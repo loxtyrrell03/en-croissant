@@ -1,0 +1,440 @@
+{
+  "scope": "Independent finite local certificate for public Xg7Rd; requires python-chess.\n\nNo engine, classifier, private data or downloads. Every actual defensive reply\nis covered, with legal same-square exchanges, maximum off-square liability and\nimmediate terminal/promotion checks. This is not whole-game evaluation or a\ncertificate against longer quiet counterplay/repetition.",
+  "caseId": "lichess:Xg7Rd",
+  "cases": [
+    {
+      "mirrored": false,
+      "fen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PpP/R3KB1R w KQkq - 0 13",
+      "root": "f1g2",
+      "branches": [
+        {
+          "reply": "a5b3",
+          "answer": "d2b3",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a5b7",
+          "answer": "g2b7",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a5c4",
+          "answer": "d2c4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a5c6",
+          "answer": "g2c6",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a8a7",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a8b8",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 320
+        },
+        {
+          "reply": "a8c8",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a8d8",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "e8d7",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "e8e7",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f6d5",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f6d7",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f6e4",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f6g8",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f6h5",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f8a3",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 320
+        },
+        {
+          "reply": "f8b4",
+          "answer": "c3b4",
+          "kind": "actual-victim-defender",
+          "localBound": 430
+        },
+        {
+          "reply": "f8c5",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f8d6",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f8e7",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g4c8",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g4d1",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g4d7",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g4e2",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g4e6",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g4f3",
+          "answer": "g2f3",
+          "kind": "counterattacking-flight-guard",
+          "localBound": 430
+        },
+        {
+          "reply": "g4f5",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g4h3",
+          "answer": "g2h3",
+          "kind": "counterattacking-flight-guard",
+          "localBound": 430
+        },
+        {
+          "reply": "g4h5",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g7g5",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g7g6",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "h7h5",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "h7h6",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "h8g8",
+          "answer": "c7a5",
+          "kind": "victim",
+          "localBound": 420
+        }
+      ],
+      "guardRemoval": {
+        "removed": "d2",
+        "safeEscape": "a5c4"
+      }
+    },
+    {
+      "mirrored": true,
+      "fen": "r3kb1r/pp1n1pPp/2p1p3/6B1/N7/P4N2/2b2PPP/R3KB1R b KQkq - 0 13",
+      "root": "f8g7",
+      "branches": [
+        {
+          "reply": "a1a2",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a1b1",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 320
+        },
+        {
+          "reply": "a1c1",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a1d1",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a4b2",
+          "answer": "g7b2",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a4b6",
+          "answer": "d7b6",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a4c3",
+          "answer": "g7c3",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "a4c5",
+          "answer": "d7c5",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "e1d2",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "e1e2",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f1a6",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 320
+        },
+        {
+          "reply": "f1b5",
+          "answer": "c6b5",
+          "kind": "actual-victim-defender",
+          "localBound": 430
+        },
+        {
+          "reply": "f1c4",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f1d3",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f1e2",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f3d2",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f3d4",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f3e5",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f3g1",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "f3h4",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g2g3",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g2g4",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5c1",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5d2",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5d8",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5e3",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5e7",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5f4",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5f6",
+          "answer": "g7f6",
+          "kind": "counterattacking-flight-guard",
+          "localBound": 430
+        },
+        {
+          "reply": "g5h4",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "g5h6",
+          "answer": "g7h6",
+          "kind": "counterattacking-flight-guard",
+          "localBound": 430
+        },
+        {
+          "reply": "h1g1",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "h2h3",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        },
+        {
+          "reply": "h2h4",
+          "answer": "c2a4",
+          "kind": "victim",
+          "localBound": 420
+        }
+      ],
+      "guardRemoval": {
+        "removed": "d7",
+        "safeEscape": "a4c5"
+      }
+    }
+  ],
+  "totalDefences": 68,
+  "minimumLocalBound": 320,
+  "initialPawnIncluded": 100,
+  "wholePositionEvaluation": false
+}

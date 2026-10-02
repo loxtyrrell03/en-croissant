@@ -10,6 +10,7 @@ import { makeUci, parseUci } from "chessops/util";
 import { SharedReviewService } from "../generated/shared-review-service.js";
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 import { deepMateOrigin, deepMateAlternativeOrigin, deepMateRepeated, deepMateClean, deepMateLine } from "../../src/utils/tests/fixtures/historyAwareMate.ts";
+import { continuationOrigin, continuationCycle, continuationClean, continuationApproach, continuationLine } from "../../src/utils/tests/fixtures/continuationHistory.ts";
 
 // A public mating fixture with constructed legal histories. The histories end
 // at identical full FENs, but only one permits a defensive repetition claim.
@@ -28,6 +29,10 @@ const cases = [
   { kind: "deep-repeated", origin: deepMateOrigin, history: deepMateRepeated, pv: deepMateLine, played: "a2a3", expectedMate: "mateIn4" },
   { kind: "deep-clean", origin: deepMateOrigin, history: deepMateClean, pv: deepMateLine, played: "a2a3", expectedMate: "mateIn3" },
   { kind: "deep-safe-alternative", origin: deepMateAlternativeOrigin, history: deepMateRepeated, pv: deepMateLine, played: "a2a3", expectedMate: "mateIn3" },
+  { kind: "conditional-repeated", origin: continuationOrigin, history: [...continuationCycle, ...continuationCycle, ...continuationApproach],
+    pv: continuationLine, played: "h2h3", expectedFork: false },
+  { kind: "conditional-clean", origin: continuationOrigin, history: [...continuationClean, ...continuationApproach],
+    pv: continuationLine, played: "h2h3", expectedFork: true },
 ];
 
 for (const reflected of [false, true]) for (const row of cases) test(
@@ -78,7 +83,7 @@ for (const reflected of [false, true]) for (const row of cases) test(
       assert.equal(card.fen, fen);
       assert.deepEqual(card.tacticalHistory, { fen: start, moves });
       const verify = metadata => {
-        assert.equal(metadata.motifClassifierVersion, "site-55.adapter-172");
+        assert.equal(metadata.motifClassifierVersion, "site-55.adapter-173");
         const mates = metadata.missedMotifs.filter(m => /^mateIn\d+$/.test(m.id));
         if (row.expectedMate) assert.equal(mates[0]?.id, row.expectedMate);
         else {
@@ -92,6 +97,10 @@ for (const reflected of [false, true]) for (const row of cases) test(
           assert.match(mates[0].evidence, /within 4 moves/);
         }
         if (kind === "immediate-repeated") assert.deepEqual(metadata.missedMotifs.filter(m => m.value > 0), []);
+        if (typeof row.expectedFork === "boolean") {
+          assert.equal(metadata.missedMotifs.some(m => m.id === "fork"), row.expectedFork);
+          assert.equal(metadata.missedTimeline.some(m => m.label === "Fork Payoff"), row.expectedFork);
+        }
       };
       verify(card.tacticalClassification);
       let exported = (await service.deck()).positions[0];

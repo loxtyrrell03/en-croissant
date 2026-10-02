@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "scope": "Benchmark-only audit of one previously selected public development puzzle and its colour reflection; no production admission or runtime accuracy credit.",
+  "reports": [
+    {
+      "file": "ltbye-intermediate-adapter172.json",
+      "version": "site-55.adapter-172",
+      "sourceRef": "80155c616cf2dd0d45cb764c060d7e60b7df5ede",
+      "sourceHashes": {
+        "src/utils/tacticalMotifs/causalTactics.ts": "37ccf1b2a33cca4c5ad4760e49b8c5ffc031945942b159b160b4585d9558f022",
+        "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "193cbac014bb43f3061ba32b8379b57ff0bfb7a99740e1ed0958a2fac397c225"
+      }
+    },
+    {
+      "file": "ltbye-intermediate-current.json",
+      "version": "site-55.adapter-173",
+      "sourceRef": "working-source checkpoint",
+      "sourceHashes": {
+        "src/utils/tacticalMotifs/causalTactics.ts": "89ee3c7e52cbbbc2c04eb016a72cde04ab3d326bc59f6bb13d9f5e2ab85aed33",
+        "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "3b02e98749d14ae956fe02109430064dfa4c9f7c50d9d7d88f2c76f7dfb9dbe0"
+      }
+    }
+  ],
+  "verification": {
+    "baselineTests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "currentTests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "typescript": "pass targeted project",
+    "lint": "0 errors, 0 warnings on three owned code files",
+    "format": "pass four owned code/config files",
+    "watchedSourcesStableWithinEachRun": true,
+    "sourceWatchScope": "Core and adapter only; exact-ref loader resolves tactical modules from the pinned commit.",
+    "finalTestEdit": "Removed a lint-only second expect argument after report generation; baseline rerun passed8, no inputs/algorithm changed."
+  },
+  "results": {
+    "bothColoursIdentical": true,
+    "legalForwardReplies": 31,
+    "legalReversedReplies": 31,
+    "forwardBound": 230,
+    "reversedRecovery": 330,
+    "forwardVisits": 1548,
+    "reversedVisits": 1099,
+    "sharedVisitTotal": 2647,
+    "sharedBudget": 16384,
+    "independentForwardNextDefences": 861,
+    "independentReverseNextDefences": 873,
+    "currentRootMoveOrderImprovementLower": 230,
+    "priorRookDebt": 500,
+    "forwardIncludingPriorDebt": -270,
+    "reversedIncludingPriorDebtUpper": -500,
+    "rootOnlyMotifsBothCheckpoints": [],
+    "fullMotifsBothCheckpoints": [],
+    "intermediateAdmissionBothCheckpoints": null,
+    "missingRookPositiveBound": 230,
+    "offSquareQueenLiability": "unknown: budget exhausted; not a proved negative"
+  },
+  "boundaries": [
+    "Bounded shared-kernel certificates plus independent finite legal/material checks, not independent complete game-theoretic proof.",
+    "No holdout classification, new corpus, engine run, network request, owner data or production change.",
+    "General quiet intermediate-capture causal admission remains unimplemented.",
+    "No Rc8 necessity claim; its removal is a positive control."
+  ],
+  "files": [
+    {
+      "name": "ltbye-intermediate-adapter172.json",
+      "bytes": 216100,
+      "sha256": "f3ac2c36db1d4a825770fbb4634365269aca7e37605089313e7a011ef47a545d"
+    },
+    {
+      "name": "ltbye-intermediate-audit.mjs",
+      "bytes": 5092,
+      "sha256": "cb2651c500b6e597ebfc943ad5b1b584d3f0eac41c70558da0a1317fc400c719"
+    },
+    {
+      "name": "ltbye-intermediate-audit.test.ts",
+      "bytes": 13155,
+      "sha256": "2831ad2367eb8e34461ce2394a894f27a2fc1f53d6cbc7b1c1d3c7c86fd000c2"
+    },
+    {
+      "name": "ltbye-intermediate-audit.tsconfig.json",
+      "bytes": 235,
+      "sha256": "c360171e4fb7091916f7b083ef5a9165b3206abf2f0ff9ba8ab0762e50cb0761"
+    },
+    {
+      "name": "ltbye-intermediate-audit.vitest.ts",
+      "bytes": 210,
+      "sha256": "da5eda1d866dc3b3904bd3bffec8203543511aa7e537d028d2ea82f68d6fc219"
+    },
+    {
+      "name": "ltbye-intermediate-current.json",
+      "bytes": 216074,
+      "sha256": "b0717b96ca71812fdce9dd368e53472ba446aba7c3c9db730cf429315e721a31"
+    },
+    {
+      "name": "ltbye-intermediate-review.md",
+      "bytes": 5458,
+      "sha256": "3a5cf4faa5ff8e1506cf27c3bd1fbb83f1a0f4df8038be1235253abb6528e5c7"
+    }
+  ]
+}

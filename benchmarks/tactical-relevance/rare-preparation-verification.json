@@ -1,0 +1,337 @@
+{
+  "schema": 1,
+  "baseCommit": "80155c616cf2dd0d45cb764c060d7e60b7df5ede",
+  "classifierVersion": "site-55.adapter-173",
+  "pipelineVersion": 180,
+  "scope": "En Croissant finite causal preparation/continuation milestone; reused public development cohort plus constructed controls, not population accuracy or holdout validation",
+  "broad": {
+    "started": "2026-10-02T20:46:22.343Z",
+    "finished": "2026-10-02T20:49:48.081Z",
+    "selectedFiles": 243,
+    "activeFiles": 222,
+    "passed": 3593,
+    "knownExpectedFailures": 1,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "sourceUnchangedDuringRun": true,
+    "reportSha256": "b4bd37be94f3061371c2c2a81cc24c37a431bc66eb6a0f59226457e2fea5a0b5"
+  },
+  "newSourceContracts": {
+    "total": 56,
+    "history": 16,
+    "trap": 16,
+    "clearance": 24,
+    "scope": "Paired/constructed regression contracts, not56independentpositions"
+  },
+  "primary": {
+    "cases": 32,
+    "byteIdenticalToAdapter172": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "exactCore": {
+    "files": 34,
+    "passed": 772,
+    "skipped": 4,
+    "failed": 0,
+    "blob": "e9cb43d5e0f8fde9cb7baaaf17ca9ddb58251718",
+    "sha256": "72125e4c52b276e351a9caa47e306d9a4098d5a7c143fd8f701adc2153dc8261",
+    "sourceUnchangedDuringRun": true,
+    "pendingCheckingRayExcluded": true,
+    "reportSha256": "39235042deb946ccbc93e182a6c4d7593d5c5ce393523a7751425a16c89977be"
+  },
+  "compiledTrainer": {
+    "files": 5,
+    "passed": 85,
+    "skipped": 1,
+    "failed": 0,
+    "newRoundtrips": 8,
+    "historyRoundtripsTotal": 14,
+    "frontierRoundtripsTotal": 20,
+    "skip": "Opt-in real background-engine test",
+    "generatedSha256": "be194c7380d66d5b9ea4f6f403d22eedd9917786014999e0d7e1b8f548038f16",
+    "ownerDataUsed": false
+  },
+  "fixedBenchmarks": {
+    "history": {
+      "beforePassed": 6,
+      "afterPassed": 8,
+      "total": 8,
+      "finalReportSha256": "f1092485da2cd8bbc7327908214330d8a35c7521506bfcff3ab2ee8d5350e842",
+      "independentAdjudicationSha256": "6edaf9e8c0c51029705a8ddbe592281e36ac4611de600db5226a75a465c61901"
+    },
+    "trap": {
+      "beforePassed": 8,
+      "afterPassed": 16,
+      "total": 16,
+      "receipt": "trap-confinement-verification.json"
+    },
+    "clearance": {
+      "beforePassed": 0,
+      "afterPassed": 6,
+      "total": 6,
+      "receipt": "quiet-clearance-adapter173.json"
+    },
+    "intermediateCaptureResearch": {
+      "receipt": "ltbye-intermediate-verification.json",
+      "admissionChanged": false
+    }
+  },
+  "retainedPublicCohort": {
+    "inputs": 56,
+    "sourcePuzzles": 8,
+    "ordinaryContexts": 6,
+    "testsPassed": 14,
+    "changedObservations": 8,
+    "unchangedObservations": 48,
+    "sourceLabelsAreNotTruth": true,
+    "reportSha256": "335b052ba12d565b9de7507ee82fbee6956426d5dd17b6207b9a117d3ebd5c86",
+    "changes": [
+      {
+        "id": "lichess:wN37d",
+        "reflected": false,
+        "scope": "root-only",
+        "before": [],
+        "after": [
+          {
+            "id": "clearance",
+            "label": "Clearance Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c4b2",
+            "value": 180,
+            "verifiedCombination": true,
+            "evidence": "Nb2 attacks the rook on a4 and clears c4 for a checking entry by the rook. A legal escape of the attacked piece is met by that newly opened check. Every legal reply has a connected local continuation retaining at least 180 centipawns of material, including captures of either participant, all check evasions, and an attacked-slider retreat when required. This is a bounded material certificate, not a forced mate or a whole-position evaluation; the later fork belongs to its own move.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:wN37d",
+        "reflected": false,
+        "scope": "source-line",
+        "before": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c7c4 forks the king on d4 and bishop on b4. The knight on b2 protects c4, so the king cannot capture the rook. The line continues with c4b4, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c7c4",
+            "value": 330,
+            "relevance": "primary"
+          }
+        ],
+        "after": [
+          {
+            "id": "clearance",
+            "label": "Clearance Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c4b2",
+            "value": 180,
+            "verifiedCombination": true,
+            "evidence": "Nb2 attacks the rook on a4 and clears c4 for a checking entry by the rook. A legal escape of the attacked piece is met by that newly opened check. Every legal reply has a connected local continuation retaining at least 180 centipawns of material, including captures of either participant, all check evasions, and an attacked-slider retreat when required. This is a bounded material certificate, not a forced mate or a whole-position evaluation; the later fork belongs to its own move.",
+            "relevance": "primary"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c7c4 forks the king on d4 and bishop on b4. The knight on b2 protects c4, so the king cannot capture the rook. The line continues with c4b4, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c7c4",
+            "value": 330,
+            "relevance": "secondary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:Xg7Rd",
+        "reflected": false,
+        "scope": "root-only",
+        "before": [],
+        "after": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Knight",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f1g2",
+            "value": 320,
+            "evidence": "Bxg2 closes the knight's escape squares b7 and c6, while the bishop on c7 attacks it on a5. It has no safe move, including captures. A counterattack also concedes material: Bf3 is answered by Nxf3; Bh3 is answered by Bxh3. Defending it with Bb4 instead permits cxb4. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece. The checked total is at least 3.2 pawns of local material, including the initial capture and losses elsewhere, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:Xg7Rd",
+        "reflected": false,
+        "scope": "source-line",
+        "before": [],
+        "after": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Knight",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f1g2",
+            "value": 320,
+            "evidence": "Bxg2 closes the knight's escape squares b7 and c6, while the bishop on c7 attacks it on a5. It has no safe move, including captures. A counterattack also concedes material: Bf3 is answered by Nxf3; Bh3 is answered by Bxh3. Defending it with Bb4 instead permits cxb4. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece. The checked total is at least 3.2 pawns of local material, including the initial capture and losses elsewhere, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:wN37d",
+        "reflected": true,
+        "scope": "root-only",
+        "before": [],
+        "after": [
+          {
+            "id": "clearance",
+            "label": "Clearance Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c5b7",
+            "value": 180,
+            "verifiedCombination": true,
+            "evidence": "Nb7 attacks the rook on a5 and clears c5 for a checking entry by the rook. A legal escape of the attacked piece is met by that newly opened check. Every legal reply has a connected local continuation retaining at least 180 centipawns of material, including captures of either participant, all check evasions, and an attacked-slider retreat when required. This is a bounded material certificate, not a forced mate or a whole-position evaluation; the later fork belongs to its own move.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:wN37d",
+        "reflected": true,
+        "scope": "source-line",
+        "before": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c2c5 forks the king on d5 and bishop on b5. The knight on b7 protects c5, so the king cannot capture the rook. The line continues with c5b5, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c2c5",
+            "value": 330,
+            "relevance": "primary"
+          }
+        ],
+        "after": [
+          {
+            "id": "clearance",
+            "label": "Clearance Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c5b7",
+            "value": 180,
+            "verifiedCombination": true,
+            "evidence": "Nb7 attacks the rook on a5 and clears c5 for a checking entry by the rook. A legal escape of the attacked piece is met by that newly opened check. Every legal reply has a connected local continuation retaining at least 180 centipawns of material, including captures of either participant, all check evasions, and an attacked-slider retreat when required. This is a bounded material certificate, not a forced mate or a whole-position evaluation; the later fork belongs to its own move.",
+            "relevance": "primary"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c2c5 forks the king on d5 and bishop on b5. The knight on b7 protects c5, so the king cannot capture the rook. The line continues with c5b5, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c2c5",
+            "value": 330,
+            "relevance": "secondary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:Xg7Rd",
+        "reflected": true,
+        "scope": "root-only",
+        "before": [],
+        "after": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Knight",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f8g7",
+            "value": 320,
+            "evidence": "Bxg7 closes the knight's escape squares b2 and c3, while the bishop on c2 attacks it on a4. It has no safe move, including captures. A counterattack also concedes material: Bf6 is answered by Nxf6; Bh6 is answered by Bxh6. Defending it with Bb5 instead permits cxb5. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece. The checked total is at least 3.2 pawns of local material, including the initial capture and losses elsewhere, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:Xg7Rd",
+        "reflected": true,
+        "scope": "source-line",
+        "before": [],
+        "after": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Knight",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f8g7",
+            "value": 320,
+            "evidence": "Bxg7 closes the knight's escape squares b2 and c3, while the bishop on c2 attacks it on a4. It has no safe move, including captures. A counterattack also concedes material: Bf6 is answered by Nxf6; Bh6 is answered by Bxh6. Defending it with Bb5 instead permits cxb5. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece. The checked total is at least 3.2 pawns of local material, including the initial capture and losses elsewhere, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "wholeProjectTypes": "passed --noEmit --incremental false",
+    "scopedLint": "14 root-selected production/test/benchmark files; 0 warnings/errors; delegated benchmark checks separately retained",
+    "frontendAndReviewBuild": "passed 8970 frontend modules /48 shared review worker modules /21 OTB helper modules; existing chunk-size, third-party bigint and plugin-time warnings",
+    "diffCheck": "passed"
+  },
+  "sourceHashesLF": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "89ee3c7e52cbbbc2c04eb016a72cde04ab3d326bc59f6bb13d9f5e2ab85aed33",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "3b02e98749d14ae956fe02109430064dfa4c9f7c50d9d7d88f2c76f7dfb9dbe0",
+    "src/utils/tacticalMotifs/liveTactics.ts": "06ede875edb986d0026d7979e72a0c103a825730848dead3294f6eade4afbb75",
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "src/utils/tacticalMotifs/continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+    "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "src/components/files/opening.ts": "014bc3d4cf6c3e9916b2e14068a9c16ccbd760d6241ce4c2cc49e760a89b104d",
+    "src/utils/mistakeReview.ts": "0364e7b5ef84e92eed9539b8b2b9e929ce33616057c84cd464fae74cc4734e6c",
+    "src/utils/tests/continuationHistory.test.ts": "3fea1785bc72d680bc468da86c507b95170aae3dd1be62648ca3c7f840800e9f",
+    "src/utils/tests/fixtures/continuationHistory.ts": "4a240534dd61751b340f0aa7cd57242c66b355dd1a300730c26624bcdcfb55fa",
+    "src/utils/tests/trapConfinement.test.ts": "f71fd632d65ce0bc904c13976dc32b1872a96be71d924812e61e8d9657deff12",
+    "src/utils/tests/quietClearancePreparation.test.ts": "639c9c2c94045595c4bfe44a78eda99dad45d94cd546dfc7531fea82ed4dae8f",
+    "scripts/tests/frontier-motif-review-service.test.mjs": "bcafc20355e5de33a84ba14819724d2959d2ffe96041e998d77ac66d8e5afc26",
+    "scripts/tests/repetition-history-review-service.test.mjs": "43c98b266da40b3239fa84ea116093a8e906f9d51ea535e22418aecb9d5182b1"
+  },
+  "preservedPendingCore": {
+    "insertions": 46,
+    "deletions": 4
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "limitations": [
+    "Local material certificates do not establish whole-game advantage against unlimited quiet counterplay.",
+    "Path-local history qualification is not repetition propagation through every material-search branch.",
+    "Ltbye quiet intermediate-capture admission, larger endings and the known queen-ending promotion gap remain open.",
+    "Missing or exhausted proof remains unknown, not positional.",
+    "Working-tree builds include preserved unrelated source; exact-core checks exclude the pending checking-ray patch."
+  ]
+}

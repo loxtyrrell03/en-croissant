@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "chessVersion": "1.11.2",
+  "cases": [
+    {
+      "mirrored": false,
+      "repeated": false,
+      "rootFen": "q4k2/8/8/8/3N4/8/P6K/8 w - - 14 8",
+      "defenderClaimAtPly": null,
+      "allLegalForkReplies": [
+        "e8d7",
+        "e8d8",
+        "e8e7",
+        "e8f7",
+        "e8f8"
+      ],
+      "queenCaptureSafeAfterEveryReply": true,
+      "safeLocalAlternativeHasNoClaim": true
+    },
+    {
+      "mirrored": false,
+      "repeated": true,
+      "rootFen": "q4k2/8/8/8/3N4/8/P6K/8 w - - 14 8",
+      "defenderClaimAtPly": 3,
+      "allLegalForkReplies": [
+        "e8d7",
+        "e8d8",
+        "e8e7",
+        "e8f7",
+        "e8f8"
+      ],
+      "queenCaptureSafeAfterEveryReply": true,
+      "safeLocalAlternativeHasNoClaim": true
+    },
+    {
+      "mirrored": true,
+      "repeated": false,
+      "rootFen": "8/p6k/8/3n4/8/8/8/Q4K2 b - - 14 8",
+      "defenderClaimAtPly": null,
+      "allLegalForkReplies": [
+        "e1d1",
+        "e1d2",
+        "e1e2",
+        "e1f1",
+        "e1f2"
+      ],
+      "queenCaptureSafeAfterEveryReply": true,
+      "safeLocalAlternativeHasNoClaim": true
+    },
+    {
+      "mirrored": true,
+      "repeated": true,
+      "rootFen": "8/p6k/8/3n4/8/8/8/Q4K2 b - - 14 8",
+      "defenderClaimAtPly": 3,
+      "allLegalForkReplies": [
+        "e1d1",
+        "e1d2",
+        "e1e2",
+        "e1f1",
+        "e1f2"
+      ],
+      "queenCaptureSafeAfterEveryReply": true,
+      "safeLocalAlternativeHasNoClaim": true
+    }
+  ],
+  "scope": "Four paired constructed histories, not four independently sampled positions or a whole-position winning proof"
+}

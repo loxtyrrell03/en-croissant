@@ -39,6 +39,8 @@ const sourceFiles = [
     "src/utils/tacticalMotifs/causalTactics.ts",
     "src/utils/tacticalMotifs/mistakeReviewAdapter.ts",
     "src/utils/tacticalMotifs/historyAwareMate.ts",
+    "src/utils/tacticalMotifs/continuationHistory.ts",
+    "src/utils/tacticalMotifs/quietClearancePreparation.ts",
     "src/utils/tacticalMotifs/repetitionHistory.ts",
     "src/utils/tacticalMotifs/types.ts",
     "src/utils/tacticalMotifs/liveTactics.ts",

@@ -9,6 +9,7 @@ import { isTacticalObservation } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
 import { advancedPawnOpportunityContext, appendTacticalHistory, persistentPawnExchangeContext, rootCaptureExchangeContext, tacticalGameHistory, type TacticalGameHistory } from "./gameHistory";
 import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
+import { computeQuietClearancePreparation, type QuietClearanceProof } from "./quietClearancePreparation";
 
 const VALUE: Record<Role, number> = {
     pawn: 100,
@@ -3191,6 +3192,26 @@ export function normalizeMatingPayoffs(
         emitted.add(motif.ply);
         return [selected.get(motif.ply)!];
     });
+}
+
+const quietClearanceCache = new Map<string, QuietClearanceProof | null>();
+
+/** This separate mode requires a new major-piece attack AND a causally used
+ * checking entry. It does not relax the existing quiet-preparation gates. */
+export function proveQuietClearancePreparation(root: TacticalReplayStep, nodeLimit = 16384): QuietClearanceProof | null {
+    if (!root || !Number.isInteger(nodeLimit) || nodeLimit < 1 || nodeLimit > 16384) return null;
+    const key = `${makeFen(root.before.toSetup())}|${makeUci(root.move)}|${makeFen(root.after.toSetup())}|${root.capture}`;
+    if (nodeLimit === 16384 && quietClearanceCache.has(key)) return structuredClone(quietClearanceCache.get(key)!);
+    const proof = computeQuietClearancePreparation(root, {
+        moves: legalMoves, capture: capturedValue, exchange: tacticalExchangeGain,
+        defenderDraw: defenderCanClaimFiftyMoveDraw,
+        retainedGain: (position, move, budget) => preparationCaptureGain(position, move, budget, undefined, undefined, true),
+    }, nodeLimit);
+    if (nodeLimit === 16384) {
+        if (quietClearanceCache.size >= 64) quietClearanceCache.delete(quietClearanceCache.keys().next().value!);
+        quietClearanceCache.set(key, structuredClone(proof));
+    }
+    return proof;
 }
 
 type TacticalPreparationProof = {
@@ -7315,6 +7336,54 @@ type TrapProof = {
     }[];
 };
 const trapProofCache = new Map<string, TrapProof | null>();
+type TrapConfinement = Readonly<{ attackers: readonly Square[]; flights: readonly Square[] }>;
+const trapConfinementCache = new Map<string, TrapConfinement | null>();
+
+/** The mover can complete an allied trap by closing a formerly safe flight,
+ * without attacking the victim itself. Require an unchanged, profitable
+ * allied attack and an actual before/after flight witness. This only nominates
+ * the target; the unchanged all-defence material proof still has to close it. */
+function trapConfinement(step: TacticalReplayStep, target: Square): TrapConfinement | null {
+    const side = step.before.turn, victim = step.before.board.get(target);
+    if (step.before.isCheck() || step.after.isCheck() || step.move.promotion ||
+        !victim || victim.color === side || ["pawn", "king"].includes(victim.role) ||
+        step.after.board.get(target)?.role !== victim.role ||
+        step.after.board.get(target)?.color !== victim.color) return null;
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${target}`;
+    if (trapConfinementCache.has(key)) return trapConfinementCache.get(key)!;
+    const remember = (result: TrapConfinement | null) => {
+        trapConfinementCache.set(key, result);
+        if (trapConfinementCache.size > 256)
+            trapConfinementCache.delete(trapConfinementCache.keys().next().value!);
+        return result;
+    };
+    const attackers = [...step.after.board[side]].filter(from => {
+        const piece = step.after.board.get(from)!;
+        return from !== step.move.to && step.before.board.get(from)?.role === piece.role &&
+            step.before.board.get(from)?.color === side &&
+            attacks(piece, from, step.after.board.occupied).has(target) &&
+            winningTargets(step.before, from, side).includes(target) &&
+            winningTargets(step.after, from, side).includes(target);
+    });
+    if (!attackers.length) return remember(null);
+    const old = withTurn(step.before, opposite(side)), flights: Square[] = [];
+    for (const move of legalMoves(old)) {
+        if (move.from !== target || capturedValue(old, move) || !step.after.isLegal(move)) continue;
+        const beforeFlight = old.clone(); beforeFlight.play(move);
+        // An already capturable flight does not establish new confinement.
+        if (legalMoves(beforeFlight).some(capture => capture.to === move.to &&
+            tacticalExchangeGain(beforeFlight, capture) >= 100)) continue;
+        const afterFlight = step.after.clone(); afterFlight.play(move);
+        const collection: NormalMove = { from: step.move.to, to: move.to };
+        if (afterFlight.isLegal(collection) && tacticalExchangeGain(afterFlight, collection) >= 100)
+            flights.push(move.to);
+    }
+    const flip = side === "white" ? 0 : 56;
+    flights.sort((a, b) => makeSquare(a ^ flip).localeCompare(makeSquare(b ^ flip)));
+    return remember(flights.length ? Object.freeze({
+        attackers: Object.freeze(attackers), flights: Object.freeze(flights),
+    }) : null);
+}
 
 export function proveTrappedMaterial(
     step: TacticalReplayStep,
@@ -7333,6 +7402,10 @@ export function proveTrappedMaterial(
     const cacheable = nodeLimit === 256 && pinProofLimit === 8 && !onFailure;
     if (cacheable && trapProofCache.has(key)) return trapProofCache.get(key)!;
     const side = step.before.turn;
+    const confinement = trapConfinement(step, target);
+    const participants = [...step.after.board[side]].filter(from =>
+        winningTargets(step.after, from, side).includes(target));
+    if (confinement) participants.push(step.move.to);
     const initial =
         step.capture + (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0);
     const replies = legalMoves(step.after);
@@ -7393,10 +7466,16 @@ export function proveTrappedMaterial(
                 });
                 continue;
             }
-            // A counterattack may capture our piece instead of saving the
-            // trapped victim. Only recapturing that actual attacking piece
-            // can be an alternate payoff, not any unrelated loose piece.
-            if (reply.from !== target && capturedValue(step.after, reply)) {
+            // A counterattack may take our piece, or threaten a participating
+            // capturer/flight guard instead of saving the victim. Only the
+            // actual moved counterattacker may supply this alternate payoff.
+            // A threat against an unrelated loose piece is not trap evidence.
+            const threat = withTurn(next, opposite(side));
+            const attacksParticipant = !!confinement && participants.some(to =>
+                next.board.get(to)?.color === side &&
+                threat.isLegal({ from: reply.to, to }) &&
+                tacticalExchangeGain(threat, { from: reply.to, to }) >= 100);
+            if (reply.from !== target && (capturedValue(step.after, reply) || attacksParticipant)) {
                 const counter = capture(next, reply.to);
                 if (balance + counter.gain >= initial + 100) {
                     minimum = Math.min(minimum, balance + counter.gain);
@@ -7517,9 +7596,16 @@ export function proveTrappedMaterial(
  * alone can immobilize a piece temporarily, so those are not trap proofs. */
 function trappedPieceProof(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]) {
     if (step.after.isCheck()) return null;
-    const targets = winningTargets(step.after, step.move.to, step.before.turn).filter(
+    const directTargets = winningTargets(step.after, step.move.to, step.before.turn).filter(
         (target) => step.after.board.get(target)?.role !== "king",
     );
+    const confinements = new Map<Square, NonNullable<ReturnType<typeof trapConfinement>>>();
+    for (const target of step.after.board[opposite(step.before.turn)]) {
+        if (directTargets.includes(target)) continue;
+        const confinement = trapConfinement(step, target);
+        if (confinement) confinements.set(target, confinement);
+    }
+    const targets = [...directTargets, ...confinements.keys()];
     const proofs = [];
     for (const target of targets) {
         const proof = proveTrappedMaterial(step, target);
@@ -7527,6 +7613,7 @@ function trappedPieceProof(step: TacticalReplayStep, source: TacticalMotifEviden
             step.capture + (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0);
         if (!proof || proof.gain - initial < 100) continue;
         const victim = step.after.board.get(target)!;
+        const confinement = confinements.get(target);
         const motif: TacticalMotifEvidence = {
             id: "trappedPiece",
             label: `Trapped ${victim.role[0].toUpperCase()}${victim.role.slice(1)}`,
@@ -7535,7 +7622,9 @@ function trappedPieceProof(step: TacticalReplayStep, source: TacticalMotifEviden
             ply: 1,
             moveUci: step.uci,
             value: proof.gain,
-            evidence: `${step.san} attacks the ${victim.role} on ${makeSquare(target)}. It has no safe move, including captures.${
+            evidence: `${confinement
+                ? `${step.san} closes the ${victim.role}'s escape squares ${confinement.flights.map(makeSquare).join(" and ")}, while ${confinement.attackers.map(from => `the ${step.after.board.get(from)!.role} on ${makeSquare(from)}`).join(" and ")} attacks it on ${makeSquare(target)}`
+                : `${step.san} attacks the ${victim.role} on ${makeSquare(target)}`}. It has no safe move, including captures.${
                 proof.countercaptures.length
                     ? ` A counterattack also concedes material: ${proof.countercaptures
                           .slice(0, 2)
@@ -7551,9 +7640,11 @@ function trappedPieceProof(step: TacticalReplayStep, source: TacticalMotifEviden
                               "; ",
                           )}. Every legal defence loses material through the trapped piece or its defender.`
                     : " Every legal defence still permits a profitable capture of that same piece."
-            }${step.capture ? " This wins additional material beyond the initial capture." : ""}`,
+            }${confinement
+                ? ` The checked total is at least ${Number((proof.gain / 100).toFixed(1))} pawns of local material${step.capture ? ", including the initial capture" : ""} and losses elsewhere, not a full-position evaluation.`
+                : step.capture ? " This wins additional material beyond the initial capture." : ""}`,
         };
-        proofs.push({ motif, target, gain: proof.gain });
+        proofs.push({ motif, target, gain: proof.gain, confinement });
     }
     return proofs.sort((a, b) => b.gain - a.gain)[0] ?? null;
 }
@@ -9869,6 +9960,9 @@ export function tacticalBoardEvidence(
     }
     if (motif.id === "clearance") {
         const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
+        if (motif.label === "Clearance Preparation" && proveQuietClearancePreparation(step))
+            return { square: makeSquare(step.move.from),
+                arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] };
         const promotion = motif.label === "Promotion Clearance" && provePromotionClearance(step);
         if (promotion) {
             const branch = promotion.branches.find(candidate => candidate.kind === "clearance")!;
@@ -9970,7 +10064,10 @@ export function tacticalBoardEvidence(
         if (!proof) return null;
         return {
             square: makeSquare(proof.target),
-            arrows: [{ from: makeSquare(step.move.to), to: makeSquare(proof.target) }],
+            arrows: proof.confinement ? [
+                ...proof.confinement.attackers.map(from => ({ from: makeSquare(from), to: makeSquare(proof.target) })),
+                ...proof.confinement.flights.map(to => ({ from: makeSquare(step.move.to), to: makeSquare(to) })),
+            ] : [{ from: makeSquare(step.move.to), to: makeSquare(proof.target) }],
         };
     }
     if (motif.id === "interference") {
@@ -14570,6 +14667,15 @@ export function auditTacticalMotifs(
             value: 10000,
             evidence: `${steps[0].san} starts a forced mating attack. Every legal defence permits mate within ${checkingMate.maxMoves} moves; one verified line is ${checkingMate.example.join(" ")}. The exact continuation depends on the defence.`,
         });
+    const quietClearance = proveQuietClearancePreparation(steps[0]);
+    if (quietClearance) {
+        const root = steps[0];
+        candidates.push({
+            id: "clearance", label: "Clearance Preparation", source: proposals[0]?.source ?? "available",
+            confidence: "high", ply: 1, moveUci: root.uci, value: quietClearance.gain, verifiedCombination: true,
+            evidence: `${root.san} attacks the ${root.after.board.get(quietClearance.directTarget)!.role} on ${makeSquare(quietClearance.directTarget)} and clears ${makeSquare(root.move.from)} for a checking entry by the ${root.after.board.get(quietClearance.entry.from)!.role}. A legal escape of the attacked piece is met by that newly opened check. Every legal reply has a connected local continuation retaining at least ${quietClearance.gain} centipawns of material, including captures of either participant, all check evasions, and an attacked-slider retreat when required. This is a bounded material certificate, not a forced mate or a whole-position evaluation; the later fork belongs to its own move.`,
+        });
+    }
     const clearance = proveForcingClearance(steps);
     if (clearance)
         candidates.push({

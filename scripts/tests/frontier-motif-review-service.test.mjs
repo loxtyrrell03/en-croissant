@@ -55,6 +55,16 @@ const cases = [
     pv: ["e8f8", "f5f8", "f1f8", "h8g7", "h7h8q"], played: "e8f7", reply: "f5f7",
     motif: "mateIn3", label: "Forcing Mate", value: 10000,
   },
+  {
+    id: "Xg7Rd", fen: "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PpP/R3KB1R w KQkq - 0 13",
+    pv: ["f1g2", "a8c8", "c7a5"], played: "a2a3", reply: "h7h6",
+    motif: "trappedPiece", label: "Trapped Knight", value: 320,
+  },
+  {
+    id: "wN37d", fen: "8/2R3pp/5p2/4p3/rbNk4/6PP/5PK1/8 w - - 0 44",
+    pv: ["c4b2", "a4a1", "c7c4", "d4d5", "c4b4"], played: "h3h4", reply: "g7g6",
+    motif: "clearance", label: "Clearance Preparation", value: 180,
+  },
 ];
 
 function replay(fen, line) {
@@ -68,7 +78,7 @@ function replay(fen, line) {
 }
 
 function assertRootContract(row, card) {
-  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-172");
+  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-173");
   const root = card.tacticalClassification.missedMotifs[0];
   assert.ok(root, `${row.id} must retain a root explanation`);
   assert.equal(root.id, row.motif);
@@ -127,6 +137,15 @@ function assertRootContract(row, card) {
     assert.equal(card.tacticalClassification.missedMotifs.some(m => m.id === "discoveredAttack"), false);
     assert.equal(card.bestTimeline.some(m => m.id === "discoveredAttack"), false);
     assert.ok(card.tacticalClassification.missedMotifs.some(m => m.id === "deflection"));
+  }
+  if (row.id === "Xg7Rd") {
+    assert.match(root.evidence, /escape squares/);
+    assert.equal(card.tacticalClassification.missedMotifs.some(m => m.id === "promotionThreat"), false);
+  }
+  if (row.id === "wN37d") {
+    assert.match(root.evidence, /clears/);
+    assert.equal(card.tacticalClassification.missedMotifs.some(m => m.id === "fork" && m.ply === 1), false);
+    assert.ok(card.bestTimeline.some(m => m.id === "fork" && m.ply === 3));
   }
 }
 

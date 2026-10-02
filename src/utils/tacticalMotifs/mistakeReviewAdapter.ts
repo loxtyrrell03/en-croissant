@@ -51,6 +51,7 @@ import { isTacticalObservation } from "./types";
 import { appendTacticalHistory, type TacticalGameHistory } from "./gameHistory";
 import { tacticalRepetitionBoundary } from "./repetitionHistory";
 import { qualifyHistoryAwareMatingMotifs, retainsHistoryAwareMate } from "./historyAwareMate";
+import { filterContinuationHistory, survivesOptionalDraw } from "./continuationHistory";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -145,7 +146,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 172;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 173;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -989,11 +990,10 @@ export function filterRepetitionBoundaries(
         if (boundary.kind === "game-over") return false;
         // Defensive Deflection also has value 0, but claims to REMOVE the
         // opponent's drawing resource. An existing draw claim defeats it.
-        return isTacticalObservation(motif) || motif.id === "perpetualCheck" ||
-            motif.id === "drawingCapture" ||
-            (motif.id === "zugzwang" && motif.label === "Drawing Zugzwang");
+        return survivesOptionalDraw(motif);
     });
-    return qualifyHistoryAwareMatingMotifs(fen, line, history, bounded);
+    return qualifyHistoryAwareMatingMotifs(fen, line, history,
+        filterContinuationHistory(fen, line, history, bounded));
 }
 
 export function classifyPositionTacticalMotifs(

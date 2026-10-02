@@ -1,0 +1,433 @@
+{
+  "schemaVersion": 1,
+  "milestone": "adapter173 / live180",
+  "case": "lichess:wN37d",
+  "sourceGame": "https://lichess.org/6rpanRRK/black#86",
+  "adjudication": "Independently verified finite local material certificate. Source tags and engine scores are nominations, not gold.",
+  "fen": "8/2R3pp/5p2/4p3/rbNk4/6PP/5PK1/8 w - - 0 44",
+  "hypothesis": "Nb2 newly attacks Ra4 and opens Rc4+ against Kd4/Bb4. Bd6 requires quiet Rc6, then universally checked captures/evasions. Root clearance is not a fork already present.",
+  "proofBounds": {
+    "sharedVisitsLimit": 16384,
+    "attackerTurns": 4,
+    "checkingMoves": 2,
+    "attackedSliderRepairs": 1,
+    "minimumAcceptedLocalCp": 100,
+    "certifiedLocalCp": 180,
+    "actualRuns": [
+      {
+        "reflected": false,
+        "visits": 990,
+        "elapsedMs": 28.56770000000006
+      },
+      {
+        "reflected": true,
+        "visits": 990,
+        "elapsedMs": 10.2256000000001
+      }
+    ]
+  },
+  "contrary": {
+    "move": "c4b6",
+    "legalLine": [
+      "c4b6",
+      "b4d6",
+      "c7c6",
+      "a4a6",
+      "c6d6",
+      "d4c5"
+    ],
+    "finding": "Rxd6+ cannot be accepted as a static material leaf. After the legal king evasion, Rxb6 becomes available. Correct proof abstains; this is not an independent whole-game draw judgment."
+  },
+  "independent": {
+    "scope": "Independent finite local material verification, not whole-game WDL",
+    "cases": [
+      {
+        "reflected": false,
+        "localBoundCp": 180,
+        "rootReplies": 24,
+        "defenderNodes": 19,
+        "allReplyEdges": 90,
+        "leaves": 72,
+        "counterchecks": 7,
+        "Nb6Contrary": "King evasion makes the formerly illegal Rxb6 liability available"
+      },
+      {
+        "reflected": true,
+        "localBoundCp": 180,
+        "rootReplies": 24,
+        "defenderNodes": 19,
+        "allReplyEdges": 90,
+        "leaves": 72,
+        "counterchecks": 7,
+        "Nb6Contrary": "King evasion makes the formerly illegal Rxb6 liability available"
+      }
+    ]
+  },
+  "publicApiComparison": {
+    "contracts": "Same 6 fixed API contracts: root-only/source/hard-Bd6 line, each colour. Baseline imports only exports present in exact172.",
+    "before": {
+      "sourceRef": "80155c616cf2dd0d45cb764c060d7e60b7df5ede",
+      "contractPassed": 0,
+      "contracts": 6,
+      "rows": [
+        {
+          "name": "root",
+          "reflected": false,
+          "elapsedMs": 46.00469999999996,
+          "motifs": [],
+          "contract": false
+        },
+        {
+          "name": "source",
+          "reflected": false,
+          "elapsedMs": 38.326100000000224,
+          "motifs": [
+            {
+              "id": "fork",
+              "label": "Fork",
+              "ply": 3,
+              "value": 330,
+              "moveUci": "c7c4"
+            }
+          ],
+          "contract": false
+        },
+        {
+          "name": "repair",
+          "reflected": false,
+          "elapsedMs": 50.3436999999999,
+          "motifs": [],
+          "contract": false
+        },
+        {
+          "name": "root",
+          "reflected": true,
+          "elapsedMs": 7.666099999999915,
+          "motifs": [],
+          "contract": false
+        },
+        {
+          "name": "source",
+          "reflected": true,
+          "elapsedMs": 13.856899999999769,
+          "motifs": [
+            {
+              "id": "fork",
+              "label": "Fork",
+              "ply": 3,
+              "value": 330,
+              "moveUci": "c2c5"
+            }
+          ],
+          "contract": false
+        },
+        {
+          "name": "repair",
+          "reflected": true,
+          "elapsedMs": 34.515699999999924,
+          "motifs": [],
+          "contract": false
+        }
+      ]
+    },
+    "after": {
+      "sourceRef": "current worktree",
+      "contractPassed": 6,
+      "contracts": 6,
+      "rows": [
+        {
+          "name": "root",
+          "reflected": false,
+          "elapsedMs": 57.933300000000145,
+          "motifs": [
+            {
+              "id": "clearance",
+              "label": "Clearance Preparation",
+              "ply": 1,
+              "value": 180,
+              "moveUci": "c4b2"
+            }
+          ],
+          "contract": true
+        },
+        {
+          "name": "source",
+          "reflected": false,
+          "elapsedMs": 27.347699999999804,
+          "motifs": [
+            {
+              "id": "clearance",
+              "label": "Clearance Preparation",
+              "ply": 1,
+              "value": 180,
+              "moveUci": "c4b2"
+            },
+            {
+              "id": "fork",
+              "label": "Fork",
+              "ply": 3,
+              "value": 330,
+              "moveUci": "c7c4"
+            }
+          ],
+          "contract": true
+        },
+        {
+          "name": "repair",
+          "reflected": false,
+          "elapsedMs": 41.140300000000025,
+          "motifs": [
+            {
+              "id": "clearance",
+              "label": "Clearance Preparation",
+              "ply": 1,
+              "value": 180,
+              "moveUci": "c4b2"
+            }
+          ],
+          "contract": true
+        },
+        {
+          "name": "root",
+          "reflected": true,
+          "elapsedMs": 14.880999999999858,
+          "motifs": [
+            {
+              "id": "clearance",
+              "label": "Clearance Preparation",
+              "ply": 1,
+              "value": 180,
+              "moveUci": "c5b7"
+            }
+          ],
+          "contract": true
+        },
+        {
+          "name": "source",
+          "reflected": true,
+          "elapsedMs": 12.066499999999905,
+          "motifs": [
+            {
+              "id": "clearance",
+              "label": "Clearance Preparation",
+              "ply": 1,
+              "value": 180,
+              "moveUci": "c5b7"
+            },
+            {
+              "id": "fork",
+              "label": "Fork",
+              "ply": 3,
+              "value": 330,
+              "moveUci": "c2c5"
+            }
+          ],
+          "contract": true
+        },
+        {
+          "name": "repair",
+          "reflected": true,
+          "elapsedMs": 32.39949999999999,
+          "motifs": [
+            {
+              "id": "clearance",
+              "label": "Clearance Preparation",
+              "ply": 1,
+              "value": 180,
+              "moveUci": "c5b7"
+            }
+          ],
+          "contract": true
+        }
+      ]
+    }
+  },
+  "regressions": {
+    "owned": {
+      "passed": 24,
+      "failed": 0
+    },
+    "siblings": {
+      "files": 8,
+      "passed": 137,
+      "skipped": 13,
+      "failed": 0
+    },
+    "types": "passed whole tsgo noEmit incremental false",
+    "lint": "0 errors, 0 warnings on owned helper/test; full root milestone validates shared core"
+  },
+  "engineCorroboration": {
+    "scope": "24 tiny root-reply searches, Stockfish depth16, Threads1, Hash16MiB. Scores not a proof, no game WDL asserted.",
+    "rows": [
+      {
+        "reply": "b4a3",
+        "scoreWhite": "+548",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "b4a5",
+        "scoreWhite": "+528",
+        "depth": 16,
+        "firstMove": "c7d7"
+      },
+      {
+        "reply": "b4c3",
+        "scoreWhite": "+567",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "b4c5",
+        "scoreWhite": "+566",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "b4d2",
+        "scoreWhite": "+574",
+        "depth": 16,
+        "firstMove": "c7d7"
+      },
+      {
+        "reply": "b4d6",
+        "scoreWhite": "+306",
+        "depth": 16,
+        "firstMove": "c7c6"
+      },
+      {
+        "reply": "b4e1",
+        "scoreWhite": "+542",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "b4e7",
+        "scoreWhite": "+568",
+        "depth": 16,
+        "firstMove": "c7d7"
+      },
+      {
+        "reply": "b4f8",
+        "scoreWhite": "+532",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "d4d5",
+        "scoreWhite": "+534",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "d4e4",
+        "scoreWhite": "+567",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "a4a1",
+        "scoreWhite": "+327",
+        "depth": 16,
+        "firstMove": "c7c4"
+      },
+      {
+        "reply": "a4a2",
+        "scoreWhite": "+375",
+        "depth": 16,
+        "firstMove": "c7c4"
+      },
+      {
+        "reply": "a4a3",
+        "scoreWhite": "+380",
+        "depth": 16,
+        "firstMove": "c7c4"
+      },
+      {
+        "reply": "a4a5",
+        "scoreWhite": "+372",
+        "depth": 16,
+        "firstMove": "c7c4"
+      },
+      {
+        "reply": "a4a6",
+        "scoreWhite": "+373",
+        "depth": 16,
+        "firstMove": "c7c4"
+      },
+      {
+        "reply": "a4a7",
+        "scoreWhite": "+531",
+        "depth": 16,
+        "firstMove": "c7a7"
+      },
+      {
+        "reply": "a4a8",
+        "scoreWhite": "+385",
+        "depth": 16,
+        "firstMove": "c7c4"
+      },
+      {
+        "reply": "e5e4",
+        "scoreWhite": "+526",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "f6f5",
+        "scoreWhite": "+523",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "g7g5",
+        "scoreWhite": "+500",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "g7g6",
+        "scoreWhite": "+516",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "h7h5",
+        "scoreWhite": "+509",
+        "depth": 16,
+        "firstMove": "b2a4"
+      },
+      {
+        "reply": "h7h6",
+        "scoreWhite": "+521",
+        "depth": 16,
+        "firstMove": "b2a4"
+      }
+    ]
+  },
+  "limitations": [
+    "Finite local material retention is not a whole-position win, complete future strategy, or absence of longer quiet counterplay.",
+    "No inherited-history claim is inferred from FEN. Enclosing qualification covers supplied-route history, not all hidden branches of this material tree.",
+    "Only quiet knight clearance with one new major-piece victim, one slider checking entry, and one distinct fork victim is admitted.",
+    "A real major-target escape must use the exact formerly blocked entry and collect the distinct fork victim on every selected continuation.",
+    "Development fixture and colour/prefix controls are not independent prevalence samples or untouched holdout accuracy."
+  ],
+  "commands": {
+    "focused": "node node_modules/vitest/vitest.mjs run src/utils/tests/quietClearancePreparation.test.ts --maxWorkers=2 --update=none --cache=false",
+    "paired": "node node_modules/vitest/vitest.mjs run --config benchmarks/tactical-relevance/quiet-clearance-api.vitest.ts --maxWorkers=2 --update=none --cache=false",
+    "baselineEnv": {
+      "RARE_CAUSAL_COHORT_V2_REF": "80155c616cf2dd0d45cb764c060d7e60b7df5ede",
+      "QUIET_CLEARANCE_API_REPORT": "task-owned report path"
+    },
+    "independent": "python benchmarks/tactical-relevance/quiet-clearance-verify.py (requires existing python-chess)"
+  },
+  "hashesLF": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "89ee3c7e52cbbbc2c04eb016a72cde04ab3d326bc59f6bb13d9f5e2ab85aed33",
+    "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "src/utils/tests/quietClearancePreparation.test.ts": "639c9c2c94045595c4bfe44a78eda99dad45d94cd546dfc7531fea82ed4dae8f",
+    "benchmarks/tactical-relevance/quiet-clearance-strategy.json": "abf71d853a834584f6251d30de212abe9d22ea5dd49bb0ec10171835f685fc57",
+    "benchmarks/tactical-relevance/quiet-clearance-verify.py": "c86cab88e07f4706f35c6a14f13e069eae60b5fea7661a1f2e621cd743779009",
+    "benchmarks/tactical-relevance/quiet-clearance-api.test.ts": "44c15639085b82799ee7701acc4d2ba01d08bf74d742f5857d9ad6e22f926eec",
+    "benchmarks/tactical-relevance/quiet-clearance-api.vitest.ts": "8b7adc904ae58d30d3da9140bcf3567cf28fdbb7c92d200dee7ed0b52b96c4c7"
+  }
+}

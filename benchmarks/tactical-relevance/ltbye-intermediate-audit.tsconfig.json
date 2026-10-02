@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["./ltbye-intermediate-audit.test.ts", "./ltbye-intermediate-audit.vitest.ts"],
+  "exclude": ["../../node_modules", "../../src-tauri"]
+}
