@@ -3,9 +3,7 @@ import { useEffect, useMemo, useId, useRef, useState, type ReactNode } from "rea
 import {
   PERFORMANCE_PERIODS,
   selectResultPeriod,
-  periodPerformanceHistory,
   preparePerformanceGames,
-  strengthHistory,
   type PerformanceGame,
   type PerformanceGameType,
   type PerformancePeriod,
@@ -13,13 +11,8 @@ import {
 } from "./truePerformance";
 import s from "./TruePerformancePanel.module.css";
 import { readableOpeningName } from "./onlinePerformance";
-function calculateEstimate<T>(calculate: () => T): T | null {
-  try { return calculate(); }
-  catch (error) {
-    console.error("Performance estimate could not be calculated", error);
-    return null;
-  }
-}
+import { usePerformanceCalculation } from "./usePerformanceCalculation";
+import performanceLicenseUrl from "./performanceDynamics.LICENSE.txt?url&no-inline";
 const number = (n: number | null | undefined) =>
   n == null || !Number.isFinite(n) ? "—" : Math.round(n).toLocaleString();
 const date = (at: number) =>
@@ -58,7 +51,7 @@ export function TruePerformancePanel({
   title = "Your chess",
   poolLabel,
   compact = false,
-  asOf = Date.now() / 1000,
+  asOf: suppliedAsOf,
   controls,
   coverage,
   onOpenGame,
@@ -81,7 +74,10 @@ export function TruePerformancePanel({
   const [compareOpen, setCompareOpen] = useState(false);
   const [graphMode, setGraphMode] = useState<"performance" | "history">("performance");
   const comparisonId = useId();
-  const history = useMemo(() => calculateEstimate(() => strengthHistory(games, asOf, undefined, gameType)), [games, asOf, gameType]);
+  const asOf = useMemo(() => suppliedAsOf ?? Date.now() / 1000, [suppliedAsOf, games]);
+  const historyRequest = useMemo(() => games.length ? { kind: "history" as const, games, asOf, gameType } : null, [games, asOf, gameType]);
+  const historyCalculation = usePerformanceCalculation(historyRequest);
+  const history = historyCalculation.value;
   const selected = useMemo(
     () => selectResultPeriod(games, period, asOf, gameType),
     [games, period, asOf, gameType],
@@ -92,10 +88,16 @@ export function TruePerformancePanel({
     [history, selectedIds],
   );
   const last = points.at(-1);
-  const periodResult = useMemo(() => calculateEstimate(() => periodPerformanceHistory(selected, asOf, gameType)), [selected, asOf, gameType]);
-  const periodPoints = periodResult ?? [];
-  const performance = periodPoints.at(-1) ?? null;
   const usable = useMemo(() => preparePerformanceGames(selected, asOf, gameType), [selected, asOf, gameType]);
+  const startingRating = usable[0]?.rating;
+  const canCalculatePeriod = usable.length >= 3 && startingRating != null && Number.isFinite(startingRating) && startingRating >= 0 && startingRating <= 4000;
+  const periodRequest = useMemo(() => canCalculatePeriod ? { kind: "period" as const, games: selected, asOf, gameType } : null, [canCalculatePeriod, selected, asOf, gameType]);
+  const periodCalculation = usePerformanceCalculation(periodRequest);
+  const periodPoints = periodCalculation.value ?? [];
+  const performance = periodPoints.at(-1) ?? null;
+  const periodLoading = periodCalculation.status === "loading";
+  const chartCalculation = graphMode === "performance" ? periodCalculation : historyCalculation;
+  const chartLoading = chartCalculation.status === "loading";
   const chartPoints = graphMode === "performance" ? periodPoints.slice(2) : points;
   const enough = (history?.points.length ?? 0) >= 3 && !!last;
   const wins = selected.filter((g) => g.score === 1).length,
@@ -142,21 +144,23 @@ export function TruePerformancePanel({
       ) : (
         <>
           <div className={s.hero}>
-            <div className={s.heroHeading}><h3>How well did you play?</h3><Hint>{`Performance in your selected games, using their results and opponents’ ratings, starting from your account rating before the first game. ${performance ? `Estimated range: ${number(performance.low)}–${number(performance.high)}.` : periodResult === null ? "This estimate is unavailable because the calculation could not be verified." : "Needs at least 3 usable games and a starting rating."}`}</Hint></div>
+            <div className={s.heroHeading}><h3>How well did you play?</h3><Hint>{`Performance in your selected games, using their results and opponents’ ratings, starting from your account rating before the first game. ${performance ? `Estimated range: ${number(performance.low)}–${number(performance.high)}.` : periodLoading ? "Calculating the estimate for these games." : periodCalculation.status === "error" ? "This estimate is unavailable because the calculation could not be verified." : "Needs at least 3 usable games and a starting rating."}`}</Hint></div>
             <div className={s.heroRow}>
               <div><strong className={s.heroRating}>{number(performance?.mean)}</strong><span className={s.ratingUnit}>Performance rating · {poolLabel}</span></div>
               <button className={s.button} aria-expanded={compareOpen} aria-controls={comparisonId} onClick={() => setCompareOpen(v => !v)}>{compareOpen ? "Close comparison" : "Compare ratings"}</button>
             </div>
-            {!performance && <p className={s.note}>{periodResult === null ? "The performance estimate could not be calculated reliably for these games." : usable.length < 3 ? "Needs at least 3 games with opponent ratings." : "The starting account rating is missing."}</p>}
+            {!performance && <p className={s.note}>{periodLoading ? "Calculating performance..." : periodCalculation.error ? periodCalculation.error : usable.length < 3 ? "Needs at least 3 games with opponent ratings." : "The starting account rating is missing."}</p>}
+            {periodCalculation.error && <button type="button" className={s.button} onClick={periodCalculation.retry}>Retry performance estimate</button>}
             {usable.length < selected.length && <p className={s.note}>{selected.length-usable.length} games lack usable rating data; their results are still included below.</p>}
           </div>
           {compareOpen && <div id={comparisonId} className={s.comparison}>
-            <Metric label="In your selected games" value={number(performance?.mean)} detail={`${usable.length} games with rating data`} help="How well you played across the selection, using your rating before its first usable game as the starting point." />
-            <Metric label="After your latest game" value={enough ? number(last.mean) : "—"} detail={history === null ? "Running-strength estimate unavailable" : `${history.games.length} games of history`} help={`Your estimated level after ${last ? date(last.at) : "the latest game"}, including earlier loaded games outside the selection. This uses the same website and time control.`} />
+            <Metric label="In your selected games" value={number(performance?.mean)} detail={periodLoading ? "Calculating performance..." : periodCalculation.error ? "Performance estimate unavailable" : `${usable.length} games with rating data`} help="How well you played across the selection, using your rating before its first usable game as the starting point." />
+            <Metric label="After your latest game" value={enough ? number(last.mean) : "—"} detail={historyCalculation.status === "loading" ? "Calculating playing-strength history..." : historyCalculation.error ? "Running-strength estimate unavailable" : `${history?.games.length ?? 0} games of history`} help={`Your estimated level after ${last ? date(last.at) : "the latest game"}, including earlier loaded games outside the selection. This uses the same website and time control.`} />
             <Metric label="Website rating" value={number(selected.at(-1)?.rating)} detail="Recorded before your latest game" help="The rating recorded by the website before the last selected game; it is not either of our estimates." />
           </div>}
           <div className={s.graphControls}><label>Graph <select aria-label="Rating graph" value={graphMode} onChange={e => setGraphMode(e.target.value as "performance" | "history")}><option value="performance">Performance in selected games</option><option value="history">Estimated level after each game</option></select></label><Hint>{graphMode === "performance" ? "Recalculates performance as each selected game is added. Its final point matches the headline rating; games before your selection are not included." : "Your estimated level after each game, using earlier loaded games too. The selection controls which dates are shown, not how much earlier history is used."}</Hint></div>
-          {chartPoints.length > 0 ? <ProgressChart points={chartPoints} label={graphMode === "performance" ? "Performance rating" : "Estimated playing strength"} /> : <div className={s.empty}>{(graphMode === "performance" ? periodResult === null : history === null) ? "This estimate could not be calculated reliably. Your game results are still shown below." : "Not enough rating data to draw this graph."}</div>}
+          {chartPoints.length > 0 ? <ProgressChart points={chartPoints} label={graphMode === "performance" ? "Performance rating" : "Estimated playing strength"} /> : <div className={s.empty} role={chartLoading ? "status" : undefined} aria-live="polite">{chartLoading ? (graphMode === "performance" ? "Calculating performance..." : "Calculating playing-strength history...") : chartCalculation.error ? `${chartCalculation.error} Your game results are still shown below.` : "Not enough rating data to draw this graph."}</div>}
+          {graphMode === "history" && historyCalculation.error && <button type="button" className={s.button} onClick={historyCalculation.retry}>Retry playing-strength history</button>}
           <div className={s.results} aria-label="Game results"><div><strong className={s.winText}>{wins}</strong><span>Wins</span></div><div><strong>{draws}</strong><span>Draws</span></div><div><strong className={s.lossText}>{losses}</strong><span>Losses</span></div></div>
           {!compact && (
             <div className={s.detailsGrid}>
@@ -211,8 +215,9 @@ export function TruePerformancePanel({
             and time-control pools stay separate. Online model settings are provisional; they have
             not been calibrated on an independent online test set. These are not FIDE ratings. A
             single game shows its effect on the running estimate, not a standalone performance
-            rating.
+            rating. Repeated opponents or games in the same session can make the estimated ranges too narrow.
           </p>
+          <p><a href={performanceLicenseUrl} target="_blank" rel="noreferrer">Third-party licence</a></p>
         </details>
       </footer>
     </section>

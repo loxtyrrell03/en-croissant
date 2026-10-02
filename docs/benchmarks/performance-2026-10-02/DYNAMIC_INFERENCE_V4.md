@@ -43,3 +43,5 @@ All online constants remain provisional. The completed public-prefix likelihood 
 The supported claim is accurate numerical evaluation on the declared domain and tested cases, with explicit failure outside supported bounds. No finite experiment establishes the most accurate possible chess model.
 
 Canonical research scripts and archived rejected implementations are retained in the Novelty repository. Sibling source checkouts carry the shared kernel, regression fixtures and compact acceptance documentation; their copies do not imply separate empirical fitting or a different statistical model.
+
+The subsequent background integration is verified across all five source checkouts. See ASYNC_INTEGRATION.md and final-product-verification.json for exact source hashes, real-worker cancellation/retry checks, full licence inclusion and the source-only delivery boundary. The existing panel remains responsive during the more expensive computation.
