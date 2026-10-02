@@ -7,7 +7,7 @@ export type TournamentScoreEvidence =
   | { scoreKnown: true; scoreRound: number; scoreSource: "published" | "reconstructed" | "initial" }
   | { scoreKnown: false; scoreRound: null; scoreSource: "unknown" };
 
-export type EvidenceTournamentPlayer = TournamentPlayer & Partial<TournamentScoreEvidence>;
+export type EvidenceTournamentPlayer = TournamentPlayer;
 export interface TournamentRoundStatusEvidence {
   round: number;
   startNumber: number;
@@ -23,13 +23,7 @@ export interface TournamentRoundCoverageEvidence {
   duplicateStartNumbers: number[];
   unaccountedStartNumbers: number[];
 }
-export type EvidenceTournamentSnapshot = Omit<TournamentSnapshot, "players" | "roundStandings"> & {
-  evidenceVersion?: number;
-  players: EvidenceTournamentPlayer[];
-  roundStandings?: { round: number; players: EvidenceTournamentPlayer[] }[];
-  roundStatus?: TournamentRoundStatusEvidence[];
-  roundCoverage?: TournamentRoundCoverageEvidence[];
-};
+export type EvidenceTournamentSnapshot = TournamentSnapshot;
 
 export type AssignmentIssue = "missing-assignment" | "duplicate-assignment" | "self-pairing" |
   "unknown-player" | "status-conflict" | "invalid-status" | "duplicate-roster";

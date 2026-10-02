@@ -7,6 +7,7 @@ import { calculateSampledSwissForecast } from "../sampledSwissForecast";
 import { historicalPairingReliability } from "../pairingHistoryReliability";
 import { pairingEstimateHelp } from "../pairingScoreHelp";
 import { standingsAfterRound } from "../tournamentInsights";
+import { forecastEvidenceHelp, prepareTournamentForecastEvidence } from "../tournamentForecastEvidence";
 
 function fixture(): TournamentSnapshot {
   const points=[1,0,.5,1,0,1,.5,0];
@@ -15,16 +16,18 @@ function fixture(): TournamentSnapshot {
 }
 
 describe("unavailable historical results", () => {
-  test("past named unknowns abstain without changing candidates or exposing hidden valid results", () => {
-    const control=calculatePairingForecast(fixture(),1);
+  test("past named unknown variants abstain identically without exposing hidden valid results", () => {
+    const unknown=fixture();unknown.pairings[0]={...unknown.pairings[0],result:null,decided:false};
+    const control=calculatePairingForecast(unknown,1,{exactSwiss:null});
     for(const [result,decided] of [[null,false],["1F-unknown",true],["unknown-1F",true],["+pending",true],["1-0",false],["0-1",false]] as const) {
       const source=fixture();source.pairings[0]={...source.pairings[0],result,decided};
       const before=structuredClone(source),actual=calculatePairingForecast(source,1,{exactSwiss:{opponentStartNumber:8,color:"white",estimatedLiveResults:false,system:"dutch",acceleration:null}});
       expect(hasUnknownPriorPairingResults(source,2)).toBe(true);
-      expect(actual.candidates.map(({probability,...candidate})=>candidate)).toEqual(control.candidates.map(({probability,...candidate})=>candidate));
+      expect(actual).toEqual(control);
+      expect(actual.candidates.length>0).toBe(true);
       expect(actual.candidates.every(candidate=>candidate.probability===null)).toBe(true);
       expect(actual.otherProbability).toBeNull();expect(actual.confidence).toBe("unavailable");
-      expect(actual.caveat).toBe(UNKNOWN_PRIOR_RESULTS_HELP);expect(pairingEstimateHelp(source,actual)).toBe(UNKNOWN_PRIOR_RESULTS_HELP);
+      expect(actual.caveat).toBe(forecastEvidenceHelp("unknown-results"));expect(pairingEstimateHelp(source,actual)).toBe(UNKNOWN_PRIOR_RESULTS_HELP);
       expect(calculateExactSwissForecast(source,2,1)).toBeNull();expect(calculateSampledSwissForecast(source,2,1)).toBeNull();
       expect(historicalPairingReliability({...source,nextRound:3},3)).toBeUndefined();
       expect(source).toEqual(before);
@@ -45,11 +48,26 @@ describe("unavailable historical results", () => {
   test("unknown prior solo scores abstain, while explicit legacy awards stay known in either seat", () => {
     for(const black of [false,true]) for(const result of [null,"-","0","½","1"]) {
       const source=fixture();Object.assign(source,{completedRound:0,liveRound:1,phase:"round-in-progress"});source.pairings[0]={...source.pairings[0],whiteStartNumber:black?null:1,blackStartNumber:black?1:null,result,decided:false};
+      // Splitting the original 1-v-5 row must still account for player 5.
+      source.pairings.push({...source.pairings[0],board:5,whiteStartNumber:5,blackStartNumber:null,result:"0",decided:false});
       const unknown=result===null||result==="-";
       expect(hasUnknownPriorPairingResults(source,2)).toBe(unknown);
       const forecast=calculatePairingForecast(source,1);
+      expect(forecast.candidates.length>0).toBe(true);
       expect(forecast.candidates.every(c=>unknown?c.probability===null:typeof c.probability==="number")).toBe(true);
       if(unknown){expect(calculateExactSwissForecast(source,2,1)).toBeNull();expect(calculateSampledSwissForecast(source,2,1)).toBeNull();}
+    }
+  });
+  test("a known solo award cannot hide the displaced opponent's missing assignment", () => {
+    for(const black of [false,true]) {
+      const source=fixture();Object.assign(source,{completedRound:0,liveRound:1,phase:"round-in-progress"});
+      source.pairings[0]={...source.pairings[0],whiteStartNumber:black?null:1,blackStartNumber:black?1:null,result:"½",decided:false};
+      expect(prepareTournamentForecastEvidence(source,2).issue).toBe("incomplete-history");
+      const forecast=calculatePairingForecast(source,1);
+      expect(forecast.candidates.length>0).toBe(true);
+      expect(forecast.candidates.every(candidate=>candidate.probability===null)).toBe(true);
+      expect(forecast.otherProbability).toBeNull();
+      expect(calculateExactSwissForecast(source,2,1)).toBeNull();expect(calculateSampledSwissForecast(source,2,1)).toBeNull();
     }
   });
   test("published targets, completion and future-only missing results retain precedence", () => {
@@ -64,7 +82,11 @@ describe("unavailable historical results", () => {
   });
   test("unknown reconstructed points have no invented score or ranks, but published standings stay authoritative", () => {
     const source=fixture();source.pairings[0]={...source.pairings[0],result:"1-0",decided:false};
-    expect(standingsAfterRound(source,1).find(p=>p.startNumber===1)).toMatchObject({points:1,scoreKnown:true,rank:1});
+    const published: TournamentSnapshot = {...source,evidenceVersion:1,
+      players:source.players.map(p=>({...p,scoreKnown:true,scoreRound:1,scoreSource:"published"})),
+      roundStandings:[{round:1,players:source.players.map(p=>({...p,scoreKnown:true,scoreRound:1,scoreSource:"published"}))}]};
+    expect(standingsAfterRound(source,1).find(p=>p.startNumber===1)?.scoreKnown).toBe(false);
+    expect(standingsAfterRound(published,1).find(p=>p.startNumber===1)).toMatchObject({points:1,scoreKnown:true,rank:1,rankSource:"published"});
     const derived={...source,roundStandings:[],players:source.players.map(p=>({...p,rank:null}))};
     const rows=standingsAfterRound(derived,1);
     expect(rows.find(p=>p.startNumber===1)?.scoreKnown).toBe(false);
@@ -74,6 +96,6 @@ describe("unavailable historical results", () => {
     expect(standingsAfterRound({...derived,completedRound:0,liveRound:1},1).every(p=>p.rank===null)).toBe(true);
     const future={...derived,roundStandings:[{round:5,players:source.players}]};
     expect(standingsAfterRound(future,1)).toEqual(rows);
-    expect(standingsAfterRound({...source,roundStandings:[]},1).every(p=>p.scoreKnown)).toBe(true);
+    expect(standingsAfterRound({...published,roundStandings:[]},1).every(p=>p.scoreKnown)).toBe(true);
   });
 });

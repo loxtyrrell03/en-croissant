@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 
 const state=vi.hoisted(()=>({snapshots:[] as TournamentSnapshot[], failedSnapshot:null as TournamentSnapshot|null, failOne:false}));
-vi.mock('../exactSwissForecast.ts',()=>({calculateExactSwissForecast:(s:TournamentSnapshot,round:number,player:number,system:string)=>{
+vi.mock('../exactSwissForecast.ts',()=>({swissPairingSystemFor:()=>"dutch",calculateExactSwissForecast:(s:TournamentSnapshot,round:number,player:number,system:string)=>{
   state.snapshots.push(s);
   const complete=s.pairings.filter(p=>p.round<round).every(p=>p.decided);
   if(complete&&state.failOne&&!state.failedSnapshot) state.failedSnapshot=s;
@@ -18,6 +18,8 @@ import {calibratedRankProbabilities} from '../pairingCalibration';
 
 function snapshot():TournamentSnapshot {
   return {tournamentId:'synthetic-sampling',title:'Swiss',formatLabel:'Swiss',format:'swiss',totalRounds:5,liveRound:1,
+    completedRound:0,publishedRound:1,nextRound:2,phase:'round-in-progress',sourceUrl:'fixture://sampling',section:null,
+    dateRange:null,timeControl:null,sourceUpdatedAt:null,fetchedAt:'synthetic',warnings:[],
     players:Array.from({length:6},(_,i)=>({startNumber:i+1,name:`Player ${i+1}`,fideId:null,federation:null,title:null,rating:i<3?2000:null,rank:i+1,points:0,active:true})),
     pairings:[[1,4],[2,5],[3,6]].map(([whiteStartNumber,blackStartNumber],i)=>({round:1,board:i+1,whiteStartNumber,blackStartNumber,result:i<2?'1-0':null,decided:i<2,whitePoints:null,blackPoints:null})),
   } as TournamentSnapshot;
@@ -29,7 +31,7 @@ describe('coherent Swiss outcome sampling',()=>{
     const s=snapshot(),original=structuredClone(s);
     const first=calculateSampledSwissForecast(s,2,1);
     expect(first?.sampling).toEqual({samples:16,successful:16});
-    const samples=[...new Set(state.snapshots)].filter(p=>p!==s);
+    const samples=[...new Set(state.snapshots)].filter(p=>p.pairings.every(game=>game.decided));
     expect(samples).toHaveLength(16);
     for(const sample of samples) {
       expect(sample.pairings[0]).toEqual(original.pairings[0]);
@@ -44,7 +46,7 @@ describe('coherent Swiss outcome sampling',()=>{
     const reference=snapshot(),legacy=structuredClone(reference);
     legacy.pairings[2]={...legacy.pairings[2],result:'*',decided:true};
     const first=calculateSampledSwissForecast(reference,2,1);
-    const firstSamples=[...new Set(state.snapshots)].filter(s=>s!==reference).map(s=>s.pairings);
+    const firstSamples=[...new Set(state.snapshots)].filter(s=>s.pairings.every(p=>p.decided)).map(s=>s.pairings);
     state.snapshots=[];
     const corrected=calculateSampledSwissForecast(legacy,2,1);
     expect(corrected).toEqual(first);
@@ -64,19 +66,26 @@ describe('coherent Swiss outcome sampling',()=>{
     b.fetchedAt='future-refresh';b.players[0].notPairedRounds=[99];b.players[0].halfPointByeRounds=[99];b.pairings.push({...b.pairings[0],round:5,result:'0-1'});
     const first=calculateSampledSwissForecast(a,2,1),second=calculateSampledSwissForecast(b,2,1);
     expect(second).toEqual(first);
-    const samples=[...new Set(state.snapshots)].filter(p=>p!==a&&p!==b);
+    const samples=[...new Set(state.snapshots)].filter(p=>p.pairings.filter(game=>game.round===1).every(game=>game.decided));
     expect(samples.slice(0,16).map(s=>s.pairings.filter(p=>p.round===1))).toEqual(samples.slice(16).map(s=>s.pairings.filter(p=>p.round===1)));
   });
   test('requires a strict majority of current-round results and complete earlier history',()=>{
     const early=snapshot();early.pairings[1].decided=false;early.pairings[1].result=null;
     expect(calculateSampledSwissForecast(early,2,1)?.sampling).toBeUndefined();
-    const hole=snapshot();hole.pairings.push({...hole.pairings[2],round:0});
-    expect(calculateSampledSwissForecast(hole,2,1)?.sampling).toBeUndefined();
+    const hole=snapshot();hole.completedRound=1;hole.publishedRound=2;hole.liveRound=2;hole.nextRound=3;
+    hole.pairings.push(...hole.pairings.map(game=>({...game,round:2})));
+    const calls=state.snapshots.length;
+    expect(calculateSampledSwissForecast(hole,3,1)).toBeNull();
+    expect(state.snapshots).toHaveLength(calls);
   });
   test('retains the original reconstruction outside validated size/system/live scope',()=>{
-    const base=snapshot();base.liveRound=null;
+    const base=snapshot();base.liveRound=null;base.completedRound=1;base.phase='between-rounds';
+    base.pairings[2]={...base.pairings[2],result:'1/2-1/2',decided:true};
     expect(calculateSampledSwissForecast(base,2,1)?.sampling).toBeUndefined();
     const large=snapshot();large.players=Array.from({length:121},(_,i)=>({...large.players[0],startNumber:i+1}));
+    for(let player=7;player<=121;player+=2)large.pairings.push({round:1,board:large.pairings.length+1,
+      whiteStartNumber:player,blackStartNumber:player===121?null:player+1,whitePoints:0,blackPoints:player===121?null:0,
+      result:player===121?'1/2':'1/2-1/2',decided:true});
     expect(calculateSampledSwissForecast(large,2,1)?.sampling).toBeUndefined();
     expect(calculateSampledSwissForecast(snapshot(),2,1,'dubov')?.sampling).toBeUndefined();
     expect(state.snapshots).toHaveLength(3);

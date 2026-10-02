@@ -71,13 +71,14 @@ function snapshot(overrides: Partial<TournamentSnapshot> = {}): TournamentSnapsh
     fetchedAt: "2026-08-06T12:00:00Z",
     players: [
       player(1, "Able, Alice", 1, 2, 2200),
-      player(2, "Baker, Bob", 2, 2, 2150),
-      player(3, "Clark, Cam", 3, 1.5, 2100),
-      player(4, "Dunn, Dee", 4, 1.5, 2050),
-      player(5, "Evans, Eve", 5, 1, 2000),
-      player(6, "Fox, Finn", 6, 1, 1950),
+      player(2, "Baker, Bob", 2, 1, 2150),
+      player(3, "Clark, Cam", 3, 1, 2100),
+      player(4, "Dunn, Dee", 4, 1, 2050),
+      player(5, "Evans, Eve", 5, 0.5, 2000),
+      player(6, "Fox, Finn", 6, 0.5, 1950),
     ],
-    pairings: [pairing(1, 1, 4, "1 - 0"), pairing(2, 2, 1, "0 - 1")],
+    pairings: [pairing(1, 1, 4, "1 - 0"), pairing(1, 2, 3, "1 - 0", 2), pairing(1, 5, 6, "½-½", 3),
+      pairing(2, 2, 1, "0 - 1"), pairing(2, 3, 5, "1 - 0", 2), pairing(2, 4, 6, "1 - 0", 3)],
     warnings: [],
     ...overrides,
   };
@@ -95,7 +96,8 @@ test("large live estimates use the selected player's visible result, preserving 
   }
   const missing = { ...event, pairings: pairings.slice(1) };
   expect(calculatePairingForecast(missing, 1).candidates.map(c => c.probability))
-    .toEqual(calibratedRankProbabilities(false, 2, 32 / 64, 130, null));
+    .toEqual(Array(6).fill(null));
+  expect(calculatePairingForecast(missing, 1).otherProbability).toBeNull();
   const first = { ...event, pairings: [], completedRound: 0, publishedRound: 0, liveRound: null, nextRound: 1, phase: "registration" as const };
   expect(calculatePairingForecast(first, 1).candidates.map(c => c.probability))
     .toEqual(Array(6).fill(null));
@@ -163,8 +165,8 @@ describe("pairing forecast", () => {
       pairings: [
         ...snapshot().pairings,
         pairing(3, 1, 3, null),
-        pairing(3, 2, 4, "1 - 0", 2),
-        pairing(3, 5, 6, null, 3),
+        pairing(3, 2, 6, "1 - 0", 2),
+        pairing(3, 4, 5, null, 3),
       ],
     });
     const forecast = calculatePairingForecast(event, 1);
@@ -342,20 +344,26 @@ describe("pairing forecast", () => {
     const livePairings = [
       pairing(3, 1, 3, null),
       pairing(3, 2, 4, "1 - 0", 2),
-      pairing(3, 5, 6, null, 3),
-      pairing(3, 7, 8, "0 - 1", 4),
+      pairing(3, 5, 7, null, 3),
+      pairing(3, 6, 8, "0 - 1", 4),
     ];
     const players = [
       ...snapshot().players,
       player(7, "Gray, Gail", 7, 1, 1900),
       player(8, "Hall, Hugh", 8, 0.5, 1850),
     ];
+    // The two additional entrants need explicit prior-round accounting;
+    // their compatibility totals alone do not establish game history.
+    const prior = [...snapshot().pairings,
+      { ...pairing(1, 7, 8, "0"), blackStartNumber: null },
+      { ...pairing(1, 8, 7, "½"), blackStartNumber: null },
+      pairing(2, 7, 8, "1-0")];
     const halfResolvedEvent = snapshot({
       players,
       phase: "round-in-progress",
       liveRound: 3,
       nextRound: 4,
-      pairings: [...snapshot().pairings, ...livePairings],
+      pairings: [...prior, ...livePairings],
     });
     const halfResolved = calculatePairingForecast(halfResolvedEvent, 1, {
       exactSwiss: calculateExactSwissForecast(halfResolvedEvent, 4, 1),
@@ -366,7 +374,7 @@ describe("pairing forecast", () => {
       liveRound: 3,
       nextRound: 4,
       pairings: [
-        ...snapshot().pairings,
+        ...prior,
         ...livePairings.map((item) => ({ ...item, result: null, decided: false })),
       ],
     });
@@ -424,17 +432,19 @@ describe("pairing forecast", () => {
     expect(forecast.summary).toContain("bye");
   });
 
-  test("honours a requested bye from the Chess-Results not-paired list", () => {
+  test("honours an explicit half-point award without treating a legacy hint as proof", () => {
     const players = snapshot().players.map((item) =>
       item.startNumber === 1
         ? { ...item, active: false, notPairedRounds: [3], halfPointByeRounds: [3] }
         : item,
     );
-    const forecast = calculatePairingForecast(snapshot({ players }), 1);
+    expect(calculatePairingForecast(snapshot({ players }), 1).kind).toBe("unavailable");
+    const forecast = calculatePairingForecast(snapshot({ players, evidenceVersion: 1,
+      roundStatus: [{ round: 3, startNumber: 1, kind: "not-paired", award: 0.5 }] }), 1);
     expect(forecast.kind).toBe("scheduled");
     expect(forecast.confidence).toBe("confirmed");
     expect(forecast.candidates).toEqual([]);
-    expect(forecast.summary).toContain("requested bye");
+    expect(forecast.summary).toContain("half-point bye");
   });
 
   test("does not call an unresolved final round a completed tournament", () => {
@@ -512,5 +522,5 @@ test("known incomplete history cannot retain a stale whole-field probability cla
   const fallback=calculatePairingForecast(event,1);
   const stale=calculatePairingForecast(event,1,{exactSwiss:{opponentStartNumber:2,color:"white",estimatedLiveResults:false,system:"dutch",acceleration:null}});
   expect(stale).toEqual(fallback);
-  expect(stale.caveat).toContain("incomplete history");
+  expect(stale.caveat).toContain("earlier assignments are missing");
 });

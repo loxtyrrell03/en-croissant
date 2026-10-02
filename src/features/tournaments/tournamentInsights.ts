@@ -1,4 +1,6 @@
 import { publishedGameResult, publishedPairingScore } from "./publishedPairingResult";
+import { cachedTournamentEvidence } from "./tournamentForecastEvidence";
+import type { EvidenceTournamentSnapshot } from "./tournamentSnapshotEvidenceTypes";
 import type {
   TournamentPairing,
   TournamentPlayer,
@@ -43,75 +45,62 @@ export function playerSideInPairing(
   return null;
 }
 
-export type TournamentStandingPlayer = TournamentPlayer & { scoreKnown: boolean };
+export type TournamentStandingPlayer = TournamentPlayer & {
+  scoreKnown: boolean;
+  rankSource: "published" | "reconstructed" | "unknown";
+};
+const standingCache = new WeakMap<TournamentSnapshot, Map<number, TournamentStandingPlayer[]>>();
+const validRank = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) > 0;
 
-function scoreThroughRound(
-  snapshot: TournamentSnapshot,
-  player: TournamentPlayer,
-  round: number,
-): { points: number; scoreKnown: boolean } {
-  let score = 0;
-  let scoreKnown = true;
-  const assignedRounds = new Set<number>();
-  for (const pairing of snapshot.pairings) {
-    if (pairing.round > round) continue;
-    const side = playerSideInPairing(pairing, player.startNumber);
-    if (!side) continue;
-    assignedRounds.add(pairing.round);
-    const points = pairingScore(pairing, side);
-    if (points === null) scoreKnown = false;
-    score += points ?? 0;
-  }
-  for (const byeRound of player.halfPointByeRounds ?? []) {
-    // The explicit occupied-seat score takes precedence over older bye flags.
-    if (byeRound <= round && !assignedRounds.has(byeRound)) score += 0.5;
-  }
-  return { points: score, scoreKnown };
-}
+/** Rank authority is independent of score availability. A partial published
+ * table cannot supply invented ranks for the rest of the source roster. */
+export const hasPublishedStandingRanks = (players: TournamentStandingPlayer[]) =>
+  players.some(player => player.rankSource === "published");
 
 /**
- * Prefer Chess-Results' published rank so tie-break ordering stays exact. Old
- * cached trackers that pre-date roundStandings fall back to a deterministic
- * score/rating order until their next automatic refresh.
+ * Exact-scope published ranks retain organiser tie-breaks. Versionless numeric
+ * defaults are not score evidence: only complete recognised history can recover
+ * them. A live display scope does not change the source's completion metadata.
  */
 export function standingsAfterRound(
   snapshot: TournamentSnapshot,
   round: number,
 ): TournamentStandingPlayer[] {
-  const published = snapshot.roundStandings?.find((standing) => standing.round === round);
-  if (published?.players.length) {
-    return published.players.map(player => ({ ...player, scoreKnown: true })).sort(
-      (left, right) =>
-        (left.rank ?? Number.MAX_SAFE_INTEGER) - (right.rank ?? Number.MAX_SAFE_INTEGER) ||
-        right.points - left.points ||
-        left.startNumber - right.startNumber,
-    );
+  const saved = standingCache.get(snapshot)?.get(round);
+  if (saved) return saved;
+  const source: EvidenceTournamentSnapshot = snapshot;
+  const scopeValid = Number.isSafeInteger(round) && round >= 0 &&
+    (snapshot.totalRounds === 0 || round <= snapshot.totalRounds);
+  const evidence = scopeValid ? cachedTournamentEvidence({ ...source, completedRound: round }, round + 1) : null;
+  const scores = new Map(evidence?.players.map(player => [player.startNumber, player.aggregate]));
+  const publishedRows = source.evidenceVersion === 1 && Array.isArray(source.roundStandings)
+    ? source.roundStandings.filter(table => table?.round === round && Array.isArray(table.players)).flatMap(table => table.players)
+    : [];
+  const players: TournamentStandingPlayer[] = source.players.map(player => {
+    const score = scores.get(player.startNumber);
+    const rows = publishedRows.filter(row => row?.startNumber === player.startNumber);
+    let rank: number | null = null;
+    if (evidence && source.evidenceVersion === 1 && rows.length === 1 && validRank(rows[0].rank)) rank = rows[0].rank;
+    else if (evidence && source.evidenceVersion === 1 && rows.length === 0 && player.scoreKnown === true &&
+      player.scoreSource === "published" && player.scoreRound === round && validRank(player.rank)) rank = player.rank;
+    const known = Boolean(score?.scoreKnown && score.throughRound === round && score.points !== null);
+    return { ...player, points: known ? score!.points! : 0, scoreKnown: known,
+      scoreRound: known ? round : null, scoreSource: known ? score!.source : "unknown",
+      rank, rankSource: rank !== null ? "published" : "unknown" };
+  });
+  players.sort((left, right) =>
+    (left.rank ?? Number.MAX_SAFE_INTEGER) - (right.rank ?? Number.MAX_SAFE_INTEGER) ||
+    Number(right.scoreKnown) - Number(left.scoreKnown) ||
+    (left.scoreKnown && right.scoreKnown ? right.points - left.points : 0) ||
+    (right.rating ?? 0) - (left.rating ?? 0) || left.startNumber - right.startNumber);
+  // Derived order needs all totals; never mix it with a partial published order.
+  if (scopeValid && evidence && players.every(player => player.scoreKnown) && !hasPublishedStandingRanks(players)) {
+    players.forEach((player, index) => { player.rank = index + 1; player.rankSource = "reconstructed"; });
   }
-
-  if (round === snapshot.completedRound && snapshot.players.some((player) => player.rank !== null)) {
-    return snapshot.players.map(player => ({ ...player, scoreKnown: true })).sort(
-      (left, right) =>
-        (left.rank ?? Number.MAX_SAFE_INTEGER) - (right.rank ?? Number.MAX_SAFE_INTEGER) ||
-        right.points - left.points ||
-        left.startNumber - right.startNumber,
-    );
-  }
-
-  const players = snapshot.players
-    .map((player) => ({
-      ...player,
-      ...scoreThroughRound(snapshot, player, round),
-      rank: null,
-    }))
-    .sort(
-      (left, right) =>
-        right.points - left.points ||
-        (right.rating ?? 0) - (left.rating ?? 0) ||
-        left.startNumber - right.startNumber,
-    )
-    .map((player, index) => ({ ...player, rank: index + 1 }));
-  // An unknown score can change everyone's order, not just that player's.
-  return players.some(player => !player.scoreKnown) ? players.map(player => ({ ...player, rank: null })) : players;
+  let rounds = standingCache.get(snapshot);
+  if (!rounds) { rounds = new Map(); standingCache.set(snapshot, rounds); }
+  rounds.set(round, players);
+  return players;
 }
 
 export function playerGameHistory(

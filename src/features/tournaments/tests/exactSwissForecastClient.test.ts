@@ -1,6 +1,32 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 
+function protocolPlayers(size: number): TournamentSnapshot["players"] {
+  return Array.from({ length: size }, (_, index) => ({
+    startNumber: index + 1, name: `Player ${index + 1}`, fideId: null, federation: null,
+    title: null, rating: 2400 - index, rank: index + 1, points: 2.5, active: true,
+  }));
+}
+
+/** Complete synthetic history keeps queue/timeout tests past source admission.
+ * Workers below are controlled transport fakes; no Swiss solver runs here. */
+function protocolHistory(size: number): TournamentSnapshot["pairings"] {
+  const seats: (number | null)[] = Array.from({ length: size }, (_, index) => index + 1);
+  if (seats.length % 2) seats.push(null);
+  const rows: TournamentSnapshot["pairings"] = [];
+  for (let round = 1; round <= 5; round++) {
+    for (let board = 0; board < seats.length / 2; board++) {
+      const first = seats[board], second = seats[seats.length - 1 - board];
+      rows.push({ round, board: board + 1, whiteStartNumber: first ?? second,
+        blackStartNumber: first === null ? null : second, whitePoints: (round - 1) / 2,
+        blackPoints: second === null || first === null ? null : (round - 1) / 2,
+        result: first === null || second === null ? "1/2" : "1/2-1/2", decided: true });
+    }
+    seats.splice(1, 0, seats.pop()!);
+  }
+  return rows;
+}
+
 const snapshot: TournamentSnapshot = {
   tournamentId: "timeout-test",
   sourceUrl: "https://chess-results.com/tnr1.aspx?lan=1",
@@ -18,8 +44,8 @@ const snapshot: TournamentSnapshot = {
   timeControl: null,
   sourceUpdatedAt: null,
   fetchedAt: "2026-08-06T18:00:00Z",
-  players: [],
-  pairings: [],
+  players: protocolPlayers(20),
+  pairings: protocolHistory(20),
   warnings: [],
 };
 
@@ -37,27 +63,13 @@ describe("exact Swiss worker client", () => {
       HUGE_EXACT_SWISS_WORKER_TIMEOUT_MS,
       LARGE_EXACT_SWISS_WORKER_TIMEOUT_MS,
     } = await import("../exactSwissForecastClient");
-    const players = Array.from({ length: 361 }, (_, index) => ({
-      startNumber: index + 1,
-      name: `Player ${index + 1}`,
-      fideId: null,
-      federation: null,
-      title: null,
-      rating: 2400 - index,
-      rank: index + 1,
-      points: 0,
-      active: true,
-      notPairedRounds: [],
-      halfPointByeRounds: [],
-    }));
-
-    expect(exactSwissWorkerTimeoutMs({ ...snapshot, players: players.slice(0, 260) }, 6)).toBe(
+    expect(exactSwissWorkerTimeoutMs(field(260), 6)).toBe(
       EXACT_SWISS_WORKER_TIMEOUT_MS,
     );
-    expect(exactSwissWorkerTimeoutMs({ ...snapshot, players: players.slice(0, 261) }, 6)).toBe(
+    expect(exactSwissWorkerTimeoutMs(field(261), 6)).toBe(
       LARGE_EXACT_SWISS_WORKER_TIMEOUT_MS,
     );
-    expect(exactSwissWorkerTimeoutMs({ ...snapshot, players: players.slice(0, 331) }, 6)).toBe(
+    expect(exactSwissWorkerTimeoutMs(field(331), 6)).toBe(
       HUGE_EXACT_SWISS_WORKER_TIMEOUT_MS,
     );
   });
@@ -145,10 +157,7 @@ function controlWorkers(): void {
   vi.stubGlobal("Worker", ControlledWorker);
 }
 function field(size: number): TournamentSnapshot {
-  return { ...snapshot, players: Array.from({length: size}, (_, i) => ({
-    startNumber: i + 1, name: `Player ${i+1}`, fideId: null, federation: null,
-    title: null, rating: 2000, rank: i+1, points: 0, active: true,
-  })) };
+  return { ...snapshot, players: protocolPlayers(size), pairings: protocolHistory(size) };
 }
 
 test("a small-event timeout cannot cancel a large-event solve", async () => {
@@ -216,13 +225,14 @@ test("same-timestamp changes invalidate cached forecasts and queued snapshots st
   controlWorkers();
   const { requestExactSwissForecast, exactSwissForecastKey } = await import("../exactSwissForecastClient");
   const original=field(4), changed=structuredClone(original);
-  changed.players[0].notPairedRounds=[6];
+  changed.evidenceVersion=1;
+  changed.roundStatus=[{round:6,startNumber:1,kind:"not-paired",award:null}];
   expect(exactSwissForecastKey(original,6,1)).not.toBe(exactSwissForecastKey(changed,6,1));
   const a=requestExactSwissForecast(original,6,1), b=requestExactSwissForecast({...original,tournamentId:'b'},6,2);
   const c=requestExactSwissForecast(changed,6,3);
-  changed.players[0].notPairedRounds=[];
+  changed.roundStatus=[];
   ControlledWorker.instances[0].answer(); await a;
-  expect(ControlledWorker.instances[2].sent.snapshot.players[0].notPairedRounds).toEqual([6]);
+  expect(ControlledWorker.instances[2].sent.snapshot.roundStatus).toEqual([{round:6,startNumber:1,kind:"not-paired",award:null}]);
   ControlledWorker.instances[1].answer(); ControlledWorker.instances[2].answer(); await Promise.all([b,c]);
   expect(vi.getTimerCount()).toBe(0);
 });
@@ -490,5 +500,21 @@ test("a metadata refresh shares a queued job without extending its wait bound", 
   await expect(queued).resolves.toBeNull(); await expect(refreshed).resolves.toBeNull();
   expect(ControlledWorker.instances).toHaveLength(2);
   controllers.forEach(c => c.abort()); await Promise.all(active); await Promise.resolve();
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+
+test.each(["missing-history", "legacy-absence", "adjusted-total"])("%s refuses before creating transport work", async (kind) => {
+  controlWorkers();
+  const { requestExactSwissForecast } = await import("../exactSwissForecastClient");
+  const input = field(4);
+  if (kind === "missing-history") input.pairings = input.pairings.filter(row => row.round !== 1);
+  if (kind === "legacy-absence") input.players[0].notPairedRounds = [6];
+  if (kind === "adjusted-total") {
+    input.evidenceVersion = 1;
+    Object.assign(input.players[0], { points: 3, scoreKnown: true, scoreRound: 5, scoreSource: "published" });
+  }
+  await expect(requestExactSwissForecast(input, 6, 1)).resolves.toBeNull();
+  expect(ControlledWorker.instances).toHaveLength(0);
   expect(vi.getTimerCount()).toBe(0);
 });

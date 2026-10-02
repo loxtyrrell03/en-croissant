@@ -1,6 +1,7 @@
-import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { publishedGameResult } from "./publishedPairingResult";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
+import { prepareTournamentForecastEvidence } from "./tournamentForecastEvidence";
 import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
 import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import { pair as pairDutch } from "@echecs/swiss/dutch";
@@ -123,12 +124,14 @@ function completedRounds(
       return estimated ? [estimated] : [];
     });
     const byes = rows.map(pairingBye).filter((bye): bye is Bye => bye !== null);
-    for (const player of snapshot.players) {
-      if (
-        player.halfPointByeRounds?.includes(round) &&
-        !byes.some((bye) => bye.player === String(player.startNumber))
-      ) {
-        byes.push({ player: String(player.startNumber), kind: "half" });
+    // These are actual source no-game awards, not invented games used to
+    // force an aggregate adjustment into the history-only engine.
+    if (snapshot.evidenceVersion === 1) for (const status of snapshot.roundStatus ?? []) {
+      if (status.round === round && status.award !== null &&
+          !byes.some(bye => bye.player === String(status.startNumber)) &&
+          !rows.some(row => row.whiteStartNumber !== null && row.blackStartNumber !== null &&
+            (row.whiteStartNumber === status.startNumber || row.blackStartNumber === status.startNumber))) {
+        byes.push({ player: String(status.startNumber), kind: status.award === 1 ? "pairing" : status.award === 0.5 ? "half" : "zero" });
       }
     }
     return { games, byes };
@@ -161,6 +164,9 @@ export function calculateExactSwissForecast(
 ): ExactSwissForecast | null {
   if (!isValidTournamentTargetRound(snapshot, targetRound)) return null;
   snapshot = normalizeTournamentResults(snapshot);
+  const evidence = prepareTournamentForecastEvidence(snapshot, targetRound);
+  if (!evidence.solverCompatible) return null;
+  snapshot = evidence.snapshot;
   if (hasUnknownPriorPairingResults(snapshot, targetRound)) return null;
   snapshot = swissParticipationScenario(snapshot, targetRound);
   if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return null;

@@ -39,6 +39,8 @@ describe("truthful first-round probability contract", () => {
 
   test("retains the solver's conditional opponent for every opening-round player without inventing confidence", () => {
     const snapshot = event(22);
+    snapshot.evidenceVersion = 1;
+    snapshot.roundStatus = [3, 14].map(startNumber => ({ round: 1, startNumber, kind: "not-paired", award: null }));
     snapshot.players[2].notPairedRounds = [1];
     snapshot.players[13].notPairedRounds = [1];
     for (const me of snapshot.players.filter(p => !p.notPairedRounds?.includes(1))) {
@@ -55,6 +57,10 @@ describe("truthful first-round probability contract", () => {
     snapshot.phase = "between-rounds";
     expect(calculatePairingForecast(snapshot, 1).otherProbability).toBeNull();
     snapshot.nextRound = 2;
+    snapshot.completedRound = 1;
+    snapshot.publishedRound = 1;
+    snapshot.pairings = Array.from({ length: 11 }, (_, i) => ({ round: 1, board: i + 1,
+      whiteStartNumber: i + 1, blackStartNumber: i + 12, whitePoints: 0, blackPoints: 0, result: "½-½", decided: true }));
     const later = calculatePairingForecast(snapshot, 1);
     expect(later.candidates.every(c => typeof c.probability === "number")).toBe(true);
     expect(later.otherProbability).not.toBeNull();
@@ -73,7 +79,10 @@ describe("truthful first-round probability contract", () => {
     snapshot.pairings = [];
     snapshot.players[0].notPairedRounds = [1];
     snapshot.players[0].halfPointByeRounds = [1];
-    expect(calculatePairingForecast(snapshot, 1)).toMatchObject({ kind: "scheduled", candidates: [] });
+    expect(calculatePairingForecast(snapshot, 1)).toMatchObject({ kind: "unavailable", candidates: [] });
+    const explicit: TournamentSnapshot = { ...snapshot, evidenceVersion: 1,
+      roundStatus: [{ round: 1, startNumber: 1, kind: "not-paired", award: 0.5 }] };
+    expect(calculatePairingForecast(explicit, 1)).toMatchObject({ kind: "scheduled", candidates: [] });
   });
 });
 
@@ -81,6 +90,10 @@ describe("truthful incomplete-history probability contract", () => {
   test.each([2, 3, 5])("all estimated players abstain in round %i when any prior list is explicitly incomplete", round => {
     const source = event(22);
     Object.assign(source, { nextRound: round, phase: "between-rounds", publishedRound: round - 1, completedRound: round - 1 });
+    source.pairings = Array.from({ length: round - 1 }, (_, r) =>
+      Array.from({ length: 11 }, (_, i) => ({ round: r + 1, board: i + 1,
+        whiteStartNumber: i + 1, blackStartNumber: 12 + ((i + r) % 11),
+        whitePoints: null, blackPoints: null, result: "½-½", decided: true }))).flat();
     const before = structuredClone(source);
     const incomplete = { ...source, incompletePairingRounds: [1] };
     for (const player of source.players) {
@@ -90,7 +103,7 @@ describe("truthful incomplete-history probability contract", () => {
       expect(forecast.candidates.map(c => [c.player.startNumber, c.color, c.reasons])).toEqual(base.candidates.map(c => [c.player.startNumber, c.color, c.reasons]));
       expect(forecast.candidates.every(c => c.probability === null)).toBe(true);
       expect(forecast.otherProbability).toBeNull(); expect(forecast.confidence).toBe("unavailable");
-      expect(forecast.caveat).toContain("earlier pairing rows are missing"); expect(forecast.caveat).not.toContain("Round 1");
+      expect(forecast.caveat).toContain("earlier assignments are missing"); expect(forecast.caveat).not.toContain("Round 1");
       const stale: ExactSwissForecast = { opponentStartNumber: player.startNumber === 22 ? 1 : 22, color: "white", estimatedLiveResults: false, system: "dutch", acceleration: null };
       expect(calculatePairingForecast(incomplete, player.startNumber, { exactSwiss: stale })).toEqual(forecast);
     }
@@ -100,7 +113,12 @@ describe("truthful incomplete-history probability contract", () => {
   test("live incomplete rounds abstain while future/nonpositive flags and ordinary unresolved results do not", () => {
     const source = event(22);
     Object.assign(source, { nextRound: 3, liveRound: 2, completedRound: 1, publishedRound: 2, phase: "round-in-progress" });
-    source.pairings = [{ round: 2, board: 1, whiteStartNumber: 1, blackStartNumber: 2, whitePoints: 0, blackPoints: 0, result: null, decided: false }];
+    source.pairings = [
+      ...Array.from({ length: 11 }, (_, i) => ({ round: 1, board: i + 1,
+        whiteStartNumber: i + 1, blackStartNumber: i + 12, whitePoints: null, blackPoints: null, result: "½-½", decided: true })),
+      ...Array.from({ length: 11 }, (_, i) => ({ round: 2, board: i + 1,
+        whiteStartNumber: 2 * i + 1, blackStartNumber: 2 * i + 2, whitePoints: null, blackPoints: null, result: null, decided: false })),
+    ];
     const base = calculatePairingForecast(source, 1);
     expect(base.candidates.every(c => typeof c.probability === "number")).toBe(true);
     expect(calculatePairingForecast({ ...source, incompletePairingRounds: [0, -1, 3, 9] }, 1)).toEqual(base);

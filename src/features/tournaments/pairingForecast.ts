@@ -1,7 +1,8 @@
-import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { publishedGameResult, publishedPairingScore } from "./publishedPairingResult";
 import { hasUnknownPriorPairingResults, UNKNOWN_PRIOR_RESULTS_HELP } from "./pairingHistoryCompleteness";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
+import { cachedTournamentEvidence, prepareTournamentForecastEvidence, forecastEvidenceHelp, hasConflictingTournamentTarget } from "./tournamentForecastEvidence";
 import { swissAccelerationPoints } from "./swissPairingSettings";
 import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
 import type {
@@ -175,7 +176,8 @@ function combineDistribution(
   const buckets = new Map<number, number>();
   for (const state of current) {
     for (const outcome of outcomes) {
-      const points = Math.round((state.points + outcome.score) * 2) / 2;
+      // Preserve the organiser's score basis, including fractional adjustments.
+      const points = state.points + outcome.score;
       buckets.set(points, (buckets.get(points) ?? 0) + state.weight * outcome.weight);
     }
   }
@@ -199,13 +201,22 @@ function projectedPoints(
         (pairing.whiteStartNumber === startNumber || pairing.blackStartNumber === startNumber),
     )
     .sort((left, right) => left.round - right.round);
+  const resolvedRounds = snapshot.evidenceVersion === 1
+    ? cachedTournamentEvidence(snapshot, targetRound)?.players.find(player => player.startNumber === startNumber)?.rounds : undefined;
   for (const pairing of unsettled) {
-    const settledScore = scoreFromResult(pairing, startNumber);
+    const settledScore = snapshot.evidenceVersion === 1
+      ? resolvedRounds?.find(row => row.round === pairing.round)?.award ?? null
+      : scoreFromResult(pairing, startNumber);
     const outcomes =
       settledScore === null
         ? outcomeWeights(player, players.get(opponentNumber(pairing, startNumber) ?? -1))
         : [{ score: settledScore, weight: 1 }];
     distribution = combineDistribution(distribution, outcomes);
+  }
+  for (const status of resolvedRounds ?? []) {
+    if (status.round <= snapshot.completedRound || status.round >= targetRound ||
+        status.award === null || unsettled.some(pairing => pairing.round === status.round)) continue;
+    distribution = combineDistribution(distribution, [{ score: status.award, weight: 1 }]);
   }
   return distribution;
 }
@@ -474,8 +485,8 @@ export function calculatePairingForecast(
   snapshot = normalizeTournamentResults(snapshot);
   const model =
     snapshot.liveRound === null ? BETWEEN_ROUND_PRIMARY_MODEL : LIVE_ROUND_PRIMARY_MODEL;
-  const players = playerMap(snapshot);
-  const me = players.get(myStartNumber);
+  let players = playerMap(snapshot);
+  let me = players.get(myStartNumber);
   const targetRound = snapshot.nextRound;
   if (!me) {
     return {
@@ -526,7 +537,9 @@ export function calculatePairingForecast(
     const inconsistent = publishedRows.length !== 1 || publishedOpponent === myStartNumber ||
       involved.some((number) => snapshot.players.filter((player) => player.startNumber === number).length > 1 ||
         snapshot.pairings.filter((pairing) => pairing.round === targetRound &&
-          (pairing.whiteStartNumber === number || pairing.blackStartNumber === number)).length > 1);
+          (pairing.whiteStartNumber === number || pairing.blackStartNumber === number)).length > 1) ||
+      (snapshot.evidenceVersion === 1 && cachedTournamentEvidence(snapshot, targetRound)?.players.some(player =>
+        involved.includes(player.startNumber) && player.target.assignment === "conflict") === true);
     if (inconsistent) {
       return {
         kind: "unavailable", round: targetRound, confidence: "unavailable",
@@ -565,8 +578,16 @@ export function calculatePairingForecast(
       ...publishedNoOpponentCopy(published, targetRound),
     };
   }
-  if (!me.active || me.notPairedRounds?.includes(targetRound)) {
-    const requestedBye = me.halfPointByeRounds?.includes(targetRound) ?? false;
+  const targetEvidence = snapshot.evidenceVersion === 1
+    ? cachedTournamentEvidence(snapshot, targetRound)?.players.find(player => player.startNumber === myStartNumber)?.target : null;
+  const explicitNoGame = targetEvidence?.assignment === "not-paired" || targetEvidence?.assignment === "not-yet-entered";
+  if (explicitNoGame || (snapshot.evidenceVersion !== 1 && (!me.active || me.notPairedRounds?.includes(targetRound)))) {
+    if (!explicitNoGame) return {
+      kind: "unavailable", round: targetRound, confidence: "unavailable", candidates: [], otherProbability: null,
+      summary: "Recorded participation could not be verified",
+      caveat: forecastEvidenceHelp("unknown-availability"),
+    };
+    const requestedBye = targetEvidence?.award === 0.5;
     return {
       kind: "scheduled",
       round: targetRound,
@@ -574,10 +595,10 @@ export function calculatePairingForecast(
       candidates: [],
       otherProbability: 0,
       summary: requestedBye
-        ? `Round ${targetRound} requested bye recorded`
+        ? `Round ${targetRound} half-point bye recorded`
         : `${me.name} is not listed for pairing in round ${targetRound}`,
       caveat: requestedBye
-        ? "Chess-Results lists this as a requested bye, so there is no opponent to prepare for."
+        ? "Chess-Results records a half-point no-game award for this round."
         : "Chess-Results marks this player as not paired for the round.",
     };
   }
@@ -594,6 +615,11 @@ export function calculatePairingForecast(
   }
 
   if (snapshot.format === "round-robin") {
+    const resolved = snapshot.evidenceVersion === 1 ? cachedTournamentEvidence(snapshot, targetRound) : null;
+    if (snapshot.evidenceVersion === 1 && hasConflictingTournamentTarget(resolved)) {
+      return { kind: "unavailable", round: targetRound, confidence: "unavailable", candidates: [], otherProbability: null,
+        summary: "The next-round assignments could not be verified", caveat: forecastEvidenceHelp("conflicting-target") };
+    }
     // Only earlier published assignments may validate the assumed schedule.
     // Check actual opponents even when the result is unfinished or forfeited.
     const conflicts = snapshot.pairings.some((pairing) => {
@@ -617,12 +643,16 @@ export function calculatePairingForecast(
     const scheduled = roundRobinOpponent(snapshot.players, myStartNumber, targetRound);
     const opponent = scheduled === null ? undefined : players.get(scheduled);
     if (opponent) {
-      if (!opponent.active || opponent.notPairedRounds?.includes(targetRound)) {
+      const assignment = resolved?.players.find(player => player.startNumber === opponent.startNumber)?.target.assignment;
+      const unavailable = snapshot.evidenceVersion === 1
+        ? assignment === "not-paired" || assignment === "not-yet-entered"
+        : !opponent.active || opponent.notPairedRounds?.includes(targetRound);
+      if (unavailable) {
         return {
           kind: "unavailable", round: targetRound, confidence: "unavailable",
           candidates: [], otherProbability: 0,
-          summary: "The expected opponent is not listed for pairing",
-          caveat: "Wait for the organizer to confirm a replacement pairing or bye.",
+          summary: snapshot.evidenceVersion === 1 ? "The expected opponent is not listed for pairing" : "The expected opponent's participation could not be verified",
+          caveat: snapshot.evidenceVersion === 1 ? "Wait for the organizer to confirm a replacement pairing or bye." : forecastEvidenceHelp("unknown-availability"),
         };
       }
       return fixedForecast("inferred", targetRound, opponent, null, null);
@@ -654,6 +684,10 @@ export function calculatePairingForecast(
     };
   }
 
+  const sourceEvidence = prepareTournamentForecastEvidence(snapshot, targetRound);
+  snapshot = sourceEvidence.snapshot;
+  players = playerMap(snapshot);
+  me = players.get(myStartNumber)!;
   const priorOpponents = alreadyPlayed(snapshot, myStartNumber);
   const { field, byStartNumber: projectedByStartNumber, positions: groupPositionCache } = preparedField(snapshot, targetRound, players);
   const mineRow = projectedByStartNumber.get(myStartNumber);
@@ -716,12 +750,12 @@ export function calculatePairingForecast(
         ratingFit * coverageModel.ratingWeight,
     );
     const reasons = [
-      Math.abs(mineExpected - theirsExpected) <= 0.12
+      !sourceEvidence.evidence?.allAggregateScoresKnown ? "Score history is incomplete" : Math.abs(mineExpected - theirsExpected) <= 0.12
         ? "Same projected score group"
         : Math.abs(mineExpected - theirsExpected) <= 0.55
           ? "Adjacent score group"
           : "Possible floater",
-      band >= 0.55 ? "Matches the likely top-half / bottom-half slot" : null,
+      sourceEvidence.evidence?.allAggregateScoresKnown && band >= 0.55 ? "Matches the likely top-half / bottom-half slot" : null,
       colorFit >= 0.9 ? "Colour histories fit" : null,
     ].filter((reason): reason is string => reason !== null);
     ranked.push({ player, raw, coverageRaw, color, reasons });
@@ -750,7 +784,7 @@ export function calculatePairingForecast(
   };
   const historyIncomplete = snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound) ?? false;
   const priorResultsUnknown = hasUnknownPriorPairingResults(snapshot, targetRound);
-  const exact = historyIncomplete || priorResultsUnknown ? null : options?.exactSwiss ?? null;
+  const exact = !sourceEvidence.solverCompatible || historyIncomplete || priorResultsUnknown ? null : options?.exactSwiss ?? null;
   const exactSystemLabel = exact
     ? `${exact.system.charAt(0).toLocaleUpperCase()}${exact.system.slice(1)}`
     : "Dutch";
@@ -798,10 +832,13 @@ export function calculatePairingForecast(
   );
   const attendance = estimatedAttendance(snapshot, myStartNumber, targetRound);
   const participationAssumed = attendance < 1 || swissParticipationScenario(snapshot, targetRound) !== snapshot;
-  // Keep conditional ordering and preparation available, but do not attach a
-  // probability to unvalidated opening rules or explicitly incomplete history.
-  // Published assignments above keep their authoritative status.
-  const probabilityUnknown = snapshot.format === "swiss" && (targetRound === 1 || historyIncomplete || priorResultsUnknown);
+  // A historical rank table is not validated confidence for a new first-round
+  // field or incomplete pairing history. Missing rows can make every listed
+  // result look settled without establishing full coverage. Preserve the
+  // conditional opponent order; published assignments above stay authoritative.
+  const firstRoundProbabilityUnknown = snapshot.format === "swiss" && targetRound === 1;
+  const probabilityUnknown = firstRoundProbabilityUnknown || !sourceEvidence.numericalAvailable ||
+    (snapshot.format === "swiss" && (historyIncomplete || priorResultsUnknown));
   const candidates = selected.slice(0, 6).map<PairingCandidate>((candidate, index) => ({
     player: candidate.player, probability: probabilityUnknown ? null : probabilities[index] * attendance, color: candidate.color, board: null, reasons: candidate.reasons,
   }));
@@ -828,10 +865,12 @@ export function calculatePairingForecast(
     caveat:
       candidates.length === 0
         ? "Withdrawals or unpublished pairing settings may explain the missing candidates."
+        : firstRoundProbabilityUnknown
+          ? "Round 1 pairing chances are not calibrated. The opponent order assumes pairing rules and starting order; final entries and organiser settings can change it."
+        : sourceEvidence.issue
+          ? forecastEvidenceHelp(sourceEvidence.issue)
         : historyIncomplete
           ? "Some earlier pairing rows are missing, so pairing chances are unavailable. Candidates use incomplete history; refresh to check for the complete list."
-        : snapshot.format === "swiss" && targetRound === 1
-          ? "Round 1 pairing chances are not calibrated. The opponent order assumes pairing rules and starting order; final entries and organiser settings can change it."
         : priorResultsUnknown
           ? UNKNOWN_PRIOR_RESULTS_HELP
           : participationAssumed

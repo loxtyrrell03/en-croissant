@@ -1,6 +1,7 @@
-import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { publishedGameResult } from "./publishedPairingResult";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
+import { prepareTournamentForecastEvidence } from "./tournamentForecastEvidence";
 import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import { swissParticipationScenario } from "./swissParticipation";
@@ -35,7 +36,10 @@ function calculateOutcomeSampledSwissForecast(
   seedSalt = "production-v1",
 ): ExactSwissForecast | null {
   if (!isValidTournamentTargetRound(snapshot, targetRound)) return null;
-  snapshot = swissParticipationScenario(normalizeTournamentResults(snapshot), targetRound);
+  snapshot = normalizeTournamentResults(snapshot);
+  const evidence = prepareTournamentForecastEvidence(snapshot, targetRound);
+  if (!evidence.solverCompatible) return null;
+  snapshot = evidence.snapshot;
   if (hasUnknownPriorPairingResults(snapshot, targetRound)) return null;
   const baseline = calculateExactSwissForecast(snapshot, targetRound, myStartNumber, system);
   if (!snapshot.players.some(p => p.startNumber === myStartNumber && p.active && !p.notPairedRounds?.includes(targetRound))) return baseline;
@@ -55,7 +59,7 @@ function calculateOutcomeSampledSwissForecast(
   if (cached?.key === key) return cached.field.get(myStartNumber) ?? baseline;
   const random = randomGenerator(key);
   const players = new Map(snapshot.players.map(p => [p.startNumber, p]));
-  const active = snapshot.players.filter(p => p.active && !p.notPairedRounds?.includes(targetRound));
+  const active = swissParticipationScenario(snapshot, targetRound).players.filter(p => p.active && !p.notPairedRounds?.includes(targetRound));
   const votes = new Map<number, Map<number | null, { count: number; white: number; black: number; exact: ExactSwissForecast }>>();
   let successful = 0;
   for (let sample = 0; sample < SWISS_OUTCOME_SAMPLES; sample++) {
