@@ -1,3 +1,4 @@
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { pairingEstimateHelp } from "./pairingScoreHelp";
 import { forecastHeading, precedingResultContext, tournamentResultLabel } from "./forecastPresentation";
 import { tournamentCountdown } from "./tournamentStart";
@@ -75,7 +76,7 @@ interface Props {
 
 export function TournamentTrackerView(props: Props) {
   const { record, forecast, calculating, running, prepBusy, removeBusy, settingBusy, syncEvent, error } = props;
-  const { snapshot } = record;
+  const snapshot = normalizeTournamentResults(record.snapshot);
   const beforePlay = snapshot.publishedRound === 0 && snapshot.completedRound === 0;
   const countdown = tournamentCountdown(snapshot, Date.now());
   const dates = snapshot.dateRange?.split(" to ");

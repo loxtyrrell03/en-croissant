@@ -1346,7 +1346,9 @@ fn parse_pairing_table_with_status(
             }
             let result_text = clean_text(cells[result_index]);
             let result = non_empty(result_text.clone());
-            let decided = result.as_deref().is_some_and(is_decided_result);
+            let decided = result.as_deref().is_some_and(|value| is_decided_result(
+                value, white_start_number.is_some(), black_start_number.is_some(),
+            ));
             let white_points = cells
                 .get(white_index + 1..result_index)
                 .unwrap_or(&[])
@@ -1471,13 +1473,27 @@ fn parse_points(value: &str) -> Option<f32> {
     normalized.parse::<f32>().ok()
 }
 
-fn is_decided_result(value: &str) -> bool {
-    let compact = value
-        .chars()
-        .filter(|char| !char.is_whitespace())
-        .collect::<String>()
-        .to_ascii_lowercase();
-    !matches!(compact.as_str(), "" | "-" | "0" | "--")
+fn is_decided_result(value: &str, white_present: bool, black_present: bool) -> bool {
+    let compact = value.chars().filter(|char| !char.is_whitespace()).collect::<String>()
+        .to_ascii_lowercase().replace(['–', '—'], "-").replace(',', ".");
+    let half = |text: &str| matches!(text, "½" | "1/2" | "0.5" | ".5");
+    if white_present && black_present {
+        return matches!(compact.as_str(), "1-0" | "0-1" | "0-0" | "0f-0f" | "---" |
+            "+-" | "+--" | "-+" | "--+" | "1f-0" | "1-0f" | "1f-0f" | "1w-0l" |
+            "0f-1" | "0-1f" | "0f-1f" | "0l-1w") ||
+            compact.split_once('-').is_some_and(|(white, black)| half(white) && half(black));
+    }
+    if !white_present && !black_present { return false; }
+    let award = |text: &str| matches!(text, "0" | "0f" | "1" | "1f" | "+") || half(text);
+    if award(&compact) { return true; }
+    // A solo assignment proves only its occupied seat's explicit award. A
+    // dash, missing score or unknown text must never be inferred to mean zero.
+    compact.match_indices('-').any(|(index, _)| {
+        let (white, rest) = compact.split_at(index);
+        let black = &rest[1..];
+        let seat = |text: &str| text.is_empty() || text == "-" || award(text);
+        seat(white) && seat(black) && award(if white_present { white } else { black })
+    })
 }
 
 fn query_u16(href: &str, key: &str) -> Option<u16> {
@@ -1700,8 +1716,8 @@ mod tests {
         // Missing/ambiguous names must not become fictitious byes.
         assert!(parse_pairing_table(html, 1, &ambiguous).is_empty());
         assert!(parse_pairing_table(html, 1, &[]).is_empty());
-        assert!(is_decided_result("0 - 0"));
-        assert!(!is_decided_result(" - "));
+        assert!(is_decided_result("0 - 0", true, true));
+        assert!(!is_decided_result(" - ", true, true));
     }
 
     #[test]
@@ -1745,6 +1761,46 @@ mod tests {
         assert_eq!(details.players[2].start_number, 3);
         assert_eq!(details.players[2].name, "Clark, Cam");
         assert_eq!(details.players[2].fide_id.as_deref(), Some("789"));
+    }
+
+    #[test]
+    fn recognizes_only_complete_seat_specific_results() {
+        for result in ["1-0", "0 - 1", "½-½", "1/2-1/2", "0.5-0.5", "0,5-0,5", "1–0",
+            "1F-0F", "0F-1F", "+ - -", "- - +", "+-", "-+", "0-0", "0F-0F", "---", "1w-0l"] {
+            assert!(is_decided_result(result, true, true), "{result}");
+        }
+        for result in ["", " ", "-", "--", "*", "...", "…", "adjourned", "pending", "0", "1", "½",
+            "1-unknown", "unknown-1", "garbage.5", "½-0", "1-0 trailing", "2-0"] {
+            assert!(!is_decided_result(result, true, true), "{result}");
+        }
+        for result in ["0", "1", "½", "1/2", "0.5", "0,5", "1F", "0F"] {
+            assert!(is_decided_result(result, true, false), "{result}");
+            assert!(is_decided_result(result, false, true), "{result}");
+        }
+        assert!(is_decided_result("0-½", false, true));
+        assert!(is_decided_result("½-0", true, false));
+        assert!(!is_decided_result("+--", false, true));
+        assert!(!is_decided_result("--+", true, false));
+        for result in ["", "-", "--", "---", "*", "adjourned", "unknown-1"] {
+            assert!(!is_decided_result(result, true, false), "{result}");
+            assert!(!is_decided_result(result, false, true), "{result}");
+        }
+        assert!(!is_decided_result("1", false, false));
+    }
+
+    #[test]
+    fn unfinished_public_text_cannot_finish_the_final_round() {
+        for text in ["*", "...", "adjourned", "1-unknown", "garbage.5"] {
+            let html = PAIRING_FIXTURE.replace("½ - ½", text).replace("1 - 0", text);
+            let pairings = parse_pairing_table(&html, 7, &[]);
+            assert_eq!(pairings.len(), 3);
+            assert!(pairings.iter().all(|pairing| !pairing.decided), "{text}");
+            assert_eq!(tournament_phase(7, 6, 7, false, true), ("pairings-published".to_string(), None, Some(7)));
+            // One real result plus unreadable/pending games is still a live final round.
+            assert_eq!(tournament_phase(7, 6, 7, true, true), ("round-in-progress".to_string(), Some(7), None));
+        }
+        assert_eq!(tournament_phase(7, 7, 7, true, true), ("complete".to_string(), None, None));
+        assert_eq!(tournament_phase(7, 6, 7, true, false), ("complete".to_string(), Some(7), None));
     }
 
     #[test]

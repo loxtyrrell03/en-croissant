@@ -40,6 +40,19 @@ describe('coherent Swiss outcome sampling',()=>{
     calculateSampledSwissForecast(s,2,2);
     expect(new Set(state.snapshots).size).toBe(17);
   });
+  test('legacy unknown result flags are sampled, and raw placeholders do not change scenario seeds',()=>{
+    const reference=snapshot(),legacy=structuredClone(reference);
+    legacy.pairings[2]={...legacy.pairings[2],result:'*',decided:true};
+    const first=calculateSampledSwissForecast(reference,2,1);
+    const firstSamples=[...new Set(state.snapshots)].filter(s=>s!==reference).map(s=>s.pairings);
+    state.snapshots=[];
+    const corrected=calculateSampledSwissForecast(legacy,2,1);
+    expect(corrected).toEqual(first);
+    expect(corrected?.sampling).toEqual({samples:16,successful:16});
+    const secondSamples=[...new Set(state.snapshots)].filter(s=>s.pairings.every(p=>p.decided)).map(s=>s.pairings);
+    expect(secondSamples).toEqual(firstSamples);
+    expect(legacy.pairings[2]).toMatchObject({result:'*',decided:true});
+  });
   test('does not condition probabilities on a selectively successful ensemble',()=>{
     state.failOne=true;
     const f=calculateSampledSwissForecast(snapshot(),2,1);

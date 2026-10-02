@@ -1,3 +1,4 @@
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { useEffect, useMemo, useState } from "react";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import type { ExactSwissForecast } from "./exactSwissForecast";
@@ -31,9 +32,10 @@ function shouldCalculateExact(
 }
 
 export function usePairingForecast(
-  snapshot: TournamentSnapshot | null,
+  sourceSnapshot: TournamentSnapshot | null,
   myStartNumber: number | null,
 ): { forecast: PairingForecast | null; isCalculating: boolean } {
+  const snapshot = sourceSnapshot ? normalizeTournamentResults(sourceSnapshot) : null;
   const targetRound = snapshot?.nextRound ?? null;
   const shouldCalculate = shouldCalculateExact(snapshot, myStartNumber);
   const key =

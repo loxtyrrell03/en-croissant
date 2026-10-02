@@ -1,3 +1,5 @@
+import { publishedGameResult } from "./publishedPairingResult";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { publishedNoOpponentScore, hasUnscoredNoOpponentHistory } from "./publishedNoOpponentScore";
 import { pair as pairDutch } from "@echecs/swiss/dutch";
 import { pair as pairBurstein } from "@echecs/swiss/burstein";
@@ -64,40 +66,14 @@ function virtualAccelerationRound(
   };
 }
 
-function compactResult(value: string | null): string {
-  return (value ?? "").replace(/\s+/g, "").toLocaleLowerCase();
-}
-
-function resultIsDraw(result: string): boolean {
-  return (
-    result.includes("\u00bd") ||
-    result.includes("1/2") ||
-    result.includes(".5")
-  );
-}
-
 function playedGame(pairing: TournamentPairing): Game | null {
-  if (pairing.whiteStartNumber === null || pairing.blackStartNumber === null) return null;
-  const base = {
-    white: String(pairing.whiteStartNumber),
-    black: String(pairing.blackStartNumber),
-  };
-  const result = compactResult(pairing.result);
+  const result = publishedGameResult(pairing);
   if (!result) return null;
-  if (result === "0-0" || result === "0f-0f" || result === "---") {
-    return { ...base, result: "none", forfeit: "both" };
-  }
-  if (!pairing.decided) return null;
-  if (resultIsDraw(result)) return { ...base, result: "draw" };
-  if (result.startsWith("1f-") || result.startsWith("+-")) {
-    return { ...base, result: "white", forfeit: "black" };
-  }
-  if (result.endsWith("-1f") || result.endsWith("-+")) {
-    return { ...base, result: "black", forfeit: "white" };
-  }
-  if (result.startsWith("1-")) return { ...base, result: "white" };
-  if (result.endsWith("-1")) return { ...base, result: "black" };
-  return null;
+  const base = { white: String(pairing.whiteStartNumber), black: String(pairing.blackStartNumber) };
+  if (result.forfeit === "both") return { ...base, result: "none", forfeit: "both" };
+  if (result.forfeit === "white") return { ...base, result: "black", forfeit: "white" };
+  if (result.forfeit === "black") return { ...base, result: "white", forfeit: "black" };
+  return result.result === "none" ? null : { ...base, result: result.result };
 }
 
 function mostLikelyGame(
@@ -181,6 +157,7 @@ export function calculateExactSwissForecast(
   system: SwissPairingSystem = "dutch",
   accelerationOverride: SwissAcceleration | null | "auto" = "auto",
 ): ExactSwissForecast | null {
+  snapshot = normalizeTournamentResults(snapshot);
   if (hasUnscoredNoOpponentHistory(snapshot, targetRound)) return null;
   snapshot = swissParticipationScenario(snapshot, targetRound);
   if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return null;

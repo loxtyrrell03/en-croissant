@@ -1,3 +1,5 @@
+import { publishedGameResult, publishedPairingScore } from "./publishedPairingResult";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { swissAccelerationPoints } from "./swissPairingSettings";
 import { publishedNoOpponentScore, hasUnscoredNoOpponentHistory } from "./publishedNoOpponentScore";
 import type {
@@ -130,10 +132,6 @@ function colorIn(pairing: TournamentPairing, startNumber: number): "white" | "bl
   return null;
 }
 
-function compactResult(value: string | null): string {
-  return (value ?? "").replace(/\s+/g, "").toLocaleLowerCase();
-}
-
 /** A published one-seat assignment confirms no opponent, not the reason for
  * absence. Read only the occupied seat's explicit score; a blank is not zero. */
 function publishedNoOpponentCopy(pairing: TournamentPairing, round: number): Pick<PairingForecast, "summary" | "caveat"> {
@@ -153,21 +151,7 @@ function publishedNoOpponentCopy(pairing: TournamentPairing, round: number): Pic
 }
 
 function scoreFromResult(pairing: TournamentPairing, startNumber: number): number | null {
-  if (pairing.whiteStartNumber !== startNumber && pairing.blackStartNumber !== startNumber) return null;
-  if (pairing.whiteStartNumber === null || pairing.blackStartNumber === null) return publishedNoOpponentScore(pairing);
-  const result = compactResult(pairing.result);
-  if (!pairing.decided || !result) return null;
-  if (["0-0", "0f-0f", "---"].includes(result)) return 0;
-  const isWhite = pairing.whiteStartNumber === startNumber;
-  if (!isWhite && pairing.blackStartNumber !== startNumber) return null;
-  if (result.includes("½") || result.includes("1/2") || result.includes(".5")) return 0.5;
-  if (result.startsWith("1-") || result.startsWith("1f-") || result.startsWith("+-")) {
-    return isWhite ? 1 : 0;
-  }
-  if (result.endsWith("-1") || result.endsWith("-1f") || result.endsWith("-+")) {
-    return isWhite ? 0 : 1;
-  }
-  return null;
+  return publishedPairingScore(pairing, startNumber);
 }
 
 function outcomeWeights(
@@ -254,8 +238,7 @@ function scoreGroupOverlap(left: WeightedPoints[], right: WeightedPoints[]): num
 }
 
 function unplayedResult(pairing: TournamentPairing): boolean {
-  const result = compactResult(pairing.result);
-  return /[f+]/.test(result) || ["0-0", "---"].includes(result);
+  return Boolean(publishedGameResult(pairing)?.forfeit);
 }
 
 const colorHistories = new WeakMap<TournamentSnapshot, Map<string, Array<"white" | "black">>>();
@@ -480,7 +463,7 @@ function liveRoundResolvedFraction(snapshot: TournamentSnapshot): number | null 
       pairing.blackStartNumber !== null,
   );
   if (pairings.length === 0) return 0;
-  return pairings.filter((pairing) => pairing.decided).length / pairings.length;
+  return pairings.filter((pairing) => publishedGameResult(pairing) !== null).length / pairings.length;
 }
 
 export function calculatePairingForecast(
@@ -488,6 +471,7 @@ export function calculatePairingForecast(
   myStartNumber: number,
   options?: PairingForecastCalculationOptions,
 ): PairingForecast {
+  snapshot = normalizeTournamentResults(snapshot);
   const model =
     snapshot.liveRound === null ? BETWEEN_ROUND_PRIMARY_MODEL : LIVE_ROUND_PRIMARY_MODEL;
   const players = playerMap(snapshot);
@@ -786,10 +770,11 @@ export function calculatePairingForecast(
   ranked.forEach(appendUnique);
   // Use only the selected player's visible preceding assignment. Missing rows
   // remain unknown; future results and standings never determine this feature.
-  const ownLiveResultKnown = snapshot.liveRound === targetRound - 1
+  const ownLivePairing = snapshot.liveRound === targetRound - 1
     ? snapshot.pairings.find(pairing => pairing.round === snapshot.liveRound &&
-      (pairing.whiteStartNumber === myStartNumber || pairing.blackStartNumber === myStartNumber))?.decided ?? null
-    : null;
+      (pairing.whiteStartNumber === myStartNumber || pairing.blackStartNumber === myStartNumber))
+    : undefined;
+  const ownLiveResultKnown = ownLivePairing ? publishedPairingScore(ownLivePairing, myStartNumber) !== null : null;
   const probabilities = contextualSwissProbabilities(
     calibratedRankProbabilities(exactUsed, targetRound, liveRoundResolvedFraction(snapshot), snapshot.players.length, ownLiveResultKnown),
     exact, exactUsed, targetRound, snapshot.players.length, Math.min(6, selected.length),
@@ -856,6 +841,7 @@ export function formatForecastPercent(probability: number | null): string {
 }
 
 export function tournamentPhaseLabel(snapshot: TournamentSnapshot): string {
+  snapshot = normalizeTournamentResults(snapshot);
   switch (snapshot.phase) {
     case "registration":
       return "Registration open";

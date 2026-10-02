@@ -1,9 +1,9 @@
+import { publishedGameResult, publishedPairingScore } from "./publishedPairingResult";
 import type {
   TournamentPairing,
   TournamentPlayer,
   TournamentSnapshot,
 } from "@/features/tournaments/platform";
-import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
 
 export type TournamentSide = "white" | "black";
 
@@ -29,29 +29,9 @@ export interface TournamentPlayerStats {
   blackGames: number;
 }
 
-const HALF_RESULTS = ["1/2-1/2", "0.5-0.5", "½-½", "0,5-0,5"];
-
-function normalizedResult(result: string | null): string {
-  return (result ?? "")
-    .replace(/\s+/g, "")
-    .replace(/[–—]/g, "-")
-    .toLocaleLowerCase();
-}
-
 export function pairingScore(pairing: TournamentPairing, side: TournamentSide): number | null {
-  if ((pairing.whiteStartNumber === null) !== (pairing.blackStartNumber === null)) {
-    if ((side === "white" ? pairing.whiteStartNumber : pairing.blackStartNumber) === null) return null;
-    return publishedNoOpponentScore(pairing);
-  }
-  if (!pairing.decided) return null;
-  const result = normalizedResult(pairing.result);
-  if (result === "+--") return side === "white" ? 1 : 0;
-  if (result === "--+") return side === "black" ? 1 : 0;
-  if (result === "---") return 0;
-  if (HALF_RESULTS.some((value) => result.includes(value))) return 0.5;
-  if (/^1(?:f|w|\+)?-0(?:f|l|-)?/.test(result)) return side === "white" ? 1 : 0;
-  if (/^0(?:f|l|-)?-1(?:f|w|\+)?/.test(result)) return side === "black" ? 1 : 0;
-  return null;
+  const player = side === "white" ? pairing.whiteStartNumber : pairing.blackStartNumber;
+  return player === null ? null : publishedPairingScore(pairing, player);
 }
 
 export function playerSideInPairing(
@@ -152,7 +132,7 @@ export function playerGameHistory(
     const score = pairingScore(pairing, side);
     // Awarded forfeit points affect standings, but are not played games or a
     // rating-performance sample. Byes already have no named opponent here.
-    if (!opponent || score === null || /[fwl+]/i.test(pairing.result ?? "") || normalizedResult(pairing.result) === "---") continue;
+    if (!opponent || score === null || publishedGameResult(pairing)?.forfeit) continue;
     games.push({
       round: pairing.round,
       board: pairing.board,

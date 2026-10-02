@@ -1,0 +1,5 @@
+# Tournament core result semantics
+
+- Desktop native imports and the phone helper share this core. Result recognition is seat-aware and requires one complete known token; arbitrary source text and numeric substrings remain pending. Named games require two seats; solo scores come only from the occupied seat, including explicit zero. Keep this contract aligned with frontend `publishedPairingResult.ts`.
+- October 2026 parser/phase verification passes 28 tests in both maintained source checkouts using the existing Novelty offline parser harness. It replaces only Tauri annotations for compilation, includes the real child modules, and reuses the existing small native-check target. The original collector executable hash is preserved. This does not build or deploy En Croissant's installed desktop or phone helper.
+- See `docs/PAIRING_RESULT_TRUTHFULNESS_2026-10-02.md` for source hashes, cross-product parity, frontend/browser proof and reproduction. Preserve active services, profile data and existing build/corpus storage when continuing this work.

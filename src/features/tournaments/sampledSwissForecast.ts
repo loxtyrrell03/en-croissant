@@ -1,3 +1,5 @@
+import { publishedGameResult } from "./publishedPairingResult";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import { swissParticipationScenario } from "./swissParticipation";
 import { historicalPairingReliability } from "./pairingHistoryReliability";
@@ -30,20 +32,21 @@ function calculateOutcomeSampledSwissForecast(
   system: SwissPairingSystem = "dutch",
   seedSalt = "production-v1",
 ): ExactSwissForecast | null {
-  snapshot = swissParticipationScenario(snapshot, targetRound);
+  snapshot = swissParticipationScenario(normalizeTournamentResults(snapshot), targetRound);
   const baseline = calculateExactSwissForecast(snapshot, targetRound, myStartNumber, system);
   if (!snapshot.players.some(p => p.startNumber === myStartNumber && p.active && !p.notPairedRounds?.includes(targetRound))) return baseline;
   if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return baseline;
   if (system !== "dutch" || snapshot.players.length > MAX_SAMPLED_SWISS_PLAYERS || snapshot.liveRound !== targetRound - 1) return baseline;
-  const unresolved = snapshot.pairings.filter(p => p.round < targetRound && !p.decided && p.whiteStartNumber !== null && p.blackStartNumber !== null);
+  const unresolved = snapshot.pairings.filter(p => p.round < targetRound && publishedGameResult(p) === null && p.whiteStartNumber !== null && p.blackStartNumber !== null);
   const liveGames = snapshot.pairings.filter(p => p.round === snapshot.liveRound && p.whiteStartNumber !== null && p.blackStartNumber !== null);
-  const resolved = liveGames.filter(p => p.decided).length;
+  const resolved = liveGames.filter(p => publishedGameResult(p) !== null).length;
   // Sixteen samples are too sparse early in a live round. Independent model
   // selection found useful proper-score gains only after most results arrived.
   if (!unresolved.length || resolved <= liveGames.length / 2 || unresolved.some(p => p.round !== snapshot.liveRound)) return baseline;
   const key = JSON.stringify([targetRound, system, seedSalt, snapshot.title, snapshot.formatLabel, snapshot.totalRounds,
     snapshot.players.map(p => [p.startNumber, p.rating, p.points, p.active, (p.notPairedRounds ?? []).filter(r => r <= targetRound), (p.halfPointByeRounds ?? []).filter(r => r < targetRound)]),
-    snapshot.pairings.filter(p => p.round < targetRound).map(p => [p.round, p.whiteStartNumber, p.blackStartNumber, p.result, p.decided])]);
+    snapshot.pairings.filter(p => p.round < targetRound).map(p => [p.round, p.whiteStartNumber, p.blackStartNumber,
+      p.whiteStartNumber !== null && p.blackStartNumber !== null && publishedGameResult(p) === null ? null : p.result, p.decided])]);
   const cached = cache.get(snapshot);
   if (cached?.key === key) return cached.field.get(myStartNumber) ?? baseline;
   const random = randomGenerator(key);
@@ -54,7 +57,7 @@ function calculateOutcomeSampledSwissForecast(
   for (let sample = 0; sample < SWISS_OUTCOME_SAMPLES; sample++) {
     const completed = structuredClone(snapshot);
     for (const game of completed.pairings) {
-      if (game.round >= targetRound || game.decided || game.whiteStartNumber === null || game.blackStartNumber === null) continue;
+      if (game.round >= targetRound || publishedGameResult(game) !== null || game.whiteStartNumber === null || game.blackStartNumber === null) continue;
       const white = players.get(game.whiteStartNumber), black = players.get(game.blackStartNumber);
       const rated = Boolean(white?.rating && black?.rating);
       const expected = rated ? 1 / (1 + 10 ** ((black!.rating! - white!.rating!) / 400)) : 0.5;

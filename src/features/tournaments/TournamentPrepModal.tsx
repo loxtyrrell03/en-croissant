@@ -1,3 +1,4 @@
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pushToast } from "@/features/tournaments/ui";
 import { confirmDialog } from "@/features/tournaments/ui";
@@ -235,15 +236,16 @@ export function TournamentPrepModal({
       (candidate) => candidate.player.startNumber === startNumber,
     )?.color;
     if (forecastSide) return forecastSide;
-    const directPairing = record.snapshot.pairings.find(
+    const snapshot = normalizeTournamentResults(record.snapshot);
+    const directPairing = snapshot.pairings.find(
       (pairing) =>
-        pairing.round === record.snapshot.nextRound &&
+        pairing.round === snapshot.nextRound &&
         ((pairing.whiteStartNumber === record.userStartNumber && pairing.blackStartNumber === startNumber) ||
           (pairing.blackStartNumber === record.userStartNumber && pairing.whiteStartNumber === startNumber)),
     );
     if (directPairing?.whiteStartNumber === record.userStartNumber) return "white";
     if (directPairing?.blackStartNumber === record.userStartNumber) return "black";
-    return projectedSideFromHistory(record.snapshot, record.userStartNumber);
+    return projectedSideFromHistory(snapshot, record.userStartNumber);
   }
 
   function openPreparedOpponent(opponent: TournamentOpponentDatabase, userSide: TournamentSide) {
