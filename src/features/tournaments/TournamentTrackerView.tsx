@@ -1,5 +1,5 @@
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
-import { pairingEstimateHelp } from "./pairingScoreHelp";
+import { pairingEstimateHelp, pairingEstimateUnavailableReason } from "./pairingScoreHelp";
 import { forecastHeading, precedingResultContext, tournamentResultLabel } from "./forecastPresentation";
 import { tournamentCountdown } from "./tournamentStart";
 import { TournamentStartCountdown } from "./TournamentStartCountdown";
@@ -118,6 +118,7 @@ export function TournamentTrackerView(props: Props) {
   const readyCount = Object.values(record.opponents).filter(o => o.status === "ready" && o.gameCount > 0 && o.collectionId !== null).length;
   const emptyCount = Object.values(record.opponents).filter(o => o.status === "no-games" || (o.status === "ready" && o.gameCount === 0)).length;
   const inferred = forecast?.kind === "inferred";
+  const unavailableReason = pairingEstimateUnavailableReason(snapshot, forecast);
   const fixed = inferred || forecast?.kind === "confirmed" || forecast?.kind === "scheduled";
   const resultContext = precedingResultContext(snapshot, forecast);
   const publishedColour = forecast?.kind === "confirmed" || forecast?.kind === "scheduled";
@@ -223,6 +224,7 @@ export function TournamentTrackerView(props: Props) {
           <span>{resultContext.label}<HelpTip label="Results used for predictions">Only results reported by the organiser are known. Predictions can change as unfinished games end or the organiser updates the entries and pairing rules.</HelpTip></span>
           {resultContext.total > 0 && <button type="button" onClick={() => { setRound(resultContext.round); setTab("results"); }}>View round {resultContext.round} results →</button>}
         </div>}
+        {unavailableReason && <p className={styles.warning} role="status">{unavailableReason}<HelpTip label="Unavailable pairing chances">{pairingEstimateHelp(snapshot, forecast) ?? "The available tournament data cannot support a numerical estimate yet."}</HelpTip></p>}
         {!!forecast?.candidates.length ? <div className={styles.candidates}>
           <div className={styles.candidateHead}><span>Opponent</span><span>Rating<HelpTip label="Opponent rating">{help.rating}</HelpTip></span><span>{fixed ? "Pairing" : "Pairing chance"}{(!fixed || inferred) && <HelpTip label={inferred ? "Expected pairing" : "Pairing chance"}>{inferred ? forecast?.caveat ?? "Predicted from the players’ starting numbers. The organiser has not confirmed this pairing." : pairingEstimateHelp(snapshot, forecast) ?? help.chance}</HelpTip>}</span><span>{colourLabel}<HelpTip label="Your colour">{publishedColour ? "Your colour in the published pairing." : help.colour}</HelpTip></span><span>Preparation<HelpTip label="Games and preparation">{help.actions}</HelpTip></span></div>
           {forecast.candidates.map(candidate => {
