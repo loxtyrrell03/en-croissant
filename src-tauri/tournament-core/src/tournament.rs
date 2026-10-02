@@ -7,7 +7,7 @@ use chrono::Utc;
 use futures_util::{stream, StreamExt};
 use reqwest::{redirect, Client, Url};
 use scraper::{ElementRef, Html, Selector};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 pub mod discovery;
 mod media;
@@ -152,6 +152,88 @@ pub struct TournamentSnapshot {
     pub metadata: discovery::EventMetadata,
 }
 
+
+/// Already-decoded page inputs only. Callers must separately verify trace,
+/// charset decoding, content hashes and returned-body tournament identity.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(tag = "status", rename_all = "kebab-case", rename_all_fields = "camelCase", deny_unknown_fields)]
+pub enum RetainedTournamentPage {
+    Available { page_id: String, html: String },
+    Unavailable { page_id: String, error: String },
+}
+
+impl RetainedTournamentPage {
+    fn page_id(&self) -> &str {
+        match self { Self::Available { page_id, .. } | Self::Unavailable { page_id, .. } => page_id }
+    }
+
+    fn read<'a>(&'a self, consumed: &mut Vec<String>) -> Result<&'a str, String> {
+        let id = self.page_id().to_string();
+        if !consumed.contains(&id) { consumed.push(id); }
+        match self {
+            Self::Available { html, .. } => Ok(html),
+            Self::Unavailable { error, .. } => Err(error.clone()),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TournamentOfflinePages {
+    pub schema: u8,
+    pub source_url: String,
+    pub fetched_at: String,
+    pub detail: RetainedTournamentPage,
+    /// Selects a retained standings page for conditional metadata fallback.
+    /// This is a page address, never a replacement for missing source metadata.
+    pub metadata_fallback_round: Option<u16>,
+    #[serde(deserialize_with = "deserialize_round_pages")]
+    pub standings: BTreeMap<u16, RetainedTournamentPage>,
+    #[serde(deserialize_with = "deserialize_round_pages")]
+    pub pairings: BTreeMap<u16, RetainedTournamentPage>,
+    pub status: RetainedTournamentPage,
+}
+
+fn deserialize_round_pages<'de, D>(deserializer: D) -> Result<BTreeMap<u16, RetainedTournamentPage>, D::Error>
+where D: serde::Deserializer<'de> {
+    struct RoundPages;
+    impl<'de> serde::de::Visitor<'de> for RoundPages {
+        type Value = BTreeMap<u16, RetainedTournamentPage>;
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("unique positive round keys and retained pages")
+        }
+        fn visit_map<M: serde::de::MapAccess<'de>>(self, mut map: M) -> Result<Self::Value, M::Error> {
+            let mut pages = BTreeMap::new();
+            while let Some((round, page)) = map.next_entry::<u16, RetainedTournamentPage>()? {
+                if round == 0 || pages.insert(round, page).is_some() {
+                    return Err(serde::de::Error::custom("Duplicate or zero retained round key"));
+                }
+            }
+            Ok(pages)
+        }
+    }
+    deserializer.deserialize_map(RoundPages)
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TournamentOfflineAssembly {
+    pub schema: u8,
+    pub snapshot: TournamentSnapshot,
+    pub consumed_page_ids: Vec<String>,
+    pub network_requests: u8,
+    pub transport_verified: bool,
+    pub decoder_verified: bool,
+    pub returned_body_tournament_identity_verified: bool,
+}
+
+struct PreparedTournamentSnapshot {
+    details: TournamentDetails,
+    warnings: Vec<String>,
+    standings_through: u16,
+    pairings_through: u16,
+}
+
 #[derive(Clone, Debug, Default)]
 struct TournamentDetails {
     title: String,
@@ -217,30 +299,68 @@ pub async fn search_tournaments(query: String) -> Result<Vec<TournamentSearchRes
 
 pub async fn fetch_tournament_snapshot(url: String) -> Result<TournamentSnapshot, String> {
     let tournament_id = tournament_id_from_url(&url)?;
-    let canonical_url = canonical_tournament_url(&tournament_id);
     let client = tournament_client()?;
     let detail_url = tournament_page_url(&tournament_id, "turdet=YES&zeilen=99999");
     let detail_html = fetch_html(&client, &detail_url).await?;
-    let mut details = parse_tournament_details(&detail_html);
-    let mut warnings = Vec::new();
+    let details = parse_tournament_details(&detail_html);
+    let fallback = if needs_tournament_metadata_fallback(&details) {
+        Some(fetch_html(&client, &tournament_page_url(&tournament_id, "art=1&turdet=YES&zeilen=99999")).await)
+    } else { None };
+    let prepared = prepare_tournament_snapshot_details(details, fallback.as_ref().map(|result| {
+        (None, result.as_ref().map(String::as_str).map_err(Clone::clone))
+    }))?;
+    let completed_round = prepared.standings_through;
+    let published_round = prepared.pairings_through;
+    let standings_future = stream::iter((1..=completed_round).map(|round| {
+        let client = client.clone();
+        let tournament_id = tournament_id.clone();
+        async move {
+            let url = tournament_page_url(&tournament_id, &format!("art=1&rd={round}&zeilen=99999"));
+            (round, fetch_html(&client, &url).await)
+        }
+    })).buffer_unordered(ROUND_FETCH_CONCURRENCY).collect::<Vec<_>>();
+    let pairings_future = stream::iter((1..=published_round).map(|round| {
+        let client = client.clone();
+        let tournament_id = tournament_id.clone();
+        async move {
+            let url = tournament_page_url(&tournament_id, &format!("art=2&rd={round}&zeilen=99999"));
+            (round, fetch_html(&client, &url).await)
+        }
+    })).buffer_unordered(ROUND_FETCH_CONCURRENCY).collect::<Vec<_>>();
+    let start_future = async {
+        if completed_round > 0 || published_round > 1 { return None; }
+        let url = tournament_page_url(&tournament_id, "art=14");
+        let html = tokio::time::timeout(Duration::from_secs(8), fetch_html(&client, &url)).await.ok()?.ok()?;
+        schedule::parse_round_one_start(&html)
+    };
+    let (standings_results, round_results, round_one_start) = futures_util::future::join3(standings_future, pairings_future, start_future).await;
+    let status_page = fetch_html(&client, &tournament_page_url(&tournament_id, "art=40&zeilen=99999")).await;
+    finish_tournament_snapshot(tournament_id, prepared, standings_results, round_results,
+        status_page, Utc::now().to_rfc3339(), round_one_start, &detail_html)
+}
 
-    // Some archived/print-style Chess-Results pages omit navigation and
-    // tournament metadata from the starting list. Their final-ranking page
-    // still exposes the completed round count and standings, so use it as a
-    // compatibility fallback before declaring the event unreadable.
-    if details.total_rounds == 0
-        || details.format_label.is_empty()
-        || details.pairing_rounds.is_empty()
-    {
-        let ranking_url = tournament_page_url(&tournament_id, "art=1&turdet=YES&zeilen=99999");
-        match fetch_html(&client, &ranking_url).await {
-            Ok(html) => merge_tournament_details(&mut details, parse_tournament_details(&html)),
-            Err(error) => warnings.push(format!(
-                "The archived final-ranking page could not be inspected: {error}"
-            )),
+fn needs_tournament_metadata_fallback(details: &TournamentDetails) -> bool {
+    details.total_rounds == 0 || details.format_label.is_empty() || details.pairing_rounds.is_empty()
+}
+
+fn prepare_tournament_snapshot_details(
+    mut details: TournamentDetails,
+    fallback: Option<(Option<u16>, Result<&str, String>)>,
+) -> Result<PreparedTournamentSnapshot, String> {
+    let mut warnings = Vec::new();
+    if needs_tournament_metadata_fallback(&details) {
+        match fallback {
+            Some((scope, Ok(html))) => {
+                if scope.map_or(true, |round| standings_page_matches_round(html, round)) {
+                    merge_tournament_details(&mut details, parse_tournament_details(html));
+                } else {
+                    warnings.push(format!("The retained metadata fallback did not verify standings round {}.", scope.unwrap()));
+                }
+            }
+            Some((_, Err(error))) => warnings.push(format!("The archived final-ranking page could not be inspected: {error}")),
+            None => warnings.push("The archived final-ranking page was not supplied.".to_string()),
         }
     }
-
     if details.total_rounds == 0 {
         details.total_rounds = details.final_round.unwrap_or(0);
     }
@@ -272,64 +392,29 @@ pub async fn fetch_tournament_snapshot(url: String) -> Result<TournamentSnapshot
     // A published event may not have entrants yet. Keep its readable metadata
     // and registration state so it can be followed before the first entry.
 
-    let completed_round = details.ranking_rounds.iter().copied().max().unwrap_or(0);
-    let published_round = details.pairing_rounds.iter().copied().max().unwrap_or(0);
+    let standings_through = details.ranking_rounds.iter().copied().max().unwrap_or(0);
+    let pairings_through = details.pairing_rounds.iter().copied().max().unwrap_or(0);
+    Ok(PreparedTournamentSnapshot { details, warnings, standings_through, pairings_through })
+}
 
-    let standings_future = stream::iter((1..=completed_round).map(|round| {
-        let client = client.clone();
-        let tournament_id = tournament_id.clone();
-        async move {
-            let standings_url =
-                tournament_page_url(&tournament_id, &format!("art=1&rd={round}&zeilen=99999"));
-            (
-                round,
-                fetch_html(&client, &standings_url)
-                    .await
-                    .map(|html| parse_player_table_for_round(&html, round)),
-            )
-        }
-    }))
-    .buffer_unordered(ROUND_FETCH_CONCURRENCY)
-    .collect::<Vec<_>>();
-
-    let pairings_future = stream::iter((1..=published_round).map(|round| {
-        let client = client.clone();
-        let tournament_id = tournament_id.clone();
-        let roster = &details.players;
-        async move {
-            let round_url =
-                tournament_page_url(&tournament_id, &format!("art=2&rd={round}&zeilen=99999"));
-            (
-                round,
-                fetch_html(&client, &round_url)
-                    .await
-                    .map(|html| parse_scoped_pairing_table_evidence(&html, round, roster)),
-            )
-        }
-    }))
-    .buffer_unordered(ROUND_FETCH_CONCURRENCY)
-    .collect::<Vec<_>>();
-
-    // The two histories are independent and share bounded per-history
-    // concurrency, so load them together without serially doubling refresh
-    // time for a long event.
-    let start_future = async {
-        if completed_round > 0 || published_round > 1 {
-            return None;
-        }
-        let url = tournament_page_url(&tournament_id, "art=14");
-        let html = tokio::time::timeout(Duration::from_secs(8), fetch_html(&client, &url))
-            .await
-            .ok()?
-            .ok()?;
-        schedule::parse_round_one_start(&html)
-    };
-    let (standings_results, round_results, round_one_start) =
-        futures_util::future::join3(standings_future, pairings_future, start_future).await;
-
+fn finish_tournament_snapshot(
+    tournament_id: String,
+    prepared: PreparedTournamentSnapshot,
+    mut standings_results: Vec<(u16, Result<String, String>)>,
+    mut round_results: Vec<(u16, Result<String, String>)>,
+    status_page: Result<String, String>,
+    fetched_at: String,
+    round_one_start: Option<schedule::RoundOneStart>,
+    detail_html: &str,
+) -> Result<TournamentSnapshot, String> {
+    let PreparedTournamentSnapshot { details, mut warnings, pairings_through: published_round, .. } = prepared;
+    let canonical_url = canonical_tournament_url(&tournament_id);
+    // Network completion order cannot alter a retained snapshot's warnings.
+    standings_results.sort_by_key(|(round, _)| *round);
+    round_results.sort_by_key(|(round, _)| *round);
     let mut round_standings = Vec::new();
     for (round, result) in standings_results {
-        match result {
+        match result.map(|html| parse_player_table_for_round(&html, round)) {
             Ok(players) if !players.is_empty() => round_standings.push(TournamentRoundStandings { round, players }),
             Ok(_) => warnings.push(format!("Standings after round {round} did not have a verified matching round and readable player table.")),
             Err(error) => warnings.push(format!(
@@ -350,7 +435,7 @@ pub async fn fetch_tournament_snapshot(url: String) -> Result<TournamentSnapshot
     let mut pairings = Vec::new();
     let mut pairing_pages = BTreeMap::new();
     for (round, result) in round_results {
-        match result {
+        match result.map(|html| parse_scoped_pairing_table_evidence(&html, round, &details.players)) {
             Ok(mut parsed) => {
                 pairing_pages.insert(round, (if parsed.readable { "readable" } else { "unreadable" }, parsed.unresolved_rows));
                 if parsed.unresolved_rows > 0 {
@@ -369,8 +454,7 @@ pub async fn fetch_tournament_snapshot(url: String) -> Result<TournamentSnapshot
     }
     pairings.sort_by_key(|pairing| (pairing.round, pairing.board.unwrap_or(u32::MAX)));
 
-    let not_paired_url = tournament_page_url(&tournament_id, "art=40&zeilen=99999");
-    let (not_paired_rounds, status_evidence) = match fetch_html(&client, &not_paired_url).await {
+    let (not_paired_rounds, status_evidence) = match status_page {
         Ok(html) => (parse_not_paired_rounds(&html), Some(parse_round_status_evidence(&html))),
         Err(error) => {
             warnings.push(format!("Round-specific withdrawals and byes could not be refreshed: {error}"));
@@ -456,7 +540,7 @@ pub async fn fetch_tournament_snapshot(url: String) -> Result<TournamentSnapshot
         round_one_start,
         time_control: details.time_control,
         source_updated_at: details.source_updated_at,
-        fetched_at: Utc::now().to_rfc3339(),
+        fetched_at,
         players,
         pairings,
         round_standings,
@@ -467,6 +551,54 @@ pub async fn fetch_tournament_snapshot(url: String) -> Result<TournamentSnapshot
         warnings,
         metadata: discovery::parse_metadata(&detail_html),
     })
+}
+
+/// Assemble already-decoded retained pages without constructing a client or
+/// runtime. This shares every parser/merge/coverage/phase decision with fetch.
+/// It does not verify transport, decoder or returned-body event identity.
+pub fn assemble_tournament_snapshot_from_pages(
+    pages: &TournamentOfflinePages,
+) -> Result<TournamentOfflineAssembly, String> {
+    if pages.schema != 1 { return Err("Unsupported offline page schema.".to_string()); }
+    let tournament_id = tournament_id_from_url(&pages.source_url)?;
+    chrono::DateTime::parse_from_rfc3339(&pages.fetched_at)
+        .map_err(|_| "Offline fetchedAt must be a retained RFC3339 timestamp.".to_string())?;
+    if pages.metadata_fallback_round == Some(0) || pages.standings.contains_key(&0) || pages.pairings.contains_key(&0) {
+        return Err("Retained round page addresses must be positive.".to_string());
+    }
+    let mut ids = HashSet::new();
+    for page in std::iter::once(&pages.detail).chain(pages.standings.values())
+        .chain(pages.pairings.values()).chain(std::iter::once(&pages.status)) {
+        let id = page.page_id();
+        if id.is_empty() || id.len() > 512 || !id.chars().all(|c| c.is_ascii_alphanumeric() || "-._/".contains(c)) || !ids.insert(id) {
+            return Err("Retained page IDs must be nonempty, bounded and unique.".to_string());
+        }
+    }
+    let mut consumed = Vec::new();
+    let detail_html = pages.detail.read(&mut consumed)?;
+    let details = parse_tournament_details(detail_html);
+    let fallback = if needs_tournament_metadata_fallback(&details) {
+        pages.metadata_fallback_round.map(|round| {
+            let result = pages.standings.get(&round)
+                .ok_or_else(|| format!("Retained metadata standings page {round} is missing."))
+                .and_then(|page| page.read(&mut consumed));
+            (Some(round), result)
+        })
+    } else { None };
+    let prepared = prepare_tournament_snapshot_details(details, fallback)?;
+    let mut retained = |round: u16, map: &BTreeMap<u16, RetainedTournamentPage>, role: &str| {
+        let result = map.get(&round).ok_or_else(|| format!("Retained {role} page {round} is missing."))
+            .and_then(|page| page.read(&mut consumed)).map(str::to_string);
+        (round, result)
+    };
+    let standings_results = (1..=prepared.standings_through).map(|round| retained(round, &pages.standings, "standings")).collect();
+    let round_results = (1..=prepared.pairings_through).map(|round| retained(round, &pages.pairings, "pairings")).collect();
+    let status_page = pages.status.read(&mut consumed).map(str::to_string);
+    let snapshot = finish_tournament_snapshot(tournament_id, prepared, standings_results, round_results,
+        status_page, pages.fetched_at.clone(), None, detail_html)?;
+    Ok(TournamentOfflineAssembly { schema: 1, snapshot, consumed_page_ids: consumed,
+        network_requests: 0, transport_verified: false, decoder_verified: false,
+        returned_body_tournament_identity_verified: false })
 }
 
 fn tournament_client() -> Result<Client, String> {
@@ -928,24 +1060,9 @@ fn section_from_title(title: &str) -> Option<String> {
 }
 
 fn final_round_from_heading(value: &str) -> Option<u16> {
-    if !value.to_ascii_lowercase().contains("final ranking") {
-        return None;
-    }
-    let parts = value.split_whitespace().collect::<Vec<_>>();
-    parts.iter().enumerate().find_map(|(index, part)| {
-        (part
-            .trim_matches(|char: char| !char.is_alphanumeric())
-            .to_ascii_lowercase()
-            .starts_with("round")
-            && index > 0)
-            .then(|| {
-                parts[index - 1]
-                    .trim_matches(|char: char| !char.is_ascii_digit())
-                    .parse::<u16>()
-                    .ok()
-            })
-            .flatten()
-    })
+    let compact = value.split_whitespace().collect::<Vec<_>>().join(" ").to_ascii_lowercase();
+    if !compact.starts_with("final ranking after ") { return None; }
+    standings_round_heading(&compact).flatten()
 }
 
 fn merge_tournament_details(primary: &mut TournamentDetails, fallback: TournamentDetails) {
@@ -985,11 +1102,15 @@ fn parse_player_table(html: &str) -> Vec<TournamentPlayer> {
 }
 
 fn parse_player_table_for_round(html: &str, round: u16) -> Vec<TournamentPlayer> {
+    if !standings_page_matches_round(html, round) { return Vec::new(); }
+    parse_player_document_with_scope(&Html::parse_document(html), Some(round))
+}
+
+fn standings_page_matches_round(html: &str, round: u16) -> bool {
     let document = Html::parse_document(html);
     let headings = document.select(&selector("h1, h2, h3, h4, h5, h6"))
         .map(clean_text).filter_map(|text| standings_round_heading(&text)).collect::<Vec<_>>();
-    if headings.is_empty() || headings.iter().any(|scope| *scope != Some(round)) { return Vec::new(); }
-    parse_player_document_with_scope(&document, Some(round))
+    round > 0 && !headings.is_empty() && headings.iter().all(|scope| *scope == Some(round))
 }
 
 // A requested URL is not proof of the returned page's round. An unreadable or
@@ -1008,12 +1129,13 @@ fn standings_round_heading(text: &str) -> Option<Option<u16>> {
 
 fn pairing_round_heading(text: &str) -> Option<Option<u16>> {
     let compact = text.split_whitespace().collect::<Vec<_>>().join(" ").to_ascii_lowercase();
+    if compact == "round" { return Some(None); }
     let rest = compact.strip_prefix("round ")?;
     let words = rest.split_whitespace().collect::<Vec<_>>();
-    // A title such as Round Robin Championship is not a scope claim. Keep
-    // malformed numeric-looking claims visible so they still fail closed.
-    let first = words.first()?.as_bytes().first()?;
-    if !first.is_ascii_digit() && !matches!(*first, b'+' | b'-') { return None; }
+    // Round Robin is an event title, not a round claim. Every other explicit
+    // Round section (including unknown text) resets scope instead of inheriting
+    // a previous round and assigning later rows to the wrong history.
+    if words.first() == Some(&"robin") { return None; }
     Some(if words.len() == 1 || words.get(1).is_some_and(|word| matches!(*word, "on" | "at")) {
         words[0].parse::<u16>().ok().filter(|round| *round > 0)
     } else { None })
@@ -2409,6 +2531,106 @@ mod evidence_tests {
         use std::io::Write;
         let mut file = std::fs::OpenOptions::new().write(true).create_new(true).open(output).unwrap();
         file.write_all(serde_json::to_string_pretty(&data).unwrap().as_bytes()).unwrap(); file.sync_all().unwrap();
+    }
+
+}
+
+
+#[cfg(test)]
+mod offline_assembly_tests {
+    use super::*;
+    fn roster_html() -> &'static str { r#"<table class="CRs1"><tr><th>SNo</th><th>Name</th><th>Rtg</th><th>Pts.</th></tr><tr><td>1</td><td>Alice</td><td>2000</td><td>1</td></tr><tr><td>2</td><td>Bob</td><td>1900</td><td>0</td></tr></table>"# }
+    fn available(id: &str, html: &str) -> RetainedTournamentPage {
+        RetainedTournamentPage::Available { page_id:id.to_string(), html:html.to_string() }
+    }
+    fn pages() -> TournamentOfflinePages {
+        let detail = format!(r#"<h2>Invented Offline Open</h2><table class="daten"><tr><td>Number of rounds</td><td>2</td></tr><tr><td>Tournament type</td><td>Swiss-System</td></tr></table><a href="tnr42.aspx?art=2&amp;rd=1">Round 1</a><a href="tnr42.aspx?art=1&amp;rd=1">Standings 1</a>{}"#, roster_html());
+        let pairing = r#"<h3>Round 1</h3><table class="CRs1"><tr><th>Bo.</th><th>White</th><th>Result</th><th>Black</th></tr><tr><td>1</td><td><a href="?snr=1">Alice</a></td><td>1-0</td><td><a href="?snr=2">Bob</a></td></tr></table>"#;
+        TournamentOfflinePages { schema:1, source_url:"https://chess-results.com/tnr42.aspx?lan=1".into(), fetched_at:"2026-10-02T00:00:00Z".into(),
+            detail:available("detail", &detail), metadata_fallback_round:None,
+            standings:BTreeMap::from([(1,available("standings/1",&format!("<h2>Rank after Round 1</h2>{}",roster_html())))]),
+            pairings:BTreeMap::from([(1,available("pairings/1",pairing))]),
+            status:available("status",r#"<h2>not paired</h2><table class="CRs1"><tr><th>SNo</th><th>1.Rd</th><th>2.Rd</th></tr></table>"#) }
+    }
+    #[test]
+    fn offline_assembly_is_deterministic_and_shares_the_live_assembly_function() {
+        let pages=pages();let original=serde_json::to_vec(&pages).unwrap();
+        let result=assemble_tournament_snapshot_from_pages(&pages).unwrap();
+        assert_eq!(result.consumed_page_ids,vec!["detail","standings/1","pairings/1","status"]);
+        assert_eq!(result.network_requests,0);assert!(!result.transport_verified);assert!(!result.decoder_verified);assert!(!result.returned_body_tournament_identity_verified);
+        assert_eq!(result.snapshot.players.len(),2);assert_eq!(result.snapshot.completed_round,1);assert_eq!(result.snapshot.next_round,Some(2));
+        assert_eq!(result.snapshot.players[0].points,1.0);assert!(result.snapshot.players[0].score_known);
+        assert!(result.snapshot.incomplete_pairing_rounds.is_empty());
+        assert_eq!(serde_json::to_vec(&result).unwrap(),serde_json::to_vec(&assemble_tournament_snapshot_from_pages(&pages).unwrap()).unwrap());
+        assert_eq!(original,serde_json::to_vec(&pages).unwrap());
+        let mut consumed=Vec::new();let detail=pages.detail.read(&mut consumed).unwrap();
+        let prepared=prepare_tournament_snapshot_details(parse_tournament_details(detail),None).unwrap();
+        let standings=vec![(1,Ok(pages.standings[&1].read(&mut consumed).unwrap().to_string()))];
+        let pairings=vec![(1,Ok(pages.pairings[&1].read(&mut consumed).unwrap().to_string()))];
+        let status=Ok(pages.status.read(&mut consumed).unwrap().to_string());
+        let shared=finish_tournament_snapshot("42".into(),prepared,standings,pairings,status,pages.fetched_at.clone(),None,detail).unwrap();
+        assert_eq!(serde_json::to_value(shared).unwrap(),serde_json::to_value(result.snapshot).unwrap());
+    }
+    #[test]
+    fn offline_missing_and_unavailable_pages_preserve_unknown_coverage() {
+        let mut pages=pages();pages.pairings.clear();pages.standings.clear();
+        pages.status=RetainedTournamentPage::Unavailable {page_id:"failed/status".into(),error:"retained timeout".into()};
+        pages.pairings.insert(2,available("unused/future","<h3>Round 2</h3>"));
+        let result=assemble_tournament_snapshot_from_pages(&pages).unwrap();
+        assert_eq!(result.consumed_page_ids,vec!["detail","failed/status"]);
+        assert_eq!(result.snapshot.completed_round,0);assert!(result.snapshot.round_standings.is_empty());
+        assert!(result.snapshot.players.iter().all(|p|!p.score_known && p.score_round.is_none()));
+        assert_eq!(result.snapshot.round_coverage[0].unaccounted_start_numbers,vec![1,2]);
+        assert_eq!(result.snapshot.round_coverage[0].status_page,"unavailable");
+        assert_eq!(result.snapshot.incomplete_pairing_rounds,vec![1]);
+        assert!(result.snapshot.warnings.iter().any(|w|w.contains("retained timeout")));
+    }
+    #[test]
+    fn offline_round_and_fallback_scope_never_come_from_the_page_address() {
+        let mut pages=pages();
+        pages.detail=available("detail",&format!("<h2>Invented Offline Open</h2>{}",roster_html()));
+        pages.metadata_fallback_round=Some(2);
+        for heading in ["Final Ranking after Round 3","Final Ranking after Round unknown","<h3>Final Ranking after Round 3</h3>Final Ranking after Round 2"] {
+            pages.standings=BTreeMap::from([(2,available("standings/2",&format!("<h2>{heading}</h2>{}",roster_html())))]);
+            let result=assemble_tournament_snapshot_from_pages(&pages).unwrap();
+            assert_eq!(result.snapshot.total_rounds,0);assert_eq!(result.snapshot.completed_round,0);
+            assert_eq!(result.consumed_page_ids,vec!["detail","standings/2","status"]);
+        }
+        pages.standings=BTreeMap::from([(2,available("standings/2",&format!("<h2>Final Ranking after Round 2</h2>{}",roster_html())))]);
+        let result=assemble_tournament_snapshot_from_pages(&pages).unwrap();
+        assert_eq!(result.snapshot.total_rounds,2);assert_eq!(result.snapshot.completed_round,2);
+        assert_eq!(result.consumed_page_ids.iter().filter(|id|id.as_str()=="standings/2").count(),1);
+        for token in ["Final Ranking after 2 Rounds","Final Ranking after Round 2"] {assert_eq!(final_round_from_heading(token),Some(2));}
+        for token in ["Final Ranking after Round 0","Final Ranking after Round 2 later","Final Ranking after unknown Rounds"] {assert_eq!(final_round_from_heading(token),None);}
+    }
+    #[test]
+    fn offline_input_rejects_duplicate_ids_round_keys_and_malformed_contract() {
+        let pages=pages();let mut bad=pages.clone();bad.status=available("detail","");assert!(assemble_tournament_snapshot_from_pages(&bad).is_err());
+        bad=pages.clone();bad.fetched_at="later".into();assert!(assemble_tournament_snapshot_from_pages(&bad).is_err());
+        bad=pages.clone();bad.schema=2;assert!(assemble_tournament_snapshot_from_pages(&bad).is_err());
+        bad=pages.clone();bad.source_url="https://example.test/tnr42.aspx".into();assert!(assemble_tournament_snapshot_from_pages(&bad).is_err());
+        let encoded=serde_json::to_string(&pages).unwrap();
+        let duplicate=encoded.replacen("\"standings\":{", "\"standings\":{\"1\":{\"status\":\"unavailable\",\"pageId\":\"duplicate\",\"error\":\"failed\"},",1);
+        assert!(serde_json::from_str::<TournamentOfflinePages>(&duplicate).is_err());
+        let unknown=encoded.replacen("\"schema\":1","\"schema\":1,\"invented\":true",1);
+        assert!(serde_json::from_str::<TournamentOfflinePages>(&unknown).is_err());
+        assert!(serde_json::from_str::<RetainedTournamentPage>(r#"{"status":"available","pageId":"x","html":"","proof":true}"#).is_err());
+    }
+    #[test]
+    fn offline_unknown_round_section_resets_table_scope_without_misreading_robin_titles() {
+        let header=r#"<h2>Round Robin Championship</h2><table class="CRs1"><tr><th>White</th><th>Result</th><th>Black</th></tr>"#;
+        let row=r#"<tr><td><a href="?snr=1">Alice</a></td><td>1-0</td><td><a href="?snr=2">Bob</a></td></tr>"#;
+        let html=format!("{header}<tr><td colspan=\"3\">Round 1</td></tr>{row}<tr><td colspan=\"3\">Round unknown</td></tr>{row}<tr><td colspan=\"3\">Round 2</td></tr>{row}</table>");
+        let players=parse_player_table(roster_html());
+        for round in [1,2] {let result=parse_scoped_pairing_table_evidence(&html,round,&players);assert!(result.readable);assert_eq!(result.pairings.len(),1);assert_eq!(result.pairings[0].round,round);}
+        assert_eq!(pairing_round_heading("Round unknown"),Some(None));assert_eq!(pairing_round_heading("Round 1x"),Some(None));assert_eq!(pairing_round_heading("Round Robin Championship"),None);
+    }
+    #[test]
+    fn offline_empty_registration_preserves_target_behavior() {
+        let mut pages=pages();pages.detail=available("detail","<h2>Invented Empty Event</h2>");
+        let result=assemble_tournament_snapshot_from_pages(&pages);
+        let result=result.unwrap();assert!(result.snapshot.players.is_empty());
+        assert_eq!(result.snapshot.phase,"registration");assert!(result.snapshot.round_one_start.is_none());
     }
 
 }
