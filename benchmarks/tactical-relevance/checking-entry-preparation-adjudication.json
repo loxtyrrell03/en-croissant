@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "caseId": "GrHPv",
+  "cohort": "previously selected public development frontier; not an untouched holdout",
+  "status": "root-causal-certificate-unresolved; proposed admission rejected",
+  "productionChange": "none; all experimental additions removed",
+  "coreLfSha256": "6ec0824d8cd4d250c1e5d51ee81f2b16c6a1ff088564b5c580dd0682d88301b9",
+  "preservedUnrelatedDiff": { "checkingRayInsertions": 46, "checkingRayDeletions": 4 },
+  "fen": "5k2/5q1p/6p1/3pQp2/1prP4/7P/6P1/1R4K1 w - - 3 43",
+  "lineUci": ["b1a1", "c4c8", "a1a7", "f7a7", "e5h8", "f8f7", "h8h7", "f7f6", "h7a7"],
+  "sourceNomination": "interference; nomination only, not adjudicated root truth",
+  "rootHypothesis": "Ra1 opens a new rook checking entry Ra8+, potentially supporting a connected material preparation",
+  "rootDefences": ["f8g8", "f7g8", "f7e8", "f7g7", "f7e7", "f7d7", "f7c7", "f7b7", "f7a7", "f7f6", "f7e6", "c4c8", "c4c7", "c4c6", "c4c5", "c4d4", "c4c3", "c4c2", "c4c1", "h7h6", "g6g5", "f5f4", "b4b3", "h7h5"],
+  "localMaterialEvidence": {
+    "method": "memory-only access to existing mixed-checking kernel, initially active rook only; independently replayed all chosen defensive continuations in python-chess",
+    "colours": 2,
+    "legalRootRepliesPerColour": 24,
+    "kernelVisitsPerColour": 15838,
+    "unchangedNodeLimit": 16384,
+    "selectedAnswerNodesPerColour": 130,
+    "materialLeavesPerColour": 98,
+    "minimumLocalMaterialCp": 100,
+    "checks": ["legal moves", "optional same-square recapture minimax", "off-square piece capture liabilities", "immediate counterchecks", "terminal/draw and cycle checks"],
+    "limitation": "local material concession only; not a full-game evaluation, not a forced queen win, and not causal attribution to Ra1"
+  },
+  "rejectedAttribution": {
+    "initialGuard": "new checking entry exists and occurs in at least one selected witness",
+    "defect": "allied queen checking play can fund branches without the initiating rook participating",
+    "rookUnusedMaterialLeavesPerColour": 11,
+    "examples": ["...Qf6 Qxf6+", "...Qe8 Qh8+ Ke7 Qxh7+", "...Rc8 Qd6+ Kg8 Qxb4"],
+    "strongerGuard": "initiating slider must participate before every material or mating leaf",
+    "strongerGuardResult": "unproved Rc8 at 1735 visits in original colour; not budget exhaustion",
+    "decision": "reject production admission; do not loosen leaves, increase depth/budget, or assert unknown means positional",
+    "nextProofRequirement": "distinguish genuine concessions to the new rook entry from pre-existing independent queen gains, using positive bounded defensive evidence rather than failure to find another attack"
+  },
+  "conditionalMechanism": {
+    "startsAtPly": 5,
+    "moveUci": "e5h8",
+    "requiredPrefix": ["b1a1", "c4c8", "a1a7", "f7a7"],
+    "allCheckEvasions": ["f8e7", "f8f7"],
+    "geometry": "both king evasions block Qa7's seventh-rank protection of h7; Qxh7+ then skewers that king and Qa7",
+    "subsequentKingReplyCounts": { "Ke7": 6, "Kf7": 4 },
+    "everySubsequentReplyAllows": "h7a7",
+    "independentlyVerifiedColours": 2,
+    "limitation": "this conditional child geometry must not be reported as immediate root interference"
+  },
+  "boundedEngineCorroboration": {
+    "publicPositions": 52,
+    "selection": "root, all 24 replies after Ra1, all 27 replies after source continuation Ra1 Rc8 Ra7",
+    "maxDepth": 16,
+    "maxNodesPerPosition": 120000,
+    "maxSecondsPerPosition": 0.7,
+    "threads": 1,
+    "hashMiB": 32,
+    "role": "corroboration only, never proof or label authority"
+  },
+  "retainedContracts": {
+    "command": "node node_modules/vitest/vitest.mjs run --config benchmarks/tactical-relevance/checking-entry-preparation.vitest.ts --maxWorkers=2 --update=none --cache=false",
+    "passed": 32,
+    "failed": 0,
+    "skipped": 0,
+    "vitestSeconds": 2.49,
+    "scope": ["root-only and 2/3/9-ply prefixes", "both colours", "legal previous history", "no borrowed live arrows or labels", "no missed-tactic blame", "all conditional child king evasions", "six alternate rook placements", "draw claims at clocks 98 and 99"],
+    "interpretation": "stable conservative abstention and legal child evidence, not tactical accuracy or positional ground truth"
+  }
+}

@@ -1,0 +1,1580 @@
+{
+  "scope": "Fixed reached plies 8, 21, 40, 59, 80 and 99 in all four frozen rare-causal source games, before fresh context engine/classifier output. No move-quality, rating, result or evaluation filtering; unavailable plies are recorded, never replaced. The puzzle endpoints were already examined, so these are new development contexts, not independent games, a holdout or representative ordinary-game accuracy. Headers/comments/clocks omitted.",
+  "engineSha256": "fd3526051888b3322727d6fe734ae39e8072313c88a66009af48045d58f24b49",
+  "results": [
+    {
+      "id": "context:lwOOWkJP:ply8",
+      "rootSan": [
+        [
+          "Nge2"
+        ],
+        [
+          "a4",
+          "Bg7",
+          "d3",
+          "e6",
+          "Nf3",
+          "Nge7",
+          "h4",
+          "h6",
+          "Be3",
+          "Nd4",
+          "Nd2"
+        ],
+        [
+          "Nf3",
+          "Bg7",
+          "O-O",
+          "Nf6",
+          "d3",
+          "O-O",
+          "Nd5",
+          "b5",
+          "Nxf6+",
+          "Bxf6",
+          "c3",
+          "b4",
+          "e5",
+          "dxe5",
+          "Nd2",
+          "Bd7"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:lwOOWkJP:ply21",
+      "rootSan": [
+        [
+          "d5"
+        ],
+        [
+          "h6",
+          "c3"
+        ],
+        [
+          "Nd7",
+          "c3",
+          "Re8",
+          "a4",
+          "Rb8",
+          "Kh1",
+          "b5",
+          "e5",
+          "Qc7",
+          "axb5",
+          "Rxb5",
+          "exd6",
+          "Qxd6"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    },
+    {
+      "id": "context:lwOOWkJP:ply40",
+      "rootSan": [
+        [
+          "h4",
+          "Nc4",
+          "h5",
+          "Rb8",
+          "Bf3",
+          "Qa2",
+          "hxg6",
+          "hxg6",
+          "f5",
+          "gxf5",
+          "Qe1",
+          "Ne7",
+          "Bh5",
+          "Ng6",
+          "Nf4",
+          "Nxf4",
+          "Bxf4",
+          "Rb3",
+          "g6",
+          "fxg6",
+          "Bxg6"
+        ],
+        [
+          "Bf3",
+          "Nc4",
+          "h4",
+          "Qa2",
+          "h5",
+          "Rb8",
+          "f5",
+          "gxf5",
+          "Kh1",
+          "Ne7",
+          "Rg1",
+          "Qb3",
+          "Nf4",
+          "Qc3",
+          "Be2",
+          "Rb1",
+          "Bd3",
+          "Ra1"
+        ],
+        [
+          "Rf3",
+          "Nc4",
+          "h4",
+          "Rb8",
+          "h5",
+          "Rb1",
+          "Rc3",
+          "Qa6",
+          "Kh2",
+          "Nb4",
+          "f5",
+          "gxf5",
+          "Rg3",
+          "Na2",
+          "g6",
+          "Nxc1",
+          "gxf7+",
+          "Kxf7"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:lwOOWkJP:ply59",
+      "rootSan": [
+        [
+          "Qd4+",
+          "Kh1",
+          "Qe3",
+          "Rf3",
+          "Qc1+",
+          "Rf1",
+          "Qe3"
+        ],
+        [
+          "Qa3",
+          "Qh6",
+          "Qf8",
+          "Qg5+",
+          "Kh8",
+          "Ra1",
+          "h6",
+          "Qg3",
+          "N6a5",
+          "Bf3",
+          "Qg8",
+          "Qxg8+",
+          "Kxg8",
+          "Bh5",
+          "d4",
+          "Kf2",
+          "d3",
+          "Re1"
+        ],
+        [
+          "Qa7+",
+          "Kh2",
+          "Qe3",
+          "Rf3",
+          "Qxe5+",
+          "Rg3+",
+          "Kf8",
+          "Qg5",
+          "Ne7",
+          "fxe7+",
+          "Ke8",
+          "Qh4",
+          "Kd7",
+          "Qxh7",
+          "Kxe7",
+          "Qh4+",
+          "Kd7",
+          "Qg5"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    },
+    {
+      "id": "context:x2Oo1BCm:ply8",
+      "rootSan": [
+        [
+          "f4",
+          "c5",
+          "c3",
+          "Nc6",
+          "Ndf3",
+          "Qb6",
+          "h4",
+          "Be7",
+          "Be2",
+          "cxd4",
+          "cxd4",
+          "O-O",
+          "a3",
+          "a5",
+          "Bd3",
+          "f5",
+          "Ne2",
+          "a4",
+          "Bc2",
+          "Na5",
+          "Rb1",
+          "Nb3",
+          "Bxb3",
+          "axb3"
+        ],
+        [
+          "c3",
+          "c5",
+          "f4",
+          "Nc6",
+          "Ndf3",
+          "Qb6",
+          "h4",
+          "Be7",
+          "h5",
+          "f6",
+          "Bd3",
+          "cxd4",
+          "cxd4",
+          "O-O",
+          "Bc2",
+          "fxe5",
+          "fxe5",
+          "Ncxe5",
+          "dxe5",
+          "Nxe5",
+          "h6"
+        ],
+        [
+          "Bd3"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    },
+    {
+      "id": "context:x2Oo1BCm:ply21",
+      "rootSan": [
+        [
+          "Qa5+",
+          "Bd2",
+          "Qxa3",
+          "Nc3",
+          "Bb4",
+          "Qc2",
+          "Bxc3",
+          "Bxc3",
+          "Nb6",
+          "O-O",
+          "Na4",
+          "Bd2",
+          "Nb2",
+          "Be2",
+          "Nc4",
+          "Bxc4",
+          "dxc4",
+          "Qxc4",
+          "O-O",
+          "f5",
+          "Ra4",
+          "Qb3",
+          "Rd8",
+          "f6",
+          "Nxd4",
+          "Qb6",
+          "Rd5",
+          "Nxd4",
+          "Raxd4",
+          "Rac1",
+          "Bd7",
+          "Rc3"
+        ],
+        [
+          "Nb6",
+          "O-O"
+        ],
+        [
+          "Bxa3",
+          "O-O",
+          "Nb6",
+          "Rb1",
+          "Be7",
+          "Kh1",
+          "Nb4",
+          "Bb5+",
+          "Nc6",
+          "Ng3",
+          "O-O",
+          "Nh5",
+          "Nc4",
+          "a4",
+          "g6",
+          "f5",
+          "exf5"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:x2Oo1BCm:ply40",
+      "rootSan": [
+        [
+          "Bxc4",
+          "Nxc4",
+          "Qf2",
+          "b6",
+          "h4",
+          "Ba6",
+          "Rfe1",
+          "Na5",
+          "Rxb6",
+          "Bd3",
+          "h5",
+          "Rfc8",
+          "Nxd5",
+          "exd5",
+          "Rf6",
+          "Rc2"
+        ],
+        [
+          "Qc1"
+        ],
+        [
+          "Qf2",
+          "Na3",
+          "Rb2",
+          "Nxb5",
+          "Rxb5",
+          "Qa3",
+          "Nd1",
+          "b6",
+          "Rxb6",
+          "Nc4",
+          "Rb1"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:x2Oo1BCm:ply59",
+      "rootSan": [
+        [
+          "Kg7",
+          "h3",
+          "h6",
+          "Kh2",
+          "Qb4",
+          "Qa8",
+          "Rxd4",
+          "f5",
+          "gxf5",
+          "Rf3",
+          "f4",
+          "Qd8",
+          "Qf8",
+          "Qf6+",
+          "Kg8",
+          "Rxf4",
+          "Rxf4",
+          "Qxf4",
+          "Qg7",
+          "h4",
+          "Qg6",
+          "b6",
+          "Kg7",
+          "g4",
+          "Qc2+",
+          "Kg3"
+        ],
+        [
+          "h6",
+          "h3",
+          "Kg7",
+          "Kh2",
+          "Qc7",
+          "Rf3",
+          "Rb4",
+          "Qa3",
+          "Rxb5",
+          "Rc3",
+          "Qd8",
+          "Kg3",
+          "Qa5",
+          "Qxa5",
+          "Rxa5",
+          "Rb3",
+          "b5",
+          "Kg4",
+          "Ra4",
+          "Rxb5",
+          "Rxd4",
+          "Rb7"
+        ],
+        [
+          "h5",
+          "h3",
+          "Kg7",
+          "Kh1",
+          "b6",
+          "Qb2",
+          "Qb4",
+          "Qf2",
+          "Rxd4",
+          "Qh4",
+          "Qxb5",
+          "Qf6+",
+          "Kg8",
+          "Ra1",
+          "Ra4"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:x2Oo1BCm:ply80",
+      "rootSan": [
+        [
+          "Qxe6+",
+          "Qf7",
+          "Qe5",
+          "Qc7",
+          "Qxc7",
+          "Rxc7",
+          "Rxb4",
+          "Rc4",
+          "Rb8+",
+          "Kg7",
+          "Rb7+",
+          "Kh6",
+          "g3",
+          "Rxd4",
+          "Kg2",
+          "Rd2+",
+          "Kf3",
+          "Rd3+",
+          "Kf2",
+          "d4",
+          "Rd7",
+          "Rd2+",
+          "Kf3",
+          "g5",
+          "Rd6+",
+          "Kg7",
+          "Rd7+",
+          "Kg6",
+          "Rd6+",
+          "Kf7",
+          "Rd7+",
+          "Ke6",
+          "Rxh7"
+        ],
+        [
+          "Qe5",
+          "Qc8",
+          "Ra1",
+          "Rc7",
+          "Ra8",
+          "Qxa8",
+          "Qxc7",
+          "Qf8",
+          "Kh2",
+          "g5",
+          "Qd7",
+          "Qf6",
+          "Kh1",
+          "g4"
+        ],
+        [
+          "Qh4",
+          "Kg7",
+          "Ra1",
+          "Rc7",
+          "Qf4",
+          "Rb7",
+          "Ra6",
+          "Qf6",
+          "Rb6",
+          "Rxb6",
+          "Qc7+",
+          "Kh6",
+          "Qxb6",
+          "b3",
+          "Kh2",
+          "f4",
+          "Qxb3",
+          "Qxd4",
+          "Qa3",
+          "g5"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    },
+    {
+      "id": "context:ugpVWplb:ply8",
+      "rootSan": [
+        [
+          "Nf3",
+          "Bd6",
+          "Bb5",
+          "Nd7",
+          "O-O",
+          "e4",
+          "Bxc6",
+          "bxc6",
+          "Nd4",
+          "Qf6",
+          "Nc3",
+          "Ne5",
+          "f4",
+          "exf3",
+          "Nxf3",
+          "O-O",
+          "Nxe5"
+        ],
+        [
+          "Bb5",
+          "Bd6",
+          "Nf3",
+          "Nd7",
+          "O-O",
+          "O-O",
+          "c4",
+          "e4",
+          "Ne1",
+          "a6",
+          "Bxc6",
+          "bxc6",
+          "Nc3",
+          "Re8",
+          "f3",
+          "Qh4"
+        ],
+        [
+          "a3",
+          "Bd6"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    },
+    {
+      "id": "context:ugpVWplb:ply21",
+      "rootSan": [
+        [
+          "Rb6",
+          "gxf6"
+        ],
+        [
+          "Nd7",
+          "Bxd5",
+          "Be5",
+          "Nc3",
+          "Qxg5",
+          "Bxe4",
+          "Nc5",
+          "h4",
+          "Qh6",
+          "Bd5",
+          "c6",
+          "Bg2",
+          "Qg6",
+          "Bf1",
+          "Rfd8",
+          "Bxa6",
+          "Nxa6",
+          "d3",
+          "Nb4",
+          "h5",
+          "Qg2"
+        ],
+        [
+          "Ne8",
+          "Bxd5",
+          "Be5",
+          "Nc3",
+          "Qxg5",
+          "Bxe4",
+          "Nf6",
+          "h4",
+          "Qh6",
+          "Bf3",
+          "c5",
+          "d3",
+          "Rbe8",
+          "Qe2"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:ugpVWplb:ply40",
+      "rootSan": [
+        [
+          "exd4",
+          "f5",
+          "Kd1",
+          "fxe4",
+          "Qe3",
+          "Nf6",
+          "c4",
+          "Bc8",
+          "Kc2",
+          "Bf5",
+          "Kb2",
+          "Qc7",
+          "Rg5",
+          "h6",
+          "Rgg1",
+          "Kh7",
+          "Rae1",
+          "a5",
+          "d5",
+          "a4",
+          "Qd4",
+          "axb3",
+          "Qxf6",
+          "bxa2+",
+          "Kxa2"
+        ],
+        [
+          "Rxg6+",
+          "hxg6",
+          "exd4",
+          "Bb7",
+          "d5",
+          "Qa3",
+          "Nc4",
+          "Qe7",
+          "O-O-O",
+          "Qxe4",
+          "Qxe4",
+          "Rxe4",
+          "d6",
+          "Rbe8"
+        ],
+        [
+          "b4",
+          "Qxb4",
+          "exd4",
+          "Qxd4",
+          "c3",
+          "Qd6",
+          "Qe3",
+          "Nc5",
+          "f3",
+          "f5",
+          "Qd4",
+          "Nd3+",
+          "Kd1",
+          "Qxd4",
+          "cxd4",
+          "fxe4"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "timeline": [
+            {
+              "id": "trappedPiece",
+              "label": "Trapped Bishop",
+              "source": "available",
+              "confidence": "high",
+              "ply": 2,
+              "moveUci": "f7f5",
+              "value": 100,
+              "evidence": "f5 attacks the bishop on e4. It has no safe move, including captures. A counterattack also concedes material: Rxg6+ is answered by hxg6; Qxf5 is answered by Qxf5. Defending it with b4 instead permits Rxb4. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece.",
+              "relevance": "secondary",
+              "actor": "black"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Bishop",
+            "source": "available",
+            "confidence": "high",
+            "ply": 2,
+            "moveUci": "f7f5",
+            "value": 100,
+            "evidence": "f5 attacks the bishop on e4. It has no safe move, including captures. A counterattack also concedes material: Rxg6+ is answered by hxg6; Qxf5 is answered by Qxf5. Defending it with b4 instead permits Rxb4. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "exf3+ wins the loose queen on f3.",
+            "source": "available",
+            "ply": 8,
+            "moveUci": "e4f3",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Bishop",
+            "source": "allowed",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f5",
+            "value": 100,
+            "evidence": "f5 attacks the bishop on e4. It has no safe move, including captures. A counterattack also concedes material: Rxg6+ is answered by hxg6; Qxf5 is answered by Qxf5. Defending it with b4 instead permits Rxb4. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece.",
+            "relevance": "primary",
+            "comparison": "persists",
+            "comparisonEvidence": "exd4 is also the analysed best move. The same position and tactical danger remain after either choice."
+          }
+        ],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Bishop",
+            "source": "allowed",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f5",
+            "value": 100,
+            "evidence": "f5 attacks the bishop on e4. It has no safe move, including captures. A counterattack also concedes material: Rxg6+ is answered by hxg6; Qxf5 is answered by Qxf5. Defending it with b4 instead permits Rxb4. Every legal defence loses material through the trapped piece, its defender or the counterattacking piece.",
+            "relevance": "primary",
+            "comparison": "persists",
+            "comparisonEvidence": "exd4 is also the analysed best move. The same position and tactical danger remain after either choice.",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "confidence": "high",
+            "evidence": "fxe4 takes the bishop on e4, but concedes material elsewhere. The checked exchanges gain at least 2.3 pawns.",
+            "source": "allowed",
+            "ply": 3,
+            "moveUci": "f5e4",
+            "value": 230,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ]
+      }
+    },
+    {
+      "id": "context:I1scDAqN:ply8",
+      "rootSan": [
+        [
+          "Bxd3",
+          "Nc6"
+        ],
+        [
+          "Qxd3",
+          "Qxd3",
+          "Bxd3",
+          "Nc6",
+          "Na3",
+          "a6",
+          "O-O",
+          "h6",
+          "Ne4",
+          "Bd7",
+          "Nc5",
+          "O-O-O",
+          "Nxd7",
+          "Rxd7",
+          "Nc4",
+          "b5"
+        ],
+        [
+          "Nc3",
+          "h6",
+          "Nf3",
+          "dxc2",
+          "Qxc2",
+          "e6",
+          "Bd3",
+          "Nc6",
+          "a3",
+          "Bd6",
+          "Be3",
+          "Bd7",
+          "O-O",
+          "Qe7"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    },
+    {
+      "id": "context:I1scDAqN:ply21",
+      "rootSan": [
+        [
+          "Bxf6",
+          "Qe4",
+          "g6",
+          "Bxh6",
+          "Bg7",
+          "Qh4",
+          "f6",
+          "Re1",
+          "Qf7",
+          "Re3",
+          "Ne5",
+          "Bxg7",
+          "Qxg7",
+          "Rae1",
+          "Bd7",
+          "Ne4",
+          "Rab8"
+        ],
+        [
+          "gxf6",
+          "Qg3+",
+          "Kh8",
+          "Qh3",
+          "Kg8",
+          "Bxh6",
+          "Ne5",
+          "Bxf8",
+          "f5",
+          "Bxe7",
+          "Qxe7",
+          "Be2",
+          "Ng6",
+          "Kh1",
+          "f4",
+          "Bd3",
+          "e5",
+          "Nd5",
+          "Bxh3",
+          "Nxe7+",
+          "Nxe7",
+          "gxh3"
+        ],
+        [
+          "Kh8"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [
+          {
+            "id": "matingThreat",
+            "label": "Threatens Mate",
+            "source": "allowed",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f3e4",
+            "value": 0,
+            "relevance": "primary",
+            "evidence": "Qe4 threatens Qh7#. Black can stop immediate mate with g6 (the displayed reply). This is a concrete threat, not a claim of forced mate or material gain.",
+            "comparison": "persists",
+            "comparisonEvidence": "Bxf6 is also the analysed best move. The same position and tactical danger remain after either choice."
+          }
+        ],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [
+          {
+            "id": "matingThreat",
+            "label": "Threatens Mate",
+            "source": "allowed",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f3e4",
+            "value": 0,
+            "relevance": "primary",
+            "evidence": "Qe4 threatens Qh7#. Black can stop immediate mate with g6 (the displayed reply). This is a concrete threat, not a claim of forced mate or material gain.",
+            "comparison": "persists",
+            "comparisonEvidence": "Bxf6 is also the analysed best move. The same position and tactical danger remain after either choice.",
+            "actor": "white"
+          }
+        ]
+      }
+    },
+    {
+      "id": "context:I1scDAqN:ply40",
+      "rootSan": [
+        [
+          "Nc5",
+          "Rb8",
+          "a4",
+          "Rb6",
+          "b4",
+          "g5",
+          "axb5",
+          "axb5",
+          "Bf1",
+          "Qe7",
+          "h3",
+          "Nc6",
+          "c3",
+          "e5",
+          "Bd3"
+        ],
+        [
+          "a4",
+          "Rb8",
+          "axb5",
+          "axb5",
+          "Nc5",
+          "Rb6",
+          "b4",
+          "f5",
+          "c3",
+          "g5",
+          "Ra7",
+          "Nc6",
+          "Ra8"
+        ],
+        [
+          "b3",
+          "Rb8",
+          "a4",
+          "g5",
+          "Nc5",
+          "f5",
+          "axb5",
+          "f4",
+          "Qe4",
+          "f3",
+          "gxf3",
+          "Rxb5",
+          "Bxb5",
+          "Nxf3+",
+          "Kf1",
+          "axb5"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:I1scDAqN:ply59",
+      "rootSan": [
+        [
+          "exf4",
+          "Qf2",
+          "Re5",
+          "Bf1",
+          "Qe7",
+          "Rd2",
+          "Re1",
+          "h4",
+          "Rb1",
+          "Qxf4",
+          "Rxb2",
+          "h5",
+          "Rb1",
+          "hxg6",
+          "Bxc2",
+          "Rd6",
+          "Bxg6",
+          "Qg4",
+          "Qe3+",
+          "Kh2",
+          "Qe5+",
+          "Kg1",
+          "Kg7"
+        ],
+        [
+          "Rxc2",
+          "Nc5",
+          "Qf7",
+          "Rd8+",
+          "Kg7",
+          "Qg3",
+          "Rc1+",
+          "Kf2",
+          "Qxa2",
+          "Qh4",
+          "Qxb2+",
+          "Be2",
+          "Re8",
+          "Rxe8"
+        ],
+        [
+          "Qf8",
+          "Rd2"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 12,
+            "moveUci": "d8d7",
+            "value": 400,
+            "evidence": "Rd7+ skewers the king on f7 and the queen on g7. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": [],
+        "missedTimeline": []
+      }
+    },
+    {
+      "id": "context:I1scDAqN:ply80",
+      "rootSan": [
+        [
+          "Qf3",
+          "g5",
+          "Qh3+",
+          "Kg7",
+          "Nb4",
+          "Re3",
+          "Qh5",
+          "Ree1",
+          "Qg6+",
+          "Kf8",
+          "Qxf6+",
+          "Ke8",
+          "Qh8+",
+          "Kd7",
+          "Kg2"
+        ],
+        [
+          "Qg2",
+          "g5",
+          "Qh3+",
+          "Kg7",
+          "Nb4",
+          "Re3",
+          "Qh5",
+          "Ree1",
+          "Qg6+",
+          "Kf8",
+          "Qxf6+",
+          "Ke8",
+          "Qh8+",
+          "Kd7",
+          "Qh3",
+          "g4",
+          "Qd3+",
+          "Ke7",
+          "Nc2",
+          "Red1",
+          "Qe4+",
+          "Kf6"
+        ],
+        [
+          "Qb5",
+          "g5",
+          "Nc5",
+          "Red1",
+          "Qe2",
+          "Re1",
+          "Qa6",
+          "Kh5",
+          "Nb3",
+          "Rb1",
+          "Kf2",
+          "Re3",
+          "Nd2",
+          "Rxb2"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [
+            {
+              "id": "matingThreat",
+              "label": "Threatens Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "b7g2",
+              "value": 0,
+              "relevance": "primary",
+              "evidence": "Qg2 threatens Qxg6#. Black can stop immediate mate with g5 (the displayed reply). This is a concrete threat, not a claim of forced mate or material gain."
+            }
+          ],
+          "timeline": [
+            {
+              "id": "matingThreat",
+              "label": "Threatens Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "b7g2",
+              "value": 0,
+              "relevance": "primary",
+              "evidence": "Qg2 threatens Qxg6#. Black can stop immediate mate with g5 (the displayed reply). This is a concrete threat, not a claim of forced mate or material gain.",
+              "actor": "white"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    },
+    {
+      "id": "context:I1scDAqN:ply99",
+      "rootSan": [
+        [
+          "Kc4",
+          "h4",
+          "f4",
+          "h5",
+          "Kb4",
+          "Kxf4",
+          "Kxa4",
+          "Nd4",
+          "Kb4",
+          "Kf5",
+          "Kc4",
+          "h6",
+          "Kxd4",
+          "Kxf6",
+          "Kd3",
+          "h7",
+          "Kc2",
+          "Kg6"
+        ],
+        [
+          "Kc5",
+          "h4",
+          "Kb4",
+          "Kf4",
+          "Kc4",
+          "a5",
+          "Kb5",
+          "Kxf5",
+          "Kxa5",
+          "Nd4",
+          "Kb6",
+          "h5",
+          "Kc5",
+          "Kxf6",
+          "Kxd4",
+          "h6",
+          "Ke3"
+        ],
+        [
+          "Ke5",
+          "h4",
+          "Kd5",
+          "Kf4",
+          "Kc4",
+          "Kxf5",
+          "Kd3",
+          "Nf4+",
+          "Kc4",
+          "h5",
+          "Kb4",
+          "Ne2",
+          "Kxa4",
+          "Nd4",
+          "Ka5",
+          "Kxf6",
+          "Kb4",
+          "h6",
+          "Kc5"
+        ]
+      ],
+      "position": [
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ],
+      "source": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-169"
+      },
+      "review": {
+        "allowedMotifs": [],
+        "missedMotifs": [],
+        "motifClassifierVersion": "site-55.adapter-169",
+        "allowedTimeline": []
+      }
+    }
+  ]
+}

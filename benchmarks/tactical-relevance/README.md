@@ -1,6 +1,6 @@
 # Tactical relevance judgement, 2026-09-08
 
-The latest source milestone is [adapter 169: defensive counterthreats, outcome noise and saved-label provenance](causal-outcome-review.md), with versioned verification and explicit remaining gaps. The [private-course audit](private-course-review.md) retains earlier corpus and runtime checks; neither source tests nor historical delivery receipts establish a newer installed runtime. The entries below preserve earlier milestones, not current test totals or a general accuracy score.
+The latest source milestone is [adapter 170: score parity and stricter evidence boundaries](accuracy-boundaries-review.md), following [adapter 169: defensive counterthreats, outcome noise and saved-label provenance](causal-outcome-review.md). Both retain versioned verification and explicit remaining gaps. The [private-course audit](private-course-review.md) retains earlier corpus and runtime checks; neither source tests nor historical delivery receipts establish a newer installed runtime. The entries below preserve earlier milestones, not current test totals or a general accuracy score.
 
 The [rare-theme real-game review](rare-theme-review.md) separately records human judgements, contrary controls and open interference, zugzwang, deflection, trapped-piece and clearance cases from a fixed 20-position Lichess sample.
 

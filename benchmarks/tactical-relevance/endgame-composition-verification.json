@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "scope": "Benchmark-only feasibility; not imported into the live classifier and no runtime accuracy credit",
+  "sourceHead": "81fdd2fbcccb008839338767d64225ed7633b66d",
+  "verifiedOn": "2026-10-02",
+  "runtimeStatus": "DVs4F remains unsupported at the eight-piece root; production seven-piece provider limit unchanged",
+  "inputs": {
+    "rootFen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 1 50",
+    "moveUci": "a6b6",
+    "exactRecords": 13,
+    "recordSource": "dvs4f-zugzwang-evidence.json",
+    "recordSha256": "132b20dcf580ea04190acd6100b2b608c74c80187524b355c031a0f7b9c23842",
+    "newProviderCalls": 0,
+    "storedStrategyConsumed": false,
+    "principalVariationConsumed": false
+  },
+  "verification": {
+    "tests": 52,
+    "passed": 52,
+    "failed": 0,
+    "independentRetainedProof": {
+      "tests": 9,
+      "passed": 9
+    },
+    "focusedTypes": "passed",
+    "focusedLint": {
+      "warnings": 0,
+      "errors": 0
+    }
+  },
+  "limits": {
+    "generationNodes": 16384,
+    "generationOperations": 200000,
+    "winDepth": 4,
+    "certificateNodes": 1024,
+    "verificationOperations": 8192,
+    "recordCount": 32,
+    "edgesPerCertificateNode": 32,
+    "fenCharacters": 200
+  },
+  "measured": [
+    {
+      "case": "original",
+      "elapsedMs": 1608.5081999999998,
+      "certificate": {
+        "actualNodes": 12,
+        "passNodes": 248,
+        "bytes": 28175
+      },
+      "stats": {
+        "operations": 180795,
+        "positions": 10431,
+        "passEdges": 61665,
+        "retainedActual": 12,
+        "retainedPass": 248,
+        "records": 13
+      }
+    },
+    {
+      "case": "independent-verification",
+      "elapsedMs": 9.12440000000015,
+      "valid": true,
+      "operations": 2081,
+      "actualNodes": 12,
+      "passNodes": 248
+    },
+    {
+      "case": "clock:97:false",
+      "elapsedMs": 1685.6066999999998,
+      "stats": {
+        "operations": 180795,
+        "positions": 10431,
+        "passEdges": 61665,
+        "retainedActual": 12,
+        "retainedPass": 248,
+        "records": 13
+      },
+      "proved": true
+    },
+    {
+      "case": "clock:98:false",
+      "elapsedMs": 0.9555000000000291,
+      "stats": {
+        "operations": 98,
+        "positions": 1,
+        "passEdges": 0,
+        "retainedActual": 0,
+        "retainedPass": 0,
+        "records": 13
+      },
+      "reason": "No bounded actual win",
+      "proved": false
+    },
+    {
+      "case": "clock:97:true",
+      "elapsedMs": 1759.0663999999997,
+      "stats": {
+        "operations": 180795,
+        "positions": 10431,
+        "passEdges": 61665,
+        "retainedActual": 12,
+        "retainedPass": 248,
+        "records": 13
+      },
+      "proved": true
+    },
+    {
+      "case": "clock:98:true",
+      "elapsedMs": 0.907799999999952,
+      "stats": {
+        "operations": 98,
+        "positions": 1,
+        "passEdges": 0,
+        "retainedActual": 0,
+        "retainedPass": 0,
+        "records": 13
+      },
+      "reason": "No bounded actual win",
+      "proved": false
+    },
+    {
+      "case": "a6a7",
+      "stats": {
+        "operations": 102,
+        "positions": 2,
+        "passEdges": 0,
+        "retainedActual": 0,
+        "retainedPass": 0,
+        "records": 13
+      },
+      "reason": "No bounded actual win",
+      "proved": false
+    },
+    {
+      "case": "a6b7",
+      "stats": {
+        "operations": 102,
+        "positions": 2,
+        "passEdges": 0,
+        "retainedActual": 0,
+        "retainedPass": 0,
+        "records": 13
+      },
+      "reason": "No bounded actual win",
+      "proved": false
+    },
+    {
+      "case": "kpk:false",
+      "stats": {
+        "operations": 4,
+        "positions": 2,
+        "passEdges": 0,
+        "retainedActual": 1,
+        "retainedPass": 1,
+        "records": 0
+      },
+      "proved": true
+    },
+    {
+      "case": "kpk:true",
+      "stats": {
+        "operations": 4,
+        "positions": 2,
+        "passEdges": 0,
+        "retainedActual": 1,
+        "retainedPass": 1,
+        "records": 0
+      },
+      "proved": true
+    },
+    {
+      "case": "both-turns-win",
+      "stats": {
+        "operations": 3,
+        "positions": 1,
+        "passEdges": 0,
+        "retainedActual": 0,
+        "retainedPass": 0,
+        "records": 0
+      },
+      "reason": "Exact pass position is losing for the defender",
+      "proved": false
+    }
+  ],
+  "measurementLimits": [
+    "Single local run, not p95 or a synchronous-runtime latency guarantee",
+    "Charged operations are bounded algorithm work units, not every CPU instruction; dependency parsing and fixed KPK initialization have separate cost",
+    "Sufficient exact leaves were supplied from prior independent adjudication; automatic leaf acquisition is not implemented"
+  ],
+  "trustLimits": [
+    "Separate provider registry is trusted transport evidence, not cryptographically authenticated by this checker",
+    "FEN lacks repetition history; live proof credit requires a history-aware gate/binding",
+    "Pass is an explicit counterfactual, never a legal move",
+    "Budget exhaustion or missing exact leaves means unknown, not positional or disproved zugzwang"
+  ],
+  "files": [
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-prototype.ts",
+      "sha256": "19153797f0ce29ba7d396d8886aace35a06237caecb7f2bde53aefa492dbbfc3"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-prototype.test.ts",
+      "sha256": "8682873436aa2a0c8d7e01833cff3a3c59997672fc785e4c574f2c961a77bb92"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition.vitest.ts",
+      "sha256": "19999412d5ff61ffb985c5b7606e537a974f357353c3afba8e9499bdc5de500d"
+    }
+  ],
+  "passingContracts": [
+    "general generator recovers the proved root without supplied strategy or principal variation",
+    "clock and colour, clock=97, reflected=false",
+    "clock and colour, clock=98, reflected=false",
+    "clock and colour, clock=97, reflected=true",
+    "clock and colour, clock=98, reflected=true",
+    "drawing alternative a6a7 cannot inherit the winning certificate",
+    "drawing alternative a6b7 cannot inherit the winning certificate",
+    "tiny search budgets fail closed",
+    "root identity and low verification budgets cannot borrow a valid certificate",
+    "certificate rejects missing actual opponent reply",
+    "certificate rejects duplicate actual opponent reply",
+    "certificate rejects illegal actual move",
+    "certificate rejects winning self cycle",
+    "certificate rejects missing pass opponent reply",
+    "certificate rejects missing defender strategy choice",
+    "certificate rejects forged terminal pass root",
+    "certificate rejects turn changed inside strategy",
+    "certificate rejects clock changed inside strategy",
+    "certificate rejects wrong exact leaf clock",
+    "certificate rejects nonexistent source record",
+    "certificate rejects wrong colour transformation",
+    "certificate rejects unsupported local leaf",
+    "certificate rejects leaf given outgoing credit",
+    "certificate rejects unreachable spare proof",
+    "certificate rejects oversized graph",
+    "certificate rejects oversized reply array",
+    "certificate rejects out of range edge",
+    "certificate rejects null edge",
+    "certificate rejects malformed move",
+    "certificate rejects missing edge target",
+    "certificate rejects unreachable winning node",
+    "certificate rejects noninteger edge",
+    "certificate rejects invented promotion",
+    "exact oracle envelope rejects missing record",
+    "exact oracle envelope rejects duplicate envelope",
+    "exact oracle envelope rejects wrong category",
+    "exact oracle envelope rejects missing legal reply",
+    "exact oracle envelope rejects false terminal flag",
+    "exact oracle envelope rejects wrong clock identity",
+    "exact oracle envelope rejects oversized record envelope",
+    "closed pass cycles are nonvacuous and do not make the finite win cyclic",
+    "caller limits cannot increase either fixed bound",
+    "same general certificate uses an existing local KPK leaf without provider data, reflected=false",
+    "same general certificate uses an existing local KPK leaf without provider data, reflected=true",
+    "a winning KPK ending in both turns is not zugzwang",
+    "a correctly rebound clock identity still cannot suppress the opponent draw claim",
+    "a quiet pass edge cannot borrow a kpk leaf at clock 0",
+    "a quiet pass edge cannot borrow a kpk leaf at clock 1",
+    "a quiet pass edge cannot borrow a tablebase leaf at clock 0",
+    "a quiet pass edge cannot borrow a tablebase leaf at clock 1",
+    "exact terminal oracle facts retain checkmate priority over a high draw clock",
+    "an already automatic draw cannot be revived by a resetting pawn move"
+  ]
+}

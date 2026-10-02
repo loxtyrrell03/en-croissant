@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "purpose": "Phone-to-desktop evaluation perspective and identity-bounded legacy export repair; transport contracts, not chess accuracy.",
+  "baseCommit": "81fdd2fb",
+  "scope": "En Croissant source and generated review-service tests only",
+  "pairedObservableContracts": {
+    "frozenTestSha256": "28f3121f2fe968b18555630299e01d78b3d90b6ac497c7ba10cebccf57d1ef05",
+    "fen": "r2qk3/pbp1p3/np6/3p4/1P6/2Q1P3/2P5/2KR1B2 w - - 0 1",
+    "bestLine": ["f1a6", "b7a6", "c3c6", "e8f7", "b4b5", "a6b7", "c6b7"],
+    "playedMove": "c1d2",
+    "refutationLine": ["b7c8"],
+    "variants": "Original and rank-reflected/colour-swapped boards, each with controlled player scores +300 to 0 or -300 to -900. All fixture moves replay legally. Scores are not independent chess-quality judgments.",
+    "before": {
+      "motifVersion": "site-55.adapter-169",
+      "passed": 2, "failed": 2,
+      "reportSha256": "811d198e11cefb39f463d692173502b256254434baa04af0e6489a0038363190",
+      "outputSha256": "1640905ece50b293a58eafc6c2ef7a2f78b83509c7ea1a15d1a033e7a2972b3c",
+      "sharedReviewSha256": "63d36762cb65b59735ff44cadc86c90d11c888e6ae4e4443cccab80f704dfad8"
+    },
+    "after": {
+      "motifVersion": "site-55.adapter-170",
+      "passed": 4, "failed": 0,
+      "reportSha256": "e5b3160b30c49ffbbd706ce907809b0bda876501bdb4938375cb29b4829f655f",
+      "outputSha256": "68f9b7dce135c2db8f2d52b72d77137207620f9ff1e64f03890a91b8bbfb4f14"
+    },
+    "finding": "The unchanged observable test calls the real phone constructor, shared exporter, fresh motif classifier and motif migration. Before repair, Black's positive conditional attraction disappears and Black's losing conditional attraction incorrectly appears after export/refresh. White is unchanged. The baseline does not import the newly added provenance helper. Version changes are explicit; this is not an identical-core or staged-core receipt."
+  },
+  "broaderChecks": {
+    "sourceTests": { "newScoreContractsPassed": 14, "permanentConsumerContrastsPassed": 11, "existingPersistentPawnPassed": 2, "failed": 0, "reportSha256": "cb5e2757ec1c6a1a57d29b2a46deac2536ae9eaebc191ae45d2251b566940689" },
+    "generatedService": { "passed": 8, "failed": 0, "moduleSha256": "3b829270d7bc9170f1b49c9d5a774ee14322d7304acbe4ef66fb69fd194a84bd" },
+    "independentConsumerContrasts": { "passed": 10, "failed": 0, "intendedContractsSha256": "3d830850f232bf850cc6d193dda6f08c6bb0f27dbc5ab5b3617f7f989412290f", "reportSha256": "23115e67e787dbfa5b44669bc9c61071115669c133865551ce2f131f314c8f12" },
+    "types": "Whole-project tsgo --noEmit --incremental false passed",
+    "lint": "Five scoped source/test files: zero errors, zero warnings"
+  },
+  "scoreContract": {
+    "phoneBeforeAfter": "Player-relative winning-chance percentages",
+    "savedCpBeforeAfter": "White-relative centipawns, explicitly cpPerspective:white on new exports",
+    "savedCpLoss": "Player-relative loss; its sign/convention is unchanged"
+  },
+  "legacyRepairRequirements": [
+    "An authoritative in-memory PhoneReviewCard must produce the fresh position; this is not a sign-only or global migration.",
+    "Exact pc:reviewKey, FEN, sideToMove/playerColor, playedMoveUci, bestMoveUci and answerUci must match.",
+    "Already marked White-relative records are preserved, including later desktop reanalysis.",
+    "An unmarked already-correct tuple can receive the marker without invalidating judgments.",
+    "A changed tuple is repaired only for Black when both old scores exactly equal the opposite fresh scores, cpLoss is identical, and old reachedDepth is absent or the old export constant 16.",
+    "Changed scores clear allowed/missed motif and timeline arrays and invalidate motifClassifierVersion, natureClassifierVersion and natureMotifClassifierVersion. Immediate raw getters, counts and practice routing abstain before migration. Fresh consumer classification restores the supported primary and honest nature; raw lines and unrelated metadata survive.",
+    "Other tuples, newer depths, incomplete or conflicting identities remain untouched. Absence of a marker never generally implies player-relative scores."
+  ],
+  "boundaries": [
+    "Conditional ideas remain unknown, not confident tactical causes; the proved fork-preparation positive control remains tactical for both colours.",
+    "Service tests preserve SRS progress, comments, annotations, shapes, review trees and logs across repair, stale-client save, persistence and restart.",
+    "Unmatched standalone legacy exports can still contain ambiguous score conventions. This change neither flips them nor claims they have been repaired.",
+    "No owner store was scanned or modified. Synthetic temporary service stores were deleted after checks. No installed desktop, phone service, browser, native process or hosting change occurred.",
+    "The core classifier and pending checking-ray patch were not edited by this consumer work. Final milestone-wide core/build verification is recorded separately."
+  ],
+  "sourceHashesAfter": {
+    "src/web/sharedReview.ts": "63f69ec0f4a3531de09a4a72ee14e07fd756890af556d063d31db970812c0782",
+    "src/components/files/opening.ts": "37988eb4d4f835ae9ff5889f89fd7b476e595fbb59920fc9a109c7605aa3b96a",
+    "scripts/shared-review-service.ts": "df0bb86b38614c99c73def0937696c96860a33c10dc02abec49d946a077652c6",
+    "src/web/tests/sharedReviewScorePerspective.test.ts": "0366e32a40cd54874ac930c9f5fe201d457ee12c801f502c6e1e6651014e0715",
+    "scripts/tests/shared-review-score-perspective.test.mjs": "04957d66ed789c9cbd12946fe502a29d174117820ff9e56159fa18de53a8a744",
+    "src/utils/tests/consumerThemeRelevance.test.ts": "196a7ea236f1a28a01ce4ae46c5734e685d66d86a499b34aeb61b58af1a9910a"
+  }
+}

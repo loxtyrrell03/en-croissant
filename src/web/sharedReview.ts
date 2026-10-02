@@ -1,6 +1,7 @@
 import { createEmptyCard } from "ts-fsrs";
 import type { PhoneReviewCard } from "./mistakeReview";
 import type { MistakeReviewDeck } from "@/utils/mistakeReview";
+import type { Position } from "@/components/files/opening";
 
 export const SHARED_REVIEW_NAME = "My online games";
 export const SHARED_REVIEW_FILE = "My online games.mistake-review.json";
@@ -83,8 +84,11 @@ export function sharedReviewDeck(
                 previousMoveUci: c.previousMoveUci,
                 tacticalHistory: c.tacticalHistory,
                 winProbabilityDrop: c.drop,
-                cpBefore: chanceCp(c.before),
-                cpAfter: chanceCp(c.after),
+                // Phone chances are player-relative; saved review evaluations
+                // are White-relative. Loss remains player-relative for both sides.
+                cpPerspective: "white",
+                cpBefore: chanceCp(c.before) * (c.color === "black" ? -1 : 1),
+                cpAfter: chanceCp(c.after) * (c.color === "black" ? -1 : 1),
                 cpLoss: chanceCp(c.before) - chanceCp(c.after),
                 severity: c.drop >= 25 ? "blunder" : "mistake",
                 date: c.gameDate,
@@ -103,6 +107,51 @@ export function sharedReviewDeck(
 function chanceCp(chance: number) {
     const bounded = Math.max(0.00001, Math.min(99.99999, chance));
     return Math.round(-Math.log(100 / bounded - 1) / 0.00368208);
+}
+
+/** Repair only a legacy export matched to its authoritative phone card.
+ * Unmarked standalone desktop records have an ambiguous origin: never flip
+ * their signs merely because the player is Black. Marked records may contain
+ * newer desktop analysis and must not be replaced by the original phone score.
+ */
+export function reconcileSharedReviewScores(fresh: Position, saved: Position) {
+    const next = fresh.mistakeReview;
+    const old = saved.mistakeReview;
+    if (!next || !old || old.cpPerspective !== undefined || next.cpPerspective !== "white" ||
+        !fresh.reviewKey?.startsWith("pc:") || fresh.reviewKey !== saved.reviewKey ||
+        fresh.fen !== saved.fen || fresh.sideToMove !== saved.sideToMove ||
+        next.playerColor !== old.playerColor || next.playerColor !== fresh.sideToMove ||
+        !next.playedMoveUci || next.playedMoveUci !== old.playedMoveUci ||
+        !next.bestMoveUci || next.bestMoveUci !== old.bestMoveUci ||
+        fresh.answerUci !== saved.answerUci ||
+        ![next.cpBefore, next.cpAfter, next.cpLoss].every(value => Number.isFinite(value))) return old;
+    const changed = old.cpBefore !== next.cpBefore || old.cpAfter !== next.cpAfter || old.cpLoss !== next.cpLoss;
+    // Matching moves alone do not prove that an unmarked saved evaluation is
+    // the old export: the desktop may have reanalysed the same move. Recognize
+    // only the original player's-score tuple, at its original export depth.
+    const legacyBlackTuple = next.playerColor === "black" &&
+        old.cpBefore === -next.cpBefore! && old.cpAfter === -next.cpAfter! && old.cpLoss === next.cpLoss &&
+        (old.reachedDepth === undefined || old.reachedDepth === 16);
+    if (changed && !legacyBlackTuple) return old;
+    return {
+        ...old,
+        cpPerspective: next.cpPerspective,
+        cpBefore: next.cpBefore,
+        cpAfter: next.cpAfter,
+        cpLoss: next.cpLoss,
+        // Retain raw lines/history but require fresh classification against
+        // the repaired inputs. Legacy motif getters do not gate by version,
+        // so clear dependent badges as well as invalidating their judgments.
+        ...(changed ? {
+            allowedMotifs: [],
+            missedMotifs: [],
+            allowedTimeline: [],
+            missedTimeline: [],
+            motifClassifierVersion: undefined,
+            natureClassifierVersion: undefined,
+            natureMotifClassifierVersion: undefined,
+        } : {}),
+    };
 }
 
 // A stale device may update a review, but must not replace newly discovered cards.

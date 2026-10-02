@@ -58,7 +58,7 @@ function replay(fen, line) {
 }
 
 function assertRootContract(row, card) {
-  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-169");
+  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-170");
   const root = card.tacticalClassification.missedMotifs[0];
   assert.ok(root, `${row.id} must retain a root explanation`);
   assert.equal(root.id, row.motif);

@@ -166,6 +166,7 @@ export const positionSchema = z.object({
             winProbabilityDrop: z.number().optional(),
             cpBefore: z.number().optional(),
             cpAfter: z.number().optional(),
+            cpPerspective: z.literal("white").optional(),
             requestedDepth: z.number().optional(),
             reachedDepth: z.number().optional(),
             analysisMode: z.enum(["single", "layered"]).optional(),
@@ -332,6 +333,7 @@ export type Position = {
         winProbabilityDrop?: number;
         cpBefore?: number;
         cpAfter?: number;
+        cpPerspective?: "white";
         requestedDepth?: number;
         reachedDepth?: number;
         analysisMode?: "single" | "layered";
