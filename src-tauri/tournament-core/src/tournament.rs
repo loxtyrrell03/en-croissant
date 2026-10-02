@@ -1479,8 +1479,8 @@ fn is_decided_result(value: &str, white_present: bool, black_present: bool) -> b
     let half = |text: &str| matches!(text, "½" | "1/2" | "0.5" | ".5");
     if white_present && black_present {
         return matches!(compact.as_str(), "1-0" | "0-1" | "0-0" | "0f-0f" | "---" |
-            "+-" | "+--" | "-+" | "--+" | "1f-0" | "1-0f" | "1f-0f" | "1w-0l" |
-            "0f-1" | "0-1f" | "0f-1f" | "0l-1w") ||
+            "+-" | "+--" | "-+" | "--+" | "1f-0" | "1-0f" | "1f-0f" |
+            "0f-1" | "0-1f" | "0f-1f") ||
             compact.split_once('-').is_some_and(|(white, black)| half(white) && half(black));
     }
     if !white_present && !black_present { return false; }
@@ -1766,11 +1766,11 @@ mod tests {
     #[test]
     fn recognizes_only_complete_seat_specific_results() {
         for result in ["1-0", "0 - 1", "½-½", "1/2-1/2", "0.5-0.5", "0,5-0,5", "1–0",
-            "1F-0F", "0F-1F", "+ - -", "- - +", "+-", "-+", "0-0", "0F-0F", "---", "1w-0l"] {
+            "1F-0F", "0F-1F", "+ - -", "- - +", "+-", "-+", "0-0", "0F-0F", "---"] {
             assert!(is_decided_result(result, true, true), "{result}");
         }
         for result in ["", " ", "-", "--", "*", "...", "…", "adjourned", "pending", "0", "1", "½",
-            "1-unknown", "unknown-1", "garbage.5", "½-0", "1-0 trailing", "2-0"] {
+            "1-unknown", "unknown-1", "garbage.5", "½-0", "1-0 trailing", "2-0", "1w-0l", "0l-1w"] {
             assert!(!is_decided_result(result, true, true), "{result}");
         }
         for result in ["0", "1", "½", "1/2", "0.5", "0,5", "1F", "0F"] {

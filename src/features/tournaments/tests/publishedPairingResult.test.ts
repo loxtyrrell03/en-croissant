@@ -16,7 +16,7 @@ function fixture(): TournamentSnapshot {
     pairings:Array.from({length:4},(_,i)=>({round:1,board:i+1,whiteStartNumber:i+1,blackStartNumber:i+5,
       whitePoints:0,blackPoints:0,result:i===0?"1-0":null,decided:i===0})) };
 }
-const unknown = ["", "-", "--", "*", "...", "…", "adjourned", "pending", "0", "1", "½", "1-unknown", "unknown-1", "garbage.5", "½-0", "1-0 trailing", "2-0"];
+const unknown = ["", "-", "--", "*", "...", "…", "adjourned", "pending", "0", "1", "½", "1-unknown", "unknown-1", "garbage.5", "½-0", "1-0 trailing", "2-0", "1w-0l", "0l-1w"];
 
 describe("strict published result contract", () => {
   test("valid played results, forfeits and double-zero awards have explicit scores", () => {
@@ -24,7 +24,7 @@ describe("strict published result contract", () => {
       ["1-0",1,0,false],["0 - 1",0,1,false],["1–0",1,0,false],
       ["½-½",.5,.5,false],["1/2-1/2",.5,.5,false],["0.5-0.5",.5,.5,false],["0,5-0,5",.5,.5,false],
       ["1F-0F",1,0,true],["0F-1F",0,1,true],["+ - -",1,0,true],["- - +",0,1,true],
-      ["0-0",0,0,true],["0F-0F",0,0,true],["---",0,0,true],["1w-0l",1,0,true],
+      ["0-0",0,0,true],["0F-0F",0,0,true],["---",0,0,true],
     ];
     for(const [result,white,black,forfeit] of cases) {
       const pairing={...fixture().pairings[0],result,decided:true};

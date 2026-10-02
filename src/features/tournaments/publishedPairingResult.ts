@@ -18,9 +18,9 @@ export function publishedGameResult(pairing: TournamentPairing): PublishedGameRe
   if (pairing.whiteStartNumber === null || pairing.blackStartNumber === null || !pairing.decided) return null;
   const text = normalizedPairingResult(pairing.result);
   if (["0-0", "0f-0f", "---"].includes(text)) return { whiteScore: 0, blackScore: 0, result: "none", forfeit: "both" };
-  if (["+-", "+--", "1f-0", "1-0f", "1f-0f", "1w-0l"].includes(text))
+  if (["+-", "+--", "1f-0", "1-0f", "1f-0f"].includes(text))
     return { whiteScore: 1, blackScore: 0, result: "white", forfeit: "black" };
-  if (["-+", "--+", "0f-1", "0-1f", "0f-1f", "0l-1w"].includes(text))
+  if (["-+", "--+", "0f-1", "0-1f", "0f-1f"].includes(text))
     return { whiteScore: 0, blackScore: 1, result: "black", forfeit: "white" };
   if (text === "1-0") return { whiteScore: 1, blackScore: 0, result: "white" };
   if (text === "0-1") return { whiteScore: 0, blackScore: 1, result: "black" };
