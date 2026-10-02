@@ -1,0 +1,285 @@
+{
+  "scope": "Four frozen public development nominations, not a holdout. Original hypotheses and before outputs remain in rare-causal-audit-v1.json.",
+  "cases": [
+    {
+      "id": "lichess:CSQS3",
+      "results": [
+        {
+          "length": 1,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "length": 7,
+          "motifs": [],
+          "timeline": [
+            {
+              "id": "forcingAttack",
+              "label": "Mating Attack",
+              "source": "available",
+              "confidence": "high",
+              "ply": 3,
+              "moveUci": "h5h7",
+              "value": 200,
+              "evidence": "Qxh7 creates the new threat Qh8#. Stopping the mate concedes material: after Ke8, Qg8+ Kd7 Qxf7+ wins material. All 35 legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.",
+              "relevance": "secondary",
+              "actor": "white"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ]
+    },
+    {
+      "id": "lichess:GrHPv",
+      "results": [
+        {
+          "length": 1,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "length": 9,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ]
+    },
+    {
+      "id": "lichess:Gtvlx",
+      "results": [
+        {
+          "length": 1,
+          "motifs": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary"
+            },
+            {
+              "id": "deflection",
+              "label": "Mating Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "verifiedCombination": true,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. The other legal replies also allow immediate mate; for example, Qe2 Qxe2#. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+              "relevance": "secondary"
+            }
+          ],
+          "timeline": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary",
+              "actor": "black"
+            },
+            {
+              "id": "deflection",
+              "label": "Mating Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "verifiedCombination": true,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. The other legal replies also allow immediate mate; for example, Qe2 Qxe2#. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+              "relevance": "secondary",
+              "actor": "black"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "length": 3,
+          "motifs": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary"
+            },
+            {
+              "id": "bodenMate",
+              "label": "Boden Mate",
+              "confidence": "medium",
+              "evidence": "Bh4# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
+              "source": "available",
+              "ply": 3,
+              "moveUci": "f6h4",
+              "relevance": "secondary",
+              "value": 10000
+            },
+            {
+              "id": "deflection",
+              "label": "Mating Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "verifiedCombination": true,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. The other legal replies also allow immediate mate; for example, Qe2 Qxe2#. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+              "relevance": "secondary"
+            }
+          ],
+          "timeline": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary",
+              "actor": "black"
+            },
+            {
+              "id": "deflection",
+              "label": "Mating Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "verifiedCombination": true,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. The other legal replies also allow immediate mate; for example, Qe2 Qxe2#. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+              "relevance": "secondary",
+              "actor": "black"
+            },
+            {
+              "id": "clearance",
+              "label": "Mating Clearance",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "verifiedCombination": true,
+              "evidence": "Qxe3+ clears g5 for the bishop on f6. In this continuation, fxe3 allows Bh4#, leading to forced mate. Qe2 instead permits Qxe2#, without using the cleared route. Every legal defence is separately mated; clearance explains this branch, not a compulsory reply or an extra material win.",
+              "actor": "black",
+              "relevance": "secondary"
+            },
+            {
+              "id": "bodenMate",
+              "label": "Boden Mate",
+              "confidence": "medium",
+              "evidence": "Bh4# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
+              "source": "available",
+              "ply": 3,
+              "moveUci": "f6h4",
+              "relevance": "secondary",
+              "value": 10000,
+              "actor": "black"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ]
+    },
+    {
+      "id": "lichess:sGGZN",
+      "results": [
+        {
+          "length": 1,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-169"
+        },
+        {
+          "length": 7,
+          "motifs": [
+            {
+              "id": "forcingAttack",
+              "label": "Forcing Attack",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "d6d8",
+              "value": 400,
+              "evidence": "Rd8+ starts a checking attack that wins material or mates against every legal reply. After Kh7, Qh3+ Qh6 Rh8+ Kxh8 Qxh6+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+              "relevance": "primary"
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 5,
+              "moveUci": "d8h8",
+              "value": 400,
+              "evidence": "Rh8+ draws the king from h7 to h8, removing its protection of the queen on h6. In this line, Kxh8 Qxh6+ wins that target. Every legal defence concedes material or immediate mate.",
+              "relevance": "secondary"
+            }
+          ],
+          "timeline": [
+            {
+              "id": "forcingAttack",
+              "label": "Forcing Attack",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "d6d8",
+              "value": 400,
+              "evidence": "Rd8+ starts a checking attack that wins material or mates against every legal reply. After Kh7, Qh3+ Qh6 Rh8+ Kxh8 Qxh6+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+              "relevance": "primary",
+              "actor": "white"
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 5,
+              "moveUci": "d8h8",
+              "value": 400,
+              "evidence": "Rh8+ draws the king from h7 to h8, removing its protection of the queen on h6. In this line, Kxh8 Qxh6+ wins that target. Every legal defence concedes material or immediate mate.",
+              "relevance": "secondary",
+              "actor": "white"
+            },
+            {
+              "id": "skewer",
+              "label": "Skewer",
+              "source": "available",
+              "confidence": "high",
+              "ply": 5,
+              "moveUci": "d8h8",
+              "value": 400,
+              "evidence": "Rh8+ skewers the king on h7 and the queen on h6. No legal reply saves the rear target without conceding material.",
+              "relevance": "secondary",
+              "actor": "white"
+            },
+            {
+              "id": "hangingPiece",
+              "label": "Deflection Payoff",
+              "confidence": "high",
+              "evidence": "Qxh6+ collects the queen after Rh8+ drew its king away with Kxh8. The offered piece and subsequent exchange costs are already included in that deflection, not an additional free-piece gain.",
+              "source": "available",
+              "ply": 7,
+              "moveUci": "h3h6",
+              "relevance": "secondary",
+              "actor": "white"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-169"
+        }
+      ]
+    }
+  ]
+}

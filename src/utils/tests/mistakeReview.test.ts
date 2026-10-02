@@ -35,6 +35,7 @@ import {
 } from "@/utils/mistakeReviewAutoUpdate";
 import { applyMistakeReviewClockTimings } from "@/utils/mistakeReviewClockHydration";
 import { hasOnlineDatabaseNewLocalGames } from "@/utils/onlineGameImport";
+import { MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION } from "../tacticalMotifs/mistakeReviewAdapter";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const ONE_MINUTE_MS = 60 * 1000;
@@ -839,6 +840,19 @@ describe("mistake review helpers", () => {
 
     test("nature training separates unclassified cards from stored tactical and positional cards", () => {
         const now = new Date("2026-04-26T12:00:00Z");
+        const currentNature = (nature: "tactical" | "positional") => ({
+            nature,
+            natureConfidence: nature === "tactical" ? "high" as const : "medium" as const,
+            natureReason: "Current routing fixture judgment.",
+            natureAspect: "both" as const,
+            allowedNature: nature,
+            missedNature: nature,
+            allowedNatureReason: "Current routing fixture allowed judgment.",
+            missedNatureReason: "Current routing fixture missed judgment.",
+            tacticalSignals: nature === "tactical" ? ["Current routing fixture signal."] : [],
+            natureClassifierVersion: 4,
+            natureMotifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
+        });
         const tacticalDue = position({
             reviewKey: "tactical-due",
             card: {
@@ -848,7 +862,7 @@ describe("mistake review helpers", () => {
             } as Position["card"],
             mistakeReview: {
                 ...position().mistakeReview!,
-                nature: "tactical",
+                ...currentNature("tactical"),
                 severity: "blunder",
             },
         });
@@ -869,14 +883,14 @@ describe("mistake review helpers", () => {
             } as Position["card"],
             mistakeReview: {
                 ...position().mistakeReview!,
-                nature: "tactical",
+                ...currentNature("tactical"),
             },
         });
         const positional = position({
             reviewKey: "positional",
             mistakeReview: {
                 ...position().mistakeReview!,
-                nature: "positional",
+                ...currentNature("positional"),
             },
         });
 

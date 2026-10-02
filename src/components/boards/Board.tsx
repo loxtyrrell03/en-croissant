@@ -112,6 +112,7 @@ import {
   formatMistakeReviewLastSeen,
   getMistakeReviewNature,
   getMistakeReviewNatureConfidence,
+  getStoredMistakeReviewNatureClassification,
   mistakeReviewNatureColor,
   mistakeReviewNatureLabel,
   mistakeReviewSeverityLabel,
@@ -271,20 +272,6 @@ const BoardEvalBar = memo(function BoardEvalBar({
 function sameBoardPosition(a: string | undefined, b: string | undefined) {
   if (!a || !b) return false;
   return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
-}
-
-function getStoredMistakeReviewNatureForBoard(
-  metadata: ReviewPosition["mistakeReview"] | undefined,
-) {
-  const candidate = metadata?.nature ?? metadata?.mistakeNature ?? metadata?.summary?.nature;
-  return candidate === "tactical" || candidate === "positional" || candidate === "unknown" ? candidate : null;
-}
-
-function getStoredMistakeReviewNatureConfidenceForBoard(
-  metadata: ReviewPosition["mistakeReview"] | undefined,
-) {
-  const candidate = metadata?.natureConfidence ?? metadata?.summary?.natureConfidence;
-  return candidate === "high" || candidate === "medium" || candidate === "low" ? candidate : null;
 }
 
 function mistakeReviewColor(severity: MistakeReviewAttemptLabel | undefined) {
@@ -1820,14 +1807,15 @@ function Board({
   ].filter(Boolean);
   const canClassifyMistakeReviewNature =
     Boolean(trainerMistakeReviewPosition?.mistakeReview) && !hiddenReviewPractice;
+  const storedMistakeReviewNature = getStoredMistakeReviewNatureClassification(mistakeReviewMetadata);
   const mistakeReviewNature =
     trainerMistakeReviewPosition?.mistakeReview && canClassifyMistakeReviewNature
       ? getMistakeReviewNature(trainerMistakeReviewPosition)
-      : getStoredMistakeReviewNatureForBoard(mistakeReviewMetadata);
+      : storedMistakeReviewNature?.nature ?? (mistakeReviewMetadata ? "unknown" : null);
   const mistakeReviewNatureConfidence =
     trainerMistakeReviewPosition?.mistakeReview && canClassifyMistakeReviewNature
       ? getMistakeReviewNatureConfidence(trainerMistakeReviewPosition)
-      : getStoredMistakeReviewNatureConfidenceForBoard(mistakeReviewMetadata);
+      : storedMistakeReviewNature?.confidence ?? (mistakeReviewMetadata ? "low" : null);
   const mistakeReviewLastSeen = formatMistakeReviewLastSeen(trainerMistakeReviewPosition);
   const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
 

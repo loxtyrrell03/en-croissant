@@ -11,7 +11,8 @@ import { SharedReviewService } from "../generated/shared-review-service.js";
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
 // Public development nominations, with the independent root judgments from
-// checkingMatingPreparation / compoundSpecialMoveProof. Artificial alternative
+// checkingMatingPreparation / compoundSpecialMoveProof / defensiveMatingInterposition
+// and deflectionOutcomePayoff. Artificial alternative
 // moves and scores below exercise card transport, not whole-game evaluation.
 const cases = [
   {
@@ -29,6 +30,21 @@ const cases = [
     pv: ["d8c8", "d7c8r", "f5c8"], played: "h8h7", reply: "h1h2",
     motif: "xRayAttack", label: "X-Ray Support", value: 500,
   },
+  {
+    id: "Kn14A", fen: "1k2b2R/2p5/Qp1p4/3Pp3/N3P3/PK3r2/1P6/1q6 w - - 15 40",
+    pv: ["a4c3", "f3c3", "b3c3", "b1c1", "c3b3"], played: "b3b4", reply: "f3e3",
+    motif: "forcingAttack", label: "Mating Attack", value: 180,
+  },
+  {
+    id: "Gtvlx", fen: "1r3rk1/p1pn1ppp/b4b2/6q1/3PB3/1P2P2P/PBPN1P2/R2QK2R b KQ - 2 15",
+    pv: ["g5e3", "f2e3", "f6h4"], played: "g5h5", reply: "a2a3",
+    motif: "mateIn2", label: "Forcing Mate", value: 10000,
+  },
+  {
+    id: "sGGZN", fen: "6k1/4r1q1/N2R1pp1/1B3b2/5pP1/4Q3/PPr4P/6K1 w - - 0 32",
+    pv: ["d6d8", "g8h7", "e3h3", "g7h6", "d8h8", "h7h8", "h3h6"], played: "g1f1", reply: "g8h7",
+    motif: "forcingAttack", label: "Forcing Attack", value: 400,
+  },
 ];
 
 function replay(fen, line) {
@@ -42,6 +58,7 @@ function replay(fen, line) {
 }
 
 function assertRootContract(row, card) {
+  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-169");
   const root = card.tacticalClassification.missedMotifs[0];
   assert.ok(root, `${row.id} must retain a root explanation`);
   assert.equal(root.id, row.motif);
@@ -68,11 +85,50 @@ function assertRootContract(row, card) {
     assert.match(root.evidence, /promotion value and recaptures/);
     assert.equal(card.bestTimeline.some(m => m.ply === 3 && m.id === "hangingPiece"), false);
   }
+  if (row.id === "Kn14A") {
+    assert.match(root.evidence, /blocks check and restores the threat/);
+    assert.match(root.evidence, /All 27 legal replies/);
+    assert.match(root.evidence, /not a forced.mate claim/);
+    assert.equal(card.tacticalClassification.missedMotifs.some(m => /mateIn\d+/.test(m.id)), false);
+  }
+  if (row.id === "Gtvlx") {
+    const support = card.tacticalClassification.missedMotifs.find(m => m.id === "deflection");
+    assert.ok(support, "The mating deflection remains connected support");
+    assert.equal(support.label, "Mating Deflection");
+    assert.equal(support.relevance, "secondary");
+    assert.equal(support.value, undefined, "Mate support must not manufacture a pawn gain");
+    assert.match(support.evidence, /Every legal defence permits mate/);
+    assert.doesNotMatch(support.evidence, /not a forced.mate claim/);
+  }
+  if (row.id === "sGGZN") {
+    const payoff = card.bestTimeline.find(m => m.ply === 7 && m.id === "hangingPiece");
+    assert.ok(payoff, "The accepted deflection branch must retain its compensated payoff");
+    assert.equal(payoff.label, "Deflection Payoff");
+    assert.equal(payoff.value, undefined, "The queen is not a separate 900cp gain after sacrificing the rook");
+    assert.match(payoff.evidence, /offered|sacrificed|exchange costs/);
+    assert.doesNotMatch(payoff.evidence, /wins the loose queen/);
+  }
+}
+
+function assertExportContract(row, exported, card) {
+  const saved = exported.mistakeReview;
+  // The phone/shared exporter stores motif evidence, not a computed nature
+  // judgment. Desktop nature migration must compute its own complete record;
+  // export must not stamp an absent judgment as current.
+  for (const field of ["nature", "natureConfidence", "natureClassifierVersion", "natureMotifClassifierVersion"])
+    assert.equal(saved[field], undefined);
+  assertRootContract(row, {
+    tacticalClassification: saved,
+    bestTimeline: saved.missedTimeline,
+    explanation: exported.reason,
+  });
+  // JSON persistence omits optional fields whose value is undefined.
+  assert.deepEqual(saved.missedMotifs, JSON.parse(JSON.stringify(card.tacticalClassification.missedMotifs)));
+  assert.deepEqual(saved.missedTimeline, JSON.parse(JSON.stringify(card.bestTimeline)));
 }
 
 for (const row of cases) for (const reflected of [false, true]) test(
   `${row.id} survives generated review classification, export and reload: reflected=${reflected}`, async () => {
-    const root = await mkdtemp(join(tmpdir(), "en-shared-review-frontier-"));
     const fen = reflected ? reflectMixedForkFen(row.fen) : row.fen;
     const flip = uci => reflected ? reflectMixedForkMove(uci) : uci;
     const pv = row.pv.map(flip), playedUci = flip(row.played), reply = flip(row.reply);
@@ -83,6 +139,7 @@ for (const row of cases) for (const reflected of [false, true]) test(
     const played = parseUci(playedUci), san = makeSan(position, played);
     position.play(played);
     const after = makeFen(position.toSetup());
+    const root = await mkdtemp(join(tmpdir(), "en-shared-review-frontier-"));
     const options = {
       root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
       fetchGames: async () => [], lookup: async requested => {
@@ -108,15 +165,7 @@ for (const row of cases) for (const reflected of [false, true]) test(
       assert.equal(service.snapshot().cards.length, 1);
       const card = service.snapshot().cards[0];
       assertRootContract(row, card);
-      const saved = (await service.deck()).positions[0].mistakeReview;
-      assert.deepEqual(saved.missedMotifs, card.tacticalClassification.missedMotifs);
-      // JSON persistence omits optional fields whose value is undefined.
-      assert.deepEqual(saved.missedTimeline, JSON.parse(JSON.stringify(card.bestTimeline)));
-      if (row.id === "Vk1Ud") {
-        const savedPayoff = saved.missedTimeline.find(m => m.ply === 3);
-        assert.equal(savedPayoff?.label, "Castling Payoff");
-        assert.equal(savedPayoff?.value, undefined);
-      }
+      assertExportContract(row, (await service.deck()).positions[0], card);
       service.close();
       service = new SharedReviewService(options);
       await service.initialize(false);
@@ -125,6 +174,7 @@ for (const row of cases) for (const reflected of [false, true]) test(
       assert.equal(loaded.explanation, card.explanation);
       assert.deepEqual(loaded.tacticalClassification, JSON.parse(JSON.stringify(card.tacticalClassification)));
       assert.deepEqual(loaded.bestTimeline, JSON.parse(JSON.stringify(card.bestTimeline)));
+      assertExportContract(row, (await service.deck()).positions[0], loaded);
     } finally {
       service?.close();
       const target = resolve(root);

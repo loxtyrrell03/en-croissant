@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "scope": "Fourteen frozen observable contracts on two public puzzle positions plus controls; not fourteen independent positions or population accuracy.",
+  "test": "src/utils/tests/deflectionOutcomePayoff.test.ts",
+  "testSha256": "6219d0a251064387bcc02a48c6628e4e4b71804a07fa47dd8bd82b578b2f8447",
+  "before": {
+    "passed": 4,
+    "failed": 10,
+    "skipped": 0,
+    "reportSha256": "64ccca4838f83d8f84e5fdd2cdcee90f7eb70b218d5aa244adcc6d9282e01485"
+  },
+  "after": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "reportSha256": "00e6c5f687afddd36c5858521185b2cd61a5eefd1f97f9f59d356d4454d8b3f7"
+  },
+  "judgment": "Both-colour root/full mate support and local/full/history deflection payoff; missing-history standalone capture and mixed mate/material declines remain intact.",
+  "baselineCoreSha256": "fcd90ae864970dc93a1cfa4a88f63657cbfbdbd8ffb1fb19da35560d83dfe66e",
+  "verification": "Additional history guards, final core identity, broad tests and staged-source verification are recorded separately."
+}

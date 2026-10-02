@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "scope": "Public development case Kn14A and reflected/synthetic controls. Local proof validation, not a held-out accuracy estimate, a full-game winning proof, or installed-runtime verification.",
+  "baseline": {
+    "revision": "3756c4bd385d001deafaf657c723eb4e3ab96ed3",
+    "rootStatus": "Unproved for root-only and source line, both colours",
+    "memoryOnlyAttackingGuardRemoval": "Rxc3+ remains unproved after 451 visits in both colours",
+    "cause": "The leaf debits Qxe4 as 100cp, reducing the rook-for-knight gain from 180 to 80; independently Qxe4 allows Rxe8#. Correcting that liability alone still leaves an unresolved second king flight."
+  },
+  "position": {
+    "id": "Kn14A",
+    "fen": "1k2b2R/2p5/Qp1p4/3Pp3/N3P3/PK3r2/1P6/1q6 w - - 15 40",
+    "line": ["a4c3", "f3c3", "b3c3", "b1c1", "c3b3"],
+    "reflection": "Reverse ranks, swap piece colours and side to move, reflect UCI ranks; no source-game independence is implied."
+  },
+  "after": {
+    "adapterVersion": 169,
+    "motif": "forcingAttack",
+    "label": "Mating Attack",
+    "rootPly": 1,
+    "valueCp": 180,
+    "valueMeaning": "Verified minimum local material concession, including the 320cp interposer given for a 500cp rook; not an engine evaluation.",
+    "lineLengths": [1, 2, 3, 5],
+    "pairedRootContracts": 8,
+    "fullLineTimeline": "Only the root Mating Attack; no duplicate free-rook capture label",
+    "wording": "Blocks check and restores Rxe8#. All 27 replies allow a verified local material gain or mate. Not a forced-mate claim."
+  },
+  "bounds": {
+    "operationBudget": 8192,
+    "productionVisitsWhite": 1447,
+    "productionVisitsReflected": 1427,
+    "admission": "Legal noncapturing, nonchecking interposition against one slider check, restoring an immediate mating threat",
+    "kingEvasions": "At most two quiet king flights; each must preserve the exact nominated immediate mate. Every later checker must be legally captured and settled without another check or promotion.",
+    "materialLeaves": "Existing same-square exchange and all-piece liability bounds. An off-square debit is removed only with a separate legal short-mate proof under the same budget.",
+    "unknowns": "Cycles, draw claims, unresolved promotion or checking resources, terminal failures and exhaustion abstain. Existing attacking entry-point exclusions and modest-observation score gates are unchanged."
+  },
+  "independentVerification": {
+    "implementation": "python-chess 1.11.2, independent legal replay, exact mate-in-one/checking-mate-in-two and optional same-square recapture minimax",
+    "input": "Actual production certificate, not the memory-only prototype",
+    "allRootRepliesPerColour": 27,
+    "immediateMateRepliesPerColour": 19,
+    "additionalMateInTwoRepliesPerColour": 2,
+    "selectedAnswerVisitsPerColour": 105,
+    "checkingNodesAfterRookRecapturePerColour": 30,
+    "maximumConsecutiveChecks": 3,
+    "minimumLocalBoundCpPerColour": 180,
+    "materialBranchesWhite": {
+      "Rxc3+": 180,
+      "Qxb2+": 800,
+      "Qd1+": 400,
+      "Qa2+": 900,
+      "Qc2+": 900,
+      "Rf8": 400,
+      "c5": 330,
+      "c6": 330
+    },
+    "mateLiabilityWitness": "After Nc3 Rxc3+ Kxc3, the only profitable off-square capture is Qxe4 (+100 locally), independently refuted by Rxe8#. The same liability/refutation is checked after applicable king flights.",
+    "checkingTreeWhiteAfterNc3Rxc3Kxc3": [
+      "Qd3+ Kxd3",
+      "Qc2+ Kxc2",
+      "Qxb2+ Kxb2",
+      "Qe1+ Kb3",
+      "Qe1+ Kb3 Qb4+ axb4",
+      "Qe1+ Kb3 Qg3+ Ka2",
+      "Qe1+ Kb3 Qg3+ Ka2 Qb3+ Kxb3",
+      "Qe1+ Kb3 Qg3+ Ka2 Qxa3+ Kxa3",
+      "Qe1+ Kb3 Qe3+ Ka2",
+      "Qe1+ Kb3 Qe3+ Ka2 Qb3+ Kxb3",
+      "Qe1+ Kb3 Qe3+ Ka2 Qxa3+ Kxa3",
+      "Qe1+ Kb3 Qc3+ bxc3",
+      "Qe1+ Kb3 Qd1+ Ka2",
+      "Qe1+ Kb3 Qd1+ Ka2 Qxd5+ exd5",
+      "Qe1+ Kb3 Qd1+ Ka2 Qb3+ Kxb3",
+      "Qe1+ Kb3 Qd1+ Ka2 Qb1+ Kxb1",
+      "Qe1+ Kb3 Qd1+ Ka2 Qa1+ Kxa1",
+      "Qc1+ Kb3",
+      "Qc1+ Kb3 Qc4+ Qxc4",
+      "Qc1+ Kb3 Qe3+ Ka2",
+      "Qc1+ Kb3 Qe3+ Ka2 Qb3+ Kxb3",
+      "Qc1+ Kb3 Qe3+ Ka2 Qxa3+ Kxa3",
+      "Qc1+ Kb3 Qc3+ bxc3",
+      "Qc1+ Kb3 Qc2+ Kxc2",
+      "Qc1+ Kb3 Qxb2+ Kxb2",
+      "Qc1+ Kb3 Qd1+ Ka2",
+      "Qc1+ Kb3 Qd1+ Ka2 Qxd5+ exd5",
+      "Qc1+ Kb3 Qd1+ Ka2 Qb3+ Kxb3",
+      "Qc1+ Kb3 Qd1+ Ka2 Qb1+ Kxb1",
+      "Qc1+ Kb3 Qd1+ Ka2 Qa1+ Kxa1"
+    ]
+  },
+  "verification": {
+    "focusedSuite": "src/utils/tests/defensiveMatingInterposition.test.ts",
+    "focusedPassed": 38,
+    "focusedFailed": 0,
+    "focusedSkipped": 0,
+    "siblingRun": "12 suites, 288 passed and 10 skipped in 11.82s; performed before adding the final two reflected limiting controls, which pass in the final 38-test focused run",
+    "types": "tsconfig.review-worker.json passed",
+    "contraryControls": [
+      "Missing mating rook or queen",
+      "Missing e4 pawn leaves the third checking queen uncapturable: unknown, not a certificate",
+      "Already available mate without the original check",
+      "Losing king flights and immediate counter-mate",
+      "Nonthreatening queen interposition",
+      "Queen-for-rook loss and equal rook exchange",
+      "Unresolved defending promotion",
+      "Announced and immediate fifty-move claims",
+      "Exhausted or invalid budgets after a successful cache entry",
+      "CSQS3 deeper defensive setup remains unproved"
+    ],
+    "testHypothesisCorrection": "The first synthetic expensive-interposer draft incorrectly asked a queen to move a4-c3 like a knight. It was replaced with the legal c2-c3 queen/rook interpositions before final verification; no proof rule was loosened.",
+    "sourceHashBoundary": "The core hash includes separately owned current deflection and preserved checking-ray changes; it is an evidence snapshot, not an assertion of ownership of those changes.",
+    "sha256NormalizedLf": {
+      "src/utils/tacticalMotifs/causalTactics.ts": "11098b0a218c7cda8b72053e145764bf2a15288a670d2cbacc587c39ad91579a",
+      "src/utils/tests/defensiveMatingInterposition.test.ts": "3ed8b8cf61290eafa8a357e6b7425a9822ef567ff803fe1f6f1e98595d29eb56"
+    }
+  }
+}

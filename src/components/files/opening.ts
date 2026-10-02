@@ -195,6 +195,7 @@ export const positionSchema = z.object({
             missedNature: z.enum(["tactical", "positional", "unknown"]).optional(),
             missedNatureReason: z.string().optional(),
             natureClassifierVersion: z.number().optional(),
+            natureMotifClassifierVersion: z.string().optional(),
             allowedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
             missedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
             allowedTimeline: z.array(tacticalMotifEvidenceSchema).optional(),
@@ -361,6 +362,7 @@ export type Position = {
         missedNature?: "tactical" | "positional" | "unknown";
         missedNatureReason?: string;
         natureClassifierVersion?: number;
+        natureMotifClassifierVersion?: string;
         allowedMotifs?: TacticalMotifEvidence[];
         missedMotifs?: TacticalMotifEvidence[];
         allowedTimeline?: TacticalMotifEvidence[];

@@ -7,7 +7,7 @@ import { kingCastlesTo, rookCastlesTo, makeSquare, makeUci, opposite, parseUci }
 import type { TacticalMotifEvidence } from "./types";
 import { isTacticalObservation } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
-import { advancedPawnOpportunityContext, appendTacticalHistory, persistentPawnExchangeContext, rootCaptureExchangeContext, type TacticalGameHistory } from "./gameHistory";
+import { advancedPawnOpportunityContext, appendTacticalHistory, persistentPawnExchangeContext, rootCaptureExchangeContext, tacticalGameHistory, type TacticalGameHistory } from "./gameHistory";
 import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 
 const VALUE: Record<Role, number> = {
@@ -170,6 +170,8 @@ export function winningRecaptureEvidence(
             ...motif, label: "Deflection Payoff", value: branch.gain,
             evidence: `${step.san} wins the ${step.before.board.get(step.move.to)!.role} after ${checking.san} forced the ${checking.before.board.get(proof.guard)!.role} away from its guarding square with ${previous.san}. This is the payoff of the earlier deflection, not an additional material gain.`,
         };
+        const accepted = matching ? acceptedGuardDeflectionPayoff(context, motif) : null;
+        if (accepted) return accepted;
         const removal = matching ? proveKingCaptureDefenderRemoval(checking) : null;
         const removedGuardPayoff = removal?.branches.find(item =>
             item.replyUci === previous.uci && item.answerUci === step.uci &&
@@ -461,19 +463,35 @@ export function filterCompensatedRootCaptures(
     previousMove?: string | null,
     tacticalHistory?: TacticalGameHistory | null,
 ) {
-    if (!previousFen || !previousMove || !line.length) return motifs;
-    const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
+    if (!line.length) return motifs;
     const root = replayTacticalLine(fen, [line[0]])[0];
+    // A reduced-material exercise may still prove this exact local offer and
+    // payoff. Validate the entire supplied history and its reached position;
+    // never trim an illegal/overlong history into apparently valid credit.
+    const supplied = tacticalHistory && Array.isArray(tacticalHistory.moves)
+        ? tacticalGameHistory(tacticalHistory.fen, tacticalHistory.moves) : undefined;
+    const past = root?.capture && supplied && supplied.moves.length >= 2 &&
+        motifs.some(m => m.id === "hangingPiece" && m.ply === 1)
+        ? replayTacticalLine(supplied.fen, supplied.moves) : [];
+    const matchingDeflection = root && supplied && past.length === supplied.moves.length && past.length >= 2 &&
+        makeFen(past.at(-1)!.after.toSetup()) === makeFen(root.before.toSetup())
+        ? [...past.slice(-2), root] : null;
+    const payoff = (motif: TacticalMotifEvidence) => matchingDeflection && motif.id === "hangingPiece" && motif.ply === 1
+        ? acceptedGuardDeflectionPayoff(matchingDeflection, motif) : null;
+    if (!previousFen || !previousMove) return motifs.map(motif => payoff(motif) ?? motif);
+    const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
     if (
         !root ||
         history.length !== 2 ||
         makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())
     )
-        return motifs;
+        return motifs.map(motif => payoff(motif) ?? motif);
     const exchange = root.capture > 0 && motifs.some(m => m.id === "hangingPiece" && m.ply === 1)
         ? rootCaptureExchangeContext(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
     const compensated = !exchange && isCompensatedContinuationCapture(history, 1);
     return motifs.flatMap((motif) => {
+        const deflectionPayoff = payoff(motif);
+        if (deflectionPayoff) return [deflectionPayoff];
         if (motif.id === "intermezzo" && motif.ply && history[0].capture) {
             const prefix = replayTacticalLine(fen,line.slice(0,motif.ply));
             const checking = prefix.at(-1);
@@ -3681,6 +3699,7 @@ type QuietMatingAttackProof = MixedCheckingAttackProof & {
     threatSan: string;
     threatMateIn?: 2;
     visits: number;
+    defensiveInterposition?: true;
 };
 const quietMatingAttackCache = new Map<string, QuietMatingAttackProof | null>();
 
@@ -3695,6 +3714,25 @@ export function proveQuietMatingAttack(
     onFailure?: (reason: string) => void,
 ): QuietMatingAttackProof | null {
     return proveMatingThreatAttack(root, nodeLimit, onFailure, false);
+}
+
+/** A legal interposition may restore a mate while answering check. Keep this
+ * admission separate from attacking preparations: every reply must concede
+ * a local gain or mate, including capture of the offered blocker. */
+export function proveDefensiveMatingInterposition(
+    root: TacticalReplayStep,
+    nodeLimit = 8192,
+    onFailure?: (reason: string) => void,
+): QuietMatingAttackProof | null {
+    if (!root || !root.before.isCheck() || root.capture || root.move.promotion ||
+        !root.before.isLegal(root.move) || root.after.isCheck() || root.after.isEnd() ||
+        root.before.board.get(root.move.from)?.role === "king") return null;
+    const king = root.before.board.kingOf(root.before.turn);
+    const checkers = [...root.before.ctx().checkers];
+    if (king === undefined || checkers.length !== 1 ||
+        !["bishop", "rook", "queen"].includes(root.before.board.get(checkers[0])!.role) ||
+        !between(checkers[0], king).has(root.move.to)) return null;
+    return proveMatingThreatAttack(root, nodeLimit, onFailure, false, undefined, true);
 }
 
 /** A non-checking capture can create the same mating threat, but its initial
@@ -3787,6 +3825,7 @@ function proveMatingThreatAttack(
     onFailure: ((reason: string) => void) | undefined,
     captureThreat: boolean,
     sharedBudget?: ProofBudget,
+    defensiveInterposition = false,
 ): QuietMatingAttackProof | null {
     if (
         !root ||
@@ -3794,13 +3833,13 @@ function proveMatingThreatAttack(
         nodeLimit <= 0 ||
         (captureThreat ? !root.capture : root.capture) ||
         root.move.promotion ||
-        root.before.isCheck() ||
+        (defensiveInterposition ? !root.before.isCheck() : root.before.isCheck()) ||
         root.after.isCheck() ||
         root.after.isEnd() ||
         root.after.board.get(root.move.to)?.color !== root.before.turn
     )
         return null;
-    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${captureThreat}`;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${captureThreat}:${defensiveInterposition}`;
     if (!sharedBudget && !onFailure && nodeLimit === 8192 && quietMatingAttackCache.has(key))
         return quietMatingAttackCache.get(key)!;
     const budget = sharedBudget ?? { nodes: nodeLimit };
@@ -3839,7 +3878,7 @@ function proveMatingThreatAttack(
         // Nested preparation probes share another combination's remaining
         // budget. Keep their existing nomination scope so this new fallback
         // cannot consume the parent's previously sufficient proof budget.
-        const distances: (1 | 2)[] = sharedBudget ? [1] : [1, 2];
+        const distances: (1 | 2)[] = sharedBudget || defensiveInterposition ? [1] : [1, 2];
         const guardFallbacks: { threat: NormalMove; active: Square[] }[] = [];
         threatSearch: for (const distance of distances) for (const threat of threats) {
             if (threat.promotion) continue;
@@ -3862,6 +3901,7 @@ function proveMatingThreatAttack(
                 threat,
                 threatMateIn: distance,
                 allowCheckEvasion: !sharedBudget,
+                defensiveInterposition,
             });
             if (proof) {
                 result = {
@@ -3870,6 +3910,7 @@ function proveMatingThreatAttack(
                     threatSan: makeSan(probe, threat),
                     ...(distance === 2 ? {threatMateIn: 2 as const} : {}),
                     visits: startingNodes - budget.nodes,
+                    ...(defensiveInterposition ? { defensiveInterposition: true as const } : {}),
                 };
                 break threatSearch;
             }
@@ -3914,6 +3955,7 @@ function computeMixedCheckingAttack(
         threatMateIn?: 1 | 2;
         allowCheckEvasion?: boolean;
         allowMatingGuardRecapture?: boolean;
+        defensiveInterposition?: boolean;
     },
     discovery?: {
         active: Square[];
@@ -3929,7 +3971,7 @@ function computeMixedCheckingAttack(
         nodeLimit <= 0 ||
         (!quiet?.captureThreat && !discovery && root.capture) ||
         root.move.promotion ||
-        root.before.isCheck() ||
+        (quiet?.defensiveInterposition ? !root.before.isCheck() : root.before.isCheck()) ||
         (quiet ? root.after.isCheck() : !root.after.isCheck()) ||
         root.after.isEnd()
     )
@@ -3975,6 +4017,13 @@ function computeMixedCheckingAttack(
         fen: makeFen(pos.toSetup()),
         move: makeUci(move),
     });
+    // A restored mate can refute an otherwise profitable off-square capture.
+    // Certify that mate separately; never erase the liability merely because
+    // a threat was nominated. The same-square exchange debit is unchanged.
+    const captureGain = (pos: Chess, move: NormalMove, balance: number) =>
+        quiet?.defensiveInterposition
+            ? discoveryCaptureGain(pos, move, minimumGain - balance, budget)
+            : participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
     // A material leaf cannot stop just before a forcing counterattack. After
     // one countercheck answer, a further check is allowed only when its checker
     // can be captured safely, with no further check/promotion. Merely being
@@ -3993,7 +4042,7 @@ function computeMixedCheckingAttack(
                 if (response.promotion || visit(next, response).isCheck()) { safe = false; break; }
             }
             if (!safe) continue;
-            const gain = participantCaptureGain(pos, capture, [...pos.board[side], capture.to], budget);
+            const gain = captureGain(pos, capture, balance);
             if (gain !== null && balance + gain >= minimumGain)
                 return { gain: balance + gain, decision: decision(pos, capture) };
         }
@@ -4002,12 +4051,29 @@ function computeMixedCheckingAttack(
     const answerCountercheck = (
         pos: Chess,
         balance: number,
+        remaining = quiet?.defensiveInterposition ? 2 : 1,
+        path = new Set<string>(),
     ): { gain: number; decisions: MixedCheckingAttackProof["decisions"] } | null => {
+        const positionKey = makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ");
+        if (quiet?.defensiveInterposition && (pos.isEnd() || path.has(positionKey))) return null;
+        const nextPath = quiet?.defensiveInterposition ? new Set([...path, positionKey]) : path;
         for (const answer of ordered(pos)) {
             if (answer.promotion) continue;
             const next = visit(pos, answer);
             if (next.isCheckmate()) return { gain: 10000, decisions: [decision(pos, answer)] };
             if (next.isEnd()) continue;
+            if (quiet?.defensiveInterposition) {
+                if (defenderCanClaimFiftyMoveDraw(next)) continue;
+                // Only king flights preserving the exact restored mate may
+                // extend the normal one-evasion leaf. After two such flights,
+                // every further checker must be captured and fully settled.
+                if (!capturedValue(pos, answer)) {
+                    if (pos.board.get(answer.from)?.role !== "king" || !quiet.threat ||
+                        quiet.threatMateIn !== 1) continue;
+                    const probe = withTurn(next, side);
+                    if (!probe.isLegal(quiet.threat) || !visit(probe, quiet.threat).isCheckmate()) continue;
+                }
+            }
             let safe = true;
             let retainedGain = Infinity;
             const captureAnswers: MixedCheckingAttackProof["decisions"] = [];
@@ -4015,20 +4081,17 @@ function computeMixedCheckingAttack(
                 if (response.promotion) { safe = false; break; }
                 const checked = visit(next, response);
                 if (checked.isCheck()) {
-                    const retained = captureCounterchecker(checked,
-                        balance + capturedValue(pos, answer) - capturedValue(next, response));
+                    const checkedBalance = balance + capturedValue(pos, answer) - capturedValue(next, response);
+                    const retained = captureCounterchecker(checked, checkedBalance) ??
+                        (quiet?.defensiveInterposition && remaining > 1
+                            ? answerCountercheck(checked, checkedBalance, remaining - 1, nextPath) : null);
                     if (!retained) { safe = false; break; }
                     retainedGain = Math.min(retainedGain, retained.gain);
-                    captureAnswers.push(retained.decision);
+                    captureAnswers.push(...("decisions" in retained ? retained.decisions : [retained.decision]));
                 }
             }
             if (!safe) continue;
-            const gain = participantCaptureGain(
-                pos,
-                answer,
-                [...pos.board[side], answer.to],
-                budget,
-            );
+            const gain = captureGain(pos, answer, balance);
             if (gain !== null && balance + gain >= minimumGain)
                 return { gain: Math.min(balance + gain, retainedGain),
                     decisions: [decision(pos, answer), ...captureAnswers] };
@@ -4103,7 +4166,7 @@ function computeMixedCheckingAttack(
                 const next = visit(pos, move);
                 if (next.isEnd())
                     continue;
-                let gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+                let gain = captureGain(pos, move, balance);
                 if (gain === null || balance + gain < minimumGain)
                     continue;
                 const countercheckAnswers: MixedCheckingAttackProof["decisions"] = [];
@@ -8761,6 +8824,10 @@ function computeMaterialThreatGain(
     options: MaterialProofOptions = {},
 ): MaterialThreatProof {
     const { minimumGain = 100, mateAnswerMoves = 1, mateNodeLimit = 4096 } = options;
+    // Every caller, including legacy ray/accepted-offer fallbacks, must cover
+    // a legal draw claim. An optional later capture cannot erase a claim the
+    // defender could make now or by announcing a different quiet reply.
+    if (defenderCanClaimFiftyMoveDraw(step.after)) return { kind: "unknown" };
     const replies = legalMoves(step.after);
     if (!replies.length) return { kind: "unknown" };
     let minimum = Infinity;
@@ -8778,7 +8845,8 @@ function computeMaterialThreatGain(
             const answer = position.clone();
             answer.play(move);
             if (answer.isCheckmate()) return [makeSan(position, move)];
-            if (remaining > 1 && answer.isCheck()) checks.push({ move, answer });
+            if (remaining > 1 && answer.isCheck() && !defenderCanClaimFiftyMoveDraw(answer))
+                checks.push({ move, answer });
         }
         // Finish an available mate before exploring optional extra checking
         // sacrifices. Such detours can be sound yet teach the wrong mechanism.
@@ -9735,7 +9803,8 @@ export function tacticalBoardEvidence(
             : null;
     }
     if (motif.id === "forcingAttack") {
-        const quiet = step.capture ? proveMatingCaptureAttack(step) : proveQuietMatingAttack(step);
+        const quiet = step.capture ? proveMatingCaptureAttack(step)
+            : proveDefensiveMatingInterposition(step) ?? proveQuietMatingAttack(step);
         if (quiet) return {
             square: makeSquare(step.move.to),
             arrows: [{ from: makeSquare(quiet.threat.from), to: makeSquare(quiet.threat.to) }],
@@ -12383,6 +12452,20 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
             evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${bait.after.board.get(branch.receiver)!.role} from ${makeSquare(branch.receiver)}. If ${branch.reply}, ${branch.answer} ${branch.mode === "guard" ? "wins the now-unguarded" : "exploits the opened line to the"} ${bait.after.board.get(branch.target)!.role} on ${makeSquare(branch.target)}.${branch.mode === "guard" ? " Before the offer, that defender could legally recapture; the move order matters." : ""}${pin ? ` A different recapture, ${pin.reply}, puts the ${bait.after.board.get(pin.receiver)!.role} in a pin to its king; ${pin.answer} adds an attack on it. That pin belongs to this branch, not every defence.` : ""} All legal recaptures and declined offers retain extra material in the checked short exchanges; the continuation depends on the defence.`,
         } satisfies TacticalMotifEvidence;
     }
+    const accepted = acceptedGuardDeflectionProof(steps);
+    if (!accepted) return null;
+    return {
+        id: "deflection", label: "Deflection", source, confidence: "high", ply: 1,
+        moveUci: bait.uci, value: accepted.gain,
+        evidence: `${bait.san} draws the ${accepted.defender} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, removing its protection of the ${accepted.victim} on ${makeSquare(payoff.move.to)}. In this line, ${reply.san} ${payoff.san} wins that target. Every legal defence concedes material or immediate mate.`,
+    } satisfies TacticalMotifEvidence;
+}
+
+/** One exact accepted guard displacement, shared by the mechanism and its
+ * actual capture payoff. The supplied moves nominate identities only: the
+ * restoration counterfactual and all-reply material proof remain mandatory. */
+function acceptedGuardDeflectionProof(steps: TacticalReplayStep[]) {
+    const [bait, reply, payoff] = steps;
     if (
         !bait ||
         !reply ||
@@ -12428,17 +12511,17 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
         (bait.capture && tacticalExchangeGain(bait.before, bait.move) >= proof.gain)
     )
         return null;
-    const motif: TacticalMotifEvidence = {
-        id: "deflection",
-        label: "Deflection",
-        source,
-        confidence: "high",
-        ply: 1,
-        moveUci: bait.uci,
-        value: proof.gain,
-        evidence: `${bait.san} draws the ${defender.role} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, removing its protection of the ${victim.role} on ${makeSquare(payoff.move.to)}. In this line, ${reply.san} ${payoff.san} wins that target. Every legal defence concedes material or immediate mate.`,
+    return { gain: proof.gain, defender: defender.role, victim: victim.role };
+}
+
+function acceptedGuardDeflectionPayoff(steps: TacticalReplayStep[], motif: TacticalMotifEvidence): TacticalMotifEvidence | null {
+    const accepted = acceptedGuardDeflectionProof(steps);
+    if (!accepted) return null;
+    const [offer, reply, payoff] = steps;
+    return {
+        ...motif, label: "Deflection Payoff", value: undefined,
+        evidence: `${payoff.san} collects the ${accepted.victim} after ${offer.san} drew its ${accepted.defender} away with ${reply.san}. The offered piece and subsequent exchange costs are already included in that deflection, not an additional free-piece gain.`,
     };
-    return motif;
 }
 
 /** A checking exchange can preserve an already opened capture after an offer
@@ -12767,9 +12850,11 @@ export function proveMatingDeflection(
             declined.push(best);
         }
         const extended = mating.some(branch => branch.mode === "entry" || branch.continuation?.length);
-        // Once the new mating route is established, don't illustrate a king
-        // decline with an incidental pawn gain when the offered piece mates.
-        if (extended && root.after.isCheck()) for (const branch of declined) {
+        // Don't illustrate a decline with an incidental material gain when
+        // the offered piece immediately mates. This applies to the direct
+        // mating branches as well as longer entry routes.
+        if (root.after.isCheck()) for (const branch of declined) {
+            if (branch.gain === 10000) continue;
             const reply = parseSan(root.after, branch.reply) as NormalMove;
             const next = visit(root.after, reply);
             for (const answer of moves(next)) {
@@ -12781,7 +12866,7 @@ export function proveMatingDeflection(
                 break;
             }
         }
-        const forcingMate = extended && declined.every(branch => branch.gain === 10000);
+        const forcingMate = mating.length > 0 && declined.every(branch => branch.gain === 10000);
         if (mating.length) proof = { gain: forcingMate ? 10000 : minimum, mating, declined,
             ...(extended ? {visits: nodeLimit - budget.nodes} : {}),
             ...(forcingMate ? {forcingMate: true} : {}) };
@@ -14310,9 +14395,10 @@ export function auditTacticalMotifs(
             evidence: `${steps[0].san} prepares a mating attack with check. After ${branch.reply}, ${branch.setup} creates the threat ${branch.threat}; one material-concession line is ${branch.line.join(" ")}. All ${matingPreparation.branches.length} legal replies to the check allow a connected, verified mating attack, with every defence to each setup checked separately. Captures and defensive compensation are included. This proves a material concession, not a forced-mate claim; the later threat belongs to its actual position.`,
         });
     }
-    const quietAttack = !mate
+    const defensiveAttack = !mate ? proveDefensiveMatingInterposition(steps[0]) : null;
+    const quietAttack = defensiveAttack ?? (!mate
         ? (steps[0].capture ? proveMatingCaptureAttack(steps[0]) : proveQuietMatingAttack(steps[0]))
-        : !steps[0].capture && !steps[0].after.isCheck() ? proveQuietMatingAttack(steps[0]) : null;
+        : !steps[0].capture && !steps[0].after.isCheck() ? proveQuietMatingAttack(steps[0]) : null);
     if (quietAttack) {
         const material = quietAttack.branches.find(branch => branch.gain === quietAttack.gain)!;
         const interference = matingThreatInterference(steps[0], quietAttack);
@@ -14320,7 +14406,7 @@ export function auditTacticalMotifs(
             id: interference ? "interference" : "forcingAttack",
             label: interference ? "Mating Interference" : "Mating Attack", source: proposals[0]?.source ?? "available",
             confidence: "high", ply: 1, moveUci: steps[0].uci, value: quietAttack.gain,
-            evidence: `${steps[0].san} ${interference ? `cuts the ${interference.role}'s defensive route from ${makeSquare(interference.from)} to ${makeSquare(interference.to)}, creating the threat` : "creates the new threat"} ${quietAttack.threatSan}${quietAttack.threatMateIn === 2 ? " (mate in two if unanswered)" : ""}.${interference ? ` Without the blocker on ${makeSquare(steps[0].move.to)}, ${interference.defence} could answer that threat.` : ""} ${quietAttack.threatMateIn === 2 ? "The attack wins material or mates" : "Stopping the mate concedes material"}: after ${material.reply}, ${material.line.join(" ")} wins material. All ${quietAttack.branches.length} legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.`,
+            evidence: `${steps[0].san} ${defensiveAttack ? "blocks check and restores the threat" : interference ? `cuts the ${interference.role}'s defensive route from ${makeSquare(interference.from)} to ${makeSquare(interference.to)}, creating the threat` : "creates the new threat"} ${quietAttack.threatSan}${quietAttack.threatMateIn === 2 ? " (mate in two if unanswered)" : ""}.${interference ? ` Without the blocker on ${makeSquare(steps[0].move.to)}, ${interference.defence} could answer that threat.` : ""} ${quietAttack.threatMateIn === 2 ? "The attack wins material or mates" : "Stopping the mate concedes material"}: after ${material.reply}, ${material.line.join(" ")} wins material. All ${quietAttack.branches.length} legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.`,
         });
     }
     const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
@@ -15629,7 +15715,11 @@ export function auditTacticalMotifs(
             : {}),
         relevance: index === 0 ? ("primary" as const) : ("secondary" as const),
         value:
-            motif.value ??
+            // A verified mating mechanism supports the mate headline. Its
+            // deliberately absent material value must not become a pawn win
+            // (short line) or a duplicate mate score (completed line).
+            motif.id === "deflection" && motif.label === "Mating Deflection" && motif.verifiedCombination
+            ? undefined : motif.value ??
             (motif.id === "hangingPiece" && motif.ply
                 ? tacticalCaptureGain(steps[motif.ply - 1]) ?? 0
                 : mate || (motif.id === "mateThreat" && quietMate)

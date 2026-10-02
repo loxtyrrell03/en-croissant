@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "public-zugzwang-independent-check",
+  "puzzleId": "lichess:DVs4F",
+  "baselineHead": "3756c4bd385d001deafaf657c723eb4e3ab96ed3",
+  "runtimeBoundary": "existing eight-piece root abstention remains expected",
+  "command": "node node_modules/vitest/vitest.mjs run --config benchmarks/tactical-relevance/dvs4f-zugzwang.vitest.ts",
+  "startedAt": "2026-10-02T17:40:10.994Z",
+  "success": true,
+  "total": 9,
+  "passed": 9,
+  "failed": 0,
+  "pending": 0,
+  "tests": [
+    {
+      "title": "all13 provider certificates validate against exact FEN and complete legal move sets",
+      "status": "passed"
+    },
+    {
+      "title": "independent closure of the pawn-preserving draw strategy, reflected=false",
+      "status": "passed"
+    },
+    {
+      "title": "independent closure of the pawn-preserving draw strategy, reflected=true",
+      "status": "passed"
+    },
+    {
+      "title": "complete actual and hypothetical-pass composition, reflected=false",
+      "status": "passed"
+    },
+    {
+      "title": "complete actual and hypothetical-pass composition, reflected=true",
+      "status": "passed"
+    },
+    {
+      "title": "fifty-move claim boundary is before the defender's reset, reflected=false",
+      "status": "passed"
+    },
+    {
+      "title": "fifty-move claim boundary is before the defender's reset, reflected=true",
+      "status": "passed"
+    },
+    {
+      "title": "root, full line and counterfactual boundaries, reflected=false",
+      "status": "passed"
+    },
+    {
+      "title": "root, full line and counterfactual boundaries, reflected=true",
+      "status": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "benchmarks/tactical-relevance/dvs4f-zugzwang-evidence.json",
+      "sha256": "132b20dcf580ea04190acd6100b2b608c74c80187524b355c031a0f7b9c23842"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/dvs4f-zugzwang-proof.test.ts",
+      "sha256": "252412d4dd3887eaeff800cc4d023ad404227c8269ea76a58bbd68aed0bddabd"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/dvs4f-zugzwang.vitest.ts",
+      "sha256": "5e6cd0b58d07abac0e54f5ae46703e3afa9b4e4c5591dd4aa3829689e994ca77"
+    }
+  ],
+  "lint": {
+    "warnings": 0,
+    "errors": 0
+  }
+}

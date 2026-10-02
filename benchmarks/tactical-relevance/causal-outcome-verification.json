@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "scope": "En Croissant source adapter169 / live pipeline176. Public development regressions and synthetic transport checks, not population accuracy, new holdout results or installed-runtime proof.",
+  "baseCommit": "3756c4bd385d001deafaf657c723eb4e3ab96ed3",
+  "classifierVersion": "site-55.adapter-169",
+  "pipelineVersion": 176,
+  "broad": {
+    "started": "2026-10-02T17:47:08.081Z",
+    "finished": "2026-10-02T17:50:20.297Z",
+    "selectedFiles": 231,
+    "activeFiles": 210,
+    "fullyConditionalFiles": 21,
+    "passed": 3362,
+    "knownExpectedFailures": 1,
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "reportSha256": "6fe64305591e6ea95b9d630e7f0edfd33088fc6d28f29b0c95e3b7483c955101",
+    "sourceUnchangedDuringRun": true
+  },
+  "newChecks": {
+    "passed": 129,
+    "suites": [
+      "defensiveMatingInterposition.test.ts",
+      "deflectionOutcomePayoff.test.ts",
+      "deflectionPayoffHistoryGuards.test.ts",
+      "materialThreatDrawClaim.test.ts",
+      "mistakeNatureProvenance.test.ts",
+      "mistakeNatureProvenanceConsumers.test.tsx"
+    ]
+  },
+  "primaryPriority": {
+    "cases": 32,
+    "matches": 32,
+    "fullOutputUnchangedFromAdapter168": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "stagedCore": {
+    "passed": 518,
+    "skipped": 4,
+    "files": 20,
+    "blob": "f23a763187a652eeb3295e750f44b1a53aee8673",
+    "sha256LF": "d39792d64bed8622273f226fe70fdb0c3e118f31c74af43754ca1ff0fdfa9db8",
+    "sourceOverrideLoads": 1,
+    "pendingCheckingRayExcluded": true,
+    "unchangedDuringRun": true,
+    "reportSha256": "2a0e507e6a31c771219e316fa7325ca800e22bc45cccf0d91c81f993799b9a80"
+  },
+  "compiledServiceAndSampler": {
+    "passed": 65,
+    "skipped": 1,
+    "failed": 0,
+    "servicePasses": 55,
+    "samplerPasses": 10,
+    "optionalSkip": "Opt-in real background-engine check",
+    "generatedSha256": "6120556831c27abe33ba23d0b18e76c51d566936327986182e61af4d9838177f",
+    "transport": "Public Kn14A, Gtvlx and sGGZN both colours survive snapshot, export, reload and re-export; optional payoff values stay absent, exported motif version169 is checked, absent nature judgments are not falsely stamped.",
+    "ownerDataTouched": false
+  },
+  "exactZugzwang": {
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "receipt": "dvs4f-zugzwang-verification.json",
+    "runtimeEightPieceRootStillUnsupported": true
+  },
+  "checks": {
+    "wholeProjectTypes": "passed: --noEmit --incremental false",
+    "scopedLint": "18 files, zero errors and warnings",
+    "frontendAndReviewWorkerBuild": "passed, 8958 frontend modules; existing bundle-size/third-party bigint warnings",
+    "diffCheck": "passed"
+  },
+  "sourceHashesLF": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "6ec0824d8cd4d250c1e5d51ee81f2b16c6a1ff088564b5c580dd0682d88301b9",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "20d8889a29faf8967654c02fa51d4a2b1b37f37c50c983c145274f66a35250e6",
+    "src/utils/tacticalMotifs/liveTactics.ts": "f8456c3b4b9f61defd46aa26de84af2ea41e44da5c879bb110a6356f1374e192",
+    "src/utils/mistakeReview.ts": "b321936c24e9f2be16f8f30c1fab94b8090d06dbbf4519840a76013adc75b332",
+    "src/components/files/opening.ts": "00377f9dcb10d96e8b61d9b3eab784181b830a6da6a784cb9584d9e53ea49dee",
+    "src/components/review/OpeningReviewWorkspace.tsx": "71a39a84f02b53ab4c3c50c779379154c47a9bbed84593217f220764b180ba50",
+    "src/components/boards/Board.tsx": "4dc21dca250dd14bb5d53447d248b4ebae32bdac8878bec89dba6c1359f09d8b"
+  },
+  "indexBoard": {
+    "blob": "160bfaf8cddca0ae482cc9bf4c3c9dd1b95de50f",
+    "sha256LF": "b81ef56319c6bded912a5df2a9cd6d507c5ddf221425e36fe06433d96b569f79",
+    "preexistingFidePropHunkExcluded": true
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "limitations": [
+    "Related variants are not independent positions; paired claims remain in their own frozen receipts.",
+    "Eight-piece zugzwang is adjudicated but not runtime-supported.",
+    "CSQS3/GrHPv deeper preparations, sGGZN root-only completeness and the known queen-ending promotion gap remain unresolved.",
+    "The recursive checking-mate claim gate has preservation coverage, but no dedicated descendant-only negative fixture in this milestone.",
+    "Working-source builds include unrelated checkout changes; separately staged core and Board exclude preserved checking-ray/FIDE edits."
+  ]
+}

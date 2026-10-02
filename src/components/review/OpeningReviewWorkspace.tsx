@@ -156,6 +156,7 @@ import {
   getMistakeReviewNature,
   getMistakeReviewNatureBatchIndices,
   getMistakeReviewNatureConfidence,
+  getStoredMistakeReviewNatureClassification,
   getMistakeReviewNatureCounts,
   getMistakeReviewPhase,
   getMistakeReviewPhaseBatchIndices,
@@ -815,10 +816,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 const migrated = migratedByKey.get(mistakeReviewPositionKey(position));
                 const migratedMistake = migrated?.mistakeReview;
                 if (!migratedMistake || !position.mistakeReview) return position;
-                if (
-                  position.mistakeReview.natureClassifierVersion ===
-                  migratedMistake.natureClassifierVersion
-                ) {
+                if (getStoredMistakeReviewNatureClassification(position.mistakeReview)) {
                   return position;
                 }
 
@@ -838,6 +836,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     missedNature: migratedMistake.missedNature,
                     missedNatureReason: migratedMistake.missedNatureReason,
                     natureClassifierVersion: migratedMistake.natureClassifierVersion,
+                    natureMotifClassifierVersion: migratedMistake.natureMotifClassifierVersion,
                   },
                 };
               }),
@@ -6453,12 +6452,13 @@ function MistakeReviewGameInfoPanel({
     mistake,
     playerColor === "white" ? "black" : "white",
   );
-  const storedNature = getStoredMistakeReviewNature(position);
+  const storedNatureClassification = getStoredMistakeReviewNatureClassification(position.mistakeReview);
+  const storedNature = storedNatureClassification?.nature ?? "unknown";
   const nature = revealAnswer ? getMistakeReviewNature(position) : storedNature;
   const natureLabel = nature ? mistakeReviewNatureLabel(nature) : null;
   const natureConfidence = revealAnswer
     ? getMistakeReviewNatureConfidence(position)
-    : getStoredMistakeReviewNatureConfidence(position);
+    : storedNatureClassification?.confidence ?? "low";
   const revealedMotifs = revealAnswer
     ? [...getMistakeReviewAllowedMotifs(position), ...getMistakeReviewMissedMotifs(position)]
     : [];
@@ -6932,18 +6932,6 @@ function normalizeMistakeReviewName(value?: string | null) {
   const name = value?.trim();
   if (!name || name === "?" || name === "-") return "";
   return name;
-}
-
-function getStoredMistakeReviewNature(position: Position | null | undefined) {
-  const metadata = position?.mistakeReview;
-  const candidate = metadata?.nature ?? metadata?.mistakeNature ?? metadata?.summary?.nature;
-  return candidate === "tactical" || candidate === "positional" || candidate === "unknown" ? candidate : null;
-}
-
-function getStoredMistakeReviewNatureConfidence(position: Position | null | undefined) {
-  const metadata = position?.mistakeReview;
-  const candidate = metadata?.natureConfidence ?? metadata?.summary?.natureConfidence;
-  return candidate === "high" || candidate === "medium" || candidate === "low" ? candidate : null;
 }
 
 function normalizeMistakeReviewRating(value?: number | null) {
