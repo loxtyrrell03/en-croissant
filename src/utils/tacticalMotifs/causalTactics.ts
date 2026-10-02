@@ -3,7 +3,7 @@ import { Chess, castlingSide } from "chessops/chess";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import type { Color, NormalMove, Role, Square } from "chessops/types";
-import { kingCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops/util";
+import { kingCastlesTo, rookCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
 import { isTacticalObservation } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
@@ -3706,6 +3706,79 @@ export function proveMatingCaptureAttack(
     sharedBudget?: ProofBudget,
 ): QuietMatingAttackProof | null {
     return proveMatingThreatAttack(root, nodeLimit, onFailure, true, sharedBudget);
+}
+
+type CheckingMatingPreparationProof = {
+    gain: number;
+    visits: number;
+    branches: { reply: string; setup: string; threat: string; line: string[]; gain: number; replies: number }[];
+};
+const checkingMatingPreparationCache = new Map<string, CheckingMatingPreparationProof | null>();
+
+/** Compose a direct check with a connected, independently proved capture that
+ * creates a mating threat. All replies and child proofs share one budget; the
+ * original checker must be the child's mating partner. Neither PV moves nor
+ * engine scores supply proof. The child's gain already includes its capture. */
+export function proveCheckingMatingPreparation(
+    root: TacticalReplayStep,
+    nodeLimit = 8192,
+): CheckingMatingPreparationProof | null {
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        root.move.promotion || root.before.isCheck() || !root.after.isCheck() ||
+        root.after.isEnd() || !root.after.ctx().checkers.has(root.move.to) ||
+        defenderCanClaimFiftyMoveDraw(root.after)) return null;
+    const checker = root.after.board.get(root.move.to);
+    if (!checker || checker.color !== root.before.turn) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 8192 && checkingMatingPreparationCache.has(key))
+        return checkingMatingPreparationCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const compute = (): CheckingMatingPreparationProof | null => {
+        const replies = legalMoves(root.after);
+        if (!replies.length) return null;
+        const branches: CheckingMatingPreparationProof["branches"] = [];
+        for (const reply of replies) {
+            if (--budget.nodes < 0) return null;
+            const position = root.after.clone();
+            const debt = capturedValue(position, reply) + (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+            position.play(reply);
+            const survivor = position.board.get(root.move.to);
+            if (position.isEnd() || position.isCheck() || !survivor ||
+                survivor.color !== checker.color || survivor.role !== checker.role) return null;
+            let branch: CheckingMatingPreparationProof["branches"][number] | null = null;
+            for (const move of legalMoves(position)) {
+                if (--budget.nodes < 0) return null;
+                const capture = capturedValue(position, move);
+                if (!capture || move.promotion || move.from === root.move.to) continue;
+                const after = position.clone();
+                after.play(move);
+                if (after.isCheck() || after.isEnd() || defenderCanClaimFiftyMoveDraw(after)) continue;
+                const setup: TacticalReplayStep = { before: position, after, move, uci: makeUci(move),
+                    san: makeSan(position, move), capture, balance: capture };
+                const child = proveMatingCaptureAttack(setup, nodeLimit, undefined, budget);
+                if (!child || child.threat.from !== root.move.to || child.gain >= 10000) continue;
+                const gain = root.capture - debt + child.gain;
+                // A connected concession must add a material lesson beyond the
+                // opening capture, not just recover losses from that exchange.
+                if (gain < root.capture + MIN_TACTICAL_CAPTURE_GAIN) continue;
+                const material = child.branches.find(candidate => candidate.gain === child.gain);
+                if (!material) continue;
+                branch = { reply: makeSan(root.after, reply), setup: setup.san, threat: child.threatSan,
+                    line: [setup.san, material.reply, ...material.line], gain, replies: child.branches.length };
+                break;
+            }
+            if (!branch) return null;
+            branches.push(branch);
+        }
+        return { gain: Math.min(...branches.map(branch => branch.gain)), branches, visits: nodeLimit - budget.nodes };
+    };
+    const proof = compute();
+    if (nodeLimit === 8192) {
+        checkingMatingPreparationCache.set(key, proof);
+        if (checkingMatingPreparationCache.size > 128)
+            checkingMatingPreparationCache.delete(checkingMatingPreparationCache.keys().next().value!);
+    }
+    return proof;
 }
 
 function proveMatingThreatAttack(
@@ -9678,6 +9751,14 @@ export function tacticalBoardEvidence(
         };
     }
     if (motif.id === "doubleThreat") {
+        const castling = proveCastlingDoubleAttack(step);
+        if (castling) return {
+            square: makeSquare(castling.king),
+            arrows: [
+                { from: makeSquare(castling.king), to: makeSquare(castling.target) },
+                { from: makeSquare(castling.rook), to: makeSquare(step.after.board.kingOf(opposite(step.before.turn))!) },
+            ],
+        };
         const proof = proveQuietDoubleThreat(step);
         if (proof)
             return {
@@ -13827,6 +13908,76 @@ export function episodeEnd(steps: TacticalReplayStep[], allowConditional = false
     return steps.length;
 }
 
+type CastlingDoubleAttackProof = {
+    king: Square;
+    rook: Square;
+    target: Square;
+    gain: number;
+    branches: { replyUci: string; captureUci: string; gain: number }[];
+};
+const castlingDoubleAttackCache = new Map<string, CastlingDoubleAttackProof | null>();
+
+/** Castling moves two participants. The relocated rook must actually check,
+ * while the relocated king newly attacks a material target. Every evasion
+ * must lose that same piece to one of those two participants, including
+ * interpositions, recaptures, other captures and counterchecks. This is not
+ * discovered check: the checking rook itself moved. */
+export function proveCastlingDoubleAttack(root: TacticalReplayStep, nodeLimit = 4096): CastlingDoubleAttackProof | null {
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture ||
+        root.before.isCheck() || !root.after.isCheck() || root.after.isEnd() ||
+        defenderCanClaimFiftyMoveDraw(root.after)) return null;
+    const castle = castlingSide(root.before, root.move);
+    if (!castle || !root.before.isLegal(root.move)) return null;
+    const side = root.before.turn, king = kingCastlesTo(side, castle), rook = rookCastlesTo(side, castle);
+    if (root.after.board.get(king)?.role !== "king" || root.after.board.get(rook)?.role !== "rook" ||
+        !root.after.ctx().checkers.has(rook)) return null;
+    const oldAttacks = attacks(root.before.board.get(root.move.from)!, root.move.from, root.before.board.occupied);
+    const targets = [...attacks(root.after.board.get(king)!, king, root.after.board.occupied)
+        .intersect(root.after.board[opposite(side)])]
+        .filter(square => root.after.board.get(square)?.role !== "king" && !oldAttacks.has(square));
+    if (!targets.length) return null;
+    const key = `${makeFen(root.before.toSetup())}:${king}:${rook}`;
+    if (nodeLimit === 4096 && castlingDoubleAttackCache.has(key)) return castlingDoubleAttackCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    let result: CastlingDoubleAttackProof | null = null;
+    try {
+        for (const target of targets) {
+            const branches: CastlingDoubleAttackProof["branches"] = [];
+            for (const reply of recoveryMoves(root.after, side)) {
+                if (--budget.nodes < 0) throw new Error("Castling double-attack budget exhausted");
+                const after = root.after.clone(); after.play(reply);
+                if (after.isEnd()) break;
+                const square = reply.from === target ? reply.to : target;
+                const debit = capturedValue(root.after, reply) + (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+                let selected: CastlingDoubleAttackProof["branches"][number] | undefined;
+                for (const capture of recoveryMoves(after, side)) {
+                    if (![king, rook].includes(capture.from) || capture.to !== square || !capturedValue(after, capture)) continue;
+                    const retained = preparationCaptureGain(after, capture, budget);
+                    if (retained === null || retained - debit < MIN_TACTICAL_CAPTURE_GAIN) continue;
+                    const gain = retained - debit;
+                    if (!selected || gain > selected.gain)
+                        selected = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain };
+                }
+                if (!selected) break;
+                branches.push(selected);
+            }
+            if (branches.length !== legalMoves(root.after).length) continue;
+            const gain = Math.min(...branches.map(branch => branch.gain));
+            // A pre-existing profitable capture is not created by castling.
+            if (legalMoves(root.before).some(move => move.to === target && capturedValue(root.before, move) &&
+                tacticalExchangeGain(root.before, move) >= gain)) continue;
+            if (!result || gain > result.gain) result = { king, rook, target, gain, branches };
+        }
+    } catch { /* Incomplete defensive coverage cannot certify the compound move. */ }
+    if (nodeLimit === 4096) {
+        castlingDoubleAttackCache.set(key, result);
+        if (castlingDoubleAttackCache.size > 128)
+            castlingDoubleAttackCache.delete(castlingDoubleAttackCache.keys().next().value!);
+    }
+    return result;
+}
+
+type XRayPromotionBranch = { replyUci: string; captureUci: string; gain: number };
 type XRaySupportProof = {
     slider: Square;
     receiver: Square;
@@ -13835,7 +13986,55 @@ type XRaySupportProof = {
     recapture: string;
     mating: boolean;
     gain: number;
+    promotionBranches?: XRayPromotionBranch[];
 };
+
+/** Keep the global material-leaf promotion veto. Only this connected x-ray
+ * exchange may settle an actual promotion by capturing the promoted piece
+ * with its supporting slider or offered piece. Charge the promotion uplift
+ * and every capture, then reuse the bounded liability/countercheck verifier.
+ * All four roles and off-square promotion choices require their own answer. */
+function xRayPromotionRetention(step: TacticalReplayStep, slider: Square, gain: number, budget: ProofBudget) {
+    let minimum = gain;
+    const branches: XRayPromotionBranch[] = [];
+    for (const reply of recoveryMoves(step.after, step.before.turn)) {
+        if (--budget.nodes < 0) throw new Error("X-ray promotion budget exhausted");
+        if (!reply.promotion) {
+            if (!mayGiveCheck(step.after, reply)) continue;
+            const checked = step.after.clone(); checked.play(reply);
+            if (checked.isCheckmate()) return null;
+            if (!checked.isCheck()) continue;
+            // The promotion exception cannot skip a different checking
+            // defence. Require an actual legal evasion with the established
+            // liability/countercheck leaf; unresolved promotions still fail.
+            const balance = step.capture - capturedValue(step.after, reply);
+            let retained = -Infinity;
+            for (const answer of recoveryMoves(checked, step.before.turn)) {
+                const earned = preparationCaptureGain(checked, answer, budget);
+                if (earned !== null) retained = Math.max(retained, balance + earned);
+            }
+            if (retained < MIN_TACTICAL_CAPTURE_GAIN) return null;
+            minimum = Math.min(minimum, retained);
+            continue;
+        }
+        const after = step.after.clone(); after.play(reply);
+        if (after.isEnd()) return null;
+        const debit = capturedValue(step.after, reply) + VALUE[reply.promotion] - VALUE.pawn;
+        let selected: XRayPromotionBranch | undefined;
+        for (const capture of recoveryMoves(after, step.before.turn)) {
+            if (![slider, step.move.to].includes(capture.from) || capture.to !== reply.to || !capturedValue(after, capture)) continue;
+            const retained = preparationCaptureGain(after, capture, budget);
+            if (retained === null) continue;
+            const total = step.capture - debit + retained;
+            if (total >= MIN_TACTICAL_CAPTURE_GAIN && (!selected || total > selected.gain))
+                selected = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain: total };
+        }
+        if (!selected) return null;
+        minimum = Math.min(minimum, selected.gain);
+        branches.push(selected);
+    }
+    return { gain: minimum, branches };
+}
 
 /** X-ray support is a concrete exchange geometry, not a label financed by
  * profit or mate somewhere in a supplied PV. A legal capture of the offered
@@ -13856,8 +14055,8 @@ export function proveXRaySupport(step: TacticalReplayStep, nodeLimit = 4096): XR
             if (blockers.length !== 1) continue;
             const receiver = blockers[0];
             if (step.after.board.get(receiver)?.color === side) continue;
-            const acceptance = { from: receiver, to: square };
-            if (!step.after.isLegal(acceptance)) continue;
+            const acceptance = legalMoves(step.after).find(move => move.from === receiver && move.to === square);
+            if (!acceptance) continue;
             const accepted = step.after.clone();
             accepted.play(acceptance);
             const recapture = { from: slider, to: square };
@@ -13880,9 +14079,18 @@ export function proveXRaySupport(step: TacticalReplayStep, nodeLimit = 4096): XR
             if (!without.isLegal(step.move)) continue;
             const reduced = tacticalExchangeGain(without, step.move);
             if (reduced <= -VALUE.king) continue;
-            const gain = participantCaptureGain(step.before, step.move, [...step.before.board[side], square], budget);
-            if (gain === null || gain < 90 || gain - reduced < 90 || !noImmediateTerminalRefutation(step.before, step.move, budget)) continue;
-            return { slider, receiver, square, acceptance: makeSan(step.after, acceptance), recapture: makeSan(accepted, recapture), mating: false, gain };
+            let gain = participantCaptureGain(step.before, step.move, [...step.before.board[side], square], budget);
+            if (gain === null || gain < 90 || gain - reduced < 90) continue;
+            let promotionBranches: XRayPromotionBranch[] | undefined;
+            if (legalMoves(step.after).some(move => move.promotion)) {
+                const retained = xRayPromotionRetention(step, slider, gain, budget);
+                if (!retained) continue;
+                gain = retained.gain;
+                promotionBranches = retained.branches;
+                if (gain - reduced < 90) continue;
+            } else if (!noImmediateTerminalRefutation(step.before, step.move, budget)) continue;
+            return { slider, receiver, square, acceptance: makeSan(step.after, acceptance), recapture: makeSan(accepted, recapture), mating: false, gain,
+                ...(promotionBranches ? { promotionBranches } : {}) };
         }
     } catch {
         // Partial coverage and exhausted exchange budgets never establish support.
@@ -13895,7 +14103,7 @@ export function xRaySupportEvidence(step: TacticalReplayStep, source: TacticalMo
     if (!proof) return null;
     return { id: "xRayAttack", label: "X-Ray Support", source, confidence: "high", ply: 1,
         moveUci: step.uci, ...(proof.mating ? {} : { value: proof.gain }),
-        evidence: `${step.san} uses the ${step.after.board.get(proof.slider)!.role} on ${makeSquare(proof.slider)} behind the opposing ${step.after.board.get(proof.receiver)!.role} on ${makeSquare(proof.receiver)}. If ${proof.acceptance}, that piece vacates the ray and allows ${proof.recapture}${proof.mating ? ", with a separately verified forced mate" : ", preserving the material gain"}. This is support for the exchange on ${makeSquare(proof.square)}, not another attack at its eventual payoff.` };
+        evidence: `${step.san} uses the ${step.after.board.get(proof.slider)!.role} on ${makeSquare(proof.slider)} behind the opposing ${step.after.board.get(proof.receiver)!.role} on ${makeSquare(proof.receiver)}. If ${proof.acceptance}, that piece vacates the ray and allows ${proof.recapture}${proof.mating ? ", with a separately verified forced mate" : ", preserving the material gain"}. ${proof.promotionBranches?.length ? `All ${proof.promotionBranches.length} legal promotion choices have checked captures of the promoted piece, including its promotion value and recaptures. ` : ""}This is support for the exchange on ${makeSquare(proof.square)}, not another attack at its eventual payoff.` };
 }
 
 function trapIsMainCause(motif: TacticalMotifEvidence, directGain: number) {
@@ -14090,6 +14298,16 @@ export function auditTacticalMotifs(
             moveUci: steps[0].uci,
             value: forcingAttack.gain,
             evidence: `${steps[0].san} ${mixedCheckingAttack ? `offers the ${steps[0].before.board.get(steps[0].move.from)!.role} with check` : "starts a checking attack"} that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`,
+        });
+    }
+    const matingPreparation = !mate && !forcingAttack && !verifiedFork(steps[0])
+        ? proveCheckingMatingPreparation(steps[0]) : null;
+    if (matingPreparation) {
+        const branch = matingPreparation.branches.find(candidate => candidate.gain === matingPreparation.gain)!;
+        candidates.push({
+            id: "forcingAttack", label: "Mating Attack Preparation", source: proposals[0]?.source ?? "available",
+            confidence: "high", ply: 1, moveUci: steps[0].uci, value: matingPreparation.gain,
+            evidence: `${steps[0].san} prepares a mating attack with check. After ${branch.reply}, ${branch.setup} creates the threat ${branch.threat}; one material-concession line is ${branch.line.join(" ")}. All ${matingPreparation.branches.length} legal replies to the check allow a connected, verified mating attack, with every defence to each setup checked separately. Captures and defensive compensation are included. This proves a material concession, not a forced-mate claim; the later threat belongs to its actual position.`,
         });
     }
     const quietAttack = !mate
@@ -14311,6 +14529,15 @@ export function auditTacticalMotifs(
     candidates.push(...rayEvidence);
     const pinnedCapture = pinnedCaptureEvidence(steps[0], proposals[0]?.source ?? "available");
     if (pinnedCapture) candidates.push(pinnedCapture);
+    const castlingAttack = !mate ? proveCastlingDoubleAttack(steps[0]) : null;
+    if (castlingAttack) {
+        const root = steps[0];
+        candidates.push({
+            id: "doubleThreat", label: "Castling Double Attack", source: proposals[0]?.source ?? "available",
+            confidence: "high", ply: 1, moveUci: root.uci, value: castlingAttack.gain, verifiedCombination: true,
+            evidence: `${root.san} checks with the rook on ${makeSquare(castlingAttack.rook)} while the king on ${makeSquare(castlingAttack.king)} attacks the ${root.after.board.get(castlingAttack.target)!.role} on ${makeSquare(castlingAttack.target)}. All ${castlingAttack.branches.length} legal replies allow that same piece to be captured by the king or rook, retaining at least ${Number((castlingAttack.gain / 100).toFixed(1))} pawns of local material after recaptures and counterchecks. Both castling pieces participate; the checking rook moved, so this is not a discovered check.`,
+        });
+    }
     const defenderEvidence = capturedDefenderEvidence(
         steps[0],
         proposals[0]?.source ?? "available",
@@ -15683,6 +15910,12 @@ function normalizeDirectMaterialPayoffs(
         ) return motif;
         const victim = capture.before.board.get(capture.move.to);
         if (!victim || victim.color === capture.before.turn) return motif; // includes en passant
+        const castling = motifs.some(previous => previous.id === "doubleThreat" &&
+            previous.ply === motif.ply! - 2 && previous.source === motif.source && previous.moveUci === first.uci)
+            ? proveCastlingDoubleAttack(first) : null;
+        if (castling?.branches.some(branch => branch.replyUci === reply.uci && branch.captureUci === capture.uci))
+            return { ...motif, label: "Castling Payoff", value: undefined,
+                evidence: `${capture.san} collects the ${victim.role} attacked by ${first.san}'s castling double attack. This capture and its recaptures are already included in that combination's material bound.` };
         const candidates = motifs.filter((previous) =>
             previous.ply === motif.ply! - 2 && previous.source === motif.source &&
             previous.moveUci === first.uci &&
@@ -15935,6 +16168,8 @@ function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidenc
             gain = proof.gain;
         }
     } else if (motif.id === "forkPreparation" || motif.id === "doubleThreat") {
+        const castling = motif.id === "doubleThreat" ? proveCastlingDoubleAttack(step) : null;
+        if (castling) return { targets: [castling.target], gain: castling.gain };
         const proof =
             motif.id === "doubleThreat"
                 ? proveQuietDoubleThreat(step)
@@ -16255,6 +16490,9 @@ export function compareImmediateTacticalDefence(
             // This two-branch move-order proof needs its own defensive
             // comparison before it can blame the preceding move. Keep the
             // position lesson and independently proved alternative causes.
+        } else if (motif.id === "forcingAttack" && motif.label === "Mating Attack Preparation") {
+            // A check may merely postpone this multi-step attack. Its local
+            // proof does not yet establish prevention by the earlier move.
         } else if (!alternative) {
             comparison = "prevented";
             comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;

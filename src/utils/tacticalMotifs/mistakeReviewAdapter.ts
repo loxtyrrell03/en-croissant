@@ -143,7 +143,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 167;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 168;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -728,7 +728,7 @@ function isAlternativeCapture(motif: TacticalMotifEvidence | undefined) {
         motif.ply === 1 && motif.alternativeCapture === true;
 }
 
-/** An independently proved ordinary fork also exists in the played move.
+/** An independently proved ordinary or direct-checking fork also exists in the played move.
  * This available/persists marker is comparison context in the better-line
  * array, not a missed cause or a claim that the two moves have equal value. */
 export function isRetainedForkChoice(
@@ -750,21 +750,28 @@ function qualifyRetainedForkChoice(
     const best = replayTacticalLine(fen, [bestMove])[0];
     const played = replayTacticalLine(fen, [playedMove])[0];
     // Same destination, role and original victims connect the two mechanisms.
-    // A merely similar label, checking attack, promotion or connected exchange
+    // A merely similar label, extra checking mechanism, promotion or connected exchange
     // needs a different comparison; keep its existing lesson unchanged.
     if (!best || !played || best.move.to !== played.move.to ||
         best.move.promotion || played.move.promotion || best.capture !== played.capture ||
-        best.after.isCheck() || played.after.isCheck() ||
+        best.after.isCheck() !== played.after.isCheck() ||
         best.after.board.get(best.move.to)?.role !== played.after.board.get(played.move.to)?.role) return motifs;
+    const checking = best.after.isCheck();
+    // A direct check by the forker is part of the same mechanism. A discovered
+    // or second checker is a separate resource, even at the same destination.
+    if (checking && [best, played].some(step => step.after.ctx().checkers.size() !== 1 ||
+        !step.after.ctx().checkers.has(step.move.to))) return motifs;
+    const checkedKing = checking ? best.before.board.kingOf(best.after.turn) : undefined;
     const bestProof = proveImmediateFork(best), playedProof = proveImmediateFork(played);
     if (!bestProof || !playedProof || bestProof.gain >= 10000 || playedProof.gain >= 10000 ||
+        (checking && (checkedKing === undefined || !bestProof.targets.includes(checkedKing))) ||
         bestProof.branches.some(branch => branch.collection?.length) ||
         playedProof.branches.some(branch => branch.collection?.length) ||
         bestProof.targets.length !== playedProof.targets.length ||
         !bestProof.targets.every(target => {
             const original = best.before.board.get(target);
             return playedProof.targets.includes(target) && original &&
-                original.color !== best.before.turn && original.role !== "king" &&
+                original.color !== best.before.turn && (original.role !== "king" || target === checkedKing) &&
                 best.after.board.get(target)?.role === original.role &&
                 played.after.board.get(target)?.role === original.role;
         })) return motifs;
@@ -1164,6 +1171,8 @@ export function buildTacticalTimeline(
     const positionKey = (fen: string) => fen.split(" ").slice(0, 4).join(" ");
     const unprovedPositions = new Set([positionKey(fen)]);
     const rawSteps = walkPV(fen, legalLine, fenSide(fen)) as SiteThemeStep[];
+    // Legacy nominations may not understand king-to-rook castling aliases.
+    // The legal replay, not a missing legacy row, owns each audit's board.
     const evidence = new Map<string, TacticalMotifEvidence>();
     for (const motif of rootMotifs) {
         const step = replay[(motif.ply ?? 0) - 1];
@@ -1199,7 +1208,7 @@ export function buildTacticalTimeline(
         }
         const suffix = legalLine.slice(index);
         const tacticalStart = hasTacticalStart(
-            rawSteps[index]?.fenBefore ?? "",
+            makeFen(step.before.toSetup()),
             suffix,
             index === 0 && rootMotifs.some((motif) => motif.id === "tacticalPreparation"),
             tablebaseEvidence,
@@ -1308,14 +1317,14 @@ export function buildTacticalTimeline(
             ),
         };
         const candidates = auditTacticalMotifs(
-            rawSteps[index]?.fenBefore ?? "",
+            makeFen(step.before.toSetup()),
             suffix,
             toMotifEvidence(detail, source, sanLine?.slice(index)),
             undefined,
             {
                 tablebaseEvidence,
                 ...(index > 0 ? {
-                      previousFen: rawSteps[index - 1]?.fenBefore,
+                      previousFen: makeFen(replay[index - 1].before.toSetup()),
                       previousMoveUci: replay[index - 1].uci,
                   } : {}),
             },

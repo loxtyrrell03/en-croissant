@@ -10,9 +10,11 @@ import { parseUci } from "chessops/util";
 import { SharedReviewService } from "../generated/shared-review-service.js";
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
-for (const reflected of [false, true]) test(`shared fork stays neutral through generated review, export and reload: reflected=${reflected}`, async () => {
+for (const checking of [false, true]) for (const reflected of [false, true]) test(`shared fork stays neutral through generated review, export and reload: checking=${checking}, reflected=${reflected}`, async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-retained-fork-"));
-  const original = "1k1q3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1";
+  const original = checking
+    ? "3k3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1"
+    : "1k1q3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1";
   const fen = reflected ? reflectMixedForkFen(original) : original;
   const flip = move => reflected ? reflectMixedForkMove(move) : move;
   const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
@@ -26,7 +28,8 @@ for (const reflected of [false, true]) test(`shared fork stays neutral through g
     fetchGames: async () => [], lookup: async requested => {
       assert.ok(requested === fen || requested === after);
       // Controlled scores nominate a card and test transport, not the moves'
-      // true evaluation. The two ordinary forks are independently proved.
+      // true evaluation. Both forks are independently proved; their local
+      // material outcomes and whole-position values are not assumed equal.
       return { depth: 18, pvs: requested === fen
         ? [{ cp: reflected ? -300 : 300, moves: ["d6f7", "d8e7", "f7h8"].map(flip).join(" ") }]
         : [{ cp: 0, moves: flip("d8e7") }] };
@@ -50,6 +53,7 @@ for (const reflected of [false, true]) test(`shared fork stays neutral through g
     assert.equal(fork.comparison, "persists");
     assert.match(card.explanation, /^Both moves create this fork:/);
     assert.match(card.explanation, /does not establish that the moves are equally good/);
+    assert.match(card.explanation, checking ? /king on/ : /queen on/);
     assert.doesNotMatch(card.explanation, /you missed|also missed/i);
     assert.ok(card.bestTimeline.some(m => m.id === "fork" && m.source === "available" && m.comparison === "persists"));
     const saved = (await service.deck()).positions[0].mistakeReview;

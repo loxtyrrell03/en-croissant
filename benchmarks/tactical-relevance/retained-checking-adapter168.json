@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-02",
+  "targetClassifierVersion": "site-55.adapter-168",
+  "scope": "Same direct-checking fork attribution. Synthetic legal branch contracts, not population accuracy or holdout evidence. The paired change was frozen before the parent version bump; generated bundle and final milestone verification are separate.",
+  "baselineRevision": "662b8e57",
+  "loadedCoreSha256Raw": "5e2763c0d003bcd787b8105254cc1c5597f23234f8bb139c63e2af0262c0812d",
+  "beforeAdapterSha256Raw": "584e689c8b3e63ae0fbe1df5d04edfc4679d0d56895d07394a1e007eb1d57121",
+  "afterAdapterBeforeVersionBumpSha256Raw": "43756b02e83f3a946a6c12830bb3fd72689f808f676139c1428213f9f102fca2",
+  "pairedTest": "src/utils/tests/retainedCheckingForkChoice.test.ts",
+  "pairedTestSha256Raw": "121b690340b5de77a0df648cb51539cca57782d624be26be8d772291d9a9f363",
+  "method": "Identical observable tests with an exact resolved-module override. Both runs loaded the committed 662b8e57 core, excluding pending checking-ray code; before additionally loaded that commit's adapter. Loader use was asserted. No production file replacement or index mutation.",
+  "before": { "total": 16, "passed": 6, "failed": 10, "reportSha256Raw": "d4811dbd597bcdce43a5dadef4f668f4d5c74e9d1c096dbc1428b2c525a46a57" },
+  "after": { "total": 16, "passed": 16, "failed": 0, "reportSha256Raw": "e36cd755eca0855510d50cdbd2be346ac631ff20b3015802598e45e9bcea6fd1" },
+  "cases": [
+    { "fen": "3k3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1", "best": "d6f7", "played": "h6f7", "judgment": "Both fork Kd8/Rh8. The actual line Nhf7+ Ke7 Nxh8 permits cxd6/Kxd6; Ndf7+ has no immediate countercapture after Nxh8. Same mechanism is not equivalent material outcome, and no bounds are subtracted to invent a new cause." },
+    { "fen": "3k3r/pp1p4/3N3N/2P5/2B5/8/5PPP/6K1 w - - 0 1", "best": "d6f7", "played": "h6f7", "judgment": "Both same-target checking forks collect Rh8 after every legal king reply without an immediate countercapture. Still no claim of whole-position equality." },
+    { "fen": "1r1k3r/p1p5/3N3N/4N3/2B5/8/5PPP/6K1 w - - 0 1", "best": "d6f7", "played": "e5c6", "judgment": "Both check the same original king, but the forked rooks h8/b8 differ. Not the retained same-target mechanism." },
+    { "fen": "3k3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1", "best": "d6f7", "played": "g1f1", "judgment": "The genuine missed checking fork remains a lesson." },
+    { "fen": "3k3r/ppp5/3N3N/8/2B5/8/5PPP/3R2K1 w - - 0 1", "best": "d6f7", "played": "h6f7", "judgment": "The first move also uncovers Rd1, giving two checkers versus one. Preserve this separate mechanism; do not mark equivalent fork context." }
+  ],
+  "dimensions": "Both colours, both assignments of the two matching fork moves, omitted scores, root-only/full line evidence, nonvacuous root timeline and neutral tactical-cause selection.",
+  "guards": "Same role, destination and initial capture; same direct single-check status and original king; complete identical certified original target sets; independent all-reply immediate proofs. No promotions, mating-valued claims, extra checkers or connected collection proofs. Each motif matches its own certificate; the certificates are not compared as exact outcomes.",
+  "combinedSourceChecks": { "suites": 6, "passed": 148, "skipped": 1, "failed": 0, "reportSha256Raw": "1aaa93225f9062227f95a413d48135b7ee63e82d49f40d8375559dca51af89da", "suiteNames": ["retainedCheckingForkChoice", "retainedForkChoice", "retainedMateChoice", "tacticalLessonPriority", "liveTactics", "tacticalMotifs"] },
+  "limitations": "Compound recapture-backed comparisons remain pending: selected SAN examples are not complete typed branch/support correspondence. The observed Nd6 loss is documented, not given a new causal label. Owner stores, installed apps and phone runtime were untouched. These raw hashes identify the frozen paired artifacts, not the final generated service or version 168 core."
+}

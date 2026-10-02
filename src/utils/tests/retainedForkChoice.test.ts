@@ -106,7 +106,7 @@ for (const reflected of [false, true]) {
         expect(buildMistakeReviewTacticalExplanation(result)?.title).toBe("What you missed: Fork");
     });
 
-    test(`checking forks stay outside the material-only comparison: reflected=${reflected}`, () => {
+    test(`a matching direct checking fork is retained without comparing outcomes: reflected=${reflected}`, () => {
         const { fen, move } = fixture("3k3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1", reflected);
         const best = move("d6f7"), played = move("h6f7");
         for (const candidate of [best, played]) {
@@ -115,10 +115,8 @@ for (const reflected of [false, true]) {
             expect(proveImmediateFork(step)).not.toBeNull();
         }
         const result = classifyMistakeReviewMotifs({ fen, bestMoveUci: best, playedMoveUci: played, pvUci: [best] });
-        expect(result.missedMotifs.some(isRetainedForkChoice)).toBe(false);
-        // Unchanged evidence outside this narrow comparison, not an
-        // adjudication that its current missed-opportunity wording is right.
-        expect(result.missedMotifs.some(m => m.id === "fork")).toBe(true);
+        expect(result.missedMotifs.some(isRetainedForkChoice)).toBe(true);
+        expect(buildMistakeReviewTacticalExplanation(result)?.text).toContain("does not establish that the moves are equally good");
     });
 
     test(`a matching compound fork needs its own comparison: reflected=${reflected}`, () => {
