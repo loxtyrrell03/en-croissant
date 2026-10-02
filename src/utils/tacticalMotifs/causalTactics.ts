@@ -1802,8 +1802,8 @@ type PromotionCombinationProof = {
 const PROMOTION_COMBINATION_NODE_LIMIT = 262144;
 const promotionCombinationCache = new Map<string, PromotionCombinationProof | null>();
 
-/** Nominate advanced passed pawns only after a material concession removes
- * a piece controlling their advance. Every defensive reply is searched;
+/** Nominate advanced pawns with a passed-pawn route only after a material
+ * concession removes a piece controlling their advance. Every reply is searched;
  * the supplied PV is not used as a substitute for those replies. */
 export function provePromotionCombination(
     root: TacticalReplayStep,
@@ -1832,27 +1832,44 @@ export function provePromotionCombination(
         promotionCombinationCache.has(cacheKey)
     )
         return promotionCombinationCache.get(cacheKey)!;
+    const isPassed = (pos: Chess, sq: Square) =>
+        ![...pos.board.pieces(enemy, "pawn")].some(
+            (other) =>
+                Math.abs((other % 8) - (sq % 8)) <= 1 &&
+                (side === "white" ? other > sq : other < sq),
+        );
+    const pawnRoutes = new Map<Square, Square[]>();
     const pawns = [...root.after.board.pieces(side, "pawn")].filter((sq) => {
         const distance = side === "white" ? 7 - Math.floor(sq / 8) : Math.floor(sq / 8);
-        return (
-            distance >= 1 &&
-            distance <= 3 &&
-            ![...root.after.board.pieces(enemy, "pawn")].some(
-                (other) =>
-                    Math.abs((other % 8) - (sq % 8)) <= 1 &&
-                    (side === "white" ? other > sq : other < sq),
-            )
-        );
+        if (distance < 1 || distance > 3) return false;
+        const routes = isPassed(root.after, sq) ? [sq] : [];
+        // Capturing an adjacent pawn can create the passer. This nominates
+        // a route only; the existing bounded search still checks all replies,
+        // counterpromotion threats and captures of the promoted piece.
+        const probe = withTurn(root.after, side);
+        for (const move of legalMoves(probe)) {
+            if (move.from !== sq || move.promotion) continue;
+            const victim = probe.board.get(move.to);
+            if (victim?.color !== enemy || victim.role !== "pawn") continue;
+            const after = probe.clone();
+            after.play(move);
+            if (isPassed(after, move.to)) routes.push(move.to);
+        }
+        if (routes.length) pawnRoutes.set(sq, routes);
+        return routes.length > 0;
     });
     if (!pawns.length || pawns.length > 3) return null;
     const controlled = pawns.flatMap((sq) => {
         const path: Square[] = [];
-        for (let to = sq + direction; to >= 0 && to < 64; to += direction) {
-            if (root.before.board.has(to)) continue;
-            const probe = withTurn(root.before, enemy);
-            probe.board.take(sq);
-            probe.board.set(to, { color: side, role: "pawn" });
-            if (probe.isLegal({ from: root.move.to, to })) path.push(to);
+        for (const route of pawnRoutes.get(sq) ?? [sq]) {
+            for (let to = route === sq ? sq + direction : route; to >= 0 && to < 64; to += direction) {
+                if (root.before.board.has(to) && to !== route) continue;
+                const probe = withTurn(root.before, enemy);
+                probe.board.take(sq);
+                if (route !== sq) probe.board.take(route);
+                probe.board.set(to, { color: side, role: "pawn" });
+                if (probe.isLegal({ from: root.move.to, to }) && !path.includes(to)) path.push(to);
+            }
         }
         return path;
     });
@@ -2150,7 +2167,11 @@ export function provePromotionCombination(
                 rootBranches.push({ replyUci: makeUci(reply), gain: continuation.gain });
             if (includeWitnesses) decisions.push(...(continuation.decisions ?? []));
             const branch = [makeSan(pos, reply), ...continuation.line];
-            if (branch.length > example.length) example = branch;
+            // Keep the promotion witness even if a declined-sacrifice branch
+            // is longer. Every branch still contributes to the minimum gain.
+            const promotes = (moves: string[]) => moves.some((san, index) => index % 2 === 1 && /=[QRBN]/.test(san));
+            if ((promotes(branch) && !promotes(example)) ||
+                (promotes(branch) === promotes(example) && branch.length > example.length)) example = branch;
         }
         return Number.isFinite(minimum)
             ? { gain: minimum, line: example, ...(includeWitnesses ? { decisions } : {}) }
@@ -7821,14 +7842,18 @@ export function proveExchangeDiscovery(
     const side = step.before.turn;
     const pieces = [...new Set([step.move.to, ...rays.map((r) => r.from)])];
     const targets = [
-        ...new Set(
-            pieces.flatMap((from) => [
-                ...attacks(step.after.board.get(from)!, from, step.after.board.occupied).intersect(
-                    step.after.board[opposite(side)],
-                ),
-            ]),
-        ),
+        ...new Set([
+            ...rays.map((ray) => ray.target),
+            ...attacks(
+                step.after.board.get(step.move.to)!,
+                step.move.to,
+                step.after.board.occupied,
+            ).intersect(step.after.board[opposite(side)]),
+        ]),
     ];
+    // An unchanged attack by the uncovered slider cannot fund a failed
+    // discovery. Re8+ Kh7 Rxd8 Qxd8 Qxf7 uses the queen's already-open
+    // f-file, not the newly exposed Qf3-Qd5 diagonal.
     if (targets.length < 2) return null;
     const budget = { nodes: nodeLimit };
     const delta = (pos: Chess, move: NormalMove) =>
@@ -14031,7 +14056,7 @@ export function auditTacticalMotifs(
             ply: 1,
             moveUci: root.uci,
             value: promotionCombination.gain,
-            evidence: `${root.san} removes the ${root.before.board.get(root.move.to)!.role} on ${makeSquare(root.move.to)}, which controlled ${promotionCombination.controlled.map(makeSquare).join(" and ")}. ${promotionCombination.pawns.length === 1 ? "The passed pawn" : "The passed pawns"} on ${promotionCombination.pawns.map(makeSquare).join(" and ")} can advance. All ${promotionCombination.replyCount} legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is ${[root.san, ...promotionCombination.line].join(" ")}.`,
+            evidence: `${root.san} removes the ${root.before.board.get(root.move.to)!.role} on ${makeSquare(root.move.to)}, which controlled ${promotionCombination.controlled.map(makeSquare).join(" and ")}. ${promotionCombination.pawns.length === 1 ? "The pawn" : "The pawns"} on ${promotionCombination.pawns.map(makeSquare).join(" and ")} can advance toward promotion. All ${promotionCombination.replyCount} legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is ${[root.san, ...promotionCombination.line].join(" ")}.`,
         });
     }
     const checkingAttack =
@@ -14445,6 +14470,13 @@ export function auditTacticalMotifs(
             if (anchor < 0) continue;
             if (anchor >= 0) {
                 const bait = episode[anchor];
+                // A mating PV where the king accepts the offer does not
+                // prove attraction when a legal king flight declines it.
+                // Keep the independently proved root mate in that case.
+                const replies = legalMoves(bait.after);
+                if (!replies.length || replies.some((reply) =>
+                    bait.after.board.get(reply.from)?.role !== "king" || reply.to !== bait.move.to
+                )) continue;
                 proposal = {
                     ...proposal,
                     ply: anchor + 1,

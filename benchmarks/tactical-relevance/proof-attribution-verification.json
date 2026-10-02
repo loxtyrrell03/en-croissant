@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-02",
+  "classifierVersion": "site-55.adapter-166",
+  "livePipelineVersion": 173,
+  "workingCoreSha256LF": "957f6f798f18835585ce7362afd1fc2fadd14869899c56ececa2f3cd30a0f5c4",
+  "milestoneCoreSha256LF": "57736a80c8dbbf4d225d409f4daaa039dab1a0344a23dace4fd8d1bed50239bd",
+  "targetedContracts": {
+    "beforePassed": 6,
+    "afterPassed": 16,
+    "total": 16,
+    "beforeRootMatches": 6,
+    "afterRootMatches": 12,
+    "rootCases": 12,
+    "negativeRootCases": 4,
+    "beforeFalseTacticalRoots": 2,
+    "afterFalseTacticalRoots": 0
+  },
+  "publicRegression": {
+    "selectedFiles": 216,
+    "passedFiles": 195,
+    "skippedFiles": 21,
+    "passedTests": 2990,
+    "expectedFailures": 1,
+    "skippedTests": 364,
+    "unexpectedFailures": 0,
+    "wallSeconds": 181.83,
+    "knownExpectedFailure": "promotionCountercheckRecall.test.ts: queen-ending checking race"
+  },
+  "frozenPrimaryLessons": {
+    "scope": "Reused development scenarios with frozen depth-16 real-game and constructed lines; reflections tested separately. Not fresh engine evidence, holdout validation or all-54-label accuracy.",
+    "matched": 32,
+    "total": 32,
+    "secondaryLessonsRetained": 5,
+    "sourceCounts": { "allowed": 19, "missed": 13 },
+    "primaryCountsAllMatched": {
+      "backRankMate": 1,
+      "capturingDefender": 1,
+      "clearance": 2,
+      "discoveredAttack": 3,
+      "doubleCheck": 1,
+      "doubleThreat": 2,
+      "forcingAttack": 2,
+      "fork": 3,
+      "forkPreparation": 2,
+      "hangingPiece": 2,
+      "intermezzo": 4,
+      "mateIn3": 3,
+      "mateIn7": 1,
+      "pin": 2,
+      "promotionCombination": 1,
+      "skewer": 1,
+      "tacticalPreparation": 1
+    }
+  },
+  "milestoneOnlyRegression": { "files": 8, "passed": 177, "skipped": 5, "failed": 0 },
+  "generatedReviewService": { "passed": 39, "skipped": 1, "failed": 0 },
+  "typeCheck": "passed",
+  "focusedLint": { "warnings": 0, "errors": 0 },
+  "frontendAndReviewWorkerBuild": "passed on full working source, not installed or deployed",
+  "limitations": [
+    "Targeted contrasts and colour reflections are not independent population samples.",
+    "Full working-source reports include a preserved, separately unfinished checking-ray patch; the milestone-only run excludes it.",
+    "Private corpus, fresh engine and opt-in compiled-controller checks were not rerun.",
+    "This source milestone does not replace the installed desktop package or live phone runtime."
+  ]
+}

@@ -18,8 +18,12 @@ describe("Mistake Review tactical motif adapter", () => {
 
         expect(result.motifClassifierVersion).toBe(MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION);
         expect(result.missedMotifs.map((motif) => motif.id)).toEqual(
-            expect.arrayContaining(["attraction", "anastasiaMate"]),
+            expect.arrayContaining(["mateIn2", "anastasiaMate"]),
         );
+        // The king can decline with ...Kg8, so attraction is not the root
+        // mechanism. Anastasia still correctly describes the accepted branch.
+        expect(result.missedMotifs[0]).toMatchObject({ id: "mateIn2", ply: 1 });
+        expect(result.missedMotifs.map((motif) => motif.id)).not.toContain("attraction");
         expect(result.missedMotifs.map((motif) => motif.id)).not.toContain("mate");
         expect(result.missedMotifs.find((motif) => motif.id === "anastasiaMate")).toMatchObject({
             label: "Anastasia Mate",
