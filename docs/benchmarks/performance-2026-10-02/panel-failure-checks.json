@@ -1,0 +1,88 @@
+{
+  "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-croissant-true-performance": {
+    "passed": true,
+    "scope": "Actual shared panel; synthetic unsupported opponent uncertainty and same-instance recovery. No owner data, installed app or physical-device verification.",
+    "hashes": {
+      "truePerformance.ts": "f02ab98332e6ce59152483df30482f3925729de3fe5c2a28804dab7096e93f93",
+      "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+      "TruePerformancePanel.tsx": "ce24f40ff607174e72f73ddf8b567a80478d34f6dfa4d45dca3f3204e9fa521f"
+    },
+    "cases": [
+      {
+        "mode": "both",
+        "width": 1100,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": false,
+        "samePanelRecovered": true
+      },
+      {
+        "mode": "history",
+        "width": 1100,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": true,
+        "samePanelRecovered": true
+      },
+      {
+        "mode": "both",
+        "width": 390,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": false,
+        "samePanelRecovered": true
+      },
+      {
+        "mode": "history",
+        "width": 390,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": true,
+        "samePanelRecovered": true
+      }
+    ],
+    "expectedCalculationErrors": 6,
+    "errors": [],
+    "external": [],
+    "unexpectedConsole": []
+  },
+  "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess": {
+    "passed": true,
+    "scope": "Actual shared panel; synthetic unsupported opponent uncertainty and same-instance recovery. No owner data, installed app or physical-device verification.",
+    "hashes": {
+      "truePerformance.ts": "f02ab98332e6ce59152483df30482f3925729de3fe5c2a28804dab7096e93f93",
+      "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+      "TruePerformancePanel.tsx": "385fe770092f2562871741d2a477d8db9205b619d259163ccaa563fa03eb38f5"
+    },
+    "cases": [
+      {
+        "mode": "both",
+        "width": 1100,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": false,
+        "samePanelRecovered": true
+      },
+      {
+        "mode": "history",
+        "width": 1100,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": true,
+        "samePanelRecovered": true
+      },
+      {
+        "mode": "both",
+        "width": 390,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": false,
+        "samePanelRecovered": true
+      },
+      {
+        "mode": "history",
+        "width": 390,
+        "resultsPreserved": true,
+        "independentEstimatePreserved": true,
+        "samePanelRecovered": true
+      }
+    ],
+    "expectedCalculationErrors": 6,
+    "errors": [],
+    "external": [],
+    "unexpectedConsole": []
+  }
+}
