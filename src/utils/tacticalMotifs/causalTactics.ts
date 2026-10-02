@@ -12431,7 +12431,7 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
             // A fully mating continuation supports the independent mate
             // headline; it is not spendable material or a competing payoff.
             value: mating.forcingMate ? undefined : mating.gain,
-            ...(mating.forcingMate ? {verifiedCombination: true as const} : {}),
+            ...(mating.forcingMate ? {verifiedCombination: true as const, outcome: "mate" as const} : {}),
             evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${acceptance}: ${removedDuty}.${opening} ${verifiedDeclines}`,
         } satisfies TacticalMotifEvidence;
     }
@@ -13350,7 +13350,51 @@ type SelfInterferenceProof = {
     gain: number;
     captureUci: string;
     captureSan: string;
+    continuation?: {
+        captureSan: string;
+        branches: { replyUci: string; captureUci: string; gain: number }[];
+    };
 };
+
+/** A pawn can be the gateway to the REAL victim: its guarding slider.
+ * Demand a checking capture that skewers that exact guard, then independently
+ * collect it after every legal evasion. This is not a general pawn-grab or
+ * arbitrary higher-valued continuation. The original protection counterfactual
+ * is checked by the caller, and all leaves share its unchanged work bound. */
+function checkingInterferenceRecovery(
+    step: TacticalReplayStep, capture: NormalMove, defender: Square, budget: ProofBudget,
+): { gain: number; continuation: NonNullable<SelfInterferenceProof["continuation"]> } | null {
+    const side = step.after.turn;
+    if (step.after.board.get(capture.to)?.role !== "pawn" || capture.promotion ||
+        !step.after.isLegal(capture) || --budget.nodes < 0) return null;
+    const checked = step.after.clone(); checked.play(capture);
+    if (!checked.isCheck() || checked.isEnd() || defenderCanClaimFiftyMoveDraw(checked) ||
+        !rayTactics(checked, side).some(ray => ray.kind === "skewer" &&
+            ray.pinner === capture.to && ray.rear === defender &&
+            checked.board.get(ray.front)?.role === "king")) return null;
+    const branches: NonNullable<SelfInterferenceProof["continuation"]>["branches"] = [];
+    let captureSan = "";
+    for (const reply of legalMoves(checked)) {
+        if (--budget.nodes < 0 || reply.promotion) return null;
+        const next = checked.clone(); next.play(reply);
+        // The same guard and the same capturing piece must survive; an
+        // unrelated compensation target cannot explain this interference.
+        const collect = { from: capture.to, to: defender };
+        if (next.isEnd() || reply.from === defender || reply.to === capture.to ||
+            !next.isLegal(collect)) return null;
+        const gain = participantCaptureGain(next, collect, [...next.board[side], defender], budget);
+        const net = gain === null ? -Infinity : capturedValue(step.after, capture) + gain -
+            capturedValue(checked, reply) - step.capture;
+        if (net < 100 || skewerCaptureAllowsMate(next, collect, budget) ||
+            !noImmediateTerminalRefutation(next, collect, budget)) return null;
+        const leaf = next.clone(); leaf.play(collect);
+        if (leaf.isEnd()) return null;
+        captureSan ||= makeSan(next, collect);
+        branches.push({ replyUci: makeUci(reply), captureUci: makeUci(collect), gain: net });
+    }
+    return branches.length ? { gain: Math.min(...branches.map(branch => branch.gain)),
+        continuation: { captureSan, branches } } : null;
+}
 
 /** A defending move can cut its OWN guard's ray. Require a legal recapture
  * by that exact guard before the move, and a newly profitable capture after
@@ -13384,7 +13428,7 @@ export function proveSelfInterference(
                 if (
                     !victim ||
                     victim.color !== side ||
-                    VALUE[victim.role] < 320 ||
+                    (VALUE[victim.role] < 320 && victim.role !== "pawn") ||
                     victim.role === "king" ||
                     target === step.move.to ||
                     !between(defender, target).has(step.move.to)
@@ -13400,6 +13444,13 @@ export function proveSelfInterference(
                     if (!oldCapture.isLegal({ from: defender, to: target })) continue;
                     const oldGain = tacticalExchangeGain(beforeProbe, capture);
                     if (oldGain <= -VALUE.king || oldGain >= 100) continue;
+                    if (victim.role === "pawn") {
+                        const recovery = checkingInterferenceRecovery(step, capture, defender, budget);
+                        if (recovery) return { defender, target, capturer, blocker: step.move.to,
+                            gain: recovery.gain, captureUci: makeUci(capture), captureSan: makeSan(step.after, capture),
+                            continuation: recovery.continuation };
+                        continue;
+                    }
                     const gain = participantCaptureGain(
                         step.after,
                         capture,
@@ -13571,7 +13622,7 @@ export function selfInterferenceEvidence(
         ply: 1,
         moveUci: step.uci,
         value: "mate" in proof ? 10000 : proof.gain,
-        evidence: `${step.san} blocks ${side}'s ${step.before.board.get(proof.defender)!.role} on ${makeSquare(proof.defender)} from defending the ${step.after.board.get(proof.target)!.role} on ${makeSquare(proof.target)}. ${proof.captureSan} ${"mate" in proof ? "is now checkmate" : "now wins material"}; ${"checkEvasion" in proof ? "the guard's line was open before this move. On the resulting mating board, this blocker is the only obstruction to a king-safe recapture" : "the guard could legally recapture before this blocking move"}. This explains the concession, not a tactic won by ${side}.`,
+        evidence: `${step.san} blocks ${side}'s ${step.before.board.get(proof.defender)!.role} on ${makeSquare(proof.defender)} from defending the ${step.after.board.get(proof.target)!.role} on ${makeSquare(proof.target)}. ${proof.captureSan} ${"mate" in proof ? "is now checkmate" : proof.continuation ? `now checks and forces ${proof.continuation.captureSan}, collecting that same guard` : "now wins material"}; ${"checkEvasion" in proof ? "the guard's line was open before this move. On the resulting mating board, this blocker is the only obstruction to a king-safe recapture" : "the guard could legally recapture before this blocking move"}. This explains the concession, not a tactic won by ${side}.`,
     };
 }
 
@@ -14599,7 +14650,7 @@ export function auditTacticalMotifs(
                 ply: index + 1,
                 moveUci: root.uci,
                 value: forcedInterference.gain,
-                evidence: `${root.san} forces the defender to block its own ${root.after.board.get(branch.proof.defender)!.role}'s protection of the ${root.after.board.get(branch.proof.target)!.role} on ${makeSquare(branch.proof.target)}. After ${branch.reply}, ${branch.proof.captureSan} wins material. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.`,
+                evidence: `${root.san} forces the defender to block its own ${root.after.board.get(branch.proof.defender)!.role}'s protection of the ${root.after.board.get(branch.proof.target)!.role} on ${makeSquare(branch.proof.target)}. After ${branch.reply}, ${branch.proof.captureSan} ${branch.proof.continuation ? `checks and forces ${branch.proof.continuation.captureSan}, collecting that same guard after every legal reply` : "wins material"}. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.`,
             });
         }
         const trapped = trappedPieceProof(episode[index], proposals[0]?.source ?? "available");
@@ -15215,28 +15266,32 @@ export function auditTacticalMotifs(
                 incidentalMatingMechanisms.add(kind);
         }
     }
-    // A material discovery can be incidental to a mating move too. Remove
-    // only its newly uncovered non-king victims, never a checking battery or
-    // the moving/promoting piece. Suppress the material badge only if the
-    // same legal root still independently mates within the original bound.
-    // Keep unknown probes and any displayed capture of a removed victim.
-    if (checkingMate && normalizedCandidates.some(m => m.id === "discoveredAttack" &&
-        m.ply === 1 && m.confidence === "high" && m.value !== undefined && m.value < 10000)) {
-        const rays = revealedRays(root);
-        if (rays.length && rays.every(ray => root.after.board.get(ray.target)?.role !== "king")) {
-            const probe = root.before.clone();
-            for (const target of new Set(rays.map(ray => ray.target))) probe.board.take(target);
-            const replay = replayTacticalLine(makeFen(probe.toSetup()), steps.map(step => step.uci));
-            if (replay.length === steps.length && replay.every((step, index) => step.capture === steps[index].capture)) {
-                // Use one existing 4,096-operation certificate. A root-only
-                // engine snapshot must not need a cooperative mate suffix.
-                const proof = replay.at(-1)!.after.isCheckmate()
-                    ? proveCheckingMate(replay, 4096)
-                    : proveShortCheckingMate(replay[0], 4096);
-                if (proof && proof.maxMoves <= checkingMate.maxMoves)
-                    incidentalMatingMechanisms.add("discoveredAttack");
-            }
-        }
+    // Test a material discovery on its ACTUAL board, not just at the initial
+    // root. First independently establish that local move's mating bound.
+    // Remove all non-king victims of its joint attack (including the moving
+    // piece's targets), never a checking battery or the mover. The identical
+    // legal suffix must still mate within that bound under the same 4,096
+    // operation certificate. Unknown probes or changed captures keep the badge.
+    const incidentalDiscoveryPlies = new Set<number>();
+    for (const ply of new Set(normalizedCandidates.filter(m => m.id === "discoveredAttack" &&
+        m.ply && m.confidence === "high" && m.value !== undefined && m.value < 10000).map(m => m.ply!))) {
+        const suffix = steps.slice(ply - 1), local = suffix[0];
+        if (!local) continue;
+        const localMate = ply === 1 ? checkingMate :
+            proveShortCheckingMate(local, 4096) ?? proveCheckingMate(suffix, 4096);
+        if (!localMate) continue;
+        const rays = revealedRays(local), moved = local.after.board.get(local.move.to);
+        if (!moved || !rays.length || rays.some(ray => local.after.board.get(ray.target)?.role === "king")) continue;
+        const victims = new Set([...rays.map(ray => ray.target),
+            ...attacks(moved, local.move.to, local.after.board.occupied).intersect(local.after.board[opposite(local.before.turn)])]
+            .filter(target => local.after.board.get(target)?.role !== "king"));
+        const probe = local.before.clone();
+        for (const target of victims) probe.board.take(target);
+        const replay = replayTacticalLine(makeFen(probe.toSetup()), suffix.map(step => step.uci));
+        if (replay.length !== suffix.length || replay.some((step, index) => step.capture !== suffix[index].capture)) continue;
+        const proof = replay.at(-1)!.after.isCheckmate()
+            ? proveCheckingMate(replay, 4096) : proveShortCheckingMate(replay[0], 4096);
+        if (proof && proof.maxMoves <= localMate.maxMoves) incidentalDiscoveryPlies.add(ply);
     }
     const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
     const fork = candidates.find((m) => m.id === "fork");
@@ -15307,6 +15362,7 @@ export function auditTacticalMotifs(
             if (m.id === "forcingAttack" && m.label === "Mating Attack" && m.ply === 1 &&
                 (preparation || quietMate)) return false;
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+            if (m.id === "discoveredAttack" && m.ply && incidentalDiscoveryPlies.has(m.ply)) return false;
             // An interference that also attacks its guard already explains
             // this exact two-target fork. Keep the defensive-line mechanism,
             // not a duplicate badge recovered by the allied-capture fallback.
@@ -15704,6 +15760,7 @@ export function auditTacticalMotifs(
     if (observedThreat) filtered.unshift(observedThreat);
     return filtered.map((motif, index) => ({
         ...motif,
+        ...(motif.value === 10000 || MATE.test(motif.id) ? { outcome: "mate" as const } : {}),
         ...(/^mate(?:In\d+)?$/.test(motif.id) &&
         motif.ply &&
         steps[motif.ply - 1]?.after.isCheckmate()

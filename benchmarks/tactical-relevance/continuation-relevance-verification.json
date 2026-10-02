@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "scope": "En Croissant adapter172 / pipeline179. Reused and newly selected public development cases plus constructed controls; not population accuracy or holdout validation.",
+  "baseCommit": "455adfd38e23d352b1a4af512f67ca4795c7be5a",
+  "classifierVersion": "site-55.adapter-172",
+  "pipelineVersion": 179,
+  "broad": {
+    "started": "2026-10-02T20:03:22.745Z",
+    "finished": "2026-10-02T20:06:48.107Z",
+    "selectedFiles": 240,
+    "activeFiles": 219,
+    "fullyConditionalFiles": 21,
+    "passed": 3537,
+    "knownExpectedFailures": 1,
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "sourceUnchangedDuringRun": true,
+    "reportSha256": "acf6e513ca463cd06ca4ea8dc1f2fc4925e6a8e2ea996e292b78d7d6b73be67c"
+  },
+  "newSourceChecks": {
+    "passed": 81,
+    "suites": [
+      {
+        "file": "historyAwareMate.test.ts",
+        "passed": 40
+      },
+      {
+        "file": "checkingPawnInterference.test.ts",
+        "passed": 25
+      },
+      {
+        "file": "laterIncidentalDiscoveryMate.test.ts",
+        "passed": 14
+      },
+      {
+        "file": "mateOutcomePersistence.test.ts",
+        "passed": 2
+      }
+    ],
+    "mechanismPairedReceipt": "connected-interference-discovery-receipt.json"
+  },
+  "primaryPriority": {
+    "cases": 32,
+    "matches": 32,
+    "fullOutputUnchangedFromAdapter171": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "exactCore": {
+    "passed": 716,
+    "skipped": 4,
+    "files": 31,
+    "blob": "50cb675bb2bd0e63f036cef97a6bd02b19e3fcb8",
+    "sha256LF": "37ccf1b2a33cca4c5ad4760e49b8c5ffc031945942b159b160b4585d9558f022",
+    "pendingCheckingRayExcluded": true,
+    "unchangedDuringRun": true,
+    "reportSha256": "9c0ab97c51e16b72781df48847d6871ebc53d07704aeb71f07d7b2b604cfc17e"
+  },
+  "compiledService": {
+    "passed": 77,
+    "failed": 0,
+    "skipped": 1,
+    "files": 5,
+    "newRoundtrips": 10,
+    "historyRoundtripsTotal": 10,
+    "frontierRoundtripsTotal": 16,
+    "optionalSkip": "Opt-in real background-engine check",
+    "generatedSha256": "cd9e4691f35fb81fb50b2988fae81af0dac090c5978b53df957c644043306cc6"
+  },
+  "freshPublicCohort": {
+    "puzzles": 8,
+    "ordinaryGameContexts": 6,
+    "sourceGames": 10,
+    "pairedInputs": 56,
+    "scope": "Output-blind public-review-disjoint development selection; not56independentpositions or gold-label accuracy",
+    "review": "rare-causal-cohort-v2-review.md"
+  },
+  "checks": {
+    "wholeProjectTypes": "passed: --noEmit --incremental false",
+    "scopedLint": "15 files, zero warnings and errors",
+    "frontendAndReviewWorkerBuild": "passed:8968 frontend modules; existing bundle-size/third-party bigint warnings",
+    "diffCheck": "passed",
+    "legacySnapshot": "Only frozen proof objects receive the new mate-outcome schema field; current records, labels, values, explanations, timelines and board annotations are still compared exactly."
+  },
+  "sourceHashesLF": {
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "193cbac014bb43f3061ba32b8379b57ff0bfb7a99740e1ed0958a2fac397c225",
+    "src/utils/tacticalMotifs/liveTactics.ts": "f1f1f45f1fea92f83ebe9bc9910194331a6e0ad285eb8490da8b375f107c745c",
+    "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "src/components/files/opening.ts": "014bc3d4cf6c3e9916b2e14068a9c16ccbd760d6241ce4c2cc49e760a89b104d",
+    "src/utils/tests/historyAwareMate.test.ts": "58b664f42e8bbbbaea474d4dde921d259719c1f45c38ec7d5f29e3ac37395306",
+    "src/utils/tests/fixtures/historyAwareMate.ts": "3d1728761951bcc284df4aa4e11a6cde7caf954d4f44141e3c444e8a51fe04d4",
+    "src/utils/tests/checkingPawnInterference.test.ts": "cee2bd1e2b00c4ada278d7c8b89d52187577e28d15c6eed63bcdc81ad8b7e9f0",
+    "src/utils/tests/laterIncidentalDiscoveryMate.test.ts": "e19c968c37f09505717123de54478026b539a90fb552bc8c615eed2b40f1f3dd",
+    "src/utils/tests/mateOutcomePersistence.test.ts": "0995ab8e46b7b556580d808cac5d5c66f5c78db63412e3f85604ebc06d8313b5",
+    "src/utils/tests/crossPhaseRelevance.test.ts": "b2bb4d0521b319f26909b20fd1c00c11b54b9f206c5bdceae95d396fc181fb88",
+    "scripts/tests/repetition-history-review-service.test.mjs": "354240efe146188b3d609b48262290f97cd739e2284bae22a2b1409533d6c9e2",
+    "scripts/tests/frontier-motif-review-service.test.mjs": "c6942f03b9c17e2d06fb4baa88836142a8b55707c576563d8cb0905fe8a605d6"
+  },
+  "preservedCore": {
+    "workingSha256LF": "888a923ef38934ba532d682207876e750480ffe6aa1932f711802d7991690f15",
+    "unrelatedPendingCheckingRay": {
+      "insertions": 46,
+      "deletions": 4
+    }
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "correctedHypothesis": "The repeated Qh6 fixture refutes mate-in-three, not all wins. An independently checked alternative forces mate-in-four; final classifier preserves that real win and corrects its distance/route.",
+  "exploratoryRun": "The earlier history172 run is nonfinal: one legacy outcome-field snapshot mismatch and history-helper edits during execution. It is not counted as final passing evidence.",
+  "limitations": [
+    "Missing or partial history cannot certify absence of earlier repetitions.",
+    "History-aware mate qualification does not propagate history through every material/endgame detector.",
+    "A failed or exhausted retained-mate proof is not proof of a draw or lost win.",
+    "Quiet root preparations, the known queen-ending promotion case and larger endgames remain unresolved.",
+    "The bounded endgame-composition prototype remains benchmark-only.",
+    "Working-tree builds include preserved unrelated edits; exact-core tests exclude the pending checking-ray patch. No installed app or service was deployed."
+  ]
+}

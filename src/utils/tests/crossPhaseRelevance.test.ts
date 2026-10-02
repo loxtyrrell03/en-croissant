@@ -57,9 +57,16 @@ test("each full public game contains its nominated puzzle and every fixed contex
 });
 
 test("exact source and engine replay retains unrelated results across the twenty-three boards", () => {
-    const clean = (value: unknown) =>
-        JSON.stringify(value, (key, v) => key === "motifClassifierVersion" ? undefined : v && typeof v === "object" && !Array.isArray(v)
-            ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v);
+    const clean = (value: unknown, upgradeFrozenSchema = false) => JSON.stringify(value, (key, v) => {
+        if (key === "motifClassifierVersion") return undefined;
+        if (!v || typeof v !== "object" || Array.isArray(v)) return v;
+        // Adapter172 makes the old mating sentinel's proof dependency explicit.
+        // Upgrade that schema field only; every label, value, explanation,
+        // timeline position and annotation still has to match the frozen row.
+        const annotated = upgradeFrozenSchema && typeof v.evidence === "string" && typeof v.id === "string" && (v.value === 10000 || /(?:^mate(?:In\d+)?$|Mate$)/.test(v.id))
+            ? { ...v, outcome: "mate" } : v;
+        return Object.fromEntries(Object.entries(annotated).sort(([a], [b]) => a.localeCompare(b)));
+    });
     const cases = receipt.cases.map((row: any) => {
         const sourceResult = classifyPositionTacticalMotifs({
             fen: row.fen,
@@ -117,8 +124,8 @@ test("exact source and engine replay retains unrelated results across the twenty
         }
         expect({ id: row.id, result: clean(row.sourceResult), scan: clean(row.scan) }).toEqual({
             id: before.id,
-            result: clean(before.sourceResult),
-            scan: clean(before.scan),
+            result: clean(before.sourceResult, true),
+            scan: clean(before.scan, true),
         });
     }
     if (process.env.TACTICAL_CROSS_PHASE_REPORT)

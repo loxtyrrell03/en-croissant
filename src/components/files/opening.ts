@@ -44,6 +44,7 @@ const tacticalMotifEvidenceSchema = z.object({
     moveUci: z.string().nullable(),
     relevance: z.enum(["primary", "secondary"]).optional(),
     value: z.number().optional(),
+    outcome: z.literal("mate").optional(),
     verifiedCombination: z.literal(true).optional(),
     actor: z.enum(["white", "black"]).optional(),
     comparison: z.enum(["prevented", "persists", "reduced"]).optional(),

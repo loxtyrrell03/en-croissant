@@ -9,6 +9,7 @@ import { makeSan } from "chessops/san";
 import { makeUci, parseUci } from "chessops/util";
 import { SharedReviewService } from "../generated/shared-review-service.js";
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
+import { deepMateOrigin, deepMateAlternativeOrigin, deepMateRepeated, deepMateClean, deepMateLine } from "../../src/utils/tests/fixtures/historyAwareMate.ts";
 
 // A public mating fixture with constructed legal histories. The histories end
 // at identical full FENs, but only one permits a defensive repetition claim.
@@ -19,15 +20,25 @@ const histories = {
   clean: ["g1g2", "h7h8", "g2g3", "h8h7", "g3g4", "h7h8", "g4g1", "h8h7"],
 };
 const key = fen => fen.split(" ").slice(0, 4).join(" ");
+const cases = [
+  ...Object.entries(histories).map(([kind, history]) => ({
+    kind: `immediate-${kind}`, origin, history, pv: ["g1g7", "h7h8", "h5h6"], played: "a3a4",
+    expectedMate: kind === "clean" ? "mateIn2" : null,
+  })),
+  { kind: "deep-repeated", origin: deepMateOrigin, history: deepMateRepeated, pv: deepMateLine, played: "a2a3", expectedMate: "mateIn4" },
+  { kind: "deep-clean", origin: deepMateOrigin, history: deepMateClean, pv: deepMateLine, played: "a2a3", expectedMate: "mateIn3" },
+  { kind: "deep-safe-alternative", origin: deepMateAlternativeOrigin, history: deepMateRepeated, pv: deepMateLine, played: "a2a3", expectedMate: "mateIn3" },
+];
 
-for (const reflected of [false, true]) for (const [kind, history] of Object.entries(histories)) test(
-  `generated review preserves repetition-sensitive history: ${kind}, reflected=${reflected}`, async () => {
+for (const reflected of [false, true]) for (const row of cases) test(
+  `generated review preserves repetition-sensitive history: ${row.kind}, reflected=${reflected}`, async () => {
+    const { kind, history } = row;
     const flip = move => reflected ? reflectMixedForkMove(move) : move;
-    const start = reflected ? reflectMixedForkFen(origin) : origin;
-    const moves = history.map(flip), pv = ["g1g7", "h7h8", "h5h6"].map(flip);
+    const start = reflected ? reflectMixedForkFen(row.origin) : row.origin;
+    const moves = history.map(flip), pv = row.pv.map(flip);
     const board = Chess.fromSetup(parseFen(start).unwrap()).unwrap();
     const words = [];
-    for (const uci of [...moves, flip("a3a4")]) {
+    for (const uci of [...moves, flip(row.played)]) {
       const move = parseUci(uci);
       assert.ok(move && board.isLegal(move));
       words.push(`${board.fullmoves}${board.turn === "white" ? "." : "..."}`, makeSan(board, move));
@@ -67,10 +78,20 @@ for (const reflected of [false, true]) for (const [kind, history] of Object.entr
       assert.equal(card.fen, fen);
       assert.deepEqual(card.tacticalHistory, { fen: start, moves });
       const verify = metadata => {
-        assert.equal(metadata.motifClassifierVersion, "site-55.adapter-171");
-        const wins = metadata.missedMotifs.filter(m => m.value > 0);
-        if (kind === "repeated") assert.deepEqual(wins, []);
-        else assert.equal(wins[0]?.id, "mateIn2");
+        assert.equal(metadata.motifClassifierVersion, "site-55.adapter-172");
+        const mates = metadata.missedMotifs.filter(m => /^mateIn\d+$/.test(m.id));
+        if (row.expectedMate) assert.equal(mates[0]?.id, row.expectedMate);
+        else {
+          assert.deepEqual(mates, []);
+          assert.equal(metadata.missedMotifs.some(m => m.outcome === "mate" || m.value === 10000), false);
+          assert.equal(metadata.missedTimeline.some(m => m.outcome === "mate" || m.value === 10000), false);
+        }
+        if (kind === "deep-repeated") {
+          assert.equal(metadata.missedMotifs.some(m => m.id === "mateIn3"), false);
+          assert.equal(metadata.missedTimeline.some(m => m.id === "mateIn3"), false);
+          assert.match(mates[0].evidence, /within 4 moves/);
+        }
+        if (kind === "immediate-repeated") assert.deepEqual(metadata.missedMotifs.filter(m => m.value > 0), []);
       };
       verify(card.tacticalClassification);
       let exported = (await service.deck()).positions[0];

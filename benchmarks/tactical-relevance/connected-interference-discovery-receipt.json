@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "scope": "Two independently adjudicated public development mechanisms and reflected/constructed controls; not population accuracy or an untouched holdout.",
+  "baseCommit": "455adfd3",
+  "classifierAtPairedRuns": "site-55.adapter-171",
+  "coreSourceSha256LF": {
+    "beforeOwnedEditsIncludingPreservedCheckingRayWork": "6ec0824d8cd4d250c1e5d51ee81f2b16c6a1ff088564b5c580dd0682d88301b9",
+    "interferenceCheckpointBeforeActualPlyDiscoveryChangeIncludingConcurrentHistoryAnnotations": "6b4a570a03254b39be641aacbf29db69f2f4ed908a4003df05ffa9e07184023b",
+    "bothChangesCheckpointIncludingConcurrentHistoryAnnotations": "888a923ef38934ba532d682207876e750480ffe6aa1932f711802d7991690f15"
+  },
+  "cases": [
+    {
+      "id": "GrHPv-reached-after-Ra1-Rc8-Ra7-Qxa7",
+      "selection": "Reused public development frontier; a reached board from an already audited combination, not a newly sampled independent case.",
+      "fen": "2r2k2/q6p/6p1/3pQp2/1p1P4/7P/6P1/6K1 w - - 0 45",
+      "lineUci": ["e5h8", "f8f7", "h8h7", "f7f6", "h7a7"],
+      "before": "Root skewer of Rc8 with a 400 cp local bound; an existing 1000 cp checking continuation was hidden by generic mechanism de-duplication.",
+      "after": "Forced Interference is primary. Every king evasion blocks Qa7's protection of h7; Qxh7+ then forces capture of that exact queen. The distinct rook skewer remains secondary.",
+      "proofBoundary": "1000 cp is the pawn plus queen from this reached board, not the net result of the earlier rook sacrifice or a whole-game evaluation. No Ra1/Ra7 root certificate is added.",
+      "contractFile": "src/utils/tests/checkingPawnInterference.test.ts",
+      "contractSha256": "cee2bd1e2b00c4ada278d7c8b89d52187577e28d15c6eed63bcdc81ad8b7e9f0",
+      "identicalContracts": 25,
+      "beforePass": 14,
+      "beforeFail": 11,
+      "afterPass": 25,
+      "afterFail": 0,
+      "beforeResultSha256": "a7839411658b29c3fb5f410a11e7d6d9b1acdb58a020795a4283362fd7b33cf4",
+      "afterResultSha256": "54278131b28ac577212e7e576cb1cf5b2704969ab1744c7e0a2aa5c7287bd5cf",
+      "independentPythonChess": {
+        "cases": 4,
+        "scope": "Queen and rook guards, both colours; exact legal old recapture, all 8 root evasions and all 40 subsequent evasions, same-square exchange and immediate off-square/terminal liabilities.",
+        "resultSha256": "ad8515609ca46b9a2e3843931a07328626159e9f8018118acb72624d406382b9"
+      }
+    },
+    {
+      "id": "lichess:YvGsE",
+      "selection": "Newly found secondary-noise defect in the fresh output-blind rare-causal development cohort v2; independent all-reply adjudication followed discovery, not a holdout claim.",
+      "fen": "2b1Qn1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R w - - 2 28",
+      "lineUci": ["e8f8", "f5f8", "f1f8", "h8g7", "h7h8q"],
+      "before": "Correct root mate-in-three and deflection, but full/truncated three-ply lines add a 900 cp Discovered Attack at ply 3 against Qc1 beside the independently forced promotion mate.",
+      "after": "Keep root mate and deflection. Suppress only the actual-ply material discovery after independently proving its own mate-in-two remains within the same bound without its nonking joint-attack victims Qc1 and Bc8.",
+      "contractFile": "src/utils/tests/laterIncidentalDiscoveryMate.test.ts",
+      "contractSha256": "e19c968c37f09505717123de54478026b539a90fb552bc8c615eed2b40f1f3dd",
+      "identicalContracts": 14,
+      "beforePass": 10,
+      "beforeFail": 4,
+      "afterPass": 14,
+      "afterFail": 0,
+      "beforeResultSha256": "b048f73e41e98fd66a09a60855753d0e21ece65c249df84b0311c8e77004b204",
+      "afterResultSha256": "8fc0f07a4c44e07eac0b248b250ca873cb0f239d0f1a32cfe40b16b85facde82",
+      "independentPythonChess": {
+        "cases": 8,
+        "scope": "Original, Qc1 removed, Bc8 removed, both removed, in both colours. All 16 defensive-turn legal-move sets are singletons and the exact continuation mates. These removal probes are not playable histories.",
+        "resultSha256": "f8062649fd31d9a1bf226381af8988c0991b92f13118cd947a6b873d1cdd2da2"
+      }
+    }
+  ],
+  "regressionVerification": {
+    "testFiles": 16,
+    "passed": 305,
+    "failed": 0,
+    "optionalSkipped": 8,
+    "resultSha256": "791dfb7773e2cc2deb6ee0659070fa03912c234871afc880c109208affacbbe6",
+    "types": "Whole-project no-emit check passed, incremental output disabled.",
+    "lint": "Owned core and two tests: zero warnings, zero errors.",
+    "independentReportsDirectory": "C:/Users/Lox/AppData/Local/Temp/en-noise-probes-8ccff4c98f3845668fc1c5b4dbdbd84f",
+    "laterIntegration": "The after-checkpoint hashes include the collaborating agent's history-outcome annotations and the preserved pending checking-ray work; they are not hashes of exclusively owned changes. Final exact-core verification, generated-service checks and builds are recorded by the integrating agent."
+  },
+  "boundaries": [
+    "Original 4096-operation interference and victim-removal proof bounds remain unchanged; no score threshold or larger budget admits these cases.",
+    "No global greatest-material-value priority rule. Exact shared targets and all legal replies establish the specific interference mechanism.",
+    "Unknown, altered-capture, missing-guard, extra-defender, alternative-evasion, promotion and draw-claim probes retain conservative outcomes.",
+    "Existing material discoveries, mating discovered checks, double checks and mating-clearance supports remain covered by the existing regression suites.",
+    "Pending unrelated checking-ray core changes (46 additions, 4 deletions) were preserved, not claimed as owned work.",
+    "No owner stores, native app, phone service, website, runtime deployment, version bump, staging or commits were performed by this subtask."
+  ]
+}

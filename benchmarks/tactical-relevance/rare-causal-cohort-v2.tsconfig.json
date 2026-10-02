@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["./rare-causal-cohort-v2.test.ts", "./rare-causal-cohort-v2.vitest.ts"],
+  "exclude": ["../../node_modules", "../../src-tauri"]
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-02",
+  "baseline": { "commit": "455adfd38e23d352b1a4af512f67ca4795c7be5a", "adapter": 171 },
+  "after": { "adapter": 172, "livePipeline": 179 },
+  "adjudication": {
+    "correction": "The repeated Qh6+ position is NOT a lost win. Exhaustive legal enumeration refutes the claimed mate within three moves. A separate all-reply Qxg6+ pawn-capture reset proves mate within four. The repair changes mateIn3 to generic mateIn4 and removes the unsupported old route's mating geometry.",
+    "provenance": "Constructed legal histories around the existing public rootCheckingMate.test.ts offer fixture. Source labels and engine scores are not gold. Not an untouched puzzle cohort or a prevalence estimate.",
+    "independentVerifier": "benchmarks/tactical-relevance/history-aware-mate-audit.py",
+    "independentLibrary": "python-chess 1.11.2",
+    "engineUsed": false,
+    "fixtures": "src/utils/tests/fixtures/historyAwareMate.ts",
+    "rootReplies": ["h7h6", "h7g8"],
+    "captureAcceptance": "Qh6+ Kxh6 Rh1#",
+    "safeLongerRoute": "Qh6+ Kg8 Qxg6+ Kh8 Rc8+ Rf8 Rxf8#",
+    "safeLongerRouteOtherDefence": "After Qxg6+, the verifier also checks Rg7; every legal reply is covered.",
+    "rows": [
+      {"mirrored": false, "alternativeRook": false, "repeated": true, "legalAttackerChoicesAfterKg8": 42, "mateInOneSearchVisits": 1780, "winningMovesWithinTwoMoreMoves": [], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 1409},
+      {"mirrored": false, "alternativeRook": false, "repeated": false, "legalAttackerChoicesAfterKg8": 42, "mateInOneSearchVisits": 1781, "winningMovesWithinTwoMoreMoves": ["c1c8"], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 1409},
+      {"mirrored": false, "alternativeRook": true, "repeated": true, "legalAttackerChoicesAfterKg8": 49, "mateInOneSearchVisits": 2420, "winningMovesWithinTwoMoreMoves": ["b3b8"], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 1652},
+      {"mirrored": false, "alternativeRook": true, "repeated": false, "legalAttackerChoicesAfterKg8": 49, "mateInOneSearchVisits": 2421, "winningMovesWithinTwoMoreMoves": ["b3b8", "c1c8"], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 1652},
+      {"mirrored": true, "alternativeRook": false, "repeated": true, "legalAttackerChoicesAfterKg8": 42, "mateInOneSearchVisits": 1030, "winningMovesWithinTwoMoreMoves": [], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 99},
+      {"mirrored": true, "alternativeRook": false, "repeated": false, "legalAttackerChoicesAfterKg8": 42, "mateInOneSearchVisits": 1045, "winningMovesWithinTwoMoreMoves": ["c8c1"], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 99},
+      {"mirrored": true, "alternativeRook": true, "repeated": true, "legalAttackerChoicesAfterKg8": 49, "mateInOneSearchVisits": 1527, "winningMovesWithinTwoMoreMoves": ["b6b1"], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 90},
+      {"mirrored": true, "alternativeRook": true, "repeated": false, "legalAttackerChoicesAfterKg8": 49, "mateInOneSearchVisits": 1551, "winningMovesWithinTwoMoreMoves": ["b6b1", "c8c1"], "safeMateWithinFourViaCaptureReset": true, "captureContinuationVisits": 90}
+    ]
+  },
+  "publicApiPairedReceipt": {
+    "cases": 16,
+    "dimensions": "eight paired history/colour/extra-rook variants, each with one-ply and five-ply input; not independent sampled positions",
+    "surfaces": ["position primary", "live primary", "review primary", "mistake nature"],
+    "baselineDistanceContracts": { "passed": 12, "failed": 4 },
+    "afterDistanceContracts": { "passed": 16, "failed": 0 },
+    "changed": "Repeated base histories, both colours and both input lengths: mateIn3 -> mateIn4. Nature remains tactical. Clean and extra-rook histories remain mateIn3.",
+    "baselineMethod": "Vite read-only load hook fetched every tactical TypeScript module from the exact baseline commit; no checkout or source rewrite.",
+    "diagnosticDirectory": "C:/Users/Lox/AppData/Local/Temp/en-tactical-public-regression-693e0d898c6240b08c4ca4fb6a25789e",
+    "beforeArtifact": "history-aware-mate-api-before171.json",
+    "beforeArtifactSha256": "5d440d7b24f3b7d4d3f7ae6fcb2e93b52a4e06bd1fd083e0b6046ea5136e0930",
+    "afterArtifact": "history-aware-mate-api-after172.json",
+    "afterArtifactSha256": "4d37497e25582e840d96a58d3182364454d44e07d6c556072362d600f912c58b",
+    "independentArtifact": "history-aware-mate-independent-final.json",
+    "independentArtifactSha256": "95635f80c47d18cda891e9561e080f61cd0745d1599a59b48bb9cd927bb92504"
+  },
+  "verification": {
+    "newTests": 40,
+    "focusedFiles": 7,
+    "passed": 173,
+    "skipped": 4,
+    "failed": 0,
+    "durationSeconds": 5.84,
+    "command": "node node_modules/vitest/vitest.mjs run src/utils/tests/historyAwareMate.test.ts src/utils/tests/tacticalRepetitionHistory.test.ts src/utils/tests/rootCheckingMate.test.ts src/utils/tests/checkingMate.test.ts src/utils/tests/matingDeflection.test.ts src/utils/tests/matingMechanismRelevance.test.ts src/utils/tests/retainedMateChoice.test.ts --maxWorkers=2 --update=none --cache=false",
+    "types": "passed: tsgo --noEmit --incremental false",
+    "scopedLint": { "errors": 0, "warnings": 0 },
+    "publicApiReceiptRuns": "baseline and final each passed one aggregate test covering16 rows/four public surfaces",
+    "independentAudit": "eight cases passed; all legal attacker alternatives and all defensive replies were checked at the claimed bound"
+  },
+  "policyAndLimits": [
+    "Exact legal history is bound to the reached six-field FEN. Private immutable contexts advance only by a legal move, reset counts after pawn moves/captures and preserve prior automatic fivefold/75-move termination with checkmate priority.",
+    "Current and announced defender claims are checked at every actual mating proof node. Optional attacker claims do not erase a win. Missing/malformed history remains unknown, not evidence that no repetition existed.",
+    "Only history-sensitive mating claims are requalified. Initial unique histories also replay the supplied candidate route cheaply, so a later loop cannot certify named/root support. Independently proved material/drawing resources are not blanket-discarded.",
+    "At most seven attacking moves/13 plies and one total65,536 legal-node budget across increasing distance attempts. Every defender move is covered. Short finishes enumerate all legal attacker moves; longer ones admit checks and bounded legally nominated quiet moves. Unsupported/exhausted searches abstain, not declare a draw.",
+    "A safe different route yields only generic Forcing Mate with fresh distance/evidence; stale named mechanisms, compound/comparison metadata and old alternative lines are removed. Actual immediate named mates remain terminal facts.",
+    "Mating self-interference is a defender concession, not the mover's mate. Repetition-sensitive concession support is conservatively withheld rather than reversed into a generic attacking claim. This does not reprove every named mechanism.",
+    "Played-mate neutralization also requires positive history qualification. A Bf5/Pd3 control is blind-proof=true/history-proof=unknown; that is NOT a demonstrated draw, loss of win, or safe best alternative.",
+    "Material and endgame kernels are not all made repetition-aware in this slice. No owner data, engine download, installed runtime, hosting or website was changed. These selected regression contracts are not global tactical accuracy."
+  ],
+  "workingLfSha256": {
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "193cbac014bb43f3061ba32b8379b57ff0bfb7a99740e1ed0958a2fac397c225",
+    "src/utils/tacticalMotifs/causalTactics.ts": "888a923ef38934ba532d682207876e750480ffe6aa1932f711802d7991690f15",
+    "src/utils/tests/historyAwareMate.test.ts": "58b664f42e8bbbbaea474d4dde921d259719c1f45c38ec7d5f29e3ac37395306",
+    "src/utils/tests/fixtures/historyAwareMate.ts": "3d1728761951bcc284df4aa4e11a6cde7caf954d4f44141e3c444e8a51fe04d4",
+    "benchmarks/tactical-relevance/history-aware-mate-audit.py": "c4eb8a09948c6a1a90f4f9f49851d6f6295c3d505aeee4997ac9647b7f9986b9"
+  },
+  "coreHashScope": "Working core includes the preserved unrelated checking-ray patch and the separately owned checking-self-interference fix. This agent changed only two mating-outcome annotations in causalTactics.ts; parent verifies the exact staged core separately."
+}

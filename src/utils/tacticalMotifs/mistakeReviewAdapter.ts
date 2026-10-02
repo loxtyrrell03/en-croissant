@@ -50,6 +50,7 @@ import { qualifyComparableCaptureChoice } from "./captureChoice";
 import { isTacticalObservation } from "./types";
 import { appendTacticalHistory, type TacticalGameHistory } from "./gameHistory";
 import { tacticalRepetitionBoundary } from "./repetitionHistory";
+import { qualifyHistoryAwareMatingMotifs, retainsHistoryAwareMate } from "./historyAwareMate";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -144,7 +145,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 171;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 172;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -979,7 +980,7 @@ export function filterRepetitionBoundaries(
 ): TacticalMotifEvidence[] {
     if (!history || !motifs.length) return motifs;
     const principal = tacticalRepetitionBoundary(fen, line[0], history);
-    return motifs.filter(motif => {
+    const bounded = motifs.filter(motif => {
         const alternate = motif.alternativeLine?.uci[0];
         const sameRoot = motif.alternativeLine?.fen.trim().split(/\s+/).join(" ") === fen.trim().split(/\s+/).join(" ");
         const boundary = sameRoot && alternate && alternate !== line[0]
@@ -992,6 +993,7 @@ export function filterRepetitionBoundaries(
             motif.id === "drawingCapture" ||
             (motif.id === "zugzwang" && motif.label === "Drawing Zugzwang");
     });
+    return qualifyHistoryAwareMatingMotifs(fen, line, history, bounded);
 }
 
 export function classifyPositionTacticalMotifs(
@@ -1843,7 +1845,8 @@ export function classifyMistakeReviewMotifs(
     if (bothMovesMate || (playedMoveUci && !tacticalRepetitionBoundary(fen, playedMoveUci, input.tacticalHistory) &&
         compared.missedMotifs.some(m => m.ply === 1 &&
         (/^mateIn\d+$/.test(m.id) || m.id === "mateThreat")) &&
-        preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine])))) {
+        preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine])) &&
+        retainsHistoryAwareMate(fen, [playedMoveUci, ...refutationLine], input.tacticalHistory))) {
         // Winning by a different forced mate is not missing the win, even
         // if the preferred engine route is shorter. Do not replace this
         // evidence with a score threshold or leave a subordinate missed

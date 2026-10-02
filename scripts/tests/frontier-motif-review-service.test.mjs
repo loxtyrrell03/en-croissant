@@ -45,6 +45,16 @@ const cases = [
     pv: ["d6d8", "g8h7", "e3h3", "g7h6", "d8h8", "h7h8", "h3h6"], played: "g1f1", reply: "g8h7",
     motif: "forcingAttack", label: "Forcing Attack", value: 400,
   },
+  {
+    id: "GrHPv-reached", fen: "2r2k2/q6p/6p1/3pQp2/1p1P4/7P/6P1/6K1 w - - 0 45",
+    pv: ["e5h8", "f8f7", "h8h7", "f7f6", "h7a7"], played: "g1f1", reply: "g6g5",
+    motif: "interference", label: "Forced Interference", value: 1000,
+  },
+  {
+    id: "YvGsE", fen: "2b1Qn1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R w - - 2 28",
+    pv: ["e8f8", "f5f8", "f1f8", "h8g7", "h7h8q"], played: "e8f7", reply: "f5f7",
+    motif: "mateIn3", label: "Forcing Mate", value: 10000,
+  },
 ];
 
 function replay(fen, line) {
@@ -58,7 +68,7 @@ function replay(fen, line) {
 }
 
 function assertRootContract(row, card) {
-  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-171");
+  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-172");
   const root = card.tacticalClassification.missedMotifs[0];
   assert.ok(root, `${row.id} must retain a root explanation`);
   assert.equal(root.id, row.motif);
@@ -97,6 +107,7 @@ function assertRootContract(row, card) {
     assert.equal(support.label, "Mating Deflection");
     assert.equal(support.relevance, "secondary");
     assert.equal(support.value, undefined, "Mate support must not manufacture a pawn gain");
+    assert.equal(support.outcome, "mate", "Value-less mate support retains its proof dependency");
     assert.match(support.evidence, /Every legal defence permits mate/);
     assert.doesNotMatch(support.evidence, /not a forced.mate claim/);
   }
@@ -107,6 +118,15 @@ function assertRootContract(row, card) {
     assert.equal(payoff.value, undefined, "The queen is not a separate 900cp gain after sacrificing the rook");
     assert.match(payoff.evidence, /offered|sacrificed|exchange costs/);
     assert.doesNotMatch(payoff.evidence, /wins the loose queen/);
+  }
+  if (row.id === "GrHPv-reached") {
+    assert.ok(card.bestTimeline.some(m => m.id === "selfInterference" && m.ply === 2));
+    assert.equal(card.tacticalClassification.missedMotifs.find(m => m.id === "skewer" && m.ply === 1)?.relevance, "secondary");
+  }
+  if (row.id === "YvGsE") {
+    assert.equal(card.tacticalClassification.missedMotifs.some(m => m.id === "discoveredAttack"), false);
+    assert.equal(card.bestTimeline.some(m => m.id === "discoveredAttack"), false);
+    assert.ok(card.tacticalClassification.missedMotifs.some(m => m.id === "deflection"));
   }
 }
 

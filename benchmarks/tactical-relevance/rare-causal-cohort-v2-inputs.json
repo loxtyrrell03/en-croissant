@@ -1,0 +1,826 @@
+{
+  "schemaVersion": 1,
+  "scope": "Legality and public-game provenance only; prepared before classifier or fresh engine output",
+  "puzzles": [
+    {
+      "stratum": "interference",
+      "id": "lichess:rqcm3",
+      "sourceGameUrl": "https://lichess.org/lcCUp4PI/black#28",
+      "sourceGroup": "game:lcCUp4PI",
+      "sourceThemes": [
+        "crushing",
+        "discoveredAttack",
+        "interference",
+        "opening",
+        "sacrifice",
+        "veryLong"
+      ],
+      "sourceFen": "r1b2rk1/p1qn1pp1/2pb3p/1p1p4/3P2N1/3BB2P/PPP2PP1/R2Q1RK1 b - - 3 14",
+      "precedingMove": "h6h5",
+      "startFen": "r1b2rk1/p1qn1pp1/2pb4/1p1p3p/3P2N1/3BB2P/PPP2PP1/R2Q1RK1 w - - 0 15",
+      "bestLine": [
+        "g4h6",
+        "g7h6",
+        "d1h5",
+        "d7f6",
+        "h5h6",
+        "f6e4",
+        "f2f3",
+        "d6h2",
+        "g1h1",
+        "e4g3",
+        "h1h2",
+        "g3f1",
+        "h2g1"
+      ],
+      "selectionHash": "ad7b8c9858bdf9bb7365d71cef6eca933377bff26540b11064ea9b27f97314b2",
+      "replay": [
+        {
+          "fen": "r1b2rk1/p1qn1pp1/2pb4/1p1p3p/3P2N1/3BB2P/PPP2PP1/R2Q1RK1 w - - 0 15",
+          "uci": "g4h6",
+          "san": "Nh6+",
+          "afterFen": "r1b2rk1/p1qn1pp1/2pb3N/1p1p3p/3P4/3BB2P/PPP2PP1/R2Q1RK1 b - - 1 15",
+          "legalReplyCount": 2
+        },
+        {
+          "fen": "r1b2rk1/p1qn1pp1/2pb3N/1p1p3p/3P4/3BB2P/PPP2PP1/R2Q1RK1 b - - 1 15",
+          "uci": "g7h6",
+          "san": "gxh6",
+          "afterFen": "r1b2rk1/p1qn1p2/2pb3p/1p1p3p/3P4/3BB2P/PPP2PP1/R2Q1RK1 w - - 0 16",
+          "legalReplyCount": 35
+        },
+        {
+          "fen": "r1b2rk1/p1qn1p2/2pb3p/1p1p3p/3P4/3BB2P/PPP2PP1/R2Q1RK1 w - - 0 16",
+          "uci": "d1h5",
+          "san": "Qxh5",
+          "afterFen": "r1b2rk1/p1qn1p2/2pb3p/1p1p3Q/3P4/3BB2P/PPP2PP1/R4RK1 b - - 0 16",
+          "legalReplyCount": 31
+        },
+        {
+          "fen": "r1b2rk1/p1qn1p2/2pb3p/1p1p3Q/3P4/3BB2P/PPP2PP1/R4RK1 b - - 0 16",
+          "uci": "d7f6",
+          "san": "Nf6",
+          "afterFen": "r1b2rk1/p1q2p2/2pb1n1p/1p1p3Q/3P4/3BB2P/PPP2PP1/R4RK1 w - - 1 17",
+          "legalReplyCount": 44
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2pb1n1p/1p1p3Q/3P4/3BB2P/PPP2PP1/R4RK1 w - - 1 17",
+          "uci": "h5h6",
+          "san": "Qxh6",
+          "afterFen": "r1b2rk1/p1q2p2/2pb1n1Q/1p1p4/3P4/3BB2P/PPP2PP1/R4RK1 b - - 0 17",
+          "legalReplyCount": 35
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2pb1n1Q/1p1p4/3P4/3BB2P/PPP2PP1/R4RK1 b - - 0 17",
+          "uci": "f6e4",
+          "san": "Ne4",
+          "afterFen": "r1b2rk1/p1q2p2/2pb3Q/1p1p4/3Pn3/3BB2P/PPP2PP1/R4RK1 w - - 1 18",
+          "legalReplyCount": 40
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2pb3Q/1p1p4/3Pn3/3BB2P/PPP2PP1/R4RK1 w - - 1 18",
+          "uci": "f2f3",
+          "san": "f3",
+          "afterFen": "r1b2rk1/p1q2p2/2pb3Q/1p1p4/3Pn3/3BBP1P/PPP3P1/R4RK1 b - - 0 18",
+          "legalReplyCount": 38
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2pb3Q/1p1p4/3Pn3/3BBP1P/PPP3P1/R4RK1 b - - 0 18",
+          "uci": "d6h2",
+          "san": "Bh2+",
+          "afterFen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3Pn3/3BBP1P/PPP3Pb/R4RK1 w - - 1 19",
+          "legalReplyCount": 1
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3Pn3/3BBP1P/PPP3Pb/R4RK1 w - - 1 19",
+          "uci": "g1h1",
+          "san": "Kh1",
+          "afterFen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3Pn3/3BBP1P/PPP3Pb/R4R1K b - - 2 19",
+          "legalReplyCount": 40
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3Pn3/3BBP1P/PPP3Pb/R4R1K b - - 2 19",
+          "uci": "e4g3",
+          "san": "Ng3+",
+          "afterFen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3P4/3BBPnP/PPP3Pb/R4R1K w - - 3 20",
+          "legalReplyCount": 1
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3P4/3BBPnP/PPP3Pb/R4R1K w - - 3 20",
+          "uci": "h1h2",
+          "san": "Kxh2",
+          "afterFen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3P4/3BBPnP/PPP3PK/R4R2 b - - 0 20",
+          "legalReplyCount": 32
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3P4/3BBPnP/PPP3PK/R4R2 b - - 0 20",
+          "uci": "g3f1",
+          "san": "Nxf1+",
+          "afterFen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3P4/3BBP1P/PPP3PK/R4n2 w - - 0 21",
+          "legalReplyCount": 2
+        },
+        {
+          "fen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3P4/3BBP1P/PPP3PK/R4n2 w - - 0 21",
+          "uci": "h2g1",
+          "san": "Kg1",
+          "afterFen": "r1b2rk1/p1q2p2/2p4Q/1p1p4/3P4/3BBP1P/PPP3P1/R4nK1 b - - 1 21",
+          "legalReplyCount": 32
+        }
+      ]
+    },
+    {
+      "stratum": "clearance",
+      "id": "lichess:wN37d",
+      "sourceGameUrl": "https://lichess.org/6rpanRRK/black#86",
+      "sourceGroup": "game:6rpanRRK",
+      "sourceThemes": [
+        "advantage",
+        "clearance",
+        "endgame",
+        "fork",
+        "long"
+      ],
+      "sourceFen": "8/2R3pp/r4p2/4p3/PbNk4/6PP/5PK1/8 b - - 0 43",
+      "precedingMove": "a6a4",
+      "startFen": "8/2R3pp/5p2/4p3/rbNk4/6PP/5PK1/8 w - - 0 44",
+      "bestLine": [
+        "c4b2",
+        "a4a1",
+        "c7c4",
+        "d4d5",
+        "c4b4"
+      ],
+      "selectionHash": "38e24dec419c4fff5c55fc7dd533a6470c531404628a0af7cdb012a6a1b568ef",
+      "replay": [
+        {
+          "fen": "8/2R3pp/5p2/4p3/rbNk4/6PP/5PK1/8 w - - 0 44",
+          "uci": "c4b2",
+          "san": "Nb2",
+          "afterFen": "8/2R3pp/5p2/4p3/rb1k4/6PP/1N3PK1/8 b - - 1 44",
+          "legalReplyCount": 24
+        },
+        {
+          "fen": "8/2R3pp/5p2/4p3/rb1k4/6PP/1N3PK1/8 b - - 1 44",
+          "uci": "a4a1",
+          "san": "Ra1",
+          "afterFen": "8/2R3pp/5p2/4p3/1b1k4/6PP/1N3PK1/r7 w - - 2 45",
+          "legalReplyCount": 23
+        },
+        {
+          "fen": "8/2R3pp/5p2/4p3/1b1k4/6PP/1N3PK1/r7 w - - 2 45",
+          "uci": "c7c4",
+          "san": "Rc4+",
+          "afterFen": "8/6pp/5p2/4p3/1bRk4/6PP/1N3PK1/r7 b - - 3 45",
+          "legalReplyCount": 1
+        },
+        {
+          "fen": "8/6pp/5p2/4p3/1bRk4/6PP/1N3PK1/r7 b - - 3 45",
+          "uci": "d4d5",
+          "san": "Kd5",
+          "afterFen": "8/6pp/5p2/3kp3/1bR5/6PP/1N3PK1/r7 w - - 4 46",
+          "legalReplyCount": 22
+        },
+        {
+          "fen": "8/6pp/5p2/3kp3/1bR5/6PP/1N3PK1/r7 w - - 4 46",
+          "uci": "c4b4",
+          "san": "Rxb4",
+          "afterFen": "8/6pp/5p2/3kp3/1R6/6PP/1N3PK1/r7 b - - 0 46",
+          "legalReplyCount": 24
+        }
+      ]
+    },
+    {
+      "stratum": "deflection",
+      "id": "lichess:CY182",
+      "sourceGameUrl": "https://lichess.org/uPnSBtWu#81",
+      "sourceGroup": "game:uPnSBtWu",
+      "sourceThemes": [
+        "crushing",
+        "deflection",
+        "endgame",
+        "long",
+        "pin"
+      ],
+      "sourceFen": "6k1/4p2p/3pP1p1/PPpK4/4Qn2/2r4P/5q2/R4R2 w - - 4 41",
+      "precedingMove": "e4f4",
+      "startFen": "6k1/4p2p/3pP1p1/PPpK4/5Q2/2r4P/5q2/R4R2 b - - 0 41",
+      "bestLine": [
+        "f2g2",
+        "f4e4",
+        "c3d3",
+        "d5c6",
+        "g2e4"
+      ],
+      "selectionHash": "09a59aca723c248bbd171bedf5640d122f69197ddf37baf4339c8f9358a22aae",
+      "replay": [
+        {
+          "fen": "6k1/4p2p/3pP1p1/PPpK4/5Q2/2r4P/5q2/R4R2 b - - 0 41",
+          "uci": "f2g2",
+          "san": "Qg2+",
+          "afterFen": "6k1/4p2p/3pP1p1/PPpK4/5Q2/2r4P/6q1/R4R2 w - - 1 42",
+          "legalReplyCount": 3
+        },
+        {
+          "fen": "6k1/4p2p/3pP1p1/PPpK4/5Q2/2r4P/6q1/R4R2 w - - 1 42",
+          "uci": "f4e4",
+          "san": "Qe4",
+          "afterFen": "6k1/4p2p/3pP1p1/PPpK4/4Q3/2r4P/6q1/R4R2 b - - 2 42",
+          "legalReplyCount": 32
+        },
+        {
+          "fen": "6k1/4p2p/3pP1p1/PPpK4/4Q3/2r4P/6q1/R4R2 b - - 2 42",
+          "uci": "c3d3",
+          "san": "Rd3+",
+          "afterFen": "6k1/4p2p/3pP1p1/PPpK4/4Q3/3r3P/6q1/R4R2 w - - 3 43",
+          "legalReplyCount": 2
+        },
+        {
+          "fen": "6k1/4p2p/3pP1p1/PPpK4/4Q3/3r3P/6q1/R4R2 w - - 3 43",
+          "uci": "d5c6",
+          "san": "Kc6",
+          "afterFen": "6k1/4p2p/2KpP1p1/PPp5/4Q3/3r3P/6q1/R4R2 b - - 4 43",
+          "legalReplyCount": 34
+        },
+        {
+          "fen": "6k1/4p2p/2KpP1p1/PPp5/4Q3/3r3P/6q1/R4R2 b - - 4 43",
+          "uci": "g2e4",
+          "san": "Qxe4+",
+          "afterFen": "6k1/4p2p/2KpP1p1/PPp5/4q3/3r3P/8/R4R2 w - - 0 44",
+          "legalReplyCount": 3
+        }
+      ]
+    },
+    {
+      "stratum": "attraction",
+      "id": "lichess:GFfWQ",
+      "sourceGameUrl": "https://lichess.org/ndfhTRQ9#45",
+      "sourceGroup": "game:ndfhTRQ9",
+      "sourceThemes": [
+        "advantage",
+        "attraction",
+        "discoveredCheck",
+        "doubleCheck",
+        "kingsideAttack",
+        "middlegame",
+        "sacrifice",
+        "short"
+      ],
+      "sourceFen": "5rk1/1p1b2pp/p7/3pP3/3P3q/4B1nP/P3B1P1/R2Q2K1 w - - 2 23",
+      "precedingMove": "e3f2",
+      "startFen": "5rk1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BBP1/R2Q2K1 b - - 3 23",
+      "bestLine": [
+        "f8f2",
+        "g1f2",
+        "g3e4"
+      ],
+      "selectionHash": "00ff05918b9a5794b25aca3c6d72a8aaa7282d98016716d84d5610905ddd9b81",
+      "replay": [
+        {
+          "fen": "5rk1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BBP1/R2Q2K1 b - - 3 23",
+          "uci": "f8f2",
+          "san": "Rxf2",
+          "afterFen": "6k1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BrP1/R2Q2K1 w - - 0 24",
+          "legalReplyCount": 24
+        },
+        {
+          "fen": "6k1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BrP1/R2Q2K1 w - - 0 24",
+          "uci": "g1f2",
+          "san": "Kxf2",
+          "afterFen": "6k1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BKP1/R2Q4 b - - 0 24",
+          "legalReplyCount": 36
+        },
+        {
+          "fen": "6k1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BKP1/R2Q4 b - - 0 24",
+          "uci": "g3e4",
+          "san": "Ne4+",
+          "afterFen": "6k1/1p1b2pp/p7/3pP3/3Pn2q/7P/P3BKP1/R2Q4 w - - 1 25",
+          "legalReplyCount": 4
+        }
+      ]
+    },
+    {
+      "stratum": "xRayAttack",
+      "id": "lichess:YvGsE",
+      "sourceGameUrl": "https://lichess.org/BCPzsmYD/black#54",
+      "sourceGroup": "game:BCPzsmYD",
+      "sourceThemes": [
+        "advancedPawn",
+        "exposedKing",
+        "fork",
+        "long",
+        "mate",
+        "mateIn3",
+        "middlegame",
+        "promotion",
+        "triangleMate",
+        "xRayAttack"
+      ],
+      "sourceFen": "2b1Q2k/3n3P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R b - - 1 27",
+      "precedingMove": "d7f8",
+      "startFen": "2b1Qn1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R w - - 2 28",
+      "bestLine": [
+        "e8f8",
+        "f5f8",
+        "f1f8",
+        "h8g7",
+        "h7h8q"
+      ],
+      "selectionHash": "082e312957cfcf9808f18c4024469623a3eab617d7eafcea942609df7ddc6222",
+      "replay": [
+        {
+          "fen": "2b1Qn1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R w - - 2 28",
+          "uci": "e8f8",
+          "san": "Qxf8+",
+          "afterFen": "2b2Q1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R b - - 0 28",
+          "legalReplyCount": 1
+        },
+        {
+          "fen": "2b2Q1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R b - - 0 28",
+          "uci": "f5f8",
+          "san": "Rxf8",
+          "afterFen": "2b2r1k/7P/p2p2p1/q1pP4/2P5/8/Pr2B1K1/2q2R1R w - - 0 29",
+          "legalReplyCount": 22
+        },
+        {
+          "fen": "2b2r1k/7P/p2p2p1/q1pP4/2P5/8/Pr2B1K1/2q2R1R w - - 0 29",
+          "uci": "f1f8",
+          "san": "Rxf8+",
+          "afterFen": "2b2R1k/7P/p2p2p1/q1pP4/2P5/8/Pr2B1K1/2q4R b - - 0 29",
+          "legalReplyCount": 1
+        },
+        {
+          "fen": "2b2R1k/7P/p2p2p1/q1pP4/2P5/8/Pr2B1K1/2q4R b - - 0 29",
+          "uci": "h8g7",
+          "san": "Kg7",
+          "afterFen": "2b2R2/6kP/p2p2p1/q1pP4/2P5/8/Pr2B1K1/2q4R w - - 1 30",
+          "legalReplyCount": 29
+        },
+        {
+          "fen": "2b2R2/6kP/p2p2p1/q1pP4/2P5/8/Pr2B1K1/2q4R w - - 1 30",
+          "uci": "h7h8q",
+          "san": "h8=Q#",
+          "afterFen": "2b2R1Q/6k1/p2p2p1/q1pP4/2P5/8/Pr2B1K1/2q4R b - - 0 30",
+          "legalReplyCount": 0
+        }
+      ]
+    },
+    {
+      "stratum": "intermezzo",
+      "id": "lichess:Ltbye",
+      "sourceGameUrl": "https://lichess.org/5u4tGdlw/black#38",
+      "sourceGroup": "game:5u4tGdlw",
+      "sourceThemes": [
+        "advantage",
+        "intermezzo",
+        "middlegame",
+        "short"
+      ],
+      "sourceFen": "r1r3k1/4pp1p/p1p1b1pb/qp1BP3/3P4/2P2N1P/P1Q2PPB/2R1K2R b K - 0 19",
+      "precedingMove": "h6c1",
+      "startFen": "r1r3k1/4pp1p/p1p1b1p1/qp1BP3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 20",
+      "bestLine": [
+        "d5e6",
+        "f7e6",
+        "c2c1"
+      ],
+      "selectionHash": "4735170fea006b9fb2046974d5be769f0d18904b2c779e9e465423af7a1a68bb",
+      "replay": [
+        {
+          "fen": "r1r3k1/4pp1p/p1p1b1p1/qp1BP3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 20",
+          "uci": "d5e6",
+          "san": "Bxe6",
+          "afterFen": "r1r3k1/4pp1p/p1p1B1p1/qp2P3/3P4/2P2N1P/P1Q2PPB/2b1K2R b K - 0 20",
+          "legalReplyCount": 31
+        },
+        {
+          "fen": "r1r3k1/4pp1p/p1p1B1p1/qp2P3/3P4/2P2N1P/P1Q2PPB/2b1K2R b K - 0 20",
+          "uci": "f7e6",
+          "san": "fxe6",
+          "afterFen": "r1r3k1/4p2p/p1p1p1p1/qp2P3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 21",
+          "legalReplyCount": 31
+        },
+        {
+          "fen": "r1r3k1/4p2p/p1p1p1p1/qp2P3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 21",
+          "uci": "c2c1",
+          "san": "Qxc1",
+          "afterFen": "r1r3k1/4p2p/p1p1p1p1/qp2P3/3P4/2P2N1P/P4PPB/2Q1K2R b K - 0 21",
+          "legalReplyCount": 24
+        }
+      ]
+    },
+    {
+      "stratum": "defensiveMove",
+      "id": "lichess:ySzc4",
+      "sourceGameUrl": "https://lichess.org/8guHczpY/black#110",
+      "sourceGroup": "game:8guHczpY",
+      "sourceThemes": [
+        "advancedPawn",
+        "attackingF2F7",
+        "crushing",
+        "defensiveMove",
+        "endgame",
+        "exposedKing",
+        "fork",
+        "knightEndgame",
+        "veryLong"
+      ],
+      "sourceFen": "8/4kn2/8/4PKp1/1Pp5/2P5/8/8 b - - 0 55",
+      "precedingMove": "e7d7",
+      "startFen": "8/3k1n2/8/4PKp1/1Pp5/2P5/8/8 w - - 1 56",
+      "bestLine": [
+        "e5e6",
+        "d7e8",
+        "e6f7",
+        "e8f7",
+        "f5g5",
+        "f7e6",
+        "g5f4"
+      ],
+      "selectionHash": "03693882f904fcfa690875eebdd0b0750ef64b09faa360d6bba13c24cd2773d5",
+      "replay": [
+        {
+          "fen": "8/3k1n2/8/4PKp1/1Pp5/2P5/8/8 w - - 1 56",
+          "uci": "e5e6",
+          "san": "e6+",
+          "afterFen": "8/3k1n2/4P3/5Kp1/1Pp5/2P5/8/8 b - - 0 56",
+          "legalReplyCount": 7
+        },
+        {
+          "fen": "8/3k1n2/4P3/5Kp1/1Pp5/2P5/8/8 b - - 0 56",
+          "uci": "d7e8",
+          "san": "Ke8",
+          "afterFen": "4k3/5n2/4P3/5Kp1/1Pp5/2P5/8/8 w - - 1 57",
+          "legalReplyCount": 7
+        },
+        {
+          "fen": "4k3/5n2/4P3/5Kp1/1Pp5/2P5/8/8 w - - 1 57",
+          "uci": "e6f7",
+          "san": "exf7+",
+          "afterFen": "4k3/5P2/8/5Kp1/1Pp5/2P5/8/8 b - - 0 57",
+          "legalReplyCount": 5
+        },
+        {
+          "fen": "4k3/5P2/8/5Kp1/1Pp5/2P5/8/8 b - - 0 57",
+          "uci": "e8f7",
+          "san": "Kxf7",
+          "afterFen": "8/5k2/8/5Kp1/1Pp5/2P5/8/8 w - - 0 58",
+          "legalReplyCount": 5
+        },
+        {
+          "fen": "8/5k2/8/5Kp1/1Pp5/2P5/8/8 w - - 0 58",
+          "uci": "f5g5",
+          "san": "Kxg5",
+          "afterFen": "8/5k2/8/6K1/1Pp5/2P5/8/8 b - - 0 58",
+          "legalReplyCount": 6
+        },
+        {
+          "fen": "8/5k2/8/6K1/1Pp5/2P5/8/8 b - - 0 58",
+          "uci": "f7e6",
+          "san": "Ke6",
+          "afterFen": "8/8/4k3/6K1/1Pp5/2P5/8/8 w - - 1 59",
+          "legalReplyCount": 7
+        },
+        {
+          "fen": "8/8/4k3/6K1/1Pp5/2P5/8/8 w - - 1 59",
+          "uci": "g5f4",
+          "san": "Kf4",
+          "afterFen": "8/8/4k3/8/1Pp2K2/2P5/8/8 b - - 2 59",
+          "legalReplyCount": 6
+        }
+      ]
+    },
+    {
+      "stratum": "trappedPiece",
+      "id": "lichess:Xg7Rd",
+      "sourceGameUrl": "https://lichess.org/lMO0jlIT/black#24",
+      "sourceGroup": "game:lMO0jlIT",
+      "sourceThemes": [
+        "advantage",
+        "opening",
+        "short",
+        "trappedPiece"
+      ],
+      "sourceFen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1Pp2/PP1N1PPP/R3KB1R b KQkq - 0 12",
+      "precedingMove": "f3g2",
+      "startFen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PpP/R3KB1R w KQkq - 0 13",
+      "bestLine": [
+        "f1g2",
+        "a8c8",
+        "c7a5"
+      ],
+      "selectionHash": "247cc817078c9c85f0d7887a8779c87482cb18b72f1c3196f6e575c066a25891",
+      "replay": [
+        {
+          "fen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PpP/R3KB1R w KQkq - 0 13",
+          "uci": "f1g2",
+          "san": "Bxg2",
+          "afterFen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PBP/R3K2R b KQkq - 0 13",
+          "legalReplyCount": 34
+        },
+        {
+          "fen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PBP/R3K2R b KQkq - 0 13",
+          "uci": "a8c8",
+          "san": "Rc8",
+          "afterFen": "2r1kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PBP/R3K2R w KQk - 1 14",
+          "legalReplyCount": 39
+        },
+        {
+          "fen": "2r1kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PBP/R3K2R w KQk - 1 14",
+          "uci": "c7a5",
+          "san": "Bxa5",
+          "afterFen": "2r1kb1r/5ppp/p4n2/B7/6b1/2P1P3/PP1N1PBP/R3K2R b KQk - 0 14",
+          "legalReplyCount": 33
+        }
+      ]
+    }
+  ],
+  "games": [
+    {
+      "gameId": "QZDg7vtX",
+      "sourceGameUrl": "https://lichess.org/QZDg7vtX",
+      "exportUrl": "https://lichess.org/game/export/QZDg7vtX?clocks=false&evals=false&opening=false&literate=false",
+      "sourceSha256": "667d90a5da50e8eec514fa875e3f02a5afbff65e2c0520074e46ff3af13a019d",
+      "startFen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "e2e4",
+        "e7e6",
+        "f2f4",
+        "d7d5",
+        "e4e5",
+        "g8e7",
+        "d2d4",
+        "c7c5",
+        "c1e3",
+        "c5d4",
+        "e3d4",
+        "b8c6",
+        "g1f3",
+        "c8d7",
+        "b1c3",
+        "e7f5",
+        "d1d2",
+        "f8b4",
+        "e1a1",
+        "a7a5",
+        "a2a3",
+        "b4c3",
+        "d2c3",
+        "b7b5",
+        "f1b5",
+        "a8c8",
+        "c3b3",
+        "e8h8",
+        "a3a4",
+        "c8b8",
+        "g2g4",
+        "f5d4",
+        "f3d4",
+        "c6a7",
+        "f4f5",
+        "b8b6",
+        "f5e6",
+        "f7e6",
+        "h1f1",
+        "f8f1",
+        "d1f1",
+        "d8b8",
+        "b3f3",
+        "a7b5",
+        "f3f7",
+        "g8h8",
+        "f7f8",
+        "b8f8",
+        "f1f8"
+      ],
+      "scope": "Public legal moves only; player headers, comments and clocks omitted",
+      "retainedPlies": 49
+    },
+    {
+      "gameId": "Z1Tw5YR3",
+      "sourceGameUrl": "https://lichess.org/Z1Tw5YR3",
+      "exportUrl": "https://lichess.org/game/export/Z1Tw5YR3?clocks=false&evals=false&opening=false&literate=false",
+      "sourceSha256": "7d441f3add035f3a7c945c034d9b20329b383ca1eaae487fc36cf027004944c1",
+      "startFen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "d2d4",
+        "d7d5",
+        "g1f3",
+        "e7e6",
+        "b1c3",
+        "b8c6",
+        "e2e4",
+        "g8f6",
+        "e4d5",
+        "e6d5",
+        "d1e2",
+        "f8e7",
+        "c1f4",
+        "c6b4",
+        "c3b5",
+        "e8h8",
+        "b5c7",
+        "a8b8",
+        "c7b5",
+        "b8a8",
+        "a2a3",
+        "b4c2",
+        "e2c2",
+        "d8a5",
+        "b5c3",
+        "h7h5",
+        "b2b4",
+        "a5c7",
+        "f1d3",
+        "c7f4",
+        "c2c1",
+        "f4d6",
+        "e1h1",
+        "b7b6",
+        "h2h3",
+        "a7a5",
+        "b4b5",
+        "c8d7",
+        "a3a4",
+        "d6b4",
+        "c1f4",
+        "a8c8",
+        "f1b1",
+        "b4c3",
+        "f4e3",
+        "e7d6",
+        "b1c1",
+        "c3b2",
+        "h3h4",
+        "f6g4",
+        "e3g5",
+        "g4f2",
+        "d3f5",
+        "c8c1",
+        "g5c1",
+        "b2e2",
+        "f5d7",
+        "d6a3",
+        "a1a3",
+        "f7f5",
+        "a3e3",
+        "e2c4",
+        "c1c4",
+        "d5c4",
+        "d7f5",
+        "f8f5",
+        "f3e5",
+        "f5f4",
+        "e5g6",
+        "f4d4",
+        "e3e8",
+        "g8h7",
+        "g6f8",
+        "h7h6",
+        "e8e6",
+        "g7g6",
+        "f8g6",
+        "h6g7",
+        "g6e7",
+        "g7f7",
+        "g2g4",
+        "f7f8"
+      ],
+      "scope": "Public legal moves only; player headers, comments and clocks omitted",
+      "retainedPlies": 82
+    }
+  ],
+  "contexts": [
+    {
+      "id": "context:QZDg7vtX:ply12",
+      "gameId": "QZDg7vtX",
+      "ply": 12,
+      "sourceGameUrl": "https://lichess.org/QZDg7vtX",
+      "fen": "r1bqkb1r/pp2nppp/2n1p3/3pP3/3B1P2/8/PPP3PP/RN1QKBNR w KQkq - 1 7",
+      "previousFen": "rnbqkb1r/pp2nppp/4p3/3pP3/3B1P2/8/PPP3PP/RN1QKBNR b KQkq - 0 6",
+      "previousMoveUci": "b8c6",
+      "playedMoveUci": "g1f3",
+      "playedSan": "Nf3",
+      "actualContinuation": [
+        "g1f3",
+        "c8d7",
+        "b1c3",
+        "e7f5",
+        "d1d2",
+        "f8b4",
+        "e1a1",
+        "a7a5"
+      ],
+      "status": "unadjudicated ordinary game context"
+    },
+    {
+      "id": "context:QZDg7vtX:ply20",
+      "gameId": "QZDg7vtX",
+      "ply": 20,
+      "sourceGameUrl": "https://lichess.org/QZDg7vtX",
+      "fen": "r2qk2r/1p1b1ppp/2n1p3/p2pPn2/1b1B1P2/2N2N2/PPPQ2PP/2KR1B1R w kq - 0 11",
+      "previousFen": "r2qk2r/pp1b1ppp/2n1p3/3pPn2/1b1B1P2/2N2N2/PPPQ2PP/2KR1B1R b kq - 8 10",
+      "previousMoveUci": "a7a5",
+      "playedMoveUci": "a2a3",
+      "playedSan": "a3",
+      "actualContinuation": [
+        "a2a3",
+        "b4c3",
+        "d2c3",
+        "b7b5",
+        "f1b5",
+        "a8c8",
+        "c3b3",
+        "e8h8"
+      ],
+      "status": "unadjudicated ordinary game context"
+    },
+    {
+      "id": "context:QZDg7vtX:ply28",
+      "gameId": "QZDg7vtX",
+      "ply": 28,
+      "sourceGameUrl": "https://lichess.org/QZDg7vtX",
+      "fen": "2rq1rk1/3b1ppp/2n1p3/pB1pPn2/3B1P2/PQ3N2/1PP3PP/2KR3R w - - 3 15",
+      "previousFen": "2rqk2r/3b1ppp/2n1p3/pB1pPn2/3B1P2/PQ3N2/1PP3PP/2KR3R b k - 2 14",
+      "previousMoveUci": "e8h8",
+      "playedMoveUci": "a3a4",
+      "playedSan": "a4",
+      "actualContinuation": [
+        "a3a4",
+        "c8b8",
+        "g2g4",
+        "f5d4",
+        "f3d4",
+        "c6a7",
+        "f4f5",
+        "b8b6"
+      ],
+      "status": "unadjudicated ordinary game context"
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply12",
+      "gameId": "Z1Tw5YR3",
+      "ply": 12,
+      "sourceGameUrl": "https://lichess.org/Z1Tw5YR3",
+      "fen": "r1bqk2r/ppp1bppp/2n2n2/3p4/3P4/2N2N2/PPP1QPPP/R1B1KB1R w KQkq - 2 7",
+      "previousFen": "r1bqkb1r/ppp2ppp/2n2n2/3p4/3P4/2N2N2/PPP1QPPP/R1B1KB1R b KQkq - 1 6",
+      "previousMoveUci": "f8e7",
+      "playedMoveUci": "c1f4",
+      "playedSan": "Bf4",
+      "actualContinuation": [
+        "c1f4",
+        "c6b4",
+        "c3b5",
+        "e8h8",
+        "b5c7",
+        "a8b8",
+        "c7b5",
+        "b8a8"
+      ],
+      "status": "unadjudicated ordinary game context"
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply20",
+      "gameId": "Z1Tw5YR3",
+      "ply": 20,
+      "sourceGameUrl": "https://lichess.org/Z1Tw5YR3",
+      "fen": "r1bq1rk1/pp2bppp/5n2/1N1p4/1n1P1B2/5N2/PPP1QPPP/R3KB1R w KQ - 3 11",
+      "previousFen": "1rbq1rk1/pp2bppp/5n2/1N1p4/1n1P1B2/5N2/PPP1QPPP/R3KB1R b KQ - 2 10",
+      "previousMoveUci": "b8a8",
+      "playedMoveUci": "a2a3",
+      "playedSan": "a3",
+      "actualContinuation": [
+        "a2a3",
+        "b4c2",
+        "e2c2",
+        "d8a5",
+        "b5c3",
+        "h7h5",
+        "b2b4",
+        "a5c7"
+      ],
+      "status": "unadjudicated ordinary game context"
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply28",
+      "gameId": "Z1Tw5YR3",
+      "ply": 28,
+      "sourceGameUrl": "https://lichess.org/Z1Tw5YR3",
+      "fen": "r1b2rk1/ppq1bpp1/5n2/3p3p/1P1P1B2/P1N2N2/2Q2PPP/R3KB1R w KQ - 1 15",
+      "previousFen": "r1b2rk1/pp2bpp1/5n2/q2p3p/1P1P1B2/P1N2N2/2Q2PPP/R3KB1R b KQ - 0 14",
+      "previousMoveUci": "a5c7",
+      "playedMoveUci": "f1d3",
+      "playedSan": "Bd3",
+      "actualContinuation": [
+        "f1d3",
+        "c7f4",
+        "c2c1",
+        "f4d6",
+        "e1h1",
+        "b7b6",
+        "h2h3",
+        "a7a5"
+      ],
+      "status": "unadjudicated ordinary game context"
+    }
+  ]
+}
