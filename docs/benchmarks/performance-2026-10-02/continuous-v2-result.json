@@ -1,0 +1,814 @@
+{
+  "scope": "Continuous constant-period and zero-drift numerical inference, conditional on the unchanged model; not dynamic-diffusion or empirical accuracy acceptance.",
+  "version": "bayes-grid-v2-log-support",
+  "node": "v24.19.0",
+  "toleranceRatingPoints": 0.001,
+  "sourceHashes": {
+    "truePerformance.ts": "d623ed9792dbd34059c5cb65e3b47bbf3ee141bd59e4264c168ac88b5e3a8553",
+    "performanceNumerics.ts": "f7acbb075ef39c430862eb843115fdcfe9267322e77fafc7d443b979a7dec35c"
+  },
+  "referenceSha256": "07dda7adb28960307fefb1f87e19111588cfc695804a5e5a3428354d4f65eb5c",
+  "passedContinuousGates": false,
+  "failures": [
+    "ordinary-ten: low error -0.14412641618059752 exceeds 0.001",
+    "ordinary-ten: high error 0.04051672898685865 exceeds 0.001",
+    "wins-5000: low error -0.051121832378157706 exceeds 0.001",
+    "wins-5000: high error 0.1410550139617044 exceeds 0.001",
+    "losses-then-wins-5000: sd error -0.239198088797143 exceeds 0.001",
+    "losses-then-wins-5000: low error -2.689310237943573 exceeds 0.001",
+    "losses-then-wins-5000: high error 2.689310237819882 exceeds 0.001",
+    "wins-then-losses-5000: sd error -0.23919808879605764 exceeds 0.001",
+    "wins-then-losses-5000: low error -2.689310237814425 exceeds 0.001",
+    "wins-then-losses-5000: high error 2.6893102379426637 exceeds 0.001",
+    "alternating-5000: sd error -0.2391980888155114 exceeds 0.001",
+    "alternating-5000: low error -2.6893102378633102 exceeds 0.001",
+    "alternating-5000: high error 2.6893102378689946 exceeds 0.001",
+    "subcell-1812-no-opponent-uncertainty-5000: mean error -0.1682113789822779 exceeds 0.001",
+    "subcell-1812-no-opponent-uncertainty-5000: sd error -0.09196649150143354 exceeds 0.001",
+    "subcell-1812-no-opponent-uncertainty-5000: low error -2.035127005729464 exceeds 0.001",
+    "subcell-1812-no-opponent-uncertainty-5000: high error 1.8972187226695496 exceeds 0.001",
+    "halfcell-1815-no-opponent-uncertainty-5000: sd error 0.2823573219828832 exceeds 0.001",
+    "halfcell-1815-no-opponent-uncertainty-5000: low error 0.3760644396713815 exceeds 0.001",
+    "halfcell-1815-no-opponent-uncertainty-5000: high error -0.3760644396804764 exceeds 0.001",
+    "mismatched-low-prior: low error -0.28833491102068365 exceeds 0.001",
+    "mismatched-low-prior: high error 0.30222600324941595 exceeds 0.001",
+    "mismatched-high-prior: low error -0.3022260032611257 exceeds 0.001",
+    "mismatched-high-prior: high error 0.2883349109633855 exceeds 0.001",
+    "provisional-opponents-5000: mean error 0.009077118686491303 exceeds 0.001",
+    "provisional-opponents-5000: sd error -0.08619464804398547 exceeds 0.001",
+    "provisional-opponents-5000: low error -1.852475692391181 exceeds 0.001",
+    "provisional-opponents-5000: high error 2.16810458035593 exceeds 0.001",
+    "high-uncertainty-opponents-5000: mean error -7.465561513056855 exceeds 0.001",
+    "high-uncertainty-opponents-5000: sd error 0.26827626226958046 exceeds 0.001",
+    "high-uncertainty-opponents-5000: low error -8.879315147705256 exceeds 0.001",
+    "high-uncertainty-opponents-5000: high error -5.771280860878051 exceeds 0.001",
+    "classical-colour-and-draw-slope: mean error -0.7758589380493959 exceeds 0.001",
+    "classical-colour-and-draw-slope: sd error 0.14253959066381938 exceeds 0.001",
+    "classical-colour-and-draw-slope: low error -1.458674659031658 exceeds 0.001",
+    "classical-colour-and-draw-slope: high error 0.17529304199069884 exceeds 0.001",
+    "upper-grid-boundary-5000: mean error -431.6835353774504 exceeds 0.001",
+    "upper-grid-boundary-5000: sd error -59.76519516798102 exceeds 0.001",
+    "upper-grid-boundary-5000: low error -325.8587637386454 exceeds 0.001",
+    "upper-grid-boundary-5000: high error -554.4473876798202 exceeds 0.001",
+    "lower-grid-boundary-5000: mean error 431.68353537743974 exceeds 0.001",
+    "lower-grid-boundary-5000: sd error -59.765195167970376 exceeds 0.001",
+    "lower-grid-boundary-5000: low error 554.4473876798343 exceeds 0.001",
+    "lower-grid-boundary-5000: high error 325.8587637387566 exceeds 0.001",
+    "broad-prior-upper-boundary-5000: mean error -1038.1869056197365 exceeds 0.001",
+    "broad-prior-upper-boundary-5000: sd error -131.1273045409233 exceeds 0.001",
+    "broad-prior-upper-boundary-5000: low error -808.7156822781799 exceeds 0.001",
+    "broad-prior-upper-boundary-5000: high error -1314.0056923663406 exceeds 0.001",
+    "subcell-1800: sd error -0.2922740556066197 exceeds 0.001",
+    "subcell-1800: low error -2.7917251039252733 exceeds 0.001",
+    "subcell-1800: high error 2.791725103918907 exceeds 0.001",
+    "subcell-1800.125: mean error -0.013776284878304068 exceeds 0.001",
+    "subcell-1800.125: sd error -0.29137533677913474 exceeds 0.001",
+    "subcell-1800.125: low error -2.8109005064782195 exceeds 0.001",
+    "subcell-1800.125: high error 2.7667325694380906 exceeds 0.001",
+    "subcell-1801: mean error -0.10341140522132264 exceeds 0.001",
+    "subcell-1801: sd error -0.23668543960158228 exceeds 0.001",
+    "subcell-1801: low error -2.7443107370600046 exceeds 0.001",
+    "subcell-1801: high error 2.4572929637477046 exceeds 0.001",
+    "subcell-1802: mean error -0.16821137898205052 exceeds 0.001",
+    "subcell-1802: sd error -0.09196649150143354 exceeds 0.001",
+    "subcell-1802: low error -2.035127005729464 exceeds 0.001",
+    "subcell-1802: high error 1.8972187226695496 exceeds 0.001",
+    "subcell-1803: mean error -0.16932238576714553 exceeds 0.001",
+    "subcell-1803: sd error 0.08549038293172462 exceeds 0.001",
+    "subcell-1803: low error -0.14132202377049907 exceeds 0.001",
+    "subcell-1803: high error 1.203117305006117 exceeds 0.001",
+    "subcell-1804: mean error -0.10520916599284647 exceeds 0.001",
+    "subcell-1804: sd error 0.2280869134261847 exceeds 0.001",
+    "subcell-1804: low error 1.1914099225480186 exceeds 0.001",
+    "subcell-1804: high error 0.43228511768074895 exceeds 0.001",
+    "subcell-1805: sd error 0.2823573219823068 exceeds 0.001",
+    "subcell-1805: low error 0.3760644396727457 exceeds 0.001",
+    "subcell-1805: high error -0.37606443967933956 exceeds 0.001",
+    "subcell-1806: mean error 0.10520916599239172 exceeds 0.001",
+    "subcell-1806: sd error 0.22808691342617138 exceeds 0.001",
+    "subcell-1806: low error -0.4322851176871154 exceeds 0.001",
+    "subcell-1806: high error -1.191409922554385 exceeds 0.001",
+    "subcell-1807: mean error 0.16932238576691816 exceeds 0.001",
+    "subcell-1807: sd error 0.08549038293171929 exceeds 0.001",
+    "subcell-1807: low error -1.2031173050124835 exceeds 0.001",
+    "subcell-1807: high error 0.14132202376390524 exceeds 0.001",
+    "subcell-1808: mean error 0.16821137898159577 exceeds 0.001",
+    "subcell-1808: sd error -0.09196649150143088 exceeds 0.001",
+    "subcell-1808: low error -1.897218722675916 exceeds 0.001",
+    "subcell-1808: high error 2.0351270057228703 exceeds 0.001",
+    "subcell-1809: mean error 0.10341140521882153 exceeds 0.001",
+    "subcell-1809: sd error -0.23668543960044008 exceeds 0.001",
+    "subcell-1809: low error -2.4572929637554353 exceeds 0.001",
+    "subcell-1809: high error 2.7443107370531834 exceeds 0.001",
+    "subcell-1809.875: mean error 0.01377628487784932 exceeds 0.001",
+    "subcell-1809.875: sd error -0.2913753367769374 exceeds 0.001",
+    "subcell-1809.875: low error -2.766732569446276 exceeds 0.001",
+    "subcell-1809.875: high error 2.8109005064738994 exceeds 0.001",
+    "subcell-1810: sd error -0.2922740556066197 exceeds 0.001",
+    "subcell-1810: low error -2.7917251039252733 exceeds 0.001",
+    "subcell-1810: high error 2.791725103918907 exceeds 0.001",
+    "sharp-symmetric: mean error -3.375 exceeds 0.001",
+    "sharp-symmetric: sd error -0.129139041815551 exceeds 0.001",
+    "sharp-symmetric: low error -7.871807955979648 exceeds 0.001",
+    "sharp-symmetric: high error 1.1218079559796479 exceeds 0.001",
+    "sharp-asymmetric: mean error 4.101322957219281 exceeds 0.001",
+    "sharp-asymmetric: sd error -0.29754712482708784 exceeds 0.001",
+    "sharp-asymmetric: low error -0.07240271800151277 exceeds 0.001",
+    "sharp-asymmetric: high error 8.260479449950253 exceeds 0.001",
+    "underflowing-start: mean error -0.8576594673218096 exceeds 0.001",
+    "underflowing-start: sd error -0.8179881514859761 exceeds 0.001",
+    "underflowing-start: low error -4.282112658785991 exceeds 0.001",
+    "underflowing-start: high error 1.9402071958165834 exceeds 0.001"
+  ],
+  "cases": [
+    {
+      "id": "ordinary-ten",
+      "games": 10,
+      "elapsedMs": 5.433300000000003,
+      "actual": {
+        "mean": 1576.834105812001,
+        "sd": 95.40198362410294,
+        "low": 1391.582135435461,
+        "high": 1766.5152224967164,
+        "edgeMass": 1.297434026913747e-99
+      },
+      "expected": {
+        "mean": 1576.8341056370991,
+        "sd": 95.40198440150881,
+        "low": 1391.7262618516415,
+        "high": 1766.4747057677296,
+        "mode": 1574.4292934423645
+      },
+      "errors": {
+        "mean": 1.7490197024017107e-7,
+        "sd": -7.774058730092293e-7,
+        "low": -0.14412641618059752,
+        "high": 0.04051672898685865
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "wins-5000",
+      "games": 5000,
+      "elapsedMs": 1027.1901,
+      "actual": {
+        "mean": 2902.473483901878,
+        "sd": 63.53989342506034,
+        "low": 2783.602553994105,
+        "high": 3032.717265799518,
+        "edgeMass": 1.051029442485838e-92
+      },
+      "expected": {
+        "mean": 2902.4734838933705,
+        "sd": 63.539893430160255,
+        "low": 2783.6536758264833,
+        "high": 3032.576210785556,
+        "mode": 2896.510240091664
+      },
+      "errors": {
+        "mean": 8.50741344038397e-9,
+        "sd": -5.0999133804907615e-9,
+        "low": -0.051121832378157706,
+        "high": 0.1410550139617044
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "losses-then-wins-5000",
+      "games": 5000,
+      "elapsedMs": 1007.5392000000002,
+      "actual": {
+        "mean": 1499.9999999999184,
+        "sd": 5.044311335226508,
+        "low": 1486.9550770851858,
+        "high": 1513.0449229146836,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 1499.9999999999995,
+        "sd": 5.283509424023651,
+        "low": 1489.6443873231294,
+        "high": 1510.3556126768638,
+        "mode": 1500.0000000932735
+      },
+      "errors": {
+        "mean": -8.117240213323385e-11,
+        "sd": -0.239198088797143,
+        "low": -2.689310237943573,
+        "high": 2.689310237819882
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "wins-then-losses-5000",
+      "games": 5000,
+      "elapsedMs": 1009.0311000000002,
+      "actual": {
+        "mean": 1500.0000000000807,
+        "sd": 5.044311335227592,
+        "low": 1486.955077085315,
+        "high": 1513.0449229148146,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 1499.9999999999995,
+        "sd": 5.2835094240236495,
+        "low": 1489.6443873231294,
+        "high": 1510.355612676872,
+        "mode": 1500.0000000932735
+      },
+      "errors": {
+        "mean": 8.117240213323385e-11,
+        "sd": -0.23919808879605764,
+        "low": -2.689310237814425,
+        "high": 2.6893102379426637
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "alternating-5000",
+      "games": 5000,
+      "elapsedMs": 1313.1151000000004,
+      "actual": {
+        "mean": 1499.9999999999993,
+        "sd": 5.04431133520814,
+        "low": 1486.955077085266,
+        "high": 1513.0449229147328,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 1499.9999999999995,
+        "sd": 5.283509424023651,
+        "low": 1489.6443873231294,
+        "high": 1510.3556126768638,
+        "mode": 1500.0000000932735
+      },
+      "errors": {
+        "mean": -2.2737367544323206e-13,
+        "sd": -0.2391980888155114,
+        "low": -2.6893102378633102,
+        "high": 2.6893102378689946
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "subcell-1812-no-opponent-uncertainty-5000",
+      "games": 5000,
+      "elapsedMs": 259.71990000000005,
+      "actual": {
+        "mean": 1811.8317886210182,
+        "sd": 5.058785686479263,
+        "low": 1799.8694500569309,
+        "high": 1823.9926416600156,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 1812.0000000000005,
+        "sd": 5.150752177980697,
+        "low": 1801.9045770626603,
+        "high": 1822.095422937346,
+        "mode": 1812.0000000042726
+      },
+      "errors": {
+        "mean": -0.1682113789822779,
+        "sd": -0.09196649150143354,
+        "low": -2.035127005729464,
+        "high": 1.8972187226695496
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "halfcell-1815-no-opponent-uncertainty-5000",
+      "games": 5000,
+      "elapsedMs": 176.09059999999954,
+      "actual": {
+        "mean": 1814.9999999999989,
+        "sd": 5.433109499963003,
+        "low": 1805.280641502333,
+        "high": 1824.7193584976667,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 1815.0000000000005,
+        "sd": 5.15075217798012,
+        "low": 1804.9045770626617,
+        "high": 1825.0954229373472,
+        "mode": 1815.0000001791138
+      },
+      "errors": {
+        "mean": -1.5916157281026244e-12,
+        "sd": 0.2823573219828832,
+        "low": 0.3760644396713815,
+        "high": -0.3760644396804764
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "mismatched-low-prior",
+      "games": 200,
+      "elapsedMs": 42.19260000000031,
+      "actual": {
+        "mean": 2667.8891143878227,
+        "sd": 45.65716664130027,
+        "low": 2581.847818177844,
+        "high": 2761.410296434874,
+        "edgeMass": 3.017586841716672e-146
+      },
+      "expected": {
+        "mean": 2667.889113473482,
+        "sd": 45.65716779187927,
+        "low": 2582.136153088865,
+        "high": 2761.1080704316246,
+        "mode": 2663.962401197627
+      },
+      "errors": {
+        "mean": 9.143404895439744e-7,
+        "sd": -0.0000011505789956345325,
+        "low": -0.28833491102068365,
+        "high": 0.30222600324941595
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "mismatched-high-prior",
+      "games": 200,
+      "elapsedMs": 45.92000000000007,
+      "actual": {
+        "mean": 932.1108856121783,
+        "sd": 45.65716664130043,
+        "low": 838.5897035651252,
+        "high": 1018.1521818221545,
+        "edgeMass": 2.7479018029329463e-112
+      },
+      "expected": {
+        "mean": 932.1108865265176,
+        "sd": 45.65716779187931,
+        "low": 838.8919295683863,
+        "high": 1017.8638469111911,
+        "mode": 936.0375969816452
+      },
+      "errors": {
+        "mean": -9.143392389887595e-7,
+        "sd": -0.0000011505788819476948,
+        "low": -0.3022260032611257,
+        "high": 0.2883349109633855
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "provisional-opponents-5000",
+      "games": 5000,
+      "elapsedMs": 1160.0302999999994,
+      "actual": {
+        "mean": 1999.7002254721424,
+        "sd": 5.8083636676856205,
+        "low": 1986.2854206157908,
+        "high": 2013.4124359733119,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 1999.691148353456,
+        "sd": 5.894558315729606,
+        "low": 1988.137896308182,
+        "high": 2011.244331392956,
+        "mode": 1999.6911847790363
+      },
+      "errors": {
+        "mean": 0.009077118686491303,
+        "sd": -0.08619464804398547,
+        "low": -1.852475692391181,
+        "high": 2.16810458035593
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "high-uncertainty-opponents-5000",
+      "games": 5000,
+      "elapsedMs": 1168.9763000000003,
+      "actual": {
+        "mean": 2440.06284624238,
+        "sd": 8.90862546087056,
+        "low": 2421.7373273498283,
+        "high": 2458.715059764619,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 2447.528407755437,
+        "sd": 8.64034919860098,
+        "low": 2430.6166424975336,
+        "high": 2464.486340625497,
+        "mode": 2447.504032028626
+      },
+      "errors": {
+        "mean": -7.465561513056855,
+        "sd": 0.26827626226958046,
+        "low": -8.879315147705256,
+        "high": -5.771280860878051
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "games": 600,
+      "elapsedMs": 132.58480000000054,
+      "actual": {
+        "mean": 1936.778115138397,
+        "sd": 22.520985849934668,
+        "low": 1892.2809930642975,
+        "high": 1981.6433920964746,
+        "edgeMass": 0
+      },
+      "expected": {
+        "mean": 1937.5539740764464,
+        "sd": 22.37844625927085,
+        "low": 1893.7396677233291,
+        "high": 1981.468099054484,
+        "mode": 1937.5012709415437
+      },
+      "errors": {
+        "mean": -0.7758589380493959,
+        "sd": 0.14253959066381938,
+        "low": -1.458674659031658,
+        "high": 0.17529304199069884
+      },
+      "reference": "reference"
+    },
+    {
+      "id": "upper-grid-boundary-5000",
+      "games": 5000,
+      "elapsedMs": 1266.8261999999995,
+      "actual": {
+        "mean": 4999.23367827033,
+        "sd": 2.844503241926429,
+        "low": 4988.040791833409,
+        "high": 5004.730652156624,
+        "edgeMass": 0.9281678177435673
+      },
+      "expected": {
+        "mean": 5430.91721364778,
+        "sd": 62.60969840990745,
+        "low": 5313.899555572054,
+        "high": 5559.178039836444,
+        "mode": 5424.975242691247
+      },
+      "errors": {
+        "mean": -431.6835353774504,
+        "sd": -59.76519516798102,
+        "low": -325.8587637386454,
+        "high": -554.4473876798202
+      },
+      "reference": "unboundedReference"
+    },
+    {
+      "id": "lower-grid-boundary-5000",
+      "games": 5000,
+      "elapsedMs": 1260.5172000000002,
+      "actual": {
+        "mean": -999.2336782703285,
+        "sd": 2.844503241926901,
+        "low": -1004.7306521566243,
+        "high": -988.0407918334072,
+        "edgeMass": 0.9281678177435538
+      },
+      "expected": {
+        "mean": -1430.9172136477682,
+        "sd": 62.60969840989728,
+        "low": -1559.1780398364585,
+        "high": -1313.8995555721638,
+        "mode": -1424.9752430147807
+      },
+      "errors": {
+        "mean": 431.68353537743974,
+        "sd": -59.765195167970376,
+        "low": 554.4473876798343,
+        "high": 325.8587637387566
+      },
+      "reference": "unboundedReference"
+    },
+    {
+      "id": "broad-prior-upper-boundary-5000",
+      "games": 5000,
+      "elapsedMs": 1272.4992000000002,
+      "actual": {
+        "mean": 4999.978981840264,
+        "sd": 0.45873844086708226,
+        "low": 4995.229498410384,
+        "high": 5004.749474318215,
+        "edgeMass": 0.9979016850436387
+      },
+      "expected": {
+        "mean": 6038.165887460001,
+        "sd": 131.58604298179037,
+        "low": 5803.945180688564,
+        "high": 6318.755166684556,
+        "mode": 6013.696707651601
+      },
+      "errors": {
+        "mean": -1038.1869056197365,
+        "sd": -131.1273045409233,
+        "low": -808.7156822781799,
+        "high": -1314.0056923663406
+      },
+      "reference": "unboundedReference"
+    }
+  ],
+  "subcell": [
+    {
+      "center": 1800,
+      "actual": {
+        "mean": 1800,
+        "sd": 4.858478122374077,
+        "low": 1787.112851958735,
+        "high": 1812.887148041265,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 0,
+        "sd": -0.2922740556066197,
+        "low": -2.7917251039252733,
+        "high": 2.791725103918907
+      }
+    },
+    {
+      "center": 1800.125,
+      "actual": {
+        "mean": 1800.1112237151217,
+        "sd": 4.859376841201562,
+        "low": 1787.2186765561821,
+        "high": 1812.9871555067841,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -0.013776284878304068,
+        "sd": -0.29137533677913474,
+        "low": -2.8109005064782195,
+        "high": 2.7667325694380906
+      }
+    },
+    {
+      "center": 1801,
+      "actual": {
+        "mean": 1800.8965885947787,
+        "sd": 4.914066738379114,
+        "low": 1788.1602663256003,
+        "high": 1813.5527159010937,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -0.10341140522132264,
+        "sd": -0.23668543960158228,
+        "low": -2.7443107370600046,
+        "high": 2.4572929637477046
+      }
+    },
+    {
+      "center": 1802,
+      "actual": {
+        "mean": 1801.831788621018,
+        "sd": 5.058785686479263,
+        "low": 1789.8694500569309,
+        "high": 1813.9926416600156,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -0.16821137898205052,
+        "sd": -0.09196649150143354,
+        "low": -2.035127005729464,
+        "high": 1.8972187226695496
+      }
+    },
+    {
+      "center": 1803,
+      "actual": {
+        "mean": 1802.8306776142329,
+        "sd": 5.236242560912421,
+        "low": 1792.7632550388898,
+        "high": 1814.2985402423521,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -0.16932238576714553,
+        "sd": 0.08549038293172462,
+        "low": -0.14132202377049907,
+        "high": 1.203117305006117
+      }
+    },
+    {
+      "center": 1804,
+      "actual": {
+        "mean": 1803.8947908340072,
+        "sd": 5.378839091406881,
+        "low": 1795.0959869852084,
+        "high": 1814.5277080550268,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -0.10520916599284647,
+        "sd": 0.2280869134261847,
+        "low": 1.1914099225480186,
+        "high": 0.43228511768074895
+      }
+    },
+    {
+      "center": 1805,
+      "actual": {
+        "mean": 1804.9999999999989,
+        "sd": 5.433109499963003,
+        "low": 1795.280641502333,
+        "high": 1814.7193584976667,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -1.1368683772161603e-12,
+        "sd": 0.2823573219823068,
+        "low": 0.3760644396727457,
+        "high": -0.37606443967933956
+      }
+    },
+    {
+      "center": 1806,
+      "actual": {
+        "mean": 1806.1052091659924,
+        "sd": 5.378839091406868,
+        "low": 1795.4722919449732,
+        "high": 1814.9040130147916,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 0.10520916599239172,
+        "sd": 0.22808691342617138,
+        "low": -0.4322851176871154,
+        "high": -1.191409922554385
+      }
+    },
+    {
+      "center": 1807,
+      "actual": {
+        "mean": 1807.169322385767,
+        "sd": 5.236242560912416,
+        "low": 1795.7014597576479,
+        "high": 1817.23674496111,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 0.16932238576691816,
+        "sd": 0.08549038293171929,
+        "low": -1.2031173050124835,
+        "high": 0.14132202376390524
+      }
+    },
+    {
+      "center": 1808,
+      "actual": {
+        "mean": 1808.1682113789816,
+        "sd": 5.058785686479266,
+        "low": 1796.0073583399844,
+        "high": 1820.130549943069,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 0.16821137898159577,
+        "sd": -0.09196649150143088,
+        "low": -1.897218722675916,
+        "high": 2.0351270057228703
+      }
+    },
+    {
+      "center": 1809,
+      "actual": {
+        "mean": 1809.1034114052188,
+        "sd": 4.9140667383802565,
+        "low": 1796.447284098905,
+        "high": 1821.8397336743992,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 0.10341140521882153,
+        "sd": -0.23668543960044008,
+        "low": -2.4572929637554353,
+        "high": 2.7443107370531834
+      }
+    },
+    {
+      "center": 1809.875,
+      "actual": {
+        "mean": 1809.8887762848778,
+        "sd": 4.859376841203759,
+        "low": 1797.012844493214,
+        "high": 1822.78132344382,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 0.01377628487784932,
+        "sd": -0.2913753367769374,
+        "low": -2.766732569446276,
+        "high": 2.8109005064738994
+      }
+    },
+    {
+      "center": 1810,
+      "actual": {
+        "mean": 1810.0000000000002,
+        "sd": 4.858478122374077,
+        "low": 1797.112851958735,
+        "high": 1822.887148041265,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 2.2737367544323206e-13,
+        "sd": -0.2922740556066197,
+        "low": -2.7917251039252733,
+        "high": 2.791725103918907
+      }
+    }
+  ],
+  "sharp": [
+    {
+      "id": "sharp-symmetric",
+      "expected": {
+        "mean": 1803.375,
+        "sd": 0.129139041815551,
+        "low": 1803.1218079559796,
+        "high": 1803.6281920440204
+      },
+      "actual": {
+        "mean": 1800,
+        "sd": 4.199346519182206e-79,
+        "low": 1795.25,
+        "high": 1804.75,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -3.375,
+        "sd": -0.129139041815551,
+        "low": -7.871807955979648,
+        "high": 1.1218079559796479
+      }
+    },
+    {
+      "id": "sharp-asymmetric",
+      "expected": {
+        "mean": 1805.8986770427807,
+        "sd": 0.29754712482708784,
+        "low": 1805.3224027180015,
+        "high": 1806.4895205500497
+      },
+      "actual": {
+        "mean": 1810,
+        "sd": 2.004731155335481e-21,
+        "low": 1805.25,
+        "high": 1814.75,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": 4.101322957219281,
+        "sd": -0.29754712482708784,
+        "low": -0.07240271800151277,
+        "high": 8.260479449950253
+      }
+    },
+    {
+      "id": "underflowing-start",
+      "expected": {
+        "mean": 4000.8576712127106,
+        "sd": 0.8288257610286611,
+        "low": 3999.532112952421,
+        "high": 4002.8098042559504
+      },
+      "actual": {
+        "mean": 4000.0000117453887,
+        "sd": 0.010837609542684971,
+        "low": 3995.250000293635,
+        "high": 4004.750011451767,
+        "edgeMass": 0
+      },
+      "errors": {
+        "mean": -0.8576594673218096,
+        "sd": -0.8179881514859761,
+        "low": -4.282112658785991,
+        "high": 1.9402071958165834
+      }
+    }
+  ],
+  "chronology": {
+    "exactPrefixEquality": true,
+    "expansionFinalErrors": {
+      "mean": 0,
+      "sd": 0,
+      "low": 0,
+      "high": 0
+    },
+    "reversalErrors": {
+      "mean": -1.2596501619555056e-10,
+      "sd": -3.290701044988964e-12,
+      "low": -4.411049303598702e-11,
+      "high": -4.774847184307873e-11
+    },
+    "graphErrors": {
+      "mean": 0,
+      "sd": 0,
+      "low": 0,
+      "high": 0
+    }
+  }
+}

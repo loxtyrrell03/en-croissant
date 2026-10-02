@@ -2,7 +2,6 @@ import { PerformanceHelp } from "./PerformanceHelp";
 import { useEffect, useMemo, useId, useRef, useState, type ReactNode } from "react";
 import {
   PERFORMANCE_PERIODS,
-  periodPerformance,
   selectResultPeriod,
   periodPerformanceHistory,
   preparePerformanceGames,
@@ -85,9 +84,9 @@ export function TruePerformancePanel({
     () => history.points.filter((p) => selectedIds.has(p.id)),
     [history, selectedIds],
   );
-  const performance = useMemo(() => periodPerformance(selected, undefined, gameType), [selected, gameType]);
   const last = points.at(-1);
   const periodPoints = useMemo(() => periodPerformanceHistory(selected, asOf, gameType), [selected, asOf, gameType]);
+  const performance = periodPoints.at(-1) ?? null;
   const usable = useMemo(() => preparePerformanceGames(selected, asOf, gameType), [selected, asOf, gameType]);
   const chartPoints = graphMode === "performance" ? periodPoints.slice(2) : points;
   const enough = history.points.length >= 3 && !!last;

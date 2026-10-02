@@ -1,0 +1,173 @@
+{
+  "qaScriptSha256": "796105ce6e0fe69ac47517a7b346eb58900acdaec6b060df23fb668b80ab33cd",
+  "checks": [
+    {
+      "root": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\outpost-true-performance",
+      "result": {
+        "passed": true,
+        "scope": "Actual shared panel with synthetic inputs; loadMs includes fixture-only reference calculation and is not app-only latency. No installed or physical-device verification.",
+        "hashes": {
+          "truePerformance.ts": "f02ab98332e6ce59152483df30482f3925729de3fe5c2a28804dab7096e93f93",
+          "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+          "TruePerformancePanel.tsx": "2c22699c3ba5d4957ffcd8718e3dd1637f6bf99af171ef7a3107f554751933e7"
+        },
+        "cases": [
+          {
+            "n": 200,
+            "width": 1100,
+            "varied": false,
+            "rating": "1,791",
+            "graphMatches": true,
+            "loadMs": 274.76430000000005
+          },
+          {
+            "n": 200,
+            "width": 390,
+            "varied": false,
+            "rating": "1,791",
+            "graphMatches": true,
+            "loadMs": 218.087
+          },
+          {
+            "n": 1000,
+            "width": 1100,
+            "varied": false,
+            "rating": "1,798",
+            "graphMatches": true,
+            "loadMs": 663.9470000000001
+          },
+          {
+            "n": 1000,
+            "width": 390,
+            "varied": false,
+            "rating": "1,798",
+            "graphMatches": true,
+            "loadMs": 675.2068999999997
+          },
+          {
+            "n": 5000,
+            "width": 1100,
+            "varied": true,
+            "rating": "1,799",
+            "graphMatches": true,
+            "loadMs": 5151.0053
+          }
+        ],
+        "errors": [],
+        "external": []
+      }
+    },
+    {
+      "root": "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess",
+      "result": {
+        "passed": true,
+        "scope": "Actual shared panel with synthetic inputs; loadMs includes fixture-only reference calculation and is not app-only latency. No installed or physical-device verification.",
+        "hashes": {
+          "truePerformance.ts": "f02ab98332e6ce59152483df30482f3925729de3fe5c2a28804dab7096e93f93",
+          "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+          "TruePerformancePanel.tsx": "764a7c47a814904e4e25e8a28f5e84a3f8c5b3b1312db7ee2ed617da1db92670"
+        },
+        "cases": [
+          {
+            "n": 200,
+            "width": 1100,
+            "varied": false,
+            "rating": "1,791",
+            "graphMatches": true,
+            "loadMs": 298.6196
+          },
+          {
+            "n": 200,
+            "width": 390,
+            "varied": false,
+            "rating": "1,791",
+            "graphMatches": true,
+            "loadMs": 228.5057999999999
+          },
+          {
+            "n": 1000,
+            "width": 1100,
+            "varied": false,
+            "rating": "1,798",
+            "graphMatches": true,
+            "loadMs": 663.8191000000002
+          },
+          {
+            "n": 1000,
+            "width": 390,
+            "varied": false,
+            "rating": "1,798",
+            "graphMatches": true,
+            "loadMs": 670.9572000000003
+          },
+          {
+            "n": 5000,
+            "width": 1100,
+            "varied": true,
+            "rating": "1,799",
+            "graphMatches": true,
+            "loadMs": 5329.7635
+          }
+        ],
+        "errors": [],
+        "external": []
+      }
+    },
+    {
+      "root": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-croissant-true-performance",
+      "result": {
+        "passed": true,
+        "scope": "Actual shared panel with synthetic inputs; loadMs includes fixture-only reference calculation and is not app-only latency. No installed or physical-device verification.",
+        "hashes": {
+          "truePerformance.ts": "f02ab98332e6ce59152483df30482f3925729de3fe5c2a28804dab7096e93f93",
+          "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+          "TruePerformancePanel.tsx": "fc2bc41995bffa29ce8c800280fab0014a7aec3ed18db2bf65097023240b1fae"
+        },
+        "cases": [
+          {
+            "n": 200,
+            "width": 1100,
+            "varied": false,
+            "rating": "1,791",
+            "graphMatches": true,
+            "loadMs": 315.9566
+          },
+          {
+            "n": 200,
+            "width": 390,
+            "varied": false,
+            "rating": "1,791",
+            "graphMatches": true,
+            "loadMs": 242.26099999999974
+          },
+          {
+            "n": 1000,
+            "width": 1100,
+            "varied": false,
+            "rating": "1,798",
+            "graphMatches": true,
+            "loadMs": 663.7327
+          },
+          {
+            "n": 1000,
+            "width": 390,
+            "varied": false,
+            "rating": "1,798",
+            "graphMatches": true,
+            "loadMs": 664.2118999999998
+          },
+          {
+            "n": 5000,
+            "width": 1100,
+            "varied": true,
+            "rating": "1,799",
+            "graphMatches": true,
+            "loadMs": 5102.2237
+          }
+        ],
+        "errors": [],
+        "external": []
+      }
+    }
+  ]
+}
