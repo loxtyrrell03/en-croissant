@@ -109,18 +109,6 @@ function playerMap(snapshot: TournamentSnapshot): Map<number, TournamentPlayer> 
   return new Map(snapshot.players.map((player) => [player.startNumber, player]));
 }
 
-function pairingFor(
-  snapshot: TournamentSnapshot,
-  round: number,
-  startNumber: number,
-): TournamentPairing | undefined {
-  return snapshot.pairings.find(
-    (pairing) =>
-      pairing.round === round &&
-      (pairing.whiteStartNumber === startNumber || pairing.blackStartNumber === startNumber),
-  );
-}
-
 function opponentNumber(pairing: TournamentPairing, startNumber: number): number | null {
   if (pairing.whiteStartNumber === startNumber) return pairing.blackStartNumber;
   if (pairing.blackStartNumber === startNumber) return pairing.whiteStartNumber;
@@ -516,9 +504,26 @@ export function calculatePairingForecast(
     };
   }
 
-  const published = pairingFor(snapshot, targetRound, myStartNumber);
+  const publishedRows = snapshot.pairings.filter((pairing) => pairing.round === targetRound &&
+    (pairing.whiteStartNumber === myStartNumber || pairing.blackStartNumber === myStartNumber));
+  const published = publishedRows[0];
   if (published) {
     const publishedOpponent = opponentNumber(published, myStartNumber);
+    const involved = publishedOpponent === null ? [myStartNumber] : [myStartNumber, publishedOpponent];
+    // A source assignment is authoritative only when both identities and their
+    // assignments are unambiguous. Never confirm the first of conflicting rows.
+    const inconsistent = publishedRows.length !== 1 || publishedOpponent === myStartNumber ||
+      involved.some((number) => snapshot.players.filter((player) => player.startNumber === number).length > 1 ||
+        snapshot.pairings.filter((pairing) => pairing.round === targetRound &&
+          (pairing.whiteStartNumber === number || pairing.blackStartNumber === number)).length > 1);
+    if (inconsistent) {
+      return {
+        kind: "unavailable", round: targetRound, confidence: "unavailable",
+        candidates: [], otherProbability: 0,
+        summary: `Round ${targetRound} pairing has conflicting source data`,
+        caveat: "The pairing or player list contains conflicting entries. Refresh the tournament after the organizer updates it.",
+      };
+    }
     const opponent = publishedOpponent === null ? undefined : players.get(publishedOpponent);
     if (opponent) {
       return fixedForecast(
