@@ -3,7 +3,7 @@
  * error. Predictive probabilities integrate both players' uncertainty. This is
  * numerical inference under an explicit model, not a universal optimum.
  */
-export const TRUE_PERFORMANCE_VERSION = "bayes-grid-v1";
+export const TRUE_PERFORMANCE_VERSION = "bayes-grid-v2-log-support";
 export interface PerformanceGame {
     id: string;
     pool: string;
@@ -79,6 +79,7 @@ const GW = [
     0.0112574113277207, 0.2220759220056126, 0.5333333333333333, 0.2220759220056126,
     0.0112574113277207,
 ];
+const LOG_GW = GW.map(Math.log);
 
 /** Stable proper Davidson likelihood, including its strength-dependent draw term. */
 export function outcomeProbabilities(
@@ -87,26 +88,39 @@ export function outcomeProbabilities(
     white: boolean,
     model = ONLINE_MODEL,
 ): [number, number, number] {
+    const log = logOutcomeProbabilities(rating, opponent, white, model);
+    return [Math.exp(log[0]), Math.exp(log[1]), Math.exp(log[2])];
+}
+function logOutcomeProbabilities(
+    rating: number,
+    opponent: number,
+    white: boolean,
+    model: PerformanceModel,
+): [number, number, number] {
     const z =
         (Math.LN10 * (rating - opponent + (white ? 1 : -1) * model.whiteAdvantage)) / model.divisor;
     const draw = model.logDraw + (model.drawSlope * ((rating + opponent) / 2 - 2200)) / 400 + z / 2;
     const max = Math.max(z, draw, 0);
-    const a = Math.exp(z - max),
-        d = Math.exp(draw - max),
-        b = Math.exp(-max),
-        sum = a + d + b;
-    return [a / sum, d / sum, b / sum];
+    const logSum = Math.log(Math.exp(z - max) + Math.exp(draw - max) + Math.exp(-max));
+    return [z - max - logSum, draw - max - logSum, -max - logSum];
 }
-function likelihood(
+function logAdd(a: number, b: number) {
+    if (a === -Infinity) return b;
+    if (b === -Infinity) return a;
+    const max = Math.max(a, b);
+    return max + Math.log1p(Math.exp(Math.min(a, b) - max));
+}
+function logLikelihood(
     r: number,
     game: PerformanceGame,
     model: PerformanceModel,
 ): [number, number, number] {
-    const sum: [number, number, number] = [0, 0, 0];
+    const sum: [number, number, number] = [-Infinity, -Infinity, -Infinity];
     const sd = game.opponentSd ?? model.opponentSd;
+    if (sd === 0) return logOutcomeProbabilities(r, game.opponentRating!, game.white, model);
     for (let i = 0; i < GH.length; i++) {
-        const p = outcomeProbabilities(r, game.opponentRating! + GH[i] * sd, game.white, model);
-        for (let k = 0; k < 3; k++) sum[k] += GW[i] * p[k];
+        const p = logOutcomeProbabilities(r, game.opponentRating! + GH[i] * sd, game.white, model);
+        for (let k = 0; k < 3; k++) sum[k] = logAdd(sum[k], LOG_GW[i] + p[k]);
     }
     return sum;
 }
@@ -133,16 +147,18 @@ function grid(model: PerformanceModel) {
         (_, i) => MIN_R + i * model.step,
     );
 }
-function normalise(p: number[]) {
-    const sum = p.reduce((s, v) => s + v, 0);
-    if (!(sum > 0) || !Number.isFinite(sum))
+function normaliseLog(logP: number[]) {
+    const max = Math.max(...logP);
+    if (!Number.isFinite(max))
         throw new Error("Performance posterior could not be normalised");
-    return p.map((v) => v / sum);
+    const logSum = Math.log(logP.reduce((sum, value) => sum + Math.exp(value - max), 0));
+    return logP.map((value) => value - max - logSum);
 }
 function prior(xs: number[], mean: number, sd: number) {
-    return normalise(xs.map((x) => Math.exp(-0.5 * ((x - mean) / sd) ** 2)));
+    return normaliseLog(xs.map((x) => -0.5 * ((x - mean) / sd) ** 2));
 }
-function summary(xs: number[], p: number[]): StrengthEstimate {
+function summary(xs: number[], logP: number[]): StrengthEstimate {
+    const p = logP.map(Math.exp);
     const mean = p.reduce((s, v, i) => s + v * xs[i], 0);
     const variance = p.reduce((s, v, i) => s + v * (xs[i] - mean) ** 2, 0);
     const quantile = (q: number) => {
@@ -162,42 +178,41 @@ function summary(xs: number[], p: number[]): StrengthEstimate {
         edgeMass: p[0] + p[p.length - 1],
     };
 }
-function diffuse(p: number[], variance: number, step: number) {
-    if (variance <= 0) return p;
+function diffuse(logP: number[], variance: number, step: number) {
+    if (variance <= 0) return logP;
     // Sub-cell diffusion preserves variance rather than losing short time gaps.
-    let kernel: number[];
+    let logKernel: number[];
     if (variance < step * step) {
         const side = variance / (2 * step * step);
-        kernel = [side, 1 - 2 * side, side];
+        logKernel = [Math.log(side), Math.log1p(-2 * side), Math.log(side)];
     } else {
-        const radius = Math.min(p.length - 1, Math.ceil((5 * Math.sqrt(variance)) / step));
-        kernel = normalise(
+        const radius = Math.min(logP.length - 1, Math.ceil((5 * Math.sqrt(variance)) / step));
+        logKernel = normaliseLog(
             Array.from({ length: radius * 2 + 1 }, (_, i) =>
-                Math.exp((-0.5 * ((i - radius) * step) ** 2) / variance),
+                (-0.5 * ((i - radius) * step) ** 2) / variance,
             ),
         );
     }
-    const radius = (kernel.length - 1) / 2,
-        out = p.map(() => 0);
-    for (let i = 0; i < p.length; i++)
-        if (p[i] > 1e-15)
-            for (let j = 0; j < kernel.length; j++) {
-                const k = i + j - radius;
-                if (k >= 0 && k < p.length) out[k] += p[i] * kernel[j];
-            }
-    return normalise(out);
-}
-function update(xs: number[], p: number[], game: PerformanceGame, model: PerformanceModel) {
-    const predictive: [number, number, number] = [0, 0, 0],
-        next = p.map(() => 0);
-    const result = game.score === 1 ? 0 : game.score === 0.5 ? 1 : 2;
-    for (let i = 0; i < xs.length; i++)
-        if (p[i] > 1e-15) {
-            const probs = likelihood(xs[i], game, model);
-            next[i] = p[i] * probs[result];
-            for (let k = 0; k < 3; k++) predictive[k] += p[i] * probs[k];
+    const radius = (logKernel.length - 1) / 2,
+        out = logP.map(() => -Infinity);
+    // Keep all log mass: a currently unlikely cell can become plausible later.
+    for (let i = 0; i < logP.length; i++)
+        for (let j = 0; j < logKernel.length; j++) {
+            const k = i + j - radius;
+            if (k >= 0 && k < logP.length) out[k] = logAdd(out[k], logP[i] + logKernel[j]);
         }
-    return { posterior: normalise(next), predictive };
+    return normaliseLog(out);
+}
+function update(xs: number[], logP: number[], game: PerformanceGame, model: PerformanceModel) {
+    const predictive: [number, number, number] = [0, 0, 0],
+        next = logP.map(() => -Infinity);
+    const result = game.score === 1 ? 0 : game.score === 0.5 ? 1 : 2;
+    for (let i = 0; i < xs.length; i++) {
+        const logProbs = logLikelihood(xs[i], game, model);
+        next[i] = logP[i] + logProbs[result];
+        for (let k = 0; k < 3; k++) predictive[k] += Math.exp(logP[i] + logProbs[k]);
+    }
+    return { posterior: normaliseLog(next), predictive };
 }
 export type PerformanceGameType = "rated" | "unrated" | "both";
 export function matchesGameType(rated: boolean, gameType: PerformanceGameType) {

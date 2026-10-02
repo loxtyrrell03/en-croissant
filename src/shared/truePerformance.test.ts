@@ -23,6 +23,46 @@ const sample = (n = 30): PerformanceGame[] =>
         rated: true,
     }));
 describe("Bayesian result model", () => {
+    it("gives the same period posterior after reordering a long run of identical evidence", () => {
+        const lossesFirst = sample(200).map((g, i) => ({
+            ...g, rating: 1500, opponentRating: 1800, score: i < 100 ? 0 as const : 1 as const,
+        }));
+        const winsFirst = lossesFirst.map((g) => ({ ...g, score: (1 - g.score) as 0 | 1 }));
+        const model = { ...ONLINE_MODEL, opponentSd: 0, driftSdYear: 0 };
+        const a = periodPerformance(lossesFirst, model)!, b = periodPerformance(winsFirst, model)!;
+        expect(a.mean).toBeCloseTo(b.mean, 8);
+        expect(a.sd).toBeCloseTo(b.sd, 8);
+        expect(a.low).toBeCloseTo(b.low, 8);
+        expect(a.high).toBeCloseTo(b.high, 8);
+        // Independent log-product reference on this grid, with no opponent uncertainty.
+        expect(a.mean).toBeCloseTo(1791.3614164541998, 8);
+        expect(strengthHistory(lossesFirst, Infinity, model).points.at(-1)?.mean).toBeCloseTo(a.mean, 9);
+    });
+    it("allows strong accumulated evidence to recover a previously negligible prior tail", () => {
+        const games = sample(100).map((g) => ({
+            ...g, rating: 1500, opponentRating: 2500, score: 1 as const,
+        }));
+        const model = { ...ONLINE_MODEL, opponentSd: 0 };
+        expect(periodPerformance(games, model)!.mean).toBeCloseTo(2914.4828598108716, 8);
+    });
+    it("retains prior and result evidence even when their probabilities underflow", () => {
+        const games = sample(3).map((g) => ({
+            ...g, rating: 0, opponentRating: 4000, score: 1 as const,
+        }));
+        const estimate = periodPerformance(games, { ...ONLINE_MODEL, divisor: 1, opponentSd: 0, priorSd: 50 })!;
+        expect(estimate.mean).toBeGreaterThan(3900);
+        expect(Number.isFinite(estimate.sd)).toBe(true);
+        expect(estimate.edgeMass).toBeLessThan(1e-8);
+    });
+    it("preserves recoverable tails through nonzero chronological diffusion", () => {
+        const games = sample(200).map((g, i) => ({
+            ...g, rating: 1500, opponentRating: 1800, score: i < 100 ? 0 as const : 1 as const,
+        }));
+        const model = { ...ONLINE_MODEL, opponentSd: 0, driftSdYear: 1e-4 };
+        const point = strengthHistory(games, Infinity, model).points.at(-1)!;
+        expect(point.mean).toBeCloseTo(periodPerformance(games, model)!.mean, 5);
+        expect(point.predictive.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 12);
+    });
     it("matches an independent 61-node, half-point-grid reference", () => {
         const opponents = [1480, 1520, 1495, 1470, 1510, 1530, 1490, 1505, 1520, 1500];
         const scores = [1, 0, 0.5, 1, 1, 0, 1, 1, 0, 1] as const;
@@ -116,6 +156,15 @@ it("the graph ends at the selected-game headline without borrowing earlier games
     const points = periodPerformanceHistory(selected);
     expect(points).toHaveLength(20);
     expect(points.at(-1)?.mean).toBeCloseTo(periodPerformance(selected)!.mean, 10);
+});
+it("the period graph and headline agree after a long loss and recovery sequence", () => {
+    const games = sample(200).map((g, i) => ({
+        ...g, rating: 1500, opponentRating: 1800, score: i < 100 ? 0 as const : 1 as const,
+    }));
+    const point = periodPerformanceHistory(games).at(-1)!, estimate = periodPerformance(games)!;
+    expect(point.mean).toBeCloseTo(estimate.mean, 10);
+    expect(point.low).toBeCloseTo(estimate.low, 10);
+    expect(point.high).toBeCloseTo(estimate.high, 10);
 });
 it("counts completed games with missing ratings in results, but not the estimate", () => {
     const games = sample(5); games[3] = {...games[3], opponentRating:null};
