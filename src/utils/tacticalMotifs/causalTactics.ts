@@ -546,7 +546,8 @@ export function filterCompensatedRootCaptures(
                     (provePreventiveIntermediateCapture(steps[prior.ply-1]) ?? proveQuietIntermediateCapture(steps[prior.ply-1]))?.deferred.to === capture.move.to)) return [];
         }
         if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
-        if (!exchange && motif.id === "hangingPiece" && motif.ply === 1 &&
+        if (!exchange && (motif.id === "hangingPiece" ||
+                (motif.id === "capturingDefender" && capturedDefenderProof(root, motif.source)?.captureRetention)) && motif.ply === 1 &&
             (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN && history[0].capture && !history[0].move.promotion &&
             root.move.to !== history[0].move.to) {
             const recovery = tacticalCaptureProof(root).counterattack;
@@ -573,7 +574,9 @@ export function filterCompensatedRootCaptures(
             if (includesPriorRecovery && retained < MIN_TACTICAL_CAPTURE_GAIN) return [];
             if (retained < (motif.value ?? Infinity)) motif = {
                 ...motif, value: retained,
-                evidence: `${root.san} retains at least ${retained / 100} pawns locally after including the piece just lost to ${history[0].san}. Recovering that exchange is not an additional free-piece gain.`,
+                evidence: motif.id === "capturingDefender"
+                    ? `${motif.evidence} Including the piece just lost to ${history[0].san}, the local material bound is ${retained / 100} pawns; recovering that exchange is not additional profit.`
+                    : `${root.san} retains at least ${retained / 100} pawns locally after including the piece just lost to ${history[0].san}. Recovering that exchange is not an additional free-piece gain.`,
             };
         }
         // A newly supported pawn preparation must not turn recovering part of
@@ -8751,6 +8754,7 @@ export function proveConnectedPin(root: TacticalReplayStep, nodeLimit = 32768,
 
 function rayMaterialProof(step: TacticalReplayStep, ray: RayTactic) {
     const rejectCaptureMate = ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king";
+    const skewerWitness = ray.kind === "skewer" && !rejectCaptureMate ? ray : undefined;
     const blocks =
         ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king"
             ? [...between(ray.pinner, ray.front)]
@@ -8758,7 +8762,7 @@ function rayMaterialProof(step: TacticalReplayStep, ray: RayTactic) {
     // A pin/skewer's captured target is not a gain if another friendly piece
     // can be taken in return. Use the same liability-aware leaves as the
     // interposition proof, including off-ray pieces and terminal counterplay.
-    let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, undefined, { allPiecesAtLeaf: true, rayMaterialOnly: true, rejectCaptureMate });
+    let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, undefined, { allPiecesAtLeaf: true, rayMaterialOnly: true, rejectCaptureMate, skewerWitness });
     if (proof.kind === "proven") return proof;
     if (blocks.length)
         proof = materialThreatProof(
@@ -8869,6 +8873,10 @@ type MaterialProofOptions = {
     // A defender may abandon the targets to countercheck. Only the actual
     // checker may substitute for a named victim, never an unrelated loose piece.
     countercheckCaptures?: boolean;
+    // An optional rear-pawn sacrifice cannot borrow a prior capture's credit
+    // to establish a skewer. Require a selected, independently profitable
+    // capture along this ray after its non-king front piece actually moves.
+    skewerWitness?: Pick<RayTactic, "pinner" | "front" | "rear">;
 };
 function materialThreatGain(step: TacticalReplayStep, targets: Square[], capturers: Square[]) {
     const proof = materialThreatProof(step, targets, capturers);
@@ -8899,7 +8907,7 @@ function materialThreatProof(
     promotionFrom?: Square,
     options: MaterialProofOptions = {},
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}:${Boolean(options.countercheckCaptures)}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}:${Boolean(options.countercheckCaptures)}:${options.skewerWitness ? `${options.skewerWitness.pinner},${options.skewerWitness.front},${options.skewerWitness.rear}` : ""}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
     const proof = computeMaterialThreatGain(
         step,
@@ -8940,6 +8948,7 @@ function computeMaterialThreatGain(
     let mateNodes = mateNodeLimit;
     const matingDefences: { defence: string; mate: string }[] = [];
     const captureBranches: { replyUci: string; answerUci: string; gain: number }[] = [];
+    let witnessedRearCapture = false;
     const checkingMateAnswer = (position: Chess, remaining: number): string[] | null => {
         const checks: { move: NormalMove; answer: Chess }[] = [];
         for (const move of legalMoves(position)) {
@@ -8976,6 +8985,7 @@ function computeMaterialThreatGain(
         next.play(reply);
         let best = -VALUE.king;
         let answerUci: string | undefined;
+        let bestRearCapture = false;
         let unknown = false;
         // Capturing the attacking piece with the skewered queen may itself
         // lose the queen to a supporter. Consider that legal recapture too.
@@ -9025,6 +9035,7 @@ function computeMaterialThreatGain(
                                 // branch, not independent material evidence
                                 // for a fork inside an all-mating combination.
                                 best = 10000;
+                                bestRearCapture = false;
                                 matingDefences.push({
                                     defence: makeSan(step.after, reply),
                                     mate: makeSan(next, move),
@@ -9076,8 +9087,13 @@ function computeMaterialThreatGain(
                         capturedValue(step.after, reply) -
                         (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
                         exchangeGain;
-                    if (candidateGain > best) {
+                    const rearCapture = !!options.skewerWitness &&
+                        reply.from === options.skewerWitness.front &&
+                        move.from === options.skewerWitness.pinner &&
+                        move.to === options.skewerWitness.rear && exchangeGain > 0;
+                    if (candidateGain > best || (candidateGain === best && rearCapture && !bestRearCapture)) {
                         best = candidateGain;
+                        bestRearCapture = rearCapture;
                         if (options.captureWitnesses) answerUci = makeUci(move);
                     }
                 }
@@ -9116,13 +9132,14 @@ function computeMaterialThreatGain(
                         unknown = true;
                         continue;
                     }
-                    best = Math.max(
-                        best,
-                        step.capture -
+                    const promotionGain = step.capture -
                             capturedValue(step.after, reply) -
                             (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
-                            gain,
-                    );
+                            gain;
+                    if (promotionGain > best) {
+                        best = promotionGain;
+                        bestRearCapture = false;
+                    }
                 }
             }
         }
@@ -9131,6 +9148,7 @@ function computeMaterialThreatGain(
             if (mateNodes < 0) return { kind: "unknown" };
             if (mate) {
                 best = 10000;
+                bestRearCapture = false;
                 matingDefences.push({ defence: makeSan(step.after, reply), mate: mate.join(" ") });
             }
         }
@@ -9159,12 +9177,14 @@ function computeMaterialThreatGain(
             minimum = best;
             limitingDefence = makeSan(step.after, reply);
         }
+        witnessedRearCapture ||= bestRearCapture;
         if (options.captureWitnesses) {
             if (!answerUci) return { kind: "unknown" };
             captureBranches.push({ replyUci: makeUci(reply), answerUci, gain: best });
         }
     }
-    if (incomplete || !Number.isFinite(minimum)) return { kind: "unknown" };
+    if (incomplete || !Number.isFinite(minimum) || (options.skewerWitness && !witnessedRearCapture))
+        return { kind: "unknown" };
     return checks.length
         ? { kind: "forcing", gain: minimum, checks }
         : {
@@ -10664,6 +10684,7 @@ function capturedDefenderProof(
     capturers: Square[];
     gain: number;
     extended: boolean;
+    captureRetention?: CaptureCounterattackProof;
 } | null {
     const defender = step.before.board.get(step.move.to);
     if (!defender || defender.color === step.before.turn || defender.role === "king") return null;
@@ -10698,22 +10719,48 @@ function capturedDefenderProof(
             ...new Set([target, ...relatedRays.map((ray) => ray.rear), ...additionalTargets]),
         ];
         const proofCapturers = [...new Set([...capturers, step.move.to])];
-        const gain = directGain ?? proveDefenderCombination(step, proofTargets, proofCapturers);
-        if (gain === null) continue;
-        if (directGain === null && additionalTargets.length) {
-            const independent = materialThreatGain(step, additionalTargets, [step.move.to]);
-            if (independent !== null && independent >= gain) continue;
+        let gain = directGain ?? proveDefenderCombination(step, proofTargets, proofCapturers);
+        const independent = directGain === null && additionalTargets.length
+            ? materialThreatGain(step, additionalTargets, [step.move.to]) : null;
+        // A declined exchange can retain the captured defender by taking an
+        // actual counterattacker instead of its former ward. Reuse only the
+        // existing all-reply capture certificate with this sole ward, and
+        // require a selected acceptance branch that collects it using the
+        // old attacker whose legal exchange improved when the guard vanished.
+        const retention = gain === null || (independent !== null && independent >= gain)
+            ? tacticalCaptureProof(step).counterattack : undefined;
+        const acceptance = retention?.targets.length === 1 && retention.targets[0] === target
+            ? retention.leaves.map(leaf => leaf.lineUci &&
+                replayTacticalLine(makeFen(step.after.toSetup()), leaf.lineUci))
+                .find(branch => branch?.length === 2 && branch[0].capture &&
+                    branch[0].move.to === step.move.to && capturers.includes(branch[1].move.from) &&
+                    branch[1].move.to === target && branch[1].capture &&
+                    tacticalExchangeGain(branch[1].before, branch[1].move) > 0)
+            : undefined;
+        const captureRetention = acceptance ? retention : undefined;
+        if (captureRetention) {
+            // A stronger/equal already-certified ordering of these same two
+            // captures remains the lesson; this fallback does not duplicate it.
+            const order = proveQuietIntermediateCapture(step);
+            if (order?.deferred.to === target && order.gain >= captureRetention.gain) continue;
+            gain = captureRetention.gain;
         }
+        if (gain === null) continue;
+        // The generic direct-threat proof can itself use the old attacker's
+        // collection after accepting this exchange. Such a branch is not
+        // independent of removing the guard; the exact witness above proves it.
+        if (!captureRetention && independent !== null && independent >= gain) continue;
         // Winning a loose queen may incidentally remove a rook's defender.
         // That relationship is not the cause if the capture already earns
         // at least the entire proved gain without exploiting the rook.
         if (tacticalExchangeGain(step.before, step.move) >= gain) continue;
         return {
             target,
-            targets: directGain !== null ? [target] : proofTargets,
-            capturers: directGain !== null ? capturers : proofCapturers,
+            targets: directGain !== null || captureRetention ? [target] : proofTargets,
+            capturers: directGain !== null || captureRetention ? capturers : proofCapturers,
             gain,
             extended: directGain === null,
+            ...(captureRetention ? { captureRetention } : {}),
             motif: {
                 id: "capturingDefender",
                 label: "Removing the Defender",
@@ -10722,7 +10769,8 @@ function capturedDefenderProof(
                 ply: 1,
                 moveUci: step.uci,
                 value: gain,
-                evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} that defended the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. ${directGain !== null ? "Every legal reply allows a profitable capture of that target." : `${additionalTargets.length ? `It also attacks ${additionalTargets.map((to) => `the ${step.after.board.get(to)!.role} on ${makeSquare(to)}`).join(" and ")}. ` : ""}${relatedRays.length ? `Moving the defended piece exposes ${relatedRays.map((ray) => `the ${step.after.board.get(ray.rear)!.role} on ${makeSquare(ray.rear)}`).join(" and ")}. ` : ""}The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.`}`,
+                ...(captureRetention ? { verifiedCombination: true } : {}),
+                evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} that defended the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. ${captureRetention && acceptance ? `After ${acceptance[0].san}, ${acceptance[1].san} collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The ${gain / 100}-pawn bound is local material, not a full-position evaluation.` : directGain !== null ? "Every legal reply allows a profitable capture of that target." : `${additionalTargets.length ? `It also attacks ${additionalTargets.map((to) => `the ${step.after.board.get(to)!.role} on ${makeSquare(to)}`).join(" and ")}. ` : ""}${relatedRays.length ? `Moving the defended piece exposes ${relatedRays.map((ray) => `the ${step.after.board.get(ray.rear)!.role} on ${makeSquare(ray.rear)}`).join(" and ")}. ` : ""}The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.`}`,
             },
         };
     }
@@ -16149,10 +16197,11 @@ function normalizeDefensiveDeflectionPayoffs(steps: TacticalReplayStep[], motifs
 function normalizeCaptureCounterattackPayoffs(steps: TacticalReplayStep[], motifs: TacticalMotifEvidence[]) {
     const replacements = new Map<number, {label:string; evidence:string}>();
     for (const motif of motifs) {
-        if (motif.id !== "hangingPiece" || !motif.ply) continue;
+        if (!["hangingPiece", "capturingDefender"].includes(motif.id) || !motif.ply) continue;
         const start = motif.ply - 1;
         const root = steps[start], reply = steps[start + 1], answer = steps[start + 2];
         if (!root?.capture || motif.moveUci !== root.uci || !reply?.capture || !answer?.capture) continue;
+        if (motif.id === "capturingDefender" && !capturedDefenderProof(root, motif.source)?.captureRetention) continue;
         const proof = tacticalCaptureProof(root).counterattack;
         const leaf = proof?.leaves.find(candidate => !candidate.quiet &&
             candidate.fen === makeFen(answer.before.toSetup()) && candidate.moveUci === answer.uci);

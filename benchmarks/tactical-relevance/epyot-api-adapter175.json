@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 1,
+  "sourceRef": "index",
+  "sourceHashes": {
+    "causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+    "mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "liveTactics.ts": "fd140c4e84448d9ddffb1272e916f210f1585a5cd77e50db314b90d4d4af55f8"
+  },
+  "version": "site-55.adapter-175",
+  "scope": "Eight fixed public API variants of one development position; contract observations are not population accuracy.",
+  "rows": [
+    {
+      "reflected": false,
+      "history": false,
+      "length": 1,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": false,
+      "history": false,
+      "length": 3,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6",
+          "d1d6",
+          "g7e5"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": false,
+      "history": true,
+      "length": 1,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6"
+        ],
+        "previousFen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+        "previousMoveUci": "f3e5",
+        "tacticalHistory": {
+          "fen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+          "moves": [
+            "f3e5"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe5, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe5, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": false,
+      "history": true,
+      "length": 3,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6",
+          "d1d6",
+          "g7e5"
+        ],
+        "previousFen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+        "previousMoveUci": "f3e5",
+        "tacticalHistory": {
+          "fen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+          "moves": [
+            "f3e5"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe5, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd6 removes the queen on d6 that defended the knight on e5. After Rxd6, Bxe5 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe5, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": false,
+      "length": 1,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": false,
+      "length": 3,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3",
+          "d8d3",
+          "g2e4"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 320,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": true,
+      "length": 1,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3"
+        ],
+        "previousFen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+        "previousMoveUci": "f6e4",
+        "tacticalHistory": {
+          "fen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+          "moves": [
+            "f6e4"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe4, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe4, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": true,
+      "length": 3,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3",
+          "d8d3",
+          "g2e4"
+        ],
+        "previousFen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+        "previousMoveUci": "f6e4",
+        "tacticalHistory": {
+          "fen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+          "moves": [
+            "f6e4"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe4, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 220,
+            "verifiedCombination": true,
+            "evidence": "Qxd3 removes the queen on d3 that defended the knight on e4. After Rxd3, Bxe4 collects that unguarded target. Declining permits connected captures or safe retention instead; it does not force that same continuation. Every legal reply is checked, including other losses and immediate counterchecks. The 3.2-pawn bound is local material, not a full-position evaluation. Including the piece just lost to Nxe4, the local material bound is 2.2 pawns; recovering that exchange is not additional profit.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      },
+      "contracts": {
+        "namedPrimary": true,
+        "correctPrimaryBound": true,
+        "noRearPawnSkewers": true,
+        "payoffNotCountedTwice": true
+      }
+    }
+  ]
+}

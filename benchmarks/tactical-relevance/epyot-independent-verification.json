@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "checker": "python-chess",
+  "checkerVersion": "1.11.2",
+  "scope": "Independent exact legal-move enumeration, selected-path replay and material arithmetic only. Does not independently verify shared-kernel minimax bounds, later liability, repetition/draw strategy or full-game result. Null proofs remain unknown.",
+  "scriptSha256": "b3ce9ac04219bdf893ba3e7ddf4187029bf4ac85abaacb8beaad29c03083abea",
+  "receipts": [
+    {
+      "file": "epyot-causal-adapter174-complete.json",
+      "sha256": "5efe7841b960339bfb3269b8711afd2873b7f0087236cb857828da25c4768d89",
+      "version": "site-55.adapter-174",
+      "passed": true,
+      "counts": {
+        "validPositions": 16,
+        "legalPlies": 994,
+        "replayedSelectedLeaves": 424,
+        "completeRootReplySets": 12,
+        "rearCaptureRefutations": 32,
+        "guardContrasts": 6,
+        "positiveSkewerWitnesses": 0
+      }
+    },
+    {
+      "file": "epyot-causal-adapter175.json",
+      "sha256": "9720a17626819d5fd43cf29fd88693a1061edec274dd8c0b4dbf8a8a6befd1db",
+      "version": "site-55.adapter-175",
+      "passed": true,
+      "counts": {
+        "validPositions": 16,
+        "legalPlies": 994,
+        "replayedSelectedLeaves": 424,
+        "completeRootReplySets": 12,
+        "rearCaptureRefutations": 32,
+        "guardContrasts": 6,
+        "positiveSkewerWitnesses": 0
+      }
+    },
+    {
+      "file": "epyot-skewer-preservation-adapter174.json",
+      "sha256": "6bba2ca3ec2d8286f96af0ea9896d452ccd5eb76f4a9e8424581a8d4059396ac",
+      "version": "site-55.adapter-174",
+      "passed": true,
+      "counts": {
+        "validPositions": 4,
+        "legalPlies": 320,
+        "replayedSelectedLeaves": 148,
+        "completeRootReplySets": 4,
+        "rearCaptureRefutations": 0,
+        "guardContrasts": 0,
+        "positiveSkewerWitnesses": 4
+      }
+    },
+    {
+      "file": "epyot-skewer-preservation-adapter175.json",
+      "sha256": "17eb7a59fb32423fe481af96f85819e12cde5e1b66642ff1216e212f398da999",
+      "version": "site-55.adapter-175",
+      "passed": true,
+      "counts": {
+        "validPositions": 4,
+        "legalPlies": 320,
+        "replayedSelectedLeaves": 148,
+        "completeRootReplySets": 4,
+        "rearCaptureRefutations": 0,
+        "guardContrasts": 0,
+        "positiveSkewerWitnesses": 4
+      }
+    }
+  ],
+  "totals": {
+    "validPositions": 40,
+    "legalPlies": 2628,
+    "replayedSelectedLeaves": 1144,
+    "completeRootReplySets": 32,
+    "rearCaptureRefutations": 64,
+    "guardContrasts": 12,
+    "positiveSkewerWitnesses": 8
+  }
+}

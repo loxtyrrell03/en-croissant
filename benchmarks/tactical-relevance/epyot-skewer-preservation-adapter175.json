@@ -1,0 +1,1805 @@
+{
+  "schemaVersion": 1,
+  "sourceRef": "index",
+  "sourceHashes": {
+    "causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+    "mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9"
+  },
+  "version": "site-55.adapter-175",
+  "scope": "Independent genuine nonking-front skewer preservation controls, both colours with and without initiating pawn capture. Bounded material proof, not whole-game result.",
+  "observations": [
+    {
+      "capture": false,
+      "reflected": false,
+      "fen": "7k/5r2/8/8/2q5/8/B1P2PPP/5BK1 w - - 0 1",
+      "gain": 170,
+      "visits": 466,
+      "rootReplies": [
+        "c4f1",
+        "c4c2",
+        "c4e2",
+        "c4b3",
+        "c4c3",
+        "c4d3",
+        "c4a4",
+        "c4b4",
+        "c4d4",
+        "c4e4",
+        "c4f4",
+        "c4g4",
+        "c4h4",
+        "c4b5",
+        "c4c5",
+        "c4d5",
+        "c4a6",
+        "c4c6",
+        "c4e6",
+        "c4c7",
+        "c4c8",
+        "f7f2",
+        "f7f3",
+        "f7f4",
+        "f7f5",
+        "f7f6",
+        "f7a7",
+        "f7b7",
+        "f7c7",
+        "f7d7",
+        "f7e7",
+        "f7g7",
+        "f7h7",
+        "f7f8",
+        "h8g7",
+        "h8h7",
+        "h8g8"
+      ],
+      "leaves": [
+        {
+          "lineUci": [
+            "h8g8",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h8g7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h8h7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f8",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7a7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7b7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7c7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7d7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7e7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7g7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7h7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f6",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f5",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f4",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f3",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f2",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": -100,
+          "gain": 700,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c8",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c7",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 170,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4a6",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c6",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4e6",
+            "b3e6"
+          ],
+          "moveUci": "b3e6",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4b5",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c5",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4d5",
+            "b3d5"
+          ],
+          "moveUci": "b3d5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4a4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4b4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4d4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4e4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4f4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 170,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4g4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4h4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4b3",
+            "c2b3"
+          ],
+          "moveUci": "c2b3",
+          "balance": -330,
+          "gain": 570,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c3",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4d3",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c2",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": -100,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4e2",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4f1",
+            "g1f1"
+          ],
+          "moveUci": "g1f1",
+          "balance": -330,
+          "gain": 570,
+          "quiet": false
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a2b3",
+            "value": 170,
+            "evidence": "Bb3 skewers the queen on c4 and the rook on f7. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a2b3",
+            "value": 170,
+            "evidence": "Bb3 skewers the queen on c4 and the rook on f7. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "capture": false,
+      "reflected": true,
+      "fen": "5bk1/b1p2ppp/8/2Q5/8/8/5R2/7K b - - 0 1",
+      "gain": 170,
+      "visits": 466,
+      "rootReplies": [
+        "h1g1",
+        "h1g2",
+        "h1h2",
+        "f2f1",
+        "f2a2",
+        "f2b2",
+        "f2c2",
+        "f2d2",
+        "f2e2",
+        "f2g2",
+        "f2h2",
+        "f2f3",
+        "f2f4",
+        "f2f5",
+        "f2f6",
+        "f2f7",
+        "c5c1",
+        "c5c2",
+        "c5a3",
+        "c5c3",
+        "c5e3",
+        "c5b4",
+        "c5c4",
+        "c5d4",
+        "c5a5",
+        "c5b5",
+        "c5d5",
+        "c5e5",
+        "c5f5",
+        "c5g5",
+        "c5h5",
+        "c5b6",
+        "c5c6",
+        "c5d6",
+        "c5c7",
+        "c5e7",
+        "c5f8"
+      ],
+      "leaves": [
+        {
+          "lineUci": [
+            "h1g1",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h1g2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h1h2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f1",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2a2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2b2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2c2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2d2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2e2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2g2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2h2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f3",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f4",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f5",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f6",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f7",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": -100,
+          "gain": 700,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c1",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c2",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 170,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5a3",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c3",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5e3",
+            "b6e3"
+          ],
+          "moveUci": "b6e3",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5b4",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c4",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5d4",
+            "b6d4"
+          ],
+          "moveUci": "b6d4",
+          "balance": 0,
+          "gain": 900,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5a5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5b5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5d5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5e5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5f5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 170,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5g5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5h5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5b6",
+            "c7b6"
+          ],
+          "moveUci": "c7b6",
+          "balance": -330,
+          "gain": 570,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c6",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5d6",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c7",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": -100,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5e7",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 400,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5f8",
+            "g8f8"
+          ],
+          "moveUci": "g8f8",
+          "balance": -330,
+          "gain": 570,
+          "quiet": false
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a7b6",
+            "value": 170,
+            "evidence": "Bb6 skewers the queen on c5 and the rook on f2. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a7b6",
+            "value": 170,
+            "evidence": "Bb6 skewers the queen on c5 and the rook on f2. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "capture": true,
+      "reflected": false,
+      "fen": "7k/5r2/8/8/2q5/1p6/B1P2PPP/5BK1 w - - 0 1",
+      "gain": 270,
+      "visits": 466,
+      "rootReplies": [
+        "c4f1",
+        "c4c2",
+        "c4e2",
+        "c4b3",
+        "c4c3",
+        "c4d3",
+        "c4a4",
+        "c4b4",
+        "c4d4",
+        "c4e4",
+        "c4f4",
+        "c4g4",
+        "c4h4",
+        "c4b5",
+        "c4c5",
+        "c4d5",
+        "c4a6",
+        "c4c6",
+        "c4e6",
+        "c4c7",
+        "c4c8",
+        "f7f2",
+        "f7f3",
+        "f7f4",
+        "f7f5",
+        "f7f6",
+        "f7a7",
+        "f7b7",
+        "f7c7",
+        "f7d7",
+        "f7e7",
+        "f7g7",
+        "f7h7",
+        "f7f8",
+        "h8g7",
+        "h8h7",
+        "h8g8"
+      ],
+      "leaves": [
+        {
+          "lineUci": [
+            "h8g8",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h8g7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h8h7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f8",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7a7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7b7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7c7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7d7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7e7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7g7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7h7",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f6",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f5",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f4",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f3",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f7f2",
+            "b3c4"
+          ],
+          "moveUci": "b3c4",
+          "balance": 0,
+          "gain": 800,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c8",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c7",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 270,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4a6",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c6",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4e6",
+            "b3e6"
+          ],
+          "moveUci": "b3e6",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4b5",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c5",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4d5",
+            "b3d5"
+          ],
+          "moveUci": "b3d5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4a4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4b4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4d4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4e4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4f4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 270,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4g4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4h4",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4b3",
+            "c2b3"
+          ],
+          "moveUci": "c2b3",
+          "balance": -230,
+          "gain": 670,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c3",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4d3",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4c2",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4e2",
+            "b3f7"
+          ],
+          "moveUci": "b3f7",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c4f1",
+            "g1f1"
+          ],
+          "moveUci": "g1f1",
+          "balance": -230,
+          "gain": 670,
+          "quiet": false
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a2b3",
+            "value": 270,
+            "evidence": "Bxb3 skewers the queen on c4 and the rook on f7. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a2b3",
+            "value": 270,
+            "evidence": "Bxb3 skewers the queen on c4 and the rook on f7. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "capture": true,
+      "reflected": true,
+      "fen": "5bk1/b1p2ppp/1P6/2Q5/8/8/5R2/7K b - - 0 1",
+      "gain": 270,
+      "visits": 466,
+      "rootReplies": [
+        "h1g1",
+        "h1g2",
+        "h1h2",
+        "f2f1",
+        "f2a2",
+        "f2b2",
+        "f2c2",
+        "f2d2",
+        "f2e2",
+        "f2g2",
+        "f2h2",
+        "f2f3",
+        "f2f4",
+        "f2f5",
+        "f2f6",
+        "f2f7",
+        "c5c1",
+        "c5c2",
+        "c5a3",
+        "c5c3",
+        "c5e3",
+        "c5b4",
+        "c5c4",
+        "c5d4",
+        "c5a5",
+        "c5b5",
+        "c5d5",
+        "c5e5",
+        "c5f5",
+        "c5g5",
+        "c5h5",
+        "c5b6",
+        "c5c6",
+        "c5d6",
+        "c5c7",
+        "c5e7",
+        "c5f8"
+      ],
+      "leaves": [
+        {
+          "lineUci": [
+            "h1g1",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h1g2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "h1h2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f1",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2a2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2b2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2c2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2d2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2e2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2g2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2h2",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f3",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f4",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f5",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f6",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "f2f7",
+            "b6c5"
+          ],
+          "moveUci": "b6c5",
+          "balance": 0,
+          "gain": 800,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c1",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c2",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 270,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5a3",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c3",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5e3",
+            "b6e3"
+          ],
+          "moveUci": "b6e3",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5b4",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c4",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5d4",
+            "b6d4"
+          ],
+          "moveUci": "b6d4",
+          "balance": 100,
+          "gain": 1000,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5a5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5b5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5d5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5e5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5f5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 270,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5g5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5h5",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 600,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5b6",
+            "c7b6"
+          ],
+          "moveUci": "c7b6",
+          "balance": -230,
+          "gain": 670,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c6",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5d6",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5c7",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 0,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5e7",
+            "b6f2"
+          ],
+          "moveUci": "b6f2",
+          "balance": 100,
+          "gain": 500,
+          "quiet": false
+        },
+        {
+          "lineUci": [
+            "c5f8",
+            "g8f8"
+          ],
+          "moveUci": "g8f8",
+          "balance": -230,
+          "gain": 670,
+          "quiet": false
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a7b6",
+            "value": 270,
+            "evidence": "Bxb6 skewers the queen on c5 and the rook on f2. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a7b6",
+            "value": 270,
+            "evidence": "Bxb6 skewers the queen on c5 and the rook on f2. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    }
+  ]
+}

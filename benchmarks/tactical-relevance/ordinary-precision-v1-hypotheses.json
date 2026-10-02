@@ -1,0 +1,24 @@
+{
+  "scope": "Saved before this sample's classifier output. No whole-position tactical/positional gold labels are inferred from quiet appearance. The actual continuation is not an optimal-play proof, and the deterministic quiet alternatives are not claimed to be good moves.",
+  "rules": [
+    "A later tactic belongs to its actual ply and cannot establish a root causal preparation without an independent connection.",
+    "A material capture must include the immediately preceding exchange and exact history; recovering an earlier sacrifice is not automatically fresh profit.",
+    "An attack on one piece or a pin-like alignment is not enough for a forcing fork/trap/material primary.",
+    "An already available threat cannot be credited to an unrelated quiet move without new causal evidence.",
+    "Missing proof is unknown. Empty classifications are not scored as correct positional negatives."
+  ],
+  "contexts": [
+    { "id": "context:QZDg7vtX:ply15", "beforeOutput": "Nf5 attacks Bd4; verify any claimed fork/trap beyond this ordinary single-target tempo." },
+    { "id": "context:QZDg7vtX:ply33", "beforeOutput": "Na7 is a knight retreat in a developed position. Later f5 and kingside play do not automatically explain this root." },
+    { "id": "context:QZDg7vtX:ply45", "beforeOutput": "Black is in check and has the played Kh8; the ensuing source mate is White's story, not a winning Black tactic." },
+    { "id": "context:Z1Tw5YR3:ply15", "beforeOutput": "Castling changes king location; later Nc7 pawn collection and an eventual knight incursion must stay on their actual ply." },
+    { "id": "context:Z1Tw5YR3:ply33", "beforeOutput": "b6 develops a pawn structure; the supplied later Qxc3 branch cannot by itself prove b6 forced a piece gain." },
+    { "id": "context:Z1Tw5YR3:ply45", "beforeOutput": "Bd6 is a quiet bishop move; examine any later pawn/capture claims with the exact accumulated material history." },
+    { "id": "context:C9q6jvtW:ply15", "beforeOutput": "Castling and subsequent normal development have no presumed tactical proof. The bishop excursion Bxa7 is later." },
+    { "id": "context:C9q6jvtW:ply33", "beforeOutput": "Nxf6 and the source queen exchange need their actual capture ledger; neither endpoint is presumed a free whole piece." },
+    { "id": "context:C9q6jvtW:ply45", "beforeOutput": "Kf7 centralizes the king. A later Bxf5 capture is not itself a causal explanation of this king move." },
+    { "id": "context:Gectvn7R:ply15", "beforeOutput": "Bb6 retreats the bishop; later captures/open files are separate events until connected proof exists." },
+    { "id": "context:Gectvn7R:ply33", "beforeOutput": "Bxe5 follows a capture onto e5; verify complete prior exchange debt before calling it a newly hanging bishop." },
+    { "id": "context:Gectvn7R:ply45", "beforeOutput": "Ne4 centralizes a knight, followed by further maneuvering; do not backdate a later Nb5 exchange." }
+  ]
+}

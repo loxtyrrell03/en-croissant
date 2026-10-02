@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "stage": "Frozen before new counterfactual/kernel/classifier output for this audit",
+  "sourceRef": "b75c13e2f3a63d69cf60bd9e0b4221f884a9e190",
+  "source": "Retained public development EpYOT, not a new independent sample or holdout",
+  "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+  "line": ["b6d6", "d1d6", "g7e5"],
+  "hypotheses": [
+    {
+      "name": "rear targets removed with off-ray b-file blocker",
+      "operation": "Remove White pawns c3, g3, b2 and h2; place a White pawn at b3. All other pieces, turn, clocks and rights unchanged. Reflect colours/ranks as a second case.",
+      "purpose": "Eliminate all rear material targets of Qd6-Ne5 and Bg7-Ne5 while blocking Rb1xb7. Unlike the prior all-removal board, the unrelated b7 liability should not reduce the collection bound.",
+      "unknown": "Whether every legal root reply still permits the same320 local bound must be verified. The new b3 pawn must not fund the proof or become another target on either alleged ray."
+    },
+    {
+      "name": "rear pawns relocated off the rays",
+      "operation": "Move White Pc3 to c4, Pg3 to g4, Pb2 to b3 and Ph2 to h3 in the counterfactual board; no claim that this is a legal move sequence. Verify setup legality and all generated replies.",
+      "purpose": "Preserve pawn count and b-file blockage while removing the original rear-ray targets. This is an alternate legal position, not a same-game variation.",
+      "unknown": "Relocated pawns change attacked squares, so a successful bound is supporting contrast evidence, not automatic proof of causal independence in the original."
+    },
+    {
+      "name": "front knight departures",
+      "operation": "Enumerate every legal Ne5 move after Qxd6. For each, enumerate Q or Bg7 captures of the alleged rear targets and queen-retreat choices, including legal reply safety.",
+      "purpose": "Distinguish actual rear capture from retained initial queen gain, same-front collection by another attacker, and removal-of-defender alternatives."
+    },
+    {
+      "name": "reversed defended-target recapture",
+      "operation": "Replay g7e5 d6e5 from the original root and prove White's retained recovery against every legal Black reply, separately from the already-refuted d6b6 a7b6 line.",
+      "purpose": "Test whether the queen is a necessary guard of Ne5 and whether the proper root lesson is removing its defence before Bxe5.",
+      "unknown": "A nominal bishop330 capture is not assumed retained; all-reply material/countercheck proof must close within the existing bound."
+    }
+  ],
+  "limits": "No production edits. No automatic motif preference by value. Unknown or exhausted proofs remain unknown. No new downloads, engine runs, owner data or runtime operations."
+}

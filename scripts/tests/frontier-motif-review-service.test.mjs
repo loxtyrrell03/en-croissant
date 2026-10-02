@@ -88,7 +88,7 @@ function replay(fen, line) {
 }
 
 function assertRootContract(row, card) {
-  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-174");
+  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-175");
   const root = card.tacticalClassification.missedMotifs[0];
   if (row.motif === null) {
     assert.equal(root, undefined, "A claimable draw cannot be shown as a missed winning trap");
