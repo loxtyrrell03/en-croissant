@@ -1,6 +1,6 @@
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import type { PairingForecast } from "./pairingForecast";
-import { hasUnscoredNoOpponentHistory } from "./publishedNoOpponentScore";
+import { hasUnknownPriorPairingResults, UNKNOWN_PRIOR_RESULTS_HELP } from "./pairingHistoryCompleteness";
 
 export function pairingEstimateHelp(
   snapshot: TournamentSnapshot,
@@ -13,6 +13,5 @@ export function pairingEstimateHelp(
   if (snapshot.format === "swiss" && snapshot.incompletePairingRounds?.some(round => round > 0 && round < forecast.round!)) {
     return "Some earlier pairing rows are missing, so pairing chances are unavailable. Candidates use incomplete history; refresh to check for the complete list.";
   }
-  if (!hasUnscoredNoOpponentHistory(snapshot, forecast.round)) return null;
-  return "An earlier no-opponent score is missing. These percentages estimate your next opponent and may change when the score is published.";
+  return snapshot.format === "swiss" && hasUnknownPriorPairingResults(snapshot, forecast.round) ? UNKNOWN_PRIOR_RESULTS_HELP : null;
 }

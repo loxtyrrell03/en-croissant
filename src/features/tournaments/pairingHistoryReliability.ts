@@ -1,4 +1,5 @@
 import { publishedGameResult } from "./publishedPairingResult";
+import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import { calculateExactSwissForecast, swissPairingSystemFor } from "./exactSwissForecast";
 import type { PairingHistoryReliability } from "./pairingHistoryCalibration";
@@ -12,6 +13,7 @@ const cache = new WeakMap<TournamentSnapshot, Map<number, PairingHistoryReliabil
 export function historicalPairingReliability(snapshot: TournamentSnapshot, target: number): PairingHistoryReliability | undefined {
   if (snapshot.format !== "swiss" || swissPairingSystemFor(snapshot) !== "dutch" || snapshot.players.length > weights.maxPlayers || target < 3 ||
       snapshot.incompletePairingRounds?.some(r => r > 0 && r < target) ||
+      hasUnknownPriorPairingResults(snapshot, target) ||
       snapshot.pairings.some(p => p.round < target && publishedGameResult(p) === null && p.whiteStartNumber !== null && p.blackStartNumber !== null)) return undefined;
   // Older runtimes omit completeness metadata. Require positive roster coverage
   // for every earlier round before allowing confidence to increase.

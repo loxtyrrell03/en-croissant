@@ -29,7 +29,7 @@ test("later missing scores retain their specific help and a known-score refresh 
   const s = trackerFixture().record.snapshot;
   s.pairings = [{ round: 1, board: 1, whiteStartNumber: 1, blackStartNumber: null,
     whitePoints: null, blackPoints: null, result: null, decided: false }];
-  expect(pairingEstimateHelp(s, { kind: "estimated", round: 2 })).toContain("score is missing");
+  expect(pairingEstimateHelp(s, { kind: "estimated", round: 2 })).toContain("earlier results are missing");
   const refreshed = { ...s, pairings: s.pairings.map(g => ({ ...g, result: "½" })) };
   expect(pairingEstimateHelp(refreshed, { kind: "estimated", round: 2 })).toBeNull();
 });

@@ -43,10 +43,10 @@ const help = {
   colour: "The colour you are expected to play. It is confirmed only when the organiser publishes the pairing.",
   games: "This opponent’s saved games from in-person tournaments. No public games means the search finished but found none.",
   actions: "Import & prep finds this player’s games and opens them for preparation. Open Prep uses games already saved.",
-  points: "A win is 1 point, a draw ½, and a loss 0. Includes any points awarded without playing a game.",
+  points: "A win is 1 point, a draw ½, and a loss 0. Includes any points awarded without playing a game. A dash means a result is missing.",
   rating: "The player's rating listed for this event.",
   rank: "The place published by the organiser after this round, including how they separate players on equal points.",
-  order: "An order based on points and ratings. The organiser’s order for players on equal points is unavailable.",
+  order: "An order based on points and ratings. The organiser’s order for players on equal points is unavailable. Order is unavailable while a score is missing.",
   form: "W means win, D means draw, L means loss. Oldest games come first.",
 };
 type Tab = "next" | "standings" | "results" | "players" | "tracking";

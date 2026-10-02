@@ -59,8 +59,7 @@ function scoreThroughRound(
     if (!side) continue;
     assignedRounds.add(pairing.round);
     const points = pairingScore(pairing, side);
-    if (points === null && (pairing.decided || pairing.round <= snapshot.completedRound ||
-      pairing.whiteStartNumber === null || pairing.blackStartNumber === null)) scoreKnown = false;
+    if (points === null) scoreKnown = false;
     score += points ?? 0;
   }
   for (const byeRound of player.halfPointByeRounds ?? []) {

@@ -1,6 +1,7 @@
 import { publishedGameResult } from "./publishedPairingResult";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
-import { publishedNoOpponentScore, hasUnscoredNoOpponentHistory } from "./publishedNoOpponentScore";
+import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
+import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import { pair as pairDutch } from "@echecs/swiss/dutch";
 import { pair as pairBurstein } from "@echecs/swiss/burstein";
 import { pair as pairDubov } from "@echecs/swiss/dubov";
@@ -158,7 +159,7 @@ export function calculateExactSwissForecast(
   accelerationOverride: SwissAcceleration | null | "auto" = "auto",
 ): ExactSwissForecast | null {
   snapshot = normalizeTournamentResults(snapshot);
-  if (hasUnscoredNoOpponentHistory(snapshot, targetRound)) return null;
+  if (hasUnknownPriorPairingResults(snapshot, targetRound)) return null;
   snapshot = swissParticipationScenario(snapshot, targetRound);
   if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return null;
   const acceleration =

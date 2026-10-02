@@ -1,7 +1,8 @@
 import { publishedGameResult, publishedPairingScore } from "./publishedPairingResult";
+import { hasUnknownPriorPairingResults, UNKNOWN_PRIOR_RESULTS_HELP } from "./pairingHistoryCompleteness";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { swissAccelerationPoints } from "./swissPairingSettings";
-import { publishedNoOpponentScore, hasUnscoredNoOpponentHistory } from "./publishedNoOpponentScore";
+import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
 import type {
   TournamentPairing,
   TournamentPlayer,
@@ -732,8 +733,8 @@ export function calculatePairingForecast(
     }
   };
   const historyIncomplete = snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound) ?? false;
-  const unscoredHistory = hasUnscoredNoOpponentHistory(snapshot, targetRound);
-  const exact = historyIncomplete || unscoredHistory ? null : options?.exactSwiss ?? null;
+  const priorResultsUnknown = hasUnknownPriorPairingResults(snapshot, targetRound);
+  const exact = historyIncomplete || priorResultsUnknown ? null : options?.exactSwiss ?? null;
   const exactSystemLabel = exact
     ? `${exact.system.charAt(0).toLocaleUpperCase()}${exact.system.slice(1)}`
     : "Dutch";
@@ -784,7 +785,7 @@ export function calculatePairingForecast(
   // Keep conditional ordering and preparation available, but do not attach a
   // probability to unvalidated opening rules or explicitly incomplete history.
   // Published assignments above keep their authoritative status.
-  const probabilityUnknown = snapshot.format === "swiss" && (targetRound === 1 || historyIncomplete);
+  const probabilityUnknown = snapshot.format === "swiss" && (targetRound === 1 || historyIncomplete || priorResultsUnknown);
   const candidates = selected.slice(0, 6).map<PairingCandidate>((candidate, index) => ({
     player: candidate.player, probability: probabilityUnknown ? null : probabilities[index] * attendance, color: candidate.color, board: null, reasons: candidate.reasons,
   }));
@@ -813,10 +814,10 @@ export function calculatePairingForecast(
         ? "Withdrawals or unpublished pairing settings may explain the missing candidates."
         : historyIncomplete
           ? "Some earlier pairing rows are missing, so pairing chances are unavailable. Candidates use incomplete history; refresh to check for the complete list."
-        : probabilityUnknown
+        : snapshot.format === "swiss" && targetRound === 1
           ? "Round 1 pairing chances are not calibrated. The opponent order assumes pairing rules and starting order; final entries and organiser settings can change it."
-        : unscoredHistory
-          ? "An earlier no-opponent row has no score. Estimates may change when the organizer publishes it."
+        : priorResultsUnknown
+          ? UNKNOWN_PRIOR_RESULTS_HELP
           : participationAssumed
           ? `Recent zero-point absences are treated as continued absences in the pairing estimate. Players can return; this is not a confirmed withdrawal. Other includes a possible bye or continued absence.${sectionScope}`
           : sampledUsed

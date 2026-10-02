@@ -1,5 +1,6 @@
 import { publishedGameResult } from "./publishedPairingResult";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import { swissParticipationScenario } from "./swissParticipation";
 import { historicalPairingReliability } from "./pairingHistoryReliability";
@@ -33,6 +34,7 @@ function calculateOutcomeSampledSwissForecast(
   seedSalt = "production-v1",
 ): ExactSwissForecast | null {
   snapshot = swissParticipationScenario(normalizeTournamentResults(snapshot), targetRound);
+  if (hasUnknownPriorPairingResults(snapshot, targetRound)) return null;
   const baseline = calculateExactSwissForecast(snapshot, targetRound, myStartNumber, system);
   if (!snapshot.players.some(p => p.startNumber === myStartNumber && p.active && !p.notPairedRounds?.includes(targetRound))) return baseline;
   if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return baseline;

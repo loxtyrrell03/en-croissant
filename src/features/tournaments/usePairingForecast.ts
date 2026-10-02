@@ -1,4 +1,5 @@
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import { useEffect, useMemo, useState } from "react";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import type { ExactSwissForecast } from "./exactSwissForecast";
@@ -25,7 +26,7 @@ function shouldCalculateExact(
   if (!snapshot || myStartNumber === null || snapshot.format !== "swiss") return false;
   const targetRound = snapshot.nextRound;
   if (targetRound === null || snapshot.phase === "complete") return false;
-  if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return false;
+  if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound) || hasUnknownPriorPairingResults(snapshot, targetRound)) return false;
   if (snapshot.pairings.some((pairing) => pairing.round === targetRound)) return false;
   const me = snapshot.players.find((player) => player.startNumber === myStartNumber);
   return Boolean(me?.active && !me.notPairedRounds?.includes(targetRound));

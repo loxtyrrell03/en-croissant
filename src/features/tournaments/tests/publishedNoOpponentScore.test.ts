@@ -41,8 +41,10 @@ describe("published no-opponent score semantics", () => {
     const forecast = calculatePairingForecast(s, 1, { exactSwiss: { opponentStartNumber: 7, color: "white", system: "dutch", acceleration: null, estimatedLiveResults: false } });
     expect(forecast.kind).toBe("estimated");
     expect(forecast.candidates[0]?.reasons.some(reason => reason.startsWith("Whole-field"))).toBe(false);
-    expect(forecast.caveat).toBe("An earlier no-opponent row has no score. Estimates may change when the organizer publishes it.");
-    expect(forecast.candidates.reduce((sum, c) => sum + c.probability!, forecast.otherProbability!)).toBeCloseTo(1);
+    expect(forecast.caveat).toContain("pairing chances are unavailable");
+    expect(forecast.candidates.every(candidate => candidate.probability === null)).toBe(true);
+    expect(forecast.otherProbability).toBeNull();
+    expect(forecast.confidence).toBe("unavailable");
   });
 
   test("unknown scores break an earlier absence streak and do not inspect future rounds", () => {
