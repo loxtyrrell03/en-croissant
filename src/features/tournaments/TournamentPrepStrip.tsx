@@ -50,7 +50,7 @@ function TournamentPrepRow({
   const pairingStatus = top && forecast
     ? forecast.kind === "inferred" ? "Expected (Berger)" : forecast.kind === "confirmed" || forecast.kind === "scheduled"
       ? forecast.kind === "confirmed" ? "Published pairing" : "Scheduled pairing"
-      : `${formatForecastPercent(top.probability)} pairing chance${isCalculating ? " · updating" : ""}`
+      : `${top.probability === null ? "Pairing chance unknown" : `${formatForecastPercent(top.probability)} pairing chance`}${isCalculating ? " · updating" : ""}`
     : null;
 
   return (

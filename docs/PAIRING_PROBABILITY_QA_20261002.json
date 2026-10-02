@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-02",
+  "focusedTests": {
+    "files": 9,
+    "passed": 102
+  },
+  "typeScript": "passed",
+  "browser": {
+    "checks": [
+      "tracker 1280px: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions",
+      "home 1280px: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions",
+      "tracker 760px: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions",
+      "home 760px: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions",
+      "tracker 390px touch: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions",
+      "home 390px touch: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions",
+      "tracker 360px touch: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions",
+      "home 360px touch: opening/incomplete/complete/refreshed/published, labels, help focus/click/Escape/outside, tooltip bounds and wired actions"
+    ],
+    "errors": [],
+    "external": [],
+    "scope": "Actual shared En Croissant Tracker and Prep row with Mantine theme in headless WebKit at desktop/phone widths. Native service and asynchronous worker boundaries isolated; no installed desktop or live/physical phone proof."
+  },
+  "sourceSHA256": {
+    "src/features/tournaments/pairingForecast.ts": "fe05f74ed8033386b72df97947b599368fc0ad3e7914ad1953db20339648aa5a",
+    "src/features/tournaments/pairingScoreHelp.ts": "18207fb65e63e0395e14dea4d5dd7310f4e4a240f0bea05f6e69d20324ce9273",
+    "src/features/tournaments/TournamentTrackerView.tsx": "e5402ae32dc4ed6e3213cd701627b1ab499cad8a38b250f8a336f74bc61bcd65",
+    "src/features/tournaments/TournamentPrepStrip.tsx": "781c981f6b8d35feb32f9e327df820f5121ea253f0c89ff242428c49efcbac75",
+    "scripts/qa-pairing-probability.mjs": "632464eb5b65607adb62bc5cb7862979df2b06d39f65c45d8dd431af845b40af"
+  },
+  "delivery": "Source-only. No installed desktop, phone deployment, restart or physical-phone verification.",
+  "primary": {
+    "focusedTests": {
+      "files": 9,
+      "passed": 102
+    },
+    "typeScript": "passed",
+    "browser": "Not repeated; feature-checkout component proof only.",
+    "trackerSHA256": "cc90195f3457643e39ad47b5e0a83e5532a567ec3d17830919069ae71728ec60",
+    "preservation": "Existing game-count wording retained. Unrelated dirty files and root guidance unchanged."
+  }
+}

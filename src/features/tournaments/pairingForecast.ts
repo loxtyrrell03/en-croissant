@@ -20,7 +20,8 @@ export type PairingForecastKind =
 
 export interface PairingCandidate {
   player: TournamentPlayer;
-  probability: number;
+  /** Null means no validated probability is available; never interpret as zero. */
+  probability: number | null;
   color: "white" | "black" | null;
   board: number | null;
   reasons: string[];
@@ -31,7 +32,7 @@ export interface PairingForecast {
   round: number | null;
   confidence: "confirmed" | "high" | "medium" | "low" | "unavailable";
   candidates: PairingCandidate[];
-  otherProbability: number;
+  otherProbability: number | null;
   summary: string;
   caveat: string | null;
 }
@@ -795,10 +796,14 @@ export function calculatePairingForecast(
   );
   const attendance = estimatedAttendance(snapshot, myStartNumber, targetRound);
   const participationAssumed = attendance < 1 || swissParticipationScenario(snapshot, targetRound) !== snapshot;
+  // Keep conditional ordering and preparation available, but do not attach a
+  // probability to unvalidated opening rules or explicitly incomplete history.
+  // Published assignments above keep their authoritative status.
+  const probabilityUnknown = snapshot.format === "swiss" && (targetRound === 1 || historyIncomplete);
   const candidates = selected.slice(0, 6).map<PairingCandidate>((candidate, index) => ({
-    player: candidate.player, probability: probabilities[index] * attendance, color: candidate.color, board: null, reasons: candidate.reasons,
+    player: candidate.player, probability: probabilityUnknown ? null : probabilities[index] * attendance, color: candidate.color, board: null, reasons: candidate.reasons,
   }));
-  const otherProbability = Math.max(0, 1 - candidates.reduce((sum, item) => sum + item.probability, 0));
+  const otherProbability = probabilityUnknown ? null : Math.max(0, 1 - probabilities.slice(0, candidates.length).reduce((sum, value) => sum + value * attendance, 0));
   const top = candidates[0]?.probability ?? 0;
   const confidence = top >= 0.7 ? "high" : top >= 0.32 ? "medium" : "low";
   const sectionSuffix = snapshot.section ? ` in ${snapshot.section}` : "";
@@ -809,7 +814,7 @@ export function calculatePairingForecast(
   return {
     kind: candidates.length > 0 ? "estimated" : "unavailable",
     round: targetRound,
-    confidence: candidates.length > 0 ? confidence : "unavailable",
+    confidence: candidates.length > 0 && !probabilityUnknown ? confidence : "unavailable",
     candidates,
     otherProbability: candidates.length > 0 ? otherProbability : 0,
     summary:
@@ -821,10 +826,12 @@ export function calculatePairingForecast(
     caveat:
       candidates.length === 0
         ? "Withdrawals or unpublished pairing settings may explain the missing candidates."
+        : historyIncomplete
+          ? "Some earlier pairing rows are missing, so pairing chances are unavailable. Candidates use incomplete history; refresh to check for the complete list."
+        : probabilityUnknown
+          ? "Round 1 pairing chances are not calibrated. The opponent order assumes pairing rules and starting order; final entries and organiser settings can change it."
         : unscoredHistory
           ? "An earlier no-opponent row has no score. Estimates may change when the organizer publishes it."
-        : historyIncomplete
-          ? "Some published pairing rows could not be read. These estimates use incomplete history; refresh the tournament to check for updated source data."
           : participationAssumed
           ? `Recent zero-point absences are treated as continued absences in the pairing estimate. Players can return; this is not a confirmed withdrawal. Other includes a possible bye or continued absence.${sectionScope}`
           : sampledUsed
@@ -841,7 +848,8 @@ export function calculatePairingForecast(
   };
 }
 
-export function formatForecastPercent(probability: number): string {
+export function formatForecastPercent(probability: number | null): string {
+  if (probability === null) return "Unknown";
   if (!Number.isFinite(probability) || probability <= 0) return "--";
   if (probability < 0.01) return "<1%";
   return `~${Math.max(1, Math.round(probability * 100))}%`;

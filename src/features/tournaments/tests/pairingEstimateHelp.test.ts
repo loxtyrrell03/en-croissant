@@ -42,6 +42,6 @@ test("opening-round help leaves the calculated candidates and probabilities inta
   const forecast = calculatePairingForecast(s, s.players[0].startNumber);
   const before = structuredClone(forecast);
   expect(forecast.kind).toBe("estimated");
-  expect(pairingEstimateHelp(s, forecast)).toContain("especially uncertain");
+  expect(pairingEstimateHelp(s, forecast)).toContain("no validated probability");
   expect(forecast).toEqual(before);
 });

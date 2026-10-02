@@ -91,14 +91,14 @@ test("large live estimates use the selected player's visible result, preserving 
     const forecast = calculatePairingForecast(event, selected);
     expect(forecast.candidates.map(c => c.probability))
       .toEqual(calibratedRankProbabilities(false, 2, 33 / 65, 130, known));
-    expect(forecast.otherProbability + forecast.candidates.reduce((sum, c) => sum + c.probability, 0)).toBeCloseTo(1);
+    expect(forecast.otherProbability! + forecast.candidates.reduce((sum, c) => sum + c.probability!, 0)).toBeCloseTo(1);
   }
   const missing = { ...event, pairings: pairings.slice(1) };
   expect(calculatePairingForecast(missing, 1).candidates.map(c => c.probability))
     .toEqual(calibratedRankProbabilities(false, 2, 32 / 64, 130, null));
   const first = { ...event, pairings: [], completedRound: 0, publishedRound: 0, liveRound: null, nextRound: 1, phase: "registration" as const };
   expect(calculatePairingForecast(first, 1).candidates.map(c => c.probability))
-    .toEqual(calibratedRankProbabilities(false, 1, null, 130));
+    .toEqual(Array(6).fill(null));
 });
 
 describe("pairing forecast", () => {
@@ -190,8 +190,8 @@ describe("pairing forecast", () => {
     expect(forecast.kind).toBe("estimated");
     expect(forecast.candidates[0].probability).toBeCloseTo(0.601688, 5);
     expect(
-      forecast.candidates.reduce((sum, candidate) => sum + candidate.probability, 0) +
-        forecast.otherProbability,
+      forecast.candidates.reduce((sum, candidate) => sum + candidate.probability!, 0) +
+        forecast.otherProbability!,
     ).toBeCloseTo(1);
     expect(forecast.caveat).toContain("whole-field FIDE Dutch");
     expect(formatForecastPercent(forecast.candidates[0].probability)).toBe("~60%");
@@ -243,7 +243,7 @@ describe("pairing forecast", () => {
     });
 
     expect(forecast.candidates[0].player.startNumber).toBe(1);
-    expect(forecast.candidates[0].probability).toBeLessThan(0.4);
+    expect(forecast.candidates[0].probability).toBeNull();
   });
 
   test("can render the calibrated fallback while exact solving runs elsewhere", () => {
@@ -374,9 +374,9 @@ describe("pairing forecast", () => {
       exactSwiss: calculateExactSwissForecast(noResultsEvent, 4, 1),
     });
     expect(halfResolved.candidates[0].probability).toBeGreaterThan(
-      noResults.candidates[0].probability,
+      noResults.candidates[0].probability!,
     );
-    expect(halfResolved.otherProbability).toBeLessThan(noResults.otherProbability);
+    expect(halfResolved.otherProbability).toBeLessThan(noResults.otherProbability!);
   });
 
   test("derives a deterministic opponent for an unpublished round robin round", () => {

@@ -1,0 +1,89 @@
+{
+  "fixturesSHA256": "6066bc96b92f54d64b5d366391bb8a53f92755dea172f21eb3b2ac19a9c43fe8",
+  "replaySHA256": "2f1b83b5cbc9c7eda503696a8d30be3082ae0f73fc7489c6e381669be142fb28",
+  "sourceSHA256": {
+    "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927": "fe05f74ed8033386b72df97947b599368fc0ad3e7914ad1953db20339648aa5a",
+    "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess-tournament-integration": "3cbd46bccf12703ec73616208496c2bab694029e7cad8eb228239ca980c7f980"
+  },
+  "events": 4,
+  "snapshots": 316,
+  "states": 11403,
+  "baselinePreserved": 11403,
+  "intentionalAbstentions": 0,
+  "dependencies": {
+    "pairingCalibration.ts": {
+      "canonicalSHA256": "08aac0285efe7e952428b4e4ce37c21e60100e3db4b89463169b457bd29f4d40",
+      "enSHA256": "9ddcd493cac5b6df6acf7e5ad7ac633151e61a7c37d274b898a9a9533eb7fa1f",
+      "noveltySHA256": "d17139556eb67ff5c3bd09bf0d214ef3be55b0fdf288884fe3e1f4d24bd7efab"
+    },
+    "pairingHistoryCalibration.ts": {
+      "canonicalSHA256": "f04834a11abab7921a95108c88a80ae509065e829bc22fc93918a623b6c0238f",
+      "enSHA256": "bb532d45c2b6aa7c15443ebf16c727d2e95e27a40fac1f24b39fb749a00d7139",
+      "noveltySHA256": "c56e13337d6e858f3232da0605310ec43a6df38f307a26cad4d8a11e27ccb331"
+    },
+    "swissParticipation.ts": {
+      "canonicalSHA256": "95f2facdc1a9794e46964e897e40d757ce3268eee4a1885fb573cf6ffac123d9",
+      "enSHA256": "415ed382a894cf77f98cfcd750c4d3f1462a78518f0138042112e87394206218",
+      "noveltySHA256": "58f37f1cb0122976d8aa8c42c984c2a7a8981e3b788cc0c6fdbd60bd82e1f63d"
+    },
+    "swissPairingSettings.ts": {
+      "canonicalSHA256": "698c1c9d30a75f273c931533884e3eec2e158dc598c56f86ceccc3eeb4bf1fc1",
+      "enSHA256": "d80fd3c153986e2fa19d701caf12fba7f32a0be3b3790374f5307f10d1dd9a29",
+      "noveltySHA256": "f77c6f3ffb41703fb021773e14b2c86b11dd2b4ac10e91e602fd36b58c785d36"
+    },
+    "publishedNoOpponentScore.ts": {
+      "canonicalSHA256": "0b17ee47fdfc415250c4b9ba4b19226866de70a6e306fdd0e99f4c87c5d983a6",
+      "enSHA256": "5eb90d6f8da82d1a9a86169a382eb12431c89aa6087517eba64fb5b3b14e50fe",
+      "noveltySHA256": "c06a7ebd0699fe72ee7bbe4101b8cd0e9236424b1062601657eccc3de94b55d0"
+    },
+    "exactSwissForecast.ts": {
+      "canonicalSHA256": "02031b6ed725cebfca4c30897363c5a8511ec671a91fb506a5d70053a00adb1f",
+      "enSHA256": "54995f534e6ab91cb5b47c662e2c4570041237e38e2a9b8df97988ca1705f33b",
+      "noveltySHA256": "9b9055ed4e2be4e8518f55d98cc149c4455a1e3b3a76e579a5a4528ef3ae5e33"
+    },
+    "sampledSwissForecast.ts": {
+      "canonicalSHA256": "ca10b06eb1402afbe8a7f9c04f47bb7f983418338bd9b51747341a167bcb1bc0",
+      "enSHA256": "f0cca1f79b16b196b9bf4497ffeacdd10be20757965a8c0046f1f465b8675c42",
+      "noveltySHA256": "c2d5043144fc559c8ea2a7ee82a307dbe0f42bb7b9a4862a08a841d4e5d0bf24"
+    },
+    "adaptiveSwissWeights.json": {
+      "canonicalSHA256": "6d50b1f505d3efe562ee4d9d9027f402ac459a3e0de61fa7ebed6b35aab9410c",
+      "enSHA256": "ba0173e9307ad35a8a20897fd92974e65ac302ed77ea05e792168e7fdc867442",
+      "noveltySHA256": "7f3b18fb2b1fa37180d84ac8c4eb570a42a66a679f52ec0274c75ac1c8b409f8"
+    },
+    "firstRoundCalibrationWeights.json": {
+      "canonicalSHA256": "176289843f5805d84bd900e86ff061c7e47f74d5010035e8b9079475d8977212",
+      "enSHA256": "ed656cbe3e694f19c17a837db36899a0615f196d8876b2e6e6f1cb73c2e91121",
+      "noveltySHA256": "ed656cbe3e694f19c17a837db36899a0615f196d8876b2e6e6f1cb73c2e91121"
+    },
+    "largeFallbackWeights.json": {
+      "canonicalSHA256": "c960de3ba6f341ef579a7e7f6be18bf5111001292565b1645345342f3a8a2739",
+      "enSHA256": "641b5a94b3adbb285bfeb5fa43963ce99155bf10a576d08ba646e1b9bdc15705",
+      "noveltySHA256": "641b5a94b3adbb285bfeb5fa43963ce99155bf10a576d08ba646e1b9bdc15705"
+    },
+    "ownResultCalibrationWeights.json": {
+      "canonicalSHA256": "f04bbb5c4a56922f26e7649270214d7fd7fc03a130c720ca840321f91369b4f6",
+      "enSHA256": "a4205f51d6947fc93db166c4d9a1b6cf9a83ad9614521c4b52a646479ac5523a",
+      "noveltySHA256": "fed7a1ce0e33edce82cf51226eaca3e9078206a078db2a43ac30dd153a1b537c"
+    },
+    "pairingCalibrationWeights.json": {
+      "canonicalSHA256": "ec9a345aa774db7664f3263ad8b325919308c439b4a49eb80714398b03d9ab15",
+      "enSHA256": "222484bb3a2f9657a6b1fdbb3a2b9b824a5d0543a4379cc97c6b4aff85b628c8",
+      "noveltySHA256": "222484bb3a2f9657a6b1fdbb3a2b9b824a5d0543a4379cc97c6b4aff85b628c8"
+    },
+    "swissAttendanceWeights.json": {
+      "canonicalSHA256": "a2b2c675f74744b9d34e6bbf345f81d8aefae6a9eed3d1cf42a5a13e6bd26870",
+      "enSHA256": "0aa7b00f3a2282d15d854cc7895bc8e80f997ac3cee076fc3c1399a7e6c9282a",
+      "noveltySHA256": "1fc7da44dbb64114f4e6a1da843ad03affc1e905d14b44d9a13a1a7f2ae98c86"
+    },
+    "@echecs/swiss": {
+      "treeSHA256": "f7ef3030edda6a6a11b81cc9b3d60c8cc35545876d473c612337f2d860d2182e",
+      "files": 35
+    },
+    "@echecs/tournament": {
+      "treeSHA256": "40f18dca39c05ee66090fce2284b795751d580446c13c18c4723d3a80a4830ef",
+      "files": 7
+    }
+  },
+  "scope": "Pure fallback forecasts compared for ids, order, probabilities, colours, kind, round, confidence, Other and displayed labels; no worker runs or delivery. Branding/caveats excluded."
+}

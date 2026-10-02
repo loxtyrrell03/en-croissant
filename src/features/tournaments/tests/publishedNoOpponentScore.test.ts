@@ -42,7 +42,7 @@ describe("published no-opponent score semantics", () => {
     expect(forecast.kind).toBe("estimated");
     expect(forecast.candidates[0]?.reasons.some(reason => reason.startsWith("Whole-field"))).toBe(false);
     expect(forecast.caveat).toBe("An earlier no-opponent row has no score. Estimates may change when the organizer publishes it.");
-    expect(forecast.candidates.reduce((sum, c) => sum + c.probability, forecast.otherProbability)).toBeCloseTo(1);
+    expect(forecast.candidates.reduce((sum, c) => sum + c.probability!, forecast.otherProbability!)).toBeCloseTo(1);
   });
 
   test("unknown scores break an earlier absence streak and do not inspect future rounds", () => {

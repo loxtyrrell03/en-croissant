@@ -60,7 +60,7 @@ describe("participation estimates from published history", () => {
     expect(f.kind).toBe("estimated");
     expect(f.candidates).toHaveLength(4);
     expect(f.otherProbability).toBeGreaterThan(.85);
-    expect(f.candidates.reduce((n, c) => n + c.probability, f.otherProbability)).toBeCloseTo(1);
+    expect(f.candidates.reduce((n, c) => n + c.probability!, f.otherProbability!)).toBeCloseTo(1);
     expect(f.caveat).toContain("not a confirmed withdrawal");
     s.players[4].notPairedRounds = [2];
     expect(calculatePairingForecast(s, 5).kind).toBe("scheduled");
