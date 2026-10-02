@@ -4,8 +4,9 @@
  * numerical inference under an explicit model, not a universal optimum.
  */
 import { continuousLogSummary, logMidpointError, normalQuadrature } from "./performanceNumerics";
+import { gaussianLogConvolution } from "./performanceDynamics";
 
-export const TRUE_PERFORMANCE_VERSION = "bayes-continuous-v3";
+export const TRUE_PERFORMANCE_VERSION = "bayes-continuous-v4-dual-domain";
 export interface PerformanceGame {
     id: string;
     pool: string;
@@ -158,74 +159,6 @@ function grid(model: PerformanceModel) {
         (_, i) => MIN_R + i * model.step,
     );
 }
-function normaliseLog(logP: number[]) {
-    const max = Math.max(...logP);
-    if (!Number.isFinite(max))
-        throw new Error("Performance posterior could not be normalised");
-    const logSum = Math.log(logP.reduce((sum, value) => sum + Math.exp(value - max), 0));
-    return logP.map((value) => value - max - logSum);
-}
-function prior(xs: number[], mean: number, sd: number) {
-    return normaliseLog(xs.map((x) => -0.5 * ((x - mean) / sd) ** 2));
-}
-function summary(xs: number[], logP: number[]): StrengthEstimate {
-    const p = logP.map(Math.exp);
-    const mean = p.reduce((s, v, i) => s + v * xs[i], 0);
-    const variance = p.reduce((s, v, i) => s + v * (xs[i] - mean) ** 2, 0);
-    const quantile = (q: number) => {
-        let c = 0;
-        for (let i = 0; i < p.length; i++) {
-            const last = c;
-            c += p[i];
-            if (c >= q) return xs[i] + ((q - last) / p[i] - 0.5) * (xs[1] - xs[0]);
-        }
-        return xs[xs.length - 1];
-    };
-    return {
-        mean,
-        sd: Math.sqrt(variance),
-        low: quantile(0.025),
-        high: quantile(0.975),
-        edgeMass: p[0] + p[p.length - 1],
-    };
-}
-function diffuse(logP: number[], variance: number, step: number) {
-    if (variance <= 0) return logP;
-    // Sub-cell diffusion preserves variance rather than losing short time gaps.
-    let logKernel: number[];
-    if (variance < step * step) {
-        const side = variance / (2 * step * step);
-        logKernel = [Math.log(side), Math.log1p(-2 * side), Math.log(side)];
-    } else {
-        const radius = Math.min(logP.length - 1, Math.ceil((5 * Math.sqrt(variance)) / step));
-        logKernel = normaliseLog(
-            Array.from({ length: radius * 2 + 1 }, (_, i) =>
-                (-0.5 * ((i - radius) * step) ** 2) / variance,
-            ),
-        );
-    }
-    const radius = (logKernel.length - 1) / 2,
-        out = logP.map(() => -Infinity);
-    // Keep all log mass: a currently unlikely cell can become plausible later.
-    for (let i = 0; i < logP.length; i++)
-        for (let j = 0; j < logKernel.length; j++) {
-            const k = i + j - radius;
-            if (k >= 0 && k < logP.length) out[k] = logAdd(out[k], logP[i] + logKernel[j]);
-        }
-    return normaliseLog(out);
-}
-function update(xs: number[], logP: number[], game: PerformanceGame, model: PerformanceModel) {
-    const predictive: [number, number, number] = [0, 0, 0],
-        next = logP.map(() => -Infinity);
-    const result = game.score === 1 ? 0 : game.score === 0.5 ? 1 : 2;
-    for (let i = 0; i < xs.length; i++) {
-        const logProbs = logLikelihood(xs[i], game, model);
-        next[i] = logP[i] + logProbs[result];
-        for (let k = 0; k < 3; k++) predictive[k] += Math.exp(logP[i] + logProbs[k]);
-    }
-    return { posterior: normaliseLog(next), predictive };
-}
-
 /** Past-only constant-strength inference. The support mesh retains every log
  * value; discarded integration tails can always recover from the exact counts. */
 class PeriodPosterior {
@@ -394,6 +327,202 @@ function constantHistory(games: PerformanceGame[], model: PerformanceModel, coll
     }
     return { estimate, points };
 }
+
+class HistoryMeshRequest extends Error {
+    constructor(readonly kind: "expand" | "refine", readonly left = true, readonly right = true) {
+        super(`Chronological performance needs ${kind}`);
+    }
+}
+
+/** Unlike a constant period, drift cannot be reconstructed from game counts.
+ * Mesh changes replay the chronological evidence from the original prior.
+ * Previously returned points are deliberately never replaced by that replay. */
+function dynamicLikelihood(game: PerformanceGame, model: PerformanceModel) {
+    const sd = game.opponentSd ?? model.opponentSd, slope = Math.LN10 / model.divisor;
+    if (sd === 0) return (r: number) => logLikelihood(r, game, model);
+    const os = model.drawSlope / 800 - slope / 2;
+    const [nodes, weights] = normalQuadrature(sd * (Math.max(-slope, os, 0) - Math.min(-slope, os, 0)));
+    const wins = nodes.map(x => Math.exp(-slope * sd * x)), draws = nodes.map(x => Math.exp(os * sd * x));
+    return (r: number): [number, number, number] => {
+        const z = slope * (r - game.opponentRating! + (game.white ? 1 : -1) * model.whiteAdvantage);
+        const d = model.logDraw + model.drawSlope * ((r + game.opponentRating!) / 2 - 2200) / 400 + z / 2;
+        if (Math.abs(z) > 500 || Math.abs(d) > 500) return logLikelihood(r, game, model);
+        const a = Math.exp(z), b = Math.exp(d);
+        let win = 0, draw = 0, loss = 0;
+        for (let i = 0; i < nodes.length; i++) {
+            const w = a * wins[i], q = b * draws[i], weight = weights[i] / (w + q + 1);
+            win += weight * w; draw += weight * q; loss += weight;
+        }
+        if (Math.min(win, draw, loss) <= 1e-280 || !Number.isFinite(win + draw + loss)) return logLikelihood(r, game, model);
+        return [Math.log(win), Math.log(draw), Math.log(loss)];
+    };
+}
+interface DynamicLikelihoodCache {
+    entries: Map<string, { low: number; h: number; values: Float64Array }>;
+    bytes: number;
+}
+class DynamicPosterior {
+    private h: number;
+    private low: number;
+    private high: number;
+    private xs: number[] = [];
+    private logs: number[] = [];
+    private last: number;
+    private readonly past: PerformanceGame[] = [];
+
+    constructor(private readonly mean: number, private readonly model: PerformanceModel, private readonly start: number, factor = 1, initialStep = 10, private readonly shared: DynamicLikelihoodCache = { entries: new Map(), bytes: 0 }) {
+        this.h = Math.min(model.step, initialStep);
+        const radius = factor * Math.max(10 * model.priorSd + 8 * this.h, 24 * this.h);
+        this.low = 2 * this.h * Math.floor((mean - radius) / (2 * this.h));
+        this.high = 2 * this.h * Math.ceil((mean + radius) / (2 * this.h));
+        this.last = start; this.reset();
+    }
+
+    spacing() { return this.h; }
+
+    private reset() {
+        const count = Math.round((this.high - this.low) / this.h) + 1;
+        if (count > 24001) throw new Error("Chronological performance requires an unsupported integration mesh");
+        this.xs = Array.from({ length: count }, (_, i) => this.low + i * this.h);
+        this.logs = this.xs.map(x => -.5 * ((x - this.mean) / this.model.priorSd) ** 2);
+        this.last = this.start;
+    }
+
+    private likelihood(game: PerformanceGame) {
+        const key = `${game.opponentRating}:${game.opponentSd ?? this.model.opponentSd}:${Number(game.white)}`;
+        const cached = this.shared.entries.get(key);
+        const offset = cached ? (this.low - cached.low) / this.h : 0;
+        if (cached?.h === this.h && Number.isInteger(offset) && offset >= 0 && 3 * (offset + this.xs.length) <= cached.values.length) {
+            this.shared.entries.delete(key); this.shared.entries.set(key, cached);
+            return cached.values.subarray(3 * offset, 3 * (offset + this.xs.length));
+        }
+        const values = new Float64Array(this.xs.length * 3), evaluate = dynamicLikelihood(game, this.model);
+        for (let i = 0; i < this.xs.length; i++) values.set(evaluate(this.xs[i]), 3 * i);
+        if (cached) { this.shared.entries.delete(key); this.shared.bytes -= cached.values.byteLength; }
+        while (this.shared.bytes + values.byteLength > 8 * 1024 * 1024 && this.shared.entries.size) {
+            const oldest = this.shared.entries.keys().next().value!;
+            this.shared.bytes -= this.shared.entries.get(oldest)!.values.byteLength; this.shared.entries.delete(oldest);
+        }
+        if (values.byteLength <= 8 * 1024 * 1024) {
+            this.shared.entries.set(key, { low: this.low, h: this.h, values }); this.shared.bytes += values.byteLength;
+        }
+        return values;
+    }
+
+    private bounds(logs: number[]) {
+        let peak = -Infinity;
+        for (const value of logs) peak = Math.max(peak, value);
+        const n = logs.length;
+        let left = logs[0] > peak - 45 || logs[2] <= logs[1];
+        let right = logs[n - 1] > peak - 45 || logs[n - 3] <= logs[n - 2];
+        if (left || right) throw new HistoryMeshRequest("expand", left, right);
+    }
+
+    private summarise(logs: number[], fine = continuousLogSummary(this.xs, logs)) {
+        const coarse = continuousLogSummary(this.xs.filter((_, i) => i % 2 === 0), logs.filter((_, i) => i % 2 === 0));
+        const difference = Math.max(...(["mean", "sd", "low", "high"] as const).map(key => Math.abs(fine[key] - coarse[key])));
+        if (difference > .00008 || logMidpointError(logs) > .00005 || fine.modeSd < .3 * this.h)
+            throw new HistoryMeshRequest("refine");
+        return fine;
+    }
+
+    private step(game: PerformanceGame, capture?: (forecast: Pick<StrengthPoint, "before" | "predictive">) => void): StrengthPoint {
+        const variance = this.model.driftSdYear ** 2 * (game.at - this.last) / (365.25 * 86400);
+        const propagated = gaussianLogConvolution(this.xs, this.logs, variance);
+        this.bounds(propagated.logs);
+        const before = this.summarise(propagated.logs);
+        const likelihood = this.likelihood(game), result = game.score === 1 ? 0 : game.score === .5 ? 1 : 2;
+        const candidates = [0, 1, 2].map(outcome => propagated.logs.map((value, i) => value + likelihood[3 * i + outcome]));
+        const summaries = candidates.map((logs) => {
+            const first = continuousLogSummary(this.xs, logs);
+            // Resolve all material predictive outcomes before selecting the
+            // observed result, so the numerical pre-game forecast uses no result.
+            if (first.logNormalizer - before.logNormalizer > -30) {
+                this.bounds(logs);
+                return this.summarise(logs, first);
+            }
+            if (logMidpointError(logs) > .00005 || first.modeSd < .3 * this.h) throw new HistoryMeshRequest("refine");
+            return first;
+        });
+        const maxEvidence = Math.max(...summaries.map(s => s.logNormalizer));
+        const evidence = summaries.map(s => Math.exp(s.logNormalizer - maxEvidence));
+        const total = evidence.reduce((a, b) => a + b, 0);
+        const forecast = { before: before.mean, predictive: evidence.map(value => value / total) as [number, number, number] };
+        // Freeze the forecast before resolving a possibly negligible observed
+        // outcome. Its later mesh replay must not change the pre-game forecast.
+        capture?.(forecast);
+        const selectedLogs = candidates[result];
+        this.bounds(selectedLogs);
+        const selected = summaries[result].logNormalizer - before.logNormalizer > -30
+            ? summaries[result] : this.summarise(selectedLogs, summaries[result]);
+        let peak = -Infinity;
+        for (const value of selectedLogs) peak = Math.max(peak, value);
+        this.logs = selectedLogs.map(value => value - peak);
+        this.last = game.at;
+        return { mean: selected.mean, sd: selected.sd, low: selected.low, high: selected.high, edgeMass: selected.edgeMass,
+            ...forecast,
+            id: game.id, at: game.at, rating: game.rating };
+    }
+
+    add(game: PerformanceGame): StrengthPoint {
+        let replay = false;
+        let forecast: Pick<StrengthPoint, "before" | "predictive"> | undefined;
+        for (let attempt = 0; attempt < 18; attempt++) {
+            try {
+                let point: StrengthPoint;
+                if (replay) {
+                    this.reset();
+                    for (const old of this.past) this.step(old);
+                }
+                point = this.step(game, value => { forecast ??= value; });
+                this.past.push(game); return { ...point, ...forecast };
+            } catch (error) {
+                if (!(error instanceof HistoryMeshRequest)) throw error;
+                if (error.kind === "refine") this.h /= 2;
+                else {
+                    const extension = 2 * this.h * Math.ceil((this.high - this.low) / (4 * this.h));
+                    if (error.left) this.low -= extension;
+                    if (error.right) this.high += extension;
+                }
+                replay = true;
+            }
+        }
+        throw new Error("Chronological performance domain or resolution did not converge");
+    }
+}
+const DYNAMIC_DOMAIN_SCALE = 1;
+class CheckedDynamicPosterior {
+    private factor = DYNAMIC_DOMAIN_SCALE;
+    private resolution = 10;
+    private readonly cache: DynamicLikelihoodCache = { entries: new Map(), bytes: 0 };
+    private small: DynamicPosterior;
+    private wide: DynamicPosterior;
+    private readonly past: PerformanceGame[] = [];
+    constructor(private readonly mean: number, private readonly model: PerformanceModel, private readonly start: number) {
+        this.small = new DynamicPosterior(mean, model, start, this.factor, this.resolution, this.cache);
+        this.wide = new DynamicPosterior(mean, model, start, 2 * this.factor, this.resolution, this.cache);
+    }
+    add(game: PerformanceGame): StrengthPoint {
+        let forecast: Pick<StrengthPoint, "before" | "predictive"> | undefined;
+        for (let attempt = 0; attempt < 8; attempt++) {
+            const wide = this.wide.add(game), small = this.small.add(game);
+            const predictionDifference = Math.max(Math.abs(small.before - wide.before) / .00008,
+                ...small.predictive.map((p, k) => Math.abs(p - wide.predictive[k]) / 1e-8));
+            if (predictionDifference <= 1) forecast ??= { before: wide.before, predictive: wide.predictive };
+            const posteriorDifference = Math.max(...(["mean", "sd", "low", "high"] as const)
+                .map(key => Math.abs(small[key] - wide[key])));
+            if (predictionDifference <= 1 && posteriorDifference <= .00008) {
+                this.past.push(game); return { ...wide, ...forecast };
+            }
+            if (this.small.spacing() !== this.wide.spacing()) this.resolution = Math.min(this.small.spacing(), this.wide.spacing());
+            else this.factor *= 2;
+            this.small = new DynamicPosterior(this.mean, this.model, this.start, this.factor, this.resolution, this.cache);
+            this.wide = new DynamicPosterior(this.mean, this.model, this.start, 2 * this.factor, this.resolution, this.cache);
+            for (const old of this.past) { this.wide.add(old); this.small.add(old); }
+        }
+        throw new Error("Chronological performance domain convergence did not resolve");
+    }
+}
 export type PerformanceGameType = "rated" | "unrated" | "both";
 export function matchesGameType(rated: boolean, gameType: PerformanceGameType) {
     return gameType === "both" || rated === (gameType === "rated");
@@ -427,8 +556,8 @@ export function strengthHistory(
     model = ONLINE_MODEL,
     gameType: PerformanceGameType = "rated",
 ): StrengthHistory {
-    const games = preparePerformanceGames(input, asOf, gameType),
-        xs = grid(model);
+    grid(model);
+    const games = preparePerformanceGames(input, asOf, gameType);
     const pool = games[0]?.pool ?? null;
     if (games.some((g) => g.pool !== pool))
         throw new Error("Choose one account and time control for performance estimates");
@@ -439,22 +568,9 @@ export function strengthHistory(
         points: StrengthPoint[] = [];
     if (model.driftSdYear === 0)
         return { games: usable, points: constantHistory(usable, model, true).points, excluded: input.length - usable.length, model, pool };
-    let p = prior(xs, usable[0].rating!, model.priorSd),
-        last = usable[0].at;
+    const posterior = new CheckedDynamicPosterior(usable[0].rating!, model, usable[0].at);
     for (const game of usable) {
-        p = diffuse(p, (model.driftSdYear ** 2 * (game.at - last)) / (365.25 * 86400), model.step);
-        const before = summary(xs, p).mean;
-        const updated = update(xs, p, game, model);
-        p = updated.posterior;
-        points.push({
-            ...summary(xs, p),
-            id: game.id,
-            at: game.at,
-            before,
-            rating: game.rating,
-            predictive: updated.predictive,
-        });
-        last = game.at;
+        points.push(posterior.add(game));
     }
     return { games: usable, points, excluded: input.length - usable.length, model, pool };
 }

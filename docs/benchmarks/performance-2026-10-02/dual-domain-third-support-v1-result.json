@@ -1,0 +1,1277 @@
+{
+  "scope": "Support-domain numerical convergence only. Agreement is not independent truth or a rigorous global exterior-error certificate. Independent analytic/full-log references remain required.",
+  "passed": true,
+  "failures": [],
+  "fixtureSha256": "a0319b9e98bdbd25f6585b14a7caface6e1a26b57637cf560f8f4e07031cf5bd",
+  "seed": 1656758695,
+  "checkerSha256": "ff45b6896c6b9379858ec8b36762c8e2804467f16a41f517b82b974223e8fb15",
+  "rawSourceHashes": {
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/truePerformance.ts": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceDynamics.ts": "22a2e7ea307d8cbab13dd3151c6723d8a2d0b0f7d9d408df65436b883b43605d",
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422"
+  },
+  "variants": [
+    {
+      "scale": 1,
+      "version": "bayes-continuous-v4-dual-domain",
+      "transformedSourceHashes": {
+        "../../outpost-chess/tmp/performance-20261002/dual-domain/truePerformance.ts": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+        "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceDynamics.ts": "22a2e7ea307d8cbab13dd3151c6723d8a2d0b0f7d9d408df65436b883b43605d",
+        "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422"
+      },
+      "transforms": [
+        {
+          "file": "../../outpost-chess/tmp/performance-20261002/dual-domain/truePerformance.ts",
+          "symbol": "DYNAMIC_DOMAIN_SCALE",
+          "originalValue": 1,
+          "value": 1,
+          "occurrences": 1,
+          "rawSha256": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+          "transformedSha256": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493"
+        }
+      ],
+      "bundleSha256": "ddb3ed824af838a895a5c660943c5d29d11d2c187fcba2e47e2aa52e04625071"
+    },
+    {
+      "scale": 2,
+      "version": "bayes-continuous-v4-dual-domain",
+      "transformedSourceHashes": {
+        "../../outpost-chess/tmp/performance-20261002/dual-domain/truePerformance.ts": "e07e8445493db7ec0e1d3869ecda39a2946b653c07df2bdee2922cebb50729d0",
+        "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+        "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceDynamics.ts": "22a2e7ea307d8cbab13dd3151c6723d8a2d0b0f7d9d408df65436b883b43605d"
+      },
+      "transforms": [
+        {
+          "file": "../../outpost-chess/tmp/performance-20261002/dual-domain/truePerformance.ts",
+          "symbol": "DYNAMIC_DOMAIN_SCALE",
+          "originalValue": 1,
+          "value": 2,
+          "occurrences": 1,
+          "rawSha256": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+          "transformedSha256": "e07e8445493db7ec0e1d3869ecda39a2946b653c07df2bdee2922cebb50729d0"
+        }
+      ],
+      "bundleSha256": "0deeb8c05f9e2ba9a7e4c07e34ee4ef3ab9b5f527824a7c0c6910ef3c3dc7a8b"
+    }
+  ],
+  "gameTraversals": 11534,
+  "cases": [
+    {
+      "id": "one-second-fractional-centre",
+      "games": 120,
+      "elapsedMs": 294.15279999999996,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 1805.211835279285,
+          "sd": 36.53577144476971,
+          "low": 1733.5783759708102,
+          "high": 1876.838324371438,
+          "edgeMass": 0,
+          "before": 1807.0989329929212,
+          "predictive": [
+            0.21239663300711958,
+            0.07620821786952671,
+            0.7113951491233537
+          ],
+          "id": "000119",
+          "at": 1700000119,
+          "rating": 1800.375
+        },
+        {
+          "mean": 1805.211835279285,
+          "sd": 36.53577144476971,
+          "low": 1733.5783759708102,
+          "high": 1876.838324371438,
+          "edgeMass": 0,
+          "before": 1807.0989329929212,
+          "predictive": [
+            0.21239663300711958,
+            0.07620821786952671,
+            0.7113951491233537
+          ],
+          "id": "000119",
+          "at": 1700000119,
+          "rating": 1800.375
+        }
+      ],
+      "historyHashes": [
+        "0a7af8b82f8e601b08a16c01077c8a75aa9953a2d6b508ef26528cc15100e647",
+        "c94586788e663393c8282c470cfe482bcc5defe12f342541bfdc891fc5f7b7e8"
+      ]
+    },
+    {
+      "id": "hourly-fractional-centre",
+      "games": 120,
+      "elapsedMs": 976.5007,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 1851.4389808770948,
+          "sd": 34.68849744005848,
+          "low": 1783.412278945516,
+          "high": 1919.4415992080849,
+          "edgeMass": 0,
+          "before": 1855.8486539168348,
+          "predictive": [
+            0.609451252144838,
+            0.08469659131675746,
+            0.3058521565384045
+          ],
+          "id": "000119",
+          "at": 1700428400,
+          "rating": 1812.625
+        },
+        {
+          "mean": 1851.4389808770948,
+          "sd": 34.68849744005848,
+          "low": 1783.412278945516,
+          "high": 1919.4415992080849,
+          "edgeMass": 0,
+          "before": 1855.8486539168348,
+          "predictive": [
+            0.609451252144838,
+            0.08469659131675746,
+            0.3058521565384045
+          ],
+          "id": "000119",
+          "at": 1700428400,
+          "rating": 1812.625
+        }
+      ],
+      "historyHashes": [
+        "5b9d2c97efbbde0640c7cfd13f7299d3dcce03d62b9768e08e2557fc437ea3d6",
+        "9a502c61e54786b52f732cb93960d98e89257e64f974e42046efcafd4f952c1e"
+      ]
+    },
+    {
+      "id": "session-gaps-low-rating",
+      "games": 120,
+      "elapsedMs": 726.1009999999997,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 701.6419847473551,
+          "sd": 48.40120909201472,
+          "low": 606.899760365759,
+          "high": 796.6506184234277,
+          "edgeMass": 0,
+          "before": 698.0999606616438,
+          "predictive": [
+            0.19555012003432068,
+            0.0738069203437181,
+            0.7306429596219612
+          ],
+          "id": "000119",
+          "at": 1709144000,
+          "rating": 600.125
+        },
+        {
+          "mean": 701.6419847473551,
+          "sd": 48.40120909201472,
+          "low": 606.899760365759,
+          "high": 796.6506184234277,
+          "edgeMass": 0,
+          "before": 698.0999606616438,
+          "predictive": [
+            0.19555012003432068,
+            0.0738069203437181,
+            0.7306429596219612
+          ],
+          "id": "000119",
+          "at": 1709144000,
+          "rating": 600.125
+        }
+      ],
+      "historyHashes": [
+        "17123733cdc3310848b748720532b4613b049d1c25ec2b213d7e60259a9f9ffa",
+        "87209fe11a85ecd77a57e19956a7051b4f765da64424515131f5b061517a698f"
+      ]
+    },
+    {
+      "id": "mixed-gaps-high-rating",
+      "games": 120,
+      "elapsedMs": 950.8204000000005,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 2528.469033734233,
+          "sd": 64.21453441879035,
+          "low": 2402.703627988176,
+          "high": 2654.4815348473458,
+          "edgeMass": 0,
+          "before": 2542.316755001668,
+          "predictive": [
+            0.553995829334872,
+            0.08654107255272936,
+            0.3594630981123986
+          ],
+          "id": "000119",
+          "at": 1740338975,
+          "rating": 2600.875
+        },
+        {
+          "mean": 2528.469033734233,
+          "sd": 64.21453441879035,
+          "low": 2402.703627988176,
+          "high": 2654.4815348473458,
+          "edgeMass": 0,
+          "before": 2542.316755001668,
+          "predictive": [
+            0.553995829334872,
+            0.08654107255272936,
+            0.3594630981123986
+          ],
+          "id": "000119",
+          "at": 1740338975,
+          "rating": 2600.875
+        }
+      ],
+      "historyHashes": [
+        "482518d7f04d48cb59c9e6eb374775fbbd55f2d43f7c91209e2a6837e5c6fc92",
+        "cffe2b57306465995b9a33b3603842bf4e80307e53ec5c1175954af97d280b9f"
+      ]
+    },
+    {
+      "id": "balanced-repeat-opponent-1000",
+      "games": 1000,
+      "elapsedMs": 3355.0751999999993,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 1812.0023871567853,
+          "sd": 11.498417372154352,
+          "low": 1789.4644241862534,
+          "high": 1834.5403547823753,
+          "edgeMass": 0,
+          "before": 1811.621468785609,
+          "predictive": [
+            0.45407334485927053,
+            0.09086379231102709,
+            0.4550628628297024
+          ],
+          "id": "000999",
+          "at": 1700000999,
+          "rating": 1812.375
+        },
+        {
+          "mean": 1812.0023871567853,
+          "sd": 11.498417372154352,
+          "low": 1789.4644241862534,
+          "high": 1834.5403547823753,
+          "edgeMass": 0,
+          "before": 1811.621468785609,
+          "predictive": [
+            0.45407334485927053,
+            0.09086379231102709,
+            0.4550628628297024
+          ],
+          "id": "000999",
+          "at": 1700000999,
+          "rating": 1812.375
+        }
+      ],
+      "historyHashes": [
+        "db48816879018fad47a9bce86933dbd6ab655ff5bf8df35cf71c40299acda1f6",
+        "1b75c19eb4818aa7972a1d801f0dc463dbed6ddd5df27c52c422576eb17da856"
+      ]
+    },
+    {
+      "id": "shuffled-extremes-low-prior",
+      "games": 120,
+      "elapsedMs": 1029.2880000000005,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 528.9432182261947,
+          "sd": 85.23631047892188,
+          "low": 371.6488681392275,
+          "high": 705.5308009300916,
+          "edgeMass": 4.937743270925774e-93,
+          "before": 489.41574143306957,
+          "predictive": [
+            1.870768676498244e-9,
+            0.000008407977892823523,
+            0.9999915901513386
+          ],
+          "id": "000119",
+          "at": 1702700030,
+          "rating": 0.375
+        },
+        {
+          "mean": 528.9432182261947,
+          "sd": 85.23631047892188,
+          "low": 371.6488681392275,
+          "high": 705.5308009300916,
+          "edgeMass": 0,
+          "before": 489.41574143306957,
+          "predictive": [
+            1.870768676498244e-9,
+            0.000008407977892823523,
+            0.9999915901513386
+          ],
+          "id": "000119",
+          "at": 1702700030,
+          "rating": 0.375
+        }
+      ],
+      "historyHashes": [
+        "8accca60acebb54294162d83029ac30687f67aca594a1498aa2cf80c80c688ee",
+        "49f8a3dc25a725b52ce83b57644f9b2deadc333c69b4d22eef9e53f1f2b6b3e5"
+      ]
+    },
+    {
+      "id": "shuffled-extremes-wide-high-prior",
+      "games": 120,
+      "elapsedMs": 1112.9303,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 2601.9027051331645,
+          "sd": 156.07352778420935,
+          "low": 2274.7223121002207,
+          "high": 2886.635395847643,
+          "edgeMass": 0,
+          "before": 2447.268726626255,
+          "predictive": [
+            0.0014560445054217672,
+            0.0042180728828561135,
+            0.9943258826117222
+          ],
+          "id": "000119",
+          "at": 1702701829,
+          "rating": 3999.625
+        },
+        {
+          "mean": 2601.9027051331645,
+          "sd": 156.07352778420935,
+          "low": 2274.7223121002207,
+          "high": 2886.635395847643,
+          "edgeMass": 0,
+          "before": 2447.268726626255,
+          "predictive": [
+            0.0014560445054217672,
+            0.0042180728828561135,
+            0.9943258826117222
+          ],
+          "id": "000119",
+          "at": 1702701829,
+          "rating": 3999.625
+        }
+      ],
+      "historyHashes": [
+        "defcc514e864cb4a185b1c872789a550140d5f51943f389504958e5eba13db0a",
+        "7d281039e1d2cf0fe367f3316e3077ad3ccda71d9e221eb749f4fbc1617b1620"
+      ]
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "games": 120,
+      "elapsedMs": 850.8678,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 2179.3170941510193,
+          "sd": 61.00589308033062,
+          "low": 2059.934239434824,
+          "high": 2299.1088804151696,
+          "edgeMass": 1.6766692041340489e-237,
+          "before": 2170.3534947567805,
+          "predictive": [
+            0.33549714966567085,
+            0.20900461728917022,
+            0.4554982330451588
+          ],
+          "id": "000119",
+          "at": 1716676640,
+          "rating": 2200.125
+        },
+        {
+          "mean": 2179.3170941510193,
+          "sd": 61.00589308033062,
+          "low": 2059.934239434824,
+          "high": 2299.1088804151696,
+          "edgeMass": 0,
+          "before": 2170.3534947567805,
+          "predictive": [
+            0.33549714966567085,
+            0.20900461728917022,
+            0.4554982330451588
+          ],
+          "id": "000119",
+          "at": 1716676640,
+          "rating": 2200.125
+        }
+      ],
+      "historyHashes": [
+        "6cc1756bfffcfa5601f7ccfdf6b55a75a95dc6b1117bb204abbfd254ea03cc7b",
+        "dc18b36c413662f5838b7a96796ecc35ffce57c30ce68c8e51eab7ffe8056344"
+      ]
+    },
+    {
+      "id": "wide-player-prior",
+      "games": 120,
+      "elapsedMs": 1413.4916999999987,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 0,
+        "low": 0,
+        "high": 0,
+        "before": 0,
+        "predictive": 0
+      },
+      "final": [
+        {
+          "mean": 3001.477252081358,
+          "sd": 58.09287811356311,
+          "low": 2887.5855119625157,
+          "high": 3115.321780625618,
+          "edgeMass": 0,
+          "before": 3017.196123298481,
+          "predictive": [
+            0.7886076191810235,
+            0.06586685845408047,
+            0.1455255223648961
+          ],
+          "id": "000119",
+          "at": 1719548029,
+          "rating": 3123.875
+        },
+        {
+          "mean": 3001.477252081358,
+          "sd": 58.09287811356311,
+          "low": 2887.5855119625157,
+          "high": 3115.321780625618,
+          "edgeMass": 0,
+          "before": 3017.196123298481,
+          "predictive": [
+            0.7886076191810235,
+            0.06586685845408047,
+            0.1455255223648961
+          ],
+          "id": "000119",
+          "at": 1719548029,
+          "rating": 3123.875
+        }
+      ],
+      "historyHashes": [
+        "f0bb00cc2170e7969c3658da3ce3838ea94429f2285d27777457705bd27bc355",
+        "6d9abee53cf612edffd9e15dd5057adf0524f7167edb461c2a94279135ed1236"
+      ]
+    }
+  ],
+  "currentOutcomeChecks": [
+    {
+      "id": "one-second-fractional-centre",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1800.375,
+        "predictive": [
+          0.39294751109902987,
+          0.08276259313069101,
+          0.5242898957702791
+        ]
+      }
+    },
+    {
+      "id": "one-second-fractional-centre",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1800.375,
+        "predictive": [
+          0.39294751109902987,
+          0.08276259313069101,
+          0.5242898957702791
+        ]
+      }
+    },
+    {
+      "id": "one-second-fractional-centre",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1801.7599708323576,
+        "predictive": [
+          0.1985720865869455,
+          0.07312838217537901,
+          0.7282995312376755
+        ]
+      }
+    },
+    {
+      "id": "one-second-fractional-centre",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1801.7599708323576,
+        "predictive": [
+          0.1985720865869455,
+          0.07312838217537901,
+          0.7282995312376755
+        ]
+      }
+    },
+    {
+      "id": "one-second-fractional-centre",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1807.0989329929212,
+        "predictive": [
+          0.21239663300711958,
+          0.07620821786952671,
+          0.7113951491233537
+        ]
+      }
+    },
+    {
+      "id": "one-second-fractional-centre",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1807.0989329929212,
+        "predictive": [
+          0.21239663300711958,
+          0.07620821786952671,
+          0.7113951491233537
+        ]
+      }
+    },
+    {
+      "id": "hourly-fractional-centre",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1812.625,
+        "predictive": [
+          0.30610963912859057,
+          0.07904143279990274,
+          0.6148489280715067
+        ]
+      }
+    },
+    {
+      "id": "hourly-fractional-centre",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1812.625,
+        "predictive": [
+          0.30610963912859057,
+          0.07904143279990274,
+          0.6148489280715067
+        ]
+      }
+    },
+    {
+      "id": "hourly-fractional-centre",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1816.5866331387892,
+        "predictive": [
+          0.5632553623019183,
+          0.08569689331491741,
+          0.35104774438316433
+        ]
+      }
+    },
+    {
+      "id": "hourly-fractional-centre",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1816.5866331387892,
+        "predictive": [
+          0.5632553623019183,
+          0.08569689331491741,
+          0.35104774438316433
+        ]
+      }
+    },
+    {
+      "id": "hourly-fractional-centre",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1855.8486539168348,
+        "predictive": [
+          0.609451252144838,
+          0.08469659131675746,
+          0.3058521565384045
+        ]
+      }
+    },
+    {
+      "id": "hourly-fractional-centre",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1855.8486539168348,
+        "predictive": [
+          0.609451252144838,
+          0.08469659131675746,
+          0.3058521565384045
+        ]
+      }
+    },
+    {
+      "id": "session-gaps-low-rating",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 600.125,
+        "predictive": [
+          0.11016982970801964,
+          0.0549584858041877,
+          0.8348716844877926
+        ]
+      }
+    },
+    {
+      "id": "session-gaps-low-rating",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 600.125,
+        "predictive": [
+          0.11016982970801964,
+          0.0549584858041877,
+          0.8348716844877926
+        ]
+      }
+    },
+    {
+      "id": "session-gaps-low-rating",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 603.8175840676503,
+        "predictive": [
+          0.12027063105159527,
+          0.060166270364438584,
+          0.8195630985839661
+        ]
+      }
+    },
+    {
+      "id": "session-gaps-low-rating",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 603.8175840676503,
+        "predictive": [
+          0.12027063105159527,
+          0.060166270364438584,
+          0.8195630985839661
+        ]
+      }
+    },
+    {
+      "id": "session-gaps-low-rating",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 698.0999606616438,
+        "predictive": [
+          0.19555012003432068,
+          0.0738069203437181,
+          0.7306429596219612
+        ]
+      }
+    },
+    {
+      "id": "session-gaps-low-rating",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 698.0999606616438,
+        "predictive": [
+          0.19555012003432068,
+          0.0738069203437181,
+          0.7306429596219612
+        ]
+      }
+    },
+    {
+      "id": "mixed-gaps-high-rating",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 2600.875,
+        "predictive": [
+          0.21382247477634267,
+          0.07111704345680202,
+          0.7150604817668553
+        ]
+      }
+    },
+    {
+      "id": "mixed-gaps-high-rating",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 2600.875,
+        "predictive": [
+          0.21382247477634267,
+          0.07111704345680202,
+          0.7150604817668553
+        ]
+      }
+    },
+    {
+      "id": "mixed-gaps-high-rating",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 2557.8199436302075,
+        "predictive": [
+          0.8018744332150841,
+          0.06299420376757454,
+          0.13513136301734144
+        ]
+      }
+    },
+    {
+      "id": "mixed-gaps-high-rating",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 2557.8199436302075,
+        "predictive": [
+          0.8018744332150841,
+          0.06299420376757454,
+          0.13513136301734144
+        ]
+      }
+    },
+    {
+      "id": "mixed-gaps-high-rating",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 2542.316755001668,
+        "predictive": [
+          0.553995829334872,
+          0.08654107255272936,
+          0.3594630981123986
+        ]
+      }
+    },
+    {
+      "id": "mixed-gaps-high-rating",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 2542.316755001668,
+        "predictive": [
+          0.553995829334872,
+          0.08654107255272936,
+          0.3594630981123986
+        ]
+      }
+    },
+    {
+      "id": "balanced-repeat-opponent-1000",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1812.375,
+        "predictive": [
+          0.45821454089305375,
+          0.08443045095065015,
+          0.4573550081562961
+        ]
+      }
+    },
+    {
+      "id": "balanced-repeat-opponent-1000",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1812.375,
+        "predictive": [
+          0.45821454089305375,
+          0.08443045095065015,
+          0.4573550081562961
+        ]
+      }
+    },
+    {
+      "id": "balanced-repeat-opponent-1000",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1796.2907235899743,
+        "predictive": [
+          0.4356994515611727,
+          0.08904144205958923,
+          0.475259106379238
+        ]
+      }
+    },
+    {
+      "id": "balanced-repeat-opponent-1000",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1796.2907235899743,
+        "predictive": [
+          0.4356994515611727,
+          0.08904144205958923,
+          0.475259106379238
+        ]
+      }
+    },
+    {
+      "id": "balanced-repeat-opponent-1000",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 1808.9356704218515,
+        "predictive": [
+          0.45074999271052146,
+          0.0905429235967436,
+          0.458707083692735
+        ]
+      }
+    },
+    {
+      "id": "balanced-repeat-opponent-1000",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 1808.9356704218515,
+        "predictive": [
+          0.45074999271052146,
+          0.0905429235967436,
+          0.458707083692735
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-low-prior",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 0.3750000000000253,
+        "predictive": [
+          0.45821454089305397,
+          0.08443045095065015,
+          0.4573550081562959
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-low-prior",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 0.3750000000000253,
+        "predictive": [
+          0.45821454089305397,
+          0.08443045095065015,
+          0.4573550081562959
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-low-prior",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 499.52013023139,
+        "predictive": [
+          2.316015046118237e-9,
+          0.000008992755225366238,
+          0.9999910049287596
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-low-prior",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 499.52013023139,
+        "predictive": [
+          2.316015046118237e-9,
+          0.000008992755225366238,
+          0.9999910049287596
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-low-prior",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 489.41574143306957,
+        "predictive": [
+          1.870768676498244e-9,
+          0.000008407977892823523,
+          0.9999915901513386
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-low-prior",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 489.41574143306957,
+        "predictive": [
+          1.870768676498244e-9,
+          0.000008407977892823523,
+          0.9999915901513386
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-wide-high-prior",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 3999.625,
+        "predictive": [
+          0.9999944707577368,
+          0.000005523438529132244,
+          5.8037339616452155e-9
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-wide-high-prior",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 3999.625,
+        "predictive": [
+          0.9999944707577368,
+          0.000005523438529132244,
+          5.8037339616452155e-9
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-wide-high-prior",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 3099.3373719009505,
+        "predictive": [
+          0.03719312258936315,
+          0.022713660999493433,
+          0.9400932164111434
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-wide-high-prior",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 3099.3373719009505,
+        "predictive": [
+          0.03719312258936315,
+          0.022713660999493433,
+          0.9400932164111434
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-wide-high-prior",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 2447.268726626255,
+        "predictive": [
+          0.0014560445054217672,
+          0.0042180728828561135,
+          0.9943258826117222
+        ]
+      }
+    },
+    {
+      "id": "shuffled-extremes-wide-high-prior",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 2447.268726626255,
+        "predictive": [
+          0.0014560445054217672,
+          0.0042180728828561135,
+          0.9943258826117222
+        ]
+      }
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 2200.125,
+        "predictive": [
+          0.3989814549542394,
+          0.21088998877358858,
+          0.39012855627217197
+        ]
+      }
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 2200.125,
+        "predictive": [
+          0.3989814549542394,
+          0.21088998877358858,
+          0.39012855627217197
+        ]
+      }
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 2157.6517784121856,
+        "predictive": [
+          0.08794308620063081,
+          0.1535097673630553,
+          0.7585471464363139
+        ]
+      }
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 2157.6517784121856,
+        "predictive": [
+          0.08794308620063081,
+          0.1535097673630553,
+          0.7585471464363139
+        ]
+      }
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 2170.3534947567805,
+        "predictive": [
+          0.33549714966567085,
+          0.20900461728917022,
+          0.4554982330451588
+        ]
+      }
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 2170.3534947567805,
+        "predictive": [
+          0.33549714966567085,
+          0.20900461728917022,
+          0.4554982330451588
+        ]
+      }
+    },
+    {
+      "id": "wide-player-prior",
+      "prefix": 0,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 3123.875,
+        "predictive": [
+          0.3175499584546094,
+          0.06424563917064455,
+          0.6182044023747462
+        ]
+      }
+    },
+    {
+      "id": "wide-player-prior",
+      "prefix": 0,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 3123.875,
+        "predictive": [
+          0.3175499584546094,
+          0.06424563917064455,
+          0.6182044023747462
+        ]
+      }
+    },
+    {
+      "id": "wide-player-prior",
+      "prefix": 19,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 3116.4606151838384,
+        "predictive": [
+          0.9114076906831307,
+          0.03979294516715942,
+          0.04879936414970991
+        ]
+      }
+    },
+    {
+      "id": "wide-player-prior",
+      "prefix": 19,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 3116.4606151838384,
+        "predictive": [
+          0.9114076906831307,
+          0.03979294516715942,
+          0.04879936414970991
+        ]
+      }
+    },
+    {
+      "id": "wide-player-prior",
+      "prefix": 119,
+      "scale": 1,
+      "passed": true,
+      "forecast": {
+        "before": 3017.196123298481,
+        "predictive": [
+          0.7886076191810235,
+          0.06586685845408047,
+          0.1455255223648961
+        ]
+      }
+    },
+    {
+      "id": "wide-player-prior",
+      "prefix": 119,
+      "scale": 2,
+      "passed": true,
+      "forecast": {
+        "before": 3017.196123298481,
+        "predictive": [
+          0.7886076191810235,
+          0.06586685845408047,
+          0.1455255223648961
+        ]
+      }
+    }
+  ]
+}

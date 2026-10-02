@@ -1,6 +1,6 @@
 # Continuous period inference
 
-Version `bayes-continuous-v3` corrects numerical inference for the existing constant-period Davidson/Gaussian model. It does not fit or change the statistical coefficients. Period performance and a zero-drift chronological history share this solver; the nonzero-drift history remains a separate, incomplete numerical improvement task.
+Version `bayes-continuous-v3` corrects numerical inference for the existing constant-period Davidson/Gaussian model. It does not fit or change the statistical coefficients. Period performance and a zero-drift chronological history share this solver. This document retains the v3 milestone and its then-open dynamic failures; the subsequent [v4 chronological correction](DYNAMIC_INFERENCE_V4.md) preserves this period solver and supersedes that incomplete dynamic branch.
 
 ## Calculation
 
@@ -32,7 +32,7 @@ The panel now uses the final cumulative-period graph point as its headline, elim
 
 ## Remaining limits
 
-Nonzero-drift history still uses the earlier grid/convolution. Independent spectral Gaussian references in `drift-reference.json` show interval endpoint errors up to 1.389 rating points in ordinary fixtures, while a wide-prior/inactivity analytic case exposes much larger boundary bias. `drift-v3-result.json` deliberately reports failure of the continuous-history gates. `DRIFT_AUDIT.md` records the short-gap artificial-mode problem and the required support-safe repair; a finer grid alone is insufficient.
+At the v3 milestone, nonzero-drift history still used the earlier grid/convolution. Independent spectral Gaussian references in `drift-reference.json` show interval endpoint errors up to 1.389 rating points in ordinary fixtures, while a wide-prior/inactivity analytic case exposes much larger boundary bias. `drift-v3-result.json` deliberately reports failure of the continuous-history gates. `DRIFT_AUDIT.md` retains the short-gap artificial-mode diagnosis; the subsequent v4 solver passes those gates without changing their tolerances.
 
 No real-data predictive, calibration or latent-strength recovery experiment has yet justified replacing the provisional model assumptions. Source admission is separate, and Tournament TPR is a distinct convention documented in `CALCULATOR_SCOPE.md`.
 

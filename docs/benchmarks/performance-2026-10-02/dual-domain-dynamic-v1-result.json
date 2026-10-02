@@ -1,0 +1,440 @@
+{
+  "scope": "Synthetic numerical correctness: analytic Gaussian propagation, partition invariance, support expansion, rare-tail log convolution, and chronology; not empirical calibration.",
+  "version": "bayes-continuous-v4-dual-domain",
+  "node": "v24.19.0",
+  "methodAudit": "dual-domain",
+  "sourceHashes": {
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/truePerformance.ts": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceDynamics.ts": "22a2e7ea307d8cbab13dd3151c6723d8a2d0b0f7d9d408df65436b883b43605d",
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422"
+  },
+  "referenceSha256": "742db428d218ec4bd64b149a2e01b7601407f29dcc95ae970909b8e653260472",
+  "exteriorReferenceSha256": "3f9a847ed50221902e858923576fa7989f92cb6fe267a8a7bcd381c2ad232b09",
+  "passed": true,
+  "numericalGatesPass": true,
+  "failures": [],
+  "cases": [
+    {
+      "id": "gaussian-concentrated-4h",
+      "games": 2,
+      "elapsedMs": 5.606100000000005,
+      "maximumErrors": {
+        "mean": 2.7284841053187847e-12,
+        "sd": 1.6498802324349526e-11,
+        "low": 1.1368683772161603e-11,
+        "high": 2.3419488570652902e-11,
+        "before": 2.7284841053187847e-12,
+        "predictive": 0
+      },
+      "actualLast": {
+        "mean": 1802.3749999999973,
+        "sd": 5.497849266908062,
+        "low": 1791.5994134444372,
+        "high": 1813.1505865555846,
+        "edgeMass": 0,
+        "before": 1802.3749999999973,
+        "predictive": [
+          1,
+          0,
+          0
+        ],
+        "id": "000001",
+        "at": 1700014400,
+        "rating": 1802.375
+      },
+      "referenceLast": {
+        "mean": 1802.375,
+        "sd": 5.497849266903746,
+        "low": 1791.5994134444388,
+        "high": 1813.1505865555612,
+        "before": 1802.375,
+        "predictive": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "gaussian-concentrated-two-2h",
+      "games": 3,
+      "elapsedMs": 2.3759000000000015,
+      "maximumErrors": {
+        "mean": 2.7284841053187847e-12,
+        "sd": 1.6498802324349526e-11,
+        "low": 2.091837814077735e-11,
+        "high": 2.3419488570652902e-11,
+        "before": 2.7284841053187847e-12,
+        "predictive": 0
+      },
+      "actualLast": {
+        "mean": 1802.3749999999973,
+        "sd": 5.497849266908062,
+        "low": 1791.5994134444372,
+        "high": 1813.1505865555846,
+        "edgeMass": 0,
+        "before": 1802.3749999999973,
+        "predictive": [
+          1,
+          0,
+          0
+        ],
+        "id": "000002",
+        "at": 1700014400,
+        "rating": 1802.375
+      },
+      "referenceLast": {
+        "mean": 1802.375,
+        "sd": 5.497849266903746,
+        "low": 1791.5994134444388,
+        "high": 1813.1505865555612,
+        "before": 1802.375,
+        "predictive": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "gaussian-concentrated-four-1h",
+      "games": 5,
+      "elapsedMs": 2.1994000000000113,
+      "maximumErrors": {
+        "mean": 2.7284841053187847e-12,
+        "sd": 1.6498802324349526e-11,
+        "low": 2.091837814077735e-11,
+        "high": 2.3419488570652902e-11,
+        "before": 2.7284841053187847e-12,
+        "predictive": 0
+      },
+      "actualLast": {
+        "mean": 1802.3749999999973,
+        "sd": 5.497849266908062,
+        "low": 1791.5994134444372,
+        "high": 1813.1505865555846,
+        "edgeMass": 0,
+        "before": 1802.3749999999973,
+        "predictive": [
+          1,
+          0,
+          0
+        ],
+        "id": "000004",
+        "at": 1700014400,
+        "rating": 1802.375
+      },
+      "referenceLast": {
+        "mean": 1802.375,
+        "sd": 5.497849266903746,
+        "low": 1791.5994134444388,
+        "high": 1813.1505865555612,
+        "before": 1802.375,
+        "predictive": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "gaussian-upper-boundary",
+      "games": 2,
+      "elapsedMs": 13.277699999999996,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 5.684341886080802e-14,
+        "low": 1.3642420526593924e-11,
+        "high": 1.3642420526593924e-11,
+        "before": 0,
+        "predictive": 0
+      },
+      "actualLast": {
+        "mean": 4000,
+        "sd": 533.3854141237834,
+        "low": 2954.583798438416,
+        "high": 5045.416201561584,
+        "edgeMass": 1.1116250979462209e-41,
+        "before": 4000,
+        "predictive": [
+          1,
+          0,
+          0
+        ],
+        "id": "000001",
+        "at": 2331152000,
+        "rating": 4000
+      },
+      "referenceLast": {
+        "mean": 4000,
+        "sd": 533.3854141237834,
+        "low": 2954.5837984384025,
+        "high": 5045.4162015615975,
+        "before": 4000,
+        "predictive": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "gaussian-lower-boundary",
+      "games": 2,
+      "elapsedMs": 7.845299999999995,
+      "maximumErrors": {
+        "mean": 3.203141192522451e-14,
+        "sd": 1.1368683772161603e-13,
+        "low": 1.3642420526593924e-11,
+        "high": 1.3642420526593924e-11,
+        "before": 3.203141192522451e-14,
+        "predictive": 0
+      },
+      "actualLast": {
+        "mean": -3.203141192522451e-14,
+        "sd": 533.3854141237836,
+        "low": -1045.4162015615839,
+        "high": 1045.4162015615839,
+        "edgeMass": 1.1116250979462289e-41,
+        "before": -3.203141192522451e-14,
+        "predictive": [
+          1,
+          0,
+          0
+        ],
+        "id": "000001",
+        "at": 2331152000,
+        "rating": 0
+      },
+      "referenceLast": {
+        "mean": 0,
+        "sd": 533.3854141237834,
+        "low": -1045.4162015615975,
+        "high": 1045.4162015615975,
+        "before": 0,
+        "predictive": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "gaussian-split-upper-boundary",
+      "games": 4,
+      "elapsedMs": 14.504099999999994,
+      "maximumErrors": {
+        "mean": 0,
+        "sd": 4.547473508864641e-13,
+        "low": 1.3642420526593924e-11,
+        "high": 1.3642420526593924e-11,
+        "before": 0,
+        "predictive": 0
+      },
+      "actualLast": {
+        "mean": 4000,
+        "sd": 533.3854141237837,
+        "low": 2954.583798438416,
+        "high": 5045.416201561584,
+        "edgeMass": 1.1116250979462131e-41,
+        "before": 4000,
+        "predictive": [
+          1,
+          0,
+          0
+        ],
+        "id": "000003",
+        "at": 2331152000,
+        "rating": 4000
+      },
+      "referenceLast": {
+        "mean": 4000,
+        "sd": 533.3854141237834,
+        "low": 2954.5837984384025,
+        "high": 5045.4162015615975,
+        "before": 4000,
+        "predictive": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "gaussian-near-zero-drift",
+      "games": 2,
+      "elapsedMs": 0.808099999999996,
+      "maximumErrors": {
+        "mean": 9.094947017729282e-13,
+        "sd": 1.6498802324349526e-11,
+        "low": 1.1368683772161603e-11,
+        "high": 1.0459189070388675e-11,
+        "before": 9.094947017729282e-13,
+        "predictive": 0
+      },
+      "actualLast": {
+        "mean": 1802.374999999999,
+        "sd": 5.150752177996499,
+        "low": 1792.2797112378794,
+        "high": 1812.4702887621424,
+        "edgeMass": 0,
+        "before": 1802.374999999999,
+        "predictive": [
+          1,
+          0,
+          0
+        ],
+        "id": "000001",
+        "at": 1700014400,
+        "rating": 1802.375
+      },
+      "referenceLast": {
+        "mean": 1802.375,
+        "sd": 5.15075217798,
+        "low": 1792.279711237868,
+        "high": 1812.470288762132,
+        "before": 1802.375,
+        "predictive": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "rare-prior-tail-then-drift",
+      "games": 302,
+      "elapsedMs": 705.5747,
+      "maximumErrors": {
+        "mean": 0.0000037141890061320737,
+        "sd": 2.280562085843485e-7,
+        "low": 0.000003014398771483684,
+        "high": 0.0000035357402339286637,
+        "before": 0.0000035965686038252898,
+        "predictive": 4.440516843118303e-10
+      },
+      "actualLast": {
+        "mean": 3697.148459984841,
+        "sd": 90.2956037467952,
+        "low": 3519.260533582519,
+        "high": 3873.190833890776,
+        "edgeMass": 1.6635940705394372e-234,
+        "before": 3705.9822939249434,
+        "predictive": [
+          0.15554697369269663,
+          0.06724254177332506,
+          0.7772104845339782
+        ],
+        "id": "000301",
+        "at": 1731557600,
+        "rating": 0
+      },
+      "referenceLast": {
+        "mean": 3697.1484603316076,
+        "sd": 90.29560376380194,
+        "low": 3519.2605339011834,
+        "high": 3873.1908343147006,
+        "before": 3705.982294265561,
+        "predictive": [
+          0.15554697395229583,
+          0.06724254181528054,
+          0.7772104842324237
+        ]
+      }
+    },
+    {
+      "id": "rare-tail-drift-reversal",
+      "games": 600,
+      "elapsedMs": 913.7015000000001,
+      "maximumErrors": {
+        "mean": 0.0000037141890061320737,
+        "sd": 2.280562085843485e-7,
+        "low": 0.000003014398771483684,
+        "high": 0.0000035357402339286637,
+        "before": 0.0000035965686038252898,
+        "predictive": 9.221484686960935e-10
+      },
+      "actualLast": {
+        "mean": -218.57818034759882,
+        "sd": 24.027779230874565,
+        "low": -266.39647539314865,
+        "high": -172.1938148328718,
+        "edgeMass": 7.471056351256957e-151,
+        "before": -217.76993970459523,
+        "predictive": [
+          0.2058322917442831,
+          0.07667628149802204,
+          0.717491426757695
+        ],
+        "id": "000599",
+        "at": 1731557600,
+        "rating": 0
+      },
+      "referenceLast": {
+        "mean": -218.57817952953016,
+        "sd": 24.027779249786708,
+        "low": -266.39647461161815,
+        "high": -172.19381400372367,
+        "before": -217.7699388855081,
+        "predictive": [
+          0.20583229247923887,
+          0.07667628159043074,
+          0.7174914259303304
+        ]
+      }
+    }
+  ],
+  "exactPrefixEquality": true,
+  "partitionErrors": {
+    "mean": 0,
+    "sd": 0,
+    "low": 0,
+    "high": 0,
+    "before": 0
+  },
+  "nearZeroErrors": {
+    "mean": 9.88620740827173e-10,
+    "sd": 9.838885262070107e-11,
+    "low": 8.458300726488233e-10,
+    "high": 1.2641976354643703e-9,
+    "before": 9.233644959749654e-10,
+    "predictive": 4.440892098500626e-16
+  },
+  "currentOutcomeChecks": [
+    {
+      "id": "rare-sharp-observed-draw",
+      "centre": 1802.375,
+      "opponent": 2202.375,
+      "divisor": 5,
+      "passed": true,
+      "before": 1802.375,
+      "predictive": [
+        7.590678516033966e-16,
+        2.817757574320362e-16,
+        0.9999999999999989
+      ]
+    },
+    {
+      "id": "remote-observed-win-requiring-expansion",
+      "centre": 0,
+      "opponent": 4000,
+      "divisor": 10,
+      "passed": true,
+      "before": 40.037415893036666,
+      "predictive": [
+        0,
+        6.56059640315341e-194,
+        1
+      ]
+    }
+  ],
+  "exteriorApiAvailable": false,
+  "exteriorChecks": [
+    {
+      "id": "gaussian-envelope-audit",
+      "passed": null,
+      "status": "not-applicable",
+      "reason": "Explicit dual-domain numerical-convergence method; no Gaussian-envelope certificate is claimed"
+    }
+  ]
+}

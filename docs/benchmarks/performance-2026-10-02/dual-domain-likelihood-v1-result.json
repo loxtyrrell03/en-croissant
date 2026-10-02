@@ -1,0 +1,65 @@
+{
+  "scope": "Fast-path equivalence is an implementation check; narrow-draw probabilities use a frozen independent adaptive-integration oracle. No empirical calibration claim.",
+  "version": "bayes-continuous-v4-dual-domain",
+  "sourceHashes": {
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/truePerformance.ts": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+    "../../outpost-chess/tmp/performance-20261002/dual-domain/performanceDynamics.ts": "22a2e7ea307d8cbab13dd3151c6723d8a2d0b0f7d9d408df65436b883b43605d"
+  },
+  "checkerSha256": "ebe2a9f2bee08d38602ab1d184ea7a1eabde58b0c7e14f4cdaebe78165d451b5",
+  "transforms": [
+    {
+      "file": "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess\\tmp\\performance-20261002\\dual-domain\\truePerformance.ts",
+      "scope": "Export two private functions only",
+      "rawSha256": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+      "transformedSha256": "9720f57a5aad19804f0234986291ac9e8c6652d1406c82ab4c0f8e9c3f9c697d"
+    }
+  ],
+  "bundleSha256": "d387c8b0f1decc37056116f1c244844c3c8a874c4b8377aa427e672aea70de7c",
+  "passed": false,
+  "failures": [
+    "Unseen narrow draw at drift 90: Chronological performance requires an unsupported integration mesh"
+  ],
+  "likelihood": [
+    {
+      "id": "online",
+      "comparisons": 504,
+      "maximumLogError": 7.105427357601002e-15,
+      "maximumProbabilityError": 2.7755575615628914e-16
+    },
+    {
+      "id": "classical",
+      "comparisons": 504,
+      "maximumLogError": 3.552713678800501e-15,
+      "maximumProbabilityError": 3.3306690738754696e-16
+    },
+    {
+      "id": "tiny-log-draw",
+      "comparisons": 126,
+      "maximumLogError": 0,
+      "maximumProbabilityError": 0
+    }
+  ],
+  "tinyLogLikelihood": [
+    -8.665382021404246e-17,
+    -960.5068524562449,
+    -460.51039122617107
+  ],
+  "sharpDraw": [
+    {
+      "driftSdYear": 0,
+      "passed": true,
+      "maximumError": 1.0808677629141339e-12,
+      "predictive": [
+        0.49333420032803516,
+        0.000034139584808196396,
+        0.5066316600871567
+      ]
+    },
+    {
+      "driftSdYear": 90,
+      "passed": false,
+      "error": "Chronological performance requires an unsupported integration mesh"
+    }
+  ]
+}
