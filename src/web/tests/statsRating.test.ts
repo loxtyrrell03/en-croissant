@@ -9,8 +9,115 @@ import {
     groupSessions,
     recentStreak,
     trendPerWeek,
+    toPerformanceGames,
     type StatsGameResult,
 } from "../statsRating";
+import { normaliseChessComPerformance, normaliseLichessPerformance } from "../../shared/onlinePerformance";
+import { periodPerformance } from "../../shared/truePerformance";
+
+describe("phone and desktop performance input parity", () => {
+    for (const color of ["white", "black"] as const) {
+        it.each([true, false, undefined])(`retains opponent provisional=%s when playing as ${color}`, async (provisional) => {
+            const nowMs = Date.now();
+            const opponentColor = color === "white" ? "black" : "white";
+            const rows = Array.from({ length: 3 }, (_, i) => ({
+                id: "audit00" + i,
+                rated: true, variant: "standard", speed: "blitz", status: "mate", winner: color,
+                createdAt: nowMs - 200_000 + i * 1000, lastMoveAt: nowMs - 100_000 + i * 1000,
+                players: {
+                    [color]: { user: { id: "synthetic", name: "Synthetic" }, rating: 1500, provisional: true },
+                    [opponentColor]: { user: { id: "opponent", name: "Opponent" }, rating: 1700, provisional },
+                },
+            }));
+            stubFetch(() => ({ text: rows.map((row) => JSON.stringify(row)).join("\n") }));
+            const games = await fetchStatsGames({ source: "lichess", username: "Synthetic",
+                timeClass: "blitz", ratedFilter: "rated", maxGames: 10, maxDays: 1 });
+            const phone = toPerformanceGames(games);
+            const desktop = rows.map(row => normaliseLichessPerformance(row,
+                { id: "audit", provider: "lichess", username: "Synthetic" }, "blitz")!);
+            expect(games).toHaveLength(3);
+            expect(games.map(game => game.opponentSd)).toEqual(Array(3).fill(provisional === true ? 150 : undefined));
+            expect(phone.map(game => game.opponentSd)).toEqual(desktop.map(game => game.opponentSd));
+            expect(periodPerformance(phone)).toEqual(periodPerformance(desktop));
+        });
+
+        it.each([
+            ["1500", 1500], ["0", 0], [null, null], ["?", null], ["", null],
+            ["1500?", null], ["-5", null], ["1e3", null], ["1700.5", null],
+        ] as const)(`uses only valid own pre-game PGN Elo %s as ${color}`, async (header, expected) => {
+            const nowSec = Math.floor(Date.now() / 1000);
+            const opponentColor = color === "white" ? "black" : "white";
+            const ownTag = color === "white" ? "WhiteElo" : "BlackElo";
+            const opponentTag = color === "white" ? "BlackElo" : "WhiteElo";
+            const rows = Array.from({ length: 3 }, (_, i) => ({
+                url: "https://www.chess.com/game/live/" + (2000 + i),
+                rules: "chess", time_class: "blitz", rated: true, end_time: nowSec - 100 + i,
+                pgn: '[' + opponentTag + ' "1700"]' + (header === null ? "" : '\n[' + ownTag + ' "' + header + '"]'),
+                [color]: { username: "Synthetic", rating: 1510, result: "win" },
+                [opponentColor]: { username: "Opponent", rating: 1600, result: "resigned" },
+            }));
+            stubFetch(url => ({ json: url.endsWith("/archives")
+                ? { archives: ["https://api.chess.com/pub/player/Synthetic/games/2026/10"] }
+                : { games: rows } }));
+            const games = await fetchStatsGames({ source: "chesscom", username: "Synthetic",
+                timeClass: "blitz", ratedFilter: "rated", maxGames: 10, maxDays: 1 });
+            expect(games).toHaveLength(3);
+            expect(games.map(game => game.preGameRating)).toEqual(Array(3).fill(expected));
+            expect(games.map(game => game.rating)).toEqual(Array(3).fill(1510));
+            const phone = toPerformanceGames(games);
+            expect(phone.map(game => game.rating)).toEqual(Array(3).fill(expected));
+            const desktop = rows.map(row => normaliseChessComPerformance(row,
+                { id: "audit", provider: "chesscom", username: "Synthetic" }, "blitz")!);
+            expect(phone.map(game => game.rating)).toEqual(desktop.map(game => game.rating));
+            expect(periodPerformance(phone)).toEqual(periodPerformance(desktop));
+        });
+
+        it(`uses valid opponent PGN Elo and finite API fallback when playing as ${color}`, async () => {
+            const cases = [
+                { header: "1700", api: 1600, expected: 1700 },
+                { header: "0", api: 1600, expected: 0 },
+                { header: null, api: 1600, expected: 1600 },
+                { header: "?", api: 1600, expected: 1600 },
+                { header: "1700?", api: 1600, expected: 1600 },
+                { header: "1700.5", api: 1600, expected: 1600 },
+                { header: "1e3", api: 1600, expected: 1600 },
+                { header: "-5", api: 1600, expected: 1600 },
+                { header: "", api: 1600, expected: 1600 },
+                { header: "1700", api: undefined, expected: 1700 },
+                { header: "?", api: undefined, expected: null },
+                { header: "?", api: Infinity, expected: null },
+                { header: "?", api: NaN, expected: null },
+            ];
+            const nowSec = Math.floor(Date.now() / 1000);
+            const opponentColor = color === "white" ? "black" : "white";
+            const ownTag = color === "white" ? "WhiteElo" : "BlackElo";
+            const opponentTag = color === "white" ? "BlackElo" : "WhiteElo";
+            for (const [i, example] of cases.entries()) {
+                const row = {
+                    url: "https://www.chess.com/game/live/" + (1000 + i),
+                    rules: "chess", time_class: "blitz", rated: true, end_time: nowSec - 10,
+                    pgn: '[' + ownTag + ' "1500"]' + (example.header === null ? "" : '\n[' + opponentTag + ' "' + example.header + '"]'),
+                    [color]: { username: "Synthetic", rating: 1510, result: "win" },
+                    [opponentColor]: { username: "Opponent", rating: example.api, result: "resigned" },
+                };
+                stubFetch(url => ({ json: url.endsWith("/archives")
+                    ? { archives: ["https://api.chess.com/pub/player/Synthetic/games/2026/10"] }
+                    : { games: [row] } }));
+                const games = await fetchStatsGames({ source: "chesscom", username: "Synthetic",
+                    timeClass: "blitz", ratedFilter: "rated", maxGames: 10, maxDays: 1 });
+                expect(games).toHaveLength(1);
+                expect(games[0].opp).toBe(example.expected);
+                expect(games[0].preGameRating).toBe(1500);
+                const phone = toPerformanceGames(games)[0];
+                expect(phone.opponentRating).toBe(example.expected);
+                expect(phone.white).toBe(color === "white");
+                const desktop = normaliseChessComPerformance(row,
+                    { id: "audit", provider: "chesscom", username: "Synthetic" }, "blitz")!;
+                expect(phone.opponentRating).toBe(desktop.opponentRating);
+            }
+        });
+    }
+});
 
 // ---------------------------------------------------------------------------
 // Result fixtures are independently integrated using the new Bayesian model.

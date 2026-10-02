@@ -25,6 +25,7 @@ export type StatsGame = {
     result: StatsGameResult;
     termination: StatsTermination;
     opp: number | null;
+    opponentSd?: number;
     oppName: string | null;
     rated: boolean;
     color: "w" | "b";
@@ -71,6 +72,7 @@ type StatsRatingGame = Pick<StatsGame, "end" | "start" | "rating" | "result" | "
             | "color"
             | "rated"
             | "oppName"
+            | "opponentSd"
             | "url"
             | "openingName"
             | "preGameRating"
@@ -84,6 +86,7 @@ export function toPerformanceGames(games: readonly StatsRatingGame[]): Performan
         at: g.end,
         rating: g.preGameRating !== undefined ? g.preGameRating : g.rating,
         opponentRating: g.opp,
+        opponentSd: g.opponentSd,
         score: g.result === "win" ? 1 : g.result === "draw" ? 0.5 : 0,
         white: g.color !== "b",
         rated: g.rated !== false,
@@ -563,11 +566,10 @@ function normalizeChessComArchiveGames(
             end: game.end_time,
             start: parsePgnStart(pgn),
             rating: mine.rating,
-            preGameRating:
-                Number(getPgnHeader(pgn, mine === game.white ? "WhiteElo" : "BlackElo")) || null,
+            preGameRating: getPgnRating(pgn, mine === game.white ? "WhiteElo" : "BlackElo"),
             result: normalizeChessComResult(mine.result),
             termination: getChessComTermination(mine.result, opponent?.result),
-            opp: oppRating,
+            opp: getPgnRating(pgn, mine === game.white ? "BlackElo" : "WhiteElo") ?? oppRating,
             oppName: opponent && typeof opponent.username === "string" ? opponent.username : null,
             rated: isRated,
             color: mine === game.white ? "w" : "b",
@@ -656,6 +658,14 @@ function parsePgnStart(pgn: string | null): number | null {
     return Number.isNaN(value) ? null : value / 1000;
 }
 
+// A pre-game PGN Elo is stronger evidence than a provider rating with unclear timing.
+function getPgnRating(pgn: string | null, name: string): number | null {
+    const value = getPgnHeader(pgn, name);
+    if (!value || !/^\d+$/.test(value)) return null;
+    const rating = Number(value);
+    return Number.isFinite(rating) ? rating : null;
+}
+
 function getPgnHeader(pgn: string | null, name: string): string | null {
     if (typeof pgn !== "string") return null;
     const match = pgn.match(new RegExp(`^\\[${name}\\s+"([^"]*)"\\]`, "m"));
@@ -668,6 +678,7 @@ type LichessGamePlayer = {
     user?: { name?: string };
     rating?: number;
     ratingDiff?: number;
+    provisional?: boolean;
 };
 type LichessNdjsonGame = {
     id?: string;
@@ -803,6 +814,7 @@ function normalizeLichessGame(
             opponent && typeof opponent.rating === "number" && Number.isFinite(opponent.rating)
                 ? opponent.rating
                 : null,
+        opponentSd: opponent?.provisional === true ? 150 : undefined,
         oppName: opponent && typeof opponent.user?.name === "string" ? opponent.user.name : null,
         rated: game.rated === true,
         color,
