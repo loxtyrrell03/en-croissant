@@ -1,0 +1,2027 @@
+{
+  "date": "2026-10-02",
+  "scope": "Frozen targeted development contracts and colour/clock controls; not independent holdout or population accuracy. Baselines are per-fix, so exact core hashes distinguish intermediate adapter-167 source.",
+  "workingSourceBoundary": "Includes the preserved pending checking-ray changes. Staged-only verification separately checks the committed core without them.",
+  "groups": [
+    {
+      "name": "fifty-move-proof",
+      "scope": "Public/synthetic legal draw-boundary contracts; no owner corpus, engine, or runtime activity.",
+      "contracts": 54,
+      "before": {
+        "classifierVersion": "site-55.adapter-166",
+        "sourceSha256LF": "957f6f798f18835585ce7362afd1fc2fadd14869899c56ececa2f3cd30a0f5c4",
+        "passed": 26
+      },
+      "after": {
+        "classifierVersion": "site-55.adapter-167",
+        "sourceSha256LF": "9f9ba822b995f13c2f6318a0e3eecc7408e305b502b15ea74d324390a9ca6f60",
+        "passed": 54
+      },
+      "cases": [
+        {
+          "id": "checking-material:0:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ5P/R2R1b2 b q - 0 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:0:true",
+          "fen": "r2r1B2/pq5p/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 0 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:97:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ5P/R2R1b2 b q - 97 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:97:true",
+          "fen": "r2r1B2/pq5p/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 97 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:98:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ5P/R2R1b2 b q - 98 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:98:true",
+          "fen": "r2r1B2/pq5p/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 98 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:99:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ5P/R2R1b2 b q - 99 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:99:true",
+          "fen": "r2r1B2/pq5p/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 99 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:100:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ5P/R2R1b2 b q - 100 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "checking-material:100:true",
+          "fen": "r2r1B2/pq5p/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 100 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:0:false",
+          "fen": "8/3r4/5Q2/p6P/2k5/2P5/P3pBPK/3q4 w - - 0 66",
+          "pvUci": [
+            "f6c6",
+            "c4d3",
+            "c6d7"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:0:true",
+          "fen": "3Q4/p3Pbpk/2p5/2K5/P6p/5q2/3R4/8 b - - 0 66",
+          "pvUci": [
+            "f3c3",
+            "c5d6",
+            "c3d2"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:97:false",
+          "fen": "8/3r4/5Q2/p6P/2k5/2P5/P3pBPK/3q4 w - - 97 66",
+          "pvUci": [
+            "f6c6",
+            "c4d3",
+            "c6d7"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:97:true",
+          "fen": "3Q4/p3Pbpk/2p5/2K5/P6p/5q2/3R4/8 b - - 97 66",
+          "pvUci": [
+            "f3c3",
+            "c5d6",
+            "c3d2"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:98:false",
+          "fen": "8/3r4/5Q2/p6P/2k5/2P5/P3pBPK/3q4 w - - 98 66",
+          "pvUci": [
+            "f6c6",
+            "c4d3",
+            "c6d7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:98:true",
+          "fen": "3Q4/p3Pbpk/2p5/2K5/P6p/5q2/3R4/8 b - - 98 66",
+          "pvUci": [
+            "f3c3",
+            "c5d6",
+            "c3d2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:99:false",
+          "fen": "8/3r4/5Q2/p6P/2k5/2P5/P3pBPK/3q4 w - - 99 66",
+          "pvUci": [
+            "f6c6",
+            "c4d3",
+            "c6d7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:99:true",
+          "fen": "3Q4/p3Pbpk/2p5/2K5/P6p/5q2/3R4/8 b - - 99 66",
+          "pvUci": [
+            "f3c3",
+            "c5d6",
+            "c3d2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:100:false",
+          "fen": "8/3r4/5Q2/p6P/2k5/2P5/P3pBPK/3q4 w - - 100 66",
+          "pvUci": [
+            "f6c6",
+            "c4d3",
+            "c6d7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "forced-self-interference:100:true",
+          "fen": "3Q4/p3Pbpk/2p5/2K5/P6p/5q2/3R4/8 b - - 100 66",
+          "pvUci": [
+            "f3c3",
+            "c5d6",
+            "c3d2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "interference",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:0:false",
+          "fen": "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 0 1",
+          "pvUci": [
+            "e8e1",
+            "g1f2",
+            "d7d5",
+            "d1d5",
+            "e1a1"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:0:true",
+          "fen": "r2r2k1/p5pp/5p2/8/3q4/6P1/3Q1PBP/4R1K1 w - - 0 1",
+          "pvUci": [
+            "e1e8",
+            "g8f7",
+            "d2d4",
+            "d8d4",
+            "e8a8"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:97:false",
+          "fen": "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 97 1",
+          "pvUci": [
+            "e8e1",
+            "g1f2",
+            "d7d5",
+            "d1d5",
+            "e1a1"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:97:true",
+          "fen": "r2r2k1/p5pp/5p2/8/3q4/6P1/3Q1PBP/4R1K1 w - - 97 1",
+          "pvUci": [
+            "e1e8",
+            "g8f7",
+            "d2d4",
+            "d8d4",
+            "e8a8"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:98:false",
+          "fen": "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 98 1",
+          "pvUci": [
+            "e8e1",
+            "g1f2",
+            "d7d5",
+            "d1d5",
+            "e1a1"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:98:true",
+          "fen": "r2r2k1/p5pp/5p2/8/3q4/6P1/3Q1PBP/4R1K1 w - - 98 1",
+          "pvUci": [
+            "e1e8",
+            "g8f7",
+            "d2d4",
+            "d8d4",
+            "e8a8"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:99:false",
+          "fen": "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 99 1",
+          "pvUci": [
+            "e8e1",
+            "g1f2",
+            "d7d5",
+            "d1d5",
+            "e1a1"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:99:true",
+          "fen": "r2r2k1/p5pp/5p2/8/3q4/6P1/3Q1PBP/4R1K1 w - - 99 1",
+          "pvUci": [
+            "e1e8",
+            "g8f7",
+            "d2d4",
+            "d8d4",
+            "e8a8"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:100:false",
+          "fen": "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 100 1",
+          "pvUci": [
+            "e8e1",
+            "g1f2",
+            "d7d5",
+            "d1d5",
+            "e1a1"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "exchange-deflection:100:true",
+          "fen": "r2r2k1/p5pp/5p2/8/3q4/6P1/3Q1PBP/4R1K1 w - - 100 1",
+          "pvUci": [
+            "e1e8",
+            "g8f7",
+            "d2d4",
+            "d8d4",
+            "e8a8"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": "deflection",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:0:false",
+          "fen": "r2q1r2/p4p1k/1p2pP1n/2p4R/3p1P2/P2P1N1P/1PP4K/6R1 w - - 0 30",
+          "pvUci": [
+            "g1g7",
+            "h7h8",
+            "h5h6"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:0:true",
+          "fen": "6r1/1pp4k/p2p1n1p/3P1p2/2P4r/1P2Pp1N/P4P1K/R2Q1R2 b - - 0 30",
+          "pvUci": [
+            "g8g2",
+            "h2h1",
+            "h4h3"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:97:false",
+          "fen": "r2q1r2/p4p1k/1p2pP1n/2p4R/3p1P2/P2P1N1P/1PP4K/6R1 w - - 97 30",
+          "pvUci": [
+            "g1g7",
+            "h7h8",
+            "h5h6"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:97:true",
+          "fen": "6r1/1pp4k/p2p1n1p/3P1p2/2P4r/1P2Pp1N/P4P1K/R2Q1R2 b - - 97 30",
+          "pvUci": [
+            "g8g2",
+            "h2h1",
+            "h4h3"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "before": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": true,
+            "primary": "mateIn2",
+            "timelineMechanism": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:98:false",
+          "fen": "r2q1r2/p4p1k/1p2pP1n/2p4R/3p1P2/P2P1N1P/1PP4K/6R1 w - - 98 30",
+          "pvUci": [
+            "g1g7",
+            "h7h8",
+            "h5h6"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": null,
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:98:true",
+          "fen": "6r1/1pp4k/p2p1n1p/3P1p2/2P4r/1P2Pp1N/P4P1K/R2Q1R2 b - - 98 30",
+          "pvUci": [
+            "g8g2",
+            "h2h1",
+            "h4h3"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": null,
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:99:false",
+          "fen": "r2q1r2/p4p1k/1p2pP1n/2p4R/3p1P2/P2P1N1P/1PP4K/6R1 w - - 99 30",
+          "pvUci": [
+            "g1g7",
+            "h7h8",
+            "h5h6"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": null,
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:99:true",
+          "fen": "6r1/1pp4k/p2p1n1p/3P1p2/2P4r/1P2Pp1N/P4P1K/R2Q1R2 b - - 99 30",
+          "pvUci": [
+            "g8g2",
+            "h2h1",
+            "h4h3"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": null,
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:100:false",
+          "fen": "r2q1r2/p4p1k/1p2pP1n/2p4R/3p1P2/P2P1N1P/1PP4K/6R1 w - - 100 30",
+          "pvUci": [
+            "g1g7",
+            "h7h8",
+            "h5h6"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": null,
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "mating-king-deflection:100:true",
+          "fen": "6r1/1pp4k/p2p1n1p/3P1p2/2P4r/1P2Pp1N/P4P1K/R2Q1R2 b - - 100 30",
+          "pvUci": [
+            "g8g2",
+            "h2h1",
+            "h4h3"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "before": {
+            "proved": true,
+            "primary": null,
+            "timelineMechanism": true
+          },
+          "after": {
+            "proved": false,
+            "primary": null,
+            "timelineMechanism": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "later-claim:95:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ6/R2R1b2 b q - 95 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "after": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "later-claim:95:true",
+          "fen": "r2r1B2/pq6/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 95 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "after": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "later-claim:96:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ6/R2R1b2 b q - 96 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "after": {
+            "proved": false,
+            "primary": null
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "later-claim:96:true",
+          "fen": "r2r1B2/pq6/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 96 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "after": {
+            "proved": false,
+            "primary": null
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "later-claim:97:false",
+          "fen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ6/R2R1b2 b q - 97 23",
+          "pvUci": [
+            "h5h3",
+            "g3f2",
+            "h3h2",
+            "f2f1",
+            "h2b2"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "after": {
+            "proved": false,
+            "primary": null
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "later-claim:97:true",
+          "fen": "r2r1B2/pq6/1p3bk1/5p2/3Pn2R/4P3/PPQ2P1P/R3K3 w Q - 97 23",
+          "pvUci": [
+            "h4h6",
+            "g6f7",
+            "h6h7",
+            "f7f8",
+            "h7b7"
+          ],
+          "expected": {
+            "proved": false,
+            "primary": null
+          },
+          "before": {
+            "proved": true,
+            "primary": "forcingAttack"
+          },
+          "after": {
+            "proved": false,
+            "primary": null
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "capturing-reset:false",
+          "fen": "8/3r4/2p2Q2/p6P/2k5/2P5/P3pBPK/3q4 w - - 100 66",
+          "pvUci": [
+            "f6c6",
+            "c4d3",
+            "c6d7"
+          ],
+          "expected": {
+            "proved": true
+          },
+          "before": {
+            "proved": true
+          },
+          "after": {
+            "proved": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "capturing-reset:true",
+          "fen": "3Q4/p3Pbpk/2p5/2K5/P6p/2P2q2/3R4/8 b - - 100 66",
+          "pvUci": [
+            "f3c3",
+            "c5d6",
+            "c3d2"
+          ],
+          "expected": {
+            "proved": true
+          },
+          "before": {
+            "proved": true
+          },
+          "after": {
+            "proved": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "pawn-reset:false",
+          "fen": "3k4/1r5q/3PP3/8/8/8/8/K6Q w - - 100 1",
+          "pvUci": [
+            "e6e7",
+            "d8c8",
+            "h1h7"
+          ],
+          "expected": {
+            "primary": "interference"
+          },
+          "before": {
+            "primary": "interference"
+          },
+          "after": {
+            "primary": "interference"
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "pawn-reset:true",
+          "fen": "k6q/8/8/8/8/3pp3/1R5Q/3K4 b - - 100 1",
+          "pvUci": [
+            "e3e2",
+            "d1c1",
+            "h8h2"
+          ],
+          "expected": {
+            "primary": "interference"
+          },
+          "before": {
+            "primary": "interference"
+          },
+          "after": {
+            "primary": "interference"
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "forced-capture-reset:false",
+          "fen": "3r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 98 24",
+          "pvUci": [
+            "e4e8",
+            "d8e8",
+            "f3d5"
+          ],
+          "expected": {
+            "primary": "deflection"
+          },
+          "before": {
+            "primary": "deflection"
+          },
+          "after": {
+            "primary": "deflection"
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "forced-capture-reset:true",
+          "fen": "6k1/p5pp/1p2pq2/4r3/2PQ4/1P6/P4PPP/3R2K1 b - - 98 24",
+          "pvUci": [
+            "e5e1",
+            "d1e1",
+            "f6d4"
+          ],
+          "expected": {
+            "primary": "deflection"
+          },
+          "before": {
+            "primary": "deflection"
+          },
+          "after": {
+            "primary": "deflection"
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "immediate-mate:false",
+          "fen": "7k/8/5KQ1/8/8/8/8/8 w - - 149 1",
+          "pvUci": [
+            "g6g7"
+          ],
+          "expected": {
+            "primary": "mateIn1"
+          },
+          "before": {
+            "primary": "mateIn1"
+          },
+          "after": {
+            "primary": "mateIn1"
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "immediate-mate:true",
+          "fen": "8/8/8/8/8/5kq1/8/7K b - - 149 1",
+          "pvUci": [
+            "g3g2"
+          ],
+          "expected": {
+            "primary": "mateIn1"
+          },
+          "before": {
+            "primary": "mateIn1"
+          },
+          "after": {
+            "primary": "mateIn1"
+          },
+          "beforePass": true,
+          "afterPass": true
+        }
+      ]
+    },
+    {
+      "name": "incidental-discovery",
+      "scope": "Public/synthetic causal-attribution contracts, not a population or holdout accuracy estimate.",
+      "contracts": 22,
+      "before": {
+        "classifierVersion": "site-55.adapter-167",
+        "sourceSha256LF": "dbb5dfcc951fc335ab3dec499c95b9df431fb1d3ae9c02de581033b5f8242770",
+        "passed": 18
+      },
+      "after": {
+        "classifierVersion": "site-55.adapter-167",
+        "sourceSha256LF": "9f9ba822b995f13c2f6318a0e3eecc7408e305b502b15ea74d324390a9ca6f60",
+        "passed": 22
+      },
+      "cases": [
+        {
+          "id": "independent-mate:false:false",
+          "fen": "8/p3P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53",
+          "pvUci": [
+            "e7e8n",
+            "d6c6",
+            "h7c7"
+          ],
+          "expected": {
+            "branches": [
+              {
+                "reply": "d6c6",
+                "mates": [
+                  "h7c7"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "before": {
+            "branches": [
+              {
+                "reply": "d6c6",
+                "mates": [
+                  "h7c7"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "after": {
+            "branches": [
+              {
+                "reply": "d6c6",
+                "mates": [
+                  "h7c7"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "independent-mate:false:true",
+          "fen": "7Q/p7/1p6/2p4R/2P2k1P/1P1K4/P3p2r/8 b - - 0 53",
+          "pvUci": [
+            "e2e1n",
+            "d3c3",
+            "h2c2"
+          ],
+          "expected": {
+            "branches": [
+              {
+                "reply": "d3c3",
+                "mates": [
+                  "h2c2"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "before": {
+            "branches": [
+              {
+                "reply": "d3c3",
+                "mates": [
+                  "h2c2"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "after": {
+            "branches": [
+              {
+                "reply": "d3c3",
+                "mates": [
+                  "h2c2"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "independent-mate:true:false",
+          "fen": "8/4P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53",
+          "pvUci": [
+            "e7e8n",
+            "d6c6",
+            "h7c7"
+          ],
+          "expected": {
+            "branches": [
+              {
+                "reply": "d6c6",
+                "mates": [
+                  "h7c7"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "before": {
+            "branches": [
+              {
+                "reply": "d6c6",
+                "mates": [
+                  "h7c7"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "after": {
+            "branches": [
+              {
+                "reply": "d6c6",
+                "mates": [
+                  "h7c7"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "independent-mate:true:true",
+          "fen": "7Q/p7/1p6/2p4R/2P2k1P/1P1K4/4p2r/8 b - - 0 53",
+          "pvUci": [
+            "e2e1n",
+            "d3c3",
+            "h2c2"
+          ],
+          "expected": {
+            "branches": [
+              {
+                "reply": "d3c3",
+                "mates": [
+                  "h2c2"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "before": {
+            "branches": [
+              {
+                "reply": "d3c3",
+                "mates": [
+                  "h2c2"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "after": {
+            "branches": [
+              {
+                "reply": "d3c3",
+                "mates": [
+                  "h2c2"
+                ]
+              }
+            ],
+            "distance": 2
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:false:1:false",
+          "fen": "8/p3P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53",
+          "pvUci": [
+            "e7e8n"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": true,
+            "timelineDiscovery": true
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:false:1:true",
+          "fen": "7Q/p7/1p6/2p4R/2P2k1P/1P1K4/P3p2r/8 b - - 0 53",
+          "pvUci": [
+            "e2e1n"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": true,
+            "timelineDiscovery": true
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:false:3:false",
+          "fen": "8/p3P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53",
+          "pvUci": [
+            "e7e8n",
+            "d6c6",
+            "h7c7"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": true,
+            "timelineDiscovery": true
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:false:3:true",
+          "fen": "7Q/p7/1p6/2p4R/2P2k1P/1P1K4/P3p2r/8 b - - 0 53",
+          "pvUci": [
+            "e2e1n",
+            "d3c3",
+            "h2c2"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": true,
+            "timelineDiscovery": true
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": false,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:true:1:false",
+          "fen": "8/4P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53",
+          "pvUci": [
+            "e7e8n"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:true:1:true",
+          "fen": "7Q/p7/1p6/2p4R/2P2k1P/1P1K4/4p2r/8 b - - 0 53",
+          "pvUci": [
+            "e2e1n"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:true:3:false",
+          "fen": "8/4P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53",
+          "pvUci": [
+            "e7e8n",
+            "d6c6",
+            "h7c7"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "underpromotion-labels:true:3:true",
+          "fen": "7Q/p7/1p6/2p4R/2P2k1P/1P1K4/4p2r/8 b - - 0 53",
+          "pvUci": [
+            "e2e1n",
+            "d3c3",
+            "h2c2"
+          ],
+          "expected": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "before": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "after": {
+            "primary": "mateIn2",
+            "underpromotion": true,
+            "discovery": false,
+            "timelineDiscovery": false
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "nonmating-material-discovery:false",
+          "fen": "4q1k1/5ppp/8/8/4B3/8/5PPP/4R1K1 w - - 0 1",
+          "pvUci": [
+            "e4h7",
+            "g8h7",
+            "e1e8"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "nonmating-material-discovery:true",
+          "fen": "4r1k1/5ppp/8/4b3/8/8/5PPP/4Q1K1 b - - 0 1",
+          "pvUci": [
+            "e5h2",
+            "g1h2",
+            "e8e1"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-discovered-check:false",
+          "fen": "3rkr2/5p2/8/8/6B1/8/4B3/4R1K1 w - - 0 1",
+          "pvUci": [
+            "e2d3"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-discovered-check:true",
+          "fen": "4r1k1/4b3/8/6b1/8/8/5P2/3RKR2 b - - 0 1",
+          "pvUci": [
+            "e7d6"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-double-check:false",
+          "fen": "3rkr2/5p2/8/8/8/8/4B3/4R1K1 w - - 0 1",
+          "pvUci": [
+            "e2b5"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "mating-double-check:true",
+          "fen": "4r1k1/4b3/8/8/8/8/5P2/3RKR2 b - - 0 1",
+          "pvUci": [
+            "e7b4"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "supporting-mating-clearance:false",
+          "fen": "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 0 34",
+          "pvUci": [
+            "c5e3",
+            "f2e3",
+            "h5c5",
+            "e6c4",
+            "c5c4",
+            "c1b1",
+            "e2d3"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "supporting-mating-clearance:true",
+          "fen": "r1k1r3/1p2Bpp1/pP4b1/P7/2B4R/2K1b3/8/8 w - - 0 34",
+          "pvUci": [
+            "c4e6",
+            "f7e6",
+            "h4c4",
+            "e3c5",
+            "c4c5",
+            "c8b8",
+            "e7d6"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "displayed-capture-of-probed-victim:false",
+          "fen": "8/p3P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53",
+          "pvUci": [
+            "e7e8n",
+            "d6c6",
+            "h7a7"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        },
+        {
+          "id": "displayed-capture-of-probed-victim:true",
+          "fen": "7Q/p7/1p6/2p4R/2P2k1P/1P1K4/P3p2r/8 b - - 0 53",
+          "pvUci": [
+            "e2e1n",
+            "d3c3",
+            "h2a2"
+          ],
+          "expected": {
+            "retained": true
+          },
+          "before": {
+            "retained": true
+          },
+          "after": {
+            "retained": true
+          },
+          "beforePass": true,
+          "afterPass": true
+        }
+      ]
+    }
+  ]
+}

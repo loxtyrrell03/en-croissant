@@ -39,7 +39,7 @@ const tacticalMotifEvidenceSchema = z.object({
     label: z.string(),
     confidence: z.enum(["high", "medium", "low"]),
     evidence: z.string(),
-    source: z.enum(["allowed", "missed"]),
+    source: z.enum(["allowed", "missed", "available"]),
     ply: z.number().int().positive().nullable(),
     moveUci: z.string().nullable(),
     relevance: z.enum(["primary", "secondary"]).optional(),

@@ -27,6 +27,7 @@ import {
     winningRecaptureEvidence,
     contextualCaptureObservation,
     tacticalCaptureGain,
+    proveImmediateFork,
     proveImmediatePromotion,
     provePromotionThreat,
     promotionThreatContinuations,
@@ -142,7 +143,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 166;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 167;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -727,8 +728,57 @@ function isAlternativeCapture(motif: TacticalMotifEvidence | undefined) {
         motif.ply === 1 && motif.alternativeCapture === true;
 }
 
+/** An independently proved ordinary fork also exists in the played move.
+ * This available/persists marker is comparison context in the better-line
+ * array, not a missed cause or a claim that the two moves have equal value. */
+export function isRetainedForkChoice(
+    motif: TacticalMotifEvidence | undefined,
+): motif is TacticalMotifEvidence & { id: "fork"; source: "available"; comparison: "persists"; ply: 1 } {
+    return motif?.id === "fork" && motif.source === "available" &&
+        motif.comparison === "persists" && motif.ply === 1;
+}
+
+function qualifyRetainedForkChoice(
+    fen: string,
+    bestMove: string | null,
+    playedMove: string | null,
+    motifs: TacticalMotifEvidence[],
+): TacticalMotifEvidence[] {
+    const candidates = motifs.filter(m => m.source === "missed" && m.id === "fork" &&
+        m.ply === 1 && m.moveUci === bestMove && m.confidence === "high" && !m.verifiedCombination);
+    if (!bestMove || !playedMove || bestMove === playedMove || !candidates.length) return motifs;
+    const best = replayTacticalLine(fen, [bestMove])[0];
+    const played = replayTacticalLine(fen, [playedMove])[0];
+    // Same destination, role and original victims connect the two mechanisms.
+    // A merely similar label, checking attack, promotion or connected exchange
+    // needs a different comparison; keep its existing lesson unchanged.
+    if (!best || !played || best.move.to !== played.move.to ||
+        best.move.promotion || played.move.promotion || best.capture !== played.capture ||
+        best.after.isCheck() || played.after.isCheck() ||
+        best.after.board.get(best.move.to)?.role !== played.after.board.get(played.move.to)?.role) return motifs;
+    const bestProof = proveImmediateFork(best), playedProof = proveImmediateFork(played);
+    if (!bestProof || !playedProof || bestProof.gain >= 10000 || playedProof.gain >= 10000 ||
+        bestProof.branches.some(branch => branch.collection?.length) ||
+        playedProof.branches.some(branch => branch.collection?.length) ||
+        bestProof.targets.length !== playedProof.targets.length ||
+        !bestProof.targets.every(target => {
+            const original = best.before.board.get(target);
+            return playedProof.targets.includes(target) && original &&
+                original.color !== best.before.turn && original.role !== "king" &&
+                best.after.board.get(target)?.role === original.role &&
+                played.after.board.get(target)?.role === original.role;
+        })) return motifs;
+    const targets = bestProof.targets.map(target =>
+        `the ${best.before.board.get(target)!.role} on ${makeSquare(target)}`).join(" and ");
+    const comparisonEvidence = `${best.san} and ${played.san} both fork ${targets}. Each has a verified local material gain against every legal reply. This does not establish that the moves are equally good, or explain why the played move was worse.`;
+    return motifs.map(motif => candidates.includes(motif) && motif.value === bestProof.gain
+        ? { ...motif, source: "available", comparison: "persists", comparisonEvidence }
+        : motif);
+}
+
 /** A post-move tactic is not automatically a newly caused one. */
 export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
+    if (isRetainedForkChoice(motif)) return "Fork in both moves";
     if (motif.id === "attractionIdea") return "Conditional idea";
     if (motif.id === "matingThreat") return "Concrete threat";
     if (motif.source === "missed")
@@ -741,7 +791,7 @@ export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
 }
 
 export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefined) {
-    if (isTacticalObservation(motif)) return false;
+    if (isTacticalObservation(motif) || isRetainedForkChoice(motif)) return false;
     return Boolean(
         motif &&
         !isAlternativeCapture(motif) &&
@@ -801,6 +851,20 @@ function chooseMistakeReviewTacticalExplanation({
     allowedMotifs: TacticalMotifEvidence[];
     missedMotifs: TacticalMotifEvidence[];
 }): MistakeReviewTacticalExplanation | null {
+    const retainedFork = missedMotifs.find(isRetainedForkChoice);
+    if (retainedFork) {
+        const other = chooseMistakeReviewTacticalExplanation({
+            allowedMotifs,
+            missedMotifs: missedMotifs.filter(m => !isRetainedForkChoice(m)),
+        });
+        if (other) return other;
+        return {
+            title: "Both moves create this fork",
+            text: retainedFork.comparisonEvidence ?? retainedFork.evidence,
+            source: "mixed",
+            primary: retainedFork,
+        };
+    }
     const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
     const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
     if (!allowed && !missed) return null;
@@ -1560,6 +1624,9 @@ export function classifyMistakeReviewMotifs(
     classification.missedMotifs = qualifyComparableCaptureChoice(
         fen, bestMoveUci, playedMoveUci, classification.missedMotifs,
     );
+    classification.missedMotifs = qualifyRetainedForkChoice(
+        fen, bestMoveUci, playedMoveUci, classification.missedMotifs,
+    );
     // Another promotion retaining at least the same local material is not a
     // missed generic promotion. It may still miss a separately proved mate or
     // fork; equal local gains do not certify equivalent whole-position play.
@@ -1686,8 +1753,9 @@ export function classifyMistakeReviewMotifs(
                 tacticalHistory: input.tacticalHistory,
                 tablebaseEvidence: input.tablebaseEvidence,
             });
-            const motifs = qualifyComparableCaptureChoice(fen, move, playedMoveUci,
-                result.motifs.map(motif => ({ ...motif, source: "missed" as const })))
+            const motifs = qualifyRetainedForkChoice(fen, move, playedMoveUci,
+                qualifyComparableCaptureChoice(fen, move, playedMoveUci,
+                    result.motifs.map(motif => ({ ...motif, source: "missed" as const }))))
                 .filter(drawingResourceMissed);
             const primary = selectImportantTacticalMotifs(motifs.filter(motif =>
                 motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) &&
@@ -1723,9 +1791,14 @@ export function classifyMistakeReviewMotifs(
         if (alternative && (!allowedRoots.length || (alternative.value ?? 0) > Math.max(...allowedRoots.map(m => m.value ?? 0)))) compared.allowedMotifs = [alternative,
             ...compared.allowedMotifs.map(m => ({ ...m, relevance: "secondary" as const }))];
     }
-    if (playedMoveUci && compared.missedMotifs.some(m => m.ply === 1 &&
+    // Direct board evidence also covers named mates and different mating
+    // patterns. Completing checkmate cannot miss another mate-in-one.
+    const bothMovesMate = bestMoveUci && playedMoveUci &&
+        replayTacticalLine(fen, [bestMoveUci])[0]?.after.isCheckmate() &&
+        replayTacticalLine(fen, [playedMoveUci])[0]?.after.isCheckmate();
+    if (bothMovesMate || (playedMoveUci && compared.missedMotifs.some(m => m.ply === 1 &&
         (/^mateIn\d+$/.test(m.id) || m.id === "mateThreat")) &&
-        preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine]))) {
+        preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine])))) {
         // Winning by a different forced mate is not missing the win, even
         // if the preferred engine route is shorter. Do not replace this
         // evidence with a score threshold or leave a subordinate missed

@@ -1,0 +1,444 @@
+{
+  "date": "2026-10-02",
+  "classifierVersion": "site-55.adapter-167",
+  "livePipeline": 174,
+  "scope": "En Croissant source milestone. Targeted adjudicated contracts and regression stability; not population accuracy or all-motif gold coverage.",
+  "hashesLF": {
+    "workingCore": "9f9ba822b995f13c2f6318a0e3eecc7408e305b502b15ea74d324390a9ca6f60",
+    "adapter": "584e689c8b3e63ae0fbe1df5d04edfc4679d0d56895d07394a1e007eb1d57121",
+    "livePipeline": "88bbc9f522485d2479c2ff5d862dc30f53991ad398345546e883264393b59469",
+    "sharedCardConsumer": "9a333a94c4856ad472b238d6b80f9fbbd57ea45ac57645ee26d80b2d12e71ade",
+    "generatedReviewWorker": "4b294d8eab3b42568d3204482c60758392a6fded453083a35e41e281ca1f947e"
+  },
+  "stagedCore": {
+    "scope": "Exact index core with frozen current-working consumer modules and listed public tests; not a fully indexed or deployed build. No pending checking-ray test or generated-service bundle is included.",
+    "started": "2026-10-02T16:16:00.256Z",
+    "finished": "2026-10-02T16:16:19.475Z",
+    "exitCode": 0,
+    "success": true,
+    "before": {
+      "head": "182550545bbc7d680b5bbdf21a05469766b69a64",
+      "indexSha256": "7ecb2b2674f0aa739ef5eb5de81f58b0b6f1b88a6c8a5d232afdb9a3d824eb06",
+      "stagedCoreBlob": "a3653550dcfe17ed542cf07a4063c53a9ddc3810",
+      "stagedCoreSha256": "5e2763c0d003bcd787b8105254cc1c5597f23234f8bb139c63e2af0262c0812d",
+      "working": {
+        "src/utils/tacticalMotifs/causalTactics.ts": "9f9ba822b995f13c2f6318a0e3eecc7408e305b502b15ea74d324390a9ca6f60",
+        "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "584e689c8b3e63ae0fbe1df5d04edfc4679d0d56895d07394a1e007eb1d57121",
+        "src/utils/tacticalMotifs/mistakeNature.ts": "c6d41a829695a9f647d63b4efe0ac7178a800ce90cc7b2cf88945d78afe167fd",
+        "src/utils/tacticalMotifs/liveTactics.ts": "88bbc9f522485d2479c2ff5d862dc30f53991ad398345546e883264393b59469",
+        "src/components/files/opening.ts": "3fdc50724df2f2311689405a286cddf146e3f6d25503e422625beada9bb8d379",
+        "src/components/panels/tactics/TacticalLineExplanation.tsx": "1938ba1a48e9abcf4809c7d78c1aaee56771a8a5c60a7870096d32fd6b5cbd7c",
+        "src/utils/tests/tacticalFiftyMoveProof.test.ts": "2f049f88af21413455fc5e778980c16952e86efe1624719320a79327959f2d45",
+        "src/utils/tests/incidentalDiscoveryMate.test.ts": "699a40e7cff3a5b929c8fe57ea5584da96bcee8b8a5ff4c5b2d86ebbc67bee86",
+        "src/utils/tests/retainedForkChoice.test.ts": "f707a492b4b4aff47b7bc35677b8c107065efd77c207e86c55cebe9b21ddd987",
+        "src/utils/tests/retainedMateChoice.test.ts": "12f4f712eaca9c9e88f929678d5bf8cbf8bb18d45e30f7e520c49a2924d9d9e3",
+        "src/utils/tests/retainedForkConsumers.test.tsx": "d78a4c05fd62d0c123149f9cc5b0d424cfaa263f3a2fc18f2b8fff36e5a09e92",
+        "src/utils/tests/tacticalProofAttribution.test.ts": "4d05b54b31083673df317b04ae085c9dbc3ae7d61d4c664dacdd160087864bbf",
+        "src/utils/tests/tacticalLessonPriority.test.ts": "2aad15286a391676ecbb33870882ba38a9343d1be3f5c1e4b065dbca1e0ea1d2",
+        "src/utils/tests/tacticalMotifs.test.ts": "63774caef3329e0db7cdd56138b1c7cf971b98721ed9c2860f6546e9d15a3882",
+        "src/utils/tests/liveTactics.test.ts": "70f3120beecda1b9fc23c11bf6a48d63d10ba0c698c73689cf167848d83c877d",
+        "src/utils/tests/mistakeNature.test.ts": "839e49aefbdf6e55d803596fd53a2e158ab8c7b85dde583d01a1da63ac0db52a",
+        "src/utils/tests/sharedReview.test.ts": "ba8517683ac3abc53519d1f86d77539b3e41f20af61cefc8c47d40cd5012b69a"
+      }
+    },
+    "indexAndSourcesUnchanged": true,
+    "loadedExactCore": true,
+    "coreLoadCount": 1,
+    "counts": {
+      "total": 270,
+      "passed": 268,
+      "failed": 0,
+      "pending": 2,
+      "todo": 0
+    },
+    "testFiles": [
+      "src/utils/tests/tacticalFiftyMoveProof.test.ts",
+      "src/utils/tests/incidentalDiscoveryMate.test.ts",
+      "src/utils/tests/retainedForkChoice.test.ts",
+      "src/utils/tests/retainedMateChoice.test.ts",
+      "src/utils/tests/retainedForkConsumers.test.tsx",
+      "src/utils/tests/tacticalProofAttribution.test.ts",
+      "src/utils/tests/tacticalLessonPriority.test.ts",
+      "src/utils/tests/tacticalMotifs.test.ts",
+      "src/utils/tests/liveTactics.test.ts",
+      "src/utils/tests/mistakeNature.test.ts",
+      "src/utils/tests/sharedReview.test.ts"
+    ]
+  },
+  "types": {
+    "command": "node node_modules/@typescript/native-preview/bin/tsgo.js --noEmit",
+    "exitCode": 0
+  },
+  "lint": {
+    "files": 17,
+    "warnings": 0,
+    "errors": 0
+  },
+  "build": {
+    "command": "npm run build-vite",
+    "exitCode": 0,
+    "adapterStableDuringBuild": true,
+    "warnings": [
+      "existing large chunks / large-source Babel deoptimization",
+      "swiss dependency BigInt target warning",
+      "plugin timing advisory"
+    ],
+    "boundary": "Working-source frontend and review-worker build. No clean native package or installation."
+  },
+  "nodeTests": {
+    "commands": [
+      "node --test scripts/tests/shared-review-service.test.mjs scripts/tests/retained-fork-review-service.test.mjs",
+      "node --test scripts/tests/tactical-sample-evidence.test.mjs"
+    ],
+    "passed": 51,
+    "failed": 0,
+    "skipped": 1,
+    "servicePassed": 41,
+    "samplerPassed": 10,
+    "skippedScope": "Opt-in real background engine test; no owner stores used."
+  },
+  "runtime": {
+    "installed": false,
+    "phonePublished": false,
+    "websiteChanged": false,
+    "ownerStoreRescan": false,
+    "physicalDeviceVerified": false
+  },
+  "publicRegression": {
+    "files": 221,
+    "passedFiles": 200,
+    "skippedFiles": 21,
+    "failedFiles": 0,
+    "total": 3469,
+    "passed": 3104,
+    "expectedFailure": 1,
+    "conditionalSkips": 364,
+    "unexpectedFailures": 0,
+    "vitestPassedIncludingExpectedFailure": 3105,
+    "expectedFailureCase": "known coverage gap: retain promotion through a queen-ending checking race",
+    "expectedFailureFile": "src/utils/tests/promotionCountercheckRecall.test.ts:157",
+    "wallSeconds": 178.56,
+    "sourceHashesUnchanged": true,
+    "selection": "rg -l 'tacticalMotifs' src/utils/tests --glob '*.test.ts' --glob '*.test.tsx'",
+    "flags": "Two workers; no snapshot updates/cache; only public TACTICAL_LESSON_REPORT enabled. No private, fresh-engine or compiled-worker opt-ins."
+  },
+  "primaryPriority": {
+    "scope": "32 frozen before/after engine scenarios from real-game positions and constructed controls, plus separately tested colour-reflected controls. Human judgements remain unchanged. Reused development data, not holdout validation or general accuracy. Engine lines are frozen depth-16 evidence, not fresh searches in this report.",
+    "matched": 32,
+    "total": 32,
+    "secondaryLessons": 5,
+    "unchangedFromAdapter166": true,
+    "allowed": 19,
+    "missed": 13,
+    "perTheme": {
+      "mateIn3": {
+        "cases": 3,
+        "matched": 3
+      },
+      "promotionCombination": {
+        "cases": 1,
+        "matched": 1
+      },
+      "discoveredAttack": {
+        "cases": 3,
+        "matched": 3
+      },
+      "pin": {
+        "cases": 2,
+        "matched": 2
+      },
+      "doubleCheck": {
+        "cases": 1,
+        "matched": 1
+      },
+      "skewer": {
+        "cases": 1,
+        "matched": 1
+      },
+      "capturingDefender": {
+        "cases": 1,
+        "matched": 1
+      },
+      "tacticalPreparation": {
+        "cases": 1,
+        "matched": 1
+      },
+      "intermezzo": {
+        "cases": 4,
+        "matched": 4
+      },
+      "fork": {
+        "cases": 3,
+        "matched": 3
+      },
+      "mateIn7": {
+        "cases": 1,
+        "matched": 1
+      },
+      "forkPreparation": {
+        "cases": 2,
+        "matched": 2
+      },
+      "doubleThreat": {
+        "cases": 2,
+        "matched": 2
+      },
+      "forcingAttack": {
+        "cases": 2,
+        "matched": 2
+      },
+      "hangingPiece": {
+        "cases": 2,
+        "matched": 2
+      },
+      "clearance": {
+        "cases": 2,
+        "matched": 2
+      },
+      "backRankMate": {
+        "cases": 1,
+        "matched": 1
+      }
+    },
+    "cases": [
+      {
+        "name": "The real Kf1 best defence does not cause the existing mate",
+        "expectedPrimary": "mateIn3",
+        "actualPrimary": "mateIn3",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "The real Bh3 mistake misses Qxc6+'s mate, not just the knight",
+        "expectedPrimary": "mateIn3",
+        "actualPrimary": "mateIn3",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Pushed too early instead of removing the promotion-path defender (MJZcU)",
+        "expectedPrimary": "promotionCombination",
+        "actualPrimary": "promotionCombination",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Left the queen behind the discovered checking capture",
+        "expectedPrimary": "discoveredAttack",
+        "actualPrimary": "discoveredAttack",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "A different reply wins the same queen after the better move",
+        "expectedPrimary": "pin",
+        "actualPrimary": "pin",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Ignored double-check mate instead of making a king escape",
+        "expectedPrimary": "doubleCheck",
+        "actualPrimary": "doubleCheck",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Failed to unpin the knight",
+        "expectedPrimary": "pin",
+        "actualPrimary": "pin",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Allowed a king-queen skewer instead of preserving the queen",
+        "expectedPrimary": "skewer",
+        "actualPrimary": "skewer",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Allowed checking defender removal and lost the queen",
+        "expectedPrimary": "capturingDefender",
+        "actualPrimary": "capturingDefender",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Missed quiet mate while leaving the queen attacked",
+        "expectedPrimary": "mateIn3",
+        "actualPrimary": "mateIn3",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Missed the quiet rook preparation for mate or a queen skewer",
+        "expectedPrimary": "tacticalPreparation",
+        "actualPrimary": "tacticalPreparation",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Recaptured the rook before taking the queen with check",
+        "expectedPrimary": "intermezzo",
+        "actualPrimary": "intermezzo",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Recaptured the bishop before taking the knight with check",
+        "expectedPrimary": "intermezzo",
+        "actualPrimary": "intermezzo",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Allowed a checking queen capture before the rook recapture",
+        "expectedPrimary": "intermezzo",
+        "actualPrimary": "intermezzo",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Allowed an intermediate knight capture before the bishop recapture",
+        "expectedPrimary": "intermezzo",
+        "actualPrimary": "intermezzo",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "b6 permits the f7 fork",
+        "expectedPrimary": "fork",
+        "actualPrimary": "fork",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "The real Ke8 mistake allows a mating attack with quiet preparation",
+        "expectedPrimary": "mateIn7",
+        "actualPrimary": "mateIn7",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "The real Rc5 mistake permits a checking fork preparation",
+        "expectedPrimary": "forkPreparation",
+        "actualPrimary": "forkPreparation",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "The real g6 mistake permits Nd7's double threat",
+        "expectedPrimary": "doubleThreat",
+        "actualPrimary": "doubleThreat",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "The real Re2 mistake allows a forcing checking attack",
+        "expectedPrimary": "forcingAttack",
+        "actualPrimary": "forcingAttack",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Be7 hangs the bishop while also missing the checking attack",
+        "expectedPrimary": "hangingPiece",
+        "actualPrimary": "hangingPiece",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "An irrelevant pawn move misses the forcing checking attack",
+        "expectedPrimary": "forcingAttack",
+        "actualPrimary": "forcingAttack",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "A quiet king move misses Nd7's double threat",
+        "expectedPrimary": "doubleThreat",
+        "actualPrimary": "doubleThreat",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Playing Nd3 too early misses the checking preparation",
+        "expectedPrimary": "forkPreparation",
+        "actualPrimary": "forkPreparation",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Retreating the bishop misses the checking clearance",
+        "expectedPrimary": "clearance",
+        "actualPrimary": "clearance",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "The real Qxd4 mistake allows the checking clearance",
+        "expectedPrimary": "clearance",
+        "actualPrimary": "clearance",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Developing the bishop misses the overloaded-queen discovery",
+        "expectedPrimary": "discoveredAttack",
+        "actualPrimary": "discoveredAttack",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "The real Nxd4 mistake allows the overloaded-queen discovery",
+        "expectedPrimary": "discoveredAttack",
+        "actualPrimary": "discoveredAttack",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Taking a pawn misses the promotion-backed knight fork",
+        "expectedPrimary": "fork",
+        "actualPrimary": "fork",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Moving onto f6 allows the promotion-backed fork",
+        "expectedPrimary": "fork",
+        "actualPrimary": "fork",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      },
+      {
+        "name": "Missed queen while the knight is already attacked",
+        "expectedPrimary": "hangingPiece",
+        "actualPrimary": "hangingPiece",
+        "expectedSource": "missed",
+        "actualSource": "missed"
+      },
+      {
+        "name": "Failed to create a back-rank escape",
+        "expectedPrimary": "backRankMate",
+        "actualPrimary": "backRankMate",
+        "expectedSource": "allowed",
+        "actualSource": "allowed"
+      }
+    ]
+  },
+  "expandedNewTests": {
+    "fiftyMove": 54,
+    "incidentalDiscovery": 22,
+    "retainedFork": 23,
+    "retainedMate": 10,
+    "retainedForkConsumers": 5,
+    "passed": 114
+  },
+  "independentReview": {
+    "stagedCoreDiscoveryAndLiabilityPassed": 40,
+    "privateChecksSkipped": 2,
+    "failed": 0,
+    "scope": "Read-only peer review plus staged-core tests, not proof of identical counterfactual mating strategy."
+  }
+}

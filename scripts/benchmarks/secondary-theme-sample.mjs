@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
+import { collectTacticalSampleEvidence, selectTacticalDevelopmentCases } from "./tactical-sample-evidence.mjs";
 
 // Selection uses only fixed source strata, IDs and source-game identities.
 // Never inspect classifier labels/scores to decide which rows to retain.
@@ -45,51 +46,16 @@ for (const file of frozenExclusions
   ? []
   : readdirSync(directory).filter((name) => /\.(json|md)$/.test(name))) {
   const content = readFileSync(join(directory, file), "utf8");
-  for (const match of content.matchAll(/lichess:([a-zA-Z0-9]{5})\b/g))
-    excludedIds.add(`lichess:${match[1]}`);
-  for (const match of content.matchAll(/https:\/\/lichess\.org\/([a-zA-Z0-9]{8})(?:[/#"\s])/g))
-    excludedGames.add(`game:${match[1]}`);
+  const evidence = collectTacticalSampleEvidence(content, file.endsWith(".md") ? "markdown" : "json");
+  for (const id of evidence.excludedIds) excludedIds.add(id);
+  for (const game of evidence.excludedGames) excludedGames.add(game);
 }
-const { seed, themes, perTheme } = selectedProfile;
+const { seed, perTheme } = selectedProfile;
 const rows = raw
   .trim()
   .split(/\r?\n/)
   .map((line) => JSON.parse(line));
-const candidates = rows
-  .filter(
-    (row) =>
-      row.split === "development" &&
-      !excludedIds.has(row.id) &&
-      !excludedGames.has(row.sourceGroup),
-  )
-  .map((row) => ({ row, hash: createHash("sha256").update(`${seed}:${row.id}`).digest("hex") }))
-  .sort((a, b) => a.hash.localeCompare(b.hash));
-const games = new Set();
-const cases = [];
-for (const theme of themes) {
-  const selected = candidates.filter(
-    ({ row }) => row.sourceThemes.includes(theme) && !games.has(row.sourceGroup),
-  );
-  for (const { row, hash } of selected) {
-    if (games.has(row.sourceGroup)) continue;
-    cases.push({
-      stratum: theme,
-      id: row.id,
-      sourceGameUrl: row.sourceGameUrl,
-      sourceGroup: row.sourceGroup,
-      sourceThemes: row.sourceThemes,
-      sourceFen: row.sourceFen,
-      precedingMove: row.precedingMove,
-      startFen: row.startFen,
-      bestLine: row.bestLine,
-      selectionHash: hash,
-    });
-    games.add(row.sourceGroup);
-    if (cases.filter((row) => row.stratum === theme).length === perTheme) break;
-  }
-  if (cases.filter((row) => row.stratum === theme).length !== perTheme)
-    throw new Error(`Insufficient new development rows: ${theme}`);
-}
+const cases = selectTacticalDevelopmentCases(rows, { excludedIds, excludedGames }, selectedProfile);
 writeFileSync(
   output,
   JSON.stringify(
@@ -101,6 +67,10 @@ writeFileSync(
         "chessmistaketrainer/benchmarks/tactical-classifier/lichess-2026-08-02-fixture-v1.jsonl",
       sourceSha256,
       seed,
+      ...(frozenExclusions ? {} : {
+        exclusionBasis: "Structured position/result/judgement identities and narrative reviews; nested exclusion inventories and metadata are not prior case evidence.",
+        reuseBoundary: "New relative to recorded public cases, not an independent unseen dataset: this source fixture has already supported development. No holdout rows are selected.",
+      }),
       ...(profile === "secondary" ? {} : { profile, perTheme }),
       selection: `First ${perTheme === 3 ? "three" : "two"} SHA-256 ordered unseen development rows per stratum, excluding prior source games and IDs. Distinct games across strata. Selection precedes chess judgement, engine analysis and classifier output.`,
       excludedIds: [...excludedIds].sort(),

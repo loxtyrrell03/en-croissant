@@ -1,6 +1,6 @@
 import { Badge, Group, Stack, Text } from "@mantine/core";
 import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
-import { tacticalMotifPerspective } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
+import { isRetainedForkChoice, tacticalMotifPerspective } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 
 /** Keep the main lesson visible; expose conditional continuation details only
  * with the move that produces them. A reply is not labelled an available move. */
@@ -46,13 +46,13 @@ export function TacticalLineExplanation({
                     size="xs"
                     variant={motif.relevance === "primary" ? "filled" : "light"}
                   >
-                    {motif.alternativeCapture ? tacticalMotifPerspective(motif) : motif.label}
+                    {motif.alternativeCapture || isRetainedForkChoice(motif) ? tacticalMotifPerspective(motif) : motif.label}
                   </Badge>
                 ))}
               </Group>
               {here.map((motif) => (
                 <Text key={motif.id} size="xs" c="dimmed">
-                  {motif.alternativeCapture && motif.comparisonEvidence ? motif.comparisonEvidence : motif.evidence}
+                  {(motif.alternativeCapture || isRetainedForkChoice(motif)) && motif.comparisonEvidence ? motif.comparisonEvidence : motif.evidence}
                 </Text>
               ))}
             </Stack>

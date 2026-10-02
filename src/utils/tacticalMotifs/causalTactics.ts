@@ -3407,7 +3407,8 @@ export function proveCheckingMaterialAttack(
         root.capture ||
         root.before.isCheck() ||
         !root.after.isCheck() ||
-        root.after.isEnd()
+        root.after.isEnd() ||
+        defenderCanClaimFiftyMoveDraw(root.after)
     )
         return null;
     const side = root.before.turn;
@@ -3538,7 +3539,10 @@ export function proveCheckingMaterialAttack(
         checks: number,
         pieces: Square[],
     ): Win | null => {
-        if (pos.isEnd()) return null;
+        // A later capture cannot erase a claim available before this reply.
+        // Only the defending turn is tested; the attacker may choose mate or
+        // a zeroing capture/pawn move instead of claiming its own draw.
+        if (pos.isEnd() || defenderCanClaimFiftyMoveDraw(pos)) return null;
         let minimum: Win | null = null;
         for (const move of orderedMoves(pos)) {
             const next = visit(pos, move);
@@ -11878,7 +11882,8 @@ export function proveExchangeDeflection(
         nodeLimit <= 0 ||
         root.move.promotion ||
         !root.after.isCheck() ||
-        root.after.isEnd()
+        root.after.isEnd() ||
+        defenderCanClaimFiftyMoveDraw(root.after)
     )
         return null;
     const piece = root.after.board.get(root.move.to);
@@ -13340,6 +13345,7 @@ export function proveForcedSelfInterference(
         nodeLimit <= 0 ||
         !root.after.isCheck() ||
         root.after.isEnd() ||
+        defenderCanClaimFiftyMoveDraw(root.after) ||
         root.move.promotion
     )
         return null;
@@ -13425,7 +13431,8 @@ export function proveMatingKingDeflection(
         nodeLimit <= 0 ||
         root.move.promotion ||
         !root.after.isCheck() ||
-        root.after.isEnd()
+        root.after.isEnd() ||
+        defenderCanClaimFiftyMoveDraw(root.after)
     )
         return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
@@ -14893,6 +14900,29 @@ export function auditTacticalMotifs(
             );
             if (replay.length === steps.length && proveCheckingMate(replay, 4096))
                 incidentalMatingMechanisms.add(kind);
+        }
+    }
+    // A material discovery can be incidental to a mating move too. Remove
+    // only its newly uncovered non-king victims, never a checking battery or
+    // the moving/promoting piece. Suppress the material badge only if the
+    // same legal root still independently mates within the original bound.
+    // Keep unknown probes and any displayed capture of a removed victim.
+    if (checkingMate && normalizedCandidates.some(m => m.id === "discoveredAttack" &&
+        m.ply === 1 && m.confidence === "high" && m.value !== undefined && m.value < 10000)) {
+        const rays = revealedRays(root);
+        if (rays.length && rays.every(ray => root.after.board.get(ray.target)?.role !== "king")) {
+            const probe = root.before.clone();
+            for (const target of new Set(rays.map(ray => ray.target))) probe.board.take(target);
+            const replay = replayTacticalLine(makeFen(probe.toSetup()), steps.map(step => step.uci));
+            if (replay.length === steps.length && replay.every((step, index) => step.capture === steps[index].capture)) {
+                // Use one existing 4,096-operation certificate. A root-only
+                // engine snapshot must not need a cooperative mate suffix.
+                const proof = replay.at(-1)!.after.isCheckmate()
+                    ? proveCheckingMate(replay, 4096)
+                    : proveShortCheckingMate(replay[0], 4096);
+                if (proof && proof.maxMoves <= checkingMate.maxMoves)
+                    incidentalMatingMechanisms.add("discoveredAttack");
+            }
         }
     }
     const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));

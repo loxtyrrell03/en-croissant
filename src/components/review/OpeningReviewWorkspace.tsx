@@ -185,6 +185,7 @@ import {
 } from "@/utils/mistakeReview";
 import {
   buildMistakeReviewTacticalExplanation,
+  isRetainedForkChoice,
   tacticalMotifPerspective,
   tacticalMotifColor,
   tacticalMotifLabel,
@@ -6487,7 +6488,7 @@ function MistakeReviewGameInfoPanel({
                 key={`${motif.source}:${motif.id}:${index}`}
                 label={`${tacticalMotifPerspective(motif)} motif, ${
                   motif.confidence
-                } confidence: ${motif.evidence}`}
+                } confidence: ${isRetainedForkChoice(motif) ? motif.comparisonEvidence ?? motif.evidence : motif.evidence}`}
                 multiline
                 maw={360}
               >
