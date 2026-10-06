@@ -44,8 +44,12 @@ Adopted as cross-repository user guidance on 2026-09-08. Project-specific archit
   TypeScript and the production build pass; scoped lint has no errors. Chrome
   renders the actual compiled desktop CSS, Tabler icons and Chessground fixture
   with valid/missing board images and both orientations. This is browser asset
-  proof, not a claim of native window verification. Native executable delivery
-  is pending the owner's saved/closed app because Windows locks the live binary.
+  proof, not a claim of native window verification. After the owner saved and
+  closed the app, the repaired native release was rebuilt using the existing
+  cache. Its current entry, desktop/phone styles, study panel and selected
+  board/piece assets are verified in the executable; the normal app path was
+  reopened. The daily-plan file hash is unchanged. No native UI control or
+  phone service change was used for activation.
 
 
 ## 2026-10-06 optional daily study plans
