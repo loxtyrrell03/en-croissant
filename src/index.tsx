@@ -97,11 +97,22 @@ type TauriWindow = Window & {
   __TAURI_INTERNALS__?: unknown;
 };
 
+// Keep the native and phone dynamic imports in separate async functions. A
+// conditional import expression can be folded into one Vite preload helper
+// with only the phone dependency list, leaving desktop CSS unloaded.
+async function loadNativeRoot() {
+  return await import("./App");
+}
+
+async function loadWebRoot() {
+  return await import("./web/WebApp");
+}
+
 async function renderRoot() {
   const isTauriRuntime =
     typeof window !== "undefined" && Boolean((window as TauriWindow).__TAURI_INTERNALS__);
   const [module] = await Promise.all([
-    isTauriRuntime ? import("./App") : import("./web/WebApp"),
+    isTauriRuntime ? loadNativeRoot() : loadWebRoot(),
     // Never let a failed lazy locale request strand the native window blank.
     i18nStartupReady,
   ]);

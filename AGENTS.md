@@ -29,6 +29,25 @@ Adopted as cross-repository user guidance on 2026-09-08. Project-specific archit
 
 # AGENTS.md
 
+## 2026-10-07 native and phone root stylesheet loading
+
+- Keep `src/index.tsx` native and phone imports in separate async loaders. Vite
+  8/Rolldown merged the earlier conditional dynamic import into one preload
+  helper containing only phone dependencies, so desktop board and sidebar CSS
+  existed in the executable but never loaded. `rootStylePreloadGuard` now checks
+  emitted imports and their actual CSS dependency lists during every main build;
+  merely checking that an asset exists does not catch this failure.
+- The selected board image retains a CSS checkerboard underneath it, including
+  when a saved image is unavailable. Existing board themes and pieces remain
+  authoritative. The Accounts sidebar link and its route preload are restored.
+- Verification: three build-guard regressions, seven daily-plan tests, full
+  TypeScript and the production build pass; scoped lint has no errors. Chrome
+  renders the actual compiled desktop CSS, Tabler icons and Chessground fixture
+  with valid/missing board images and both orientations. This is browser asset
+  proof, not a claim of native window verification. Native executable delivery
+  is pending the owner's saved/closed app because Windows locks the live binary.
+
+
 ## 2026-10-06 optional daily study plans
 
 - Desktop Daily Goals also loads a validated `daily-study-plan.json` from the

@@ -7,6 +7,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { defineConfig } from "vite";
 import { configDefaults } from "vitest/config";
 import { tacticalWorkerDevelopmentPlugin } from "./scripts/vite-tactical-worker.mjs";
+import { rootStylePreloadGuard } from "./scripts/check-root-style-preloads.mjs";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
 const host = process.env.TAURI_DEV_HOST;
@@ -17,6 +18,7 @@ export default defineConfig({
     publicDir: usesHomePhoneServer ? false : "public",
     plugins: [
         tacticalWorkerDevelopmentPlugin(),
+        rootStylePreloadGuard(),
         tanstackRouter({
             target: "react",
         }),
