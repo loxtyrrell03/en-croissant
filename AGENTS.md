@@ -29,6 +29,26 @@ Adopted as cross-repository user guidance on 2026-09-08. Project-specific archit
 
 # AGENTS.md
 
+## 2026-10-06 optional daily study plans
+
+- Desktop Daily Goals also loads a validated `daily-study-plan.json` from the
+  configured documents directory. The repeatable 60/90-minute study blocks have
+  PGN/course actions, per-day checks and notes, and optional weekly opening topics.
+  Existing goals, decks and review history remain separate. No plan file means
+  no extra panel; corrupt plans have an explicit Retry action.
+- Course windows use a persistent app-owned WebView browser profile, without
+  granting remote pages native app capabilities. Only normal HTTPS Chessable,
+  Lichess and Chess.com links are admitted from the main window. Keep passwords
+  out of plan files; never transfer Chrome cookies. Open in browser preserves
+  access to an existing Chrome sign-in. Missing exact course links are labelled.
+- Completion is manually recorded, not inferred from elapsed time or external
+  course progress. Seven focused React/schema checks, native URL validation,
+  TypeScript and the production frontend build pass. The panel/opening details
+  render in a private browser preview at desktop and 390px. Native authenticated
+  course access remains separate verification. The hosted phone app is unchanged.
+  See `docs/DAILY_STUDY_PLAN.md`.
+
+
 ## Milestone documentation
 
 - Agents must update this `AGENTS.md` after every meaningful, verified milestone and include that update in the same milestone commit.
