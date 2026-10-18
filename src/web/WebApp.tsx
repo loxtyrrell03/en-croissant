@@ -1447,6 +1447,17 @@ function BoardWorkspace({
   const board = state.board ?? createEmptyWebBoardState();
   const baseOrientation = activePrep?.userColor ?? board.orientation;
   const [orientationOverride, setOrientationOverride] = useState<WebColor | null>(null);
+  const alignBoardToPrepSide = useCallback(
+    (color: WebColor) => {
+      setOrientationOverride(null);
+      setState((current) =>
+        current.board.orientation === color
+          ? current
+          : { ...current, board: { ...current.board, orientation: color } },
+      );
+    },
+    [setState],
+  );
   useEffect(() => {
     setOrientationOverride(null);
   }, [activePrep?.id, baseOrientation, board.sourceDatabaseId, board.sourceGameId, board.startFen]);
@@ -2056,6 +2067,7 @@ function BoardWorkspace({
                 <PrepUnderBoardPanel
                   state={state}
                   setState={setState}
+                  onUserColorChange={alignBoardToPrepSide}
                   activePrep={activePrep}
                   currentFen={currentFen}
                   stats={prepStats}
@@ -4933,6 +4945,7 @@ function EngineLineTable({
 function PrepUnderBoardPanel({
   state,
   setState,
+  onUserColorChange,
   activePrep,
   currentFen,
   stats,
@@ -4951,6 +4964,7 @@ function PrepUnderBoardPanel({
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
+  onUserColorChange: (color: WebColor) => void;
   activePrep: WebPrepWorkspace | null;
   currentFen: string;
   stats: WebPrepMoveStat[];
@@ -5150,6 +5164,9 @@ function PrepUnderBoardPanel({
     [activePrep?.sortDefaults, storedPrepSetup.sortDefaults],
   );
   const selectedUserColor = activePrep?.userColor ?? userColor;
+  useEffect(() => {
+    onUserColorChange(selectedUserColor);
+  }, [onUserColorChange, selectedUserColor]);
   const selectedPlayerColor = oppositeWebColor(selectedUserColor);
   const selectedOpponentName = activePrep?.opponent ?? opponent;
   const trimmedSelectedOpponentName = selectedOpponentName.trim();

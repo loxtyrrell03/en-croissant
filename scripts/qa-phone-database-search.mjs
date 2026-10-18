@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { execFileSync } from "node:child_process";
 import { build, preview } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -10,7 +11,13 @@ const { chromium, webkit } = createRequire(process.env.FIDE_QA_DEPENDENCIES || i
   "playwright",
 );
 const root = process.cwd();
-const output = path.resolve("tmp/phone-database-search");
+const baselineRef = process.argv
+  .find((arg) => arg.startsWith("--baseline-ref="))
+  ?.slice("--baseline-ref=".length);
+const output = path.resolve("tmp/phone-database-search", baselineRef ? "baseline" : "current");
+const baselineSource = baselineRef
+  ? execFileSync("git", ["show", baselineRef + ":src/web/WebApp.tsx"], { encoding: "utf8" })
+  : null;
 await fs.mkdir(output, { recursive: true });
 await fs.writeFile(
   path.join(output, "entry.tsx"),
@@ -28,18 +35,56 @@ createRoot(document.getElementById('root')).render(<App/>);
 );
 const relative = path.relative(root, output).replaceAll("\\", "/");
 await fs.writeFile(
+  path.join(output, "prep.tsx"),
+  `
+import React from 'react';import{createRoot}from'react-dom/client';import{createEmptyWebState}from'/src/web/storage';
+async function setup(){
+ const state=createEmptyWebState();state.board.orientation='black';
+ state.databases=['Alex Example - OTB prep (12 games)','Study games','Pat Example - as Black (5 games)'].map((name,i)=>({id:'example-'+i,name:name+'.pgn',sourceKind:'source',hostedLazy:true,importedAt:1,updatedAt:1,gameCount:12,sizeBytes:100,playerNames:[]}));
+ for(const db of state.databases)state.gamesByDatabase[db.id]=[];
+ await new Promise((resolve,reject)=>{const request=indexedDB.open('en-croissant-web-companion',1);request.onupgradeneeded=()=>request.result.createObjectStore('state');request.onsuccess=()=>{const db=request.result,tx=db.transaction('state','readwrite');tx.objectStore('state').put(state,'main');tx.oncomplete=()=>{db.close();resolve()};tx.onabort=()=>reject(tx.error)}});
+ const realFetch=window.fetch;window.fetch=async(url,options)=>{const p=new URL(String(url),location.href).pathname;if(p.startsWith('/api/')||p.startsWith('/v1/'))return Response.json({},{status:404});return realFetch(url,options)};
+ const{default:WebApp}=await import('/src/web/WebApp');createRoot(document.getElementById('root')).render(<WebApp/>);
+}void setup();
+`,
+);
+await fs.writeFile(
+  path.join(output, "auth.ts"),
+  "export async function loadSharedLichessCredential(){return null} export async function saveSharedLichessCredential(){}\n",
+);
+await fs.writeFile(
+  path.join(output, "prep.html"),
+  `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0"><div id="root"></div><script type="module" src="/${relative}/prep.tsx"></script></body></html>`,
+);
+await fs.writeFile(
   path.join(output, "index.html"),
   `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0"><div id="root"></div><script type="module" src="/${relative}/entry.tsx"></script></body></html>`,
 );
 await build({
   root,
   configFile: false,
-  plugins: [react()],
-  resolve: { alias: { "@": path.resolve("src") } },
+  plugins: [
+    {
+      name: "orientation-baseline",
+      enforce: "pre",
+      load: (id) =>
+        baselineSource &&
+        id.replaceAll("\\", "/") === path.resolve("src/web/WebApp.tsx").replaceAll("\\", "/")
+          ? baselineSource
+          : null,
+    },
+    react(),
+  ],
+  resolve: {
+    alias: [
+      { find: "@/utils/sharedLichessAuth", replacement: path.join(output, "auth.ts") },
+      { find: "@", replacement: path.resolve("src") },
+    ],
+  },
   build: {
     outDir: path.join(output, "bundle"),
     copyPublicDir: false,
-    rollupOptions: { input: path.join(output, "index.html") },
+    rollupOptions: { input: [path.join(output, "index.html"), path.join(output, "prep.html")] },
   },
   logLevel: "warn",
 });
@@ -56,6 +101,69 @@ try {
   for (const [engine, browserType] of Object.entries({ chromium, webkit })) {
     const browser = await browserType.launch({ headless: true });
     try {
+      const prepContext = await browser.newContext({
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+      });
+      const prepPage = await prepContext.newPage();
+      prepPage.setDefaultTimeout(6000);
+      prepPage.on("pageerror", (error) =>
+        errors.push({ engine, prep: true, error: error.message }),
+      );
+      await prepContext.route("**/*", (route) =>
+        new URL(route.request().url()).origin === origin ? route.continue() : route.abort(),
+      );
+      await prepPage.goto(origin + "/" + relative + "/prep.html");
+      await prepPage.getByRole("tab", { name: "Prep", exact: true }).click();
+      const username = prepPage.getByRole("textbox", { name: "Username", exact: true });
+      await prepPage.waitForFunction(
+        () => document.querySelector('input[placeholder="All players"]')?.value === "Alex Example",
+      );
+      await prepPage.screenshot({
+        path: path.join(output, `${engine}-initial-prep.png`),
+        fullPage: true,
+      });
+      assert.equal(await prepPage.locator(".cg-wrap.orientation-white").count(), 1);
+      await prepPage.getByText("I'm Black", { exact: true }).click();
+      await prepPage.locator(".cg-wrap.orientation-black").waitFor();
+      await prepPage.getByText("I'm White", { exact: true }).click();
+      await prepPage.locator(".cg-wrap.orientation-white").waitFor();
+      await username.fill("");
+      await prepPage.getByRole("button", { name: "Builder", exact: true }).click();
+      assert.equal(await username.inputValue(), "");
+      async function choose(current, next) {
+        await prepPage.getByRole("button", { name: current, exact: true }).click();
+        await prepPage
+          .getByRole("button", {
+            name: new RegExp("^" + next.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?: |$)"),
+          })
+          .click();
+      }
+      await choose("Alex Example - OTB prep (12 games)", "Study games");
+      assert.equal(await username.inputValue(), "");
+      await choose("Study games", "Alex Example - OTB prep (12 games)");
+      await prepPage.waitForFunction(
+        () => document.querySelector('input[placeholder="All players"]')?.value === "Alex Example",
+      );
+      assert.equal(
+        await prepPage.getByRole("radio", { name: "I'm White", exact: true }).isChecked(),
+        true,
+      );
+      assert.equal(await prepPage.locator(".cg-wrap.orientation-white").count(), 1);
+      await prepPage.screenshot({
+        path: path.join(output, `${engine}-prep-white.png`),
+        fullPage: true,
+      });
+      checks.push({
+        engine,
+        prepAutofill: true,
+        manualClear: true,
+        genericCollection: true,
+        reselect: true,
+        userSide: "white",
+        pass: true,
+      });
+      await prepContext.close();
       for (const width of [320, 390]) {
         const context = await browser.newContext({
           viewport: { width, height: 844 },
