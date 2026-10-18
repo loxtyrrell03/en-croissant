@@ -126,6 +126,7 @@ import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
 import { loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
+import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
 import { annotatePhoneMove } from "./phoneAnnotations";
 import {
   askWebChessCoach,
@@ -530,6 +531,39 @@ function WebAppContent() {
   const [view, setView] = useState<ViewMode>("board");
   const [boardPanelMode, setBoardPanelMode] = useState<BoardPanelMode>("moves");
   const [importing, setImporting] = useState(false);
+  useEffect(() => {
+    if (!loaded || readWebOtbPrepLink(window.location.search)) return;
+    return watchPhonePrepRequests({
+      appliedId: () => webStateSession.getSnapshot().savedState?.lastAppliedPhonePrepRequestId,
+      apply: async (request, signal) => {
+        if (phoneBoardHasUnfiledAnalysis(webStateSession.getSnapshot().state)) return;
+        // Explicit links remain a separate intentional action. A saved PC request
+        // is consumed once on each device, including the installed home-screen app.
+        if (webStateSession.getSnapshot().state.lastAppliedPhonePrepRequestId !== request.id) {
+          const job = await loadWebOtbImportJob(request.jobId, signal);
+          if (signal.aborted) return;
+          setState((current) => ({
+            ...openWebOtbPrepLink(current, job, request.userColor),
+            lastAppliedPhonePrepRequestId: request.id,
+          }));
+        }
+        await webStateSession.flush();
+        if (signal.aborted) return;
+        setView("board");
+        setBoardPanelMode("prep");
+        notifications.show({
+          title: "Prep ready",
+          message: `I'm ${request.userColor === "white" ? "White" : "Black"}`,
+          color: "green",
+        });
+      },
+      onError: (error) => notifications.show({
+        title: "Could not load requested prep",
+        message: error instanceof Error ? error.message : "Reopen the app to retry.",
+        color: "red",
+      }),
+    });
+  }, [loaded, setState]);
   useEffect(() => {
     if (!loaded) return;
     const link = readWebOtbPrepLink(window.location.search);
