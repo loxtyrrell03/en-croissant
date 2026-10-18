@@ -794,6 +794,36 @@ export function getWebDatabaseTitlePlayerName(
     return candidate;
 }
 
+/** Hosted databases need not download games before a player can be selected.
+ * Only an explicit opponent-collection title may supply a name without game
+ * evidence; arbitrary collection labels must never become player identities. */
+export function getWebPrepDatabaseOpponent(
+    database: { name: string; playerNames?: string[] } | null,
+    players: { name: string; games: number }[],
+): string | null {
+    if (!database) return null;
+    const counted = players[0];
+    if (counted) {
+        return getWebDatabaseTitlePlayerName(database.name, counted.name) ?? counted.name;
+    }
+    for (const player of database.playerNames ?? []) {
+        const matched = getWebDatabaseTitlePlayerName(database.name, player);
+        if (matched) return matched;
+    }
+    if (database.playerNames?.length === 1 && database.playerNames[0].trim()) {
+        return database.playerNames[0].trim();
+    }
+    const onlineLabel = database.name.replace(/\.(?:db3|pgn)$/i, "").trim();
+    if (/(?:_| )(?:lichess|chesscom|chess\.com)(?: recent| games)*$/i.test(onlineLabel)) {
+        return getWebDatabaseLabelPlayerCandidate(onlineLabel);
+    }
+    const match = database.name.replace(/\.(?:db3|pgn)$/i, "").trim().match(
+        /^(.*?)\s+[-–—]\s+(?:OTB\s+prep|OTB\s+games(?:\s+since\s+\d{4})?|as\s+(?:White|Black)|opponent\s+prep)(?:\s*\([\d,]+\s+games?\))?$/i,
+    );
+    const candidate = match?.[1].trim();
+    return candidate || null;
+}
+
 type MoveBucket = {
     move: string;
     uci: string | null;

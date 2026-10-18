@@ -247,7 +247,7 @@ import {
   getGamesForWebPrepSource,
   getDatabasePlayerCounts,
   filterWebGamesByLocalFilters,
-  getWebDatabaseTitlePlayerName,
+  getWebPrepDatabaseOpponent,
   getNextOpenPrepStat,
   getWebPrepBranchCoverageStats,
   getWebPrepMoveKey,
@@ -6000,23 +6000,28 @@ function PrepUnderBoardPanel({
 
   // Autofill the opponent only once per selected source; refilling whenever
   // the field becomes empty made it impossible to clear and retype a name.
-  const autofilledOpponentSourceRef = useRef<string | null>(null);
+  const autofilledOpponentSourceRef = useRef({ sourceId: null as string | null, handled: false });
   useEffect(() => {
     if (selectedPrepMode !== "player" || selectedPrepSource !== "local") return;
-    if (!activePrepSourceId || selectedPrepDatabasePlayers.length === 0) return;
-    if (autofilledOpponentSourceRef.current === activePrepSourceId) return;
-    autofilledOpponentSourceRef.current = activePrepSourceId;
-    if (trimmedSelectedOpponentName) return;
+    if (autofilledOpponentSourceRef.current.sourceId !== activePrepSourceId) {
+      autofilledOpponentSourceRef.current = { sourceId: activePrepSourceId, handled: false };
+    }
+    if (!activePrepSourceId) return;
+    if (autofilledOpponentSourceRef.current.handled) return;
+    if (trimmedSelectedOpponentName) {
+      autofilledOpponentSourceRef.current.handled = true;
+      return;
+    }
+    const labelPlayer = getWebPrepDatabaseOpponent(
+      activePrepSourceDatabase,
+      selectedPrepDatabasePlayers,
+    );
+    if (!labelPlayer) return;
 
-    const defaultPlayer = selectedPrepDatabasePlayers[0];
-    const labelPlayer =
-      getWebDatabaseTitlePlayerName(activePrepSourceDatabase?.name, defaultPlayer.name) ??
-      defaultPlayer.name;
-    if (!labelPlayer.trim()) return;
-
+    autofilledOpponentSourceRef.current.handled = true;
     updatePrepOpponent(labelPlayer);
   }, [
-    activePrepSourceDatabase?.name,
+    activePrepSourceDatabase,
     activePrepSourceId,
     selectedPrepDatabasePlayers,
     selectedPrepMode,

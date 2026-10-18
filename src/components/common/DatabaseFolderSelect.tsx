@@ -24,7 +24,14 @@ import {
   IconPinned,
   IconPinnedOff,
 } from "@tabler/icons-react";
-import { useCallback, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from "react";
 import type { DatabaseSelectGroup } from "@/utils/db";
 
 type DatabaseFolderSelectItem = DatabaseSelectGroup["items"][number] & {
@@ -246,6 +253,23 @@ export default function DatabaseFolderSelect({
   const [opened, setOpened] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  useEffect(() => {
+    if (!opened) return;
+    const viewport = window.visualViewport;
+    const resize = () => setViewportHeight(viewport?.height ?? window.innerHeight);
+    resize();
+    viewport?.addEventListener("resize", resize);
+    window.addEventListener("resize", resize);
+    return () => {
+      viewport?.removeEventListener("resize", resize);
+      window.removeEventListener("resize", resize);
+    };
+  }, [opened]);
+  const listMaxHeight =
+    viewportHeight === null
+      ? DATABASE_PICKER_LIST_MAX_HEIGHT
+      : Math.max(48, Math.min(DATABASE_PICKER_LIST_MAX_HEIGHT, viewportHeight - 120));
   const pinnedValueSet = useMemo(() => new Set(preferences.pinnedValues), [preferences]);
   const orderedData = useMemo(
     () =>
@@ -529,6 +553,7 @@ export default function DatabaseFolderSelect({
         else closePicker();
       }}
       position="bottom-start"
+      floatingStrategy="fixed"
       withinPortal
       shadow="md"
     >
@@ -564,24 +589,28 @@ export default function DatabaseFolderSelect({
         </Button>
       </Popover.Target>
 
-      <Popover.Dropdown p={6} miw={260} maw={420}>
+      <Popover.Dropdown
+        p={6}
+        miw="min(260px, calc(100vw - 16px))"
+        maw="min(420px, calc(100vw - 16px))"
+      >
         <Stack gap={6}>
           {showSearch ? (
             <TextInput
               aria-label="Search databases"
               placeholder="Search databases"
               size={size}
+              // iOS zooms small inputs on focus, moving the portaled picker.
+              styles={{ input: { fontSize: 16 } }}
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
             />
           ) : null}
           {trimmedQuery ? (
-            <ScrollArea.Autosize
-              mah={DATABASE_PICKER_LIST_MAX_HEIGHT}
-              type="auto"
-              offsetScrollbars
-              scrollbarSize={6}
-            >
+            <ScrollArea.Autosize mah={listMaxHeight} type="auto" offsetScrollbars scrollbarSize={6}>
               <Stack gap={2}>
                 {searchMatches.length > 0 ? (
                   searchMatches.map(({ item, group }) => (
@@ -605,12 +634,7 @@ export default function DatabaseFolderSelect({
               </Stack>
             </ScrollArea.Autosize>
           ) : !visibleGroup ? (
-            <ScrollArea.Autosize
-              mah={DATABASE_PICKER_LIST_MAX_HEIGHT}
-              type="auto"
-              offsetScrollbars
-              scrollbarSize={6}
-            >
+            <ScrollArea.Autosize mah={listMaxHeight} type="auto" offsetScrollbars scrollbarSize={6}>
               <Stack gap={4}>
                 {pinnedItems.map(({ item, group }) => (
                   <DatabaseRow
@@ -691,7 +715,7 @@ export default function DatabaseFolderSelect({
                 </Group>
               </UnstyledButton>
               <ScrollArea.Autosize
-                mah={DATABASE_PICKER_LIST_MAX_HEIGHT}
+                mah={listMaxHeight}
                 type="auto"
                 offsetScrollbars
                 scrollbarSize={6}
