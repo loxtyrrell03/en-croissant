@@ -124,6 +124,8 @@ import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
 import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
+import { loadWebOtbImportJob } from "./otbImport";
+import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { annotatePhoneMove } from "./phoneAnnotations";
 import {
   askWebChessCoach,
@@ -528,6 +530,38 @@ function WebAppContent() {
   const [view, setView] = useState<ViewMode>("board");
   const [boardPanelMode, setBoardPanelMode] = useState<BoardPanelMode>("moves");
   const [importing, setImporting] = useState(false);
+  useEffect(() => {
+    if (!loaded) return;
+    const link = readWebOtbPrepLink(window.location.search);
+    if (!link) return;
+    const controller = new AbortController();
+    setImporting(true);
+    void (async () => {
+      try {
+        const job = await loadWebOtbImportJob(link.jobId, controller.signal);
+        if (controller.signal.aborted) return;
+        setState((current) => openWebOtbPrepLink(current, job, link.userColor));
+        await webStateSession.flush();
+        if (controller.signal.aborted) return;
+        setView("board");
+        setBoardPanelMode("prep");
+        notifications.show({
+          title: "Prep ready",
+          message: `I'm ${link.userColor === "white" ? "White" : "Black"}`,
+          color: "green",
+        });
+      } catch (error) {
+        if (!controller.signal.aborted) notifications.show({
+          title: "Could not open prep",
+          message: error instanceof Error ? error.message : "Reload this link to retry.",
+          color: "red",
+        });
+      } finally {
+        if (!controller.signal.aborted) setImporting(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [loaded, setState]);
   const [pastedPgn, setPastedPgn] = useState("");
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
