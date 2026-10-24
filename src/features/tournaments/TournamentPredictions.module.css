@@ -1,0 +1,33 @@
+.root { min-width: 0; margin-bottom: 18px; font-size: var(--op-fs-md); }
+.root h4 { display: flex; align-items: center; gap: 8px; font-size: var(--op-fs-md); margin: 12px 0; font-weight: 600; }
+.root p { margin: 12px 0; }
+.root .link { border: 0; background: transparent; color: var(--op-accent); padding: 6px 0; text-align: left; font-size: inherit; }
+.switcher { display: flex; gap: 8px; margin: 0 0 18px; flex-wrap: wrap; }
+.switcher button[aria-pressed=true] { background: var(--op-accent); color: var(--op-bg); border-color: var(--op-accent); }
+.comparison { border-block: 1px solid var(--op-border); margin: 12px 0; padding: 2px 0 12px; }
+.pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.pair > div { display: flex; flex-direction: column; gap: 6px; overflow-wrap: anywhere; }
+.pair > div > span { color: var(--op-text-dim); }
+.pair strong { font-size: var(--op-fs-lg); }
+.verdict { display: flex; gap: 8px 20px; flex-wrap: wrap; }
+.verdict > span { color: var(--op-text-dim); }
+.changed { color: var(--op-warn); }
+.opponents { margin-top: 12px; }
+.opponent { display: grid; grid-template-columns: minmax(0,1fr) minmax(65px,.4fr) minmax(78px,.5fr); align-items: center; gap: 12px; border-bottom: 1px solid var(--op-border); padding: 12px 0; overflow-wrap: anywhere; }
+.opponent > span:last-child, .other { color: var(--op-text-dim); }
+.opponent[data-actual] { background: var(--op-accent-soft); }
+.actual { display: block; color: var(--op-accent); font-size: inherit; font-weight: 500; }
+.round { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+.round select { min-width: 140px; }
+.shortlist { margin: 16px 0; }
+.shortlist summary { cursor: pointer; padding: 8px 0; }
+.shortlist summary > button { margin-left: 8px; }
+.shortlist label { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.shortlist select { max-width: 100%; }
+.error { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding: 12px 0; color: var(--op-warn); }
+@container (max-width: 31em) {
+ .pair { grid-template-columns: 1fr; gap: 18px; }
+ .opponent { grid-template-columns: minmax(0,1fr) auto; }
+ .opponent > span:last-child { grid-column: 1 / -1; }
+ .root :where(button:not([aria-label^="Help:"]),select) { min-height: 44px; }
+}
