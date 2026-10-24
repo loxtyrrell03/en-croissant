@@ -23,6 +23,15 @@ committing unrelated work.
 
 ## Verified milestones
 
+Native tab saves and close requests now retain the original tab/source and
+immutable annotated PGN, check native errors, serialize/coalesce automatic writes,
+and keep cancelled, failed or newly edited work open. Canonical live trees also
+fix delayed-session duplication and background-close ownership; game selection
+rejects stale reads and protects newer edits. Forty-one source/component checks,
+TypeScript and scoped lint pass. Native atomic/source-checked file writes and
+automatic Clear tabs remain open; this is source proof, with native/browser
+delivery separate. See `TAB_SAVE_OWNERSHIP.md`.
+
 | Improvement | Desktop | Phone | Verification / delivery |
 | --- | --- | --- | --- |
 | Strict online PGN dates, Novelty `33978469` | Incremental database cursor rejects impossible calendar dates; unknown time retains the valid UTC day | Online PGN imports use the same validator for ordering and filtering | 28 focused tests, whole-project TypeScript, scoped lint. First batch: phone deployed, desktop executable rebuilt |

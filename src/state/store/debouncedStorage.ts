@@ -82,15 +82,7 @@ export function createDebouncedSessionStorage<S>(delay = DEBOUNCE_MS): PersistSt
     bindFlushHandlers();
 
     return {
-        getItem: (name) => {
-            const pending = pendingWrites.get(name);
-            if (pending) {
-                return pending as StorageValue<S>;
-            }
-
-            const stored = sessionStorage.getItem(name);
-            return stored ? (JSON.parse(stored) as StorageValue<S>) : null;
-        },
+        getItem: readDebouncedSessionStorageItem<S>,
         setItem: (name, value) => {
             pendingWrites.set(name, value as StorageValue<unknown>);
             scheduleFlush(delay);
@@ -100,6 +92,26 @@ export function createDebouncedSessionStorage<S>(delay = DEBOUNCE_MS): PersistSt
             sessionStorage.removeItem(name);
         },
     };
+}
+
+export function readDebouncedSessionStorageItem<S>(name: string): StorageValue<S> | null {
+    const pending = pendingWrites.get(name);
+    if (pending) {
+        // Match JSON persistence: never hydrate a newly opened store with
+        // action closures belonging to an older store that queued this value.
+        const state = pending.state;
+        return {
+            ...pending,
+            state:
+                state && typeof state === "object" && !Array.isArray(state)
+                    ? (Object.fromEntries(
+                          Object.entries(state).filter(([, value]) => typeof value !== "function"),
+                      ) as S)
+                    : (state as S),
+        };
+    }
+    const stored = sessionStorage.getItem(name);
+    return stored ? (JSON.parse(stored) as StorageValue<S>) : null;
 }
 
 export function removeDebouncedSessionStorageItem(name: string) {

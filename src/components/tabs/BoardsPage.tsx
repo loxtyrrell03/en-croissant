@@ -1,6 +1,7 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { ActionIcon, ScrollArea, Tabs } from "@mantine/core";
-import { useHotkeys, useToggle } from "@mantine/hooks";
+import { useHotkeys } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import { IconPlus } from "@tabler/icons-react";
 import { useAtom, useAtomValue, useStore } from "jotai";
 import {
@@ -27,6 +28,9 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { removeDebouncedSessionStorageItem } from "@/state/store/debouncedStorage";
+import { getTabTreeStore, releaseTabTreeStore } from "@/state/store/treeRegistry";
+import { createTabSaveTarget } from "@/utils/tabSaveTarget";
+import { hasMeaningfulTabContent } from "@/utils/tabContent";
 import { createTab, genID, isPersistentGameOrigin, type Tab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import { BoardStartupFallback } from "../common/StartupProgress";
@@ -48,7 +52,7 @@ export default function BoardsPage() {
 
   const [tabs, setTabs] = useAtom(tabsAtom);
   const [activeTab, setActiveTab] = useAtom(activeTabAtom);
-  const [saveModalOpened, toggleSaveModal] = useToggle();
+  const [closingTabId, setClosingTabId] = useState<string | null>(null);
   const navigate = useNavigate();
   const store = useStore();
 
@@ -89,36 +93,53 @@ export default function BoardsPage() {
   const closeTab = useCallback(
     async (value: string | null, forced?: boolean) => {
       if (value !== null) {
-        const closedTab = tabs.find((tab) => tab.value === value);
-        const tabState = JSON.parse(sessionStorage.getItem(value) || "{}");
-        if (tabState && isPersistentGameOrigin(closedTab) && tabState.state.dirty && !forced) {
-          toggleSaveModal();
-          return;
-        }
-        if (value === activeTab) {
-          const index = tabs.findIndex((tab) => tab.value === value);
-          if (tabs.length > 1) {
-            if (index === tabs.length - 1) {
-              startTransition(() => setActiveTab(tabs[index - 1].value));
-            } else {
-              startTransition(() => setActiveTab(tabs[index + 1].value));
-            }
-          } else {
-            startTransition(() => setActiveTab(null));
-            navigate({ to: "/home" });
+        const latestTabs = store.get(tabsAtom);
+        const closedTab = latestTabs.find((tab) => tab.value === value);
+        if (!closedTab) return true;
+        try {
+          const tree = getTabTreeStore(value).getState();
+          if (
+            !forced &&
+            tree.dirty &&
+            (isPersistentGameOrigin(closedTab) ||
+              ((closedTab.type === "analysis" || closedTab.type === "play") &&
+                hasMeaningfulTabContent(tree)))
+          ) {
+            setClosingTabId(value);
+            return false;
           }
-        }
-        const remainingTabs = tabs.filter((tab) => tab.value !== value);
-        setTabs(remainingTabs);
-        removeDebouncedSessionStorageItem(value);
-        if (closedTab) {
+          removeDebouncedSessionStorageItem(value);
+          setTabs((current) => current.filter((tab) => tab.value !== value));
+          const remainingTabs = store.get(tabsAtom);
+          if (store.get(activeTabAtom) === value) {
+            const index = latestTabs.findIndex((tab) => tab.value === value);
+            setActiveTab(remainingTabs[Math.min(index, remainingTabs.length - 1)]?.value ?? null);
+            if (!remainingTabs.length) navigate({ to: "/home" });
+          }
           cleanupClosedTabAtomState(closedTab, remainingTabs, store.get(enginesAtom));
+          releaseTabTreeStore(value);
+        } catch (error) {
+          notifications.show({
+            title: "Could not close game",
+            message: String(error),
+            color: "red",
+          });
+          return false;
         }
-        unwrap(await commands.killEngines(value));
-        await commands.abortGame(`${value}-game`);
+        try {
+          unwrap(await commands.killEngines(value));
+          await commands.abortGame(`${value}-game`);
+        } catch (error) {
+          notifications.show({
+            title: "Game closed",
+            message: `Its engine could not be stopped: ${String(error)}`,
+            color: "red",
+          });
+        }
       }
+      return true;
     },
-    [tabs, activeTab, setTabs, toggleSaveModal, setActiveTab, navigate, store],
+    [setTabs, setActiveTab, navigate, store],
   );
 
   function selectTab(index: number) {
@@ -159,12 +180,23 @@ export default function BoardsPage() {
   const duplicateTab = useCallback(
     (value: string) => {
       const id = genID();
-      const tab = tabs.find((tab) => tab.value === value);
-      if (sessionStorage.getItem(value)) {
-        sessionStorage.setItem(id, sessionStorage.getItem(value) || "");
-      }
-
+      const tab = store.get(tabsAtom).find((tab) => tab.value === value);
       if (tab) {
+        try {
+          // The active tree can be newer than its debounced session snapshot.
+          // JSON also drops methods bound to the original store.
+          sessionStorage.setItem(
+            id,
+            JSON.stringify({ state: getTabTreeStore(value).getState(), version: 0 }),
+          );
+        } catch (error) {
+          notifications.show({
+            title: "Could not duplicate game",
+            message: String(error),
+            color: "red",
+          });
+          return;
+        }
         setTabs((prev) => [
           ...prev,
           {
@@ -177,7 +209,7 @@ export default function BoardsPage() {
         startTransition(() => setActiveTab(id));
       }
     },
-    [tabs, setTabs, setActiveTab],
+    [store, setTabs, setActiveTab],
   );
 
   useEffect(() => {
@@ -228,86 +260,98 @@ export default function BoardsPage() {
     ["ctrl+9", () => selectTab(tabs.length - 1)],
   ]);
 
+  const closingTab = tabs.find((tab) => tab.value === closingTabId);
   return (
-    <Tabs
-      value={activeTab}
-      onChange={(v) => setActiveTab(v)}
-      keepMounted={false}
-      className={classes.tabsContainer}
-    >
-      <ScrollArea scrollbarSize={6} className={classes.tabsHeader}>
-        <DragDropContext
-          onDragEnd={({ destination, source }) =>
-            destination?.index !== undefined &&
-            setTabs((prev) => {
-              const result = Array.from(prev);
-              const [removed] = result.splice(source.index, 1);
-              result.splice(destination.index, 0, removed);
-              return result;
-            })
-          }
-        >
-          <Droppable droppableId="droppable" direction="horizontal">
-            {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex" }}>
-                {tabs.map((tab, i) => (
-                  <Draggable key={tab.value} draggableId={tab.value} index={i}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <BoardTab
-                          tab={tab}
-                          tabType={tab.type}
-                          setActiveTab={handleSetActiveTab}
-                          closeTab={closeTab}
-                          renameTab={renameTab}
-                          duplicateTab={duplicateTab}
-                          selected={activeTab === tab.value}
-                        />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-                <ActionIcon
-                  variant="default"
-                  radius={0}
-                  classNames={{
-                    root: classes.newTab,
-                  }}
-                  onClick={() => void createAnalysisTab()}
+    <>
+      <Tabs
+        value={activeTab}
+        onChange={(v) => setActiveTab(v)}
+        keepMounted={false}
+        className={classes.tabsContainer}
+      >
+        <ScrollArea scrollbarSize={6} className={classes.tabsHeader}>
+          <DragDropContext
+            onDragEnd={({ destination, source }) =>
+              destination?.index !== undefined &&
+              setTabs((prev) => {
+                const result = Array.from(prev);
+                const [removed] = result.splice(source.index, 1);
+                result.splice(destination.index, 0, removed);
+                return result;
+              })
+            }
+          >
+            <Droppable droppableId="droppable" direction="horizontal">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  style={{ display: "flex" }}
                 >
-                  <IconPlus />
-                </ActionIcon>
-                <div className={classes.tabsFiller} />
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </ScrollArea>
-      {tabs.map((tab) => (
-        <Tabs.Panel
-          key={tab.value}
-          value={tab.value}
-          h="100%"
-          w="100%"
-          pb="sm"
-          px="xs"
-          className={classes.tabPanel}
-        >
-          <TabSwitch
-            tab={tab}
-            saveModalOpened={saveModalOpened}
-            toggleSaveModal={toggleSaveModal}
-            closeTab={closeTab}
-            activeTab={activeTab}
-          />
-        </Tabs.Panel>
-      ))}
-    </Tabs>
+                  {tabs.map((tab, i) => (
+                    <Draggable key={tab.value} draggableId={tab.value} index={i}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <BoardTab
+                            tab={tab}
+                            tabType={tab.type}
+                            setActiveTab={handleSetActiveTab}
+                            closeTab={closeTab}
+                            renameTab={renameTab}
+                            duplicateTab={duplicateTab}
+                            selected={activeTab === tab.value}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                  <ActionIcon
+                    variant="default"
+                    radius={0}
+                    classNames={{
+                      root: classes.newTab,
+                    }}
+                    onClick={() => void createAnalysisTab()}
+                  >
+                    <IconPlus />
+                  </ActionIcon>
+                  <div className={classes.tabsFiller} />
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </ScrollArea>
+        {tabs.map((tab) => (
+          <Tabs.Panel
+            key={tab.value}
+            value={tab.value}
+            h="100%"
+            w="100%"
+            pb="sm"
+            px="xs"
+            className={classes.tabPanel}
+          >
+            <TabSwitch tab={tab} />
+          </Tabs.Panel>
+        ))}
+      </Tabs>
+      {closingTab && (
+        <ConfirmChangesModal
+          key={closingTab.value}
+          opened
+          tab={closingTab}
+          target={createTabSaveTarget(store, closingTab.value)}
+          store={getTabTreeStore(closingTab.value)}
+          onClose={() => setClosingTabId(null)}
+          closeTab={() => closeTab(closingTab.value, true)}
+        />
+      )}
+    </>
   );
 }
 
@@ -565,19 +609,7 @@ function stopDragCursor() {
   document.body.style.userSelect = "";
 }
 
-function TabSwitch({
-  tab,
-  saveModalOpened,
-  toggleSaveModal,
-  closeTab,
-  activeTab,
-}: {
-  tab: Tab;
-  saveModalOpened: boolean;
-  toggleSaveModal: () => void;
-  closeTab: (value: string | null, forced?: boolean) => void;
-  activeTab: string | null;
-}) {
+function TabSwitch({ tab }: { tab: Tab }) {
   return match(tab.type)
     .with("new", () => null)
     .with("play", () => (
@@ -594,11 +626,6 @@ function TabSwitch({
         <Suspense fallback={<WorkspaceStartupFallback tab={tab} />}>
           <BoardAnalysis />
         </Suspense>
-        <ConfirmChangesModal
-          opened={saveModalOpened}
-          toggle={toggleSaveModal}
-          closeTab={() => closeTab(activeTab, true)}
-        />
       </TreeStateProvider>
     ))
     .with("puzzles", () => (
