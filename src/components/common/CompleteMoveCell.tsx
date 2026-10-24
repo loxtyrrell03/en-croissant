@@ -28,6 +28,7 @@ import { type GameHeaders, type TreeNode, treeIterator } from "@/utils/treeReduc
 import MoveCell from "./MoveCell";
 import moveCellStyles from "./MoveCell.module.css";
 import { TreeStateContext } from "./TreeStateContext";
+import { NotationViewContext, useNotationDetail } from "./NotationViewContext";
 
 const transpositionCache = new WeakMap<
   TreeStore,
@@ -158,7 +159,8 @@ function CompleteMoveCell({
   const [open, setOpen] = useState(false);
   const [annotating, setAnnotating] = useState(false);
   const currentTab = useAtomValue(currentTabAtom);
-  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
+  const showMoveAnnotations = useNotationDetail(currentShowMoveAnnotationsAtom);
+  const { readOnly } = useContext(NotationViewContext);
   const tabFile = getTabFile(currentTab);
   const moveTiming = useStoreWithEqualityFn(
     store,
@@ -203,7 +205,7 @@ function CompleteMoveCell({
       >
         {hasNumber && `${moveNumber.toString()}${isWhite ? "." : "..."}`}
         {move && (
-          <Menu opened={open} width={200}>
+          <Menu opened={open && !readOnly} width={200}>
             <Menu.Target>
               <MoveCell
                 ref={ref}
@@ -213,7 +215,7 @@ function CompleteMoveCell({
                 isCurrentVariation={isCurrentVariation}
                 onClick={() => goToMove(movePath)}
                 onContextMenu={(e: React.MouseEvent) => {
-                  setOpen((v) => !v);
+                  if (!readOnly) setOpen((v) => !v);
                   e.preventDefault();
                   e.stopPropagation();
                 }}
@@ -283,7 +285,7 @@ function CompleteMoveCell({
           </Tooltip>
         )}
       </Box>
-      {annotating && move && (
+      {!readOnly && annotating && move && (
         <MoveAnnotationPanel path={movePath} onClose={() => setAnnotating(false)} />
       )}
       {showComments && !tableLayout && displayComment && <Comment comment={displayComment} />}

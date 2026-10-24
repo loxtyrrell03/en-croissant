@@ -1,4 +1,5 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
+import { webGameBoardSetup } from "./gameBoardSetup";
 import { PhoneTournaments } from "@/features/tournaments/PhoneTournaments";
 import "@lichess-org/chessground/assets/chessground.base.css";
 import "@lichess-org/chessground/assets/chessground.cburnett.css";
@@ -699,12 +700,13 @@ function WebAppContent() {
   );
   const loadGameOnBoard = useCallback(
     (game: WebGame, options: { cursor?: number; orientation?: WebColor } = {}) => {
+      const setup = webGameBoardSetup(game, options.orientation);
       setState((current) => ({
         ...current,
         activePrepId: null,
         board: {
-          orientation: options.orientation ?? "white",
-          startFen: game.moves[0]?.fenBefore ?? INITIAL_FEN,
+          orientation: setup.orientation,
+          startFen: setup.startFen,
           line: webGameToLine(game),
           cursor: clampCursor(options.cursor ?? game.moves.length, game.moves.length),
           sourceTitle: getWebBoardSourceTitle(game, current.databases),

@@ -14,6 +14,7 @@ import {
 } from "./aiCoachPersistence";
 import { getPGN, parsePGN } from "./chess";
 import { hydrateOnlinePgnClocks } from "./onlinePgnClocks";
+import { explicitPgnOrientation } from "./pgnOrientation";
 import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
@@ -187,7 +188,10 @@ export async function createTab({
                 : pgn;
         const tree = initialState ?? (await parsePGN(hydratedPgn ?? "", headers?.fen));
         if (headers) {
-            tree.headers = headers;
+            tree.headers = {
+                ...headers,
+                orientation: explicitPgnOrientation(headers.orientation) ?? tree.headers.orientation,
+            };
             if (position) {
                 tree.position = position;
             }

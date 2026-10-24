@@ -1,10 +1,11 @@
 import { Box, rgba, useMantineTheme } from "@mantine/core";
 import { IconFlag } from "@tabler/icons-react";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import type { ReactNode, RefObject } from "react";
 import { currentShowMoveAnnotationsAtom, moveNotationTypeAtom } from "@/state/atoms";
 import { ANNOTATION_INFO, type Annotation, addPieceSymbol } from "@/utils/annotation";
 import classes from "./MoveCell.module.css";
+import { useNotationDetail } from "./NotationViewContext";
 
 interface MoveCellProps {
   annotations: Annotation[];
@@ -21,7 +22,7 @@ interface MoveCellProps {
 
 function MoveCell(props: MoveCellProps) {
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
-  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
+  const showMoveAnnotations = useNotationDetail(currentShowMoveAnnotationsAtom);
   const visualAnnotation = showMoveAnnotations ? props.annotations[0] : "";
 
   const color = ANNOTATION_INFO[visualAnnotation]?.color || "gray";

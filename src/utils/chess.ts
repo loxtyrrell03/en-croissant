@@ -10,6 +10,7 @@ import { BoundedMap } from "./boundedCache";
 import { parseSanOrUci, positionFromFen } from "./chessops";
 import { isPrefix } from "./misc";
 import { gameAnalysisEvidence } from "./gameAnalysisEvidence";
+import { explicitPgnOrientation, pgnOrientation } from "./pgnOrientation";
 import {
     formatScore,
     getCPLoss,
@@ -128,8 +129,8 @@ export function getMoveText(
         }
 
         if (opt.extraMarkups && tree.shapes.length > 0) {
-            const squares = tree.shapes.filter((shape) => shape.dest === undefined);
-            const arrows = tree.shapes.filter((shape) => shape.dest !== undefined);
+            const squares = tree.shapes.filter((shape) => shape.dest === undefined || shape.dest === shape.orig);
+            const arrows = tree.shapes.filter((shape) => shape.dest !== undefined && shape.dest !== shape.orig);
 
             if (squares.length > 0) {
                 content += `[%csl ${squares
@@ -437,7 +438,7 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
             if (comment.shapes.length > 0) {
                 const shapes: DrawShape[] = comment.shapes.map((shape) => ({
                     orig: makeSquare(shape.from),
-                    dest: makeSquare(shape.to),
+                    dest: shape.from === shape.to ? undefined : makeSquare(shape.to),
                     brush: shape.color,
                 }));
                 root.shapes.push(...shapes);
@@ -529,6 +530,7 @@ export function parsePgnTokens(tokens: Token[], initialFen?: string): TreeState 
         pos?.turn === "black" ? 1 : 0,
     );
     tree.headers = headers;
+    tree.headers.orientation = pgnOrientation(fen, headers.orientation);
     tree.position = headers.start ?? [];
     return tree;
 }
@@ -575,10 +577,6 @@ function getPgnHeaders(tokens: Token[]): GameHeaders {
         return ["*", "1-0", "0-1", "1/2-1/2"].includes(value);
     };
 
-    const isValidOrientation = (value: string): value is "white" | "black" => {
-        return ["white", "black"].includes(value);
-    };
-
     const headers: GameHeaders = {
         id: 0,
         fen: FEN ?? INITIAL_FEN,
@@ -593,7 +591,7 @@ function getPgnHeaders(tokens: Token[]): GameHeaders {
         site: Site ?? "",
         event: Event ?? "",
         start: JSON.parse(Start ?? "[]"),
-        orientation: isValidOrientation(Orientation) ? Orientation : "white",
+        orientation: explicitPgnOrientation(Orientation) ?? undefined,
         time_control: TimeControl,
         variant: Variant,
         other: other,

@@ -43,7 +43,16 @@ describe("saved board drawing ownership", () => {
     const pgn = getPGN(tree.root, { headers: tree.headers, glyphs: true, comments: true, variations: true, extraMarkups: true });
     expect(pgn).toContain("Ge2e4");
     expect(pgn).toContain("Rd4");
+    expect(pgn).toContain("[%csl Rd4]");
+    expect(pgn).not.toContain("Rd4d4");
     expect(pgn).toContain("Bg1f3");
     expect(pgn).not.toContain("Bd2d4");
+  });
+  test("an older saved same-square drawing remains a PGN circle when exported", () => {
+    const tree = parsePgnTokens([]);
+    tree.root.shapes = [{ orig: "d4", dest: "d4", brush: "red" }];
+    const pgn = getPGN(tree.root, { headers: tree.headers, glyphs: true, comments: true, variations: true, extraMarkups: true });
+    expect(pgn).toContain("[%csl Rd4]");
+    expect(pgn).not.toContain("[%cal");
   });
 });

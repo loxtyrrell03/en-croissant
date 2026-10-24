@@ -1,6 +1,7 @@
 import { Chessground as NativeChessground } from "@lichess-org/chessground";
 import type { Api } from "@lichess-org/chessground/api";
 import type { Config } from "@lichess-org/chessground/config";
+import { defaults as chessgroundDefaults } from "@lichess-org/chessground/state";
 import { Box } from "@mantine/core";
 import equal from "fast-deep-equal/es6";
 import { useAtomValue } from "jotai";
@@ -20,6 +21,8 @@ import {
   isChessComBoardStyle,
   type BoardStyle,
 } from "@/utils/boardStyle";
+
+const DEFAULT_DRAW_BRUSHES = chessgroundDefaults().drawable.brushes;
 
 const BOARD_COORDINATE_COLORS: Record<string, { white: string; black: string }> = {
   blue: { white: "#dee3e6", black: "#788a94" },
@@ -143,12 +146,13 @@ function buildManagedConfig(
   if (props.drawable) {
     config.drawable = {
       ...props.drawable,
-      brushes: isChessComBoardStyle(boardStyle)
-        ? {
-            ...CHESS_COM_DRAW_BRUSHES,
-            ...props.drawable.brushes,
-          }
-        : props.drawable.brushes,
+      // Passing undefined erases Chessground's defaults and crashes when a
+      // saved shape renders. Rebuild the base palette on theme changes too.
+      brushes: {
+        ...DEFAULT_DRAW_BRUSHES,
+        ...(isChessComBoardStyle(boardStyle) ? CHESS_COM_DRAW_BRUSHES : {}),
+        ...props.drawable.brushes,
+      },
       onChange: handlers.drawableOnChange,
     };
   }
@@ -289,7 +293,12 @@ export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
       return;
     }
 
+    const brushesChanged =
+      appliedConfigRef.current &&
+      !equal(appliedConfigRef.current.drawable?.brushes, config.drawable?.brushes);
     api.set(config);
+    // Chessground's SVG cache keys shapes rather than palette values.
+    if (brushesChanged) api.redrawAll();
     appliedConfigRef.current = config;
   }, [boardStyle, handlers, moveMethod, props, setBoardFen]);
 

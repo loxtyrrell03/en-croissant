@@ -17,7 +17,15 @@ import { formatMoveThinkTime } from "@/utils/clock";
 import { getLiveReplayProgress, getLiveReplayStep } from "@/utils/liveReplay";
 import { TreeStateContext } from "./TreeStateContext";
 
-function MoveControls({ readOnly }: { readOnly?: boolean }) {
+function MoveControls({
+  readOnly,
+  isolated = false,
+  compact = false,
+}: {
+  readOnly?: boolean;
+  isolated?: boolean;
+  compact?: boolean;
+}) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
@@ -38,7 +46,13 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const tickRef = useRef<number | null>(null);
-  const setLiveReplayClock = useSetAtom(liveReplayClockAtom);
+  const writeSharedReplayClock = useSetAtom(liveReplayClockAtom);
+  const setLiveReplayClock = useCallback(
+    (value: Parameters<typeof writeSharedReplayClock>[0]) => {
+      if (!isolated) writeSharedReplayClock(value);
+    },
+    [isolated, writeSharedReplayClock],
+  );
 
   const clearLiveTimers = useCallback(() => {
     if (timeoutRef.current !== null) {
@@ -201,17 +215,17 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
   }, [clearLiveTimers, setLiveReplayClock]);
 
   const keyMap = useAtomValue(keyMapAtom);
-  useHotkeys(keyMap.PREVIOUS_MOVE.keys, handlePrevious);
-  useHotkeys(keyMap.NEXT_MOVE.keys, handleNext);
-  useHotkeys(keyMap.GO_TO_START.keys, handleStart);
-  useHotkeys(keyMap.GO_TO_END.keys, handleEnd);
-  useHotkeys(keyMap.DELETE_MOVE.keys, handleDeleteMove);
-  useHotkeys(keyMap.GO_TO_BRANCH_START.keys, handleStartBranch);
-  useHotkeys(keyMap.GO_TO_BRANCH_END.keys, handleEndBranch);
-  useHotkeys(keyMap.NEXT_BRANCH.keys, handleNextBranch);
-  useHotkeys(keyMap.PREVIOUS_BRANCH.keys, handlePreviousBranch);
-  useHotkeys(keyMap.NEXT_BRANCHING.keys, handleNextBranching);
-  useHotkeys(keyMap.PREVIOUS_BRANCHING.keys, handlePreviousBranching);
+  useHotkeys(keyMap.PREVIOUS_MOVE.keys, handlePrevious, { enabled: !isolated });
+  useHotkeys(keyMap.NEXT_MOVE.keys, handleNext, { enabled: !isolated });
+  useHotkeys(keyMap.GO_TO_START.keys, handleStart, { enabled: !isolated });
+  useHotkeys(keyMap.GO_TO_END.keys, handleEnd, { enabled: !isolated });
+  useHotkeys(keyMap.DELETE_MOVE.keys, handleDeleteMove, { enabled: !isolated });
+  useHotkeys(keyMap.GO_TO_BRANCH_START.keys, handleStartBranch, { enabled: !isolated });
+  useHotkeys(keyMap.GO_TO_BRANCH_END.keys, handleEndBranch, { enabled: !isolated });
+  useHotkeys(keyMap.NEXT_BRANCH.keys, handleNextBranch, { enabled: !isolated });
+  useHotkeys(keyMap.PREVIOUS_BRANCH.keys, handlePreviousBranch, { enabled: !isolated });
+  useHotkeys(keyMap.NEXT_BRANCHING.keys, handleNextBranching, { enabled: !isolated });
+  useHotkeys(keyMap.PREVIOUS_BRANCHING.keys, handlePreviousBranching, { enabled: !isolated });
 
   return (
     <Stack gap={4}>
@@ -236,16 +250,14 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
             variant={liveReplay ? "filled" : "default"}
             color={liveReplay ? "blue" : undefined}
             size="lg"
-            px="xs"
+            px={compact ? 0 : "xs"}
             onClick={() => {
               if (!liveStep && !liveReplay) return;
               setLiveReplay((playing) => !playing);
             }}
             aria-label={liveReplay ? "Pause live replay" : "Watch at game pace"}
             disabled={!liveReplay && !liveStep}
-            leftSection={
-              liveReplay ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />
-            }
+            leftSection={liveReplay ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}
             styles={{
               root: {
                 minWidth: 0,
@@ -255,11 +267,11 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
                 lineHeight: 1.05,
               },
               section: {
-                marginInlineEnd: 6,
+                marginInlineEnd: compact ? 0 : 6,
               },
             }}
           >
-            {liveLabel}
+            {compact ? null : liveLabel}
           </Button>
         </Tooltip>
         <Tooltip label="Next move" openDelay={350}>

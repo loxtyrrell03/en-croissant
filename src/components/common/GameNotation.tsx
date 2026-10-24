@@ -72,6 +72,7 @@ import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 import type { TreeStore } from "@/state/store/tree";
 import AnnotationEditor from "../panels/annotation/AnnotationEditor";
 import CompleteMoveCell from "./CompleteMoveCell";
+import { NotationViewContext, useNotationDetail } from "./NotationViewContext";
 import styles from "./GameNotation.module.css";
 import OpeningName from "./OpeningName";
 
@@ -83,6 +84,8 @@ function GameNotation({
   className,
   compact = false,
   grow = true,
+  readOnly = false,
+  forceDetails = false,
 }: {
   topBar?: boolean;
   controls?: React.ReactNode;
@@ -91,6 +94,8 @@ function GameNotation({
   className?: string;
   compact?: boolean;
   grow?: boolean;
+  readOnly?: boolean;
+  forceDetails?: boolean;
 }) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
@@ -133,153 +138,157 @@ function GameNotation({
 
   const [invisibleValue, setInvisible] = useAtom(currentInvisibleAtom);
   const invisible = topBar && invisibleValue;
-  const showComments = useAtomValue(currentShowCommentsAtom);
+  const savedShowComments = useAtomValue(currentShowCommentsAtom);
+  const showComments = forceDetails || savedShowComments;
+  const notationView = useMemo(() => ({ readOnly, forceDetails }), [readOnly, forceDetails]);
   const tableView = useAtomValue(tableViewAtom);
   const colorScheme = useColorScheme();
 
   const keyMap = useAtomValue(keyMapAtom);
-  useHotkeys(keyMap.TOGGLE_BLUR.keys, () => setInvisible((v) => !v));
+  useHotkeys(keyMap.TOGGLE_BLUR.keys, () => setInvisible((v) => !v), { enabled: !readOnly });
 
   function handleNotationContextMenu(event: React.MouseEvent) {
-    if (reportVisible) return;
+    if (reportVisible || readOnly) return;
     event.preventDefault();
     setRootContextMenuPosition({ x: event.clientX, y: event.clientY });
   }
 
   return (
-    <Paper
-      data-testid="game-notation"
-      withBorder
-      flex={grow ? 1 : undefined}
-      className={className}
-      style={{ position: "relative", overflow: "hidden", minHeight: 0 }}
-    >
-      <Group h="100%" wrap="nowrap" align="stretch" gap={0} style={{ minHeight: 0 }}>
-        {controls && (
-          <>
-            <ScrollArea
-              type="never"
-              py={compact ? 6 : "md"}
-              mx={compact ? 4 : "xs"}
-              style={{ flexShrink: 0 }}
-            >
-              {controls}
-            </ScrollArea>
-            <Divider orientation="vertical" />
-          </>
-        )}
-        <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-          {topBar && (
-            <NotationHeader
-              compact={compact}
-              headerActions={headerActions}
-              reportVisible={reportVisible}
-              setReportVisible={setReportVisible}
-            />
+    <NotationViewContext.Provider value={notationView}>
+      <Paper
+        data-testid="game-notation"
+        withBorder
+        flex={grow ? 1 : undefined}
+        className={className}
+        style={{ position: "relative", overflow: "hidden", minHeight: 0 }}
+      >
+        <Group h="100%" wrap="nowrap" align="stretch" gap={0} style={{ minHeight: 0 }}>
+          {controls && (
+            <>
+              <ScrollArea
+                type="never"
+                py={compact ? 6 : "md"}
+                mx={compact ? 4 : "xs"}
+                style={{ flexShrink: 0 }}
+              >
+                {controls}
+              </ScrollArea>
+              <Divider orientation="vertical" />
+            </>
           )}
-          {content ? (
-            <Box flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
-              {content}
-            </Box>
-          ) : (
-            <ScrollArea
-              flex={1}
-              offsetScrollbars
-              scrollbars="y"
-              viewportRef={viewport}
-              style={{ minHeight: 0 }}
-            >
-              <Stack gap="xs">
-                {reportVisible ? (
-                  <GameAnalysisReport isAnalysing={reportInProgress} />
-                ) : (
-                  <>
-                    <Box onContextMenu={handleNotationContextMenu} style={{ minHeight: 80 }}>
-                      <Menu
-                        opened={rootContextMenuPosition !== null}
-                        onChange={(opened) => {
-                          if (!opened) setRootContextMenuPosition(null);
-                        }}
-                        width={200}
-                        shadow="md"
-                      >
-                        <Menu.Target>
-                          <Box
-                            style={{
-                              position: "fixed",
-                              left: rootContextMenuPosition?.x ?? -1000,
-                              top: rootContextMenuPosition?.y ?? -1000,
-                              width: 1,
-                              height: 1,
-                              pointerEvents: "none",
-                            }}
+          <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
+            {topBar && !readOnly && (
+              <NotationHeader
+                compact={compact}
+                headerActions={headerActions}
+                reportVisible={reportVisible}
+                setReportVisible={setReportVisible}
+              />
+            )}
+            {content ? (
+              <Box flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                {content}
+              </Box>
+            ) : (
+              <ScrollArea
+                flex={1}
+                offsetScrollbars
+                scrollbars="y"
+                viewportRef={viewport}
+                style={{ minHeight: 0 }}
+              >
+                <Stack gap="xs">
+                  {reportVisible ? (
+                    <GameAnalysisReport isAnalysing={reportInProgress} />
+                  ) : (
+                    <>
+                      <Box onContextMenu={handleNotationContextMenu} style={{ minHeight: 80 }}>
+                        <Menu
+                          opened={!readOnly && rootContextMenuPosition !== null}
+                          onChange={(opened) => {
+                            if (!opened) setRootContextMenuPosition(null);
+                          }}
+                          width={200}
+                          shadow="md"
+                        >
+                          <Menu.Target>
+                            <Box
+                              style={{
+                                position: "fixed",
+                                left: rootContextMenuPosition?.x ?? -1000,
+                                top: rootContextMenuPosition?.y ?? -1000,
+                                width: 1,
+                                height: 1,
+                                pointerEvents: "none",
+                              }}
+                            />
+                          </Menu.Target>
+                          <Menu.Dropdown>
+                            <Menu.Item
+                              leftSection={<IconPencil size="0.875rem" />}
+                              onClick={() => {
+                                setRootAnnotating(true);
+                                setRootContextMenuPosition(null);
+                              }}
+                            >
+                              {t("Board.Tabs.Annotate")}
+                            </Menu.Item>
+                          </Menu.Dropdown>
+                        </Menu>
+                        {invisible && (
+                          <Overlay
+                            backgroundOpacity={0.6}
+                            color={colorScheme === "dark" ? "#1a1b1e" : undefined}
+                            blur={8}
+                            zIndex={2}
                           />
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          <Menu.Item
-                            leftSection={<IconPencil size="0.875rem" />}
-                            onClick={() => {
-                              setRootAnnotating(true);
-                              setRootContextMenuPosition(null);
-                            }}
-                          >
-                            {t("Board.Tabs.Annotate")}
-                          </Menu.Item>
-                        </Menu.Dropdown>
-                      </Menu>
-                      {invisible && (
-                        <Overlay
-                          backgroundOpacity={0.6}
-                          color={colorScheme === "dark" ? "#1a1b1e" : undefined}
-                          blur={8}
-                          zIndex={2}
-                        />
-                      )}
-                      {rootAnnotating && (
-                        <RootAnnotationPanel onClose={() => setRootAnnotating(false)} />
-                      )}
-                      {showComments && rootComment && (
-                        <Box p="sm" fz="sm">
-                          <Comment comment={rootComment} />
-                        </Box>
-                      )}
-                      {tableView ? (
-                        <TableNotation targetRef={targetRef} compact={compact} />
-                      ) : (
-                        <Box pt={compact ? 3 : "md"} px={compact ? 8 : "sm"}>
-                          <RenderVariationTree
-                            targetRef={targetRef}
-                            nodePath={[]}
-                            depth={0}
-                            first
-                            compact={compact}
-                          />
-                        </Box>
-                      )}
-                    </Box>
-                    <Box pb={compact ? 4 : "md"}>
-                      {headers.result !== "*" && (
-                        <Text ta="center">
-                          {headers.result}
-                          <br />
-                          <Text span fs="italic">
-                            {headers.result === "1/2-1/2"
-                              ? "Draw"
-                              : headers.result === "1-0"
-                                ? "White wins"
-                                : "Black wins"}
+                        )}
+                        {!readOnly && rootAnnotating && (
+                          <RootAnnotationPanel onClose={() => setRootAnnotating(false)} />
+                        )}
+                        {showComments && rootComment && (
+                          <Box p="sm" fz="sm">
+                            <Comment comment={rootComment} />
+                          </Box>
+                        )}
+                        {tableView ? (
+                          <TableNotation targetRef={targetRef} compact={compact} />
+                        ) : (
+                          <Box pt={compact ? 3 : "md"} px={compact ? 8 : "sm"}>
+                            <RenderVariationTree
+                              targetRef={targetRef}
+                              nodePath={[]}
+                              depth={0}
+                              first
+                              compact={compact}
+                            />
+                          </Box>
+                        )}
+                      </Box>
+                      <Box pb={compact ? 4 : "md"}>
+                        {headers.result !== "*" && (
+                          <Text ta="center">
+                            {headers.result}
+                            <br />
+                            <Text span fs="italic">
+                              {headers.result === "1/2-1/2"
+                                ? "Draw"
+                                : headers.result === "1-0"
+                                  ? "White wins"
+                                  : "Black wins"}
+                            </Text>
                           </Text>
-                        </Text>
-                      )}
-                    </Box>
-                  </>
-                )}
-              </Stack>
-            </ScrollArea>
-          )}
-        </Stack>
-      </Group>
-    </Paper>
+                        )}
+                      </Box>
+                    </>
+                  )}
+                </Stack>
+              </ScrollArea>
+            )}
+          </Stack>
+        </Group>
+      </Paper>
+    </NotationViewContext.Provider>
   );
 }
 
@@ -641,8 +650,8 @@ const RenderVariationTree = memo(
     compact?: boolean;
   }) {
     const store = useContext(TreeStateContext)!;
-    const showVariations = useAtomValue(currentShowVariationsAtom);
-    const showComments = useAtomValue(currentShowCommentsAtom);
+    const showVariations = useNotationDetail(currentShowVariationsAtom);
+    const showComments = useNotationDetail(currentShowCommentsAtom);
     const node = useStore(store, (s) => getNodeAtPath(s.root, nodePath));
     const variations = node.children;
 
@@ -934,9 +943,9 @@ const TableNotation = memo(function TableNotation({
   compact?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
-  const showVariations = useAtomValue(currentShowVariationsAtom);
-  const showComments = useAtomValue(currentShowCommentsAtom);
-  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
+  const showVariations = useNotationDetail(currentShowVariationsAtom);
+  const showComments = useNotationDetail(currentShowCommentsAtom);
+  const showMoveAnnotations = useNotationDetail(currentShowMoveAnnotationsAtom);
   const segments = useStoreWithEqualityFn(
     store,
     (s) =>
@@ -1089,8 +1098,8 @@ function RowSegment({
   compact?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
-  const showComments = useAtomValue(currentShowCommentsAtom);
-  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
+  const showComments = useNotationDetail(currentShowCommentsAtom);
+  const showMoveAnnotations = useNotationDetail(currentShowMoveAnnotationsAtom);
   const whitePath = useMemo(() => parsePathStr(whitePathStr), [whitePathStr]);
   const white = useStoreWithEqualityFn(store, (s) => selectMoveNodeView(s.root, whitePath), equal);
   const blackPath = useMemo(() => parsePathStr(blackPathStr), [blackPathStr]);
