@@ -119,9 +119,14 @@ import {
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import PhoneMistakeReview from "./PhoneMistakeReview";
+import PhonePcServices from "./PhonePcServices";
+import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
 import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
+import { loadWebOtbImportJob } from "./otbImport";
+import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
+import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
 import { annotatePhoneMove } from "./phoneAnnotations";
 import {
   askWebChessCoach,
@@ -245,7 +250,7 @@ import {
   getGamesForWebPrepSource,
   getDatabasePlayerCounts,
   filterWebGamesByLocalFilters,
-  getWebDatabaseTitlePlayerName,
+  getWebPrepDatabaseOpponent,
   getNextOpenPrepStat,
   getWebPrepBranchCoverageStats,
   getWebPrepMoveKey,
@@ -526,6 +531,71 @@ function WebAppContent() {
   const [view, setView] = useState<ViewMode>("board");
   const [boardPanelMode, setBoardPanelMode] = useState<BoardPanelMode>("moves");
   const [importing, setImporting] = useState(false);
+  useEffect(() => {
+    if (!loaded || readWebOtbPrepLink(window.location.search)) return;
+    return watchPhonePrepRequests({
+      appliedId: () => webStateSession.getSnapshot().savedState?.lastAppliedPhonePrepRequestId,
+      apply: async (request, signal) => {
+        if (phoneBoardHasUnfiledAnalysis(webStateSession.getSnapshot().state)) return;
+        // Explicit links remain a separate intentional action. A saved PC request
+        // is consumed once on each device, including the installed home-screen app.
+        if (webStateSession.getSnapshot().state.lastAppliedPhonePrepRequestId !== request.id) {
+          const job = await loadWebOtbImportJob(request.jobId, signal);
+          if (signal.aborted) return;
+          setState((current) => ({
+            ...openWebOtbPrepLink(current, job, request.userColor),
+            lastAppliedPhonePrepRequestId: request.id,
+          }));
+        }
+        await webStateSession.flush();
+        if (signal.aborted) return;
+        setView("board");
+        setBoardPanelMode("prep");
+        notifications.show({
+          title: "Prep ready",
+          message: `I'm ${request.userColor === "white" ? "White" : "Black"}`,
+          color: "green",
+        });
+      },
+      onError: (error) => notifications.show({
+        title: "Could not load requested prep",
+        message: error instanceof Error ? error.message : "Reopen the app to retry.",
+        color: "red",
+      }),
+    });
+  }, [loaded, setState]);
+  useEffect(() => {
+    if (!loaded) return;
+    const link = readWebOtbPrepLink(window.location.search);
+    if (!link) return;
+    const controller = new AbortController();
+    setImporting(true);
+    void (async () => {
+      try {
+        const job = await loadWebOtbImportJob(link.jobId, controller.signal);
+        if (controller.signal.aborted) return;
+        setState((current) => openWebOtbPrepLink(current, job, link.userColor));
+        await webStateSession.flush();
+        if (controller.signal.aborted) return;
+        setView("board");
+        setBoardPanelMode("prep");
+        notifications.show({
+          title: "Prep ready",
+          message: `I'm ${link.userColor === "white" ? "White" : "Black"}`,
+          color: "green",
+        });
+      } catch (error) {
+        if (!controller.signal.aborted) notifications.show({
+          title: "Could not open prep",
+          message: error instanceof Error ? error.message : "Reload this link to retry.",
+          color: "red",
+        });
+      } finally {
+        if (!controller.signal.aborted) setImporting(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [loaded, setState]);
   const [pastedPgn, setPastedPgn] = useState("");
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
@@ -1183,6 +1253,7 @@ function WebAppContent() {
           </Box>
         </Box>
 
+        <PhonePcServices />
         <main className={classes.main}>
           {workspace.saveError && (
             <Stack
@@ -1444,6 +1515,17 @@ function BoardWorkspace({
   const board = state.board ?? createEmptyWebBoardState();
   const baseOrientation = activePrep?.userColor ?? board.orientation;
   const [orientationOverride, setOrientationOverride] = useState<WebColor | null>(null);
+  const alignBoardToPrepSide = useCallback(
+    (color: WebColor) => {
+      setOrientationOverride(null);
+      setState((current) =>
+        current.board.orientation === color
+          ? current
+          : { ...current, board: { ...current.board, orientation: color } },
+      );
+    },
+    [setState],
+  );
   useEffect(() => {
     setOrientationOverride(null);
   }, [activePrep?.id, baseOrientation, board.sourceDatabaseId, board.sourceGameId, board.startFen]);
@@ -2005,7 +2087,7 @@ function BoardWorkspace({
               tabs cannot abort an active PC search. */}
           <EngineUnderBoardPanel
             analysisRequestId={onlineAnalysisRequestId}
-            compact={panelMode !== "engine"}
+            compact={panelMode !== "engine" && panelMode !== "moves"}
             currentFen={currentFen}
             upcomingFens={upcomingEngineFens}
             onAnalysisLinesChange={handleEngineAnalysisLinesChange}
@@ -2053,6 +2135,7 @@ function BoardWorkspace({
                 <PrepUnderBoardPanel
                   state={state}
                   setState={setState}
+                  onUserColorChange={alignBoardToPrepSide}
                   activePrep={activePrep}
                   currentFen={currentFen}
                   stats={prepStats}
@@ -4389,6 +4472,7 @@ function EngineUnderBoardPanel({
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const pcServices = usePcServicesAvailability();
   const performancePreset =
     settings.engineKind === "lc0" ? settings.lc0Preset : settings.stockfishPreset;
 
@@ -4404,7 +4488,7 @@ function EngineUnderBoardPanel({
   }, [analysisRequestId, setSettings]);
 
   useEffect(() => {
-    if (!settings.enabled || suspended) {
+    if (!settings.enabled || suspended || pcServices === "off" || pcServices === "starting") {
       if (!suspended) void releaseWebPcEngine(settings.engineKind);
       setStatus("idle");
       setError(null);
@@ -4463,6 +4547,7 @@ function EngineUnderBoardPanel({
     performancePreset,
     suspended,
     upcomingFens,
+    pcServices,
   ]);
 
   useEffect(() => {
@@ -4505,7 +4590,11 @@ function EngineUnderBoardPanel({
     ? "Auto network"
     : getLc0NetworkDisplayName(settings.lc0Network);
   const analysisSource = topLine ? getWebEngineSourceLabel(topLine) : engineLabel;
-  const compactEngineMeta = getWebCompactEngineMeta({
+  const compactEngineMeta = pcServices === "off"
+    ? { label: "PC services off", accessibleLabel: "PC services are off" }
+    : status === "error"
+    ? { label: "Unavailable", accessibleLabel: "PC engine is unavailable" }
+    : getWebCompactEngineMeta({
     enabled: analysisEnabled,
     topLine,
     nodeCount,
@@ -4924,6 +5013,7 @@ function EngineLineTable({
 function PrepUnderBoardPanel({
   state,
   setState,
+  onUserColorChange,
   activePrep,
   currentFen,
   stats,
@@ -4942,6 +5032,7 @@ function PrepUnderBoardPanel({
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
+  onUserColorChange: (color: WebColor) => void;
   activePrep: WebPrepWorkspace | null;
   currentFen: string;
   stats: WebPrepMoveStat[];
@@ -5141,6 +5232,9 @@ function PrepUnderBoardPanel({
     [activePrep?.sortDefaults, storedPrepSetup.sortDefaults],
   );
   const selectedUserColor = activePrep?.userColor ?? userColor;
+  useEffect(() => {
+    onUserColorChange(selectedUserColor);
+  }, [onUserColorChange, selectedUserColor]);
   const selectedPlayerColor = oppositeWebColor(selectedUserColor);
   const selectedOpponentName = activePrep?.opponent ?? opponent;
   const trimmedSelectedOpponentName = selectedOpponentName.trim();
@@ -5991,23 +6085,28 @@ function PrepUnderBoardPanel({
 
   // Autofill the opponent only once per selected source; refilling whenever
   // the field becomes empty made it impossible to clear and retype a name.
-  const autofilledOpponentSourceRef = useRef<string | null>(null);
+  const autofilledOpponentSourceRef = useRef({ sourceId: null as string | null, handled: false });
   useEffect(() => {
     if (selectedPrepMode !== "player" || selectedPrepSource !== "local") return;
-    if (!activePrepSourceId || selectedPrepDatabasePlayers.length === 0) return;
-    if (autofilledOpponentSourceRef.current === activePrepSourceId) return;
-    autofilledOpponentSourceRef.current = activePrepSourceId;
-    if (trimmedSelectedOpponentName) return;
+    if (autofilledOpponentSourceRef.current.sourceId !== activePrepSourceId) {
+      autofilledOpponentSourceRef.current = { sourceId: activePrepSourceId, handled: false };
+    }
+    if (!activePrepSourceId) return;
+    if (autofilledOpponentSourceRef.current.handled) return;
+    if (trimmedSelectedOpponentName) {
+      autofilledOpponentSourceRef.current.handled = true;
+      return;
+    }
+    const labelPlayer = getWebPrepDatabaseOpponent(
+      activePrepSourceDatabase,
+      selectedPrepDatabasePlayers,
+    );
+    if (!labelPlayer) return;
 
-    const defaultPlayer = selectedPrepDatabasePlayers[0];
-    const labelPlayer =
-      getWebDatabaseTitlePlayerName(activePrepSourceDatabase?.name, defaultPlayer.name) ??
-      defaultPlayer.name;
-    if (!labelPlayer.trim()) return;
-
+    autofilledOpponentSourceRef.current.handled = true;
     updatePrepOpponent(labelPlayer);
   }, [
-    activePrepSourceDatabase?.name,
+    activePrepSourceDatabase,
     activePrepSourceId,
     selectedPrepDatabasePlayers,
     selectedPrepMode,

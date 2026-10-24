@@ -1,4 +1,5 @@
 import { parseUci } from "chessops";
+import { resolvePrivateServiceUrl } from "./serverUrl";
 import { normalizeMove } from "chessops/chess";
 import { makeSan } from "chessops/san";
 import { BoundedMap, BoundedSet } from "@/utils/boundedCache";
@@ -23,7 +24,7 @@ const LICHESS_CLOUD_MAX_MULTIPV = 5;
 const LICHESS_CLOUD_MIN_REQUEST_INTERVAL_MS = 1_000;
 const LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS = 60_000;
 const PC_STORED_EVAL_TIMEOUT_MS = 2_000;
-const configuredRemoteStockfishUrl = String(
+const configuredRemoteStockfishUrl = resolvePrivateServiceUrl(
   import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ??
     "https://lox-pc.tail89d19b.ts.net",
 ).trim();

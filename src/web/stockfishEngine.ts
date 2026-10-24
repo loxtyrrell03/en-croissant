@@ -7,7 +7,7 @@ import { positionFromFen } from "@/utils/chessops";
 import type { WebEngineLine, WebEngineScore } from "./model";
 import { normalizeWebEngineScoreForWhite } from "./engineScore";
 import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessCloud";
-import { WEB_SERVER_BASE_URL } from "./serverUrl";
+import { WEB_SERVER_BASE_URL, resolvePrivateServiceUrl } from "./serverUrl";
 import type { Lc0NetworkProfile, PcEngineKind } from "@/utils/lc0Networks";
 import type { EnginePerformancePreset } from "@/utils/enginePerformance";
 
@@ -21,7 +21,7 @@ const REMOTE_STOCKFISH_MAX_ATTEMPTS = 2;
 const STORED_CLOUD_CACHE_LIMIT = 160;
 const STORED_CLOUD_PREFETCH_LIMIT = 3;
 const STOCKFISH_MAX_DEPTH = 70;
-const configuredRemoteStockfishUrl = String(
+const configuredRemoteStockfishUrl = resolvePrivateServiceUrl(
     import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://lox-pc.tail89d19b.ts.net",
 ).trim();
 const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");

@@ -12,6 +12,9 @@ foreach ($path in @(
   $installerPath,
   $publisherPath,
   $collectorTerminatorPath
+  (Join-Path $scriptsRoot 'manage-phone-services.ps1')
+  (Join-Path $scriptsRoot 'run-phone-service-controller.ps1')
+  (Join-Path $scriptsRoot 'watch-phone-service-controller.ps1')
 )) {
   $tokens = $null
   $parseErrors = $null
@@ -33,6 +36,13 @@ if ($launcher -notmatch 'taskkill\.exe\s+/PID.*?/T\s+/F') {
 }
 
 $installer = Get-Content -Raw -LiteralPath $installerPath
+$controllerRunner = Get-Content -Raw -LiteralPath (Join-Path $scriptsRoot 'run-phone-service-controller.ps1')
+if ($controllerRunner -notmatch '\$process\.WaitForExit\(\)' -or $controllerRunner -match '-PassThru\s+-Wait') {
+  throw 'Scheduler must track the controller exit rather than wait for its surviving backend descendants.'
+}
+if ($installer -notmatch 'Stop-Process -Id \$oldController.ProcessId') {
+  throw 'Controller replacement must reclaim the exact installed controller left behind by WScript.'
+}
 if ($installer -notmatch "launcher.*run-installed-home-server\.ps1") {
   throw 'The task installer does not target the installed launcher directory.'
 }
@@ -41,10 +51,11 @@ if ($installer -match "-File\s+.*start-home-server\.ps1") {
 }
 
 $publisher = Get-Content -Raw -LiteralPath $publisherPath
-$migrationIndex = $publisher.IndexOf('install-home-server-launcher.ps1')
-$runtimeMutationIndex = $publisher.IndexOf('$collectorDestination')
-if ($migrationIndex -lt 0 -or $runtimeMutationIndex -lt 0 -or $migrationIndex -gt $runtimeMutationIndex) {
-  throw 'Publishing does not migrate the scheduled launcher before mutating the runtime.'
+if ($publisher -match 'install-home-server-launcher\.ps1' -or $publisher -match 'serve --bg') {
+  throw 'Ordinary publication must preserve the installed scheduled tasks and shared Serve routes.'
+}
+if ($publisher -notmatch 'controller-config\.json' -or $publisher -notmatch 'phone-services\.json') {
+  throw 'Publication must check the existing controller and owner On/Off choice.'
 }
 
 $stager = Get-Content -Raw -LiteralPath $stagerPath

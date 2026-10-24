@@ -1,4 +1,5 @@
 import { getWebPrepMoveKey, type WebPrepMoveStat } from "./prepIndex";
+import { resolvePrivateServiceUrl } from "./serverUrl";
 import { makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
 import {
@@ -71,7 +72,7 @@ const EXPLORER_PC_TIMEOUT_MS = 8_000;
 const EXPLORER_PREFETCH_MOVES = 1;
 const MAX_EXPLORER_MEMORY_ENTRIES = 512;
 const PC_STRENGTH_GRACE_MS = 75;
-const configuredPrivateServerUrl = String(
+const configuredPrivateServerUrl = resolvePrivateServiceUrl(
     import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://lox-pc.tail89d19b.ts.net",
 ).trim();
 const PRIVATE_SERVER_URL = configuredPrivateServerUrl.replace(/\/+$/, "");

@@ -37,6 +37,10 @@ test(
       await Promise.all(
         [jobRoot, artifactRoot, siteRoot].map((path) => mkdir(path, { recursive: true })),
       );
+      const helperName = "encroissant-tournament-core-123456abcdef.exe";
+      await mkdir(join(serverRoot, "runtime"));
+      await writeFile(join(serverRoot, "runtime", helperName), "fixture: availability only");
+      await writeFile(join(serverRoot, "runtime-deployment.json"), "\uFEFF" + JSON.stringify({tournamentBinary:helperName}));
       const id = newId();
       const timestamp = "2026-09-12T00:00:00.000Z";
       const saved = {
@@ -91,6 +95,8 @@ test(
         output = `${output}${chunk}`.slice(-6000);
       });
       await waitForServer(baseUrl, child, () => output);
+      const health = await (await fetch(`${baseUrl}/api/health`)).json();
+      assert.equal(health.tournamentServiceAvailable, true, "loads the Windows UTF-8 BOM deployment manifest");
       const path = `/api/otb-import/jobs/${id}`;
       const send = (target, method, body) =>
         fetch(`${baseUrl}${target}`, {

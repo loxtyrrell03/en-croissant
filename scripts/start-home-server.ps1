@@ -38,6 +38,10 @@ $installedLauncher = Join-Path $launcherRoot 'run-installed-home-server.ps1'
 $deploymentPath = Join-Path $serverRoot 'runtime-deployment.json'
 $sourceStatsWorkerRoot = Join-Path $PSScriptRoot 'generated'
 $sourceLauncher = Join-Path $PSScriptRoot 'run-installed-home-server.ps1'
+$tournamentBinary = 'encroissant-tournament-core-' + $sourceCommit.Substring(0, 12) + '.exe'
+if (-not (Test-Path -LiteralPath (Join-Path $runtimeRoot $tournamentBinary))) {
+  throw 'The matching tournament helper must be staged by publish-home-site before the runtime is changed.'
+}
 
 New-Item -ItemType Directory -Path $serverRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
@@ -93,6 +97,7 @@ $deployment = [ordered]@{
   sourceCommit = $sourceCommit
   repoRoot = $canonicalRepoRoot
   stagedAt = (Get-Date).ToUniversalTime().ToString('o')
+  tournamentBinary = $tournamentBinary
 }
 $temporaryDeployment = "$deploymentPath.next-$PID"
 $deployment | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $temporaryDeployment -Encoding utf8

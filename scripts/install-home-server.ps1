@@ -184,7 +184,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 if (-not $SkipTailscaleServe) {
-  & $tailscale serve --bg --yes $Port
+  & $tailscale serve --bg --yes 8786
   if ($LASTEXITCODE -ne 0) {
     throw "Tailscale Serve could not expose the home server."
   }

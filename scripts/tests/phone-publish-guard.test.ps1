@@ -29,6 +29,17 @@ $publicRoot = Join-Path $testRoot "public"
 New-Item -ItemType Directory -Path $repoRoot, (Join-Path $buildRoot "assets") -Force | Out-Null
 
 try {
+  $hashFixture = Join-Path $testRoot 'hash-fixture.bin'
+  [System.IO.File]::WriteAllBytes($hashFixture, [byte[]]@(97, 98, 99))
+  $oldModulePreference = $PSModuleAutoLoadingPreference
+  try {
+    $PSModuleAutoLoadingPreference = 'None'
+    $actualHash = Get-EnCroissantFileSha256 -Path $hashFixture
+    if ($actualHash -ne 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad') {
+      throw 'File hashing must preserve exact SHA-256 bytes without module auto-loading.'
+    }
+  } finally { $PSModuleAutoLoadingPreference = $oldModulePreference }
+
   Invoke-TestGit -Repo $repoRoot -Arguments @("init", "--initial-branch=main")
   Invoke-TestGit -Repo $repoRoot -Arguments @("config", "user.email", "test@example.invalid")
   Invoke-TestGit -Repo $repoRoot -Arguments @("config", "user.name", "Publish Guard Test")

@@ -1,0 +1,12 @@
+.root {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0.3rem var(--mantine-spacing-md) 0.45rem;
+}
+.toggle {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}

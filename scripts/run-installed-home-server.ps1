@@ -5,10 +5,21 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$startupMutex = [Threading.Mutex]::new($false, 'Global\EnCroissantInstalledHomeServer')
+$startupAcquired = $false
+try {
+  try { $startupAcquired = $startupMutex.WaitOne(60000) }
+  catch [Threading.AbandonedMutexException] { $startupAcquired = $true }
+  if (-not $startupAcquired) { throw 'Another home-server start is still running.' }
 if (-not $ServerRoot) {
   $ServerRoot = Join-Path $env:LOCALAPPDATA 'EnCroissantHomeServer'
 }
 $ServerRoot = [IO.Path]::GetFullPath($ServerRoot)
+$servicesState = Join-Path $ServerRoot 'phone-services.json'
+if (Test-Path -LiteralPath $servicesState) {
+  $services = Get-Content -Raw -LiteralPath $servicesState | ConvertFrom-Json
+  if ($services.enabled -eq $false) { exit 0 }
+}
 $pidPath = Join-Path $ServerRoot 'home-server.pid'
 $stdoutPath = Join-Path $ServerRoot 'stdout.log'
 $stderrPath = Join-Path $ServerRoot 'stderr.log'
@@ -98,6 +109,11 @@ if ($ForceRestart) {
 
 $env:EN_CROISSANT_HOME_SERVER_PORT = [string]$Port
 $env:EN_CROISSANT_REPO_ROOT = $repoRoot
+$controllerConfig = Join-Path $ServerRoot 'launcher\controller-config.json'
+if (Test-Path -LiteralPath $controllerConfig) {
+  $controllerSettings = Get-Content -Raw -LiteralPath $controllerConfig | ConvertFrom-Json
+  $env:EN_CROISSANT_PRIVATE_ORIGINS = @($controllerSettings.origins) -join ','
+}
 if (-not $env:EN_CROISSANT_COACH_COMMAND) {
   $installedCoach = Get-Command codex.exe -ErrorAction SilentlyContinue
   if ($installedCoach) {
@@ -136,3 +152,7 @@ while ((Get-Date) -lt $deadline) {
 }
 
 throw "Timed out waiting for the home server. See $stderrPath"
+} finally {
+  if ($startupAcquired) { $startupMutex.ReleaseMutex() }
+  $startupMutex.Dispose()
+}

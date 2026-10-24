@@ -62,7 +62,7 @@ const engineIdleMs = positiveInteger(
 const backendIdleMs = positiveInteger(
   process.env.STOCKFISH_REMOTE_BACKEND_IDLE_MS || config.backendIdleMs,
   30_000,
-  1_000,
+  0,
   10 * 60_000,
 );
 const localEvalPath = resolve(
@@ -885,6 +885,9 @@ function clearBackendIdleShutdown() {
 
 function scheduleBackendIdleShutdown() {
   clearBackendIdleShutdown();
+  // Zero keeps the inexpensive HTTP/UCI service available. Worker idle timers
+  // remain independent so standby does not keep Stockfish or LC0 running.
+  if (backendIdleMs === 0) return;
   if (activeHttpRequests > 0 || activeUciClients > 0) return;
   backendIdleTimer = setTimeout(() => {
     backendIdleTimer = null;
