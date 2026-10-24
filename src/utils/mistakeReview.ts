@@ -2,6 +2,7 @@ import { basename, resolve } from "@tauri-apps/api/path";
 import { exists, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import { createEmptyCard, type ReviewLog } from "ts-fsrs";
 import { z } from "zod";
+import { flushReviewDeckWrites, pendingReviewDeck, writeReviewDeck } from "@/utils/reviewDeckWrites";
 import type {
     MistakeReviewScanRequest,
     MistakeReviewScanResult,
@@ -446,6 +447,8 @@ export type MistakeReviewTimeManagementSummary = {
 };
 
 export async function readMistakeReviewDeck(path: string): Promise<MistakeReviewDeck> {
+    const pending = pendingReviewDeck<MistakeReviewDeck>(path);
+    if (pending) return pending;
     const raw = await readTextFile(path);
     if (isSharedReviewPath(path) && JSON.parse(raw).source === "pc-online-review-v1") {
         try {
@@ -464,19 +467,21 @@ export async function readMistakeReviewDeck(path: string): Promise<MistakeReview
 }
 
 export async function writeMistakeReviewDeck(path: string, deck: MistakeReviewDeck) {
-    if (isSharedReviewPath(path) && deck.source === "pc-online-review-v1") {
-        const saved = await pcReviewDeckRequest(deck);
-        await writeCachedMistakeReviewSummary(path, getMistakeReviewDeckSummary(path, saved));
-        return saved;
-    }
-    const updatedDeck: MistakeReviewDeck = {
+    const updatedDeck: MistakeReviewDeck = isSharedReviewPath(path) && deck.source === "pc-online-review-v1" ? deck : {
         ...deck,
         version: MISTAKE_REVIEW_VERSION,
         updatedAt: Date.now(),
     };
-    await writeTextFile(path, stringifyReviewDeck(updatedDeck));
-    await writeCachedMistakeReviewSummary(path, getMistakeReviewDeckSummary(path, updatedDeck));
-    return updatedDeck;
+    return writeReviewDeck(path, updatedDeck, async (snapshot) => {
+        if (isSharedReviewPath(path) && snapshot.source === "pc-online-review-v1") {
+            const saved = await pcReviewDeckRequest(snapshot);
+            await writeCachedMistakeReviewSummary(path, getMistakeReviewDeckSummary(path, saved));
+            return saved;
+        }
+        await writeTextFile(path, stringifyReviewDeck(snapshot));
+        await writeCachedMistakeReviewSummary(path, getMistakeReviewDeckSummary(path, snapshot));
+        return snapshot;
+    });
 }
 
 export function needsMistakeReviewDeckNatureMigration(deck: MistakeReviewDeck) {
@@ -544,6 +549,7 @@ export async function migrateMistakeReviewDeckMotifClassifications(
 }
 
 export async function deleteMistakeReviewDeck(path: string) {
+    await flushReviewDeckWrites(path);
     await remove(path);
 }
 

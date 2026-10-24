@@ -81,6 +81,7 @@ import { useStore } from "zustand";
 import { commands } from "@/bindings";
 import { Chessground } from "@/chessground/Chessground";
 import Board from "@/components/boards/Board";
+import ReviewSaveStatus from "@/components/review/ReviewSaveStatus";
 import { BoardWithAnnotationLayout } from "@/components/boards/BoardWithAnnotationLayout";
 import EngineDockedPanel from "@/components/boards/EngineDockedPanel";
 import EngineKeyboardShortcuts from "@/components/boards/EngineKeyboardShortcuts";
@@ -763,7 +764,12 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     setLoaded(false);
     setLoadError(null);
     setLoadedReviewPositionIndex(null);
-    localStorage.removeItem(getDeckStorageKey(deckPath, 0));
+    try {
+      localStorage.removeItem(getDeckStorageKey(deckPath, 0));
+    } catch {
+      // This obsolete browser cache must not block the file-backed deck or a
+      // retained failed save when browser storage is unavailable.
+    }
 
     async function loadDeck() {
       try {
@@ -1450,6 +1456,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
               <Tabs.Panel value="review" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <EngineDockedPanel contentPadding="sm">
+                  <ReviewSaveStatus path={deckPath} />
                   <OpeningReviewPanel
                     deckName={deckInfo?.name ?? tab.name}
                     deckPath={deckPath}

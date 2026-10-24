@@ -4,6 +4,7 @@ import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
 import { commands } from "@/bindings";
 import { getStats, type Position } from "@/components/files/opening";
+import { flushReviewDeckWrites, pendingReviewDeck, writeReviewDeck } from "@/utils/reviewDeckWrites";
 
 const openingHealthDateRangeSchema = z.enum([
     "all",
@@ -219,6 +220,8 @@ function stringifyReviewDeck(deck: { positions: unknown[] }) {
 }
 
 export async function readOpeningReviewDeck(path: string): Promise<OpeningReviewDeck> {
+    const pending = pendingReviewDeck<OpeningReviewDeck>(path);
+    if (pending) return pending;
     const raw = await readTextFile(path);
     const parsed = openingReviewDeckSchema.parse(JSON.parse(raw));
     return {
@@ -235,12 +238,15 @@ export async function writeOpeningReviewDeck(path: string, deck: OpeningReviewDe
         version: OPENING_REVIEW_VERSION,
         updatedAt: Date.now(),
     };
-    await writeTextFile(path, stringifyReviewDeck(updatedDeck));
-    await writeCachedOpeningReviewSummary(path, getOpeningReviewDeckSummary(path, updatedDeck));
-    return updatedDeck;
+    return writeReviewDeck(path, updatedDeck, async (snapshot) => {
+        await writeTextFile(path, stringifyReviewDeck(snapshot));
+        await writeCachedOpeningReviewSummary(path, getOpeningReviewDeckSummary(path, snapshot));
+        return snapshot;
+    });
 }
 
 export async function deleteOpeningReviewDeck(path: string) {
+    await flushReviewDeckWrites(path);
     await remove(path);
 }
 
