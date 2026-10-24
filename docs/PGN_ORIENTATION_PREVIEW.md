@@ -38,5 +38,11 @@ PGN import controls, read-only notation in both layouts, isolated navigation,
 real Chessground drawing/style changes and circle preservation have regression
 coverage. Chrome fixtures verify full rotated boards, arrows/circles, side-line
 navigation, explicit/standalone perspectives and bounded layouts at 900/390/320px.
-This is source/component proof until a matching clean runtime delivery is
-recorded; native-window and physical-phone interaction are separate.
+Clean delivery source `44c37e09` passes 37 selected checks across 13 files with
+no unhandled errors, TypeScript, scoped lint and frontend/worker/native builds.
+It is published to the phone and included in the rebuilt standalone desktop;
+see the parity delivery receipt. The live phone starts Ready and its HTTPS
+metadata/data/RPC checks pass, preserving owner board/view/engine state. The
+PGN import control checks use isolated fixture storage; no synthetic games were
+imported into the owner's live workspace. Native-window and physical-phone
+interaction remain separate.

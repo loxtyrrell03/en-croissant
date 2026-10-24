@@ -1,48 +1,47 @@
 {
   "schema": 1,
-  "status": "third-batch-delivered",
+  "status": "fourth-batch-delivered",
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
     "schemaVersion": 1,
-    "releaseId": "5f5f45c48820-ea68491a9bec",
-    "sourceCommit": "5f5f45c48820d58e8f5d6edbeca70cf792d78190",
+    "releaseId": "44c37e09869d-d38a3d5b2fb0",
+    "sourceCommit": "44c37e09869d94e66a091e7beef54b5cd7cf9805",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "builtAt": "2026-10-24T16:28:22.1104405Z",
-    "appShellSha256": "ea68491a9bec5f33eaafdfc33305f7c4bc522326ea91bba3da13dc466a525bec",
+    "builtAt": "2026-10-24T17:15:59.1035444Z",
+    "appShellSha256": "d38a3d5b2fb020d88ddc0e60f5955b8e3fab11ba3a1a3163b4e3dc4712c36773",
     "verified": [
       "matching canonical HTTPS health/version metadata",
       "library/workspace/native tournament settings reads",
-      "Chrome connected Ready at 390px",
-      "real source tiny/zero result labels with no clipping or page overflow",
-      "computed White/draw/Black segment colours match theme",
-      "original source/setup/view/board/engine restored"
+      "Chrome connected Ready at 390px without page errors",
+      "original source/view/board/engine preserved",
+      "actual PGN import controls verified separately with isolated fixture storage"
     ],
     "physicalPhoneVerified": false
   },
   "desktop": {
-    "exeBytes": 51084800,
-    "exeSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
+    "exeBytes": 51088896,
+    "exeSha256": "a1f6f3b0162a50795ced5a17ecb55bcc367706b02c19a1d3d2fa837f714eb329",
     "assets": [
       {
-        "asset": "assets/AnalysisPanel-C_y_9SD9.js",
+        "asset": "assets/GamePreview-Dlr7uxkH.js",
         "embedded": true,
-        "sha256": "238949ac8332a20f875418b0420d7ac6692ddc2589b4ec38db5f72d814ad46f5"
+        "sha256": "fc816f94dd51dd6653b1a0a34e26f895da0f9c7340460ace795974ed0b8098a6"
       },
       {
-        "asset": "assets/GameNotation-C00bmFbg.js",
+        "asset": "assets/GameNotation-DixjxKwT.js",
         "embedded": true,
-        "sha256": "0e0f8c899ad7cffbf66e4493c96a67ea1ec4ab98092ffa46689c2c689f9cb690"
+        "sha256": "e38c6e0d000b9f0022ce32a39ee261735b61c3cc6588991e52cc3c90186e41e7"
       },
       {
-        "asset": "assets/WdlResultBar-D7zA8rMs.js",
+        "asset": "assets/Chessground-Er54zolh.js",
         "embedded": true,
-        "sha256": "20ad59e4fc42b806e9bc75b9c3d08eb0a92186b2e2a15b28ee01d503854e0c79"
+        "sha256": "aa8c52892d37ee2f2c1edb34922001738b4e93bbd3e2392d951bd4cf14258fd9"
       },
       {
-        "asset": "assets/WdlResultBar-C7GRRlSC.css",
+        "asset": "assets/pgnOrientation-Devmcc55.js",
         "embedded": true,
-        "sha256": "b31cfcc5ade5e28ee6540882a2e586afba61853281c6eed53cff1c7f6d623711"
+        "sha256": "0b3ca5ff67fee9182323b960f20dfaeb955aac0c9ecde1c878a79c5920355945"
       },
       {
         "asset": "assets/App-DXJraGpt.css",
@@ -54,9 +53,9 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "5f5f45c48820d58e8f5d6edbeca70cf792d78190",
+    "sourceCommit": "44c37e09869d94e66a091e7beef54b5cd7cf9805",
     "activeDevSessionPreserved": true,
-    "rollbackSha256": "e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952"
+    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
   },
   "checks": {
     "combinedFrontend": {
@@ -113,15 +112,33 @@
         }
       ],
       "countsOverlapEarlierSuites": true
+    },
+    "fourthBatch": {
+      "passed": 37,
+      "files": 13,
+      "source": "44c37e09869d94e66a091e7beef54b5cd7cf9805",
+      "unhandledErrors": 0,
+      "types": "passed in primary and clean delivery",
+      "scopedLint": "16 changed files passed without warnings or errors",
+      "frontendAndWorkerBuilds": "passed",
+      "nativeReleaseBuild": "passed with 22 existing warnings",
+      "actualComponentProof": [
+        "phone PGN import controls with isolated storage",
+        "real Chessground saved drawings and palette updates",
+        "native read-only notation in both layouts",
+        "isolated preview hotkeys and replay clock",
+        "Chrome 900/390/320px preview drawings and orientations"
+      ],
+      "countsOverlapEarlierSuites": true
     }
   },
   "tailscaleServeUnchanged": true,
   "remainingWork": "NOVELTY_SYNC_GAPS_2026-10-24.md",
   "previousBatch": {
-    "sourceCommit": "cc3e71d20bcaffc0604a6bb9ac0aae0ef9cce170",
-    "phoneShellSha256": "95ba505d5b323385e005c0c101066d2087fbf5b8059776c4bc82a7fb725e3e65",
-    "exeSha256": "e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952",
-    "exeBytes": 51086336
+    "sourceCommit": "5f5f45c48820d58e8f5d6edbeca70cf792d78190",
+    "phoneShellSha256": "ea68491a9bec5f33eaafdfc33305f7c4bc522326ea91bba3da13dc466a525bec",
+    "exeSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
+    "exeBytes": 51084800
   },
   "controllerPid": 24080,
   "ownerServicesEnabled": true

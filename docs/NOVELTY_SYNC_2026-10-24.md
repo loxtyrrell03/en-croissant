@@ -183,3 +183,34 @@ Embedded analysis, notation, result-bar and stylesheet keys match the clean
 build. The previous executable is retained for rollback. The active Dev session
 and shortcut remain; native-window interaction is unverified. Separate ongoing
 primary edits are excluded from the delivery.
+
+## Fourth verified delivery
+
+Clean source `44c37e09869d94e66a091e7beef54b5cd7cf9805` carries imported PGN
+perspectives and standalone starting positions through native preview/tab and
+phone opening. Native previews now show saved annotations and variations in
+read-only mode, with correctly oriented selected-node drawings and isolated
+navigation/clock ownership. Circle export, default drawing brushes and palette
+redraws are repaired; complete boards fit short/narrow panes. See
+`PGN_ORIENTATION_PREVIEW.md`.
+
+All 37 selected checks across 13 files pass with no unhandled errors. These
+include real Chessground rendering/style changes, both notation layouts, native
+tab ownership, actual phone PGN import controls and existing Prep regressions.
+Types, scoped lint, frontend/worker and native builds pass. Chrome fixtures at
+900/390/320px verify pieces/marks, side-line navigation, explicit perspectives
+and bounded controls. Synthetic PGN imports use isolated test storage.
+
+Phone release `44c37e09869d-d38a3d5b2fb0` passes matching canonical HTTPS
+health/version, library/workspace/native tournament settings reads and connected
+Chrome startup at 390px. Original owner source/view/board/engine state is
+preserved; no synthetic game was imported into the live workspace. Serve JSON,
+controller PID 24080, enabled state and helper hashes are preserved; only the
+intended home server restarts. Physical-phone interaction is unverified.
+
+The standalone desktop build passes with 22 existing warnings: 51,088,896 bytes,
+SHA-256 `a1f6f3b0162a50795ced5a17ecb55bcc367706b02c19a1d3d2fa837f714eb329`.
+Its embedded GamePreview, GameNotation, Chessground wrapper, orientation and
+root-style asset keys match the clean bundle. The previous executable is kept
+for rollback, and the active Dev session/shortcut remain. Native-window
+interaction is unverified. The broader parity goal remains active.
