@@ -36,6 +36,7 @@ import { unwrap } from "@/utils/unwrap";
 import { BoardStartupFallback } from "../common/StartupProgress";
 import { TreeStateProvider } from "../common/TreeStateContext";
 import { BoardTab } from "./BoardTab";
+import { ClearTabsButton } from "./ClearTabsButton";
 import ConfirmChangesModal from "./ConfirmChangesModal";
 import { platform } from "@tauri-apps/plugin-os";
 import { useNavigate } from "@tanstack/react-router";
@@ -269,63 +270,66 @@ export default function BoardsPage() {
         keepMounted={false}
         className={classes.tabsContainer}
       >
-        <ScrollArea scrollbarSize={6} className={classes.tabsHeader}>
-          <DragDropContext
-            onDragEnd={({ destination, source }) =>
-              destination?.index !== undefined &&
-              setTabs((prev) => {
-                const result = Array.from(prev);
-                const [removed] = result.splice(source.index, 1);
-                result.splice(destination.index, 0, removed);
-                return result;
-              })
-            }
-          >
-            <Droppable droppableId="droppable" direction="horizontal">
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  style={{ display: "flex" }}
-                >
-                  {tabs.map((tab, i) => (
-                    <Draggable key={tab.value} draggableId={tab.value} index={i}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <BoardTab
-                            tab={tab}
-                            tabType={tab.type}
-                            setActiveTab={handleSetActiveTab}
-                            closeTab={closeTab}
-                            renameTab={renameTab}
-                            duplicateTab={duplicateTab}
-                            selected={activeTab === tab.value}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                  <ActionIcon
-                    variant="default"
-                    radius={0}
-                    classNames={{
-                      root: classes.newTab,
-                    }}
-                    onClick={() => void createAnalysisTab()}
+        <div className={classes.tabsHeader} style={{ display: "flex", alignItems: "flex-start" }}>
+          <ScrollArea scrollbarSize={6} style={{ flex: 1, minWidth: 0 }}>
+            <DragDropContext
+              onDragEnd={({ destination, source }) =>
+                destination?.index !== undefined &&
+                setTabs((prev) => {
+                  const result = Array.from(prev);
+                  const [removed] = result.splice(source.index, 1);
+                  result.splice(destination.index, 0, removed);
+                  return result;
+                })
+              }
+            >
+              <Droppable droppableId="droppable" direction="horizontal">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    style={{ display: "flex" }}
                   >
-                    <IconPlus />
-                  </ActionIcon>
-                  <div className={classes.tabsFiller} />
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </ScrollArea>
+                    {tabs.map((tab, i) => (
+                      <Draggable key={tab.value} draggableId={tab.value} index={i}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <BoardTab
+                              tab={tab}
+                              tabType={tab.type}
+                              setActiveTab={handleSetActiveTab}
+                              closeTab={closeTab}
+                              renameTab={renameTab}
+                              duplicateTab={duplicateTab}
+                              selected={activeTab === tab.value}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    <ActionIcon
+                      variant="default"
+                      radius={0}
+                      classNames={{
+                        root: classes.newTab,
+                      }}
+                      onClick={() => void createAnalysisTab()}
+                    >
+                      <IconPlus />
+                    </ActionIcon>
+                    <div className={classes.tabsFiller} />
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </ScrollArea>
+          <ClearTabsButton disabled={!!closingTabId} />
+        </div>
         {tabs.map((tab) => (
           <Tabs.Panel
             key={tab.value}

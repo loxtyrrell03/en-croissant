@@ -1370,7 +1370,7 @@ export const currentPuzzleAtom = tabValue(currentPuzzleFamily);
 // Game
 
 type GameState = "settingUp" | "playing" | "gameOver";
-const gameStateFamily = atomFamily((_tab: string) => atom<GameState>("settingUp"));
+export const gameStateFamily = atomFamily((_tab: string) => atom<GameState>("settingUp"));
 export const currentGameStateAtom = tabValue(gameStateFamily);
 
 const playersFamily = atomFamily((_tab: string) =>
