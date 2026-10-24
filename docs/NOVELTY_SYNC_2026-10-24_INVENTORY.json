@@ -4,8 +4,43 @@
   "scope": "All local and fetched branches; source/native-source/script changes. Includes repeated integrations, research and release support.",
   "limitation": "Candidate inventory only. File names and byte parity do not establish feature coverage, correct wiring, installed desktop delivery, hosted phone delivery or physical-device behavior.",
   "novelty": {
-    "head": "397fc567af896dec5ae8b648578ab403ee9a26f2",
+    "head": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
     "commits": [
+      {
+        "commit": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
+        "date": "2026-10-24",
+        "subject": "Fix PGN orientation in Files preview and board opening",
+        "files": [
+          "scripts/qa-pgn-orientation.mjs",
+          "src/chess/pgn/orientation.ts",
+          "src/chess/tests/pgnOrientation.test.ts",
+          "src/features/board/boardStore.ts",
+          "src/features/files/FilesSurface.tsx",
+          "src/features/files/openPgn.ts",
+          "src/features/files/tests/pgnOpeningOrientation.test.ts"
+        ],
+        "areas": [
+          "files-and-library",
+          "board-and-annotations"
+        ]
+      },
+      {
+        "commit": "de844abd1b9a6500eccae517b6ecc09100dd7623",
+        "date": "2026-10-24",
+        "subject": "Show every Database result percentage",
+        "files": [
+          "scripts/qa-database-result-percentages.mjs",
+          "src/features/database/AGENTS.md",
+          "src/features/database/DatabasePanel.module.css",
+          "src/features/database/DatabasePanel.tsx",
+          "src/features/database/DatabaseResultBar.module.css",
+          "src/features/database/DatabaseResultBar.tsx",
+          "src/features/database/tests/DatabaseResultBar.test.tsx"
+        ],
+        "areas": [
+          "prep-and-database"
+        ]
+      },
       {
         "commit": "e1e396f5fb15ceed5c6370d543a86d4402e75a99",
         "date": "2026-10-24",
@@ -10815,8 +10850,341 @@
     ]
   },
   "en": {
-    "head": "64f8a5c690466a5d1d17aa902d48b195838c1bfb",
+    "head": "35ee5833d6ba532595e03924597d98a548c0a0e3",
     "commits": [
+      {
+        "commit": "26cc4e5e29c81a3bef18b085e1e14948176ae634",
+        "date": "2026-10-24",
+        "subject": "Retain review progress through failed and overlapping saves",
+        "files": [
+          "src/components/review/OpeningReviewWorkspace.tsx",
+          "src/components/review/ReviewSaveStatus.test.tsx",
+          "src/components/review/ReviewSaveStatus.tsx",
+          "src/utils/mistakeReview.ts",
+          "src/utils/openingReview.ts",
+          "src/utils/reviewDeckWrites.ts",
+          "src/utils/tests/reviewDeckWriteIntegration.test.ts",
+          "src/utils/tests/reviewDeckWrites.test.ts"
+        ],
+        "areas": [
+          "reviews-and-training",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "35ee5833d6ba532595e03924597d98a548c0a0e3",
+        "date": "2026-10-24",
+        "subject": "Retain review progress through failed and overlapping saves",
+        "files": [
+          "src/components/review/OpeningReviewWorkspace.tsx",
+          "src/components/review/ReviewSaveStatus.test.tsx",
+          "src/components/review/ReviewSaveStatus.tsx",
+          "src/utils/mistakeReview.ts",
+          "src/utils/openingReview.ts",
+          "src/utils/reviewDeckWrites.ts",
+          "src/utils/tests/reviewDeckWriteIntegration.test.ts",
+          "src/utils/tests/reviewDeckWrites.test.ts"
+        ],
+        "areas": [
+          "reviews-and-training",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "ff5f271ca4abcda656d6a61ef64b0983dfaeab49",
+        "date": "2026-10-24",
+        "subject": "Add phone game reports and Engine Plans beneath the board",
+        "files": [
+          "src/web/PhoneEnginePlansPanel.tsx",
+          "src/web/WebApp.tsx",
+          "src/web/WebGameReportPanel.tsx",
+          "src/web/model.ts",
+          "src/web/phoneEnginePlans.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/phoneAnalysisFlow.test.tsx",
+          "src/web/tests/phoneAnalysisPanels.test.tsx",
+          "src/web/tests/stockfishEngine.test.ts"
+        ],
+        "areas": [
+          "engine-plans",
+          "phone"
+        ]
+      },
+      {
+        "commit": "bc72331c5aa07d2e69c47691c6323fd2e25ab4db",
+        "date": "2026-10-24",
+        "subject": "Share canonical game reports with the phone core",
+        "files": [
+          "src/web/gameReport.ts",
+          "src/web/tests/gameReport.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "fd03459c3368aae82c568f9c5ed17192cdf81bce",
+        "date": "2026-10-24",
+        "subject": "Add bounded exact-score phone report transport",
+        "files": [
+          "scripts/install-home-server-launcher.ps1",
+          "scripts/install-stockfish-remote-server.ps1",
+          "scripts/stockfish-remote-server.mjs",
+          "scripts/tests/engine-report-service.test.mjs",
+          "scripts/tests/uci-report-search.test.mjs",
+          "scripts/uci-report-search.d.mts",
+          "scripts/uci-report-search.mjs",
+          "src/web/reportEngineEvidence.ts",
+          "src/web/reportStockfishEngine.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/reportEngineEvidence.test.ts",
+          "src/web/tests/reportStockfishEngine.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "44c37e09869d94e66a091e7beef54b5cd7cf9805",
+        "date": "2026-10-24",
+        "subject": "Provide scrolling APIs for deferred preview rendering checks",
+        "files": [
+          "src/components/common/GameNotation.preview.test.tsx"
+        ],
+        "areas": [
+          "reviews-and-training",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "5fef6a9c21d1afd3c4f996f5e5dc95cea344cfc6",
+        "date": "2026-10-24",
+        "subject": "Preserve PGN perspectives, starting boards and preview annotations",
+        "files": [
+          "src/chessground/Chessground.test.tsx",
+          "src/chessground/Chessground.tsx",
+          "src/components/common/CompleteMoveCell.tsx",
+          "src/components/common/GameNotation.preview.test.tsx",
+          "src/components/common/GameNotation.tsx",
+          "src/components/common/MoveCell.tsx",
+          "src/components/common/MoveControls.preview.test.tsx",
+          "src/components/common/MoveControls.tsx",
+          "src/components/common/NotationViewContext.ts",
+          "src/components/databases/GamePreview.test.tsx",
+          "src/components/databases/GamePreview.tsx",
+          "src/utils/chess.ts",
+          "src/utils/pgnOrientation.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/boardDrawings.test.ts",
+          "src/utils/tests/pgnOrientation.test.ts",
+          "src/web/WebApp.tsx",
+          "src/web/gameBoardSetup.ts",
+          "src/web/tests/gameBoardSetup.test.ts",
+          "src/web/tests/phonePgnOpening.test.tsx"
+        ],
+        "areas": [
+          "reviews-and-training",
+          "accounts-and-home",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "5f5f45c48820d58e8f5d6edbeca70cf792d78190",
+        "date": "2026-10-24",
+        "subject": "Bind result segment colours through Mantine across production styles",
+        "files": [
+          "src/components/common/WdlResultBar.test.tsx",
+          "src/components/common/WdlResultBar.tsx"
+        ],
+        "areas": [
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "c8f1d805ef08b1a12aba7a3ee7658f32ba3c36a0",
+        "date": "2026-10-24",
+        "subject": "Keep every database result percentage visible across desktop and phone",
+        "files": [
+          "src/components/common/WdlResultBar.module.css",
+          "src/components/common/WdlResultBar.test.tsx",
+          "src/components/common/WdlResultBar.tsx",
+          "src/components/panels/database/DatabaseWdlBar.tsx",
+          "src/components/panels/gaps/RepertoireGapsPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/components/review/OpeningReviewWorkspace.tsx",
+          "src/web/WebApp.tsx"
+        ],
+        "areas": [
+          "prep-and-database",
+          "reviews-and-training",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "0099a0a1700182a76dd1359468d71ccb1eb4bb5c",
+        "date": "2026-10-24",
+        "subject": "Retain report run limits with verified PGN evidence",
+        "files": [
+          "scripts/check-game-report-stockfish.ps1",
+          "src-tauri/src/chess.rs",
+          "src/components/common/GameAnalysisReport.tsx",
+          "src/components/common/GameNotation.tsx",
+          "src/components/common/GameReportRunLabel.test.tsx",
+          "src/components/common/GameReportRunLabel.tsx",
+          "src/components/panels/analysis/ReportModal.tsx",
+          "src/components/panels/analysis/ReportPanel.tsx",
+          "src/state/store/tree.ts",
+          "src/utils/chess.ts",
+          "src/utils/gameReportRun.ts",
+          "src/utils/tests/gameReportRun.test.ts"
+        ],
+        "areas": [
+          "game-analysis",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "0438c57317d9b52835ed5dda8eac1f003dd1e11f",
+        "date": "2026-10-24",
+        "subject": "Share game-analysis presets and guard report request ownership",
+        "files": [
+          "src/components/common/GameNotation.tsx",
+          "src/components/panels/analysis/GameAnalysisLimitControls.tsx",
+          "src/components/panels/analysis/ReportModal.test.tsx",
+          "src/components/panels/analysis/ReportModal.tsx",
+          "src/components/panels/analysis/ReportPanel.tsx",
+          "src/state/gameAnalysisSettings.ts",
+          "src/state/store/tree.ts",
+          "src/state/tests/reportAnalysis.test.ts",
+          "src/utils/gameAnalysisSettings.ts",
+          "src/utils/gameReportOwnership.ts",
+          "src/utils/tests/gameAnalysisSettings.test.ts",
+          "src/utils/tests/gameReportOwnership.test.ts",
+          "src/utils/treeReducer.ts"
+        ],
+        "areas": [
+          "game-analysis",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "ea79ef86c784a52fbe04efa29e26857f58ebba4b",
+        "date": "2026-10-24",
+        "subject": "Bound game report searches and retain exact selected-move evidence",
+        "files": [
+          "scripts/check-game-report-protocol.ps1",
+          "scripts/fixtures/fake-report-engine.rs",
+          "src-tauri/src/chess.rs",
+          "src-tauri/src/error.rs",
+          "src-tauri/src/main.rs",
+          "src-tauri/src/report_limits.rs",
+          "src/bindings/generated.ts"
+        ],
+        "areas": []
+      },
+      {
+        "commit": "969d4b0841747f892fd6e99d73a76bb11f2f6b6c",
+        "date": "2026-10-24",
+        "subject": "Refresh desktop and phone database sources when pickers open",
+        "files": [
+          "src/components/common/DatabaseFolderSelect.test.tsx",
+          "src/components/common/DatabaseFolderSelect.tsx",
+          "src/components/common/LiveDatabaseFolderSelect.test.tsx",
+          "src/components/common/LiveDatabaseFolderSelect.tsx",
+          "src/components/panels/database/DatabaseComparePanel.tsx",
+          "src/components/panels/database/DatabasePanel.tsx",
+          "src/components/panels/gaps/RepertoireGapsPanel.tsx",
+          "src/components/panels/plan/PlanExplorerPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/components/tabs/NewTabHome.tsx",
+          "src/web/WebApp.tsx",
+          "src/web/hostedFiles.ts",
+          "src/web/tests/hostedRefresh.test.ts",
+          "src/web/tests/hostedRefreshHook.test.tsx",
+          "src/web/useHostedDatabaseFolders.ts"
+        ],
+        "areas": [
+          "plans",
+          "prep-and-database",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "7f9bf1e43130b60d9c727b45e9cf4268059bf2c4",
+        "date": "2026-10-24",
+        "subject": "Align native report accuracy and custom-position evidence with Novelty",
+        "files": [
+          "src/components/common/GameAnalysisReport.test.tsx",
+          "src/components/common/GameAnalysisReport.tsx",
+          "src/components/panels/analysis/ReportPanel.tsx",
+          "src/state/store/tree.ts",
+          "src/state/tests/reportAnalysis.test.ts",
+          "src/utils/chess.ts",
+          "src/utils/gameAccuracy.ts",
+          "src/utils/gameAnalysisEvidence.ts",
+          "src/utils/gameAnalysisReport.ts",
+          "src/utils/score.ts",
+          "src/utils/tests/gameAccuracy-reference.json",
+          "src/utils/tests/gameAccuracy.test.ts",
+          "src/utils/tests/gameAnalysisReport.test.ts",
+          "src/utils/tests/score.test.ts"
+        ],
+        "areas": [
+          "game-analysis",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "cb05a3e53a827d3da60d807e3574c19fb48a52fe",
+        "date": "2026-10-24",
+        "subject": "Port source-qualified Engine Plans continuations and horizons",
+        "files": [
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx",
+          "src/components/panels/enginePlan/EnginePlanPresentation.test.tsx",
+          "src/components/panels/enginePlan/EnginePlanPresentation.tsx",
+          "src/state/atoms.ts",
+          "src/utils/enginePlanExplorer.ts",
+          "src/utils/planHorizon.ts",
+          "src/utils/tests/enginePlanCoverage.test.ts",
+          "src/utils/tests/enginePlanEvidence.test.ts",
+          "src/utils/tests/enginePlanExplorer.test.ts",
+          "src/utils/tests/planStrength.test.ts"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "091f4fd785ef583e066433b9f6d8530d4bf58ca2",
+        "date": "2026-10-24",
+        "subject": "Validate engine plan PVs and preserve independent source evidence",
+        "files": [
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx",
+          "src/state/atoms.ts",
+          "src/utils/enginePlanExplorer.ts",
+          "src/utils/tests/enginePlanEvidence.test.ts",
+          "src/utils/tests/enginePlanExplorer.test.ts"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "c23e3cf9b12d25c070b51b94e8397d1edc6051ce",
+        "date": "2026-10-24",
+        "subject": "Inventory recent Novelty changes and track remaining target gaps",
+        "files": [
+          "scripts/audit-novelty-changes.mjs"
+        ],
+        "areas": []
+      },
       {
         "commit": "8ff91aaac8bb1c4cea21a35fc285368601781d1c",
         "date": "2026-10-24",
@@ -18429,24 +18797,6 @@
           "src/bindings/generated.ts"
         ],
         "areas": []
-      },
-      {
-        "commit": "dd4fe88721800fa4f2c52a654a361eb11afc093d",
-        "date": "2026-07-24",
-        "subject": "Make chess coach lessons concrete and personal",
-        "files": [
-          "scripts/chess-coach-derived.mjs",
-          "scripts/chess-coach-service.mjs",
-          "scripts/coach-style-eval.mjs",
-          "scripts/home-server.mjs",
-          "scripts/start-home-server.ps1",
-          "scripts/tests/chess-coach-derived.test.mjs",
-          "src-tauri/src/coach.rs",
-          "src-tauri/src/opening.rs"
-        ],
-        "areas": [
-          "phone"
-        ]
       }
     ]
   },
@@ -18463,12 +18813,23 @@
       ]
     },
     {
+      "novelty": "src/chess/tests/pgnOrientation.test.ts",
+      "noveltySha256": "8cb9c22d31c6609df935815cacfaf74acc35109320453fab89d87ba379087399",
+      "en": [
+        {
+          "path": "src/utils/tests/pgnOrientation.test.ts",
+          "sha256": "405e7918b7ef913b6af71b5a4bd1853c10f35785c6af6bb14e190a9f252915c8",
+          "identical": false
+        }
+      ]
+    },
+    {
       "novelty": "src/chess/tree.ts",
       "noveltySha256": "047b89fce65dce94b9bb1339bfa93d4205d579bd1a96ed1e178dde5ed63bc9f0",
       "en": [
         {
           "path": "src/state/store/tree.ts",
-          "sha256": "b93e0980ecbf02e38b37ebe851adcc7e7d13e8286f6b81215be05e6fb6e51102",
+          "sha256": "071095898f09b9604f9e5324653008836c9a1c8227ed0dd3c2580130ba756419",
           "identical": false
         }
       ]
@@ -18545,7 +18906,7 @@
       "en": [
         {
           "path": "src/utils/tests/boardDrawings.test.ts",
-          "sha256": "6d228f2d938a78846ea64bc4c856ae8c2b6cc04a6d9d3d729c94a2db29b87172",
+          "sha256": "dea176f6892b4481ff9b4ff2ac3c2d061b9c0028506fb4e051a44ec94a735ce1",
           "identical": false
         }
       ]
@@ -18563,11 +18924,11 @@
     },
     {
       "novelty": "src/features/database/DatabasePanel.tsx",
-      "noveltySha256": "54ff652b97f0d2fc952024b776151430e079517c391cf334a4f6f3dd20102b52",
+      "noveltySha256": "0db02112c20da0d821b0b3c916f986bf52b33abc51c0734da7b5cbc5b57c4939",
       "en": [
         {
           "path": "src/components/panels/database/DatabasePanel.tsx",
-          "sha256": "4210deb5e411c9713ca132934fda7407e4fd406459f197d6fb727994e93e6e2a",
+          "sha256": "3e7acd3808355073b6d4ef6bfe080ce4da58bc57f090729e053bf401169596f0",
           "identical": false
         }
       ]
@@ -18589,7 +18950,7 @@
       "en": [
         {
           "path": "src/utils/enginePlanExplorer.ts",
-          "sha256": "3383f6e4f977c7ccba39a40d4444135afc8e1084cf78b58bbaaf6ca5713fc0bd",
+          "sha256": "2b4644f24d1cbf2ecea3e81d899bf52a21dece261207a85b7a50d1bf2bb4dbfb",
           "identical": false
         }
       ]
@@ -18606,12 +18967,23 @@
       ]
     },
     {
+      "novelty": "src/features/enginePlans/tests/enginePlanCoverage.test.ts",
+      "noveltySha256": "df3e6ee8189140409dbeada7a34cccd24b0306a965736b6891367a62ff79c95e",
+      "en": [
+        {
+          "path": "src/utils/tests/enginePlanCoverage.test.ts",
+          "sha256": "e60fd669cb1f3c6f41b66c11da9d0581793d4fe46158d3e2a067da5e7359517b",
+          "identical": false
+        }
+      ]
+    },
+    {
       "novelty": "src/features/enginePlans/tests/enginePlanExplorer.test.ts",
       "noveltySha256": "ab4fe249b8a4005f9c62d901958b7536775edb3708892dd594dbd856cf67dcfb",
       "en": [
         {
           "path": "src/utils/tests/enginePlanExplorer.test.ts",
-          "sha256": "456f9db5392dac6545343c0759688638af7cdd3afe0ce69e5d592d8155e5b780",
+          "sha256": "728f6c31b13be96d99d27388ea5668f39cf6e40595a8ae969a40461d513ebe43",
           "identical": false
         }
       ]
@@ -18622,7 +18994,7 @@
       "en": [
         {
           "path": "src/web/model.ts",
-          "sha256": "8a9a8a06c713684bb44a7cdd20dd1da65fc1ab3ce24d1dbe8ac35c92578d1543",
+          "sha256": "10db7ed6c0b6f786a4068c27a3c395f4ac88af33b20193e0b40d8331168c10a6",
           "identical": false
         }
       ]
@@ -18715,7 +19087,18 @@
       "en": [
         {
           "path": "src/components/panels/plan/PlanExplorerPanel.tsx",
-          "sha256": "fdf9ab5d18ba829ad27b1f609b1b995e11ab8c3243eb76f382d70679e10543e0",
+          "sha256": "eb579064bbc3ecaa9a80b631ece4394ced0791208f827dbe17e31dfaf0adbda6",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/plans/planHorizon.ts",
+      "noveltySha256": "3b691fdafe288a1cc374579405af4742ff2812e538eb86935d6794976469f156",
+      "en": [
+        {
+          "path": "src/utils/planHorizon.ts",
+          "sha256": "f8c81d9a68464e02500d7fd90bd16e1f9490741f8aabcbb666b09fdce231eafc",
           "identical": false
         }
       ]
@@ -18753,7 +19136,7 @@
       "en": [
         {
           "path": "src/utils/mistakeReview.ts",
-          "sha256": "0364e7b5ef84e92eed9539b8b2b9e929ce33616057c84cd464fae74cc4734e6c",
+          "sha256": "90c4443bca924bf71cad68c661d4bb2daaa3f3360b70e0742d95fb7d950c9784",
           "identical": false
         },
         {
@@ -20012,7 +20395,7 @@
       "en": [
         {
           "path": "src/features/tournaments/TournamentTrackerView.tsx",
-          "sha256": "b7873fd9ccf9627452c0b83107cbfc79cc6bbd75ec7827e3fa691ec0f7ac0183",
+          "sha256": "8a87092d3c304f377f54e5e07867b590614b2251da2ec5f764e9a20aa1ef8f71",
           "identical": false
         }
       ]
@@ -20342,7 +20725,7 @@
       "en": [
         {
           "path": "src/web/hostedDatabaseIndex.ts",
-          "sha256": "60b778df07aae70b5cd98b1f52bf05a9f66f44059c081bd9b7bf7ee4166b2ef3",
+          "sha256": "38146a26b7a21f5093d78d430a93b159dbf31267b4044141d9efad934277703f",
           "identical": false
         }
       ]
@@ -20353,7 +20736,7 @@
       "en": [
         {
           "path": "src/web/hostedFiles.ts",
-          "sha256": "f9aff519e62458d4704b7ca112efcb6ca84b0c8a19b702f6486739dfe1be3c07",
+          "sha256": "6cfdd64bc271e3c0182351c1846a3223a44200920cad56c782da7d14bb7594ac",
           "identical": false
         }
       ]

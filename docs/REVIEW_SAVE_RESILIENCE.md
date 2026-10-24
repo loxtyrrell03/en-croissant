@@ -37,3 +37,21 @@ phone workspace failure/overlap/remount behavior. Types and scoped lint pass.
 Clean build/runtime delivery and rendered error-layout verification are tracked
 separately in the parity ledger. No owner deck or phone workspace was edited by
 these synthetic checks.
+
+## Related parity checks
+
+Novelty's `fe5ccd04` fixes its post-move callback comparing the resulting
+board with the original card. En's native Board captures the practice entry and
+original FEN/SAN/UCI before `storeMakeMove`, then checks request/card/FEN/move/phase
+before delayed assessment. Phone `attempt` replays from `card.fen` into a
+separate preview. Existing assessment and actual phone interaction tests pass;
+these controllers already satisfy that specific behavior.
+
+Novelty's `88e97630` repairs a persisted scheduler last-run map. En uses timers:
+tournament jobs schedule their next interval after completion/failure, and
+replacing/stopping a registration clears the old scheduled callback. Three
+fake-clock checks cover storage denial, long-running/failing jobs and replacement
+without changing the scheduler. Online/study hooks have fixed timers plus
+in-memory running refs; phone review polling has a pending guard. There is no
+shared persisted cadence map to replace. This is target-specific source/test
+evidence, not native-window or physical-phone verification.
