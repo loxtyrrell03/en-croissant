@@ -131,7 +131,7 @@ import PhoneEnginePlansPanel from "./PhoneEnginePlansPanel";
 import { loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
-import { annotatePhoneDrawings, annotatePhoneMove, savedPhoneDrawings } from "./phoneAnnotations";
+import { annotatePhoneDrawings, annotatePhoneMove, phonePrepAnnotationContext, savedPhoneDrawings } from "./phoneAnnotations";
 import {
   newPhoneAnnotationOwner,
   phoneDrawingSeat,
@@ -5900,7 +5900,7 @@ function PrepUnderBoardPanel({
       moveLimit,
       builder: getWebPrepStrengthSettingsPatch(selectedBuilderSettings, {}),
       sortDefaults: selectedPrepSortDefaults,
-      startFen: INITIAL_FEN,
+      ...phonePrepAnnotationContext(state),
       rootPly: currentLine.length,
       line: currentLine,
       notesByFen: {},
