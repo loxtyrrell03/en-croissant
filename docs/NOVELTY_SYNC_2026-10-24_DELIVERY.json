@@ -361,5 +361,37 @@
       "baselineIgnored": 8,
       "changedIgnored": 9
     }
+  },
+  "pendingWorkspacePreferences": {
+    "primarySourceCommit": "2c1813c7805316f7182eb8842f9e82f7f419a504",
+    "cleanSourceCommit": "46bf0caab843b49cb00f63b574bbeefc2ba2d2b5",
+    "checkedAt": "2026-10-24T23:38:35.410926+00:00",
+    "canonicalPhoneBuildSeconds": 24.77,
+    "phoneBundle": {
+      "entry": "WebApp-zeH4_A3O.js",
+      "sha256": "db31bded1c18a6cde1c9cda5ae4c645b11c380b1c10bf11eacaaba5f81875341",
+      "bytes": 421881,
+      "indexSha256": "6b26d8148eb6d133912553c8dbb6aa678fe23943d9759eff9f04831107725765",
+      "canonicalOriginPresent": true,
+      "inventedFixturesExcluded": true
+    },
+    "nativePrimarySourceCommit": "85bb921235f1ed4c21cc4317605fb929f33b13fd",
+    "nativeCleanSourceCommit": "75ea649fdaf36de65bf436859483adf4119be4a2",
+    "nativeFrontendTests": 76,
+    "nativeFrontendFiles": 8,
+    "phoneFrontendTests": 407,
+    "phoneFrontendFiles": 53,
+    "initialPrimaryAdditionalTemporaryFixtureTests": 27,
+    "types": true,
+    "lintFiles": 30,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "webAppExistingWarnings": 25,
+    "desktopBuildSeconds": 20.99,
+    "matchingOwnedSourceFiles": 31,
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "standalonePublished": false,
+    "phonePublished": false
   }
 }
