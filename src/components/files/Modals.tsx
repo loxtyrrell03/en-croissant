@@ -1,3 +1,5 @@
+import { useStore as useAtomStore } from "jotai";
+import { noteFileMove } from "@/utils/fileSourceMoves";
 import { Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useLoaderData } from "@tanstack/react-router";
@@ -373,6 +375,7 @@ export function RenameModal({
   setSelected: React.Dispatch<React.SetStateAction<Entry | null>>;
   onRenamed: (result: RenameResult) => void;
 }) {
+  const atomStore = useAtomStore();
   const { t } = useTranslation();
 
   const [name, setName] = useState("");
@@ -419,6 +422,7 @@ export function RenameModal({
 
     try {
       await rename(entry.path, newPath);
+      noteFileMove(atomStore, entry.path, newPath, entry.type === "directory", nextName);
 
       if (entry.type === "file" && isPgnFile(entry)) {
         await rename(getInfoPath(entry.path), getInfoPath(newPath)).catch(() => {});
@@ -487,6 +491,7 @@ export function EditModal({
   setSelected: React.Dispatch<React.SetStateAction<FileMetadata | Directory | null>>;
   metadata: FileMetadata;
 }) {
+  const atomStore = useAtomStore();
   const { t } = useTranslation();
 
   const [filename, setFilename] = useState(metadata.name);
@@ -508,6 +513,7 @@ export function EditModal({
     const newPGNPath = await resolve(await dirname(metadata.path), `${filename}.pgn`);
 
     await rename(metadata.path, newPGNPath);
+    noteFileMove(atomStore, metadata.path, newPGNPath, false, filename);
     await rename(metadataPath, getInfoPath(newPGNPath));
     await rename(getAiCoachSidecarPath(metadata.path), getAiCoachSidecarPath(newPGNPath)).catch(
       () => {},

@@ -23,6 +23,7 @@ import { notePgnFileWrite } from "@/utils/pgnSourceTabs";
 import { withPgnFileTask } from "@/utils/pgnFileQueue";
 import GameInfo from "@/components/common/GameInfo";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import { applyFileOrientation } from "@/utils/fileBoardPreferences";
 import ConfirmChangesModal from "@/components/tabs/ConfirmChangesModal";
 import { currentTabAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
@@ -244,7 +245,7 @@ export function GameSelectorAccordion({
           },
         };
       });
-      setState(tree);
+      setState(applyFileOrientation(tree, sourceFile.path));
     } catch (error) {
       if (pageRequest.current === ticket && owns()) {
         if (forced) throw error;

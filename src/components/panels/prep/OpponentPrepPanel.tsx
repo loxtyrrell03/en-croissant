@@ -1,3 +1,4 @@
+import { useFilePrepSources } from "@/hooks/useFilePrepSources";
 import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import { WdlResultBar } from "@/components/common/WdlResultBar";
 import {
@@ -771,6 +772,17 @@ function OpponentPrepPanel({
       };
     });
   }, [savedPrepSettings, setPrep]);
+  const {
+    markModeChoice,
+    markSourceChoice,
+    isOwnerCurrent: ownsPreferenceContext,
+  } = useFilePrepSources({
+    tab: currentTab,
+    scope,
+    prep,
+    setPrep,
+    pristine: shouldApplyStoredPrepSettings(prep),
+  });
 
   useEffect(() => {
     if (!configReady || prep.rootPath !== null) return;
@@ -1427,6 +1439,7 @@ function OpponentPrepPanel({
 
   const updateSettings = useCallback(
     (patch: PrepStoredSettingsPatch, resetProgress = true) => {
+      if (!ownsPreferenceContext()) return;
       setSavedPrepSettings((current) => ({
         ...current,
         ...patch,
@@ -1439,7 +1452,7 @@ function OpponentPrepPanel({
         skippedBranches: resetProgress ? {} : current.skippedBranches,
       }));
     },
-    [setPrep, setSavedPrepSettings],
+    [ownsPreferenceContext, setPrep, setSavedPrepSettings],
   );
 
   useEffect(() => {
@@ -1562,6 +1575,7 @@ function OpponentPrepPanel({
 
   const changePrepMode = useCallback(
     (mode: "player" | "general") => {
+      markModeChoice();
       if (mode === "general") {
         updateSettings(
           {
@@ -1595,12 +1609,15 @@ function OpponentPrepPanel({
         true,
       );
     },
-    [prepSource, updateSettings],
+    [markModeChoice, prepSource, updateSettings],
   );
 
   const changePrepSource = useCallback(
     (value: string | null) => {
       if (!value) return;
+      markSourceChoice(
+        value === LICHESS_ALL_SOURCE || value === LICHESS_MASTER_SOURCE ? "general" : prepMode,
+      );
 
       if (value === LICHESS_ALL_SOURCE) {
         updateSettings(
@@ -1646,7 +1663,7 @@ function OpponentPrepPanel({
         true,
       );
     },
-    [localDatabases, prep.color, prepMode, updateSettings],
+    [localDatabases, markSourceChoice, prep.color, prepMode, updateSettings],
   );
 
   const changeGeneralUserColor = useCallback(

@@ -31,6 +31,8 @@ import { keyMapAtom } from "@/state/keybinds";
 import { useBlindfoldMaiaTrainer } from "@/hooks/useBlindfoldMaiaTrainer";
 import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
 import { useStartPracticeGame } from "@/hooks/useStartPracticeGame";
+import { flipBoardOrientation } from "@/utils/fileBoardPreferences";
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 
 interface BoardControlsProps {
   editingMode: boolean;
@@ -61,9 +63,7 @@ function BoardControls({
   const { documentDir } = useLoaderData({ from: "/" });
 
   const store = useContext(TreeStateContext)!;
-  const headers = useStore(store, (s) => s.headers);
-  const root = useStore(store, (s) => s.root);
-  const setHeaders = useStore(store, (s) => s.setHeaders);
+  const targetFor = useTabSaveTargets();
   const clearShapes = useStore(store, (s) => s.clearShapes);
 
   const keyMap = useAtomValue(keyMapAtom);
@@ -75,16 +75,10 @@ function BoardControls({
   const practiceAgainstBot = usePracticeAgainstBot();
   const startBlindfoldTrainer = useBlindfoldMaiaTrainer();
 
-  const orientation = headers.orientation || "white";
   const changeModeLabel = t(
     currentTab?.type === "analysis" ? "Board.Action.PlayFromHere" : "Board.Action.AnalyzeGame",
   );
-  const toggleOrientation = () =>
-    setHeaders({
-      ...headers,
-      fen: root.fen,
-      orientation: orientation === "black" ? "white" : "black",
-    });
+  const toggleOrientation = () => flipBoardOrientation(store, targetFor(currentTab?.value));
 
   function changeTabType() {
     if (currentTab?.type === "analysis") {
@@ -139,10 +133,7 @@ function BoardControls({
             </ActionIcon>
           </Tooltip>
         )}
-        <Tooltip
-          position="right"
-          label={changeModeLabel}
-        >
+        <Tooltip position="right" label={changeModeLabel}>
           <ActionIcon onClick={changeTabType} aria-label={changeModeLabel}>
             {currentTab?.type === "analysis" ? (
               <IconTarget size="1.2rem" />
@@ -213,7 +204,10 @@ function BoardControls({
             key: keyMap.SWAP_ORIENTATION.keys,
           })}
         >
-          <ActionIcon onClick={() => toggleOrientation()}>
+          <ActionIcon
+            aria-label={t("Board.Action.FlipBoard", { key: keyMap.SWAP_ORIENTATION.keys })}
+            onClick={() => toggleOrientation()}
+          >
             <IconSwitchVertical size="1.2rem" />
           </ActionIcon>
         </Tooltip>

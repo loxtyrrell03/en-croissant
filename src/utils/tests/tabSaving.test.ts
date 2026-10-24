@@ -66,7 +66,12 @@ function tab(id = "original", kind: "none" | "file" | "database" = "file"): Tab 
             kind === "none"
                 ? { kind }
                 : kind === "database"
-                  ? { kind, database: "/library/fixture.db3", gameId: 17, sourceIdentity: "db-original" }
+                  ? {
+                        kind,
+                        database: "/library/fixture.db3",
+                        gameId: 17,
+                        sourceIdentity: "db-original",
+                    }
                   : {
                         kind,
                         gameNumber: 2,
@@ -104,6 +109,18 @@ beforeEach(() => {
 });
 
 describe("tab-owned saves", () => {
+    it("cleans saved game edits when only the presentation orientation changes during I/O", async () => {
+        const state = setup();
+        const pending = deferred<typeof ok>();
+        io.write.mockReturnValueOnce(pending.promise);
+        const saving = state.request();
+        await vi.waitFor(() => expect(io.write).toHaveBeenCalledOnce());
+        state.tree.getState().setOrientation("black");
+        pending.resolve(ok);
+        expect(await saving).toBe(true);
+        expect(state.tree.getState().dirty).toBe(false);
+        expect(state.tree.getState().headers.orientation).toBe("black");
+    });
     it("refuses legacy database bindings without touching the row", async () => {
         const original = tab("original", "database");
         if (original.gameOrigin.kind === "database") delete original.gameOrigin.sourceIdentity;
@@ -134,7 +151,9 @@ describe("tab-owned saves", () => {
 
     it("keeps the database source identity and edits when saving a separate copy", async () => {
         const state = setup(tab("original", "database"));
-        expect(await state.request({ isUserSave: true, forceSaveAs: true, copyOnly: true })).toBe(true);
+        expect(await state.request({ isUserSave: true, forceSaveAs: true, copyOnly: true })).toBe(
+            true,
+        );
         expect(io.writeDb).not.toHaveBeenCalled();
         expect(state.target.get()).toEqual(state.origin);
         expect(state.tree.getState().dirty).toBe(true);
@@ -146,10 +165,21 @@ describe("tab-owned saves", () => {
         io.writeDb.mockReturnValueOnce(pending.promise);
         const saving = state.request();
         await vi.waitFor(() => expect(io.writeDb).toHaveBeenCalledOnce());
-        state.target.update((tab) => ({ ...tab, gameOrigin: { kind: "database", database: "/other.db3", gameId: 99, sourceIdentity: "other-row" } }));
+        state.target.update((tab) => ({
+            ...tab,
+            gameOrigin: {
+                kind: "database",
+                database: "/other.db3",
+                gameId: 99,
+                sourceIdentity: "other-row",
+            },
+        }));
         pending.resolve({ status: "ok", data: "written-original" });
         expect(await saving).toBe(false);
-        expect(state.target.get()?.gameOrigin).toMatchObject({ gameId: 99, sourceIdentity: "other-row" });
+        expect(state.target.get()?.gameOrigin).toMatchObject({
+            gameId: 99,
+            sourceIdentity: "other-row",
+        });
         expect(state.tree.getState().dirty).toBe(true);
     });
 

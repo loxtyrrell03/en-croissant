@@ -150,6 +150,8 @@ import type { LiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import { findFen } from "@/utils/treeReducer";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
+import { flipBoardOrientation } from "@/utils/fileBoardPreferences";
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import { type Position as ReviewPosition } from "../files/opening";
 import { arrowColors } from "../panels/analysis/BestMoves";
 import AnnotationHint from "./AnnotationHint";
@@ -568,12 +570,9 @@ function Board({
 
   const turn = pos?.turn || "white";
   const orientation = headers.orientation || "white";
+  const orientationTargetFor = useTabSaveTargets();
   const toggleOrientation = () =>
-    setHeaders({
-      ...headers,
-      fen: rootFen,
-      orientation: orientation === "black" ? "white" : "black",
-    });
+    flipBoardOrientation(store, orientationTargetFor(currentTab?.value));
 
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys(keyMap.SWAP_ORIENTATION.keys, () => toggleOrientation());
@@ -1799,15 +1798,16 @@ function Board({
   ].filter(Boolean);
   const canClassifyMistakeReviewNature =
     Boolean(trainerMistakeReviewPosition?.mistakeReview) && !hiddenReviewPractice;
-  const storedMistakeReviewNature = getStoredMistakeReviewNatureClassification(mistakeReviewMetadata);
+  const storedMistakeReviewNature =
+    getStoredMistakeReviewNatureClassification(mistakeReviewMetadata);
   const mistakeReviewNature =
     trainerMistakeReviewPosition?.mistakeReview && canClassifyMistakeReviewNature
       ? getMistakeReviewNature(trainerMistakeReviewPosition)
-      : storedMistakeReviewNature?.nature ?? (mistakeReviewMetadata ? "unknown" : null);
+      : (storedMistakeReviewNature?.nature ?? (mistakeReviewMetadata ? "unknown" : null));
   const mistakeReviewNatureConfidence =
     trainerMistakeReviewPosition?.mistakeReview && canClassifyMistakeReviewNature
       ? getMistakeReviewNatureConfidence(trainerMistakeReviewPosition)
-      : storedMistakeReviewNature?.confidence ?? (mistakeReviewMetadata ? "low" : null);
+      : (storedMistakeReviewNature?.confidence ?? (mistakeReviewMetadata ? "low" : null));
   const mistakeReviewLastSeen = formatMistakeReviewLastSeen(trainerMistakeReviewPosition);
   const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
 
@@ -2069,7 +2069,8 @@ function Board({
                     ...boardDrawings({
                       saved: currentNode.shapes,
                       overlays: shapes,
-                      visible: (shape) => (!planExplorerPreviewLine || !isPlanBrush(shape.brush)) &&
+                      visible: (shape) =>
+                        (!planExplorerPreviewLine || !isPlanBrush(shape.brush)) &&
                         (!hideMistakeReviewPreAttemptGreenArrows || !isGreenBoardArrowShape(shape)),
                       eraseOnClick: eraseDrawablesOnClick,
                       save: setShapes,
@@ -2309,7 +2310,15 @@ function Board({
                           <Badge
                             color={mistakeReviewNatureColor(mistakeReviewNature)}
                             variant="light"
-                            styles={{ root: { height: "auto", maxWidth: "100%" }, label: { whiteSpace: "normal", overflowWrap: "anywhere", lineHeight: 1.4, textAlign: "center" } }}
+                            styles={{
+                              root: { height: "auto", maxWidth: "100%" },
+                              label: {
+                                whiteSpace: "normal",
+                                overflowWrap: "anywhere",
+                                lineHeight: 1.4,
+                                textAlign: "center",
+                              },
+                            }}
                             title={`${mistakeReviewNatureLabel(mistakeReviewNature)}, ${
                               mistakeReviewNatureConfidence ?? "unknown"
                             } confidence`}
@@ -2477,8 +2486,18 @@ function Board({
       </Box>
       {(whiteFideOpen || blackFideOpen) && (
         <Suspense fallback={null}>
-          <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} fideId={headers.other?.WhiteFideId} />
-          <FideInfo opened={blackFideOpen} setOpened={setBlackFideOpen} name={headers.black} fideId={headers.other?.BlackFideId} />
+          <FideInfo
+            opened={whiteFideOpen}
+            setOpened={setWhiteFideOpen}
+            name={headers.white}
+            fideId={headers.other?.WhiteFideId}
+          />
+          <FideInfo
+            opened={blackFideOpen}
+            setOpened={setBlackFideOpen}
+            name={headers.black}
+            fideId={headers.other?.BlackFideId}
+          />
         </Suspense>
       )}
     </>
