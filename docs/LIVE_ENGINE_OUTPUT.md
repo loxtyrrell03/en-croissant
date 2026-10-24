@@ -54,6 +54,17 @@ report this as a full-suite pass or silently rewrite independent expectations.
 
 These are source, synthetic stream and local-process checks. Browser control is
 still disabled in Work settings. Rendered evaluation-bar/native-window evidence,
-clean delivery verification and standalone/hosted publication remain separate.
-No live app, hosted engine service, profile data, downloaded corpus or hosting
-route was changed by this milestone.
+standalone/hosted publication remain separate. The existing Dev watcher rebuilds
+from watched source edits; that is separate from standalone delivery. No app or
+service was manually restarted. Hosted engine service/configuration, profile
+data, downloaded corpus and hosting routes remain untouched.
+
+Clean delivery `eb898149` independently passes all eight focused native checks
+(including the real Stockfish fixture), the full native Tauri check with its
+22 existing warnings, and a combined 134-check/seventeen-file frontend suite.
+Whole-project types and six-file lint pass with no warnings/errors. All 10 owned
+source/test files match committed primary. Desktop Vite builds in 27.19 seconds;
+the canonical-origin home-phone build succeeds in 22.96 seconds, uses the reused
+task build directory, includes the canonical host and excludes invented test
+fixtures. Neither build was installed or published. The broad native baseline
+failure comparison above remains a material limitation.

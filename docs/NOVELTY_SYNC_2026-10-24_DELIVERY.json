@@ -320,5 +320,46 @@
     "standalonePublished": false,
     "phoneApplicable": false,
     "phoneReason": "Native database-row/multi-tab practice and clear controls; phone keeps its separate root-owned workspace protocol"
+  },
+  "pendingLiveEngineOutput": {
+    "primarySourceCommit": "52fc816df0169c2cbc3ea46ae9cd173cb718bdc4",
+    "cleanSourceCommit": "eb8981491ea2440636e50ff52c736f8f0f24ce6c",
+    "focusedFrontendTests": 39,
+    "focusedFrontendFiles": 6,
+    "cleanCombinedFrontendTests": 134,
+    "cleanCombinedFrontendFiles": 17,
+    "nativeFocusedTests": 8,
+    "realExistingStockfishProcess": true,
+    "types": true,
+    "lintFiles": 6,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeCheck": true,
+    "nativeExistingWarnings": 22,
+    "desktopBuildSeconds": 27.19,
+    "canonicalPhoneBuildSeconds": 22.96,
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "standalonePublished": false,
+    "phonePublished": false,
+    "engineServiceChanged": false,
+    "phoneBundle": {
+      "entry": "WebApp-Dju05ViI.js",
+      "sha256": "cea76099c0ebcbaf8dc1746d3c472852aeaca7f3aa2da2053c45b17e89f4dfb3",
+      "bytes": 424532,
+      "indexSha256": "3eb05b510404bbc2a3fdcf9316d754c365f6292e94d2e74b0b662134da476078",
+      "canonicalOriginPresent": true,
+      "inventedFixturesExcluded": true
+    },
+    "matchingOwnedSourceFiles": 10,
+    "broadNativeBaseline": {
+      "baselineCommit": "b01f15c1c2c04181217ae890f9db0918e8e2c92f",
+      "baselinePassed": 293,
+      "changedPassed": 300,
+      "baselineFailed": 13,
+      "changedFailed": 13,
+      "baselineIgnored": 8,
+      "changedIgnored": 9
+    }
   }
 }
