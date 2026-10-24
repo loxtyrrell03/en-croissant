@@ -38,6 +38,24 @@ remain authoritative where already available.
 
 ## Integration inventory in progress
 
+The existing sparse phone delivery checkout now merges primary source through
+`64f8a5c6` with the live-phone branch through `7ea2eadb`. September Stats conflicts
+were resolved to the verified October estimator, workers and range transport;
+October phone opponent-picker, orientation, direct-link and installed-root
+handoff changes are retained. No new checkout, dependency tree or corpus copy was
+created. The clean combined source passes 548 focused tests, an additional
+69 phone storage/import/Prep tests, 62 service/build/controller tests (one optional
+engine check skipped), full TypeScript and the complete frontend/worker build.
+The existing shared review runtime was regenerated from committed source;
+uncommitted checking-ray research in primary remains excluded.
+
+The first guarded publication built both native helpers but stopped before
+activation when Windows PowerShell could not resolve `Get-FileHash`. The shared
+streaming .NET SHA-256 helper now removes that command dependency for manifest
+and native-helper verification. The publish-guard suite passes, including the
+standard `abc` digest with module auto-loading disabled; no ancestry, clean-source
+or integrity check was removed. Delivery status remains pending the retry.
+
 | Area | Initial finding | Next verification |
 | --- | --- | --- |
 | Performance estimator, workers and custom periods | 23 of 24 matching shared files are byte-identical, including the model, workers and controls; the phone adds adapter tests. Source reconciliation is now committed | Reconcile prerequisites, test desktop/phone adapters, then deliver |
@@ -51,3 +69,17 @@ remain authoritative where already available.
 This is an active audit ledger, not a claim of complete feature or deployment
 parity. Installed desktop, served phone and physical-device evidence must be
 recorded separately as work progresses.
+
+## First phone delivery
+
+Source `8ff91aaac8bb1c4cea21a35fc285368601781d1c` is live at
+`https://lox-pc.tail89d19b.ts.net/`. Canonical HTTPS health and app-version
+source/hash agree; the publisher verified native settings RPC and both rebuilt
+helper hashes. Chrome renders the connected Board and Ready service status,
+and Stats exposes Last day, Last 3 days, Custom duration/unit and Apply before
+loading an account. This is desktop-browser delivery proof, not physical-phone
+verification. The desktop release executable is being rebuilt separately.
+
+The remaining source differences are tracked in
+`NOVELTY_SYNC_GAPS_2026-10-24.md`; the all-branch candidate inventory is
+`NOVELTY_SYNC_2026-10-24_INVENTORY.json`. The goal remains active.
