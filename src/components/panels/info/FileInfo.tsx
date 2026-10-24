@@ -1,6 +1,10 @@
+import type { PgnGameListEntry } from "@/utils/pgnGameList";
 import { ActionIcon, Code, Divider, Group, Text, Tooltip } from "@mantine/core";
 import { IconReload } from "@tabler/icons-react";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
+import { notifications } from "@mantine/notifications";
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
+import { withPgnFileTask } from "@/utils/pgnFileQueue";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 import { currentTabAtom } from "@/state/atoms";
@@ -11,10 +15,11 @@ import { unwrap } from "@/utils/unwrap";
 function FileInfo({
   setGames,
 }: {
-  setGames: React.Dispatch<React.SetStateAction<Map<number, string>>>;
+  setGames: React.Dispatch<React.SetStateAction<Map<number, PgnGameListEntry>>>;
 }) {
   const { t } = useTranslation();
-  const [tab, setCurrentTab] = useAtom(currentTabAtom);
+  const tab = useAtomValue(currentTabAtom);
+  const targetFor = useTabSaveTargets();
   const tabFile = getTabFile(tab);
 
   if (!tabFile) return null;
@@ -34,27 +39,42 @@ function FileInfo({
             <ActionIcon
               variant="outline"
               size="sm"
-              onClick={() =>
-                commands.countPgnGames(tabFile.path).then((v) => {
-                  setCurrentTab((prev) => {
-                    if (prev.gameOrigin.kind !== "file" && prev.gameOrigin.kind !== "temp_file") {
-                      return prev;
-                    }
-                    return {
-                      ...prev,
-                      gameOrigin: {
-                        ...prev.gameOrigin,
-                        file: {
-                          ...prev.gameOrigin.file,
-                          numGames: unwrap(v),
-                          numGamesKnown: true,
+              onClick={async () => {
+                const target = targetFor(tab?.value);
+                try {
+                  await withPgnFileTask(tabFile.path, async () => {
+                    const count = unwrap(await commands.countPgnGames(tabFile.path));
+                    if (getTabFile(target.get())?.path !== tabFile.path) return;
+                    target.update((prev) => {
+                      const origin = prev.gameOrigin;
+                      if (
+                        (origin.kind !== "file" && origin.kind !== "temp_file") ||
+                        origin.file.path !== tabFile.path
+                      )
+                        return prev;
+                      return {
+                        ...prev,
+                        gameOrigin: {
+                          ...origin,
+                          file: {
+                            ...origin.file,
+                            numGames: count,
+                            numGamesKnown: true,
+                            lastModified: Math.max(Date.now(), origin.file.lastModified + 1),
+                          },
                         },
-                      },
-                    };
+                      };
+                    });
+                    setGames(new Map());
                   });
-                  setGames(new Map());
-                })
-              }
+                } catch (error) {
+                  notifications.show({
+                    title: "Could not reload game list",
+                    message: String(error),
+                    color: "red",
+                  });
+                }
+              }}
             >
               <IconReload size="1rem" />
             </ActionIcon>

@@ -70,7 +70,7 @@ use crate::fs::set_file_as_executable;
 use crate::lexer::lex_pgn;
 use crate::oauth::authenticate;
 use crate::otb_import::{cancel_otb_games, collect_otb_games, OtbImportProgress};
-use crate::pgn::{count_pgn_games, delete_game, read_games, split_pgn_to_files, write_game};
+use crate::pgn::{append_pgn_game, count_pgn_games, create_pgn_game, delete_game, read_games, read_pgn_game, read_pgn_games, split_pgn_to_files, write_game};
 use crate::puzzle::{
     delete_puzzle_database, export_blindfold_puzzle_progress, export_puzzle_progress,
     get_blindfold_puzzle_dashboard, get_blindfold_puzzle_progress, get_blindfold_training_puzzle,
@@ -113,7 +113,6 @@ pub struct AppState {
     search_collisions: DashMap<(GameQuery, PathBuf), Arc<tokio::sync::Mutex<()>>>,
     db_cancel_flags: DashMap<String, Arc<AtomicBool>>,
     db_pause_flags: DashMap<String, Arc<AtomicBool>>,
-    pgn_offsets: DashMap<String, Vec<u64>>,
     // Databases with a PGN conversion currently writing to them; guards
     // against concurrent journal-less imports into the same file.
     active_conversions: DashMap<String, ()>,
@@ -221,6 +220,10 @@ fn main() {
             cancel_otb_games,
             count_pgn_games,
             read_games,
+            read_pgn_game,
+            read_pgn_games,
+            create_pgn_game,
+            append_pgn_game,
             split_pgn_to_files,
             lex_pgn,
             is_bmi2_compatible,

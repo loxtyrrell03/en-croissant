@@ -40,10 +40,10 @@ TypeScript, 20-file lint with zero warnings/errors and the production Vite build
 ending normalization. No native executable or hosted app was published for this
 frontend foundation.
 
-The underlying native PGN writer still needs source fingerprint checks, fresh
-offsets and atomic replacement. Cross-tab/external file changes can therefore
-still conflict. The virtual game-list header cache and deletion/index-shift
-identity also need further work. Custom-root PGN counters now use each resulting
+The native PGN transaction, virtual-list/preview request guards and deletion
+identity are now implemented in source; see `NATIVE_PGN_FILES.md` for the fresh
+span/identity checks, atomic publication, metadata ownership, cross-tab ordering,
+verification and external-writer limits. Custom-root PGN counters use each resulting
 FEN's turn/fullmove value, preserving relative tree indices; multi-annotation
 export emits separate unambiguous NAGs instead of duplicated comma lists. Four
 new regressions reproduce the old counter/annotation failures; related native
@@ -51,5 +51,5 @@ save, drawing, report and phone checks total 55 checks across seven files, with
 types and scoped lint passing. Clean delivery source `549faef9` independently
 passes those same checks and the production Vite build (23.64 seconds); both
 owned exporter files match primary. This repair is also source-only.
-Do not describe this foundation as completed no-clobber Files saves
-or automatic Clear tabs, and do not infer runtime delivery from these checks.
+Database-row compare-before-write and automatic Clear tabs remain separate work.
+Do not infer runtime delivery from these source checks.

@@ -5,6 +5,7 @@ import { tabsAtom } from "@/state/atoms";
 import { createTabSaveTarget } from "../tabSaveTarget";
 import { ownTabTree } from "@/state/store/treeOwner";
 import { saveToFile, type Tab } from "../tabs";
+import { withPgnFileTask } from "../pgnFileQueue";
 
 const io = vi.hoisted(() => ({
     dialog: vi.fn(),
@@ -16,6 +17,20 @@ const io = vi.hoisted(() => ({
 }));
 vi.mock("@/state/atoms", () => ({ tabsAtom: atom<Tab[]>([]) }));
 vi.mock("@/bindings", () => ({ commands: { writeGame: io.write, writeDbGame: io.writeDb } }));
+vi.mock("@/bindings/pgnFiles", () => ({
+    pgnFiles: {
+        write: async (path: string, n: number, identity: string, pgn: string, metadata: string) => {
+            const result = await io.write(path, n, pgn, identity, metadata);
+            if (result.status === "error") throw new Error(result.error);
+            return result.data ?? { file: path, index: n, identity: "b".repeat(64), gameCount: 4 };
+        },
+        create: async (path: string, pgn: string, metadata: string, source: unknown) => {
+            const result = await io.write(path, 0, pgn, null, metadata, source);
+            if (result.status === "error") throw new Error(result.error);
+            return result.data ?? { file: path, index: 0, identity: "b".repeat(64), gameCount: 1 };
+        },
+    },
+}));
 vi.mock("@tauri-apps/plugin-dialog", () => ({ save: io.dialog }));
 vi.mock("@tauri-apps/api/path", () => ({
     resolve: async (...parts: string[]) => parts.join("/"),
@@ -55,6 +70,7 @@ function tab(id = "original", kind: "none" | "file" | "database" = "file"): Tab 
                   : {
                         kind,
                         gameNumber: 2,
+                        sourceIdentity: "a".repeat(64),
                         file: {
                             type: "file",
                             name: "Fixture",
@@ -88,6 +104,96 @@ beforeEach(() => {
 });
 
 describe("tab-owned saves", () => {
+    it("rechecks the binding after a preceding deletion before issuing a queued write", async () => {
+        const state = setup();
+        let finish!: () => void;
+        const deletion = withPgnFileTask("/games/fixture.pgn", async () => {
+            await new Promise<void>((resolve) => {
+                finish = resolve;
+            });
+            state.target.update((tab) => ({ ...tab, gameOrigin: { kind: "none" } }));
+        });
+        await Promise.resolve();
+        const saving = state.request();
+        const rejection = saving.catch((error) => error);
+        await Promise.resolve();
+        expect(io.write).not.toHaveBeenCalled();
+        finish();
+        await deletion;
+        expect(await rejection).toMatchObject({ message: expect.stringContaining("another game") });
+        expect(io.write).not.toHaveBeenCalled();
+        expect(state.tree.getState().dirty).toBe(true);
+    });
+    it("preserves file metadata edited while a write was pending", async () => {
+        const state = setup();
+        const done = deferred<typeof ok>();
+        io.write.mockReturnValue(done.promise);
+        const saving = state.request();
+        await vi.waitFor(() => expect(io.write).toHaveBeenCalledOnce());
+        state.target.update((tab) =>
+            tab.gameOrigin.kind === "file"
+                ? {
+                      ...tab,
+                      gameOrigin: {
+                          ...tab.gameOrigin,
+                          file: {
+                              ...tab.gameOrigin.file,
+                              name: "Updated name",
+                              metadata: { type: "repertoire", tags: ["Keep"] },
+                          },
+                      },
+                  }
+                : tab,
+        );
+        done.resolve(ok);
+        await saving;
+        expect(state.target.get()?.gameOrigin).toMatchObject({
+            file: { name: "Updated name", metadata: { type: "repertoire", tags: ["Keep"] } },
+        });
+    });
+    it("refuses legacy file bindings without a captured identity while retaining a working copy path", async () => {
+        const owner = tab();
+        if (owner.gameOrigin.kind === "file") delete owner.gameOrigin.sourceIdentity;
+        const state = setup(owner);
+        await expect(state.request()).rejects.toThrow("identity is missing");
+        expect(io.write).not.toHaveBeenCalled();
+        expect(state.tree.getState().dirty).toBe(true);
+        expect(await state.request({ forceSaveAs: true, copyOnly: true })).toBe(true);
+        expect(state.tree.getState().dirty).toBe(true);
+    });
+    it("keeps a relocated native index and refreshed identity for the next save", async () => {
+        const state = setup();
+        io.write.mockResolvedValueOnce({
+            status: "ok",
+            data: { file: "/games/fixture.pgn", index: 7, identity: "c".repeat(64), gameCount: 8 },
+        });
+        expect(await state.request()).toBe(true);
+        expect(state.target.get()?.gameOrigin).toMatchObject({
+            gameNumber: 7,
+            sourceIdentity: "c".repeat(64),
+        });
+        state.tree.getState().setComment("Another edit");
+        expect(await state.request()).toBe(true);
+        expect(io.write.mock.calls[1][1]).toBe(7);
+        expect(io.write.mock.calls[1][3]).toBe("c".repeat(64));
+    });
+    it("binds the actual collision-safe filename returned by native creation", async () => {
+        const state = setup(tab("original", "none"));
+        io.write.mockResolvedValueOnce({
+            status: "ok",
+            data: {
+                file: "/documents/saved (2).pgn",
+                index: 0,
+                identity: "c".repeat(64),
+                gameCount: 1,
+            },
+        });
+        expect(await state.request()).toBe(true);
+        expect(state.target.get()?.gameOrigin).toMatchObject({
+            sourceIdentity: "c".repeat(64),
+            file: { path: "/documents/saved (2).pgn" },
+        });
+    });
     it("refuses a mismatched live board and tab owner", async () => {
         const state = setup();
         ownTabTree(state.tree, "other");

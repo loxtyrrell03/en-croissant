@@ -29,9 +29,8 @@ import {
   IconZoomCheck,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
-import { writeTextFile } from "@tauri-apps/plugin-fs";
 import type { Piece } from "chessops";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useStore as useAtomStore } from "jotai";
 import {
   lazy,
   Suspense,
@@ -54,7 +53,8 @@ import {
   practiceStateAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
-import { defaultPGN } from "@/utils/chess";
+import { appendTabGame } from "@/utils/appendTabGame";
+import { notePgnFileWrite } from "@/utils/pgnSourceTabs";
 import { getTabFile, getTabGameNumber, getTabPracticeKey, saveToFile } from "@/utils/tabs";
 import type { LiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import DetachedEval from "../common/DetachedEval";
@@ -159,10 +159,14 @@ function BoardAnalysis() {
   const [editingMode, toggleEditingMode] = useToggle();
   const [underBoardMode, setUnderBoardMode] = useState<UnderBoardMode>("moves");
   const [savingCopy, setSavingCopy] = useState(false);
+  const [savingFile, setSavingFile] = useState(0);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [tacticalScan, setTacticalScan] = useState<LiveTacticalScan | null>(null);
   const [topBarActionsTarget, setTopBarActionsTarget] = useState<HTMLElement | null>(null);
-  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const currentTab = useAtomValue(currentTabAtom);
+  const atomStore = useAtomStore();
+  const [addingGame, setAddingGame] = useState(false);
+  const addingGameRef = useRef(false);
   const saveTargetFor = useTabSaveTargets();
   const tabFile = getTabFile(currentTab);
   const isReviewOrigin =
@@ -191,7 +195,6 @@ function BoardAnalysis() {
   const saveRoot = useStore(store, (s) => s.root);
   const saveHeaders = useStore(store, (s) => s.headers);
 
-  const reset = useStore(store, (s) => s.reset);
   const clearShapes = useStore(store, (s) => s.clearShapes);
   const setAnnotation = useStore(store, (s) => s.setAnnotation);
   const goToNext = useStore(store, (s) => s.goToNext);
@@ -203,6 +206,7 @@ function BoardAnalysis() {
 
   const saveFile = useCallback(
     async (isUserSave = false) => {
+      setSavingFile((count) => count + 1);
       try {
         return await saveToFile({
           dir: documentDir,
@@ -219,6 +223,8 @@ function BoardAnalysis() {
           color: "red",
         });
         return false;
+      } finally {
+        setSavingFile((count) => Math.max(0, count - 1));
       }
     },
     [saveTargetFor, currentTab, documentDir, store],
@@ -261,30 +267,25 @@ function BoardAnalysis() {
     }
   }, [hasPersistentOrigin, saveFile, autoSave, dirty, saveRoot, saveHeaders]);
 
-  const addGame = useCallback(() => {
-    if (!tabFile) return;
-    setCurrentTab((prev) => {
-      if (prev.gameOrigin.kind !== "file" && prev.gameOrigin.kind !== "temp_file") {
-        return prev;
-      }
-      return {
-        ...prev,
-        gameOrigin: {
-          ...prev.gameOrigin,
-          gameNumber: prev.gameOrigin.file.numGames,
-          file: {
-            ...prev.gameOrigin.file,
-            numGames: prev.gameOrigin.file.numGames + 1,
-            numGamesKnown: true,
-          },
-        },
-      };
-    });
-    reset();
-    writeTextFile(tabFile.path, `\n\n${defaultPGN()}\n\n`, {
-      append: true,
-    });
-  }, [setCurrentTab, reset, tabFile]);
+  const addGame = useCallback(async () => {
+    if (addingGameRef.current) return;
+    addingGameRef.current = true;
+    setAddingGame(true);
+    try {
+      await appendTabGame(saveTargetFor(currentTab?.value), store, saveFile, (path, result) =>
+        notePgnFileWrite(atomStore, path, result),
+      );
+    } catch (error) {
+      notifications.show({
+        title: "Could not open a new game",
+        message: String(error),
+        color: "red",
+      });
+    } finally {
+      addingGameRef.current = false;
+      setAddingGame(false);
+    }
+  }, [atomStore, currentTab?.value, saveFile, saveTargetFor, store]);
 
   const keyMap = useAtomValue(keyMapAtom);
 
@@ -321,6 +322,7 @@ function BoardAnalysis() {
       toggleEditingMode={toggleEditingMode}
       dirty={dirty}
       saveFile={userSaveFile}
+      savingFile={savingFile > 0}
       onOpenCoach={() => setCurrentTabSelected("coach")}
     />
   );
@@ -578,7 +580,7 @@ function BoardAnalysis() {
               <Tabs.Panel value="info" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <EngineDockedPanel>
                   <DeferredPanel>
-                    <InfoPanel addGame={addGame} />
+                    <InfoPanel addGame={addGame} addingGame={addingGame} />
                   </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>

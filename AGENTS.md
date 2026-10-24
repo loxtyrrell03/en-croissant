@@ -1,3 +1,27 @@
+## 2026-10-24 native PGN file transactions
+
+- Native file opens capture a complete-game SHA-256 identity. Fresh spans,
+  unique relocation and full-source recheck guard staged replacements; cached
+  offsets cannot redirect writes. Windows ReplaceFile preserves metadata and
+  retains/reports any recovery backup on partial failure. New PGNs and info
+  sidecars publish without replacement and return collision-safe paths.
+- Renderer per-file queues include binding/count completion, with late owner
+  checks after waiting. Virtual headers await parsing, merge ranges and reject
+  older path/version/retry generations. Batch counts refresh changed/empty files;
+  previews hide stale boards and validate identity again at Open. Deletion
+  preserves/unbinds open board edits, and append saves first and retains edits
+  made while waiting. Legacy file tabs without identity fail closed with copy
+  recovery available; online clock hydration no longer writes outside this path.
+- Eighteen tiny native filesystem checks and 93 frontend checks across seventeen
+  files pass, plus full types, 24-file lint and the complete native Tauri check.
+  The native check retains 22 existing unused-code/import warnings. Browser
+  control is disabled in Work settings; rendered and installed-native proof is
+  pending. No standalone/hosted release or owner data migration was performed.
+- Identity is content-based, and source recheck is not an OS compare-and-swap
+  against uncooperative external editors. Limits: 8 MiB/game and 32 MiB/range;
+  list requests contain at most four games. See docs/NATIVE_PGN_FILES.md.
+  Database-row compare-before-write and automatic Clear tabs remain open.
+
 ## 2026-10-24 custom-root PGN export
 
 - Move labels use the resulting node FEN's real turn/fullmove counter, so White
@@ -9,7 +33,7 @@
   Primary and clean delivery source 549faef9 pass 55 related save/drawing/report/
   phone checks across seven files, full types and two-file lint. The clean
   production Vite build passes in 23.64 seconds; both exporter files match.
-  This is source proof; runtime delivery and the broader file-conflict/Clear-tabs
+  This is source proof; runtime delivery and the broader database-row/Clear-tabs
   work remain separate. No service, owner data or native binary changed.
 
 ## 2026-10-24 clean tab-save source verification
@@ -37,11 +61,10 @@
   20-file lint pass. Native I/O is mocked in these fixtures; browser control is
   disabled in Work settings. Installed-native/browser delivery remains separate.
   Phone already owns its single durable workspace writer.
-- Native PGN source fingerprints/fresh offsets/atomic replacement, cross-tab
-  conflicts, virtual header-cache/deletion identity and automatic Clear tabs
-  remain open. Custom-root counters/multiple NAG export are repaired in source. See
-  docs/TAB_SAVE_OWNERSHIP.md; do not claim complete no-clobber writes from this
-  frontend foundation. No hosting, service, native binary or owner data change.
+- Native file transactions, virtual-list/preview guards and deletion/append
+  identity are now implemented in source; docs/NATIVE_PGN_FILES.md records
+  verification and runtime limits. Database-row write identity and automatic
+  Clear tabs remain open. Custom-root counters/multiple NAG export are repaired.
 
 ## Tournament prediction history (2026-10-24)
 
