@@ -56,7 +56,8 @@ limits, failed-save retry without reanalysis, cancellation and changed games;
 real WebApp navigation covers report save, mistake selection and playing a plan
 without modifying the imported game. Engine transport tests cover fresh legal
 rank-preserving lines; shared extraction/evidence/coverage tests retain the
-native behavior. TypeScript, scoped lint and the primary frontend build pass.
+native behavior. TypeScript, scoped lint and both primary and clean-delivery
+frontend builds pass; the latter completes in 21.06 seconds.
 
 Browser control was disabled in Work settings when responsive verification was
 attempted. Therefore narrow rendering, touch/focus help and large-text layouts
@@ -64,9 +65,14 @@ of these new controls are not yet visually verified. The earlier three static
 designs were visually reviewed; those screenshots are not implementation proof.
 No native Computer Use or alternate browser automation was used.
 
-Clean build/runtime delivery and the shared engine protocol update are still
-required. The live phone and standalone desktop remain at the preceding verified
-delivery until the parity receipt is updated. Do not copy just the engine entry
-point: the new UCI report helper must be installed first, and an active shared
-engine must not be interrupted. No full corpus test or database migration is
-required for this frontend/report slice.
+The shared engine service now runs protocol version 1 from clean `ff5f271c`.
+Canonical HTTPS checks complete a depth-8/50-ms report with legal exact chosen
+evidence and an ordinary finite depth-2 search. The first request includes
+engine startup (939 ms total); its selected exact depth is 8. No queue remains.
+The existing config, task, routes and owner enabled choice are preserved.
+
+The new phone UI remains unpublished pending rendered verification. Its live
+release and standalone desktop remain at the preceding `44c37e09` delivery.
+See `NOVELTY_SYNC_2026-10-24_DELIVERY.json` for separate UI/backend receipts.
+Install the UCI report helper before the engine entry point; never interrupt an
+active shared engine. No full corpus test or database migration is required.
