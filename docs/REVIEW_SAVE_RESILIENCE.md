@@ -33,10 +33,13 @@ separate storage mechanisms are preserved.
 The focused native writer, actual opening/mistake file adapters and mounted
 error/retry panel have nine regression checks. The related ten-file suite has
 92 checks, covering existing review assessment, phone grade interaction and
-phone workspace failure/overlap/remount behavior. Types and scoped lint pass.
-Clean build/runtime delivery and rendered error-layout verification are tracked
-separately in the parity ledger. No owner deck or phone workspace was edited by
-these synthetic checks.
+phone workspace failure/overlap/remount behavior. Together with the three cadence
+checks below, all 95 checks across eleven files pass on clean `ac47b965`.
+Clean types, nine-file lint (zero warnings/errors) and the production frontend
+bundle (23.51 seconds) pass. The nine owned source/test files match primary
+after line-ending normalization. Runtime delivery and rendered error-layout
+verification are tracked separately in the parity ledger. No owner deck or
+phone workspace was edited by these synthetic checks.
 
 ## Related parity checks
 
