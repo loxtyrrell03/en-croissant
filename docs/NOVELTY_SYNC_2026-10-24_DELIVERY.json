@@ -194,7 +194,7 @@
     "publishedSourceCommit": "dfc2183148a4ee80a523e420cdfe452d9b332b78"
   },
   "observedPhoneRelease": {
-    "checkedAt": "2026-10-24T20:14:14.463452+00:00",
+    "checkedAt": "2026-10-24T21:37:21.310687+00:00",
     "url": "https://lox-pc.tail89d19b.ts.net/",
     "sourceCommit": "dfc2183148a4ee80a523e420cdfe452d9b332b78",
     "releaseId": "dfc2183148a4-5ead9cb908c9",
@@ -277,5 +277,21 @@
     "nativeWindowVerified": false,
     "standalonePublished": false,
     "phonePublished": false
+  },
+  "pendingSharedTournamentSearch": {
+    "noveltySourceCommit": "641036423d1b0ab73389a37271163bef9d38d445",
+    "primarySourceCommit": "3e50490271dfa6e054c55f35818b6cd2074e1b83",
+    "cleanSourceCommit": "58e1c55ce00b9cefee6850b3a012d54d9c6380ee",
+    "checks": {
+      "selectedSearchTests": 44,
+      "selectedSearchFiles": 5,
+      "combinedFrontendTests": 137,
+      "combinedFrontendFiles": 22,
+      "types": true,
+      "productionBuildSeconds": 23.46
+    },
+    "published": false,
+    "browserReverifiedByThisAudit": false,
+    "relatedBrowserEvidence": "TOURNAMENT_SEARCH_QUALITY_2026-10-24.md"
   }
 }

@@ -1,3 +1,13 @@
+## 2026-10-24 combined delivery-source verification
+
+- Parity integration carries primary search source 3e504902 into clean delivery
+  58e1c55c, preserving prior phone features and native PGN safeguards. Its five
+  selected search/model/persistence suites pass 44 checks; the combined PGN,
+  preview, report, phone and search selection passes 137 checks across 22 files.
+  Full types and production Vite build (23.46 seconds) pass. No native source
+  changed from the separately verified PGN milestone. This is combined-source
+  proof, with the feature's browser receipts and runtime publication separate.
+
 ## Tournament search quality (2026-10-24)
 
 - Discovery remembers the explicitly selected region and compatible country in versioned browser storage, with validation and a session fallback. Queries and dates reset on a fresh app session; explicit Clear filters resets the area. Profiles remain independent.

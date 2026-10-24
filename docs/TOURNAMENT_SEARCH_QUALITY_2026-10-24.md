@@ -23,3 +23,10 @@ Tournament search now remembers the owner's chosen area across app sessions and 
 Changes are present in the primary Novelty Dev source and shared En desktop/phone source. The isolated Novelty branch contains only this task's changes; the dirty primary checkouts retain unrelated work. This task does not publish an installer, deploy the hosted phone runtime, restart services or modify owner databases. Browser/component proof does not establish installed-executable or physical-phone interaction.
 
 Reproduce browser checks with `node scripts/qa-tournament-search-quality.mjs [repository-path] [phone]`. Set `NOVELTY_QA_ORIGIN=http://localhost:4780` to verify the current primary Dev modules after checking its checkout identity; the harness still uses an isolated test browser and synthetic responses.
+
+The parity audit carries primary `3e504902` into clean delivery source
+`58e1c55c`, retaining the native PGN safeguards and all earlier phone changes.
+The five selected search/model/persistence suites pass 44 checks; combined with
+the PGN/preview/report/phone regressions, 137 checks across 22 files pass, plus
+full types and the production Vite build (23.46 seconds). This combined-source
+check does not rerun the feature browser receipts above or publish either app.

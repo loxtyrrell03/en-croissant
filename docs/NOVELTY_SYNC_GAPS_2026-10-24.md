@@ -34,6 +34,14 @@ the history inventory, not counted as separate missing features.
 
 ## Already present or deliberately separate
 
+- The concurrent tournament-search quality feature (Novelty `64103642`, En
+  `3e504902`) is retained in clean delivery `58e1c55c`: saved region/country,
+  rough-word and numeric-section matching, bounded supplemental lookup, shared
+  cache/retry/cancellation and past-date actions. Its 44 selected search checks
+  join 93 PGN/preview/report/phone checks in a passing 137-check combined build.
+  Source/browser evidence from that feature is documented separately; hosted
+  and installed delivery remain pending.
+
 - The current shared performance model, worker lifecycle and custom-period
   modules were already mirrored in source. Their missing committed prerequisites
   were reconciled and tested in this task; runtime delivery is tracked separately.
