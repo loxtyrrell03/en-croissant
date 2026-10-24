@@ -1,3 +1,4 @@
+import { WdlResultBar } from "@/components/common/WdlResultBar";
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import {
   ActionIcon,
@@ -135,7 +136,6 @@ import {
   type OnlineGameSource,
 } from "@/utils/onlineGameImport";
 import { getDatabasesDir } from "@/utils/directories";
-import resultClasses from "../database/OpeningsTable.module.css";
 
 type OpeningHealthMode = "opponent" | "self";
 type OpeningHealthColorFilter = "any" | "white" | "black";
@@ -3795,21 +3795,7 @@ function OpeningHealthResultBars({
           1,
         )}% / Black ${blackPercent.toFixed(1)}%`}
       >
-        <Progress.Root size="lg" className={resultClasses.result}>
-          <Progress.Section value={whitePercent} className={resultClasses.whiteResultsSection}>
-            <Progress.Label c="black">
-              {whitePercent > 18 ? `${whitePercent.toFixed(0)}%` : ""}
-            </Progress.Label>
-          </Progress.Section>
-          <Progress.Section value={drawPercent} color="gray">
-            <Progress.Label>{drawPercent > 18 ? `${drawPercent.toFixed(0)}%` : ""}</Progress.Label>
-          </Progress.Section>
-          <Progress.Section value={blackPercent} color="black">
-            <Progress.Label>
-              {blackPercent > 18 ? `${blackPercent.toFixed(0)}%` : ""}
-            </Progress.Label>
-          </Progress.Section>
-        </Progress.Root>
+        <WdlResultBar white={white} draw={draw} black={black} precision={0} compact />
       </Tooltip>
     </Stack>
   );

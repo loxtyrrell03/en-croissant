@@ -1,3 +1,4 @@
+import { WdlResultBar } from "@/components/common/WdlResultBar";
 import {
   ActionIcon,
   Alert,
@@ -6770,25 +6771,8 @@ function BranchStatsCell({
 }
 
 function PrepResultBar({ row }: { row: Pick<Opening, "white" | "draw" | "black"> }) {
-  const total = getOpeningTotal(row);
-  const whitePercent = total > 0 ? (row.white / total) * 100 : 0;
-  const drawPercent = total > 0 ? (row.draw / total) * 100 : 0;
-  const blackPercent = total > 0 ? (row.black / total) * 100 : 0;
-
   return (
-    <Progress.Root size="lg">
-      <Progress.Section value={whitePercent} color="gray.2">
-        <Progress.Label c="black">
-          {whitePercent >= 18 ? `${whitePercent.toFixed(0)}%` : ""}
-        </Progress.Label>
-      </Progress.Section>
-      <Progress.Section value={drawPercent} color="gray">
-        <Progress.Label>{drawPercent >= 18 ? `${drawPercent.toFixed(0)}%` : ""}</Progress.Label>
-      </Progress.Section>
-      <Progress.Section value={blackPercent} color="dark">
-        <Progress.Label>{blackPercent >= 18 ? `${blackPercent.toFixed(0)}%` : ""}</Progress.Label>
-      </Progress.Section>
-    </Progress.Root>
+    <WdlResultBar white={row.white} draw={row.draw} black={row.black} precision={0} compact tone="prep" />
   );
 }
 

@@ -28,7 +28,7 @@ the history inventory, not counted as separate missing features.
 | Automatic meaningful-tab save before Clear tabs | Current Novelty `clearTabs.ts` / `ClearTabsButton` | Audit En tab closing/source binding and save failures. Preserve comments, variations, marks and nonstandard starts and keep tabs open when saving fails |
 | Preview annotations, variations and starting-position notes | `ef05c032`, current annotation editor | Evaluate En native preview renderer and phone PGN parsing/navigation; preserve existing full game trees rather than flattening them |
 | Startup engine score coalescing and stable evaluation display | `58741060`, earlier retarget fixes | Compare En's existing engine lifecycle, saved score and board overlay ownership before porting the state machine |
-| Always-visible Database W/D/L percentages | `de844abd` (new since the first inventory) | Both native `DatabaseWdlBar` and phone `WebWdlBar` still hide labels for small segments. Port the separate label space through their existing Mantine styling, including zero results and missing-data distinction |
+| Always-visible Database W/D/L percentages | `de844abd` (new since the first inventory) | The shared Mantine `WdlResultBar` now serves native Database/Prep/review/health and phone Database/Prep rows. Tiny/zero labels remain visible, empty/invalid results use dashes, Black perspective/precision/palettes remain. Nine checks, types, scoped lint and narrow/light/dark/doubled-text Chrome fixtures pass. Clean runtime delivery remains; see `DATABASE_RESULTS.md` |
 
 ## Already present or deliberately separate
 

@@ -1,3 +1,4 @@
+import { WdlResultBar } from "@/components/common/WdlResultBar";
 import { TacticalLineExplanation, TacticalAlternativeExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import {
   ActionIcon,
@@ -234,7 +235,6 @@ import {
   isOpeningReviewSavedMove,
 } from "@/utils/openingReviewPractice";
 import { BoundedMap } from "@/utils/boundedCache";
-import resultClasses from "@/components/panels/database/OpeningsTable.module.css";
 import classes from "./OpeningReviewWorkspace.module.css";
 
 const AnalysisPanel = lazy(() => import("@/components/panels/analysis/AnalysisPanel"));
@@ -5593,11 +5593,6 @@ function OpeningReviewWdlBar({
     );
   }
 
-  const winPercent = (wins / total) * 100;
-  const drawPercent = (draws / total) * 100;
-  const lossPercent = (losses / total) * 100;
-  const whiteResultPercent = side === "black" ? lossPercent : winPercent;
-  const blackResultPercent = side === "black" ? winPercent : lossPercent;
   const scoreText = score === null ? "Score unknown" : `Score ${formatReviewPercent(score)}`;
   const winRateText =
     winRate === null ? "Win rate unknown" : `Win rate ${formatReviewPercent(winRate)}`;
@@ -5616,24 +5611,12 @@ function OpeningReviewWdlBar({
         </Text>
       </Group>
       <Tooltip withArrow label={`${recordText}. ${winRateText}. ${scoreText}.`}>
-        <Progress.Root size={compact ? "lg" : "xl"} className={resultClasses.result}>
-          <Progress.Section
-            value={whiteResultPercent}
-            className={resultClasses.whiteResultsSection}
-          >
-            <Progress.Label c="black">
-              {whiteResultPercent > 10 ? `${whiteResultPercent.toFixed(1)}%` : ""}
-            </Progress.Label>
-          </Progress.Section>
-          <Progress.Section value={drawPercent} color="gray">
-            <Progress.Label>{drawPercent > 10 ? `${drawPercent.toFixed(1)}%` : ""}</Progress.Label>
-          </Progress.Section>
-          <Progress.Section value={blackResultPercent} color="black">
-            <Progress.Label>
-              {blackResultPercent > 10 ? `${blackResultPercent.toFixed(1)}%` : ""}
-            </Progress.Label>
-          </Progress.Section>
-        </Progress.Root>
+        <WdlResultBar
+          white={side === "black" ? losses : wins}
+          draw={draws}
+          black={side === "black" ? wins : losses}
+          compact={compact}
+        />
       </Tooltip>
     </Stack>
   );
@@ -7136,21 +7119,7 @@ function OpeningReviewResultBars({
           1,
         )}% / Black ${blackPercent.toFixed(1)}%`}
       >
-        <Progress.Root size="lg" className={resultClasses.result}>
-          <Progress.Section value={whitePercent} className={resultClasses.whiteResultsSection}>
-            <Progress.Label c="black">
-              {whitePercent > 18 ? `${whitePercent.toFixed(0)}%` : ""}
-            </Progress.Label>
-          </Progress.Section>
-          <Progress.Section value={drawPercent} color="gray">
-            <Progress.Label>{drawPercent > 18 ? `${drawPercent.toFixed(0)}%` : ""}</Progress.Label>
-          </Progress.Section>
-          <Progress.Section value={blackPercent} color="black">
-            <Progress.Label>
-              {blackPercent > 18 ? `${blackPercent.toFixed(0)}%` : ""}
-            </Progress.Label>
-          </Progress.Section>
-        </Progress.Root>
+        <WdlResultBar white={white} draw={draw} black={black} precision={0} compact />
       </Tooltip>
     </Stack>
   );
