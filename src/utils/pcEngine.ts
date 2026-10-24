@@ -10,9 +10,11 @@ import {
     type Lc0NetworkProfile,
 } from "@/utils/lc0Networks";
 import type { PcEngine } from "@/utils/engines";
+import { coalescedUpdates } from "./coalescedUpdates";
 
 const PC_ENGINE_MAX_DEPTH = 70;
 const PC_ENGINE_FIRST_LINE_TIMEOUT_MS = 15_000;
+const PC_ENGINE_UPDATE_INTERVAL_MS = 500;
 const PC_LC0_SESSION_ID = "en-croissant-desktop";
 
 export type PcEngineAnalysisUpdate = {
@@ -76,6 +78,24 @@ export async function getPcEngineBestMoves({
         networkMode?: string;
     } = {};
     let remoteError: Error | null = null;
+    let completed = false;
+    const output = coalescedUpdates<PcEngineAnalysisUpdate>(
+        (update) => onUpdate?.(update),
+        () => !controller.signal.aborted,
+        PC_ENGINE_UPDATE_INTERVAL_MS,
+    );
+    const publish = (progress: number, finished = false) => {
+        if (!onUpdate) return;
+        const update = {
+            progress,
+            lines: sortedUniqueLines(linesByPv),
+            engineName: meta.engine || engine.name,
+            networkName: meta.networkName || null,
+            networkMode: meta.networkMode || null,
+        };
+        if (finished) output.finish(update);
+        else output.push(update);
+    };
 
     try {
         const response = await fetch(endpoint, {
@@ -100,6 +120,7 @@ export async function getPcEngineBestMoves({
         const decoder = new TextDecoder();
         let buffer = "";
         const consumeLine = (rawLine: string) => {
+            if (completed) return;
             if (!rawLine.trim()) return;
             const message = JSON.parse(rawLine) as {
                 type?: string;
@@ -117,18 +138,17 @@ export async function getPcEngineBestMoves({
                 remoteError = new Error(message.message || "Gaming PC engine failed.");
                 return;
             }
+            if (message.type === "done") {
+                completed = true;
+                if (!remoteError && linesByPv.size > 0) publish(infinite ? 99.99 : 100, true);
+                return;
+            }
             if (message.type !== "uci" || !message.line) return;
             const parsed = parsePcUciInfoLine(message.line, fen);
             if (!parsed || parsed.multipv > multipv) return;
             markStarted();
             linesByPv.set(parsed.multipv, parsed);
-            onUpdate?.({
-                progress: analysisProgress(goMode, depth, parsed),
-                lines: sortedUniqueLines(linesByPv),
-                engineName: meta.engine || engine.name,
-                networkName: meta.networkName || null,
-                networkMode: meta.networkMode || null,
-            });
+            publish(analysisProgress(goMode, depth, parsed));
         };
 
         while (true) {
@@ -137,6 +157,10 @@ export async function getPcEngineBestMoves({
             const chunks = buffer.split(/\r?\n/);
             buffer = done ? "" : (chunks.pop() ?? "");
             for (const chunk of chunks) consumeLine(chunk);
+            if (completed) {
+                void Promise.resolve().then(() => reader.cancel?.()).catch(() => {});
+                break;
+            }
             if (done) {
                 if (buffer.trim()) consumeLine(buffer);
                 break;
@@ -144,13 +168,16 @@ export async function getPcEngineBestMoves({
         }
 
         if (remoteError) throw remoteError;
+        if (controller.signal.aborted) throw new DOMException("Analysis cancelled", "AbortError");
         const lines = sortedUniqueLines(linesByPv);
         if (lines.length === 0) throw new Error("Gaming PC engine returned no analysis lines.");
+        publish(infinite ? 99.99 : 100, true);
         return [infinite ? 99.99 : 100, lines];
     } catch (error) {
         if (firstLineTimedOut) throw new Error(`${engine.name} did not begin analysis in time.`);
         throw error;
     } finally {
+        output.cancel();
         markStarted();
         signal?.removeEventListener("abort", abort);
     }
