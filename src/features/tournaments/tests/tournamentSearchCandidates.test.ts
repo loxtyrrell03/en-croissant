@@ -13,7 +13,7 @@ test("retrieves exact source matches outside the browse cap without losing brows
   const result = await supplementTournamentCandidates(request, "world open", browse, fetch, () => true);
   expect(result.events.map(event => event.tournamentId)).toEqual(["1", "2"]);
   expect(result.sourceLimitReached).toBe(true);
-  expect(fetch.mock.calls.length).toBeLessThanOrEqual(3);
+  expect(fetch.mock.calls.length).toBeLessThanOrEqual(6);
   expect(fetch).toHaveBeenCalledWith({ ...request, query: "world open" });
 });
 test("does not supplement complete listings, blank text or a cancelled request", async () => {
@@ -26,8 +26,34 @@ test("does not supplement complete listings, blank text or a cancelled request",
 test("keeps long fuzzy searches within the source field limit", async () => {
   const fetch = vi.fn(async () => browse);
   await supplementTournamentCandidates(request, "a long tournament name ".repeat(10), browse, fetch, () => true);
+  await supplementTournamentCandidates(request, "pneumonoultramicroscopicsilicovolcanoconiosis".repeat(4), browse, fetch, () => true);
   for (const [value] of fetch.mock.calls as unknown as [typeof request][]) expect(value.query.length).toBeLessThanOrEqual(50);
 });
 test("exposes a failed supplemental lookup rather than implying no matches", async () => {
   await expect(supplementTournamentCandidates(request, "world", browse, async () => { throw Error("Source unavailable"); }, () => true)).rejects.toThrow("Source unavailable");
+});
+
+test("recovers a misspelt event outside the cap, including a venue-only match",async()=>{
+  const fetch=vi.fn(async(scoped:typeof request)=>({...browse,events:scoped.query==="tol"?[event("2")]:scoped.location?[event("3")]:[]}));
+  const result=await supplementTournamentCandidates(request,"brsitol",browse,fetch,()=>true);
+  expect(result.events.map(x=>x.tournamentId)).toEqual(["1","2","3"]);
+  expect(fetch.mock.calls.length).toBeLessThanOrEqual(6);
+  for(const [scoped] of fetch.mock.calls)expect(scoped).toMatchObject({country:request.country,from:request.from,to:request.to,period:request.period});
+});
+
+test("keeps successful partial results visible when another lookup fails",async()=>{
+  const progress=vi.fn();
+  await expect(supplementTournamentCandidates(request,"world open",browse,async scoped=>{
+    if(scoped.query==="world open")throw Error("Offline");
+    return {...browse,events:[event("2")]};
+  },()=>true,progress)).rejects.toThrow("Some tournament searches failed");
+  expect(progress.mock.calls.at(-1)?.[0].events.map((x:ReturnType<typeof event>)=>x.tournamentId)).toEqual(["1","2"]);
+});
+
+test("limits concurrent work and stops queued requests after cancellation",async()=>{
+  let active=true;const release:Array<()=>void>=[];const progress=vi.fn();
+  const fetch=vi.fn(async()=>{await new Promise<void>(resolve=>release.push(resolve));return browse;});
+  const run=supplementTournamentCandidates(request,"brsitol championship",browse,fetch,()=>active,progress);
+  expect(fetch).toHaveBeenCalledTimes(2);active=false;release.forEach(done=>done());await run;
+  expect(fetch).toHaveBeenCalledTimes(2);expect(progress).not.toHaveBeenCalled();
 });

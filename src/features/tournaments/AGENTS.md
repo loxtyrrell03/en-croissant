@@ -1,3 +1,11 @@
+## Tournament search quality (2026-10-24)
+
+- Discovery remembers the explicitly selected region and compatible country in versioned browser storage, with validation and a session fallback. Queries and dates reset on a fresh app session; explicit Clear filters resets the area. Profiles remain independent.
+- Rough-word search handles omitted generic chess/event wording, reordered words, typo prefixes, split/joined place names, common championship/junior/qualifier abbreviations and published date years. Numeric years and under-age/rating sections remain exact. Indexed vocabulary and per-query word costs keep large directories responsive; search never invents tournament records.
+- Capped directories receive at most six literal-title/fragment/venue requests with concurrency two. Successful pages display progressively; cancellation stops queued work, failures remain visible alongside successful results, and Retry refreshes the request cache. Identical in-flight browse reads and successful fragment requests are shared for five minutes. Never silently relax the selected geography/time-control/date filters.
+- All / Any date and the empty-state Search all dates action include past and ongoing events without losing the query or area. Returning to Upcoming restores the normal rolling window.
+- Behavior is mirrored in Novelty and En Croissant's native desktop/embedded phone surfaces, preserving their own navigation and theme. Focused tests and project types pass. scripts/qa-tournament-search-quality.mjs verifies real components at 1100/560/390/360px, reload persistence, query/cap recovery, errors/retry, shared reads/cancellation, links and bounded help using isolated synthetic responses. See docs/TOURNAMENT_SEARCH_QUALITY_2026-10-24.md for live evidence and delivery limits.
+
 ## Tournament prediction history (2026-10-24)
 
 - Phone delivery: the feature was published from dfc2183148a4ee80a523e420cdfe452d9b332b78 at the canonical private URL. HTTPS health/native settings RPC and connected Chrome navigation through the real tracker, automatic comparison and another player's history passed. The later duplicate-completion-text cleanup is source-only; subsequent unrelated phone-drawing work shares the delivery branch and was not published by this task. See docs/TOURNAMENT_PREDICTION_HISTORY.md.

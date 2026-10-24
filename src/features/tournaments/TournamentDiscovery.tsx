@@ -1,19 +1,19 @@
 import { TournamentStartCountdown } from "./TournamentStartCountdown";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HelpTip } from "@/features/tournaments/ui";
-import { desktopApi, isDesktop, type TournamentDiscoveryResponse, type TournamentSearchResult } from "@/features/tournaments/platform";
+import { isDesktop, type TournamentDiscoveryResponse, type TournamentSearchResult } from "@/features/tournaments/platform";
 import { isChessResultsTournamentUrl } from "./tournamentFinder";
 import { searchTournamentEvents } from "./tournamentSearch";
 import { supplementTournamentCandidates } from "./tournamentSearchCandidates";
 import { tournamentPlayerKey, type TournamentPrepMap } from "./tournamentPrepStore";
-import { countries, countryName, defaultDiscoveryFilters, discoveryCache, discoveryRequest, lastDiscoveryFilters, readableDate, regions, rememberDiscoveryFilters, type DiscoveryFilters } from "./tournamentDiscoveryModel";
+import { cacheDiscoveryResponse, countries, countryName, defaultDiscoveryFilters, discoveryCache, discoveryRequest, discoverySource, initialDiscoveryFilters, readableDate, regions, rememberDiscoveryFilters, type DiscoveryFilters } from "./tournamentDiscoveryModel";
 import { TournamentArtwork } from "./TournamentArtwork";
 import { tournamentCountdown } from "./tournamentStart";
 import styles from "./TournamentDiscovery.module.css";
 
 interface Props {records:TournamentPrepMap;onInspect:(url:string)=>void;onOpen:(id:string)=>void;busy:boolean;onCancel:()=>void;error:string|null;}
 export function TournamentDiscovery({records,onInspect,onOpen,busy,onCancel,error}:Props){
-  const [filters,setFilters]=useState<DiscoveryFilters>(()=>lastDiscoveryFilters??defaultDiscoveryFilters());
+  const [filters,setFilters]=useState<DiscoveryFilters>(initialDiscoveryFilters);
   const [view,setView]=useState<"discover"|"following">(()=>Object.keys(records).length?"following":"discover");
   const choseView=useRef(false);
   useEffect(()=>{if(!choseView.current&&Object.keys(records).length)setView("following");},[records]);
@@ -29,7 +29,7 @@ export function TournamentDiscovery({records,onInspect,onOpen,busy,onCancel,erro
   const currentKey=useRef("");
   const [resultKey,setResultKey]=useState("");
   // Search the same candidate listings as browsing. The source name filter
-  // only matches title prefixes and cannot support fuzzy/location searches.
+  // matches literal title text and cannot correct misspellings or search other fields.
   const request=discoveryRequest({...filters,query:""});
   const sourceKey=JSON.stringify(request);
   const key=JSON.stringify({...request,query:filters.query.trim()});
@@ -51,13 +51,14 @@ export function TournamentDiscovery({records,onInspect,onOpen,busy,onCancel,erro
       if(owner!==sequence.current)return;
       if(!isDesktop()){setSearchError("Tournament discovery is available in the desktop app.");setSearching(false);return;}
       void (async()=>{
-        const result=fresh(browse)?browse!:await desktopApi.discoverTournaments(JSON.parse(sourceKey));
+        const result=fresh(browse)?browse!:await discoverySource.read(JSON.parse(sourceKey));
         if(owner!==sequence.current)return result;
-        discoveryCache.set(sourceKey,result);setResponse(result);setResultKey(key);
-        return supplementTournamentCandidates(JSON.parse(sourceKey),filters.query,result,desktopApi.discoverTournaments,()=>owner===sequence.current);
+        cacheDiscoveryResponse(sourceKey,result);setResponse(result);setResultKey(key);
+        return supplementTournamentCandidates(JSON.parse(sourceKey),filters.query,result,discoverySource.read,()=>owner===sequence.current,
+          partial=>{if(owner===sequence.current){setResponse(partial);setResultKey(key);}});
       })().then(result=>{
         if(owner!==sequence.current)return;
-        discoveryCache.set(key,result);if(discoveryCache.size>20)discoveryCache.delete(discoveryCache.keys().next().value!);
+        cacheDiscoveryResponse(key,result);
         setResponse(result);setResultKey(key);
       }).catch(caught=>{if(owner===sequence.current)setSearchError(caught instanceof Error?caught.message:String(caught));})
         .finally(()=>{if(owner===sequence.current)setSearching(false);});
@@ -65,10 +66,13 @@ export function TournamentDiscovery({records,onInspect,onOpen,busy,onCancel,erro
     return()=>{window.clearTimeout(timeout);if(sequence.current===owner)sequence.current++;};
   },[key,sourceKey,revision,view,isLink,filters.query]);
   function change<K extends keyof DiscoveryFilters>(field:K,value:DiscoveryFilters[K]){
-    setFilters(previous=>({...previous,[field]:value,...(field==="region"?{country:""}:{})}));
+    setFilters(previous=>({...previous,[field]:value,...(field==="region"?{country:""}:{}),
+      ...(field==="period"?{dates:value==="all"?"any":previous.dates==="any"?"3":previous.dates}:{}),
+      ...(field==="dates"&&value==="any"?{period:"all" as const}:{})}));
   }
-  function retry(){discoveryCache.delete(currentKey.current);discoveryCache.delete(sourceKey);setRevision(v=>v+1);}
-  const events=resultKey===key?searchTournamentEvents(filters.query,response?.events??[]):[];
+  function retry(){discoveryCache.delete(currentKey.current);discoveryCache.delete(sourceKey);discoverySource.clear();setRevision(v=>v+1);}
+  const matches=useMemo(()=>resultKey===key?searchTournamentEvents(filters.query,response?.events??[]):[],[resultKey,key,filters.query,response]);
+  const events=[...matches];
   if(sort!=="auto"||!filters.query.trim())events.sort((a,b)=>sort==="name"?a.title.localeCompare(b.title):(a.startDate??"9999").localeCompare(b.startDate??"9999")*(sort==="latest"?-1:1));
   const tracked=Object.values(records).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
   const following=<section className={styles.following} aria-label="Following tournaments"><h2>{tracked.length} followed {tracked.length===1?"tournament":"tournaments"}</h2>{tracked.length?tracked.map(record=>{
@@ -97,14 +101,14 @@ export function TournamentDiscovery({records,onInspect,onOpen,busy,onCancel,erro
     <nav className={styles.viewTabs} aria-label="Tournament directory"><button type="button" aria-pressed={view==="discover"} onClick={()=>{choseView.current=true;setView("discover");}}>Discover</button><button type="button" aria-pressed={view==="following"} onClick={()=>{choseView.current=true;setView("following");}}>Following · {tracked.length}</button></nav>
     {view==="discover"&&<>
       <div className={styles.filters} data-open={filtersOpen}>
-        <label className={styles.searchField}><span>Search <HelpTip label="Tournament search">Matches names, places and organizers, including misspellings and words in any order.</HelpTip></span><input aria-label="Search tournaments" value={filters.query} maxLength={500} placeholder="Name, place or Chess-Results link" onChange={e=>change("query",e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&isLink&&!busy)onInspect(filters.query);}}/></label>
+        <label className={styles.searchField}><span>Search <HelpTip label="Tournament search">Matches names, places and organizers, including misspellings, short names and words in any order. The selected area and dates still apply.</HelpTip></span><input aria-label="Search tournaments" value={filters.query} maxLength={500} placeholder="Name, place or Chess-Results link" onChange={e=>change("query",e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&isLink&&!busy)onInspect(filters.query);}}/></label>
         <button className={styles.narrowFilters} type="button" aria-expanded={filtersOpen} onClick={()=>setFiltersOpen(!filtersOpen)}>{filtersOpen?"Close filters":"Filters"}{filters.region||filters.country?` · ${filters.country?countryName(filters.country):filters.region}`:""}</button>
-        <label>Dates<select aria-label="Dates" value={filters.dates} onChange={e=>change("dates",e.target.value)}><option value="1">{filters.period==="past"?"Past month":"Next month"}</option><option value="3">{filters.period==="past"?"Past 3 months":"Next 3 months"}</option><option value="12">{filters.period==="past"?"Past year":"Next year"}</option><option value="custom">Custom dates</option></select></label>
+        <label>Dates<select aria-label="Dates" value={filters.dates} onChange={e=>change("dates",e.target.value)}><option value="1">{filters.period==="past"?"Past month":"Next month"}</option><option value="3">{filters.period==="past"?"Past 3 months":"Next 3 months"}</option><option value="12">{filters.period==="past"?"Past year":"Next year"}</option><option value="custom">Custom dates</option><option value="any">Any date</option></select></label>
         <label>Region<select aria-label="Region" value={filters.region} onChange={e=>change("region",e.target.value)}><option value="">All regions</option>{regions.map(region=><option key={region}>{region}</option>)}</select></label>
         <label>Country / federation<select aria-label="Country / federation" value={filters.country} onChange={e=>change("country",e.target.value)}><option value="">All countries</option>{countries.filter(c=>!filters.region||c.regions.includes(filters.region)).map(c=><option key={c.code} value={c.code}>{c.name}</option>)}</select></label>
       </div>
       {filters.dates==="custom"&&<div className={styles.customDates}><label>From<input type="date" value={filters.from} onChange={e=>change("from",e.target.value)}/></label><label>To<input type="date" value={filters.to} onChange={e=>change("to",e.target.value)}/></label></div>}
-      <div className={styles.filterBar}><div className={styles.periods} aria-label="Event period">{([['upcoming','Upcoming'],['ongoing','Ongoing'],['past','Past']] as const).map(([id,title])=><button type="button" key={id} aria-pressed={filters.period===id} onClick={()=>change("period",id)}>{title}</button>)}</div>
+      <div className={styles.filterBar}><div className={styles.periods} aria-label="Event period">{([['upcoming','Upcoming'],['ongoing','Ongoing'],['past','Past'],['all','All']] as const).map(([id,title])=><button type="button" key={id} aria-pressed={filters.period===id} onClick={()=>change("period",id)}>{title}</button>)}</div>
         <details className={styles.moreFilters}><summary>More filters{filters.timeControl||filters.location||filters.includeUndated?` · ${[filters.timeControl?({"1":"Classical","2":"Rapid","3":"Blitz"} as Record<string,string>)[filters.timeControl]:null,filters.location,filters.includeUndated?"Undated":null].filter(Boolean).join(" · ")}`:""}</summary><div><label>Time control<select aria-label="Time control" value={filters.timeControl} onChange={e=>change("timeControl",e.target.value)}><option value="">All</option><option value="1">Classical</option><option value="2">Rapid</option><option value="3">Blitz</option></select></label><label>City / area<input value={filters.location} maxLength={30} onChange={e=>change("location",e.target.value)} placeholder="Any location"/></label><label className={styles.check}><input type="checkbox" checked={filters.includeUndated} onChange={e=>change("includeUndated",e.target.checked)}/>Include dates to be confirmed</label><label className={styles.check}><input type="checkbox" checked={images} onChange={e=>{setImages(e.target.checked);try{localStorage.setItem("encroissant.tournaments.images",e.target.checked?"on":"off");}catch{/* Optional display preference. */}}}/>Organizer images<HelpTip label="Organizer images">Shows artwork published with the event when available. Missing artwork leaves the event row unchanged.</HelpTip></label><button type="button" onClick={()=>setFilters(defaultDiscoveryFilters())}>Clear filters</button></div></details>
       </div>
       {isLink&&<button type="button" className={styles.primary} disabled={busy} onClick={()=>onInspect(filters.query)}>Open tournament link</button>}
@@ -112,10 +116,10 @@ export function TournamentDiscovery({records,onInspect,onOpen,busy,onCancel,erro
     {(busy||searching)&&<div className={styles.status} role="status"><span>{busy?"Loading tournament…":"Finding tournaments…"}</span><button type="button" onClick={()=>{if(busy)onCancel();else {sequence.current++;setSearching(false);}}}>Cancel</button></div>}
     {(searchError||error)&&<div className={styles.error} role="alert"><span>{error??searchError}{response&&resultKey===key&&searchError?` Showing results checked ${new Date(response.fetchedAt).toLocaleString()}.`:""}</span>{searchError&&<button type="button" onClick={retry}>Retry</button>}</div>}
     {view==="following"?following:<section aria-label="Tournament results">
-      <div className={styles.resultsHeading}><h2>{filters.period==="upcoming"?"Upcoming tournaments":filters.period==="ongoing"?"Ongoing tournaments":"Past tournaments"}</h2><label><span className={styles.srOnly}>Sort tournaments</span><select value={sort==="auto"&&!filters.query.trim()?"soonest":sort} onChange={e=>setSort(e.target.value)}><option value="auto" disabled={!filters.query.trim()}>Best match</option><option value="soonest">Soonest first</option><option value="latest">Latest first</option><option value="name">Name</option></select></label></div>
+      <div className={styles.resultsHeading}><h2>{filters.period==="upcoming"?"Upcoming tournaments":filters.period==="ongoing"?"Ongoing tournaments":filters.period==="past"?"Past tournaments":"All tournaments"}</h2><label><span className={styles.srOnly}>Sort tournaments</span><select value={sort==="auto"&&!filters.query.trim()?"soonest":sort} onChange={e=>setSort(e.target.value)}><option value="auto" disabled={!filters.query.trim()}>Best match</option><option value="soonest">Soonest first</option><option value="latest">Latest first</option><option value="name">Name</option></select></label></div>
       {response?.sourceLimitReached&&resultKey===key&&<p className={styles.warning} role="status">The source limit was reached; some listings may be missing. Choose a country to search more completely.</p>}
       <div className={styles.cards}>{events.slice(0,visibleCount).map(eventCard)}</div>
-      {!searching&&!isLink&&!searchError&&response&&resultKey===key&&!events.length&&<div className={styles.empty}><p>No matching events.</p><button type="button" onClick={()=>setFilters(defaultDiscoveryFilters())}>Clear filters</button></div>}
+      {!searching&&!isLink&&!searchError&&response&&resultKey===key&&!events.length&&<div className={styles.empty}><p>No matching events.</p>{filters.dates!=="any"&&<button type="button" onClick={()=>change("period","all")}>Search all dates</button>}<button type="button" onClick={()=>setFilters(defaultDiscoveryFilters())}>Clear filters</button></div>}
       {events.length>0&&<div className={styles.resultsFooter}><span>Showing {Math.min(events.length,visibleCount)} of {events.length} events</span>{visibleCount<events.length&&<button type="button" onClick={()=>setVisibleCount(n=>n+20)}>Show more</button>}</div>}
     </section>}
     <footer className={styles.source}>Chess-Results<HelpTip label="Tournament source">Dates and entries come from the organizer’s listing. Country filters use the source federation. A source limit is shown when listings may be incomplete.</HelpTip></footer>

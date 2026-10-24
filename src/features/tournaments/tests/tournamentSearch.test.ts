@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { TournamentSearchResult } from "@/features/tournaments/platform";
-import { searchTournamentEvents } from "../tournamentSearch";
+import { searchTournamentEvents, tournamentSearchSeeds } from "../tournamentSearch";
 
 const event = (id: string, title: string, extra: Partial<TournamentSearchResult> = {}): TournamentSearchResult => ({
   tournamentId: id, title, sourceUrl: `https://chess-results.com/tnr${id}.aspx`, section: null,
@@ -54,5 +54,28 @@ describe("tournament word search", () => {
     expect(searchTournamentEvents("bristol", many)).toHaveLength(45);
     expect(searchTournamentEvents("", many)).toEqual(many);
     expect(searchTournamentEvents("bristol", many)[0]).toBe(many[0]);
+  });
+  test.each(["find me a chess tournament in bristol", "bristol chess events", "brist quali", "brsit quali"])("handles rough wording: %s",query=>{
+    expect(ids(query)).toContain(bristol.tournamentId);
+    expect(ids(query)).not.toContain("2");
+  });
+  test("uses published years while preserving exact numeric sections",()=>{
+    expect(ids("bristol 2026")).toContain("3");
+    expect(ids("bristol under 1800")).toEqual(["3"]);
+    expect(ids("bristol u 1800")).toEqual(["3"]);
+    expect(ids("bristol under 1900")).toEqual([]);
+  });
+  test("joins and separates place names without dropping unknown words",()=>{
+    const rows=[event("8","Blackpool Junior Championships"),event("9","West Wales Open",{federation:"WLS"})];
+    expect(searchTournamentEvents("black pool junior champs",rows).map(x=>x.tournamentId)).toEqual(["8"]);
+    expect(searchTournamentEvents("westwales chess",rows).map(x=>x.tournamentId)).toEqual(["9"]);
+    expect(searchTournamentEvents("welsh open",rows).map(x=>x.tournamentId)).toEqual(["9"]);
+    expect(searchTournamentEvents("blackpool nonexistent",rows)).toEqual([]);
+  });
+  test("retrieves by useful typo-resistant fragments rather than generic tournament words",()=>{
+    const seeds=tournamentSearchSeeds("international brsitol chess tournament",[]);
+    expect(seeds).toContain("tol");expect(seeds[0]).toBe("brsitol");
+    expect(seeds).not.toContain("tournament");
+    expect(tournamentSearchSeeds("brsitol",events)[0]).toBe("bristol");
   });
 });
