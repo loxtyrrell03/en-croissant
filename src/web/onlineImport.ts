@@ -1,3 +1,5 @@
+import { onlinePgnTimestamp } from "@/utils/pgnTimestamp";
+
 export type WebOnlineSource = "lichess" | "chesscom";
 export type WebOnlineImportMode = "count" | "range";
 export type WebOnlineRangePreset = "3m" | "6m" | "1y" | "all";
@@ -253,14 +255,7 @@ function splitPgnGames(pgn: string) {
 }
 
 function getPgnTimestamp(pgn: string) {
-    const utcDate =
-        getPgnHeader(pgn, "EndDate") ?? getPgnHeader(pgn, "UTCDate") ?? getPgnHeader(pgn, "Date");
-    const utcTime = getPgnHeader(pgn, "EndTime") ?? getPgnHeader(pgn, "UTCTime") ?? "00:00:00";
-    if (!utcDate) return 0;
-
-    const normalizedDate = utcDate.replace(/\./g, "-").replace(/\?/g, "0");
-    const timestamp = Date.parse(`${normalizedDate}T${utcTime.replace(/\?/g, "0")}Z`);
-    return Number.isFinite(timestamp) ? timestamp : 0;
+    return onlinePgnTimestamp(pgn);
 }
 
 function getPgnHeader(pgn: string, name: string) {

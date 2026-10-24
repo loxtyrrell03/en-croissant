@@ -4780,3 +4780,8 @@ a concrete risk that the check would resolve.
 ## Window close lifecycle
 
 - The desktop close listener explicitly prevents Tauri default destruction and uses the same process-exit action as File > Exit. Tauri onCloseRequested otherwise invokes destroy, which the main-window capability does not permit. Active AI coach work still defers exit; hide is permitted in rebuilt binaries, with minimize fallback for older binaries. Five close/coach regressions and targeted lint pass; localhost 1420 serves the handler. Editing native capabilities triggers the development watcher rebuild/restart; avoid native file edits when preserving a running session. The automatic native development rebuild completed and the app relaunched successfully. Physical close-button interaction remains unverified.
+
+## Novelty parity audit (2026-10-24)
+
+- Audit Novelty behavior across all recent feature/release branches as well as primary; the main checkout alone omits completed improvements. Track source, desktop binary and hosted phone delivery separately in `docs/NOVELTY_SYNC_2026-10-24.md`. Preserve En Croissant-specific tactics/study features and live phone ancestry.
+- `utils/pgnTimestamp.ts` validates calendar components before constructing online timestamps. Desktop database sync cursors and phone imports share it; impossible days are unknown, malformed/missing separate times retain the valid UTC day, and explicit ISO offsets survive. Keep provider header precedence and native epoch timestamps. Verified: 28 focused tests, full TypeScript and scoped lint. Source only; delivery remains pending.
