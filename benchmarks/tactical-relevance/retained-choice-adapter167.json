@@ -1,0 +1,88 @@
+{
+  "description": "Matched observable attribution regression probes; no private data. New expanded suites reported separately.",
+  "baselineRevision": "182550545bbc7d680b5bbdf21a05469766b69a64",
+  "loadedCoreSHA256": "57736a80c8dbbf4d225d409f4daaa039dab1a0344a23dace4fd8d1bed50239bd",
+  "baselineAdapterSHA256": "aaa50a9648bfd6baf1211eac1d01e787f8b0c0a959607a5de62bf59409d47ec4",
+  "finalAdapterSHA256": "584e689c8b3e63ae0fbe1df5d04edfc4679d0d56895d07394a1e007eb1d57121",
+  "loader": "Exact resolved module ID override, frozen HEAD core in all paired runs; HEAD adapter in before only. Loader asserts core was loaded. No production replacement or index mutation.",
+  "sameFork": {
+    "test": "same-fork-review.before.test.ts",
+    "testSHA256": "fbbb5e669399d979c0f37542078439d56085d40a980767853c9b91e1dcf625aa",
+    "fen": "1k1q3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1",
+    "best": "d6f7",
+    "played": "h6f7",
+    "positivePlayedControl": "g1f1",
+    "fullBestLine": ["d6f7", "d8e7", "f7h8"],
+    "rootOnlyBestLine": ["d6f7"],
+    "refutationLineInBothLengthsAndPositiveControl": ["d8e7"],
+    "dimensions": "Both colours by vertical colour reflection; full and root-only best lines; no scores; two independent original-victim fork proofs. Unequal bounds are diagnostic, never compared as exact values in the implementation.",
+    "contract": "Four certified same-target played forks must not have What you missed: Fork title; two genuine missed fork controls retain it.",
+    "before": {
+      "total": 6,
+      "passed": 2,
+      "failed": 4,
+      "report": "same-fork-before.json",
+      "sha256": "c564e32769b4729cce2ea68938d08c5eb74f960aaf9cb9723285e7ae34286f5b"
+    },
+    "after": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "report": "same-fork-after.json",
+      "sha256": "9cdc054a3784d0c29e64fd0f09de6afbbedf540a7b4e158d7453018c52711f49"
+    }
+  },
+  "namedMate": {
+    "test": "named-mate.before.test.ts",
+    "testSHA256": "8f64ab13bbc7415427da860e56b4f1b4376bb61de719ef03857135bb7e3f74db",
+    "cases": [
+      {
+        "fen": "3q2rk/6pp/7N/6N1/8/8/5PPP/6K1 w - - 0 1",
+        "best": "g5f7",
+        "played": "h6f7"
+      },
+      {
+        "fen": "3q2rk/6pp/8/6N1/8/8/5PP1/6KR w - - 0 1",
+        "best": "g5f7",
+        "played": "h1h7"
+      }
+    ],
+    "dimensions": "Both colours by vertical colour reflection; each best and played move legally replays to actual immediate checkmate; same and different mating geometries.",
+    "contract": "Playing actual checkmate cannot miss another named mate-in-one; no missed motifs or tactical mistake explanation.",
+    "before": {
+      "total": 4,
+      "passed": 0,
+      "failed": 4,
+      "report": "named-mate-before.json",
+      "sha256": "14b4b5675e6b617daf359cde63243dc452652f73f32694475cfbf8052bea6bbb"
+    },
+    "after": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "report": "named-mate-after.json",
+      "sha256": "56a5edead0ffb88e78d27cd955c98c5b55deebed88686e9c18d650f12cd025cd"
+    }
+  },
+  "expandedOwnedSuites": {
+    "total": 33,
+    "passed": 33,
+    "failed": 0,
+    "report": "retained-fork-owned.json",
+    "sha256": "71c811238d19cfccda2d241f3e4dad08db920443362dad41372d29392bcb3ea6",
+    "tests": [
+      {
+        "path": "src/utils/tests/retainedForkChoice.test.ts",
+        "count": 23,
+        "sha256": "f707a492b4b4aff47b7bc35677b8c107065efd77c207e86c55cebe9b21ddd987"
+      },
+      {
+        "path": "src/utils/tests/retainedMateChoice.test.ts",
+        "count": 10,
+        "sha256": "12f4f712eaca9c9e88f929678d5bf8cbf8bb18d45e30f7e520c49a2924d9d9e3"
+      }
+    ],
+    "additionalControls": "Reversed unequal bounds, no scores, unsafe played fork, distinct victim identities despite equal bounds, engine-nominated matching and different forks, nonvacuous root timeline, neutral perspective and selection, unrelated proved allowed loss priority, genuine missed named mate, illegal played move and later-only named mate. Checking and compound exclusions preserve evidence without treating existing blame as adjudicated gold."
+  },
+  "limitations": "Synthetic regression and source evidence only; root owns current-core broad tests, staged-only verification, generated services, final build and delivery. Ordinary nonchecking same-role/same-landing forks only; unequal whole-position value is not adjudicated."
+}

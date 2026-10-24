@@ -1,4 +1,5 @@
-import { pairingEstimateHelp } from "./pairingScoreHelp";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { pairingEstimateHelp, pairingEstimateUnavailableReason } from "./pairingScoreHelp";
 import { forecastHeading, precedingResultContext, tournamentResultLabel } from "./forecastPresentation";
 import { tournamentCountdown } from "./tournamentStart";
 import { TournamentStartCountdown } from "./TournamentStartCountdown";
@@ -7,11 +8,14 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 import { HelpTip } from "@/features/tournaments/ui";
 import type { TournamentPlayer } from "@/features/tournaments/platform";
 import { formatForecastPercent, tournamentPhaseLabel, type PairingForecast } from "./pairingForecast";
-import { standingsAfterRound, roundPairings, tournamentPlayerStats, type TournamentSide } from "./tournamentInsights";
+import { standingsAfterRound, hasPublishedStandingRanks, roundPairings, tournamentPlayerStats, type TournamentSide } from "./tournamentInsights";
 import { tournamentPlayerKey, tournamentPrepDatabaseIds, type TournamentPrepRecord, type TournamentOpponentDatabase } from "./tournamentPrepStore";
 import { reconcileTournamentIdentity } from "./tournamentRoster";
 import type { TournamentSyncEvent } from "./tournamentPrepSync";
 import styles from "./TournamentTrackerView.module.css";
+
+import { ManualResultControl } from "./ManualResultControl";
+import { manualPairingKey, reconcileManualResults, tournamentPredictionSnapshot, type ManualTournamentResult, type ManualGameResult } from "./manualTournamentResults";
 
 export type OpponentAction = "import" | "prep";
 export function importErrorHelp(message: string): string {
@@ -42,10 +46,10 @@ const help = {
   colour: "The colour you are expected to play. It is confirmed only when the organiser publishes the pairing.",
   games: "This opponent’s saved games from in-person tournaments. No public games means the search finished but found none.",
   actions: "Import & prep finds this player’s games and opens them for preparation. Open Prep uses games already saved.",
-  points: "A win is 1 point, a draw ½, and a loss 0. Includes any points awarded without playing a game.",
+  points: "A win is 1 point, a draw ½, and a loss 0. Includes any points awarded without playing a game. A dash means the total could not be verified.",
   rating: "The player's rating listed for this event.",
-  rank: "The place published by the organiser after this round, including how they separate players on equal points.",
-  order: "An order based on points and ratings. The organiser’s order for players on equal points is unavailable.",
+  rank: "The place published by the organiser after this round, including how they separate players on equal points. A dash means no verified rank is available.",
+  order: "An order based on points and ratings. The organiser’s order for players on equal points is unavailable. A dash means no verified order is available.",
   form: "W means win, D means draw, L means loss. Oldest games come first.",
 };
 type Tab = "next" | "standings" | "results" | "players" | "tracking";
@@ -69,13 +73,18 @@ interface Props {
   onRemove: () => Promise<void>;
   onBack?: () => void;
   onChooseEntry?: (player: TournamentPlayer | null) => Promise<void>;
+  onManualResult?: (input: ManualTournamentResult, result: ManualGameResult | null) => Promise<void>;
   onReviewed?: () => Promise<void>;
   onUnfollow?: () => Promise<void>;
 }
 
 export function TournamentTrackerView(props: Props) {
   const { record, forecast, calculating, running, prepBusy, removeBusy, settingBusy, syncEvent, error } = props;
-  const { snapshot } = record;
+  const snapshot = normalizeTournamentResults(record.snapshot);
+  const predictionSnapshot = tournamentPredictionSnapshot(record.snapshot, record.manualResults);
+  const manualResults = reconcileManualResults(record.snapshot, record.manualResults);
+  const manualByGame = new Map(manualResults.map(p => [manualPairingKey(p), p]));
+  const manualCount = manualResults.filter(p => forecast?.round && p.round < forecast.round).length;
   const beforePlay = snapshot.publishedRound === 0 && snapshot.completedRound === 0;
   const countdown = tournamentCountdown(snapshot, Date.now());
   const dates = snapshot.dateRange?.split(" to ");
@@ -92,13 +101,11 @@ export function TournamentTrackerView(props: Props) {
   const maxRound = Math.max(1, snapshot.publishedRound, snapshot.completedRound);
   const activeRound = Math.min(maxRound, Math.max(1, round ?? snapshot.liveRound ?? (snapshot.completedRound || maxRound)));
   const standings = standingsAfterRound(snapshot, activeRound);
-  const published = Boolean(snapshot.roundStandings?.some(row => row.round === activeRound && row.players.length) ||
-    (activeRound === snapshot.completedRound && snapshot.players.some(player => player.rank !== null)));
+  const published = hasPublishedStandingRanks(standings);
   const yourRound = snapshot.completedRound || 0;
   const yourStandings = standingsAfterRound(snapshot, yourRound);
   const you = yourStandings.find(player => player.startNumber === record.userStartNumber);
-  const yourRankPublished = Boolean(snapshot.roundStandings?.some(row => row.round === yourRound && row.players.length) ||
-    (yourRound === snapshot.completedRound && snapshot.players.some(player => player.rank !== null)));
+  const yourRankPublished = you?.rankSource === "published";
   const busy = running || prepBusy !== null || removeBusy;
   const prepDisabled = busy || snapshot.format === "team";
   const selected = inspected ? inspected.roster === snapshot.players
@@ -119,6 +126,7 @@ export function TournamentTrackerView(props: Props) {
   const readyCount = Object.values(record.opponents).filter(o => o.status === "ready" && o.gameCount > 0 && o.collectionId !== null).length;
   const emptyCount = Object.values(record.opponents).filter(o => o.status === "no-games" || (o.status === "ready" && o.gameCount === 0)).length;
   const inferred = forecast?.kind === "inferred";
+  const unavailableReason = pairingEstimateUnavailableReason(predictionSnapshot, forecast);
   const fixed = inferred || forecast?.kind === "confirmed" || forecast?.kind === "scheduled";
   const resultContext = precedingResultContext(snapshot, forecast);
   const publishedColour = forecast?.kind === "confirmed" || forecast?.kind === "scheduled";
@@ -221,29 +229,31 @@ export function TournamentTrackerView(props: Props) {
           <span className={styles.importYear}>Games since {record.fromYear}<HelpTip label="Games since">Find games played in this year or later. You can change the year before importing.</HelpTip></span>
         </div>
         {resultContext && <div className={styles.forecastContext}>
-          <span>{resultContext.label}<HelpTip label="Results used for predictions">Only results reported by the organiser are known. Predictions can change as unfinished games end or the organiser updates the entries and pairing rules.</HelpTip></span>
+          <span>{resultContext.label}<HelpTip label="Results used for predictions">Predictions use reported results and any manual results you enter. An official result automatically replaces a manual result.</HelpTip></span>
           {resultContext.total > 0 && <button type="button" onClick={() => { setRound(resultContext.round); setTab("results"); }}>View round {resultContext.round} results →</button>}
         </div>}
+        {manualCount > 0 && <p className={styles.forecastContext} role="status">Predictions use {manualCount} manual {manualCount === 1 ? "result" : "results"}.<HelpTip label="Manual results used for predictions">These are your assumptions, not official results. The organiser’s result automatically replaces each one.</HelpTip></p>}
+        {unavailableReason && <p className={styles.warning} role="status">{unavailableReason}<HelpTip label="Unavailable pairing chances">{pairingEstimateHelp(predictionSnapshot, forecast) ?? "The available tournament data cannot support a numerical estimate yet."}</HelpTip></p>}
         {!!forecast?.candidates.length ? <div className={styles.candidates}>
-          <div className={styles.candidateHead}><span>Opponent</span><span>Rating<HelpTip label="Opponent rating">{help.rating}</HelpTip></span><span>{fixed ? "Pairing" : "Pairing chance"}{(!fixed || inferred) && <HelpTip label={inferred ? "Expected pairing" : "Pairing chance"}>{inferred ? forecast?.caveat ?? "Predicted from the players’ starting numbers. The organiser has not confirmed this pairing." : pairingEstimateHelp(snapshot, forecast) ?? help.chance}</HelpTip>}</span><span>{colourLabel}<HelpTip label="Your colour">{publishedColour ? "Your colour in the published pairing." : help.colour}</HelpTip></span><span>Preparation<HelpTip label="Games and preparation">{help.actions}</HelpTip></span></div>
+          <div className={styles.candidateHead}><span>Opponent</span><span>Rating<HelpTip label="Opponent rating">{help.rating}</HelpTip></span><span>{fixed ? "Pairing" : "Pairing chance"}{(!fixed || inferred) && <HelpTip label={inferred ? "Expected pairing" : "Pairing chance"}>{inferred ? forecast?.caveat ?? "Predicted from the players’ starting numbers. The organiser has not confirmed this pairing." : pairingEstimateHelp(predictionSnapshot, forecast) ?? help.chance}</HelpTip>}</span><span>{colourLabel}<HelpTip label="Your colour">{publishedColour ? "Your colour in the published pairing." : help.colour}</HelpTip></span><span>Preparation<HelpTip label="Games and preparation">{help.actions}</HelpTip></span></div>
           {forecast.candidates.map(candidate => {
             const item = record.opponents[String(candidate.player.startNumber)];
             const colour = candidate.color ?? props.projectedSideFor(candidate.player.startNumber);
             return <div className={styles.candidateRow} key={candidate.player.startNumber}>
               <button type="button" className={styles.playerLink} onClick={() => inspect(candidate.player)}><strong>{candidate.player.name}</strong><small>{candidate.player.fideId ? `FIDE ${candidate.player.fideId}` : "No FIDE ID/profile listed"}{candidate.board ? ` · Board ${candidate.board}` : ""}</small></button>
               <div className={styles.rating}><span className={styles.mobileLabel}>Rating</span>{candidate.player.rating ?? "Not listed"}</div>
-              <div className={styles.chance}><span className={styles.mobileLabel}>{fixed ? "Pairing" : "Pairing chance"}{(!fixed || inferred) && <HelpTip label={`${inferred ? "Expected pairing" : "Pairing chance"} for ${candidate.player.name}`}>{inferred ? forecast.caveat ?? "Predicted from the players’ starting numbers. The organiser has not confirmed this pairing." : pairingEstimateHelp(snapshot, forecast) ?? help.chance}</HelpTip>}</span><strong>{fixed ? forecast.kind === "confirmed" ? "Published" : inferred ? "Expected" : "Scheduled" : formatForecastPercent(candidate.probability)}</strong></div>
+              <div className={styles.chance}><span className={styles.mobileLabel}>{fixed ? "Pairing" : "Pairing chance"}{(!fixed || inferred) && <HelpTip label={`${inferred ? "Expected pairing" : "Pairing chance"} for ${candidate.player.name}`}>{inferred ? forecast.caveat ?? "Predicted from the players’ starting numbers. The organiser has not confirmed this pairing." : pairingEstimateHelp(predictionSnapshot, forecast) ?? help.chance}</HelpTip>}</span><strong>{fixed ? forecast.kind === "confirmed" ? "Published" : inferred ? "Expected" : "Scheduled" : formatForecastPercent(candidate.probability)}</strong></div>
               <div className={styles.colour}><span className={styles.mobileLabel}>{colourLabel}</span>{candidate.color === null ? "Not known" : candidate.color === "white" ? "White" : "Black"}</div>
               {item ? actions(item, colour, true) : <span className={styles.unavailableAction}>Refresh roster to prepare</span>}
             </div>;
           })}
-          {forecast.kind === "estimated" && forecast.otherProbability > 0 && <div className={styles.other}>Other opponents or no game <HelpTip label="Other outcomes">{"Chance of a different opponent or no game this round. Rounding may keep the percentages from adding to 100%."}</HelpTip><strong>{formatForecastPercent(forecast.otherProbability)}</strong></div>}
+          {forecast.kind === "estimated" && forecast.otherProbability !== null && forecast.otherProbability > 0 && <div className={styles.other}>Other opponents or no game <HelpTip label="Other outcomes">{"Chance of a different opponent or no game this round. Rounding may keep the percentages from adding to 100%."}</HelpTip><strong>{formatForecastPercent(forecast.otherProbability)}</strong></div>}
         </div> : forecast?.kind === "complete" ? <><div className={styles.sectionHeader}><h3>Standings</h3>{roundControl}</div>{search}{table}</> : <p className={styles.empty}>{!snapshot.players.length?"Players not published yet.":record.userStartNumber===null?"Choose your entry to see your predicted opponents.":forecast?.summary ?? "No pairing prediction is available yet."}</p>}
       </>}
-      {(tab === "standings" || tab === "results") && (beforePlay ? <p className={styles.empty}>{tab === "standings" ? "Standings" : "Results"} not published yet.</p> : <><div className={styles.sectionHeader}><h3>{tab === "standings" ? "Standings" : "Results"}</h3>{roundControl}</div>{tab === "standings" ? <>{search}{table}</> : <div className={styles.results}>{roundPairings(snapshot, activeRound).map((pairing, index) => <div className={styles.resultRow} key={index}><span>{pairing.whiteStartNumber === null || pairing.blackStartNumber === null ? "No board" : pairing.board ? `Board ${pairing.board}` : "Board not listed"}</span>{([pairing.whiteStartNumber, pairing.blackStartNumber] as const).map((number, sideIndex) => {const player = number === null ? null : players.get(number);return <div key={sideIndex}><small>{sideIndex ? "Black" : "White"}</small>{player ? <button type="button" className={styles.playerLink} onClick={() => inspect(player)}>{player.name}</button> : number === null ? "No opponent" : `Player ${number} not listed`}</div>;})}<strong>{tournamentResultLabel(pairing, snapshot)}</strong></div>)}{!roundPairings(snapshot, activeRound).length && <p className={styles.empty}>No pairings published for round {activeRound}.</p>}</div>}</>)}
+      {(tab === "standings" || tab === "results") && (beforePlay ? <p className={styles.empty}>{tab === "standings" ? "Standings" : "Results"} not published yet.</p> : <><div className={styles.sectionHeader}><h3>{tab === "standings" ? "Standings" : "Results"}</h3>{roundControl}</div>{tab === "standings" ? <>{search}{table}</> : <div className={styles.results}>{roundPairings(snapshot, activeRound).map((pairing, index) => <div className={styles.resultRow} key={index}><span>{pairing.whiteStartNumber === null || pairing.blackStartNumber === null ? "No board" : pairing.board ? `Board ${pairing.board}` : "Board not listed"}</span>{([pairing.whiteStartNumber, pairing.blackStartNumber] as const).map((number, sideIndex) => {const player = number === null ? null : players.get(number);return <div key={sideIndex}><small>{sideIndex ? "Black" : "White"}</small>{player ? <button type="button" className={styles.playerLink} onClick={() => inspect(player)}>{player.name}</button> : number === null ? "No opponent" : `Player ${number} not listed`}</div>;})}<div className={styles.resultValue}><strong>{tournamentResultLabel(pairing, snapshot)}</strong><ManualResultControl snapshot={record.snapshot} pairing={pairing} manual={manualByGame.get(manualPairingKey(pairing))} busy={settingBusy || running || removeBusy} onChange={props.onManualResult}/></div></div>)}{!roundPairings(snapshot, activeRound).length && <p className={styles.empty}>No pairings published for round {activeRound}.</p>}</div>}</>)}
       {tab === "players" && <><div className={styles.sectionHeader}><h3>{beforePlay?"Registered players":"Players"}</h3>{!beforePlay&&selected&&roundControl}{inspected && <button type="button" onClick={() => setInspected(null)}>All players</button>}{newPlayers.length>0&&<><label className={styles.newFilter}><input type="checkbox" checked={newOnly} onChange={e=>setNewOnly(e.target.checked)}/>{newPlayers.length} new</label>{props.onReviewed&&<button type="button" disabled={settingBusy} onClick={()=>{setNewOnly(false);void props.onReviewed?.();}}>Mark reviewed</button>}</>}</div>{inspected && !selected && <p className={styles.warning} role="status">The entry for {inspected.player.name} has changed or is no longer uniquely listed. Choose a player below to continue.</p>}{!selected || !stats ? <>{search}{entrantList}</> : <>
         <div className={styles.sectionHeader}><div><h3>{selected.name}{selected.startNumber === record.userStartNumber ? " · You" : ""}</h3><p>{[selected.title, selected.rating === null ? "Rating not listed" : `${selected.rating} rating`, selected.federation].filter(Boolean).join(" · ")}</p></div>{selected.fideId ? <TournamentWebsiteLink url={`https://ratings.fide.com/profile/${selected.fideId}`}>FIDE {selected.fideId} ↗</TournamentWebsiteLink> : <span>No FIDE ID/profile listed for this player.</span>}</div>
-        {snapshot.completedRound > 0&&<><dl className={styles.playerMetrics}><div><dt>{published ? "Rank" : "Order"}<HelpTip label="Player rank">{published ? help.rank : help.order}</HelpTip></dt><dd>{selectedStanding?.rank ?? "—"}</dd></div><div><dt>Points<HelpTip label="Player points">{help.points}</HelpTip></dt><dd>{selectedStanding?.scoreKnown ? selectedStanding.points : "—"}</dd></div><div><dt>Performance<HelpTip label="Performance rating">{"An estimated rating based on results against rated opponents. Winning or losing every game gives only a rough estimate."}</HelpTip></dt><dd>{stats.performanceRating ?? "—"}</dd></div><div><dt>Average opponent<HelpTip label="Average opponent rating">{"Average rating of opponents already played. Opponents without a rating are left out."}</HelpTip></dt><dd>{stats.averageOpponent ?? "—"}</dd></div></dl><p className={styles.playerSummary}>{stats.wins} wins · {stats.draws} draws · {stats.losses} losses <span>{stats.whiteGames} games as White · {stats.blackGames} as Black</span></p></>}
+        {snapshot.completedRound > 0&&<><dl className={styles.playerMetrics}><div><dt>{selectedStanding?.rankSource === "published" ? "Rank" : "Order"}<HelpTip label="Player rank">{selectedStanding?.rankSource === "published" ? help.rank : help.order}</HelpTip></dt><dd>{selectedStanding?.rank ?? "—"}</dd></div><div><dt>Points<HelpTip label="Player points">{help.points}</HelpTip></dt><dd>{selectedStanding?.scoreKnown ? selectedStanding.points : "—"}</dd></div><div><dt>Performance<HelpTip label="Performance rating">{"An estimated rating based on results against rated opponents. Winning or losing every game gives only a rough estimate."}</HelpTip></dt><dd>{stats.performanceRating ?? "—"}</dd></div><div><dt>Average opponent<HelpTip label="Average opponent rating">{"Average rating of opponents already played. Opponents without a rating are left out."}</HelpTip></dt><dd>{stats.averageOpponent ?? "—"}</dd></div></dl><p className={styles.playerSummary}>{stats.wins} wins · {stats.draws} draws · {stats.losses} losses <span>{stats.whiteGames} games as White · {stats.blackGames} as Black</span></p></>}
         {opponent ? <div className={styles.preparation}><div><h3>Opponent games</h3><p>{opponentGameLabel(opponent)} · Since {opponent.importFromYear ?? record.fromYear}</p></div><div className={styles.sidePicker} role="group" aria-label="Your preparation colour"><span>Prepare as</span>{(["white", "black"] as const).map(value => <button key={value} type="button" aria-pressed={side === value} onClick={() => setSide(value)}>{value === "white" ? "White" : "Black"}</button>)}</div>{actions(opponent, side)}{opponent.error && <p className={styles.error}>{opponent.error}</p>}</div> : <p>This is your tournament entry.</p>}
         {snapshot.completedRound > 0 && <><h3>Game history <small>Through round {activeRound}</small></h3><div className={styles.gameHistory}>{stats.games.map(game => <div key={game.round}><span>Round {game.round}</span><strong>{game.result}</strong><span>{game.opponent.name}</span><small>{game.side === "white" ? "White" : "Black"} · {game.opponent.rating === null ? "Rating not listed" : `${game.opponent.rating} rating`}</small></div>)}{!stats.games.length && <p className={styles.empty}>No completed games by this round.</p>}</div></>}
       </>}</>}

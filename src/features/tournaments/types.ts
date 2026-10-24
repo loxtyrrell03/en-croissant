@@ -71,6 +71,10 @@ export interface TournamentPlayer {
   rating: number | null;
   rank: number | null;
   points: number;
+  /** Only explicit, scoped evidence authorizes a numeric score. */
+  scoreKnown?: boolean;
+  scoreRound?: number | null;
+  scoreSource?: "published" | "reconstructed" | "initial" | "unknown";
   active: boolean;
   /** Chess-Results rounds where this player is withdrawn or has a requested bye. */
   notPairedRounds?: number[];
@@ -161,6 +165,22 @@ export interface TournamentSnapshot {
   roundStandings?: TournamentRoundStandings[];
   /** Known incomplete published pairing rounds; absent on older native snapshots. */
   incompletePairingRounds?: number[];
+  /** Additive source contract; older numeric defaults remain unverified. */
+  evidenceVersion?: number;
+  roundStatus?: Array<{
+    round: number;
+    startNumber: number;
+    kind: "not-paired" | "not-yet-entered";
+    award: 0 | 0.5 | 1 | null;
+  }>;
+  roundCoverage?: Array<{
+    round: number;
+    pairingPage: "readable" | "unavailable" | "unreadable";
+    statusPage: "readable" | "unavailable" | "unreadable";
+    unresolvedRows: number;
+    duplicateStartNumbers: number[];
+    unaccountedStartNumbers: number[];
+  }>;
   warnings: string[];
   metadata?: TournamentEventMetadata;
 }

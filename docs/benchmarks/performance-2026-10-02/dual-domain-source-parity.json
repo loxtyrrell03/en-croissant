@@ -1,0 +1,21 @@
+{
+  "scope": "Source-only mirrored numerical correction; no runtime delivery. Relative to the frozen audit snapshot, the helper adds only its retained licence comment and the model removes one unused callback parameter to satisfy TypeScript noUnusedParameters. No arithmetic or control flow changes. Trailing blank lines were removed for the repository whitespace check.",
+  "frozenAuditHashes": {
+    "truePerformance.ts": "93d9a5339d63a8b4afc519f5129516758d4d58b3e9bd18270ee168a0aebac493",
+    "performanceDynamics.ts": "22a2e7ea307d8cbab13dd3151c6723d8a2d0b0f7d9d408df65436b883b43605d",
+    "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422"
+  },
+  "promotedHashes": {
+    "truePerformance.ts": "659d51f7c86e05054120556b1d874484a336b00ce26e6142e30b616fd101f429",
+    "performanceDynamics.ts": "711a5e5178e4136c04c64d11756bc102ae8aeb5fbd13c3bd5b09509a2ea19390",
+    "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422"
+  },
+  "licenseSha256": "23a85d119665b117b4a8b8b0b5afcb0c19a484ab010b504cc03d2de3d9f9c2f6",
+  "targets": [
+    "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\outpost-true-performance",
+    "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-croissant-true-performance",
+    "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess",
+    "C:\\Users\\Lox\\Desktop\\repo\\en-croissant",
+    "C:\\Users\\Lox\\Desktop\\repo\\en-croissant-current"
+  ]
+}

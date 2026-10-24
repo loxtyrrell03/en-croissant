@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "scope": "En Croissant source adapter170 / pipeline177. Regression and transport evidence, not population accuracy, new holdout or installed-runtime verification.",
+  "baseCommit": "81fdd2fbcccb008839338767d64225ed7633b66d",
+  "classifierVersion": "site-55.adapter-170",
+  "pipelineVersion": 177,
+  "broad": {
+    "started": "2026-10-02T18:30:02.737Z",
+    "finished": "2026-10-02T18:33:14.657Z",
+    "selectedFiles": 232,
+    "activeFiles": 211,
+    "fullyConditionalFiles": 21,
+    "passed": 3383,
+    "knownExpectedFailures": 1,
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "sourceUnchangedDuringRun": true,
+    "reportSha256": "a2ef68d081a782dee675a72734d437c55462075c0e05286196a5f4fe333bd115",
+    "coverage": "Includes the new 21-test context suite. The 11 consumer contracts were created after file selection and are separately covered by the exact-core run; do not silently include them in these broad totals."
+  },
+  "newSourceChecks": {
+    "passed": 46,
+    "suites": [
+      {
+        "file": "rareGameContextRelevance.test.ts",
+        "passed": 21
+      },
+      {
+        "file": "consumerThemeRelevance.test.ts",
+        "passed": 11
+      },
+      {
+        "file": "sharedReviewScorePerspective.test.ts",
+        "passed": 14
+      }
+    ],
+    "pairedTransport": {
+      "before": 2,
+      "after": 4,
+      "total": 4,
+      "receipt": "shared-review-score-perspective-receipt.json"
+    }
+  },
+  "primaryPriority": {
+    "cases": 32,
+    "matches": 32,
+    "fullOutputUnchangedFromAdapter169": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "exactCore": {
+    "passed": 564,
+    "skipped": 4,
+    "files": 23,
+    "blob": "f23a763187a652eeb3295e750f44b1a53aee8673",
+    "sha256LF": "d39792d64bed8622273f226fe70fdb0c3e118f31c74af43754ca1ff0fdfa9db8",
+    "pendingCheckingRayExcluded": true,
+    "unchangedDuringRun": true,
+    "reportSha256": "115aae0142a77ff44169c0c371d8f6f16e2eafcb1285344b878f2817a244a178"
+  },
+  "publicContexts": {
+    "positions": 18,
+    "unavailablePlies": 6,
+    "queries": 36,
+    "rootAlternatives": 54,
+    "allClassifierOutputUnchangedIgnoringVersion": true,
+    "beforeFullProbeSha256": "608f231c7bdbd2703dd15091d1052b2c421bb1b252006bfcea1bb8aa86bbdfcb",
+    "afterFullProbeSha256": "7ce043b3498908de09865fbd1b378f0c5b252c50e170671aaaffd49878aa4c12",
+    "hypothesesSha256": "00e3dcc6a82824f8357597e2aa48418da316f0db35fdff46c68a6c7f11426f3e",
+    "notGoldForAll18": true
+  },
+  "compiledServiceAndSampler": {
+    "servicePasses": 63,
+    "samplerPasses": 10,
+    "failed": 0,
+    "skipped": 1,
+    "optionalSkip": "Opt-in real background-engine check",
+    "generatedSha256": "3b829270d7bc9170f1b49c9d5a774ee14322d7304acbe4ef66fb69fd194a84bd",
+    "diagnostic": "The initial 12 frontier checks failed only their old literal version 169 expectation; updated to 170 with no changed chess expectations. Full 64-test rerun: 63 passes, 1 optional skip."
+  },
+  "benchmarkOnly": {
+    "endgameComposition": {
+      "passed": 52,
+      "skipped": 0,
+      "failed": 0,
+      "reportSha256": "7ea93e1804d9fdb860047d56b53a517006c47a89de6815b9fd6e01a155c6eb18"
+    },
+    "independentZugzwang": {
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0,
+      "reportSha256": "880c37990dc22d3cfb9f41da552a8f1635a67133eeed7ed45efb02f16d47e437"
+    },
+    "quietEntryAdjudication": {
+      "passed": 32,
+      "skipped": 0,
+      "failed": 0,
+      "reportSha256": "2c200446ca35352475378f32e00dbb0861dc983cad2afa8d35e8a09279f2f088"
+    },
+    "runtimeCoverageCredit": 0
+  },
+  "checks": {
+    "wholeProjectTypes": "passed: --noEmit --incremental false",
+    "scopedLint": "16 files, zero errors/warnings",
+    "frontendAndReviewWorkerBuild": "passed: 8959 frontend modules; existing bundle-size/third-party bigint warnings",
+    "diffCheck": "passed"
+  },
+  "sourceHashesLF": {
+    "src/web/sharedReview.ts": "e6278c41ad7f135e975781bd93e6e81c81e4a992105052cae03f0aee87b0d83b",
+    "src/components/files/opening.ts": "37988eb4d4f835ae9ff5889f89fd7b476e595fbb59920fc9a109c7605aa3b96a",
+    "scripts/shared-review-service.ts": "cfc813f460a4eaee3a47cc314802ae4875903695fa393931875e0c7ad317590d",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "58a2239c5c16cc321c8ad1c2c3a27aafe3eb9288f605bcbd497d445e556c4838",
+    "src/utils/tacticalMotifs/liveTactics.ts": "cd06946c7b95d9201252269a87aecc7ebd49644bda2a47f1a4f5b109f48fad0d",
+    "src/utils/tests/rareGameContextRelevance.test.ts": "5f3cfb239d0aa4f4693be3cb923c1494aff1ec6859f0ba9c6ac0f30fca4f08d5",
+    "src/utils/tests/consumerThemeRelevance.test.ts": "196a7ea236f1a28a01ce4ae46c5734e685d66d86a499b34aeb61b58af1a9910a",
+    "src/web/tests/sharedReviewScorePerspective.test.ts": "0366e32a40cd54874ac930c9f5fe201d457ee12c801f502c6e1e6651014e0715",
+    "scripts/tests/shared-review-score-perspective.test.mjs": "04957d66ed789c9cbd12946fe502a29d174117820ff9e56159fa18de53a8a744",
+    "scripts/tests/frontier-motif-review-service.test.mjs": "91b671d18f06873a5999405288c37fb89dd80a5130ae83bd4b8513b82f2306e8"
+  },
+  "preservedCore": {
+    "workingSha256LF": "6ec0824d8cd4d250c1e5d51ee81f2b16c6a1ff088564b5c580dd0682d88301b9",
+    "unchangedFromBefore170": true,
+    "unrelatedPendingCheckingRay": {
+      "insertions": 46,
+      "deletions": 4
+    },
+    "newCoreAdmission": false
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "limitations": [
+    "A recognised old exporter tuple can be repaired from an authoritative card; unmatched or ambiguous standalone legacy exports remain untouched.",
+    "Cleared derived arrays and invalidated versions prevent stale badges before recomputation; raw evidence, history, progress and annotations are retained.",
+    "GrHPv quiet-rook causality remains unproved despite all-reply bounded local gain; proposed runtime admission was withdrawn.",
+    "DVs4F remains unsupported at its eight-piece runtime root. The composition prototype needs separately trusted exact leaves and repetition-history binding before integration.",
+    "The known queen-ending promotion and other deeper causal recall gaps remain. Empty results are not scored as positional gold.",
+    "Working-tree build includes preserved unrelated checkout changes. Exact-core regression excludes the pending checking-ray patch; no app or service was deployed."
+  ]
+}

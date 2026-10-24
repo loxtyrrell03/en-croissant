@@ -1,0 +1,58 @@
+{
+  "caseId": "lichess:Xg7Rd",
+  "scope": "Both-colour escape-square confinement and connected defensive concessions; finite local material proof, not full-position evaluation",
+  "baselineHead": "80155c61",
+  "sourceCheckpoints": {
+    "hashConvention": "SHA256 of file bytes; working core checkpoints include the preserved pending checking-ray changes, not an exclusive-ownership or staged-core hash",
+    "beforeCore": "888a923ef38934ba532d682207876e750480ffe6aa1932f711802d7991690f15",
+    "afterCoreIncludingPrivateCacheAndBoundWording": "abddb6b8f3aadd08a3ace774dbd572921708d5bd037d7347da5310c0c9a572dd",
+    "pairedContractBeforeUnusedExportRemoval": "9dd267d947abf9596b27c3826989d4cc680e854807e65e1265a4401a49b0a0a1",
+    "finalContract": "f71fd632d65ce0bc904c13976dc32b1872a96be71d924812e61e8d9657deff12",
+    "contractDifference": "Only the unused export keyword was removed for lint; all 16 behavioural assertions and inputs stayed unchanged"
+  },
+  "pairedContracts": {
+    "before": { "passed": 8, "failed": 8, "reportSha256": "3edf9eadbaffe0794c5d9ae8e8fe7d259662e6f21eefb32566ada4cdb920f710" },
+    "afterFirst": { "passed": 16, "failed": 0, "reportSha256": "e76dfd57d33978bda04430e8ee66a998eed027b216e2d72f1fea8e90ae342b72" },
+    "afterFinalStandaloneBeforeCache": { "passed": 16, "failed": 0, "reportSha256": "be3e11451823d57eb3ef7f420a57dbc57b8ced027dee98292b117a15ffeb320f" },
+    "finalCachedContractIncludedInFocusedRun": true
+  },
+  "focusedRegression": {
+    "files": ["trapConfinement", "trappedPieceTactics", "trapRelevance", "discoveryTrapPriority", "captureTrapRecallAudit", "tacticalLessonPriority", "tacticalMotifs", "liveTactics", "materialTactics", "materialThreatDrawClaim", "defenderCombinationTactics", "rayMaterialLiability"],
+    "passed": 219,
+    "optionalSkipped": 3,
+    "failed": 0,
+    "reportSha256": "99144011c8f3cc50cab7536d7da6e2d14de577209113f26f1f0ee940d83e68c3",
+    "wholeProjectTypes": "passed",
+    "scopedLint": { "errors": 0, "warnings": 0 }
+  },
+  "independentWitness": {
+    "checker": "trap-confinement-verify.py",
+    "checkerSha256": "54c642cba51c281adb96b427bef694c756c7e1957f36952a6dcb03435dc8e142",
+    "output": "trap-confinement-independent.json",
+    "outputSha256": "8d6c123395b6b1a1592740132d43a8d12996bcb7f93a74ac0d1d0cf922758777",
+    "colours": 2,
+    "defencesPerColour": 34,
+    "victimCollectionsPerColour": 31,
+    "actualCounterattackerCollectionsPerColour": 2,
+    "actualGuardCollectionsPerColour": 1,
+    "minimumLocalTotalCp": 320,
+    "initialPawnIncludedCp": 100,
+    "safeFlightBefore": ["a5b7", "a5c6"],
+    "guardRemovalEscape": "a5c4",
+    "engineOrClassifierUsedAsIndependentTruth": false
+  },
+  "nominationAndProofLimits": { "privateWitnessCache": 256, "topLevelNodes": 256, "pinNominations": 8, "sharedRecoveryNodes": 4096, "increased": false },
+  "timing": {
+    "scope": "60 tiny distinct full-FEN inputs and 60 repeated calls; local timing observations, not CI thresholds",
+    "reportSha256": "730189246e12228574cf1b167ec13b26f00c1f4c443a9edd31604aa8ae15d009",
+    "milliseconds": [
+      { "case": "Xg7Rd root", "coldMean": 36.48, "coldMax": 92.33, "warmMean": 9.88 },
+      { "case": "Xg7Rd full", "coldMean": 41.74, "coldMax": 45.79, "warmMean": 15.87 },
+      { "case": "direct rook trap", "coldMean": 47.97, "coldMax": 63.26, "warmMean": 18.94 },
+      { "case": "quiet Nf3", "coldMean": 1.63, "coldMax": 2.05, "warmMean": 0.19 },
+      { "case": "GrHPv full", "coldMean": 3.41, "coldMax": 3.89, "warmMean": 0.40 },
+      { "case": "YvGsE full", "coldMean": 25.10, "coldMax": 35.29, "warmMean": 7.02 }
+    ]
+  },
+  "limits": ["No longer quiet-counterplay or full-game winning certificate", "No absent-history repetition guarantee", "No extra promotion-prevention badge inferred from the captured pawn", "Not held-out population accuracy", "No owner-store, runtime, native, website or delivery changes", "Root owns final exact-core and generated-service verification"]
+}

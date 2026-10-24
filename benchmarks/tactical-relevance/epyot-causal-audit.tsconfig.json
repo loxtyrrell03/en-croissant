@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": [
+    "epyot-causal-audit.test.ts",
+    "epyot-causal-audit.vitest.ts",
+    "epyot-skewer-preservation.test.ts",
+    "epyot-skewer-preservation.vitest.ts",
+    "epyot-api-comparison.test.ts",
+    "epyot-api-comparison.vitest.ts"
+  ],
+  "exclude": ["../../node_modules", "../../src-tauri"]
+}

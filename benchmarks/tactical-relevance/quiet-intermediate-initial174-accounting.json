@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "scope": "Initial174 integration witness only; not a released or final174 result. Captured before added debt/payoff assertions.",
+  "sourceReportSha256": "e791e7557a588763279d712a2cfd111eec7b7307598f12511f9099f99a164a25",
+  "version": "site-55.adapter-174",
+  "sourceRef": "working-source",
+  "sourceCoreSha256": "54332928895dbb81fa3b5635eec33df9841346f11aa61bf5d541be297e40eb08",
+  "boundary": "Initial report watched core only; it did not hash the new helper independently.",
+  "cases": [
+    {
+      "id": "lichess:Qq0JW",
+      "reflected": false,
+      "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P2q1/3BBQ2/PP3PPP/R3R1K1 b - - 0 15",
+      "root": "g4f3",
+      "sourceMaterial": 320,
+      "priorPawnDebt": 100,
+      "full": {
+        "motifs": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4f3",
+            "value": 320,
+            "evidence": "Qxf3 makes the near-equal exchange before Nxd5. Every legal answer preserves a connected material gain. Playing Nxd5 first instead permits Qxg4 by the piece removed on f3. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 320 centipawns, compared with at most 220 after that reversed-order recovery: a move-order improvement of at least 100 centipawns. This is not a forced reply, free queen, or whole-position evaluation.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4f3",
+            "value": 320,
+            "evidence": "Qxf3 makes the near-equal exchange before Nxd5. Every legal answer preserves a connected material gain. Playing Nxd5 first instead permits Qxg4 by the piece removed on f3. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 320 centipawns, compared with at most 220 after that reversed-order recovery: a move-order improvement of at least 100 centipawns. This is not a forced reply, free queen, or whole-position evaluation.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Nxd5 wins the loose knight on d5.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f6d5",
+            "value": 320,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "lichess:Qq0JW",
+      "reflected": true,
+      "fen": "r3r1k1/pp3ppp/3bbq2/3p2Q1/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+      "root": "g5f6",
+      "sourceMaterial": 320,
+      "priorPawnDebt": 100,
+      "full": {
+        "motifs": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g5f6",
+            "value": 320,
+            "evidence": "Qxf6 makes the near-equal exchange before Nxd4. Every legal answer preserves a connected material gain. Playing Nxd4 first instead permits Qxg5 by the piece removed on f6. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 320 centipawns, compared with at most 220 after that reversed-order recovery: a move-order improvement of at least 100 centipawns. This is not a forced reply, free queen, or whole-position evaluation.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g5f6",
+            "value": 320,
+            "evidence": "Qxf6 makes the near-equal exchange before Nxd4. Every legal answer preserves a connected material gain. Playing Nxd4 first instead permits Qxg5 by the piece removed on f6. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 320 centipawns, compared with at most 220 after that reversed-order recovery: a move-order improvement of at least 100 centipawns. This is not a forced reply, free queen, or whole-position evaluation.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Nxd4 wins the loose knight on d4.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f3d4",
+            "value": 320,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    }
+  ]
+}

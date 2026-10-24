@@ -11,7 +11,7 @@ import type {
     MistakeReviewThresholds,
 } from "@/bindings";
 import { commands } from "@/bindings";
-import { getStats, type Position } from "@/components/files/opening";
+import { getStats, positionSchema, type Position } from "@/components/files/opening";
 import {
     engineSettingsSchema,
     engineSettingsToOptions,
@@ -22,7 +22,7 @@ import {
     MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { classifyProvedMistakeNature } from "@/utils/tacticalMotifs/mistakeNature";
-import type { TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
+import type { MistakeReviewMotifClassification, TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
 import { tacticalReplyCandidatesSchema, tacticalGameHistorySchema } from "@/components/files/opening";
 import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import { isSharedReviewPath } from "@/web/sharedReview";
@@ -759,6 +759,7 @@ export function createMistakeReviewPosition(
             missedNature: natureClassification.missedNature,
             missedNatureReason: natureClassification.missedReason,
             natureClassifierVersion: MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
+            natureMotifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
             allowedMotifs: motifClassification.allowedMotifs,
             missedMotifs: motifClassification.missedMotifs,
             allowedTimeline: motifClassification.allowedTimeline,
@@ -1444,9 +1445,8 @@ export function getMistakeReviewNatureCounts(
     for (const position of positions) {
         if (!position.mistakeReview) continue;
         const nature =
-            getStoredMistakeReviewNature(position) ??
-            (classifyMissingNature ? getMistakeReviewNature(position) : null);
-        if (!nature) continue;
+            getStoredMistakeReviewNatureClassification(position.mistakeReview)?.nature ??
+            (classifyMissingNature ? getMistakeReviewNature(position) : "unknown");
         const row = counts[nature];
         row.total += 1;
         if (position.card.reps > 0 && new Date(position.card.due) <= now) {
@@ -1479,27 +1479,95 @@ export function getMistakeReviewMotifCounts(
     return counts;
 }
 
+const storedMotifClassificationSchema = positionSchema.shape.mistakeReview.unwrap().pick({
+    allowedMotifs: true, missedMotifs: true, allowedTimeline: true, missedTimeline: true,
+    motifClassifierVersion: true,
+}).required({ allowedMotifs: true, missedMotifs: true, motifClassifierVersion: true });
+type StoredMotifSnapshot = Pick<NonNullable<Position["mistakeReview"]>,
+    "allowedMotifs" | "missedMotifs" | "allowedTimeline" | "missedTimeline" | "motifClassifierVersion">;
+const storedMotifClassificationCache = new WeakMap<object, {
+    snapshot: StoredMotifSnapshot;
+    classification: MistakeReviewMotifClassification | null;
+}>();
+
+/** Read one current atomic record without inspecting lines or running proofs.
+ * Deck updates replace metadata/arrays; cache validation across summary and
+ * practice renders, invalidating when the version or any array changes.
+ * Both root arrays are emitted by current classifiers; timelines are optional.
+ */
+export function getStoredMistakeReviewMotifClassification(
+    metadata: Position["mistakeReview"] | null | undefined,
+): MistakeReviewMotifClassification | null {
+    if (!metadata || metadata.motifClassifierVersion !== MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION) return null;
+    const snapshot: StoredMotifSnapshot = {
+        allowedMotifs: metadata.allowedMotifs, missedMotifs: metadata.missedMotifs,
+        allowedTimeline: metadata.allowedTimeline, missedTimeline: metadata.missedTimeline,
+        motifClassifierVersion: metadata.motifClassifierVersion,
+    };
+    const cached = storedMotifClassificationCache.get(metadata);
+    if (cached && Object.keys(snapshot).every(key =>
+        snapshot[key as keyof StoredMotifSnapshot] === cached.snapshot[key as keyof StoredMotifSnapshot]))
+        return cached.classification;
+    const parsed = storedMotifClassificationSchema.safeParse(snapshot);
+    const classification = parsed.success ? parsed.data : null;
+    storedMotifClassificationCache.set(metadata, { snapshot, classification });
+    return classification;
+}
+
 export function getMistakeReviewAllowedMotifs(position: Position): TacticalMotifEvidence[] {
-    return position.mistakeReview?.allowedMotifs ?? [];
+    return getStoredMistakeReviewMotifClassification(position.mistakeReview)?.allowedMotifs ?? [];
 }
 
 export function getMistakeReviewMissedMotifs(position: Position): TacticalMotifEvidence[] {
-    return position.mistakeReview?.missedMotifs ?? [];
+    return getStoredMistakeReviewMotifClassification(position.mistakeReview)?.missedMotifs ?? [];
+}
+
+export function getMistakeReviewAllowedTimeline(position: Position): TacticalMotifEvidence[] {
+    const current = getStoredMistakeReviewMotifClassification(position.mistakeReview);
+    return current?.allowedTimeline ?? current?.allowedMotifs ?? [];
+}
+
+export function getMistakeReviewMissedTimeline(position: Position): TacticalMotifEvidence[] {
+    const current = getStoredMistakeReviewMotifClassification(position.mistakeReview);
+    return current?.missedTimeline ?? current?.missedMotifs ?? [];
 }
 
 export function getMistakeReviewMotifs(position: Position): TacticalMotifEvidence[] {
     return [...getMistakeReviewAllowedMotifs(position), ...getMistakeReviewMissedMotifs(position)];
 }
 
-function getStoredMistakeReviewNature(position: Position): MistakeReviewNature | null {
-    const metadata = position.mistakeReview;
-    return normalizeMistakeReviewNature(
-        metadata?.nature ??
-            metadata?.mistakeNature ??
-            metadata?.category ??
-            metadata?.summary?.nature ??
-            null,
-    );
+/** A cheap, atomic read for counts and unrevealed practice: never runs proofs. */
+export function getStoredMistakeReviewNatureClassification(
+    metadata: Position["mistakeReview"] | null | undefined,
+): MistakeReviewNatureClassification | null {
+    if (
+        !metadata ||
+        metadata.natureClassifierVersion !== MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION ||
+        metadata.natureMotifClassifierVersion !== MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
+    ) return null;
+    const nature = normalizeMistakeReviewNature(metadata.nature);
+    const confidence = normalizeMistakeReviewNatureConfidence(metadata.natureConfidence);
+    const aspect = normalizeMistakeReviewNatureAspect(metadata.natureAspect);
+    const allowedNature = normalizeMistakeReviewNature(metadata.allowedNature);
+    const missedNature = normalizeMistakeReviewNature(metadata.missedNature);
+    const present = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
+    if (
+        !nature || nature !== metadata.nature ||
+        !confidence || confidence !== metadata.natureConfidence ||
+        !aspect || aspect !== metadata.natureAspect ||
+        !allowedNature || allowedNature !== metadata.allowedNature ||
+        !missedNature || missedNature !== metadata.missedNature ||
+        !present(metadata.natureReason) || !present(metadata.allowedNatureReason) ||
+        !present(metadata.missedNatureReason) || !Array.isArray(metadata.tacticalSignals) ||
+        !metadata.tacticalSignals.every(present)
+    ) return null;
+    return {
+        nature, confidence, aspect, allowedNature, missedNature,
+        reason: metadata.natureReason,
+        tacticalSignals: metadata.tacticalSignals,
+        allowedReason: metadata.allowedNatureReason,
+        missedReason: metadata.missedNatureReason,
+    };
 }
 
 export function getMistakeReviewPhase(position: Position): MistakeReviewPhase {
@@ -1536,42 +1604,11 @@ function getMistakeReviewNatureDisplayClassification(position: Position) {
     const cached = mistakeReviewNatureDisplayCache.get(position);
     if (cached) return cached;
 
-    const metadata = position.mistakeReview;
-    const explicitNature = normalizeMistakeReviewNature(
-        metadata?.nature ??
-            metadata?.mistakeNature ??
-            metadata?.category ??
-            metadata?.summary?.nature ??
-            metadata?.summary?.mistakeNature,
-    );
-    const explicitConfidence = normalizeMistakeReviewNatureConfidence(
-        metadata?.natureConfidence ?? metadata?.summary?.natureConfidence,
-    );
-    const explicitAspect = normalizeMistakeReviewNatureAspect(metadata?.natureAspect);
-    let fallback: MistakeReviewNatureClassification | null = null;
-    const getFallback = () => {
-        fallback ??= classifyMistakeReviewNatureFromText(position);
-        return fallback;
-    };
-
-    const nature = explicitNature ?? getFallback().nature;
-    const allowedNature = normalizeMistakeReviewNature(metadata?.allowedNature);
-    const missedNature = normalizeMistakeReviewNature(metadata?.missedNature);
-    const aspect =
-        explicitAspect ??
-        inferMistakeReviewNatureAspect(allowedNature, missedNature, getFallback().aspect, nature);
-
-    const classification: MistakeReviewNatureClassification = {
-        nature,
-        confidence: explicitConfidence ?? getFallback().confidence,
-        reason: metadata?.natureReason ?? getFallback().reason,
-        tacticalSignals: metadata?.tacticalSignals ?? getFallback().tacticalSignals,
-        aspect,
-        allowedNature: allowedNature ?? getFallback().allowedNature,
-        allowedReason: metadata?.allowedNatureReason ?? getFallback().allowedReason,
-        missedNature: missedNature ?? getFallback().missedNature,
-        missedReason: metadata?.missedNatureReason ?? getFallback().missedReason,
-    };
+    // Never combine an old label/confidence with a newly computed reason.
+    // A separate dependency stamp lets nature-only migration refresh this
+    // classification without claiming that old motif arrays were refreshed.
+    const classification = getStoredMistakeReviewNatureClassification(position.mistakeReview) ??
+        classifyMistakeReviewNatureFromText(position);
 
     mistakeReviewNatureDisplayCache.set(position, classification);
     return classification;
@@ -1579,16 +1616,12 @@ function getMistakeReviewNatureDisplayClassification(position: Position) {
 
 function shouldMigrateMistakeReviewNatureClassification(position: Position) {
     const metadata = position.mistakeReview;
-    return Boolean(
-        metadata && metadata.natureClassifierVersion !== MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
-    );
+    return Boolean(metadata && !getStoredMistakeReviewNatureClassification(metadata));
 }
 
 function shouldMigrateMistakeReviewMotifClassification(position: Position) {
     const metadata = position.mistakeReview;
-    return Boolean(
-        metadata && metadata.motifClassifierVersion !== MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
-    );
+    return Boolean(metadata && !getStoredMistakeReviewMotifClassification(metadata));
 }
 
 function getMistakeReviewMotifInput(position: Position) {
@@ -1659,6 +1692,7 @@ function applyMistakeReviewNatureClassification(
             missedNature: classification.missedNature,
             missedNatureReason: classification.missedReason,
             natureClassifierVersion: MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
+            natureMotifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
         },
     };
 }
@@ -1713,19 +1747,6 @@ function classifyMistakeReviewNatureFromText(
         winProbabilityDrop: metadata?.winProbabilityDrop,
         reachedDepth: metadata?.reachedDepth,
     });
-}
-
-function inferMistakeReviewNatureAspect(
-    allowedNature: MistakeReviewNature | null,
-    missedNature: MistakeReviewNature | null,
-    fallback: MistakeReviewNatureAspect,
-    nature: MistakeReviewNature,
-) {
-    if (allowedNature === "tactical" && missedNature === "tactical") return "both";
-    if (allowedNature === "tactical") return "allowed";
-    if (missedNature === "tactical") return "missed";
-    if (nature === "tactical") return fallback;
-    return fallback;
 }
 
 function normalizeMistakeReviewMoveList(value?: string[] | null) {

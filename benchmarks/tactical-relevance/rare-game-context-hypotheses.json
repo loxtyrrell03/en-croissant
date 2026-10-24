@@ -1,0 +1,23 @@
+{
+  "scope": "Provisional board judgments recorded after fixed game export and before fresh engine/classifier output. Not final gold or a claim that quiet-looking positions contain no tactic.",
+  "cases": [
+    {"id":"context:lwOOWkJP:ply8","judgment":"Closed Sicilian development; d3/Nge2/castling is ordinary coordination, not a concrete forced tactical motif."},
+    {"id":"context:lwOOWkJP:ply21","judgment":"Black can challenge White's flank expansion with central d5. A pawn break is not automatically a tactical clearance or sacrifice; concrete all-reply gain would need proof."},
+    {"id":"context:lwOOWkJP:ply40","judgment":"White has space and a potential kingside attack. Bishop improvement or defensive coordination alone should not become a pin/fork; a useful immediate forcing resource is unresolved."},
+    {"id":"context:lwOOWkJP:ply59","judgment":"After Rf1 rather than the known stronger Bf1, Black can countercheck with Qd4+ before collecting e5. Check whether this is a saving/defensive attack or only a material concession; do not assume the prior mating threat still forces a win."},
+    {"id":"context:x2Oo1BCm:ply8","judgment":"Ordinary French Advance/Tarrasch-style development. White supports the centre and develops; no discrete root material combination expected."},
+    {"id":"context:x2Oo1BCm:ply21","judgment":"Black has sacrificed the a-pawn to damage White's queenside. Bishop access to a3 and knight development need concrete net accounting; recovering a pawn should not be counted as independent profit without full history."},
+    {"id":"context:x2Oo1BCm:ply40","judgment":"Nc4 attacks the queen on c2 and a knight/pin relationship involves Bb5 and Na5. A queen retreat or trade may simply answer one threat. Determine actual best purpose before calling multiple geometrical relationships tactics."},
+    {"id":"context:x2Oo1BCm:ply59","judgment":"Black can target loose b5 while White has checking activity. Queen repositioning toward a pawn is not itself a skewer/fork; verify whether a immediate concrete material collection is available."},
+    {"id":"context:x2Oo1BCm:ply80","judgment":"Qxe6+ recovers the pawn on e6 immediately after fxe6. Whole game history matters: it is not automatically a free pawn. Possible subsequent mating/queen activity is unresolved."},
+    {"id":"context:ugpVWplb:ply8","judgment":"White needs ordinary development in a restrained opening. Nf3/Bb5 pressure must not become a tactical pin without a forcing payoff."},
+    {"id":"context:ugpVWplb:ply21","judgment":"The f6 knight is attacked by g5. Its retreat may open Qxg5 or a king attack, but vacating a queen diagonal alone is not a proved root clearance. Tactical preparation remains unresolved."},
+    {"id":"context:ugpVWplb:ply40","judgment":"exd4 recaptures the bishop that just took White's bishop. This equal exchange is not a newly hung bishop; a distinct stronger king-safety resource must remain separate."},
+    {"id":"context:I1scDAqN:ply8","judgment":"Bxd3/Qxd3 recovers the advanced pawn after e4xd3 in an opening gambit. Include all earlier pawn exchanges; development and recovery are not an independent pawn win."},
+    {"id":"context:I1scDAqN:ply21","judgment":"Bxf6 recaptures the knight that just took Black's knight and checked the king. Equal minor-piece exchange, not a freshly hung knight or independent defender-removal win."},
+    {"id":"context:I1scDAqN:ply40","judgment":"f4 gains a tempo on Ne5, which can retreat to f7. A single pawn attack is not a fork/trap; possible independent captures elsewhere need their own proof."},
+    {"id":"context:I1scDAqN:ply59","judgment":"Rxc2 appears to collect an undefended pawn but the exposed king and major-piece coordination make compensation relevant. Do not turn later mutual checks into a root attraction or assume a material loss from one PV."},
+    {"id":"context:I1scDAqN:ply80","judgment":"White's f1 bishop blocks the rooks' route to Kg1. Qf3 can allow a queen/bishop for two rooks liquidation: that is not a sequence of independent free-piece gains. The best move and whether a saving tactical mechanism is necessary remain unresolved."},
+    {"id":"context:I1scDAqN:ply99","judgment":"Black's king must manage White's queenside passers. A quiet king move or later promotion in the game does not establish a current root tactic/zugzwang. Do not infer exact endgame outcome from a short line."}
+  ]
+}

@@ -1,3 +1,4 @@
+import { tournamentPredictionSnapshot, reconcileManualResults } from "./manualTournamentResults";
 import { pairingEstimateHelp } from "./pairingScoreHelp";
 import { TournamentStartCountdown } from "./TournamentStartCountdown";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -38,7 +39,10 @@ function TournamentPrepRow({
   const { forecast, isCalculating } = usePairingForecast(
     record.snapshot,
     record.userStartNumber,
+    record.manualResults,
   );
+  const predictionSnapshot = tournamentPredictionSnapshot(record.snapshot, record.manualResults);
+  const manualCount = reconcileManualResults(record.snapshot, record.manualResults).filter(p => forecast?.round && p.round < forecast.round).length;
   const top = forecast?.candidates[0];
   const eventDetails = [
     record.snapshot.section ? `${record.snapshot.section} section` : null,
@@ -50,7 +54,7 @@ function TournamentPrepRow({
   const pairingStatus = top && forecast
     ? forecast.kind === "inferred" ? "Expected (Berger)" : forecast.kind === "confirmed" || forecast.kind === "scheduled"
       ? forecast.kind === "confirmed" ? "Published pairing" : "Scheduled pairing"
-      : `${formatForecastPercent(top.probability)} pairing chance${isCalculating ? " · updating" : ""}`
+      : `${top.probability === null ? "Pairing chance unknown" : `${formatForecastPercent(top.probability)} pairing chance`}${isCalculating ? " · updating" : ""}`
     : null;
 
   return (
@@ -69,9 +73,9 @@ function TournamentPrepRow({
         </span>
       </button>
         <div className={styles.detail}>
-          <span className={styles.label}>Next opponent<HelpTip label={`Pairing for ${record.title}`}>{pairingEstimateHelp(record.snapshot, forecast) ?? "How likely you are to play this person next round, not your chance of winning. Confirmed pairings are labelled Published or Scheduled."}</HelpTip></span>
+          <span className={styles.label}>Next opponent<HelpTip label={`Pairing for ${record.title}`}>{pairingEstimateHelp(predictionSnapshot, forecast) ?? "How likely you are to play this person next round, not your chance of winning. Confirmed pairings are labelled Published or Scheduled."}</HelpTip></span>
           <strong>{top?.player.name ?? forecast?.summary ?? (record.snapshot.players.length ? `${record.snapshot.players.length} published players` : "Waiting for entries")}</strong>
-          <small>{pairingStatus ? `${round} · ${pairingStatus}` : record.snapshot.phase === "registration" ? "Pairings not published" : round}</small>
+          <small>{pairingStatus ? `${round} · ${pairingStatus}` : record.snapshot.phase === "registration" ? "Pairings not published" : round}{manualCount > 0 ? ` · ${manualCount} manual ${manualCount === 1 ? "result" : "results"}` : ""}</small>
         </div>
       <div className={styles.rowActions}>
       <button type="button" className={styles.openTracker} disabled={removing} onClick={() => onOpen(record.id)}>Open tracker</button>

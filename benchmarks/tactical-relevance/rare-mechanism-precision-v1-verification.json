@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "scope": "Six fixed source-game-disjoint public development puzzles; dependent root/full and colour variants. One redundant secondary-heading issue, not a false forced-win claim, population accuracy estimate or source-label agreement score.",
+  "selection": {
+    "seed": "rare-mechanism-precision-2026-10-02-v1",
+    "count": 6,
+    "strata": {
+      "interference": 2,
+      "deflection": 2,
+      "attraction": 2
+    },
+    "fixtureSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+    "selectionAndHypothesesFrozenBeforeOutputs": true,
+    "noOutputBasedReplacements": true,
+    "holdoutEvaluated": false,
+    "previousPublicReviewSourceGamesExcluded": true
+  },
+  "before": {
+    "ref": "9fad2cd685d88d10e962bd80384eb9aaf117072e",
+    "adapter": 175,
+    "pipeline": 182,
+    "tests": {
+      "total": 27,
+      "passed": 23,
+      "failed": 4,
+      "skipped": 0
+    },
+    "failures": "Only desired eAHH6 redundant double-threat suppression, root/full by both colours",
+    "loaded": {
+      "src/utils/tacticalMotifs/causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+      "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+      "src/utils/tacticalMotifs/kpkBitbase.ts": "8d126b04e5b7f4fc4038a1a3d0ff46e9705ec0d3f0de30aff14f31f5ab1dc1e0",
+      "src/utils/tacticalMotifs/gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+      "src/utils/tacticalMotifs/tablebaseEvidence.ts": "e9d2ed281c71e95dee9c60f0e730eb489ebe81bf45bfcf496064a36de73db2a2",
+      "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+      "src/utils/tacticalMotifs/quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+      "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+      "src/utils/tacticalMotifs/captureChoice.ts": "8b73bff5da02791215dd2250c0489bbcc6f8a3ba2fe192a88fc0a34c57046387",
+      "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+      "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+      "src/utils/tacticalMotifs/continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+      "src/utils/tacticalMotifs/liveTactics.ts": "fd140c4e84448d9ddffb1272e916f210f1585a5cd77e50db314b90d4d4af55f8"
+    },
+    "allLoadedModulesRecheckedUnchanged": true
+  },
+  "after": {
+    "ref": "index",
+    "coreBlob": "7a478438749f67694e781f535607ce08d7543ab3",
+    "adapter": 176,
+    "pipeline": 183,
+    "tests": {
+      "total": 27,
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0
+    },
+    "loaded": {
+      "src/utils/tacticalMotifs/causalTactics.ts": "2b4e13ad924d133042d5edf7c44052ad4f91b6e19f186b49862cd77ddc1dd3fd",
+      "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+      "src/utils/tacticalMotifs/kpkBitbase.ts": "8d126b04e5b7f4fc4038a1a3d0ff46e9705ec0d3f0de30aff14f31f5ab1dc1e0",
+      "src/utils/tacticalMotifs/gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+      "src/utils/tacticalMotifs/tablebaseEvidence.ts": "e9d2ed281c71e95dee9c60f0e730eb489ebe81bf45bfcf496064a36de73db2a2",
+      "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+      "src/utils/tacticalMotifs/quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+      "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "9583b1db7ee1f140ca20437e02c815bd8d0ad3807766fcf6e401cf5b83a06302",
+      "src/utils/tacticalMotifs/captureChoice.ts": "8b73bff5da02791215dd2250c0489bbcc6f8a3ba2fe192a88fc0a34c57046387",
+      "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+      "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+      "src/utils/tacticalMotifs/continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+      "src/utils/tacticalMotifs/liveTactics.ts": "1127b52d7dee861cba0e843a17d669844f48ebd09c6585e9bc8aa5dd68e1f1a1"
+    },
+    "allLoadedModulesRecheckedUnchanged": true,
+    "watchedHashesUnchanged": 9,
+    "pendingCheckingRayExcluded": true
+  },
+  "pairedObservations": {
+    "total": 24,
+    "changed": 4,
+    "unchangedApartFromVersion": 20,
+    "exactOnlyChange": "For eAHH6 root/full by both colours, remove root doubleThreat from motifs and timeline. Existing interference primary/evidence/value preserved; every other observation field unchanged except classifier version.",
+    "expectedDeltaEqualityAsserted": true
+  },
+  "independent": {
+    "library": "python-chess",
+    "verifier": "rare-mechanism-precision-v1-verify.py",
+    "legalSourceLines": 12,
+    "witnessGroups": 8,
+    "all16RepliesPerColourClosedForOriginal": true,
+    "forcedInterferenceRootRepliesPerColour": 2,
+    "extraNb8VictimKe3BranchClosed": true,
+    "forcedMateAllDefenderTurnsHaveOneLegalReply": true,
+    "guardRemovalAndMatingEscapeControls": true,
+    "limits": "Finite legal capture/evasion and mating witnesses. No proof of best play against all longer quiet plans. Nb8 branch >=820 is not claimed as root minimum."
+  },
+  "retainedPriorCohort": {
+    "canonicalBefore": "rare-causal-cohort-v2-adapter175.json",
+    "inputResultsMatch": true,
+    "normalizedSha256": "f294c9f4d2fb82350671f2802145c4e11e6a96bb4341c1bc4dd77abbdce620cd",
+    "loadedModuleCount": 12,
+    "allModulesUnchanged": true,
+    "canonical175Sha256": "2aa21fa2100cfecb3ea64fa9e79cfd4cef9574eb3679456e6dfe856fb341f0c1",
+    "tests": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "observations": 56,
+    "changed": 0,
+    "exclusionsFromEquality": [
+      "result.motifClassifierVersion",
+      "elapsedMs"
+    ],
+    "runner": "Read-only index module loader plus in-memory adaptation of existing harness hash lookups. No shared production or existing harness edits."
+  },
+  "checks": {
+    "wholeProjectTypes": "pass",
+    "benchmarkTypes": "pass",
+    "scopedLint": {
+      "errors": 0,
+      "warnings": 0
+    }
+  },
+  "boundaries": {
+    "unresolvedRoots": [
+      "WhAca",
+      "o4FrE",
+      "SzulO"
+    ],
+    "szuloLaterForkRetained": true,
+    "emptyMeansPositional": false,
+    "ownerStoresReadOrWritten": false,
+    "networkDownloads": false,
+    "runtimeOrServicesChanged": false,
+    "deliveryVerified": false
+  },
+  "fileLfSha256": {
+    "src/utils/tests/rareMechanismPrecision.test.ts": "a7e82f02343706ae6e52bd6b665a77e1f6f648045f70442a50900e9c44397ac2",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-adapter175.json": "6dc89c5ded4fa87df946e039dc8b0f554494ea736d86fa7a47986d48cece6fe5",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-adapter176.json": "b6a815751de5874dd83e991f9bcb5f9a14767fd2f066668454b0ef396b04ad8d",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-hypotheses.json": "291d69fcfc397503a076b15c466826b0ccecca41fc677f0fa799ff2ff50df338",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-independent.json": "50ff566f226de0f80af1ddc38ddf9ed435650c8afc4aae4b4fc6f2a1456bb084",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-review.md": "30a520fb88f55534a38d025d4f7747db1fc4e4be2bee173741f99cdf8909f953",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-select.mjs": "9e81636bbfb51f5d45c50b2a398884f8048cbb77fae7c6e8c339547adba55205",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-selection.json": "b7246b1b58fa75e8685831ad14b9ec0fb5c96e1e1777dc92a08de24a044f1f93",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1-verify.py": "1796361c6d5b31fd1eb63d47a57038f994e4a6ba38ad8e12c5bf9a01534ab82e",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1.test.ts": "445c06be1219ac8055c0c49fa95cfe426ecd8fa575597370145eaa0bc80ddd08",
+    "benchmarks/tactical-relevance/rare-mechanism-precision-v1.vitest.ts": "bee4792256d2a528edb97c5500195c190cd16e5d0f54a4eccc321184bd3a857d"
+  },
+  "temporaryReportLfSha256": {
+    "rare-mechanism-precision-v1-final-tests175.json": "f17481c49387c28835df642b8f266aff676c53b54dff5e795cee74ca836c52fe",
+    "rare-mechanism-precision-v1-final-tests176.json": "704e1e2f43911082e3527fa19a2f3ef2f6deb0f2eebb2f63d48e2a16422067a5",
+    "rare-mechanism-prior-cohort176.json": "c54a8108bb4cdc950d5b873d4f64b4d2c14986a6b9d3cc3ff456bfd37952aa4e",
+    "rare-mechanism-prior-cohort-tests176.json": "b06afedc12e769db5be702ecc14386df13f7693fbcd04fee50861247e322e63e"
+  }
+}

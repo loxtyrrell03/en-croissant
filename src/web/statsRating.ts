@@ -1,9 +1,11 @@
 import {
-    periodPerformance,
-    preparePerformanceGames,
-    strengthHistory,
-    type PerformanceGame,
+  periodPerformance,
+  preparePerformanceGames,
+  strengthHistory,
+  type PerformanceGame,
+  type PerformancePeriod,
 } from "../shared/truePerformance";
+import { performanceDurationSeconds } from "../shared/performancePeriod";
 // Performance-rating engine and game fetchers for the phone Stats feature.
 // Result estimates use the shared numerical Bayesian model. Session/tilt
 // diagnostics retain their existing behavior independently of the estimator.
@@ -14,83 +16,103 @@ export type StatsRatedFilter = "rated" | "casual" | "both";
 export type StatsGameResult = "win" | "draw" | "loss";
 export type StatsTermination = "checkmate" | "resign" | "timeout" | "draw" | "abandon" | "other";
 
+const STATS_MAX_GAMES = 5000;
+const STATS_MAX_HISTORY_DAYS = 3650;
+
+/** Bound the phone's PGN-preserving fetch to the visible Overview selection. */
+export function statsPerformanceFetchRequest(period: PerformancePeriod) {
+  if (period.endsWith("g")) {
+    return { maxGames: Number.parseInt(period, 10), maxDays: STATS_MAX_HISTORY_DAYS };
+  }
+  if (period === "all") {
+    return { maxGames: STATS_MAX_GAMES, maxDays: STATS_MAX_HISTORY_DAYS };
+  }
+  return {
+    maxGames: STATS_MAX_GAMES,
+    maxDays: performanceDurationSeconds(period) / 86400,
+  };
+}
+
 export type StatsGame = {
-    source: StatsSource;
-    id: string;
-    url: string | null;
-    end: number;
-    start: number | null;
-    rating: number;
-    preGameRating?: number | null;
-    result: StatsGameResult;
-    termination: StatsTermination;
-    opp: number | null;
-    oppName: string | null;
-    rated: boolean;
-    color: "w" | "b";
-    timeClass: StatsTimeClass;
-    timeControl: { base: number; inc: number } | null;
-    eco: string | null;
-    openingName: string | null;
-    pgn: string | null;
+  source: StatsSource;
+  id: string;
+  url: string | null;
+  end: number;
+  start: number | null;
+  rating: number;
+  preGameRating?: number | null;
+  result: StatsGameResult;
+  termination: StatsTermination;
+  opp: number | null;
+  opponentSd?: number;
+  oppName: string | null;
+  rated: boolean;
+  color: "w" | "b";
+  timeClass: StatsTimeClass;
+  timeControl: { base: number; inc: number } | null;
+  eco: string | null;
+  openingName: string | null;
+  pgn: string | null;
 };
 
 export type StatsPerformance = {
-    perf: number;
-    sd: number;
-    ci68: [number, number];
-    ci95: [number, number];
-    ess: number;
-    gamesWithOpp: number;
-    windowStartRating: number;
-    probAboveCurrent: number | null;
-    sessionSurprise: number | null;
+  perf: number;
+  sd: number;
+  ci68: [number, number];
+  ci95: [number, number];
+  ess: number;
+  gamesWithOpp: number;
+  windowStartRating: number;
+  probAboveCurrent: number | null;
+  sessionSurprise: number | null;
 };
 
 export type StatsPerformancePoint = { end: number; perf: number; sd: number };
 
 export type StatsFormSummary = {
-    slopePerWeek: number;
-    streak: { type: StatsGameResult; len: number } | null;
-    sessions: number;
-    net10: number;
-    tilt: boolean;
-    avgLossPts: number;
-    avgWinPts: number;
-    latestSessionNet: number;
-    latestSessionGames: number;
+  slopePerWeek: number;
+  streak: { type: StatsGameResult; len: number } | null;
+  sessions: number;
+  net10: number;
+  tilt: boolean;
+  avgLossPts: number;
+  avgWinPts: number;
+  latestSessionNet: number;
+  latestSessionGames: number;
 };
 
 type StatsRatingGame = Pick<StatsGame, "end" | "start" | "rating" | "result" | "opp"> &
-    Partial<
-        Pick<
-            StatsGame,
-            | "id"
-            | "source"
-            | "timeClass"
-            | "color"
-            | "rated"
-            | "oppName"
-            | "url"
-            | "openingName"
-            | "preGameRating"
-        >
-    >;
+  Partial<
+    Pick<
+      StatsGame,
+      | "id"
+      | "source"
+      | "timeClass"
+      | "color"
+      | "rated"
+      | "oppName"
+      | "opponentSd"
+      | "url"
+      | "openingName"
+      | "preGameRating"
+    >
+  >;
 
 export function toPerformanceGames(games: readonly StatsRatingGame[]): PerformanceGame[] {
-    return games.map((g, i) => ({
-        id: g.id ?? `${g.end}:${i}`,
-        pool: `${g.source ?? "legacy"}:${g.timeClass ?? "unknown"}`,
-        at: g.end,
-        rating: g.preGameRating !== undefined ? g.preGameRating : g.rating,
-        opponentRating: g.opp,
-        score: g.result === "win" ? 1 : g.result === "draw" ? 0.5 : 0,
-        white: g.color !== "b",
-        rated: g.rated !== false,
-        opponent: g.oppName ?? "",
-        url: g.url ?? undefined,
-        opening: g.openingName ?? undefined,
-    }));
+  return games.map((g, i) => ({
+    id: g.id ?? `${g.end}:${i}`,
+    pool: `${g.source ?? "legacy"}:${g.timeClass ?? "unknown"}`,
+    at: g.end,
+    rating: g.preGameRating !== undefined ? g.preGameRating : g.rating,
+    opponentRating: g.opp,
+    opponentSd: g.opponentSd,
+    score: g.result === "win" ? 1 : g.result === "draw" ? 0.5 : 0,
+    white: g.color !== "b",
+    rated: g.rated !== false,
+    opponent: g.oppName ?? "",
+    url: g.url ?? undefined,
+    opening: g.openingName ?? undefined,
+  }));
 }
 
 // Existing session diagnostics remain separate from result-based strength.
@@ -99,157 +121,155 @@ const SESSION_GAP_SECONDS = 3600;
 const RECENT_SESSION_SECONDS = 12 * 3600;
 
 const DRAW_RESULTS = new Set([
-    "agreed",
-    "repetition",
-    "stalemate",
-    "insufficient",
-    "50move",
-    "timevsinsufficient",
+  "agreed",
+  "repetition",
+  "stalemate",
+  "insufficient",
+  "50move",
+  "timevsinsufficient",
 ]);
 
 function mean(values: number[]) {
-    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function hasFiniteOpp<T extends { opp: number | null }>(game: T): game is T & { opp: number } {
-    return typeof game.opp === "number" && Number.isFinite(game.opp);
+  return typeof game.opp === "number" && Number.isFinite(game.opp);
 }
 
 // Session grouping is a descriptive form diagnostic, independent of inference.
 export function groupSessions<T extends { start?: number | null; end: number }>(games: T[]): T[][] {
-    if (!games.length) return [];
-    const sessions: T[][] = [[games[0]]];
-    for (let i = 1; i < games.length; i += 1) {
-        const previous = games[i - 1];
-        const game = games[i];
-        const gap =
-            game.start !== null && game.start !== undefined
-                ? game.start - previous.end
-                : game.end - previous.end;
-        if (gap <= SESSION_GAP_SECONDS) sessions[sessions.length - 1].push(game);
-        else sessions.push([game]);
-    }
-    return sessions;
+  if (!games.length) return [];
+  const sessions: T[][] = [[games[0]]];
+  for (let i = 1; i < games.length; i += 1) {
+    const previous = games[i - 1];
+    const game = games[i];
+    const gap =
+      game.start !== null && game.start !== undefined
+        ? game.start - previous.end
+        : game.end - previous.end;
+    if (gap <= SESSION_GAP_SECONDS) sessions[sessions.length - 1].push(game);
+    else sessions.push([game]);
+  }
+  return sessions;
 }
 
 export function trendPerWeek(games: { end: number; rating: number }[]): number {
-    if (games.length < 5) return 0;
-    const xs = games.map((game) => game.end / 86400);
-    const ys = games.map((game) => game.rating);
-    const meanX = mean(xs);
-    const meanY = mean(ys);
-    let numerator = 0;
-    let denominator = 0;
-    for (let i = 0; i < games.length; i += 1) {
-        numerator += (xs[i] - meanX) * (ys[i] - meanY);
-        denominator += (xs[i] - meanX) * (xs[i] - meanX);
-    }
-    if (denominator === 0) return 0;
-    return Math.round((numerator / denominator) * 7 * 10) / 10;
+  if (games.length < 5) return 0;
+  const xs = games.map((game) => game.end / 86400);
+  const ys = games.map((game) => game.rating);
+  const meanX = mean(xs);
+  const meanY = mean(ys);
+  let numerator = 0;
+  let denominator = 0;
+  for (let i = 0; i < games.length; i += 1) {
+    numerator += (xs[i] - meanX) * (ys[i] - meanY);
+    denominator += (xs[i] - meanX) * (xs[i] - meanX);
+  }
+  if (denominator === 0) return 0;
+  return Math.round((numerator / denominator) * 7 * 10) / 10;
 }
 
 export function recentStreak<T extends { result: StatsGameResult }>(
-    games: T[],
+  games: T[],
 ): { type: StatsGameResult; len: number } | null {
-    if (!games.length) return null;
-    const type = games[games.length - 1].result;
-    let len = 1;
-    for (let i = games.length - 2; i >= 0 && games[i].result === type; i -= 1) len += 1;
-    return { type, len };
+  if (!games.length) return null;
+  const type = games[games.length - 1].result;
+  let len = 1;
+  for (let i = games.length - 2; i >= 0 && games[i].result === type; i -= 1) len += 1;
+  return { type, len };
 }
 
 // Selected-game Bayesian performance, with full opponent marginalisation and
 // posterior quantiles. A minimum of three rated, opponent-tagged games is required.
 export function computePerformance(
-    games: StatsRatingGame[],
-    opts: { currentRating?: number | null; nowSec: number },
+  games: StatsRatingGame[],
+  opts: { currentRating?: number | null; nowSec: number },
 ): StatsPerformance | null {
-    const currentRating =
-        typeof opts.currentRating === "number" && Number.isFinite(opts.currentRating)
-            ? opts.currentRating
-            : null;
-    const nowSec = opts.nowSec;
+  const currentRating =
+    typeof opts.currentRating === "number" && Number.isFinite(opts.currentRating)
+      ? opts.currentRating
+      : null;
+  const nowSec = opts.nowSec;
 
-    const valid = preparePerformanceGames(toPerformanceGames(games), nowSec);
-    const estimate = periodPerformance(valid);
-    if (!estimate) return null;
-    const gamesWithOpp = valid.filter((g) => g.rated && g.opponentRating !== null).length;
-    const R0 = [...valid].sort((a, b) => a.at - b.at)[0].rating ?? games[0].rating;
-    const R = estimate.mean,
-        sd = estimate.sd,
-        perf = Math.round(R);
-    const ess = gamesWithOpp;
+  const valid = preparePerformanceGames(toPerformanceGames(games), nowSec);
+  const estimate = periodPerformance(valid);
+  if (!estimate) return null;
+  const gamesWithOpp = valid.filter((g) => g.rated && g.opponentRating !== null).length;
+  const R0 = [...valid].sort((a, b) => a.at - b.at)[0].rating ?? games[0].rating;
+  const R = estimate.mean,
+    sd = estimate.sd,
+    perf = Math.round(R);
+  const ess = gamesWithOpp;
 
-    // Recent-session surprise vs the CURRENT rating (drives the tilt refinement).
-    const sessions = groupSessions(games);
-    let sessionSurprise: number | null = null;
-    if (currentRating !== null && sessions.length) {
-        const latest = sessions[sessions.length - 1].filter(hasFiniteOpp);
-        if (latest.length >= 3) {
-            sessionSurprise = 0;
-            for (const game of latest) {
-                const E = 1 / (1 + Math.pow(10, (game.opp - currentRating) / 400));
-                const s = game.result === "win" ? 1 : game.result === "draw" ? 0.5 : 0;
-                sessionSurprise += s - E;
-            }
-        }
+  // Recent-session surprise vs the CURRENT rating (drives the tilt refinement).
+  const sessions = groupSessions(games);
+  let sessionSurprise: number | null = null;
+  if (currentRating !== null && sessions.length) {
+    const latest = sessions[sessions.length - 1].filter(hasFiniteOpp);
+    if (latest.length >= 3) {
+      sessionSurprise = 0;
+      for (const game of latest) {
+        const E = 1 / (1 + Math.pow(10, (game.opp - currentRating) / 400));
+        const s = game.result === "win" ? 1 : game.result === "draw" ? 0.5 : 0;
+        sessionSurprise += s - E;
+      }
     }
+  }
 
-    // Retired: the previous normal approximation was presented as a calibrated
-    // probability of true ability. The new view reports model quantiles instead.
-    const probAboveCurrent = null;
+  // Retired: the previous normal approximation was presented as a calibrated
+  // probability of true ability. The new view reports model quantiles instead.
+  const probAboveCurrent = null;
 
-    return {
-        perf,
-        sd,
-        ci68: [perf - Math.round(sd), perf + Math.round(sd)],
-        ci95: [Math.round(estimate.low), Math.round(estimate.high)],
-        ess: Math.round(ess * 10) / 10,
-        gamesWithOpp,
-        windowStartRating: R0,
-        probAboveCurrent,
-        sessionSurprise,
-    };
+  return {
+    perf,
+    sd,
+    ci68: [perf - Math.round(sd), perf + Math.round(sd)],
+    ci95: [Math.round(estimate.low), Math.round(estimate.high)],
+    ess: Math.round(ess * 10) / 10,
+    gamesWithOpp,
+    windowStartRating: R0,
+    probAboveCurrent,
+    sessionSurprise,
+  };
 }
 
 // Headline/report performance for an explicitly selected time period. Keep this
 // separate from computePerformanceSeries: the latter follows changing strength
 // through history, while this estimates constant performance in the selected games.
 export function computePeriodPerformance(
-    games: StatsRatingGame[],
-    opts: {
-        currentRating?: number | null;
-        nowSec: number;
-        windowStart: number;
-        windowEnd: number;
-    },
+  games: StatsRatingGame[],
+  opts: {
+    currentRating?: number | null;
+    nowSec: number;
+    windowStart: number;
+    windowEnd: number;
+  },
 ): StatsPerformance | null {
-    const periodGames = games
-        .filter(
-            (game) =>
-                Number.isFinite(game.end) &&
-                game.end >= opts.windowStart &&
-                game.end <= opts.windowEnd,
-        )
-        .sort((a, b) => a.end - b.end);
+  const periodGames = games
+    .filter(
+      (game) =>
+        Number.isFinite(game.end) && game.end >= opts.windowStart && game.end <= opts.windowEnd,
+    )
+    .sort((a, b) => a.end - b.end);
 
-    return computePerformance(periodGames, {
-        currentRating: opts.currentRating,
-        nowSec: Math.min(opts.nowSec, opts.windowEnd),
-    });
+  return computePerformance(periodGames, {
+    currentRating: opts.currentRating,
+    nowSec: Math.min(opts.nowSec, opts.windowEnd),
+  });
 }
 
 // Chronological Bayesian strength; changing the visible period never resets the prior.
 export function computePerformanceSeries(
-    games: StatsRatingGame[],
-    opts?: { windowSize?: number },
+  games: StatsRatingGame[],
+  opts?: { windowSize?: number },
 ): StatsPerformancePoint[] {
-    // Current-strength chronology is independent of a display window. Keep the
-    // legacy option accepted for callers, but never reset history at its edge.
-    void opts;
-    return strengthHistory(toPerformanceGames(games))
-        .points.slice(2)
-        .map((p) => ({ end: p.at, perf: Math.round(p.mean), sd: p.sd }));
+  // Current-strength chronology is independent of a display window. Keep the
+  // legacy option accepted for callers, but never reset history at its edge.
+  void opts;
+  return strengthHistory(toPerformanceGames(games))
+    .points.slice(2)
+    .map((p) => ({ end: p.at, perf: Math.round(p.mean), sd: p.sd }));
 }
 
 // Form summary distilled from computeSmartBracket's internals (smart-bracket.js:361-647):
@@ -259,106 +279,106 @@ export function computePerformanceSeries(
 // in a recent session). The performance layer feeding the refinement uses the same rolling
 // 7-day window as the original bracket.
 export function computeFormSummary(
-    games: StatsRatingGame[],
-    opts: { currentRating?: number | null; nowSec: number },
+  games: StatsRatingGame[],
+  opts: { currentRating?: number | null; nowSec: number },
 ): StatsFormSummary {
-    const nowSec = opts.nowSec;
+  const nowSec = opts.nowSec;
 
-    const deltas = games.map((game, index) =>
-        index === 0 ? null : game.rating - games[index - 1].rating,
-    );
-    const lossSamples: number[] = [];
-    const winSamples: number[] = [];
-    for (let i = 1; i < games.length; i += 1) {
-        const delta = deltas[i];
-        if (delta === null) continue;
-        if (games[i].result === "loss" && delta < 0) lossSamples.push(Math.abs(delta));
-        if (games[i].result === "win" && delta > 0) winSamples.push(delta);
+  const deltas = games.map((game, index) =>
+    index === 0 ? null : game.rating - games[index - 1].rating,
+  );
+  const lossSamples: number[] = [];
+  const winSamples: number[] = [];
+  for (let i = 1; i < games.length; i += 1) {
+    const delta = deltas[i];
+    if (delta === null) continue;
+    if (games[i].result === "loss" && delta < 0) lossSamples.push(Math.abs(delta));
+    if (games[i].result === "win" && delta > 0) winSamples.push(delta);
+  }
+  const avgLossPts = lossSamples.length >= 5 ? mean(lossSamples) : 8;
+  const avgWinPts = winSamples.length >= 5 ? mean(winSamples) : 8;
+
+  const grouped = groupSessions(games);
+  const slopePerWeek = trendPerWeek(games);
+
+  const last10Start = Math.max(0, games.length - 10);
+  let net10 = 0;
+  for (let i = last10Start; i < games.length; i += 1) {
+    const delta = deltas[i];
+    if (delta !== null) net10 += delta;
+  }
+  const streak = recentStreak(games);
+
+  const latestSession = grouped.length ? grouped[grouped.length - 1] : [];
+  const latestSessionStreak = recentStreak(latestSession);
+  const latestSessionNet = latestSession.length
+    ? latestSession[latestSession.length - 1].rating - latestSession[0].rating
+    : 0;
+  const latestIsRecent = latestSession.length
+    ? nowSec - latestSession[latestSession.length - 1].end <= RECENT_SESSION_SECONDS
+    : false;
+  const tiltFromStreak =
+    latestIsRecent &&
+    latestSessionStreak !== null &&
+    latestSessionStreak.type === "loss" &&
+    latestSessionStreak.len >= 3;
+  const tiltFromNet = latestIsRecent && latestSessionNet <= -2.5 * avgLossPts;
+
+  // Performance layer over the rolling 7-day window (like computeSmartBracket when no
+  // separate performanceGames are supplied).
+  const performanceCutoff = nowSec - PERFORMANCE_WINDOW_DAYS * 86400;
+  const performanceGames = games.filter(
+    (game) => Number.isFinite(game.end) && game.end >= performanceCutoff && game.end <= nowSec,
+  );
+  const performance = computePerformance(performanceGames, {
+    currentRating: opts.currentRating,
+    nowSec,
+  });
+  const performanceSessions = groupSessions(performanceGames);
+  const latestPerformanceSession = performanceSessions.length
+    ? performanceSessions[performanceSessions.length - 1]
+    : [];
+  const validLatestOppCount = latestPerformanceSession.filter(hasFiniteOpp).length;
+  const latestPerformanceIsRecent = latestPerformanceSession.length
+    ? nowSec - latestPerformanceSession[latestPerformanceSession.length - 1].end <=
+      RECENT_SESSION_SECONDS
+    : false;
+
+  // Surprise-weighted tilt refinement (only when the performance layer is non-null).
+  let effTiltFromStreak = tiltFromStreak;
+  const effTiltFromNet = tiltFromNet;
+  let surpriseTilt = false;
+  if (performance) {
+    const ss = performance.sessionSurprise;
+    // (a) Suppression: a pure loss streak against much stronger opponents is not tilt.
+    if (effTiltFromStreak && !effTiltFromNet && ss !== null && ss > -0.8) {
+      effTiltFromStreak = false;
     }
-    const avgLossPts = lossSamples.length >= 5 ? mean(lossSamples) : 8;
-    const avgWinPts = winSamples.length >= 5 ? mean(winSamples) : 8;
-
-    const grouped = groupSessions(games);
-    const slopePerWeek = trendPerWeek(games);
-
-    const last10Start = Math.max(0, games.length - 10);
-    let net10 = 0;
-    for (let i = last10Start; i < games.length; i += 1) {
-        const delta = deltas[i];
-        if (delta !== null) net10 += delta;
+    // (b) Enhancement: quietly losing games you would usually win fires tilt.
+    if (
+      !effTiltFromStreak &&
+      !effTiltFromNet &&
+      latestPerformanceIsRecent &&
+      validLatestOppCount >= 4 &&
+      ss !== null &&
+      ss <= -1.5
+    ) {
+      surpriseTilt = true;
     }
-    const streak = recentStreak(games);
+  }
+  const tilt = effTiltFromStreak || effTiltFromNet || surpriseTilt;
 
-    const latestSession = grouped.length ? grouped[grouped.length - 1] : [];
-    const latestSessionStreak = recentStreak(latestSession);
-    const latestSessionNet = latestSession.length
-        ? latestSession[latestSession.length - 1].rating - latestSession[0].rating
-        : 0;
-    const latestIsRecent = latestSession.length
-        ? nowSec - latestSession[latestSession.length - 1].end <= RECENT_SESSION_SECONDS
-        : false;
-    const tiltFromStreak =
-        latestIsRecent &&
-        latestSessionStreak !== null &&
-        latestSessionStreak.type === "loss" &&
-        latestSessionStreak.len >= 3;
-    const tiltFromNet = latestIsRecent && latestSessionNet <= -2.5 * avgLossPts;
-
-    // Performance layer over the rolling 7-day window (like computeSmartBracket when no
-    // separate performanceGames are supplied).
-    const performanceCutoff = nowSec - PERFORMANCE_WINDOW_DAYS * 86400;
-    const performanceGames = games.filter(
-        (game) => Number.isFinite(game.end) && game.end >= performanceCutoff && game.end <= nowSec,
-    );
-    const performance = computePerformance(performanceGames, {
-        currentRating: opts.currentRating,
-        nowSec,
-    });
-    const performanceSessions = groupSessions(performanceGames);
-    const latestPerformanceSession = performanceSessions.length
-        ? performanceSessions[performanceSessions.length - 1]
-        : [];
-    const validLatestOppCount = latestPerformanceSession.filter(hasFiniteOpp).length;
-    const latestPerformanceIsRecent = latestPerformanceSession.length
-        ? nowSec - latestPerformanceSession[latestPerformanceSession.length - 1].end <=
-          RECENT_SESSION_SECONDS
-        : false;
-
-    // Surprise-weighted tilt refinement (only when the performance layer is non-null).
-    let effTiltFromStreak = tiltFromStreak;
-    const effTiltFromNet = tiltFromNet;
-    let surpriseTilt = false;
-    if (performance) {
-        const ss = performance.sessionSurprise;
-        // (a) Suppression: a pure loss streak against much stronger opponents is not tilt.
-        if (effTiltFromStreak && !effTiltFromNet && ss !== null && ss > -0.8) {
-            effTiltFromStreak = false;
-        }
-        // (b) Enhancement: quietly losing games you would usually win fires tilt.
-        if (
-            !effTiltFromStreak &&
-            !effTiltFromNet &&
-            latestPerformanceIsRecent &&
-            validLatestOppCount >= 4 &&
-            ss !== null &&
-            ss <= -1.5
-        ) {
-            surpriseTilt = true;
-        }
-    }
-    const tilt = effTiltFromStreak || effTiltFromNet || surpriseTilt;
-
-    return {
-        slopePerWeek,
-        streak,
-        sessions: grouped.length,
-        net10,
-        tilt,
-        avgLossPts,
-        avgWinPts,
-        latestSessionNet,
-        latestSessionGames: latestSession.length,
-    };
+  return {
+    slopePerWeek,
+    streak,
+    sessions: grouped.length,
+    net10,
+    tilt,
+    avgLossPts,
+    avgWinPts,
+    latestSessionNet,
+    latestSessionGames: latestSession.length,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -369,471 +389,473 @@ const CHESSCOM_API_URL = "https://api.chess.com/pub/player";
 const LICHESS_API_URL = "https://lichess.org/api";
 
 export async function fetchStatsGames(opts: {
-    source: StatsSource;
-    username: string;
-    timeClass: StatsTimeClass;
-    ratedFilter: StatsRatedFilter;
-    maxGames: number;
-    maxDays: number;
-    monthsCap?: number;
-    lichessToken?: string | null;
-    signal?: AbortSignal;
+  source: StatsSource;
+  username: string;
+  timeClass: StatsTimeClass;
+  ratedFilter: StatsRatedFilter;
+  maxGames: number;
+  maxDays: number;
+  monthsCap?: number;
+  lichessToken?: string | null;
+  signal?: AbortSignal;
 }): Promise<StatsGame[]> {
-    const username = opts.username.trim();
-    if (!username || opts.maxGames <= 0) return [];
-    return opts.source === "chesscom"
-        ? fetchChessComStatsGames({ ...opts, username })
-        : fetchLichessStatsGames({ ...opts, username });
+  const username = opts.username.trim();
+  if (!username || opts.maxGames <= 0) return [];
+  return opts.source === "chesscom"
+    ? fetchChessComStatsGames({ ...opts, username })
+    : fetchLichessStatsGames({ ...opts, username });
 }
 
 export async function fetchCurrentRating(opts: {
-    source: StatsSource;
-    username: string;
-    timeClass: StatsTimeClass;
-    signal?: AbortSignal;
+  source: StatsSource;
+  username: string;
+  timeClass: StatsTimeClass;
+  signal?: AbortSignal;
 }): Promise<number | null> {
-    const username = opts.username.trim();
-    if (!username) return null;
+  const username = opts.username.trim();
+  if (!username) return null;
 
-    if (opts.source === "chesscom") {
-        const key = getChessComStatsKey(opts.timeClass);
-        if (!key) return null;
-        const response = await fetch(
-            `${CHESSCOM_API_URL}/${encodeURIComponent(username)}/stats`,
-            opts.signal ? { signal: opts.signal } : undefined,
-        );
-        if (!response.ok) return null;
-        const data = (await response.json()) as Record<
-            string,
-            { last?: { rating?: number } } | undefined
-        >;
-        const rating = data?.[key]?.last?.rating;
-        return typeof rating === "number" && Number.isFinite(rating) ? rating : null;
-    }
-
-    const perfKey = opts.timeClass === "daily" ? "correspondence" : opts.timeClass;
+  if (opts.source === "chesscom") {
+    const key = getChessComStatsKey(opts.timeClass);
+    if (!key) return null;
     const response = await fetch(
-        `${LICHESS_API_URL}/user/${encodeURIComponent(username)}`,
-        opts.signal ? { signal: opts.signal } : undefined,
+      `${CHESSCOM_API_URL}/${encodeURIComponent(username)}/stats`,
+      opts.signal ? { signal: opts.signal } : undefined,
     );
     if (!response.ok) return null;
-    const data = (await response.json()) as {
-        perfs?: Record<string, { rating?: number } | undefined>;
-    };
-    const rating = data.perfs?.[perfKey]?.rating;
+    const data = (await response.json()) as Record<
+      string,
+      { last?: { rating?: number } } | undefined
+    >;
+    const rating = data?.[key]?.last?.rating;
     return typeof rating === "number" && Number.isFinite(rating) ? rating : null;
+  }
+
+  const perfKey = opts.timeClass === "daily" ? "correspondence" : opts.timeClass;
+  const response = await fetch(
+    `${LICHESS_API_URL}/user/${encodeURIComponent(username)}`,
+    opts.signal ? { signal: opts.signal } : undefined,
+  );
+  if (!response.ok) return null;
+  const data = (await response.json()) as {
+    perfs?: Record<string, { rating?: number } | undefined>;
+  };
+  const rating = data.perfs?.[perfKey]?.rating;
+  return typeof rating === "number" && Number.isFinite(rating) ? rating : null;
 }
 
 function getChessComStatsKey(timeClass: StatsTimeClass) {
-    if (timeClass === "bullet") return "chess_bullet";
-    if (timeClass === "blitz") return "chess_blitz";
-    if (timeClass === "rapid") return "chess_rapid";
-    if (timeClass === "daily") return "chess_daily";
-    return null;
+  if (timeClass === "bullet") return "chess_bullet";
+  if (timeClass === "blitz") return "chess_blitz";
+  if (timeClass === "rapid") return "chess_rapid";
+  if (timeClass === "daily") return "chess_daily";
+  return null;
 }
 
 // -- chess.com ---------------------------------------------------------------
 
 type ChessComArchivePlayer = { username?: string; rating?: number; result?: string };
 type ChessComArchiveGame = {
-    url?: string;
-    pgn?: string;
-    end_time?: number;
-    time_class?: string;
-    time_control?: string;
-    rules?: string;
-    rated?: boolean;
-    white?: ChessComArchivePlayer;
-    black?: ChessComArchivePlayer;
+  url?: string;
+  pgn?: string;
+  end_time?: number;
+  time_class?: string;
+  time_control?: string;
+  rules?: string;
+  rated?: boolean;
+  white?: ChessComArchivePlayer;
+  black?: ChessComArchivePlayer;
 };
 
 // Mirrors fetchRecentGames (smart-bracket.js:101-144): walk the monthly archives
 // newest-first, stop once enough games are collected or a month reaches past the
 // cutoff, return oldest-to-newest capped at maxGames.
 async function fetchChessComStatsGames(opts: {
-    username: string;
-    timeClass: StatsTimeClass;
-    ratedFilter: StatsRatedFilter;
-    maxGames: number;
-    maxDays: number;
-    monthsCap?: number;
-    signal?: AbortSignal;
+  username: string;
+  timeClass: StatsTimeClass;
+  ratedFilter: StatsRatedFilter;
+  maxGames: number;
+  maxDays: number;
+  monthsCap?: number;
+  signal?: AbortSignal;
 }): Promise<StatsGame[]> {
-    const nowSec = Math.floor(Date.now() / 1000);
-    const cutoff = nowSec - opts.maxDays * 86400;
-    const monthsCap = opts.monthsCap ?? Math.ceil(opts.maxDays / 28) + 1;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const cutoff = nowSec - opts.maxDays * 86400;
+  const monthsCap = opts.monthsCap ?? Math.ceil(opts.maxDays / 28) + 1;
 
-    const archiveIndex = (await getChessComJson(
-        `${CHESSCOM_API_URL}/${encodeURIComponent(opts.username)}/games/archives`,
-        opts.signal,
-    )) as { archives?: string[] };
-    if (!Array.isArray(archiveIndex.archives))
-        throw new Error("Chess.com returned an invalid archive list.");
-    const expected = new RegExp(
-        `^https://api\\.chess\\.com/pub/player/${encodeURIComponent(opts.username)}/games/\\d{4}/\\d{2}$`,
-        "i",
+  const archiveIndex = (await getChessComJson(
+    `${CHESSCOM_API_URL}/${encodeURIComponent(opts.username)}/games/archives`,
+    opts.signal,
+  )) as { archives?: string[] };
+  if (!Array.isArray(archiveIndex.archives))
+    throw new Error("Chess.com returned an invalid archive list.");
+  const expected = new RegExp(
+    `^https://api\\.chess\\.com/pub/player/${encodeURIComponent(opts.username)}/games/\\d{4}/\\d{2}$`,
+    "i",
+  );
+  const archives = [...new Set(archiveIndex.archives)];
+  if (archives.some((url) => typeof url !== "string" || !expected.test(url)))
+    throw new Error("Unexpected Chess.com archive address.");
+  archives.sort();
+  const collected: StatsGame[] = [];
+  let monthsFetched = 0;
+
+  for (let i = archives.length - 1; i >= 0 && monthsFetched < monthsCap; i -= 1) {
+    const archive = (await getChessComJson(archives[i], opts.signal)) as {
+      games?: ChessComArchiveGame[];
+    };
+    if (!Array.isArray(archive.games))
+      throw new Error("Chess.com returned an invalid game archive.");
+    monthsFetched += 1;
+    const monthGames = normalizeChessComArchiveGames(
+      archive.games,
+      opts.username,
+      opts.timeClass,
+      opts.ratedFilter,
     );
-    const archives = [...new Set(archiveIndex.archives)];
-    if (archives.some((url) => typeof url !== "string" || !expected.test(url)))
-        throw new Error("Unexpected Chess.com archive address.");
-    archives.sort();
-    const collected: StatsGame[] = [];
-    let monthsFetched = 0;
-
-    for (let i = archives.length - 1; i >= 0 && monthsFetched < monthsCap; i -= 1) {
-        const archive = (await getChessComJson(archives[i], opts.signal)) as {
-            games?: ChessComArchiveGame[];
-        };
-        if (!Array.isArray(archive.games))
-            throw new Error("Chess.com returned an invalid game archive.");
-        monthsFetched += 1;
-        const monthGames = normalizeChessComArchiveGames(
-            archive.games,
-            opts.username,
-            opts.timeClass,
-            opts.ratedFilter,
-        );
-        const hasOlderGames = monthGames.some((game) => game.end < cutoff);
-        for (const game of monthGames) {
-            if (game.end >= cutoff) collected.push(game);
-        }
-        if (collected.length >= opts.maxGames || hasOlderGames) break;
+    const hasOlderGames = monthGames.some((game) => game.end < cutoff);
+    for (const game of monthGames) {
+      if (game.end >= cutoff) collected.push(game);
     }
+    if (collected.length >= opts.maxGames || hasOlderGames) break;
+  }
 
-    collected.sort((a, b) => a.end - b.end);
-    return collected.slice(-opts.maxGames);
+  collected.sort((a, b) => a.end - b.end);
+  return collected.slice(-opts.maxGames);
 }
 
 async function getChessComJson(url: string, signal?: AbortSignal): Promise<unknown> {
-    const timeout = AbortSignal.timeout(45000);
-    const response = await fetch(url, {
-        signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
-    });
-    if (!response.ok) {
-        throw new Error(`Chess.com request failed (${response.status}): ${url}`);
-    }
-    return response.json();
+  const timeout = AbortSignal.timeout(45000);
+  const response = await fetch(url, {
+    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+  });
+  if (!response.ok) {
+    throw new Error(`Chess.com request failed (${response.status}): ${url}`);
+  }
+  return response.json();
 }
 
 function normalizeChessComArchiveGames(
-    archiveGames: ChessComArchiveGame[] | undefined,
-    username: string,
-    timeClass: StatsTimeClass,
-    ratedFilter: StatsRatedFilter,
+  archiveGames: ChessComArchiveGame[] | undefined,
+  username: string,
+  timeClass: StatsTimeClass,
+  ratedFilter: StatsRatedFilter,
 ): StatsGame[] {
-    const wantedUser = username.toLowerCase();
-    const normalized: StatsGame[] = [];
+  const wantedUser = username.toLowerCase();
+  const normalized: StatsGame[] = [];
 
-    for (const game of Array.isArray(archiveGames) ? archiveGames : []) {
-        if (!game || game.rules !== "chess" || game.time_class !== timeClass) continue;
-        const isRated = game.rated === true;
-        if (ratedFilter === "rated" && !isRated) continue;
-        if (ratedFilter === "casual" && isRated) continue;
+  for (const game of Array.isArray(archiveGames) ? archiveGames : []) {
+    if (!game || game.rules !== "chess" || game.time_class !== timeClass) continue;
+    const isRated = game.rated === true;
+    if (ratedFilter === "rated" && !isRated) continue;
+    if (ratedFilter === "casual" && isRated) continue;
 
-        const whiteName =
-            game.white && typeof game.white.username === "string"
-                ? game.white.username.toLowerCase()
-                : "";
-        const blackName =
-            game.black && typeof game.black.username === "string"
-                ? game.black.username.toLowerCase()
-                : "";
-        const mine =
-            whiteName === wantedUser ? game.white : blackName === wantedUser ? game.black : null;
-        if (!mine || typeof mine.rating !== "number" || typeof game.end_time !== "number") continue;
+    const whiteName =
+      game.white && typeof game.white.username === "string"
+        ? game.white.username.toLowerCase()
+        : "";
+    const blackName =
+      game.black && typeof game.black.username === "string"
+        ? game.black.username.toLowerCase()
+        : "";
+    const mine =
+      whiteName === wantedUser ? game.white : blackName === wantedUser ? game.black : null;
+    if (!mine || typeof mine.rating !== "number" || typeof game.end_time !== "number") continue;
 
-        const opponent = mine === game.white ? game.black : game.white;
-        if (
-            mine.result !== "win" &&
-            !DRAW_RESULTS.has(mine.result ?? "") &&
-            opponent?.result !== "win"
-        )
-            continue;
-        const oppRating =
-            opponent && typeof opponent.rating === "number" && Number.isFinite(opponent.rating)
-                ? opponent.rating
-                : null;
-        const pgn = typeof game.pgn === "string" ? game.pgn : null;
-        const url = typeof game.url === "string" && game.url ? game.url : null;
+    const opponent = mine === game.white ? game.black : game.white;
+    if (mine.result !== "win" && !DRAW_RESULTS.has(mine.result ?? "") && opponent?.result !== "win")
+      continue;
+    const oppRating =
+      opponent && typeof opponent.rating === "number" && Number.isFinite(opponent.rating)
+        ? opponent.rating
+        : null;
+    const pgn = typeof game.pgn === "string" ? game.pgn : null;
+    const url = typeof game.url === "string" && game.url ? game.url : null;
 
-        normalized.push({
-            source: "chesscom",
-            id: url ?? `chesscom-${game.end_time}-${wantedUser}`,
-            url,
-            end: game.end_time,
-            start: parsePgnStart(pgn),
-            rating: mine.rating,
-            preGameRating:
-                Number(getPgnHeader(pgn, mine === game.white ? "WhiteElo" : "BlackElo")) || null,
-            result: normalizeChessComResult(mine.result),
-            termination: getChessComTermination(mine.result, opponent?.result),
-            opp: oppRating,
-            oppName: opponent && typeof opponent.username === "string" ? opponent.username : null,
-            rated: isRated,
-            color: mine === game.white ? "w" : "b",
-            timeClass: game.time_class as StatsTimeClass,
-            timeControl: parseChessComTimeControl(game.time_control),
-            eco: getPgnHeader(pgn, "ECO"),
-            openingName: getChessComOpeningName(pgn),
-            pgn,
-        });
-    }
+    normalized.push({
+      source: "chesscom",
+      id: url ?? `chesscom-${game.end_time}-${wantedUser}`,
+      url,
+      end: game.end_time,
+      start: parsePgnStart(pgn),
+      rating: mine.rating,
+      preGameRating: getPgnRating(pgn, mine === game.white ? "WhiteElo" : "BlackElo"),
+      result: normalizeChessComResult(mine.result),
+      termination: getChessComTermination(mine.result, opponent?.result),
+      opp: getPgnRating(pgn, mine === game.white ? "BlackElo" : "WhiteElo") ?? oppRating,
+      oppName: opponent && typeof opponent.username === "string" ? opponent.username : null,
+      rated: isRated,
+      color: mine === game.white ? "w" : "b",
+      timeClass: game.time_class as StatsTimeClass,
+      timeControl: parseChessComTimeControl(game.time_control),
+      eco: getPgnHeader(pgn, "ECO"),
+      openingName: getChessComOpeningName(pgn),
+      pgn,
+    });
+  }
 
-    normalized.sort((a, b) => a.end - b.end);
-    return normalized;
+  normalized.sort((a, b) => a.end - b.end);
+  return normalized;
 }
 
 function normalizeChessComResult(result: string | undefined): StatsGameResult {
-    if (result === "win") return "win";
-    if (result !== undefined && DRAW_RESULTS.has(result)) return "draw";
-    return "loss";
+  if (result === "win") return "win";
+  if (result !== undefined && DRAW_RESULTS.has(result)) return "draw";
+  return "loss";
 }
 
 // Termination from MY perspective: a win derives the "how" from the opponent's
 // result code (they got checkmated / resigned / timed out / abandoned).
 function getChessComTermination(
-    myResult: string | undefined,
-    oppResult: string | undefined,
+  myResult: string | undefined,
+  oppResult: string | undefined,
 ): StatsTermination {
-    if (myResult === "win") return getChessComEndCode(oppResult);
-    if (myResult !== undefined && DRAW_RESULTS.has(myResult)) return "draw";
-    return getChessComEndCode(myResult);
+  if (myResult === "win") return getChessComEndCode(oppResult);
+  if (myResult !== undefined && DRAW_RESULTS.has(myResult)) return "draw";
+  return getChessComEndCode(myResult);
 }
 
 function getChessComEndCode(code: string | undefined): StatsTermination {
-    if (code === "checkmated") return "checkmate";
-    if (code === "resigned") return "resign";
-    if (code === "timeout") return "timeout";
-    if (code === "abandoned") return "abandon";
-    if (code !== undefined && DRAW_RESULTS.has(code)) return "draw";
-    return "other";
+  if (code === "checkmated") return "checkmate";
+  if (code === "resigned") return "resign";
+  if (code === "timeout") return "timeout";
+  if (code === "abandoned") return "abandon";
+  if (code !== undefined && DRAW_RESULTS.has(code)) return "draw";
+  return "other";
 }
 
 // chess.com time_control strings: "180", "600+5", or "1/86400" for daily.
 function parseChessComTimeControl(value: string | undefined): { base: number; inc: number } | null {
-    if (typeof value !== "string" || !value) return null;
-    const daily = value.match(/^\d+\/(\d+)$/);
-    if (daily) return { base: Number(daily[1]), inc: 0 };
-    const live = value.match(/^(\d+)(?:\+(\d+))?$/);
-    if (!live) return null;
-    return { base: Number(live[1]), inc: live[2] ? Number(live[2]) : 0 };
+  if (typeof value !== "string" || !value) return null;
+  const daily = value.match(/^\d+\/(\d+)$/);
+  if (daily) return { base: Number(daily[1]), inc: 0 };
+  const live = value.match(/^(\d+)(?:\+(\d+))?$/);
+  if (!live) return null;
+  return { base: Number(live[1]), inc: live[2] ? Number(live[2]) : 0 };
 }
 
 function getChessComOpeningName(pgn: string | null): string | null {
-    const explicit = getPgnHeader(pgn, "Opening");
-    if (explicit) return explicit;
-    const ecoUrl = getPgnHeader(pgn, "ECOUrl");
-    if (!ecoUrl) return null;
-    const slug = ecoUrl.split("/").filter(Boolean).pop();
-    if (!slug) return null;
-    try {
-        // ECOUrl slugs append the concrete move list after the opening name
-        // ("Queens-Gambit-Declined...6.Bb2-Bd6-7.Bd3"); cut at the first move
-        // token so families group cleanly.
-        const decoded = decodeURIComponent(slug).replace(/-/g, " ");
-        const name = decoded.split(/\.{3}|\s\d+\.|^\d+\./)[0]?.trim() ?? "";
-        if (!name || /^undefined$/i.test(name)) return null;
-        return name;
-    } catch {
-        return null;
-    }
+  const explicit = getPgnHeader(pgn, "Opening");
+  if (explicit) return explicit;
+  const ecoUrl = getPgnHeader(pgn, "ECOUrl");
+  if (!ecoUrl) return null;
+  const slug = ecoUrl.split("/").filter(Boolean).pop();
+  if (!slug) return null;
+  try {
+    // ECOUrl slugs append the concrete move list after the opening name
+    // ("Queens-Gambit-Declined...6.Bb2-Bd6-7.Bd3"); cut at the first move
+    // token so families group cleanly.
+    const decoded = decodeURIComponent(slug).replace(/-/g, " ");
+    const name = decoded.split(/\.{3}|\s\d+\.|^\d+\./)[0]?.trim() ?? "";
+    if (!name || /^undefined$/i.test(name)) return null;
+    return name;
+  } catch {
+    return null;
+  }
 }
 
 // Port of parsePgnStart (smart-bracket.js:35-49).
 function parsePgnStart(pgn: string | null): number | null {
-    if (typeof pgn !== "string") return null;
-    const date = pgn.match(/\[UTCDate\s+"(\d{4})\.(\d{2})\.(\d{2})"\]/);
-    const time = pgn.match(/\[UTCTime\s+"(\d{2}):(\d{2}):(\d{2})"\]/);
-    if (!date || !time) return null;
-    const value = Date.UTC(
-        Number(date[1]),
-        Number(date[2]) - 1,
-        Number(date[3]),
-        Number(time[1]),
-        Number(time[2]),
-        Number(time[3]),
-    );
-    return Number.isNaN(value) ? null : value / 1000;
+  if (typeof pgn !== "string") return null;
+  const date = pgn.match(/\[UTCDate\s+"(\d{4})\.(\d{2})\.(\d{2})"\]/);
+  const time = pgn.match(/\[UTCTime\s+"(\d{2}):(\d{2}):(\d{2})"\]/);
+  if (!date || !time) return null;
+  const value = Date.UTC(
+    Number(date[1]),
+    Number(date[2]) - 1,
+    Number(date[3]),
+    Number(time[1]),
+    Number(time[2]),
+    Number(time[3]),
+  );
+  return Number.isNaN(value) ? null : value / 1000;
+}
+
+// A pre-game PGN Elo is stronger evidence than a provider rating with unclear timing.
+function getPgnRating(pgn: string | null, name: string): number | null {
+  const value = getPgnHeader(pgn, name);
+  if (!value || !/^\d+$/.test(value)) return null;
+  const rating = Number(value);
+  return Number.isFinite(rating) ? rating : null;
 }
 
 function getPgnHeader(pgn: string | null, name: string): string | null {
-    if (typeof pgn !== "string") return null;
-    const match = pgn.match(new RegExp(`^\\[${name}\\s+"([^"]*)"\\]`, "m"));
-    return match?.[1] ?? null;
+  if (typeof pgn !== "string") return null;
+  const match = pgn.match(new RegExp(`^\\[${name}\\s+"([^"]*)"\\]`, "m"));
+  return match?.[1] ?? null;
 }
 
 // -- Lichess -----------------------------------------------------------------
 
 type LichessGamePlayer = {
-    user?: { name?: string };
-    rating?: number;
-    ratingDiff?: number;
+  user?: { name?: string };
+  rating?: number;
+  ratingDiff?: number;
+  provisional?: boolean;
 };
 type LichessNdjsonGame = {
-    id?: string;
-    rated?: boolean;
-    variant?: string;
-    speed?: string;
-    createdAt?: number;
-    lastMoveAt?: number;
-    status?: string;
-    winner?: "white" | "black";
-    players?: { white?: LichessGamePlayer; black?: LichessGamePlayer };
-    opening?: { eco?: string; name?: string };
-    clock?: { initial?: number; increment?: number };
-    pgn?: string;
+  id?: string;
+  rated?: boolean;
+  variant?: string;
+  speed?: string;
+  createdAt?: number;
+  lastMoveAt?: number;
+  status?: string;
+  winner?: "white" | "black";
+  players?: { white?: LichessGamePlayer; black?: LichessGamePlayer };
+  opening?: { eco?: string; name?: string };
+  clock?: { initial?: number; increment?: number };
+  pgn?: string;
 };
 
 async function fetchLichessStatsGames(opts: {
-    username: string;
-    timeClass: StatsTimeClass;
-    ratedFilter: StatsRatedFilter;
-    maxGames: number;
-    maxDays: number;
-    lichessToken?: string | null;
-    signal?: AbortSignal;
+  username: string;
+  timeClass: StatsTimeClass;
+  ratedFilter: StatsRatedFilter;
+  maxGames: number;
+  maxDays: number;
+  lichessToken?: string | null;
+  signal?: AbortSignal;
 }): Promise<StatsGame[]> {
-    const nowSec = Math.floor(Date.now() / 1000);
-    const cutoff = nowSec - opts.maxDays * 86400;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const cutoff = nowSec - opts.maxDays * 86400;
 
-    const url = new URL(`${LICHESS_API_URL}/games/user/${encodeURIComponent(opts.username)}`);
-    url.searchParams.set("max", String(opts.maxGames));
-    url.searchParams.set(
-        "perfType",
-        opts.timeClass === "daily" ? "correspondence" : opts.timeClass,
-    );
-    url.searchParams.set("sort", "dateDesc");
-    url.searchParams.set("since", String(cutoff * 1000));
-    url.searchParams.set("pgnInJson", "true");
-    url.searchParams.set("clocks", "true");
-    url.searchParams.set("evals", "true");
-    url.searchParams.set("opening", "true");
-    if (opts.ratedFilter === "rated") url.searchParams.set("rated", "true");
-    if (opts.ratedFilter === "casual") url.searchParams.set("rated", "false");
+  const url = new URL(`${LICHESS_API_URL}/games/user/${encodeURIComponent(opts.username)}`);
+  url.searchParams.set("max", String(opts.maxGames));
+  url.searchParams.set("perfType", opts.timeClass === "daily" ? "correspondence" : opts.timeClass);
+  url.searchParams.set("sort", "dateDesc");
+  url.searchParams.set("since", String(Math.floor(Math.max(0, cutoff) * 1000)));
+  url.searchParams.set("pgnInJson", "true");
+  url.searchParams.set("clocks", "true");
+  url.searchParams.set("evals", "true");
+  url.searchParams.set("opening", "true");
+  if (opts.ratedFilter === "rated") url.searchParams.set("rated", "true");
+  if (opts.ratedFilter === "casual") url.searchParams.set("rated", "false");
 
-    const headers: Record<string, string> = { Accept: "application/x-ndjson" };
-    if (opts.lichessToken) headers.Authorization = `Bearer ${opts.lichessToken}`;
+  const headers: Record<string, string> = { Accept: "application/x-ndjson" };
+  if (opts.lichessToken) headers.Authorization = `Bearer ${opts.lichessToken}`;
 
-    const timeout = AbortSignal.timeout(45000);
-    const response = await fetch(url.toString(), {
-        headers,
-        signal: opts.signal ? AbortSignal.any([opts.signal, timeout]) : timeout,
-    });
-    if (!response.ok) {
-        throw new Error(`Lichess request failed (${response.status}) for ${opts.username}.`);
+  const timeout = AbortSignal.timeout(45000);
+  const response = await fetch(url.toString(), {
+    headers,
+    signal: opts.signal ? AbortSignal.any([opts.signal, timeout]) : timeout,
+  });
+  if (!response.ok) {
+    throw new Error(`Lichess request failed (${response.status}) for ${opts.username}.`);
+  }
+
+  const games: StatsGame[] = [];
+  for (const line of (await response.text()).split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    let raw: LichessNdjsonGame;
+    try {
+      raw = JSON.parse(trimmed) as LichessNdjsonGame;
+    } catch {
+      throw new Error("Lichess returned an incomplete game export. Refresh to try again.");
     }
+    const game = normalizeLichessGame(raw, opts.username, opts.timeClass);
+    if (!game) continue;
+    // "casual" is filtered client-side; "rated" was already requested server-side.
+    if (opts.ratedFilter === "casual" && game.rated) continue;
+    if (opts.ratedFilter === "rated" && !game.rated) continue;
+    if (game.end < cutoff) continue;
+    games.push(game);
+  }
 
-    const games: StatsGame[] = [];
-    for (const line of (await response.text()).split(/\r?\n/)) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        let raw: LichessNdjsonGame;
-        try {
-            raw = JSON.parse(trimmed) as LichessNdjsonGame;
-        } catch {
-            throw new Error("Lichess returned an incomplete game export. Refresh to try again.");
-        }
-        const game = normalizeLichessGame(raw, opts.username, opts.timeClass);
-        if (!game) continue;
-        // "casual" is filtered client-side; "rated" was already requested server-side.
-        if (opts.ratedFilter === "casual" && game.rated) continue;
-        if (opts.ratedFilter === "rated" && !game.rated) continue;
-        if (game.end < cutoff) continue;
-        games.push(game);
-    }
-
-    games.sort((a, b) => a.end - b.end);
-    return games.slice(-opts.maxGames);
+  games.sort((a, b) => a.end - b.end);
+  return games.slice(-opts.maxGames);
 }
 
 function normalizeLichessGame(
-    game: LichessNdjsonGame,
-    username: string,
-    requestedTimeClass: StatsTimeClass,
+  game: LichessNdjsonGame,
+  username: string,
+  requestedTimeClass: StatsTimeClass,
 ): StatsGame | null {
-    if (!game || typeof game.id !== "string" || !game.id) return null;
-    if (game.variant !== undefined && game.variant !== "standard") return null;
+  if (!game || typeof game.id !== "string" || !game.id) return null;
+  if (game.variant !== undefined && game.variant !== "standard") return null;
 
-    const wantedUser = username.toLowerCase();
-    const white = game.players?.white;
-    const black = game.players?.black;
-    const whiteName = typeof white?.user?.name === "string" ? white.user.name.toLowerCase() : "";
-    const blackName = typeof black?.user?.name === "string" ? black.user.name.toLowerCase() : "";
-    const color = whiteName === wantedUser ? "w" : blackName === wantedUser ? "b" : null;
-    if (!color) return null;
+  const wantedUser = username.toLowerCase();
+  const white = game.players?.white;
+  const black = game.players?.black;
+  const whiteName = typeof white?.user?.name === "string" ? white.user.name.toLowerCase() : "";
+  const blackName = typeof black?.user?.name === "string" ? black.user.name.toLowerCase() : "";
+  const color = whiteName === wantedUser ? "w" : blackName === wantedUser ? "b" : null;
+  if (!color) return null;
 
-    const mine = color === "w" ? white : black;
-    const opponent = color === "w" ? black : white;
-    if (!mine || typeof mine.rating !== "number" || !Number.isFinite(mine.rating)) return null;
-    const endMs = typeof game.lastMoveAt === "number" ? game.lastMoveAt : game.createdAt;
-    if (typeof endMs !== "number" || !Number.isFinite(endMs)) return null;
+  const mine = color === "w" ? white : black;
+  const opponent = color === "w" ? black : white;
+  if (!mine || typeof mine.rating !== "number" || !Number.isFinite(mine.rating)) return null;
+  const endMs = typeof game.lastMoveAt === "number" ? game.lastMoveAt : game.createdAt;
+  if (typeof endMs !== "number" || !Number.isFinite(endMs)) return null;
 
-    if (
-        !game.status ||
-        ![
-            "mate",
-            "resign",
-            "stalemate",
-            "timeout",
-            "draw",
-            "outoftime",
-            "cheat",
-            "variantEnd",
-        ].includes(game.status)
-    )
-        return null;
-    const result: StatsGameResult =
-        game.winner === undefined
-            ? "draw"
-            : game.winner === (color === "w" ? "white" : "black")
-              ? "win"
-              : "loss";
+  if (
+    !game.status ||
+    ![
+      "mate",
+      "resign",
+      "stalemate",
+      "timeout",
+      "draw",
+      "outoftime",
+      "cheat",
+      "variantEnd",
+    ].includes(game.status)
+  )
+    return null;
+  const result: StatsGameResult =
+    game.winner === undefined
+      ? "draw"
+      : game.winner === (color === "w" ? "white" : "black")
+        ? "win"
+        : "loss";
 
-    return {
-        source: "lichess",
-        id: game.id,
-        url: `https://lichess.org/${game.id}`,
-        end: Math.floor(endMs / 1000),
-        start: typeof game.createdAt === "number" ? Math.floor(game.createdAt / 1000) : null,
-        rating: mine.rating + (typeof mine.ratingDiff === "number" ? mine.ratingDiff : 0),
-        preGameRating: mine.rating,
-        result,
-        termination: getLichessTermination(game.status),
-        opp:
-            opponent && typeof opponent.rating === "number" && Number.isFinite(opponent.rating)
-                ? opponent.rating
-                : null,
-        oppName: opponent && typeof opponent.user?.name === "string" ? opponent.user.name : null,
-        rated: game.rated === true,
-        color,
-        timeClass: getLichessTimeClass(game.speed, requestedTimeClass),
-        timeControl:
-            typeof game.clock?.initial === "number"
-                ? { base: game.clock.initial, inc: game.clock.increment ?? 0 }
-                : null,
-        eco: typeof game.opening?.eco === "string" ? game.opening.eco : null,
-        openingName: typeof game.opening?.name === "string" ? game.opening.name : null,
-        pgn: typeof game.pgn === "string" ? game.pgn : null,
-    };
+  return {
+    source: "lichess",
+    id: game.id,
+    url: `https://lichess.org/${game.id}`,
+    end: Math.floor(endMs / 1000),
+    start: typeof game.createdAt === "number" ? Math.floor(game.createdAt / 1000) : null,
+    rating: mine.rating + (typeof mine.ratingDiff === "number" ? mine.ratingDiff : 0),
+    preGameRating: mine.rating,
+    result,
+    termination: getLichessTermination(game.status),
+    opp:
+      opponent && typeof opponent.rating === "number" && Number.isFinite(opponent.rating)
+        ? opponent.rating
+        : null,
+    opponentSd: opponent?.provisional === true ? 150 : undefined,
+    oppName: opponent && typeof opponent.user?.name === "string" ? opponent.user.name : null,
+    rated: game.rated === true,
+    color,
+    timeClass: getLichessTimeClass(game.speed, requestedTimeClass),
+    timeControl:
+      typeof game.clock?.initial === "number"
+        ? { base: game.clock.initial, inc: game.clock.increment ?? 0 }
+        : null,
+    eco: typeof game.opening?.eco === "string" ? game.opening.eco : null,
+    openingName: typeof game.opening?.name === "string" ? game.opening.name : null,
+    pgn: typeof game.pgn === "string" ? game.pgn : null,
+  };
 }
 
 function getLichessTermination(status: string | undefined): StatsTermination {
-    if (status === "mate") return "checkmate";
-    if (status === "resign") return "resign";
-    if (status === "outoftime" || status === "timeout") return "timeout";
-    if (status === "draw" || status === "stalemate") return "draw";
-    if (status === "aborted") return "abandon";
-    return "other";
+  if (status === "mate") return "checkmate";
+  if (status === "resign") return "resign";
+  if (status === "outoftime" || status === "timeout") return "timeout";
+  if (status === "draw" || status === "stalemate") return "draw";
+  if (status === "aborted") return "abandon";
+  return "other";
 }
 
 function getLichessTimeClass(
-    speed: string | undefined,
-    requestedTimeClass: StatsTimeClass,
+  speed: string | undefined,
+  requestedTimeClass: StatsTimeClass,
 ): StatsTimeClass {
-    if (speed === "ultraBullet" || speed === "bullet") return "bullet";
-    if (speed === "blitz") return "blitz";
-    if (speed === "rapid") return "rapid";
-    if (speed === "classical") return "classical";
-    if (speed === "correspondence") return "daily";
-    return requestedTimeClass;
+  if (speed === "ultraBullet" || speed === "bullet") return "bullet";
+  if (speed === "blitz") return "blitz";
+  if (speed === "rapid") return "rapid";
+  if (speed === "classical") return "classical";
+  if (speed === "correspondence") return "daily";
+  return requestedTimeClass;
 }

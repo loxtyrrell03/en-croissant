@@ -1,3 +1,4 @@
+import { updateTournamentPrep } from "./tournamentPrepUpdates";
 import { importOpponent } from "./opponentImport";
 import { registerJob } from "@/features/tournaments/jobs";
 import { pushToast } from "@/features/tournaments/ui";
@@ -16,6 +17,8 @@ import {
   type TournamentOpponentDatabase,
   type TournamentPrepRecord,
 } from "./tournamentPrepStore";
+
+import { reconcileManualResults } from "./manualTournamentResults";
 
 export const TOURNAMENT_PREP_JOB_ID = "tournament-prep.auto-update";
 export const TOURNAMENT_PREP_JOB_INTERVAL_MS = 15 * 60 * 1000;
@@ -88,14 +91,10 @@ function uniqueCollectionName(base: string, collections: CollectionRow[]): strin
 }
 
 async function persistRecord(record: TournamentPrepRecord): Promise<boolean> {
-  const records = await loadTournamentPreps();
-  const latest = records[record.id];
-  if (!latest) return false;
-  await saveTournamentPreps({
-    ...records,
-    [record.id]: { ...record, autoUpdate: latest.autoUpdate },
-  });
-  return true;
+  return await updateTournamentPrep(record.id, latest => ({
+    ...record, autoUpdate: latest.autoUpdate,
+    manualResults: reconcileManualResults(record.snapshot, latest.manualResults),
+  })) !== null;
 }
 
 async function syncOpponentDatabase(
@@ -162,17 +161,19 @@ async function performTournamentSync(
     message: "Checking the tournament roster and latest round",
   });
   const snapshot = await desktopApi.fetchTournamentSnapshot(record.url);
-  records = await loadTournamentPreps();
-  if (!records[tournamentId] || controller.cancelled) {
+  const refreshed = await updateTournamentPrep(tournamentId, current => {
+    if (controller.cancelled) return null;
+    const merged = mergeTournamentRoster(current, snapshot);
+    result.newOpponents = merged.newOpponents;
+    return merged.record;
+  });
+  if (!refreshed) {
     result.stopped = true;
     return result;
   }
   // Merge into the latest saved record after the request, preserving imports,
   // personal-entry choices and reviewed markers changed while it was loading.
-  const merged = mergeTournamentRoster(records[tournamentId], snapshot);
-  record = merged.record;
-  result.newOpponents = merged.newOpponents;
-  await saveTournamentPreps({ ...records, [tournamentId]: record });
+  record = refreshed;
 
   if (mode === "roster") {
     emit({

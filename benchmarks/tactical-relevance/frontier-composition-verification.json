@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-02",
+  "classifierVersion": "site-55.adapter-168",
+  "livePipeline": 175,
+  "baselineCommit": "662b8e574f8e1bd25485d9cf3b220fb4154367e0",
+  "scope": "Targeted development judgments and regression stability in En Croissant. Not general accuracy, a held-out false-positive rate, all-motif gold coverage or installed runtime evidence.",
+  "pairedObservableContracts": {
+    "total": 64, "beforePassed": 26, "afterPassed": 64,
+    "checkingPreparation": { "beforePassed": 8, "total": 18, "afterPassed": 18 },
+    "castlingAndPromotionXray": { "beforePassed": 12, "total": 30, "afterPassed": 30 },
+    "retainedCheckingFork": { "beforePassed": 6, "total": 16, "afterPassed": 16 },
+    "denominator": "Related positive/contrary, colour, line-length and castling-encoding contracts, not 64 independent positions. Missing new helper exports were not baseline failures.",
+    "baselineCoreSha256LF": "9f9ba822b995f13c2f6318a0e3eecc7408e305b502b15ea74d324390a9ca6f60",
+    "isolatedRetainedForkCoreSha256LF": "5e2763c0d003bcd787b8105254cc1c5597f23234f8bb139c63e2af0262c0812d",
+    "additionalProofContracts": 24,
+    "finalNewSourceTestsPassed": 88
+  },
+  "publicRegression": {
+    "selection": "rg -l tacticalMotifs src/utils/tests --glob *.test.ts --glob *.test.tsx",
+    "flags": "Two workers, no snapshot updates/cache, only public TACTICAL_LESSON_REPORT enabled; no private, fresh-engine or compiled-worker opt-ins.",
+    "files": 224, "activeFiles": 203, "fullyConditionalFiles": 21,
+    "total": 3557, "passed": 3192, "expectedFailure": 1, "conditionalSkips": 364, "unexpectedFailures": 0,
+    "vitestPassedIncludingExpectedFailure": 3193,
+    "expectedFailureCase": "known coverage gap: retain promotion through a queen-ending checking race",
+    "started": "2026-10-02T16:54:12.362Z",
+    "finished": "2026-10-02T16:57:30.496Z",
+    "sourceHashesUnchanged": true
+  },
+  "primaryPriority": {
+    "matched": 32, "total": 32, "secondaryLessons": 5,
+    "fullReportUnchangedFromAdapter167": true,
+    "scope": "Frozen reused development judgments and engine lines, not fresh engine searches or holdout validation. Other motifs have no denominator in this particular primary set.",
+    "perTheme": {
+      "mateIn3": { "total": 3, "matched": 3 },
+      "promotionCombination": { "total": 1, "matched": 1 },
+      "discoveredAttack": { "total": 3, "matched": 3 },
+      "pin": { "total": 2, "matched": 2 },
+      "doubleCheck": { "total": 1, "matched": 1 },
+      "skewer": { "total": 1, "matched": 1 },
+      "capturingDefender": { "total": 1, "matched": 1 },
+      "tacticalPreparation": { "total": 1, "matched": 1 },
+      "intermezzo": { "total": 4, "matched": 4 },
+      "fork": { "total": 3, "matched": 3 },
+      "mateIn7": { "total": 1, "matched": 1 },
+      "forkPreparation": { "total": 2, "matched": 2 },
+      "doubleThreat": { "total": 2, "matched": 2 },
+      "forcingAttack": { "total": 2, "matched": 2 },
+      "hangingPiece": { "total": 2, "matched": 2 },
+      "clearance": { "total": 2, "matched": 2 },
+      "backRankMate": { "total": 1, "matched": 1 }
+    }
+  },
+  "stagedCore": {
+    "blob": "c1a20b3472bb2285f408f51fa5dc19792d14a728",
+    "sha256LF": "cac97d26f3d8dde64bdcc564fa732405092e5cae3889a723dba77786b154eef3",
+    "passed": 335, "skipped": 2, "failed": 0, "files": 12,
+    "loadedExactCore": true, "loadCount": 1, "indexAndWatchedSourcesUnchanged": true,
+    "pendingCheckingRayExcluded": true,
+    "scope": "Exact staged core with frozen current source consumers and tests; not a fully indexed native build. Optional report checks skipped."
+  },
+  "hashesLF": {
+    "workingCore": "fcd90ae864970dc93a1cfa4a88f63657cbfbdbd8ffb1fb19da35560d83dfe66e",
+    "adapter": "728b5145960e6e5ff7e01856a17933bc3eee5cd562bb98bbd58fdccde6d69fd9",
+    "livePipeline": "02b2e4c6ee92bcd28c3f68821ed215dde0e82cc88ddc9b1381200cc987b4a806",
+    "generatedReviewWorker": "386000ed690e74276af1ffa7a59a5313202ce6839cf787409428b3546d18cbbe"
+  },
+  "types": { "command": "node node_modules/@typescript/native-preview/bin/tsgo.js --noEmit", "exitCode": 0 },
+  "lint": { "files": 9, "warnings": 0, "errors": 0 },
+  "build": {
+    "command": "npm run build-vite", "exitCode": 0,
+    "warnings": ["existing large source/chunks", "dependency BigInt target advisory", "plugin timing advisory"],
+    "scope": "Working-source frontend and shared review worker; not installed native or phone runtime."
+  },
+  "generatedService": {
+    "files": ["scripts/tests/shared-review-service.test.mjs", "scripts/tests/retained-fork-review-service.test.mjs", "scripts/tests/frontier-motif-review-service.test.mjs"],
+    "passed": 49, "failed": 0, "skipped": 1,
+    "skip": "Opt-in real background engine test",
+    "scope": "Actual generated module, isolated temporary synthetic stores, card classification, export and reload. Undefined optional fields are compared using the JSON persistence representation; no-payoff-value assertions remain explicit."
+  },
+  "extraAlternateCaptureProbe": {
+    "line": "O-O-O+ Rd7 Rxd7+", "colours": 2,
+    "result": "Only the root 500 cp Castling Double Attack; no extra Hanging Piece material badge. Read-only probe, no additional production change."
+  },
+  "runtime": { "installed": false, "phonePublished": false, "websiteChanged": false, "ownerStoreRescan": false, "physicalDeviceVerified": false },
+  "remaining": ["Kn14A defensive counterthreat and subsequent king escapes", "DVs4F zugzwang adjudication", "long queen-ending promotion checks", "compound retained-fork correspondence", "broader independent primary and rare-motif judgments"]
+}

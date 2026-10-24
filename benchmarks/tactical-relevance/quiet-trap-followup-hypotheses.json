@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "baseline": "9fad2cd685d88d10e962bd80384eb9aaf117072e",
+  "scope": "Independent finite causal adjudication of two previously retained public development nominations. Source labels and previous empty outputs are not truth. No new sampling or holdout claim.",
+  "selection": "quiet-trap-adversarial-selection.json",
+  "selectionSha256": "839df3c00a2282f0a9dbff8439aeedbb535a0b1f71be9dfbf3852754ad4fadc9",
+  "cases": [
+    {
+      "id": "lichess:gMkbY",
+      "root": "g7g6",
+      "hypothesis": "g6 attacks Qh5. Confinement may require connected checking-fork responses rather than only direct queen capture: Qh4 appears to allow Nxf3+, attacking Kg1 and Qh4. The source Bxg5 hxg5 Qxh8 Qxh8 gives up both Ng5 and Rh8 before collecting the queen and bishop, so any material bound must subtract both losses.",
+      "plannedChecks": ["Enumerate every legal White defence, checking moves and queen flights.", "Verify source debt and the Qh4 checking-fork branch using independent legal rules.", "Use one fixed bounded shared-kernel query and preserve unknown/exhausted branches.", "Test a removed fork partner and safe queen escape control without treating altered boards as legal game continuations."]
+    },
+    {
+      "id": "lichess:9YfbQ",
+      "root": "d8d2",
+      "hypothesis": "Rd2 does not check because Pe2 blocks the rook ray to Kf2. The source continuation trades the queen for Rc1, then returns Rd2 to d1 with a promotion-related threat. That displayed cooperation is not proof that every legal root reply loses material or permits promotion.",
+      "plannedChecks": ["Enumerate all actual root replies, captures and counterchecks.", "Account queen-for-rook debt at each displayed ply and locate the connected promotion/skewer mechanism.", "Check direct queen trade before Rd2 and a removed e2-pawn control for causal dependence.", "Report unsupported branches or horizons explicitly instead of admitting a clearance label from geometry."]
+    }
+  ],
+  "budget": "Existing bounded kernel queries, at most16384 nodes each, no production budget increase. Independent move enumeration is finite; no full tablebase, corpus, network or owner data. Root/full and colour reflections retain the same hypotheses."
+}

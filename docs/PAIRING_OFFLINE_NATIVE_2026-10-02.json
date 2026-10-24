@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "scope": "offline native source preparation and synthetic CLI proof; no primary writes, deployment, full app builds, real models or new source acquisition",
+  "externalEvidenceRoot": "C:\\Users\\Lox\\Documents\\Novelty\\PairingResearch\\2026-10-02\\native-offline-assembly-preparation-v2",
+  "sourceFiles": [
+    {
+      "path": "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess-tournament-integration\\src-tauri\\src\\tournament.rs",
+      "sha256": "228d3e01352b62940a8f97e67bca1dfc274a49a2be6c91764813acb91256a387"
+    },
+    {
+      "path": "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess-tournament-integration\\src-tauri\\src\\bin\\tournament_snapshot_cli.rs",
+      "sha256": "74511f5de00427199fe250979b6fe8ce5c349c4f80da8a0da8c6b12bc903924b"
+    },
+    {
+      "path": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927\\src-tauri\\tournament-core\\src\\tournament.rs",
+      "sha256": "6ee7bf4003e1dcf77bf19c9998ba841afe43cad34ba0919ed05c5ec24bbb9afa"
+    },
+    {
+      "path": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927\\src-tauri\\tournament-core\\src\\bin\\tournament_snapshot_cli.rs",
+      "sha256": "408ab80d981b0463ddd9cec8903a4e999824359979ee253aadad2ba108241654"
+    },
+    {
+      "path": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927\\src-tauri\\tournament-core\\src\\tournament\\discovery.rs",
+      "sha256": "fb6b75ede89faf84b464870fd5dc48ae624f712f5c55477f4b9186ec2b071329"
+    },
+    {
+      "path": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927\\src-tauri\\tournament-core\\src\\tournament\\media.rs",
+      "sha256": "9cbcf544940e78cd5fa76aeca691604ee1b337a91bc65fc58680e11d8671a33a"
+    },
+    {
+      "path": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927\\src-tauri\\tournament-core\\src\\tournament\\schedule.rs",
+      "sha256": "0a51fa0eaf76a551f66c392eb47a1c4e8dca0ead30b0cf6e357a4cff0c1e8f83"
+    }
+  ],
+  "boundedNoveltyCLI": {
+    "path": "C:\\Users\\Lox\\Documents\\Novelty\\PairingResearch\\2026-10-02\\native-offline-assembly-preparation-v2\\novelty-offline-snapshot-bounded.exe",
+    "sha256": "c260ada41c4b78f5ed7e2f7f4d5e0ae4bc5cc91a861816ef37c45186025b5c67",
+    "bytes": 11775488
+  },
+  "inputOutputLimitBytes": 268435456,
+  "receipts": {
+    "novelty-final-terminal.json": "d34e3ae88adaf30eb5c56e794075f92046a73c03dbf0efacc9e483ce184303d2",
+    "en-final-terminal.json": "aef7a788f234338c6704ebd8e37ddcc9390159e85d89b4e243f63c41a0088bc8",
+    "novelty-output-bound-final-terminal.json": "37a0faf4ad111cc693a4f683ec6839af1541d08cbef28540b5813678b6425ade",
+    "en-output-bound-final-terminal.json": "e1a3600f039410c42aefa29048776aff3c77ae8122bba31d5c55e9de31ed6579",
+    "primary-final-terminal.json": "fa9ce456976a0bd7df3541208348056192598bff1d7696c38537b34c3b5b3537"
+  },
+  "rustClosure": {
+    "path": "rust-closure.json",
+    "sha256": "e32654b2df7c0dd7c5ad86b53a84b410d149cd35a3c77bc8aa964b49797f9df4",
+    "registryClosureSHA256": "bf409817bae04a6ab9eb2cba9a0e05567efdcb5c9347ac68c20593914d99385d",
+    "packageCount": 156,
+    "fileCount": 8579,
+    "metadataSHA256": "f0ca534b29a18a5814ecc08c87dc88d54c907270421be5c9dc7d1d235a9a92ba",
+    "rustcVersion": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-pc-windows-msvc\nrelease: 1.97.1\nLLVM version: 22.1.6",
+    "cargoVersion": "cargo 1.97.1 (c980f4866 2026-06-30)"
+  },
+  "harnessClosure": {
+    "cli-harness\\build.rs": "a141a35b22d48afee1abe1d0fd8d1e482dbd00a5ff9e5988893ee3988b8c4f75",
+    "cli-harness\\Cargo.lock": "3145cf8bf16bcb38bc7fd7d27da8fd2bc8795f75644e4c72a53b26c2eaee9489",
+    "cli-harness\\Cargo.toml": "729a0499161f13810d3560ebf6e81db06890b73dcd664e9000a20217355aafe1",
+    "cli-harness\\src\\main.rs": "c89cd60130310dfc66d9895897839048f52f1af3902e03d5cac2335dc35e9762",
+    "primary-cli-harness\\build.rs": "8a7cff1ef24f229b3167a1d1134333b8e3c9a53b0ab4bd514af59597efd8d35f",
+    "primary-cli-harness\\Cargo.lock": "3145cf8bf16bcb38bc7fd7d27da8fd2bc8795f75644e4c72a53b26c2eaee9489",
+    "primary-cli-harness\\Cargo.toml": "729a0499161f13810d3560ebf6e81db06890b73dcd664e9000a20217355aafe1",
+    "primary-cli-harness\\src\\main.rs": "c89cd60130310dfc66d9895897839048f52f1af3902e03d5cac2335dc35e9762"
+  },
+  "verificationScripts": {
+    "verify_cli.py": "e28c3ea7b2f3ff6b29bf02117013cfaf899a8ab8a418b768b1b1a7ec49c31b27",
+    "verify_cli_output_bound.py": "da1661ccc9d9f716ac0304004a858e5a8c9bdc4fb04f8d34f86c86868643ac0f"
+  },
+  "fixtureHashes": {
+    "invented-input.json": "92a4797fdc7c0d7c7629dc8e84096b44a248ddd9584a7318fd5a9448bf19719e",
+    "malformed-input.json": "62b8125a6f6d924ec53345b5fcd58ca3ed3f5e7d51e2e146e5f1346508acce69"
+  },
+  "preservedBinaries": {
+    "collector": "ada05a59096d5067d4e8ba3eada7f0bae2b8c89b9cae36ebcb013d212ded3a00",
+    "liveProbe": "4b0e8ce9eadfadc0d15d1c45e3b68e27eb16a6a1374cb981c71500dd74edf04c"
+  },
+  "primaryCandidates": {
+    "novelty": {
+      "source": "C:\\Users\\Lox\\Documents\\Novelty\\PairingResearch\\2026-10-02\\native-offline-assembly-preparation-v2\\proposed-primary-native.rs",
+      "sourceSHA256": "bddf9ab725f2388a73d80ad56a3f36706cbec91c6f45dd9aca7bda3ff7133826",
+      "cli": "C:\\Users\\Lox\\Documents\\Novelty\\PairingResearch\\2026-10-02\\native-offline-assembly-preparation-v2\\proposed-primary-cli-bounded.rs",
+      "cliSHA256": "b7a88a7d89b520b5b6f425bc6a2b1f7d2a151fbe331a4bd15f1134ce42cad2fc",
+      "requiredSourcePreimage": "fd323db368b66868246bd0e8443d53c4cf734547c69798cadbfa34e77ab4e5cf",
+      "requiredCLIPreimage": "04d2f3d888fbc41a39fdedc7320110325eb13cfc0e2f6caa422f9b53146cc61b",
+      "verified": "all50native/CLItests and offline invocation; metadata/discovery mixedoffline args reject before network"
+    },
+    "en": {
+      "source": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927\\src-tauri\\tournament-core\\src\\tournament.rs",
+      "sourceSHA256": "6ee7bf4003e1dcf77bf19c9998ba841afe43cad34ba0919ed05c5ec24bbb9afa",
+      "cli": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927\\src-tauri\\tournament-core\\src\\bin\\tournament_snapshot_cli.rs",
+      "cliSHA256": "408ab80d981b0463ddd9cec8903a4e999824359979ee253aadad2ba108241654",
+      "requiredSourcePreimage": "2a525c5f2043f65a632ff866e46d68a353f1f9bed47ba6d1398cf6293a248bcb",
+      "requiredCLIAbsent": true,
+      "verified": "feature46coretests+initial3CLI, final4boundedCLItests; no new Enprimary runtime or dependency build"
+    }
+  },
+  "proofBoundary": "consumedPageIds includes inspected unavailable records; not parsedHTML/transport/decoder/body identity proof. Complete is constructor completion only. All proof flags false. Source hierarchy preserved; caller admission required."
+}

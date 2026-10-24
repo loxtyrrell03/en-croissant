@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "scope": "Fixed public/synthetic legal-history contrasts, not prevalence or population accuracy",
+  "baseline": { "commit": "52ea8975d6594d2d5e24a3df6a797571d1e7305c", "adapter": 170 },
+  "rules": {
+    "source": "https://handbook.fide.com/chapter/E012023",
+    "articles": ["9.2.1", "9.2.2", "9.2.3", "9.6.1"],
+    "contract": "The player to move may claim current or announced threefold. Fivefold ends the game automatically. Identity includes castling rights and legally available en passant, not clocks. A completed checkmate precedes a later optional claim."
+  },
+  "decisivePair": {
+    "origin": "r2q1r2/p4p1k/1p2pP1n/2p4R/3p1P2/P2P1N1P/1PP4K/6R1 w - - 0 30",
+    "repeated": ["g1g7", "h7h8", "g7g1", "h8h7", "g1g7", "h7h8", "g7g1", "h8h7"],
+    "clean": ["g1g2", "h7h8", "g2g3", "h8h7", "g3g4", "h7h8", "g4g1", "h8h7"],
+    "identicalFinalFen": "r2q1r2/p4p1k/1p2pP1n/2p4R/3p1P2/P2P1N1P/1PP4K/6R1 w - - 8 34",
+    "candidate": ["g1g7", "h7h8", "h5h6"],
+    "independentCheck": "python-chess 1.11.2 legal replay proves Black's current threefold claim after Rg7+ only in repeated history; the clean prefix gives no claim",
+    "beforeObservedOriginalColour": {
+      "repeated": { "positionPrimary": "mateIn2", "livePrimary": "mateIn2", "value": 10000, "nature": "tactical", "confidence": "high" },
+      "clean": { "positionPrimary": "mateIn2", "livePrimary": "mateIn2", "value": 10000, "nature": "tactical", "confidence": "high" },
+      "fourCyclesAutomaticFivefoldAtRoot": { "positionPrimary": "mateIn2", "livePrimary": "mateIn2", "value": 10000, "nature": "tactical", "confidence": "high" }
+    },
+    "afterVerifiedBothColours": {
+      "repeated": { "positionPrimary": null, "livePrimary": null, "missedExplanation": null, "nature": "unknown" },
+      "clean": { "positionPrimary": "mateIn2", "livePrimary": "mateIn2", "nature": "tactical" },
+      "fourCyclesAutomaticFivefoldAtRoot": { "positionPrimary": null, "livePrimary": null, "allowedMotifs": [], "missedMotifs": [] }
+    },
+    "scoreAuthority": "None. The defect and fix require no engine evaluations. Synthetic reviewed move and score nominations are not independent judgments of move quality."
+  },
+  "implementation": {
+    "historyValidation": "Separate bounded exact reached-history replay. Reduced-material origins may positively witness occurrences; the full-material capture-debt validator is unchanged. Canonical complete FEN binds the target. History cache is bounded to eight entries.",
+    "rootBoundary": "Test the actual initiating move and the defender's legal current/announced claim. An attacker's optional claim alone does not reject a winning move. A fifth occurrence anywhere in the exactly replayed supplied prefix remains terminal even when later geometric moves are appended.",
+    "filterPolicy": "A known opponent draw removes forced-win continuations. Independently proved perpetualCheck, drawingCapture, Drawing Zugzwang and non-forcing observations remain. Defensive Deflection is not preserved merely because its material value is zero: it claims to remove the opponent's drawing resource. An already automatically ended game has no later motifs.",
+    "alternativesAndConsumers": "Same-root alternatives check their own first move; a later/different-FEN alternative cannot escape the principal root boundary. Both missed and allowed reviews, timelines, live displays and nature use the adapter result. Played history is appended once for refutations. Existing live/review cache identity includes history.",
+    "limitations": [
+      "Immediate-root boundary only; deeper independent tactical proof nodes are not yet history-aware.",
+      "Missing, invalid or unbound optional history does not prove no repetition; existing FEN-only behavior is preserved.",
+      "A repeating supplied PV does not invalidate another independently certified non-repeating route.",
+      "No runtime/desktop/phone delivery, owner-data rescan, engine download, private corpus or website migration."
+    ]
+  },
+  "verification": {
+    "dedicatedTests": 36,
+    "dedicatedFailures": 0,
+    "dedicatedSkipped": 0,
+    "focusedCommand": "node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalRepetitionHistory.test.ts src/utils/tests/tacticalFiftyMoveProof.test.ts src/utils/tests/perpetualCheck.test.ts src/utils/tests/defensiveDeflectionRecall.test.ts src/utils/tests/missedAlternative.test.ts src/utils/tests/alternativeCaptureCause.test.ts --maxWorkers=2 --update=none --cache=false",
+    "focusedFiles": 6,
+    "focusedPassed": 165,
+    "focusedSkipped": 5,
+    "focusedFailed": 0,
+    "vitestSeconds": 8.36,
+    "finalTestStyleOnlyRerun": { "passed": 36, "failed": 0, "skipped": 0, "vitestSeconds": 2.76, "priorTestLfSha256": "4aa82d6396d8c78c15e430e07d10ff7c2bcf40ddfb922698f14d9b0a7a4eddd9", "change": "Unconditional empty-timeline/board assertions replace conditional assertions; no production or contract changes" },
+    "contracts": ["paired identical FEN", "both colours", "root-only/full PV", "current and announced threefold", "automatic fifth occurrence before and after root", "post-fivefold continuation", "immediate mate and attacker optional claim", "preserved independent perpetual", "defensive-deflection zero-value contrast", "exact allowed-history append", "missing/malformed/wrong-root history", "bounded input", "later alternative-FEN escape", "same-root capture reset", "live cache binding", "castling rights", "legal/uncapturable/pinned en passant", "clock-independent identity"],
+    "lfSha256": {
+      "src/utils/tacticalMotifs/repetitionHistory.ts": "9f8cbf6f411539922a8c4b0f7429f5600ac808f0aee5464652da351f8a3d17bd",
+      "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "ce55c5ffa32dcf852e0f183d91cf72b676567628e257355c26a37f54ecc1cb98",
+      "src/utils/tests/tacticalRepetitionHistory.test.ts": "dc13379d0b18dfcab0863f64bbfa843e00ce30e47cec43f17d07b7f9ea0649b0",
+      "src/utils/tests/fixtures/repetitionHistory.ts": "101a045c4e3ecf4aae6eb302dd46bed09779582f1feb5eb0a82153e3777e91b1",
+      "unchangedCausalCore": "6ec0824d8cd4d250c1e5d51ee81f2b16c6a1ff088564b5c580dd0682d88301b9"
+    },
+    "preservedPendingCoreDiff": { "insertions": 46, "deletions": 4 }
+  }
+}

@@ -27,6 +27,7 @@ import {
     winningRecaptureEvidence,
     contextualCaptureObservation,
     tacticalCaptureGain,
+    proveImmediateFork,
     proveImmediatePromotion,
     provePromotionThreat,
     promotionThreatContinuations,
@@ -48,6 +49,9 @@ import {
 import { qualifyComparableCaptureChoice } from "./captureChoice";
 import { isTacticalObservation } from "./types";
 import { appendTacticalHistory, type TacticalGameHistory } from "./gameHistory";
+import { tacticalRepetitionBoundary } from "./repetitionHistory";
+import { qualifyHistoryAwareMatingMotifs, retainsHistoryAwareMate } from "./historyAwareMate";
+import { filterContinuationHistory, survivesOptionalDraw } from "./continuationHistory";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -142,7 +146,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 164;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 176;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -727,8 +731,64 @@ function isAlternativeCapture(motif: TacticalMotifEvidence | undefined) {
         motif.ply === 1 && motif.alternativeCapture === true;
 }
 
+/** An independently proved ordinary or direct-checking fork also exists in the played move.
+ * This available/persists marker is comparison context in the better-line
+ * array, not a missed cause or a claim that the two moves have equal value. */
+export function isRetainedForkChoice(
+    motif: TacticalMotifEvidence | undefined,
+): motif is TacticalMotifEvidence & { id: "fork"; source: "available"; comparison: "persists"; ply: 1 } {
+    return motif?.id === "fork" && motif.source === "available" &&
+        motif.comparison === "persists" && motif.ply === 1;
+}
+
+function qualifyRetainedForkChoice(
+    fen: string,
+    bestMove: string | null,
+    playedMove: string | null,
+    motifs: TacticalMotifEvidence[],
+): TacticalMotifEvidence[] {
+    const candidates = motifs.filter(m => m.source === "missed" && m.id === "fork" &&
+        m.ply === 1 && m.moveUci === bestMove && m.confidence === "high" && !m.verifiedCombination);
+    if (!bestMove || !playedMove || bestMove === playedMove || !candidates.length) return motifs;
+    const best = replayTacticalLine(fen, [bestMove])[0];
+    const played = replayTacticalLine(fen, [playedMove])[0];
+    // Same destination, role and original victims connect the two mechanisms.
+    // A merely similar label, extra checking mechanism, promotion or connected exchange
+    // needs a different comparison; keep its existing lesson unchanged.
+    if (!best || !played || best.move.to !== played.move.to ||
+        best.move.promotion || played.move.promotion || best.capture !== played.capture ||
+        best.after.isCheck() !== played.after.isCheck() ||
+        best.after.board.get(best.move.to)?.role !== played.after.board.get(played.move.to)?.role) return motifs;
+    const checking = best.after.isCheck();
+    // A direct check by the forker is part of the same mechanism. A discovered
+    // or second checker is a separate resource, even at the same destination.
+    if (checking && [best, played].some(step => step.after.ctx().checkers.size() !== 1 ||
+        !step.after.ctx().checkers.has(step.move.to))) return motifs;
+    const checkedKing = checking ? best.before.board.kingOf(best.after.turn) : undefined;
+    const bestProof = proveImmediateFork(best), playedProof = proveImmediateFork(played);
+    if (!bestProof || !playedProof || bestProof.gain >= 10000 || playedProof.gain >= 10000 ||
+        (checking && (checkedKing === undefined || !bestProof.targets.includes(checkedKing))) ||
+        bestProof.branches.some(branch => branch.collection?.length) ||
+        playedProof.branches.some(branch => branch.collection?.length) ||
+        bestProof.targets.length !== playedProof.targets.length ||
+        !bestProof.targets.every(target => {
+            const original = best.before.board.get(target);
+            return playedProof.targets.includes(target) && original &&
+                original.color !== best.before.turn && (original.role !== "king" || target === checkedKing) &&
+                best.after.board.get(target)?.role === original.role &&
+                played.after.board.get(target)?.role === original.role;
+        })) return motifs;
+    const targets = bestProof.targets.map(target =>
+        `the ${best.before.board.get(target)!.role} on ${makeSquare(target)}`).join(" and ");
+    const comparisonEvidence = `${best.san} and ${played.san} both fork ${targets}. Each has a verified local material gain against every legal reply. This does not establish that the moves are equally good, or explain why the played move was worse.`;
+    return motifs.map(motif => candidates.includes(motif) && motif.value === bestProof.gain
+        ? { ...motif, source: "available", comparison: "persists", comparisonEvidence }
+        : motif);
+}
+
 /** A post-move tactic is not automatically a newly caused one. */
 export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
+    if (isRetainedForkChoice(motif)) return "Fork in both moves";
     if (motif.id === "attractionIdea") return "Conditional idea";
     if (motif.id === "matingThreat") return "Concrete threat";
     if (motif.source === "missed")
@@ -741,7 +801,7 @@ export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
 }
 
 export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefined) {
-    if (isTacticalObservation(motif)) return false;
+    if (isTacticalObservation(motif) || isRetainedForkChoice(motif)) return false;
     return Boolean(
         motif &&
         !isAlternativeCapture(motif) &&
@@ -801,6 +861,20 @@ function chooseMistakeReviewTacticalExplanation({
     allowedMotifs: TacticalMotifEvidence[];
     missedMotifs: TacticalMotifEvidence[];
 }): MistakeReviewTacticalExplanation | null {
+    const retainedFork = missedMotifs.find(isRetainedForkChoice);
+    if (retainedFork) {
+        const other = chooseMistakeReviewTacticalExplanation({
+            allowedMotifs,
+            missedMotifs: missedMotifs.filter(m => !isRetainedForkChoice(m)),
+        });
+        if (other) return other;
+        return {
+            title: "Both moves create this fork",
+            text: retainedFork.comparisonEvidence ?? retainedFork.evidence,
+            source: "mixed",
+            primary: retainedFork,
+        };
+    }
     const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
     const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
     if (!allowed && !missed) return null;
@@ -897,12 +971,39 @@ function chooseMistakeReviewTacticalExplanation({
     };
 }
 
+/** A positive opponent claim refutes a forced WIN, not an independently
+ * proved draw or a non-forcing observation. A game already ended by fivefold
+ * has no subsequent lesson. Alternative roots require their own history test;
+ * a repeating supplied PV never refutes a different certified route. */
+export function filterRepetitionBoundaries(
+    fen: string, line: string[], history: TacticalGameHistory | null | undefined,
+    motifs: TacticalMotifEvidence[],
+): TacticalMotifEvidence[] {
+    if (!history || !motifs.length) return motifs;
+    const principal = tacticalRepetitionBoundary(fen, line[0], history);
+    const bounded = motifs.filter(motif => {
+        const alternate = motif.alternativeLine?.uci[0];
+        const sameRoot = motif.alternativeLine?.fen.trim().split(/\s+/).join(" ") === fen.trim().split(/\s+/).join(" ");
+        const boundary = sameRoot && alternate && alternate !== line[0]
+            ? tacticalRepetitionBoundary(fen, alternate, history) : principal;
+        if (!boundary) return true;
+        if (boundary.kind === "game-over") return false;
+        // Defensive Deflection also has value 0, but claims to REMOVE the
+        // opponent's drawing resource. An existing draw claim defeats it.
+        return survivesOptionalDraw(motif);
+    });
+    return qualifyHistoryAwareMatingMotifs(fen, line, history,
+        filterContinuationHistory(fen, line, history, bounded));
+}
+
 export function classifyPositionTacticalMotifs(
     input: PositionTacticalMotifInput,
 ): PositionTacticalMotifClassification {
     const fen = String(input.fen ?? "").trim();
     const bestLine = cleanUciLine(input.pvUci);
     const bestMoveUci = bestLine[0] ?? null;
+    if (tacticalRepetitionBoundary(fen, bestMoveUci, input.tacticalHistory)?.kind === "game-over")
+        return { motifs: [], motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION };
     let detail: SiteThemeDetail | null = null;
 
     if (fen && bestMoveUci && hasTacticalStart(fen, bestLine)) {
@@ -921,7 +1022,7 @@ export function classifyPositionTacticalMotifs(
         }
     }
 
-    const motifs = filterCompensatedRootCaptures(
+    const auditedMotifs = filterCompensatedRootCaptures(
         fen,
         bestLine,
         auditTacticalMotifs(
@@ -935,10 +1036,11 @@ export function classifyPositionTacticalMotifs(
         cleanUci(input.previousMoveUci),
         input.tacticalHistory,
     );
+    const motifs = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, auditedMotifs);
     // A missing root certificate must not erase independently checked later
     // events. The timeline retains its quiet/terminal relevance boundaries;
     // none of its rows are promoted into a root lesson here.
-    const timeline = selectContinuationLessons(
+    const continuation = selectContinuationLessons(
         filterCompensatedRootCaptures(
             fen,
             bestLine,
@@ -949,6 +1051,7 @@ export function classifyPositionTacticalMotifs(
         ),
         motifs,
     );
+    const timeline = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, continuation);
     return {
         motifs: selectRootConnectedLessons(fen, bestLine, motifs, timeline),
         ...(motifs.length || timeline.length ? { timeline } : {}),
@@ -1100,6 +1203,8 @@ export function buildTacticalTimeline(
     const positionKey = (fen: string) => fen.split(" ").slice(0, 4).join(" ");
     const unprovedPositions = new Set([positionKey(fen)]);
     const rawSteps = walkPV(fen, legalLine, fenSide(fen)) as SiteThemeStep[];
+    // Legacy nominations may not understand king-to-rook castling aliases.
+    // The legal replay, not a missing legacy row, owns each audit's board.
     const evidence = new Map<string, TacticalMotifEvidence>();
     for (const motif of rootMotifs) {
         const step = replay[(motif.ply ?? 0) - 1];
@@ -1135,7 +1240,7 @@ export function buildTacticalTimeline(
         }
         const suffix = legalLine.slice(index);
         const tacticalStart = hasTacticalStart(
-            rawSteps[index]?.fenBefore ?? "",
+            makeFen(step.before.toSetup()),
             suffix,
             index === 0 && rootMotifs.some((motif) => motif.id === "tacticalPreparation"),
             tablebaseEvidence,
@@ -1244,14 +1349,14 @@ export function buildTacticalTimeline(
             ),
         };
         const candidates = auditTacticalMotifs(
-            rawSteps[index]?.fenBefore ?? "",
+            makeFen(step.before.toSetup()),
             suffix,
             toMotifEvidence(detail, source, sanLine?.slice(index)),
             undefined,
             {
                 tablebaseEvidence,
                 ...(index > 0 ? {
-                      previousFen: rawSteps[index - 1]?.fenBefore,
+                      previousFen: makeFen(replay[index - 1].before.toSetup()),
                       previousMoveUci: replay[index - 1].uci,
                   } : {}),
             },
@@ -1434,6 +1539,8 @@ export function classifyMistakeReviewMotifs(
     const playedMoveUci = cleanUci(input.playedMoveUci);
     const bestLine = normalizeLine(bestMoveUci, input.pvUci);
     const refutationLine = cleanUciLine(input.refutationUci);
+    if (tacticalRepetitionBoundary(fen, bestMoveUci, input.tacticalHistory)?.kind === "game-over")
+        return { allowedMotifs: [], missedMotifs: [], motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION };
     const fenAfterPlayedMove = deriveFenAfterMove(fen, playedMoveUci);
     const playedTheBestMove = Boolean(
         fenAfterPlayedMove && fenAfterPlayedMove === deriveFenAfterMove(fen, bestMoveUci),
@@ -1522,6 +1629,9 @@ export function classifyMistakeReviewMotifs(
                 .map((m) => ({ ...m, source: "missed" as const })),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
+    classification.missedMotifs = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, classification.missedMotifs);
+    classification.allowedMotifs = filterRepetitionBoundaries(fenAfterPlayedMove ?? "", refutationLine,
+        appendTacticalHistory(input.tacticalHistory, playedMoveUci), classification.allowedMotifs);
 
     // A different sound defence is not a missed sacrifice. Require the actual
     // reply to demonstrate the same rook/queen's all-defence checking resource.
@@ -1558,6 +1668,9 @@ export function classifyMistakeReviewMotifs(
             bestMoveUci && playedMoveUci && refutationLine[0] &&
             pawnOpportunityRemainsAfterReply(fen, bestMoveUci, playedMoveUci, refutationLine[0])));
     classification.missedMotifs = qualifyComparableCaptureChoice(
+        fen, bestMoveUci, playedMoveUci, classification.missedMotifs,
+    );
+    classification.missedMotifs = qualifyRetainedForkChoice(
         fen, bestMoveUci, playedMoveUci, classification.missedMotifs,
     );
     // Another promotion retaining at least the same local material is not a
@@ -1686,8 +1799,9 @@ export function classifyMistakeReviewMotifs(
                 tacticalHistory: input.tacticalHistory,
                 tablebaseEvidence: input.tablebaseEvidence,
             });
-            const motifs = qualifyComparableCaptureChoice(fen, move, playedMoveUci,
-                result.motifs.map(motif => ({ ...motif, source: "missed" as const })))
+            const motifs = qualifyRetainedForkChoice(fen, move, playedMoveUci,
+                qualifyComparableCaptureChoice(fen, move, playedMoveUci,
+                    result.motifs.map(motif => ({ ...motif, source: "missed" as const }))))
                 .filter(drawingResourceMissed);
             const primary = selectImportantTacticalMotifs(motifs.filter(motif =>
                 motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) &&
@@ -1723,9 +1837,16 @@ export function classifyMistakeReviewMotifs(
         if (alternative && (!allowedRoots.length || (alternative.value ?? 0) > Math.max(...allowedRoots.map(m => m.value ?? 0)))) compared.allowedMotifs = [alternative,
             ...compared.allowedMotifs.map(m => ({ ...m, relevance: "secondary" as const }))];
     }
-    if (playedMoveUci && compared.missedMotifs.some(m => m.ply === 1 &&
+    // Direct board evidence also covers named mates and different mating
+    // patterns. Completing checkmate cannot miss another mate-in-one.
+    const bothMovesMate = bestMoveUci && playedMoveUci &&
+        replayTacticalLine(fen, [bestMoveUci])[0]?.after.isCheckmate() &&
+        replayTacticalLine(fen, [playedMoveUci])[0]?.after.isCheckmate();
+    if (bothMovesMate || (playedMoveUci && !tacticalRepetitionBoundary(fen, playedMoveUci, input.tacticalHistory) &&
+        compared.missedMotifs.some(m => m.ply === 1 &&
         (/^mateIn\d+$/.test(m.id) || m.id === "mateThreat")) &&
-        preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine]))) {
+        preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine])) &&
+        retainsHistoryAwareMate(fen, [playedMoveUci, ...refutationLine], input.tacticalHistory))) {
         // Winning by a different forced mate is not missing the win, even
         // if the preferred engine route is shorter. Do not replace this
         // evidence with a score threshold or leave a subordinate missed
@@ -1737,6 +1858,13 @@ export function classifyMistakeReviewMotifs(
         compared.allowedMotifs = [];
         compared.allowedTimeline = compared.allowedTimeline?.map(m => ({ ...m, relevance: "secondary" }));
     }
+    // Timeline and nominated alternative routes are produced after the first
+    // audit. Apply the same exact-root boundary to every public return path.
+    compared.missedMotifs = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, compared.missedMotifs);
+    if (compared.missedTimeline) compared.missedTimeline = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, compared.missedTimeline);
+    const allowedHistory = appendTacticalHistory(input.tacticalHistory, playedMoveUci);
+    compared.allowedMotifs = filterRepetitionBoundaries(fenAfterPlayedMove ?? "", refutationLine, allowedHistory, compared.allowedMotifs);
+    if (compared.allowedTimeline) compared.allowedTimeline = filterRepetitionBoundaries(fenAfterPlayedMove ?? "", refutationLine, allowedHistory, compared.allowedTimeline);
     if (!input.tablebaseEvidence) motifCache.set(key, compared);
     if (motifCache.size > MOTIF_CACHE_LIMIT) {
         const oldestKey = motifCache.keys().next().value;

@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "scope": "Paired public development evidence, not source-label agreement or population accuracy",
+  "versions": {
+    "before": "site-55.adapter-171",
+    "after": "site-55.adapter-172",
+    "baselineCommit": "455adfd38e23d352b1a4af512f67ca4795c7be5a"
+  },
+  "sourceHashes": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "888a923ef38934ba532d682207876e750480ffe6aa1932f711802d7991690f15",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "193cbac014bb43f3061ba32b8379b57ff0bfb7a99740e1ed0958a2fac397c225",
+    "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "src/utils/tacticalMotifs/liveTactics.ts": "f1f1f45f1fea92f83ebe9bc9910194331a6e0ad285eb8490da8b375f107c745c",
+    "benchmarks/tactical-relevance/rare-causal-cohort-v2-selection.json": "62224616d8bda068e96b83d8c5fed6ad4668c5b263b21277fc8335dd9fc8512b",
+    "benchmarks/tactical-relevance/rare-causal-cohort-v2-inputs.json": "1e9b386c37d03eb28c1a6044d8da4f4bfe2dbd926b916c91e33ebb6ed2e58d5f",
+    "benchmarks/tactical-relevance/rare-causal-cohort-v2-hypotheses.json": "bfaff5a0db65e6cbb1a33a4bdbf320455d97ad07a698a4981403fd948d9b8131"
+  },
+  "selection": {
+    "seed": "rare-causal-audit-2026-10-02-v2",
+    "sourceSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+    "puzzles": 8,
+    "ordinaryContexts": 6,
+    "independentSourceGames": 10,
+    "controlGames": 2,
+    "controlPlies": [
+      12,
+      20,
+      28
+    ],
+    "retainedPublicGamePlies": 131,
+    "boundary": "Disjoint from recorded public review, not an unseen corpus; no holdout classification"
+  },
+  "comparisons": {
+    "identicalSerializedInputs": 56,
+    "unchangedFromEarlier172Checkpoint": 56,
+    "rootPrimaryChanges": 0,
+    "motifIdentityChanges": 2,
+    "unchangedMotifVariants": 54,
+    "mateOutcomeMetadataIsNotAccuracyCredit": true,
+    "semanticChanges": [
+      {
+        "id": "lichess:YvGsE",
+        "scope": "source-line",
+        "reflected": false,
+        "removed": {
+          "id": "discoveredAttack",
+          "ply": 3,
+          "value": 900
+        },
+        "primaryRetained": {
+          "id": "mateIn3",
+          "ply": 1
+        },
+        "supportingMechanismsRetained": [
+          "deflection",
+          "xRayAttack",
+          "promotion",
+          "triangleMate"
+        ]
+      },
+      {
+        "id": "lichess:YvGsE",
+        "scope": "source-line",
+        "reflected": true,
+        "removed": {
+          "id": "discoveredAttack",
+          "ply": 3,
+          "value": 900
+        },
+        "primaryRetained": {
+          "id": "mateIn3",
+          "ply": 1
+        },
+        "supportingMechanismsRetained": [
+          "deflection",
+          "xRayAttack",
+          "promotion",
+          "triangleMate"
+        ]
+      }
+    ]
+  },
+  "independentVerification": {
+    "testsPassed": 14,
+    "testsFailed": 0,
+    "optionalSourceUnavailable": {
+      "passed": 13,
+      "skipped": 1
+    },
+    "types": "pass",
+    "lint": "0 warnings, 0 errors",
+    "format": "pass",
+    "removalWitnesses": "YvGsE original / noBc8 / noQc1 / neither, both colours; every legal reply and same mate",
+    "positiveControls": "ySzc4 all seven replies and real ordinary missed queen; no blanket material suppression",
+    "negativeBoundary": "Only specific safe retreats / reply countercapture checked; ordinary empties are not certified negatives"
+  },
+  "engine": {
+    "queries": 20,
+    "errors": 0,
+    "limits": {
+      "threads": 1,
+      "hashMiB": 64,
+      "multiPv": 3,
+      "depth": 16,
+      "timeoutMsPerQuery": 30000,
+      "queries": 20
+    },
+    "inputsSha256": "1e9b386c37d03eb28c1a6044d8da4f4bfe2dbd926b916c91e33ebb6ed2e58d5f",
+    "boundary": "Corroboration only, not all-reply proof"
+  },
+  "unresolved": [
+    "rqcm3 root mechanism",
+    "wN37d quiet preparation all replies",
+    "CY182 independent bound/root-only recall",
+    "GFfWQ attraction declines/debt",
+    "Ltbye intermezzo all replies",
+    "Xg7Rd trap all replies"
+  ],
+  "runtimeDeployment": "Not attempted; benchmark/source evidence only",
+  "retainedFiles": [
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter171.json",
+      "bytes": 78462,
+      "sha256": "c692e21f90535767f7784550e420a933d9ec2204d70f3bcab1ed217e75508a61"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter172-final.json",
+      "bytes": 77169,
+      "sha256": "bf05c26815cbdc8693bedb4d5e35f8f72cabeebba5341d7ef93879d69718bcc2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter172.json",
+      "bytes": 76696,
+      "sha256": "748d55c3c3b8797cc26b1e08adbdc592e21fbeab9b7314d620e962a4d478ecd8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-engine.mjs",
+      "bytes": 2556,
+      "sha256": "40a99aaa82c6bd72c39c1931d6c6ccc2c901479096291016b9ba567971fc69f9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-hypotheses.json",
+      "bytes": 7511,
+      "sha256": "bfaff5a0db65e6cbb1a33a4bdbf320455d97ad07a698a4981403fd948d9b8131"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-inputs.json",
+      "bytes": 24420,
+      "sha256": "1e9b386c37d03eb28c1a6044d8da4f4bfe2dbd926b916c91e33ebb6ed2e58d5f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-prepare.mjs",
+      "bytes": 5111,
+      "sha256": "fd2d85aa27c7cca2ba8e3c486d1265947426ddeb9f7b7637b53b5ab693744a33"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-review.md",
+      "bytes": 9132,
+      "sha256": "01bb80b6af58bfc370926671ada4e6c84e699efbe0b805873590d9147e5b5e91"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-select.mjs",
+      "bytes": 5185,
+      "sha256": "e490dc25898dfcd9fc5d1bd077bce084cc2f11fe29bf16694a2a455a5db1f3f1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-selection.json",
+      "bytes": 62336,
+      "sha256": "62224616d8bda068e96b83d8c5fed6ad4668c5b263b21277fc8335dd9fc8512b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-stockfish16.json",
+      "bytes": 57765,
+      "sha256": "42e351c69dc01ee399a476bba4f8afad55234f38a3d23167659759993f821938"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-verify.mjs",
+      "bytes": 5334,
+      "sha256": "40374346840982fb50c77248e24ecd530b3cbd99092ac8e84bdc2607548c3499"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2.test.ts",
+      "bytes": 16136,
+      "sha256": "ec6562934ebff09309ae20222197e1c0c2b2ba37005f8edf5102b93ee9fa8fdb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2.tsconfig.json",
+      "bytes": 229,
+      "sha256": "424282a6ce509bb414d24d3e9b2739a937d4d3d6cf86735522b3367626a93cc8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2.vitest.ts",
+      "bytes": 1183,
+      "sha256": "c7642281c0f780359ff4fe6361ff85d2a0bf34a12619683add69fde98f01d92e"
+    }
+  ],
+  "totalRetainedBytesExcludingThisReceipt": 429225
+}

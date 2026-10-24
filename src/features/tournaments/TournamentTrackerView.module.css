@@ -82,7 +82,7 @@
 .form [data-result=Win] { color: var(--op-good); }
 .form [data-result=Loss] { color: var(--op-loss); }
 .results { border-top: 1px solid var(--op-border); }
-.resultRow { display: grid; grid-template-columns: 104px 1fr 1fr 72px; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--op-border); font-size: var(--op-fs-sm); }
+.resultRow { display: grid; grid-template-columns: 104px 1fr 1fr minmax(150px, .8fr); align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--op-border); font-size: var(--op-fs-sm); }
 .resultRow > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .resultRow small { font-size: var(--op-fs-xs); }
 .playerMetrics { display: flex; flex-wrap: wrap; gap: 16px 32px; margin: 18px 0; }
@@ -151,3 +151,9 @@
  .playerMetrics { gap: 16px 22px; }
 }
 @media (pointer: coarse) { .tracker :where(button:not([aria-label^="Help:"])), .tracker select, .tracker input:not([type=checkbox]) { min-height: 40px; } }
+
+.resultValue { min-width: 0; overflow-wrap: anywhere; }
+.manualResult { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.manualResult > span { font-size: var(--op-fs-xs); color: var(--op-text-dim); font-weight: 400; }
+.manualResult select { width: 100%; min-width: 0; }
+@container (max-width: 31em) { .resultRow > .resultValue { grid-column: 1 / -1; } }

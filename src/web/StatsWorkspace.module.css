@@ -52,6 +52,19 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
 }
+.customPeriod {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.45rem;
+}
+@media (max-width: 700px) {
+  .customPeriod input,
+  .customPeriod button {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
 
 .subNav {
   width: 100%;

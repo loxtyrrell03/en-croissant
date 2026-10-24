@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-02",
+  "scope": "Independent precision audit of 24 dependent ordinary public-game contexts, with 94 preselected played/quiet variants. No production changes and no accuracy/positional-negative metric.",
+  "selection": {
+    "initialBlackContexts": 12,
+    "subsequentAdjacentWhiteContexts": 12,
+    "reusedSourceGroups": 4,
+    "playedRoots": 24,
+    "playedContinuations": 24,
+    "deterministicQuietAlternatives": 46,
+    "unchangedInputSha256Lf": {
+      "ordinary-precision-v1-selection.json": "4ef8b2d1c656c0b9c149107cc8135c7aa1deaba308972e29523bdbc954f82082",
+      "ordinary-precision-v1-adjacent-selection.json": "9c8725e90fbcd1c6e9023c1770df0cfddbb831ef00aeb5644cd847519bcce0e7",
+      "ordinary-precision-v1-verify.py": "e699ace25c42dd2cfe6f5cc0d2afeb10f4b42244cd2f716839ede48a142436ff"
+    }
+  },
+  "baseline": {
+    "ref": "b75c13e2f3a63d69cf60bd9e0b4221f884a9e190",
+    "classifierVersion": "site-55.adapter-174",
+    "report": "ordinary-precision-v1-adapter174.json",
+    "passed": 32,
+    "failed": 0,
+    "legalObservationTests": 24,
+    "adjudicatedControlTests": 8,
+    "productionCoreSha256Lf": "74696f6a7d303dfe8c2656eea68d66e2a910b9a184175882f4c523e242b73210"
+  },
+  "final": {
+    "sourceRef": "index",
+    "classifierVersion": "site-55.adapter-175",
+    "livePipelineVersion": 182,
+    "coreBlob": "cdec0ea486dde67507c39da91f5fe9df2e14a5c9",
+    "passed": 32,
+    "failed": 0,
+    "observations": 94,
+    "rootSemanticChanges": 0,
+    "allObservationSemanticChanges": 0,
+    "comparison": "Exact JSON equality of all 94 complete observations after excluding only motifClassifierVersion; no positions/variants removed or relabelled.",
+    "normalizedObservationsSha256": "806ed5d51b5ee1f99c644f21c66c16deffcaf23345d6cb47c1ddeeb9435fe629",
+    "startingHashes": {
+      "causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+      "mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+      "continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+      "gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+      "quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+      "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+      "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+      "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+      "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097"
+    },
+    "endingHashes": {
+      "causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+      "mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+      "continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+      "gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+      "quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+      "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+      "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+      "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+      "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097"
+    },
+    "watchedSourcesUnchanged": true,
+    "actualLoadedModuleSha256Lf": {
+      "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+      "src/utils/tacticalMotifs/tablebaseEvidence.ts": "e9d2ed281c71e95dee9c60f0e730eb489ebe81bf45bfcf496064a36de73db2a2",
+      "src/utils/tacticalMotifs/kpkBitbase.ts": "8d126b04e5b7f4fc4038a1a3d0ff46e9705ec0d3f0de30aff14f31f5ab1dc1e0",
+      "src/utils/tacticalMotifs/causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+      "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+      "src/utils/tacticalMotifs/gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+      "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+      "src/utils/tacticalMotifs/quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+      "src/utils/tacticalMotifs/captureChoice.ts": "8b73bff5da02791215dd2250c0489bbcc6f8a3ba2fe192a88fc0a34c57046387",
+      "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+      "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+      "src/utils/tacticalMotifs/continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2"
+    },
+    "loadedModuleCount": 12,
+    "allLoadedIndexBytesRecheckedAfterRun": true,
+    "pendingCheckingRayExcluded": true
+  },
+  "independent": {
+    "file": "ordinary-precision-v1-independent.json",
+    "legalHistories": 24,
+    "bothColourMateWitnesses": 2,
+    "bothColourPawnAndAlteredHistoryWitnesses": 2,
+    "status": "passed",
+    "reusedWithoutRerun": "Exact input and independent verifier hashes unchanged; final production labels cannot change these legal witnesses."
+  },
+  "checks": {
+    "projectTypes": "passed",
+    "benchmarkTypes": "passed",
+    "scopedLint": {
+      "errors": 0,
+      "warnings": 0
+    }
+  },
+  "ownedFileSha256Lf": {
+    "ordinary-precision-v1-selection.json": "4ef8b2d1c656c0b9c149107cc8135c7aa1deaba308972e29523bdbc954f82082",
+    "ordinary-precision-v1-adjacent-selection.json": "9c8725e90fbcd1c6e9023c1770df0cfddbb831ef00aeb5644cd847519bcce0e7",
+    "ordinary-precision-v1-verify.py": "e699ace25c42dd2cfe6f5cc0d2afeb10f4b42244cd2f716839ede48a142436ff",
+    "ordinary-precision-v1.test.ts": "49bf3249179d557417db444476a1b8629ab3462061edbfd28059dda6a3976166",
+    "ordinary-precision-v1.vitest.ts": "e946efd5e963a2188ddd6395225bd304ad7706bf39a4588ad5b9108399425e18",
+    "ordinary-precision-v1-adapter174.json": "2aefd5fb5b6215b7e4c8dcccef7c21c8e6dfb6a577ec4d8f613667ff03ab8a90",
+    "ordinary-precision-v1-independent.json": "fb34da658c8c0e434a7f1d1d0cdd3c2cfd82ae9409e1525d401084423bbdad54",
+    "src/utils/tests/ordinaryPrecisionContext.test.ts": "0d53d5436bb9f92bd06ddc998ee1e8097acc075f8372b73ba1f9da9642ae3ab4"
+  },
+  "finding": "No new false tactical primary confirmed. The two unique root claims have explicit finite legal support and preserve their correct player/ply attribution. Empty outputs remain unscored unknowns.",
+  "boundaries": [
+    "Previously used games and dependent neighboring boards; not independent holdout/population precision",
+    "Actual played lines and hash-selected quiet alternatives are not best-move/evaluation assertions",
+    "Finite capture exchange and countercheck witnesses do not prove arbitrary future quiet play",
+    "No owner games/stores, corpus download, runtime, website, engine or provider operation"
+  ]
+}

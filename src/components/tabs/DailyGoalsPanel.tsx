@@ -61,6 +61,7 @@ import {
   type OpeningReviewDeckSummary,
 } from "@/utils/openingReview";
 import classes from "./DailyGoalsPanel.module.css";
+import DailyStudyPlanPanel from "./DailyStudyPlanPanel";
 
 type InitialPractice = {
   mode: "due" | "all";
@@ -354,6 +355,7 @@ export default function DailyGoalsPanel({
 
   return (
     <>
+      <DailyStudyPlanPanel onOpenFile={onOpenPrepFile} />
       <Paper withBorder p="md" className={classes.panel}>
         <Group justify="space-between" align="flex-start" gap="md">
           <Stack gap={2}>

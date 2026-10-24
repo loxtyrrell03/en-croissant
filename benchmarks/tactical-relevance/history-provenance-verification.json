@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "scope": "En Croissant source adapter171 / pipeline178. Reused public and constructed history/provenance contracts, not population accuracy or a new holdout.",
+  "baseCommit": "52ea8975d6594d2d5e24a3df6a797571d1e7305c",
+  "classifierVersion": "site-55.adapter-171",
+  "pipelineVersion": 178,
+  "broad": {
+    "started": "2026-10-02T19:03:29.997Z",
+    "finished": "2026-10-02T19:07:01.637Z",
+    "selectedFiles": 236,
+    "activeFiles": 215,
+    "fullyConditionalFiles": 21,
+    "passed": 3456,
+    "knownExpectedFailures": 1,
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "sourceUnchangedDuringRun": true,
+    "reportSha256": "7137879c1b799bdf44eaba71493ffbb86c936cd2356b8e857f599589e040f23c"
+  },
+  "newSourceChecks": {
+    "passed": 62,
+    "suites": [
+      {
+        "file": "tacticalRepetitionHistory.test.ts",
+        "passed": 36
+      },
+      {
+        "file": "mistakeMotifProvenance.test.ts",
+        "passed": 17
+      },
+      {
+        "file": "mistakeMotifProvenanceConsumers.test.tsx",
+        "passed": 9
+      }
+    ],
+    "savedReaderPairedContracts": {
+      "before": 4,
+      "after": 17,
+      "total": 17,
+      "receipt": "motif-reader-provenance-receipt.json"
+    }
+  },
+  "primaryPriority": {
+    "cases": 32,
+    "matches": 32,
+    "fullOutputUnchangedFromAdapter170": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "exactCore": {
+    "passed": 626,
+    "skipped": 4,
+    "files": 26,
+    "blob": "f23a763187a652eeb3295e750f44b1a53aee8673",
+    "sha256LF": "d39792d64bed8622273f226fe70fdb0c3e118f31c74af43754ca1ff0fdfa9db8",
+    "pendingCheckingRayExcluded": true,
+    "unchangedDuringRun": true,
+    "reportSha256": "b78a5a3f14bf939cea09ed50d0d89d161c67094460367f8c52ad548cda811915"
+  },
+  "compiledService": {
+    "passed": 67,
+    "failed": 0,
+    "skipped": 1,
+    "newHistoryRoundtrips": 4,
+    "optionalSkip": "Opt-in real background-engine check",
+    "generatedSha256": "ee066ad09802af1beeb785ff518889860f17f4a807650bdce2b56ce14a8fec7e"
+  },
+  "benchmarkOnly": {
+    "newHistoryContracts": 25,
+    "originalCompositionContracts": 52,
+    "receipt": "endgame-composition-history-verification.json",
+    "runtimeCoverageCredit": 0
+  },
+  "checks": {
+    "wholeProjectTypes": "Passed before concurrent unrelated edits. Final whole-project rerun is blocked by TS2352 at the new untracked src/shared/truePerformance.worker.test.ts:13; this file is not changed or staged by this milestone.",
+    "scopedFinalTypes": "Passed with the normal root configuration and repository type roots, excluding only the unrelated truePerformance.worker.test.ts. No production or tactical-test file is excluded.",
+    "scopedLint": "16 files, zero errors and warnings",
+    "frontendAndReviewWorkerBuild": "passed: 8961 frontend modules; existing bundle-size/third-party bigint warnings",
+    "diffCheck": "passed",
+    "testStyleCleanup": "After broad/exact runs, conditional-expect warnings were removed without changing the 36 repetition contracts; all 36 passed again. See repetition-boundaries-adapter171.json for both test hashes."
+  },
+  "sourceHashesLF": {
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "9f8cbf6f411539922a8c4b0f7429f5600ac808f0aee5464652da351f8a3d17bd",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "ce55c5ffa32dcf852e0f183d91cf72b676567628e257355c26a37f54ecc1cb98",
+    "src/utils/tacticalMotifs/liveTactics.ts": "16319794fc7b11174db29339cf341a712c3f3a54cda83f8a07551f579e4a40da",
+    "src/utils/mistakeReview.ts": "0364e7b5ef84e92eed9539b8b2b9e929ce33616057c84cd464fae74cc4734e6c",
+    "src/components/review/OpeningReviewWorkspace.tsx": "3b92907dcaf6d64ffab30d4dc672c83e46e953d421d7f3532ab7607ad6f3a09c",
+    "src/utils/tests/tacticalRepetitionHistory.test.ts": "dc13379d0b18dfcab0863f64bbfa843e00ce30e47cec43f17d07b7f9ea0649b0",
+    "src/utils/tests/fixtures/repetitionHistory.ts": "101a045c4e3ecf4aae6eb302dd46bed09779582f1feb5eb0a82153e3777e91b1",
+    "src/utils/tests/mistakeMotifProvenance.test.ts": "d51ab59f879bc0e683012fd68ef8d46c3c53894bdeb434517948b360f3d09d5c",
+    "src/utils/tests/mistakeMotifProvenanceConsumers.test.tsx": "ddd60cce829db7bb460965f51084ec26601577ccfc7141501c7b5f70a6499fdd",
+    "src/utils/tests/fixtures/staleMotifSnapshots.ts": "e4010791ab6a6e7de5eec014e72ef1602d22790ed0aef23177473aefc8a2d8e1",
+    "src/utils/tests/mistakeReview.test.ts": "475b2a7dfad3fca970798bc7932b5ac9563c27a25dd57483b4740c8e49000362",
+    "scripts/tests/repetition-history-review-service.test.mjs": "7875f033db1da69c2b82e1d5946ef3b48ed81631f7aa778f43908a56249e7ebc",
+    "scripts/tests/frontier-motif-review-service.test.mjs": "ae01db5de70504046ab5c4bcb511269eb19db68afa2f448892b33df3ce970bea"
+  },
+  "preservedCore": {
+    "workingSha256LF": "6ec0824d8cd4d250c1e5d51ee81f2b16c6a1ff088564b5c580dd0682d88301b9",
+    "unchangedFromAdapter170": true,
+    "unrelatedPendingCheckingRay": {
+      "insertions": 46,
+      "deletions": 4
+    }
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "limitations": [
+    "Runtime repetition checks prove immediate root boundaries only, not all descendants of every tactical search tree.",
+    "Missing or malformed history cannot certify absence of repetition. The new gate consumes only positive legally replayed facts.",
+    "Saved evidence readers abstain until asynchronous migration; no synchronous bulk tactical search or automatic positional-negative judgment.",
+    "Endgame history composition remains benchmark-only. Inherited winning leaves may be unknown, and trusted provider acquisition remains separate from hash binding.",
+    "The existing queen-ending promotion and quiet-preparation causal recall gaps remain.",
+    "Working-tree builds include preserved unrelated edits. Exact-core tests exclude the pending checking-ray patch; no installed app or service was deployed."
+  ]
+}

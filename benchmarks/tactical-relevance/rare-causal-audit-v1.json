@@ -1,0 +1,5532 @@
+{
+  "schema": 1,
+  "scope": "Four output-blind development-only nominations. Source-game-disjoint from prior recorded public cases; source labels are not judgments and this reused fixture is not a holdout.",
+  "sourceFixtureSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "selection": {
+    "seed": "public-rare-causal-audit-2026-10-02",
+    "themes": [
+      "deflection",
+      "interference",
+      "clearance",
+      "attraction"
+    ],
+    "perTheme": 1
+  },
+  "exclusionLedger": {
+    "ids": [
+      "lichess:9cqKR",
+      "lichess:hGEvH",
+      "lichess:kO37k",
+      "lichess:brn5j",
+      "lichess:49h84",
+      "lichess:qY3NM",
+      "lichess:W2tIf",
+      "lichess:EKWHC",
+      "lichess:KRLot",
+      "lichess:SIVEv",
+      "lichess:30PgS",
+      "lichess:I5Waq",
+      "lichess:DBBd9",
+      "lichess:qQG5v",
+      "lichess:J3vOR",
+      "lichess:HuMdz",
+      "lichess:nkeLA",
+      "lichess:R13Ct",
+      "lichess:BvWlf",
+      "lichess:vMQ3b",
+      "lichess:pV2Bd",
+      "lichess:sKDBG",
+      "lichess:xxDaj",
+      "lichess:SD5oo",
+      "lichess:qn2Fy",
+      "lichess:j8Up4",
+      "lichess:S9vEb",
+      "lichess:i2SLh",
+      "lichess:oSj8l",
+      "lichess:c6L21",
+      "lichess:DVSJh",
+      "lichess:007c6",
+      "lichess:fVRuW",
+      "lichess:K56tk",
+      "lichess:NKnZo",
+      "lichess:5hjz7",
+      "lichess:GIB50",
+      "lichess:REAdh",
+      "lichess:NGZzo",
+      "lichess:4Osgg",
+      "lichess:UCiYo",
+      "lichess:CSh8J",
+      "lichess:opGD7",
+      "lichess:fJrhT",
+      "lichess:MJZcU",
+      "lichess:0RleZ",
+      "lichess:Z5arb",
+      "lichess:iUj3e",
+      "lichess:Kvpvi",
+      "lichess:hz3ed",
+      "lichess:o8K8i",
+      "lichess:w1lKu",
+      "lichess:rqXvZ",
+      "lichess:ouIHI",
+      "lichess:eOCp9",
+      "lichess:erSYy",
+      "lichess:vztmO",
+      "lichess:G8wdr",
+      "lichess:4GiqO",
+      "lichess:wh6Ac",
+      "lichess:NOaM1",
+      "lichess:JaKHo",
+      "lichess:ZVq1J",
+      "lichess:snAK4",
+      "lichess:4Ds65",
+      "lichess:06PHz",
+      "lichess:0XwFD",
+      "lichess:0iAUN",
+      "lichess:0IJ6I",
+      "lichess:09Cf3",
+      "lichess:0hHGN",
+      "lichess:0z5nl",
+      "lichess:0rcU4",
+      "lichess:0QPvf",
+      "lichess:3kPn3",
+      "lichess:3mWuW",
+      "lichess:41frD",
+      "lichess:7Aje1",
+      "lichess:7tbEy",
+      "lichess:8FLlO",
+      "lichess:AtnrF",
+      "lichess:IyijS",
+      "lichess:Jn9KP",
+      "lichess:LDIy1",
+      "lichess:LDnWZ",
+      "lichess:NOVGX",
+      "lichess:NrHkx",
+      "lichess:NtXK7",
+      "lichess:O3OKR",
+      "lichess:OezHt",
+      "lichess:PDoyY",
+      "lichess:bBtM1",
+      "lichess:eQa3B",
+      "lichess:eimKB",
+      "lichess:g2XPR",
+      "lichess:gJxgk",
+      "lichess:hajE5",
+      "lichess:kCdp5",
+      "lichess:n48BE",
+      "lichess:nUdHj",
+      "lichess:qUCRQ",
+      "lichess:r7fZD",
+      "lichess:wVsJa",
+      "lichess:xyVJC",
+      "lichess:yLDJO",
+      "lichess:wXMJJ",
+      "lichess:KmpJY",
+      "lichess:pXSKy",
+      "lichess:ZrgCo",
+      "lichess:Vk1Ud",
+      "lichess:ilrgH",
+      "lichess:Kn14A",
+      "lichess:UohLn",
+      "lichess:DVs4F",
+      "lichess:zYjb5",
+      "lichess:dkEzJ",
+      "lichess:UiHeK",
+      "lichess:w8wvY",
+      "lichess:IKbcw",
+      "lichess:gnlcF",
+      "lichess:e9KxD",
+      "lichess:QSKdo",
+      "lichess:nBrWE",
+      "lichess:om0GQ",
+      "lichess:dLG91",
+      "lichess:GDK87",
+      "lichess:tA2XR",
+      "lichess:4RNK5",
+      "lichess:1DoTa",
+      "lichess:1GRFo",
+      "lichess:2Gc77",
+      "lichess:2QybO",
+      "lichess:2SvDe",
+      "lichess:48ION",
+      "lichess:6fO6p",
+      "lichess:6mAvx",
+      "lichess:8DHuj",
+      "lichess:8mguL",
+      "lichess:9THyd"
+    ],
+    "sourceGames": [
+      "game:mD14jttw",
+      "game:TCE52bRu",
+      "game:zcEVXTW1",
+      "game:BNbGN5Pe",
+      "game:fvNmdR3U",
+      "game:h5yHhpzr",
+      "game:zJqoVvf1",
+      "game:QwS7iWSm",
+      "game:T675oRjx",
+      "game:etolcQHz",
+      "game:MHuRInPi",
+      "game:xwAZeVkB",
+      "game:TRKE6TxS",
+      "game:Gectvn7R",
+      "game:ZFgq8VzD",
+      "game:C9q6jvtW",
+      "game:yOwOb8mH",
+      "game:8OYE3aem",
+      "game:eTscGjLx",
+      "game:BkwHTU3l",
+      "game:oD1ADLSC",
+      "game:fva0lLZe",
+      "game:puYvqadF",
+      "game:NJ3Eb11y",
+      "game:pEUmwLlr",
+      "game:pdbeBjyx",
+      "game:4tqsjUtF",
+      "game:izfXsnC0",
+      "game:WWrFvxBQ",
+      "game:UAAXpF7B",
+      "game:xuFT6vq3",
+      "game:E29eVNxr",
+      "game:NkEy0NrH",
+      "game:1plwqVL4",
+      "game:m6XYFzNi",
+      "game:lqiMtKKO",
+      "game:aV2A8QXf",
+      "game:wFNlpQnz",
+      "game:31B9VRnS",
+      "game:5TC0C2PP",
+      "game:tjadbVcy",
+      "game:G3Mo3zZE",
+      "game:QKXN6oPz",
+      "game:LKIYSXe4",
+      "game:m7aM6Y40",
+      "game:hGOMBDY0",
+      "game:dSAOWmhe",
+      "game:A0A2dlDF",
+      "game:BQIrG1B3",
+      "game:7Wimia5I",
+      "game:loCtb5SI",
+      "game:goU45R1y",
+      "game:DB4UjIGq",
+      "game:mOEDgNl8",
+      "game:vqwzqZHC",
+      "game:Ejf8ow6J",
+      "game:o9UQkODe",
+      "game:NhsymRXl",
+      "game:oUQxGPRf",
+      "game:yLTMw0nH",
+      "game:5IgAYhar",
+      "game:7lzGil6H",
+      "game:e3jcEqi6",
+      "game:seP4J8Tb",
+      "game:3Rsa9ycS",
+      "game:l8sSle4i",
+      "game:oHeYQKb9",
+      "game:Og0h3Ig3",
+      "game:PEouuNXC",
+      "game:RQB8EABI",
+      "game:Nv8lUjlo",
+      "game:eh5TbQXm",
+      "game:dzJG2gxf",
+      "game:be0rLECF",
+      "game:IyblvP2P",
+      "game:pcnTzKC6",
+      "game:FODxhu6Q",
+      "game:KWmz9y1B",
+      "game:ztEkx5X0",
+      "game:yI9Y2Aep",
+      "game:4BUsJguL",
+      "game:THTuuIz2",
+      "game:eIS3TrpJ",
+      "game:AjM3oAEe",
+      "game:qJ0aresT",
+      "game:QPNg8ZHh",
+      "game:icQaIE9m",
+      "game:wOOnQcXR",
+      "game:cS8sT93s",
+      "game:mQUbKUdO",
+      "game:pxdMS4ar",
+      "game:Unhq2NQb",
+      "game:fu4ZkxrA",
+      "game:xYoaQcxz",
+      "game:Li8zzqp9",
+      "game:sWtiFRMg",
+      "game:Sstuiwms",
+      "game:EGwnSMl7",
+      "game:cc7qidXs",
+      "game:QHKYXMwZ",
+      "game:EtPuafTc",
+      "game:zdiMuOOP",
+      "game:KufbTWxS",
+      "game:nFq8R2sJ",
+      "game:IuJas3xq",
+      "game:a4MxY0Mo",
+      "game:5NPtEpQL",
+      "game:heingGcp",
+      "game:ZQ6hOt0H",
+      "game:x1B4MZEX",
+      "game:VzM2axmW",
+      "game:79lqSOjV",
+      "game:BPhtQ9HN",
+      "game:4LQ9aTGO",
+      "game:cdobP834",
+      "game:rFPKBB1L",
+      "game:EeAn5MBT",
+      "game:ynsDtr2Y",
+      "game:GSJDd7Yn",
+      "game:sZuxhzM1",
+      "game:GBrL8A23",
+      "game:MtgbMsI4",
+      "game:FBpuOG15",
+      "game:Iji4vDQ0",
+      "game:my1AArl0",
+      "game:yxtV6nOi",
+      "game:JAFCpDph",
+      "game:GeURB1tB",
+      "game:hITPUf3v",
+      "game:pcWVHDCp",
+      "game:vISccVxI",
+      "game:Q0o5hKT2",
+      "game:MPbj9NYQ",
+      "game:YVKijnFF",
+      "game:2h2a8ToL",
+      "game:mdDpa9Xi",
+      "game:JRH8EioB",
+      "game:El4gBLqB",
+      "game:rW8JOc3d"
+    ]
+  },
+  "order": "Deterministic selection, written board hypotheses, independent legal replay and bounded engine corroboration, then classifier outputs, then adjudication and frozen observable tests.",
+  "independentImplementation": "python-chess 1.11.2",
+  "engineLimits": {
+    "threads": 1,
+    "hashMiB": 32,
+    "depth": 16,
+    "nodes": 300000,
+    "seconds": 2
+  },
+  "evidenceHashes": {
+    "rare-causal-selection.json": "da08664c7dbd9a15d8b5dc8cd6f1653fe0e696294bbd6ae4889fe69c06a29760",
+    "rare-causal-initial-judgment.json": "397c80a05f12e0fd825e9a42b1fe4519b241e3a60d0a1bfcdc66fa1427959815",
+    "rare-causal-independent.json": "0520a53c6c05c70eeaece142b466fee9f9d7c59c0494494486898c0d7665e31e",
+    "rare-causal-engine.json": "4e8f315df5f09618a0c89aa744ef0c913c27017e3ca25accf2a14eacc1fb0ad7",
+    "rare-causal-adapter168.json": "756581e1e163cbbfa3f2015d5196eead322ecb9534d32229f517c38c5a701509"
+  },
+  "cases": [
+    {
+      "stratum": "deflection",
+      "id": "lichess:CSQS3",
+      "sourceGameUrl": "https://lichess.org/lwOOWkJP/black#58",
+      "sourceGroup": "game:lwOOWkJP",
+      "sourceThemes": [
+        "crushing",
+        "defensiveMove",
+        "deflection",
+        "endgame",
+        "master",
+        "veryLong"
+      ],
+      "sourceFen": "6k1/5p1p/2n1pP2/3pPp1Q/2nq4/7P/5RB1/6K1 b - - 1 29",
+      "precedingMove": "d4a1",
+      "startFen": "6k1/5p1p/2n1pP2/3pPp1Q/2n5/7P/5RB1/q5K1 w - - 2 30",
+      "bestLine": [
+        "g2f1",
+        "g8f8",
+        "h5h7",
+        "f8e8",
+        "h7g8",
+        "e8d7",
+        "g8f7"
+      ],
+      "selectionHash": "004a3ca6f4f6c21176a28d05d639cb9b1810672d52170f1ba7faf618d006903f",
+      "hypothesis": "Bf1 interposes against Qa1's rank check while threatening an attack on h7. It resembles a defensive counterthreat; a root deflection needs an actual forced displaced defender, not the source label or the later pawn capture. Enumerate all check evasions, queen captures and mate parries. Unknown root certificate.",
+      "status": "unresolved-root",
+      "judgment": "Bf1 is a legal defensive interposition with a deeper counterthreat. The current immediate/checking-mate-in-two nomination does not prove it. Later mating evidence must stay at its own ply. Source deflection is not a proved root label; empty root output is not positional ground truth.",
+      "independentReplay": [
+        {
+          "ply": 1,
+          "uci": "g2f1",
+          "san": "Bf1",
+          "fen": "6k1/5p1p/2n1pP2/3pPp1Q/2n5/7P/5R2/q4BK1 b - - 3 30",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "g8h8",
+              "san": "Kh8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8f8",
+              "san": "Kf8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6d8",
+              "san": "Nd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6b8",
+              "san": "Nb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6e7",
+              "san": "Ne7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6a7",
+              "san": "Na7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6e5",
+              "san": "N6xe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6a5",
+              "san": "N6a5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6d4",
+              "san": "Nd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6b4",
+              "san": "Nb4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4d6",
+              "san": "Nd6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4b6",
+              "san": "Nb6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4e5",
+              "san": "N4xe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4a5",
+              "san": "N4a5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4e3",
+              "san": "Ne3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4a3",
+              "san": "Na3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4d2",
+              "san": "Nd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4b2",
+              "san": "Nb2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a8",
+              "san": "Qa8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a7",
+              "san": "Qa7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a6",
+              "san": "Qa6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1e5",
+              "san": "Qxe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a5",
+              "san": "Qa5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1d4",
+              "san": "Qd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a4",
+              "san": "Qa4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1c3",
+              "san": "Qc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a3",
+              "san": "Qa3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1b2",
+              "san": "Qb2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a2",
+              "san": "Qa2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1f1",
+              "san": "Qxf1+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1e1",
+              "san": "Qe1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1d1",
+              "san": "Qd1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1c1",
+              "san": "Qc1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1b1",
+              "san": "Qb1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h6",
+              "san": "h6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f5f4",
+              "san": "f4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d5d4",
+              "san": "d4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 2,
+          "uci": "g8f8",
+          "san": "Kf8",
+          "fen": "5k2/5p1p/2n1pP2/3pPp1Q/2n5/7P/5R2/q4BK1 w - - 4 31",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "h5h7",
+              "san": "Qxh7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5f7",
+              "san": "Qxf7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5h6",
+              "san": "Qh6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5g6",
+              "san": "Qg6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5g5",
+              "san": "Qg5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5f5",
+              "san": "Qxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5h4",
+              "san": "Qh4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5g4",
+              "san": "Qg4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5f3",
+              "san": "Qf3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5e2",
+              "san": "Qe2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h5d1",
+              "san": "Qd1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f5",
+              "san": "Rxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f4",
+              "san": "Rf4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f3",
+              "san": "Rf3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2h2",
+              "san": "Rh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2g2",
+              "san": "Rg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2e2",
+              "san": "Re2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2d2",
+              "san": "Rd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2c2",
+              "san": "Rc2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2b2",
+              "san": "Rb2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2a2",
+              "san": "Ra2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h2",
+              "san": "Kh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1g2",
+              "san": "Kg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 3,
+          "uci": "h5h7",
+          "san": "Qxh7",
+          "fen": "5k2/5p1Q/2n1pP2/3pPp2/2n5/7P/5R2/q4BK1 b - - 0 31",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "f8e8",
+              "san": "Ke8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6d8",
+              "san": "Nd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c6b8",
+              "san": "Nb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c6e7",
+              "san": "Ne7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6a7",
+              "san": "Na7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c6e5",
+              "san": "N6xe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c6a5",
+              "san": "N6a5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c6d4",
+              "san": "Nd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c6b4",
+              "san": "Nb4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4d6",
+              "san": "Nd6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4b6",
+              "san": "Nb6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4e5",
+              "san": "N4xe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4a5",
+              "san": "N4a5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4e3",
+              "san": "Ne3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4a3",
+              "san": "Na3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4d2",
+              "san": "Nd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "c4b2",
+              "san": "Nb2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1a8",
+              "san": "Qa8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1a7",
+              "san": "Qa7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1a6",
+              "san": "Qa6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1e5",
+              "san": "Qxe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1a5",
+              "san": "Qa5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1d4",
+              "san": "Qd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1a4",
+              "san": "Qa4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1c3",
+              "san": "Qc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1a3",
+              "san": "Qa3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1b2",
+              "san": "Qb2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1a2",
+              "san": "Qa2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1f1",
+              "san": "Qxf1+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1e1",
+              "san": "Qe1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1d1",
+              "san": "Qd1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1c1",
+              "san": "Qc1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "a1b1",
+              "san": "Qb1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "f5f4",
+              "san": "f4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            },
+            {
+              "uci": "d5d4",
+              "san": "d4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h7h8",
+                  "san": "Qh8#"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ply": 4,
+          "uci": "f8e8",
+          "san": "Ke8",
+          "fen": "4k3/5p1Q/2n1pP2/3pPp2/2n5/7P/5R2/q4BK1 w - - 1 32",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "h7h8",
+              "san": "Qh8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7g8",
+              "san": "Qg8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7g7",
+              "san": "Qg7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7f7",
+              "san": "Qxf7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h6",
+              "san": "Qh6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7g6",
+              "san": "Qg6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h5",
+              "san": "Qh5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7f5",
+              "san": "Qxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h4",
+              "san": "Qh4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f5",
+              "san": "Rxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f4",
+              "san": "Rf4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f3",
+              "san": "Rf3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2h2",
+              "san": "Rh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2g2",
+              "san": "Rg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2e2",
+              "san": "Re2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2d2",
+              "san": "Rd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2c2",
+              "san": "Rc2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2b2",
+              "san": "Rb2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2a2",
+              "san": "Ra2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h2",
+              "san": "Kh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1g2",
+              "san": "Kg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 5,
+          "uci": "h7g8",
+          "san": "Qg8+",
+          "fen": "4k1Q1/5p2/2n1pP2/3pPp2/2n5/7P/5R2/q4BK1 b - - 2 32",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "e8d7",
+              "san": "Kd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 6,
+          "uci": "e8d7",
+          "san": "Kd7",
+          "fen": "6Q1/3k1p2/2n1pP2/3pPp2/2n5/7P/5R2/q4BK1 w - - 3 33",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "g8h8",
+              "san": "Qh8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8f8",
+              "san": "Qf8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8e8",
+              "san": "Qe8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8d8",
+              "san": "Qd8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8c8",
+              "san": "Qc8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8b8",
+              "san": "Qb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8a8",
+              "san": "Qa8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8h7",
+              "san": "Qh7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8g7",
+              "san": "Qg7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8f7",
+              "san": "Qxf7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8g6",
+              "san": "Qg6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8g5",
+              "san": "Qg5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8g4",
+              "san": "Qg4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8g3",
+              "san": "Qg3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8g2",
+              "san": "Qg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f5",
+              "san": "Rxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f4",
+              "san": "Rf4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2f3",
+              "san": "Rf3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2h2",
+              "san": "Rh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2g2",
+              "san": "Rg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2e2",
+              "san": "Re2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2d2",
+              "san": "Rd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2c2",
+              "san": "Rc2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2b2",
+              "san": "Rb2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f2a2",
+              "san": "Ra2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h2",
+              "san": "Kh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1g2",
+              "san": "Kg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 7,
+          "uci": "g8f7",
+          "san": "Qxf7+",
+          "fen": "8/3k1Q2/2n1pP2/3pPp2/2n5/7P/5R2/q4BK1 b - - 0 33",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "d7d8",
+              "san": "Kd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d7c8",
+              "san": "Kc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c6e7",
+              "san": "Ne7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        }
+      ],
+      "engineCorroboration": {
+        "id": "lichess:CSQS3",
+        "kind": "root",
+        "fen": "6k1/5p1p/2n1pP2/3pPp1Q/2n5/7P/5RB1/q5K1 w - - 2 30",
+        "candidates": [
+          {
+            "depth": 16,
+            "nodes": 300104,
+            "cpWhite": 567,
+            "mateWhite": null,
+            "pv": [
+              "g2f1",
+              "g8f8",
+              "h5h7",
+              "f8e8",
+              "h7g8",
+              "e8d7",
+              "g8f7",
+              "d7c8",
+              "f7g8",
+              "c8b7",
+              "f6f7",
+              "a1c3",
+              "f7f8q",
+              "b7a6",
+              "g8g2",
+              "a6b6",
+              "f1c4",
+              "c3c4",
+              "f2b2",
+              "b6c7"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 300104,
+            "cpWhite": 79,
+            "mateWhite": null,
+            "pv": [
+              "f2f1",
+              "a1d4",
+              "g1h1",
+              "d4e3",
+              "f1g1",
+              "c4e5",
+              "g2d5",
+              "g8f8",
+              "d5c6",
+              "e5c6",
+              "h5h7"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 300104,
+            "cpWhite": -334,
+            "mateWhite": null,
+            "pv": [
+              "g1h2",
+              "a1e5",
+              "h2g1",
+              "e5f6",
+              "h5g4",
+              "f6g7",
+              "g4f4",
+              "c6e5",
+              "f2a2",
+              "h7h6",
+              "g1h1",
+              "e5g6"
+            ]
+          }
+        ]
+      },
+      "before": [
+        {
+          "length": 1,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-168"
+        },
+        {
+          "length": 7,
+          "motifs": [],
+          "timeline": [
+            {
+              "id": "forcingAttack",
+              "label": "Mating Attack",
+              "source": "available",
+              "confidence": "high",
+              "ply": 3,
+              "moveUci": "h5h7",
+              "value": 200,
+              "evidence": "Qxh7 creates the new threat Qh8#. Stopping the mate concedes material: after Ke8, Qg8+ Kd7 Qxf7+ wins material. All 35 legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.",
+              "relevance": "secondary",
+              "actor": "white"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-168"
+        }
+      ]
+    },
+    {
+      "stratum": "interference",
+      "id": "lichess:GrHPv",
+      "sourceGameUrl": "https://lichess.org/x2Oo1BCm/black#84",
+      "sourceGroup": "game:x2Oo1BCm",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "exposedKing",
+        "interference",
+        "master",
+        "quietMove",
+        "sacrifice",
+        "skewer",
+        "veryLong"
+      ],
+      "sourceFen": "6k1/5q1p/6p1/3pQp2/1prP4/7P/6P1/1R4K1 b - - 2 42",
+      "precedingMove": "g8f8",
+      "startFen": "5k2/5q1p/6p1/3pQp2/1prP4/7P/6P1/1R4K1 w - - 3 43",
+      "bestLine": [
+        "b1a1",
+        "c4c8",
+        "a1a7",
+        "f7a7",
+        "e5h8",
+        "f8f7",
+        "h8h7",
+        "f7f6",
+        "h7a7"
+      ],
+      "selectionHash": "3cdb83fdd6d4e59c19a719116eb4263046378d4b8987062f41d79ceec0124890",
+      "hypothesis": "Ra1 prepares Ra7 against Qf7. The offered rook may lure the queen off the eighth rank while Qh8+ and Qxh7+ lead to collecting it. Root Ra1 is a multi-move preparation, not immediate interference or skewer. Full all-reply relevance unproved; keep later mechanism at its actual ply.",
+      "status": "unresolved-root",
+      "judgment": "Ra1 is a quiet preparation for Ra7 and a later queen-winning checking sequence. Current root certificate and all-reply lesson are unresolved. Neither an immediate interference/skewer headline nor a positional-negative label is adjudicated from the supplied line.",
+      "independentReplay": [
+        {
+          "ply": 1,
+          "uci": "b1a1",
+          "san": "Ra1",
+          "fen": "5k2/5q1p/6p1/3pQp2/1prP4/7P/6P1/R5K1 b - - 4 43",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "f8g8",
+              "san": "Kg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7g8",
+              "san": "Qg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7e8",
+              "san": "Qe8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7g7",
+              "san": "Qg7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7e7",
+              "san": "Qe7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7d7",
+              "san": "Qd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7c7",
+              "san": "Qc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7b7",
+              "san": "Qb7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7a7",
+              "san": "Qa7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7f6",
+              "san": "Qf6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7e6",
+              "san": "Qe6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4c8",
+              "san": "Rc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4c7",
+              "san": "Rc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4c6",
+              "san": "Rc6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4c5",
+              "san": "Rc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4d4",
+              "san": "Rxd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4c3",
+              "san": "Rc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4c2",
+              "san": "Rc2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c4c1",
+              "san": "Rc1+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h6",
+              "san": "h6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g6g5",
+              "san": "g5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f5f4",
+              "san": "f4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b4b3",
+              "san": "b3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h5",
+              "san": "h5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 2,
+          "uci": "c4c8",
+          "san": "Rc8",
+          "fen": "2r2k2/5q1p/6p1/3pQp2/1p1P4/7P/6P1/R5K1 w - - 5 44",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "e5h8",
+              "san": "Qh8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e8",
+              "san": "Qe8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5b8",
+              "san": "Qb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5g7",
+              "san": "Qg7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e7",
+              "san": "Qe7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5c7",
+              "san": "Qc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5f6",
+              "san": "Qf6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e6",
+              "san": "Qe6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5d6",
+              "san": "Qd6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5f5",
+              "san": "Qxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5d5",
+              "san": "Qxd5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5f4",
+              "san": "Qf4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e4",
+              "san": "Qe4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5g3",
+              "san": "Qg3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e3",
+              "san": "Qe3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5h2",
+              "san": "Qh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e2",
+              "san": "Qe2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e1",
+              "san": "Qe1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h2",
+              "san": "Kh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f2",
+              "san": "Kf2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f1",
+              "san": "Kf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a8",
+              "san": "Ra8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a7",
+              "san": "Ra7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a6",
+              "san": "Ra6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a5",
+              "san": "Ra5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a4",
+              "san": "Ra4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a3",
+              "san": "Ra3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1a2",
+              "san": "Ra2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1f1",
+              "san": "Rf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1e1",
+              "san": "Re1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1d1",
+              "san": "Rd1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1c1",
+              "san": "Rc1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a1b1",
+              "san": "Rb1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g3",
+              "san": "g3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g4",
+              "san": "g4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 3,
+          "uci": "a1a7",
+          "san": "Ra7",
+          "fen": "2r2k2/R4q1p/6p1/3pQp2/1p1P4/7P/6P1/6K1 b - - 6 44",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "f8g8",
+              "san": "Kg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8e8",
+              "san": "Re8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8d8",
+              "san": "Rd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8b8",
+              "san": "Rb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8a8",
+              "san": "Ra8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c7",
+              "san": "Rc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c6",
+              "san": "Rc6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c5",
+              "san": "Rc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c4",
+              "san": "Rc4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c3",
+              "san": "Rc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c2",
+              "san": "Rc2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c1",
+              "san": "Rc1+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7g8",
+              "san": "Qg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "e5e7",
+                  "san": "Qe7#"
+                }
+              ]
+            },
+            {
+              "uci": "f7e8",
+              "san": "Qe8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "e5h8",
+                  "san": "Qh8#"
+                },
+                {
+                  "uci": "e5g7",
+                  "san": "Qg7#"
+                }
+              ]
+            },
+            {
+              "uci": "f7g7",
+              "san": "Qg7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7e7",
+              "san": "Qe7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7d7",
+              "san": "Qd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7c7",
+              "san": "Qc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7b7",
+              "san": "Qb7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7a7",
+              "san": "Qxa7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7f6",
+              "san": "Qf6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7e6",
+              "san": "Qe6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h6",
+              "san": "h6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g6g5",
+              "san": "g5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f5f4",
+              "san": "f4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b4b3",
+              "san": "b3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h5",
+              "san": "h5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 4,
+          "uci": "f7a7",
+          "san": "Qxa7",
+          "fen": "2r2k2/q6p/6p1/3pQp2/1p1P4/7P/6P1/6K1 w - - 0 45",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "e5h8",
+              "san": "Qh8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e8",
+              "san": "Qe8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5b8",
+              "san": "Qb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5g7",
+              "san": "Qg7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e7",
+              "san": "Qe7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5c7",
+              "san": "Qc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5f6",
+              "san": "Qf6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e6",
+              "san": "Qe6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5d6",
+              "san": "Qd6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5f5",
+              "san": "Qxf5+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5d5",
+              "san": "Qxd5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5f4",
+              "san": "Qf4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e4",
+              "san": "Qe4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5g3",
+              "san": "Qg3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e3",
+              "san": "Qe3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5h2",
+              "san": "Qh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e2",
+              "san": "Qe2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e5e1",
+              "san": "Qe1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h2",
+              "san": "Kh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f2",
+              "san": "Kf2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f1",
+              "san": "Kf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g3",
+              "san": "g3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g4",
+              "san": "g4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 5,
+          "uci": "e5h8",
+          "san": "Qh8+",
+          "fen": "2r2k1Q/q6p/6p1/3p1p2/1p1P4/7P/6P1/6K1 b - - 1 45",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "f8f7",
+              "san": "Kf7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f8e7",
+              "san": "Ke7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 6,
+          "uci": "f8f7",
+          "san": "Kf7",
+          "fen": "2r4Q/q4k1p/6p1/3p1p2/1p1P4/7P/6P1/6K1 w - - 2 46",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "h8g8",
+              "san": "Qg8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8f8",
+              "san": "Qf8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8e8",
+              "san": "Qe8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8d8",
+              "san": "Qd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8c8",
+              "san": "Qxc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8h7",
+              "san": "Qxh7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8g7",
+              "san": "Qg7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8f6",
+              "san": "Qf6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h8e5",
+              "san": "Qe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h2",
+              "san": "Kh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f2",
+              "san": "Kf2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f1",
+              "san": "Kf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g3",
+              "san": "g3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g4",
+              "san": "g4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 7,
+          "uci": "h8h7",
+          "san": "Qxh7+",
+          "fen": "2r5/q4k1Q/6p1/3p1p2/1p1P4/7P/6P1/6K1 b - - 0 46",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "f7f8",
+              "san": "Kf8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7e8",
+              "san": "Ke8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7f6",
+              "san": "Kf6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f7e6",
+              "san": "Ke6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 8,
+          "uci": "f7f6",
+          "san": "Kf6",
+          "fen": "2r5/q6Q/5kp1/3p1p2/1p1P4/7P/6P1/6K1 w - - 1 47",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "h7h8",
+              "san": "Qh8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7g8",
+              "san": "Qg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7g7",
+              "san": "Qg7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7f7",
+              "san": "Qf7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7e7",
+              "san": "Qe7+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7d7",
+              "san": "Qd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7c7",
+              "san": "Qc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7b7",
+              "san": "Qb7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7a7",
+              "san": "Qxa7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h6",
+              "san": "Qh6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7g6",
+              "san": "Qxg6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h5",
+              "san": "Qh5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h4",
+              "san": "Qh4+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h2",
+              "san": "Kh2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f2",
+              "san": "Kf2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f1",
+              "san": "Kf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g3",
+              "san": "g3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g2g4",
+              "san": "g4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 9,
+          "uci": "h7a7",
+          "san": "Qxa7",
+          "fen": "2r5/Q7/5kp1/3p1p2/1p1P4/7P/6P1/6K1 b - - 0 47",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "c8h8",
+              "san": "Rh8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8g8",
+              "san": "Rg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8f8",
+              "san": "Rf8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8e8",
+              "san": "Re8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8d8",
+              "san": "Rd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8b8",
+              "san": "Rb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8a8",
+              "san": "Ra8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c7",
+              "san": "Rc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c6",
+              "san": "Rc6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c5",
+              "san": "Rc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c4",
+              "san": "Rc4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c3",
+              "san": "Rc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c2",
+              "san": "Rc2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c8c1",
+              "san": "Rc1+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6e6",
+              "san": "Ke6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6g5",
+              "san": "Kg5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g6g5",
+              "san": "g5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f5f4",
+              "san": "f4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b4b3",
+              "san": "b3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        }
+      ],
+      "engineCorroboration": {
+        "id": "lichess:GrHPv",
+        "kind": "root",
+        "fen": "5k2/5q1p/6p1/3pQp2/1prP4/7P/6P1/1R4K1 w - - 3 43",
+        "candidates": [
+          {
+            "depth": 16,
+            "nodes": 270962,
+            "cpWhite": 437,
+            "mateWhite": null,
+            "pv": [
+              "b1a1",
+              "c4c8",
+              "a1a7",
+              "f7a7",
+              "e5h8",
+              "f8e7",
+              "h8h7",
+              "e7f6",
+              "h7a7",
+              "f6g5",
+              "a7e7",
+              "g5f4",
+              "e7e5",
+              "f4g5",
+              "e5d5"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 270962,
+            "cpWhite": 2,
+            "mateWhite": null,
+            "pv": [
+              "e5h8",
+              "f7g8",
+              "h8e5",
+              "g8g7",
+              "e5b8",
+              "f8f7",
+              "b8b7",
+              "f7f6",
+              "b7b6",
+              "f6f7",
+              "b1b4",
+              "c4b4",
+              "b6b4",
+              "g7f6",
+              "b4b7",
+              "f6e7",
+              "b7d5",
+              "e7e6",
+              "d5b7",
+              "f7f6",
+              "b7h7",
+              "e6e3",
+              "g1f1",
+              "e3d3",
+              "f1e1"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 270962,
+            "cpWhite": -3,
+            "mateWhite": null,
+            "pv": [
+              "b1e1",
+              "f8g8",
+              "e5d6",
+              "c4c7",
+              "d6b4",
+              "f7f8",
+              "b4f8",
+              "g8f8",
+              "e1e5",
+              "c7d7",
+              "g2g4",
+              "f8f7",
+              "g1g2",
+              "d7d8",
+              "g2g3"
+            ]
+          }
+        ]
+      },
+      "before": [
+        {
+          "length": 1,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-168"
+        },
+        {
+          "length": 9,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-168"
+        }
+      ]
+    },
+    {
+      "stratum": "clearance",
+      "id": "lichess:Gtvlx",
+      "sourceGameUrl": "https://lichess.org/ugpVWplb#29",
+      "sourceGroup": "game:ugpVWplb",
+      "sourceThemes": [
+        "bodenMate",
+        "clearance",
+        "mate",
+        "mateIn2",
+        "middlegame",
+        "sacrifice",
+        "short"
+      ],
+      "sourceFen": "1r3rk1/p1pn1ppp/b4b2/6q1/3PB3/1P2P2P/PBP2P2/RN1QK2R w KQ - 1 15",
+      "precedingMove": "b1d2",
+      "startFen": "1r3rk1/p1pn1ppp/b4b2/6q1/3PB3/1P2P2P/PBPN1P2/R2QK2R b KQ - 2 15",
+      "bestLine": [
+        "g5e3",
+        "f2e3",
+        "f6h4"
+      ],
+      "selectionHash": "1c9b97c9b128fe7d0096c98101c37d05c6fc33b8c93f2c4ec29de86e55c743f5",
+      "hypothesis": "Qxe3+ vacates g5 for Bf6-h4; fxe3 also vacates f2 on the mating diagonal. Qe2 may provide a distinct mating reply, so source-line clearance could be branch-specific. Independently verify mate in two and exact named-bishop geometry; root forced mate should lead over sacrifice/clearance if every reply mates.",
+      "status": "accepted-outcome-noise",
+      "judgment": "Qxe3+ forces mate in two: fxe3 Bh4# or Qe2 Qxe2#. Mate in 2 is primary. The supporting Mating Deflection is not an independent pawn win or a merely material attack. Clearance/Boden geometry belongs to the actual mating branch.",
+      "independentReplay": [
+        {
+          "ply": 1,
+          "uci": "g5e3",
+          "san": "Qxe3+",
+          "fen": "1r3rk1/p1pn1ppp/b4b2/8/3PB3/1P2q2P/PBPN1P2/R2QK2R w KQ - 0 16",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "d1e2",
+              "san": "Qe2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "e3e2",
+                  "san": "Qxe2#"
+                }
+              ]
+            },
+            {
+              "uci": "f2e3",
+              "san": "fxe3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "f6h4",
+                  "san": "Bh4#"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ply": 2,
+          "uci": "f2e3",
+          "san": "fxe3",
+          "fen": "1r3rk1/p1pn1ppp/b4b2/8/3PB3/1P2P2P/PBPN4/R2QK2R b KQ - 0 16",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "g8h8",
+              "san": "Kh8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f8e8",
+              "san": "Rfe8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f8d8",
+              "san": "Rfd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f8c8",
+              "san": "Rfc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8e8",
+              "san": "Rbe8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8d8",
+              "san": "Rbd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8c8",
+              "san": "Rbc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8a8",
+              "san": "Ra8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8b7",
+              "san": "Rb7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8b6",
+              "san": "Rb6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8b5",
+              "san": "Rb5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8b4",
+              "san": "Rb4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b8b3",
+              "san": "Rxb3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d7b6",
+              "san": "Nb6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d7e5",
+              "san": "Ne5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d7c5",
+              "san": "Nc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6d8",
+              "san": "Bd8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6e7",
+              "san": "Be7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6g5",
+              "san": "Bg5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6e5",
+              "san": "Be5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6h4",
+              "san": "Bh4#",
+              "check": true,
+              "mate": true,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "f6d4",
+              "san": "Bxd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c8",
+              "san": "Bc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6b7",
+              "san": "Bb7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6b5",
+              "san": "Bb5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c4",
+              "san": "Bc4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6d3",
+              "san": "Bd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6e2",
+              "san": "Be2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6f1",
+              "san": "Bf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h6",
+              "san": "h6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g7g6",
+              "san": "g6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c7c6",
+              "san": "c6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7h5",
+              "san": "h5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g7g5",
+              "san": "g5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "c7c5",
+              "san": "c5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 3,
+          "uci": "f6h4",
+          "san": "Bh4#",
+          "fen": "1r3rk1/p1pn1ppp/b7/8/3PB2b/1P2P2P/PBPN4/R2QK2R w KQ - 1 17",
+          "check": true,
+          "mate": true,
+          "replies": []
+        }
+      ],
+      "engineCorroboration": {
+        "id": "lichess:Gtvlx",
+        "kind": "root",
+        "fen": "1r3rk1/p1pn1ppp/b4b2/6q1/3PB3/1P2P2P/PBPN1P2/R2QK2R b KQ - 2 15",
+        "candidates": [
+          {
+            "depth": 16,
+            "nodes": 98006,
+            "cpWhite": null,
+            "mateWhite": -2,
+            "pv": [
+              "g5e3",
+              "f2e3",
+              "f6h4"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 98006,
+            "cpWhite": 159,
+            "mateWhite": null,
+            "pv": [
+              "g5a5",
+              "d1g4",
+              "f8d8",
+              "g4f5",
+              "c7c5",
+              "f5h7",
+              "g8f8",
+              "h1g1",
+              "c5d4",
+              "e3d4",
+              "d7b6",
+              "e1c1",
+              "a5a2",
+              "h7h8",
+              "f8e7",
+              "h8h5",
+              "f6d4"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 98006,
+            "cpWhite": 185,
+            "mateWhite": null,
+            "pv": [
+              "f8d8",
+              "d1f3",
+              "g5a5",
+              "e1c1",
+              "a5a2",
+              "h1g1",
+              "g7g6",
+              "e4d5",
+              "d7b6",
+              "d2e4",
+              "b6d5",
+              "e4f6",
+              "d5f6",
+              "f3f6",
+              "b8b3",
+              "f6d8",
+              "g8g7"
+            ]
+          }
+        ]
+      },
+      "before": [
+        {
+          "length": 1,
+          "motifs": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary"
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 100,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. For example, Qe2 Qxe2#. This is not a forced-mate claim.",
+              "relevance": "secondary"
+            }
+          ],
+          "timeline": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary",
+              "actor": "black"
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 100,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. For example, Qe2 Qxe2#. This is not a forced-mate claim.",
+              "relevance": "secondary",
+              "actor": "black"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-168"
+        },
+        {
+          "length": 3,
+          "motifs": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary"
+            },
+            {
+              "id": "bodenMate",
+              "label": "Boden Mate",
+              "confidence": "medium",
+              "evidence": "Bh4# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
+              "source": "available",
+              "ply": 3,
+              "moveUci": "f6h4",
+              "relevance": "secondary",
+              "value": 10000
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 100,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. For example, Qe2 Qxe2#. This is not a forced-mate claim.",
+              "relevance": "secondary"
+            }
+          ],
+          "timeline": [
+            {
+              "id": "mateIn2",
+              "label": "Forcing Mate",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "evidence": "Qxe3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe3+ fxe3 Bh4#. The exact continuation depends on the defence.",
+              "relevance": "primary",
+              "actor": "black"
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 100,
+              "evidence": "Qxe3+ offers the queen to deflect the pawn from f2. Accepting with fxe3 allows Bh4#: the pawn no longer blocks the mating line from h4 to e1. Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. For example, Qe2 Qxe2#. This is not a forced-mate claim.",
+              "relevance": "secondary",
+              "actor": "black"
+            },
+            {
+              "id": "clearance",
+              "label": "Mating Clearance",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "g5e3",
+              "value": 10000,
+              "verifiedCombination": true,
+              "evidence": "Qxe3+ clears g5 for the bishop on f6. In this continuation, fxe3 allows Bh4#, leading to forced mate. Qe2 instead permits Qxe2#, without using the cleared route. Every legal defence is separately mated; clearance explains this branch, not a compulsory reply or an extra material win.",
+              "actor": "black",
+              "relevance": "secondary"
+            },
+            {
+              "id": "bodenMate",
+              "label": "Boden Mate",
+              "confidence": "medium",
+              "evidence": "Bh4# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
+              "source": "available",
+              "ply": 3,
+              "moveUci": "f6h4",
+              "relevance": "secondary",
+              "value": 10000,
+              "actor": "black"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-168"
+        }
+      ]
+    },
+    {
+      "stratum": "attraction",
+      "id": "lichess:sGGZN",
+      "sourceGameUrl": "https://lichess.org/I1scDAqN/black#62",
+      "sourceGroup": "game:I1scDAqN",
+      "sourceThemes": [
+        "attraction",
+        "crushing",
+        "deflection",
+        "exposedKing",
+        "middlegame",
+        "veryLong"
+      ],
+      "sourceFen": "6k1/4r1q1/N2R1pp1/1B2pb2/5PP1/4Q3/PPr4P/6K1 b - - 0 31",
+      "precedingMove": "e5f4",
+      "startFen": "6k1/4r1q1/N2R1pp1/1B3b2/5pP1/4Q3/PPr4P/6K1 w - - 0 32",
+      "bestLine": [
+        "d6d8",
+        "g8h7",
+        "e3h3",
+        "g7h6",
+        "d8h8",
+        "h7h8",
+        "h3h6"
+      ],
+      "selectionHash": "056dc389cc34df8939239737a240239ebf5a825cb06e0260c8b319e90f85bf81",
+      "hypothesis": "Rd8+ starts a checking attack, with Kf7 as a possible alternative to source Kh7. Qh3+ Qh6 Rh8+ induces a king decision and can collect Qh6, but Kg7 may decline Kxh8 while allowing Qxh6+ protected by Rh8. A source attraction tag must not become unconditional forced attraction; verify every root and later king reply.",
+      "status": "accepted-payoff-noise",
+      "judgment": "In the actual Rh8+ Kxh8 Qxh6+ branch the queen capture follows a rook offer and must not be called an additional free queen. Exact all-reply guard-displacement evidence supports a Deflection Payoff. No history means this compensation must not be invented. Root-only completeness and general forced-attraction recall are not claimed.",
+      "independentReplay": [
+        {
+          "ply": 1,
+          "uci": "d6d8",
+          "san": "Rd8+",
+          "fen": "3R2k1/4r1q1/N4pp1/1B3b2/5pP1/4Q3/PPr4P/6K1 b - - 1 32",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "g8h7",
+              "san": "Kh7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g8f7",
+              "san": "Kf7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g7f8",
+              "san": "Qf8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e7e8",
+              "san": "Re8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 2,
+          "uci": "g8h7",
+          "san": "Kh7",
+          "fen": "3R4/4r1qk/N4pp1/1B3b2/5pP1/4Q3/PPr4P/6K1 w - - 2 33",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "d8h8",
+              "san": "Rh8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8g8",
+              "san": "Rg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8f8",
+              "san": "Rf8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8e8",
+              "san": "Re8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8c8",
+              "san": "Rc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8b8",
+              "san": "Rb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8a8",
+              "san": "Ra8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d7",
+              "san": "Rd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d6",
+              "san": "Rd6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d5",
+              "san": "Rd5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d4",
+              "san": "Rd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d3",
+              "san": "Rd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d2",
+              "san": "Rd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d1",
+              "san": "Rd1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6b8",
+              "san": "Nb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c7",
+              "san": "Nc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c5",
+              "san": "Nc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6b4",
+              "san": "Nb4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5e8",
+              "san": "Be8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5d7",
+              "san": "Bd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5c6",
+              "san": "Bc6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5c4",
+              "san": "Bc4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5a4",
+              "san": "Ba4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5d3",
+              "san": "Bd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5e2",
+              "san": "Be2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5f1",
+              "san": "Bf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3e7",
+              "san": "Qxe7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3a7",
+              "san": "Qa7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3e6",
+              "san": "Qe6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3b6",
+              "san": "Qb6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3e5",
+              "san": "Qe5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3c5",
+              "san": "Qc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3f4",
+              "san": "Qxf4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3e4",
+              "san": "Qe4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3d4",
+              "san": "Qd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3h3",
+              "san": "Qh3+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3g3",
+              "san": "Qg3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3f3",
+              "san": "Qf3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3d3",
+              "san": "Qd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3c3",
+              "san": "Qc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3b3",
+              "san": "Qb3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3a3",
+              "san": "Qa3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3f2",
+              "san": "Qf2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3e2",
+              "san": "Qe2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3d2",
+              "san": "Qd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3e1",
+              "san": "Qe1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e3c1",
+              "san": "Qc1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f1",
+              "san": "Kf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g4f5",
+              "san": "gxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g4g5",
+              "san": "g5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h2h3",
+              "san": "h3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b2b3",
+              "san": "b3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a2a3",
+              "san": "a3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h2h4",
+              "san": "h4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b2b4",
+              "san": "b4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a2a4",
+              "san": "a4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 3,
+          "uci": "e3h3",
+          "san": "Qh3+",
+          "fen": "3R4/4r1qk/N4pp1/1B3b2/5pP1/7Q/PPr4P/6K1 b - - 3 33",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "g7h6",
+              "san": "Qh6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 4,
+          "uci": "g7h6",
+          "san": "Qh6",
+          "fen": "3R4/4r2k/N4ppq/1B3b2/5pP1/7Q/PPr4P/6K1 w - - 4 34",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "d8h8",
+              "san": "Rh8+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8g8",
+              "san": "Rg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8f8",
+              "san": "Rf8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8e8",
+              "san": "Re8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8c8",
+              "san": "Rc8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8b8",
+              "san": "Rb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8a8",
+              "san": "Ra8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d7",
+              "san": "Rd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d6",
+              "san": "Rd6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d5",
+              "san": "Rd5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d4",
+              "san": "Rd4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d3",
+              "san": "Rd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d2",
+              "san": "Rd2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "d8d1",
+              "san": "Rd1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6b8",
+              "san": "Nb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c7",
+              "san": "Nc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c5",
+              "san": "Nc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6b4",
+              "san": "Nb4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5e8",
+              "san": "Be8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5d7",
+              "san": "Bd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5c6",
+              "san": "Bc6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5c4",
+              "san": "Bc4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5a4",
+              "san": "Ba4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5d3",
+              "san": "Bd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5e2",
+              "san": "Be2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5f1",
+              "san": "Bf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h6",
+              "san": "Qxh6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h5",
+              "san": "Qh5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "Qh4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3g3",
+              "san": "Qg3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3f3",
+              "san": "Qf3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3e3",
+              "san": "Qe3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3d3",
+              "san": "Qd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3c3",
+              "san": "Qc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3b3",
+              "san": "Qb3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3a3",
+              "san": "Qa3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3g2",
+              "san": "Qg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3f1",
+              "san": "Qf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h6h2",
+                  "san": "Qxh2#"
+                }
+              ]
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f1",
+              "san": "Kf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g4f5",
+              "san": "gxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g4g5",
+              "san": "g5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b2b3",
+              "san": "b3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a2a3",
+              "san": "a3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b2b4",
+              "san": "b4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a2a4",
+              "san": "a4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 5,
+          "uci": "d8h8",
+          "san": "Rh8+",
+          "fen": "7R/4r2k/N4ppq/1B3b2/5pP1/7Q/PPr4P/6K1 b - - 5 34",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "h7h8",
+              "san": "Kxh8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h7g7",
+              "san": "Kg7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 6,
+          "uci": "h7h8",
+          "san": "Kxh8",
+          "fen": "7k/4r3/N4ppq/1B3b2/5pP1/7Q/PPr4P/6K1 w - - 0 35",
+          "check": false,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "a6b8",
+              "san": "Nb8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c7",
+              "san": "Nc7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6c5",
+              "san": "Nc5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a6b4",
+              "san": "Nb4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5e8",
+              "san": "Be8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5d7",
+              "san": "Bd7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5c6",
+              "san": "Bc6",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5c4",
+              "san": "Bc4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5a4",
+              "san": "Ba4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5d3",
+              "san": "Bd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5e2",
+              "san": "Be2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b5f1",
+              "san": "Bf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h6",
+              "san": "Qxh6+",
+              "check": true,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h5",
+              "san": "Qh5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3h4",
+              "san": "Qh4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3g3",
+              "san": "Qg3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3f3",
+              "san": "Qf3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3e3",
+              "san": "Qe3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3d3",
+              "san": "Qd3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3c3",
+              "san": "Qc3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3b3",
+              "san": "Qb3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3a3",
+              "san": "Qa3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3g2",
+              "san": "Qg2",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "h3f1",
+              "san": "Qf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h6h2",
+                  "san": "Qxh2#"
+                }
+              ]
+            },
+            {
+              "uci": "g1h1",
+              "san": "Kh1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g1f1",
+              "san": "Kf1",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g4f5",
+              "san": "gxf5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "g4g5",
+              "san": "g5",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b2b3",
+              "san": "b3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a2a3",
+              "san": "a3",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "b2b4",
+              "san": "b4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "a2a4",
+              "san": "a4",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            }
+          ]
+        },
+        {
+          "ply": 7,
+          "uci": "h3h6",
+          "san": "Qxh6+",
+          "fen": "7k/4r3/N4ppQ/1B3b2/5pP1/8/PPr4P/6K1 b - - 0 35",
+          "check": true,
+          "mate": false,
+          "replies": [
+            {
+              "uci": "h8g8",
+              "san": "Kg8",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": []
+            },
+            {
+              "uci": "e7h7",
+              "san": "Rh7",
+              "check": false,
+              "mate": false,
+              "stalemate": false,
+              "matesInOneForOpponent": [
+                {
+                  "uci": "h6f8",
+                  "san": "Qf8#"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "engineCorroboration": {
+        "id": "lichess:sGGZN",
+        "kind": "root",
+        "fen": "6k1/4r1q1/N2R1pp1/1B3b2/5pP1/4Q3/PPr4P/6K1 w - - 0 32",
+        "candidates": [
+          {
+            "depth": 16,
+            "nodes": 300250,
+            "cpWhite": 339,
+            "mateWhite": null,
+            "pv": [
+              "d6d8",
+              "g8h7",
+              "e3h3",
+              "g7h6",
+              "d8h8",
+              "h7h8",
+              "h3h6",
+              "h8g8",
+              "g4f5",
+              "g6f5",
+              "a6b4",
+              "e7h7",
+              "b4c2",
+              "h7h6",
+              "b5c4",
+              "g8h7",
+              "c2d4"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 300250,
+            "cpWhite": -409,
+            "mateWhite": null,
+            "pv": [
+              "e3b3",
+              "g8h7"
+            ]
+          },
+          {
+            "depth": 16,
+            "nodes": 300250,
+            "cpWhite": -447,
+            "mateWhite": null,
+            "pv": [
+              "b5c4",
+              "g8h7",
+              "e3f4",
+              "e7e1",
+              "c4f1",
+              "g7a7",
+              "f4d4",
+              "a7d4",
+              "d6d4",
+              "f5e4",
+              "d4e4",
+              "e1e4",
+              "h2h3",
+              "e4e1",
+              "a2a3",
+              "e1c1"
+            ]
+          }
+        ]
+      },
+      "before": [
+        {
+          "length": 1,
+          "motifs": [],
+          "motifClassifierVersion": "site-55.adapter-168"
+        },
+        {
+          "length": 7,
+          "motifs": [
+            {
+              "id": "forcingAttack",
+              "label": "Forcing Attack",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "d6d8",
+              "value": 400,
+              "evidence": "Rd8+ starts a checking attack that wins material or mates against every legal reply. After Kh7, Qh3+ Qh6 Rh8+ Kxh8 Qxh6+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+              "relevance": "primary"
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 5,
+              "moveUci": "d8h8",
+              "value": 400,
+              "evidence": "Rh8+ draws the king from h7 to h8, removing its protection of the queen on h6. In this line, Kxh8 Qxh6+ wins that target. Every legal defence concedes material or immediate mate.",
+              "relevance": "secondary"
+            }
+          ],
+          "timeline": [
+            {
+              "id": "forcingAttack",
+              "label": "Forcing Attack",
+              "source": "available",
+              "confidence": "high",
+              "ply": 1,
+              "moveUci": "d6d8",
+              "value": 400,
+              "evidence": "Rd8+ starts a checking attack that wins material or mates against every legal reply. After Kh7, Qh3+ Qh6 Rh8+ Kxh8 Qxh6+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+              "relevance": "primary",
+              "actor": "white"
+            },
+            {
+              "id": "deflection",
+              "label": "Deflection",
+              "source": "available",
+              "confidence": "high",
+              "ply": 5,
+              "moveUci": "d8h8",
+              "value": 400,
+              "evidence": "Rh8+ draws the king from h7 to h8, removing its protection of the queen on h6. In this line, Kxh8 Qxh6+ wins that target. Every legal defence concedes material or immediate mate.",
+              "relevance": "secondary",
+              "actor": "white"
+            },
+            {
+              "id": "skewer",
+              "label": "Skewer",
+              "source": "available",
+              "confidence": "high",
+              "ply": 5,
+              "moveUci": "d8h8",
+              "value": 400,
+              "evidence": "Rh8+ skewers the king on h7 and the queen on h6. No legal reply saves the rear target without conceding material.",
+              "relevance": "secondary",
+              "actor": "white"
+            },
+            {
+              "id": "hangingPiece",
+              "label": "Hanging Piece",
+              "confidence": "high",
+              "evidence": "Qxh6+ wins the loose queen on h6.",
+              "source": "available",
+              "ply": 7,
+              "moveUci": "h3h6",
+              "value": 900,
+              "relevance": "secondary",
+              "actor": "white"
+            }
+          ],
+          "motifClassifierVersion": "site-55.adapter-168"
+        }
+      ]
+    }
+  ]
+}

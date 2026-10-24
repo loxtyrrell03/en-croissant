@@ -1,0 +1,903 @@
+[
+  {
+    "kind": "original",
+    "fen": "r1r3k1/4pp1p/p1p1b1p1/qp1BP3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 20",
+    "root": "d5e6",
+    "visits": 3317,
+    "forward": {
+      "bound": 230,
+      "paths": [
+        {
+          "moves": [
+            "a8b8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a8a7",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c8b8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c8d8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c8e8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c8f8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c8c7",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g8f8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g8h8",
+            "e6f7"
+          ],
+          "bound": 430
+        },
+        {
+          "moves": [
+            "g8g7",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f7e6",
+            "c2c1"
+          ],
+          "bound": 230
+        },
+        {
+          "moves": [
+            "h7h6",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h7h5",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c6c5",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g6g5",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5d8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5c7",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5b6",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5a4",
+            "c2a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5b4",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5a3",
+            "e6d7"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5c3",
+            "c2c3"
+          ],
+          "bound": 800
+        },
+        {
+          "moves": [
+            "a5a2",
+            "e6a2"
+          ],
+          "bound": 1130
+        },
+        {
+          "moves": [
+            "b5b4",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1h6",
+            "e6d7"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1g5",
+            "f3g5"
+          ],
+          "bound": 430
+        },
+        {
+          "moves": [
+            "c1f4",
+            "h2f4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1a3",
+            "e6d7"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1e3",
+            "f2e3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1b2",
+            "c2b2"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1d2",
+            "f3d2"
+          ],
+          "bound": 330
+        }
+      ]
+    },
+    "reverse": {
+      "prefix": [
+        "c2c1",
+        "e6d5"
+      ],
+      "bound": 330,
+      "paths": [
+        {
+          "moves": [
+            "c1a1",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1b1",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1d1",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1b2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1c2",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1d2",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1a3",
+            "a5a3"
+          ],
+          "bound": 1230
+        },
+        {
+          "moves": [
+            "c1e3",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1f4",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1g5",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1h6",
+            "f7f6"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1d1",
+            "a5b6"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1f1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1h1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1d2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1e2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h1f1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h1g1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a2a3",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a2a4",
+            "a5b6"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g2g3",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g2g4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h2g1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h2g3",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h2f4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3g1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3d2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3h4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3g5",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h3h4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e5e6",
+            "a5a4"
+          ],
+          "bound": 330
+        }
+      ]
+    }
+  },
+  {
+    "kind": "remove-c8",
+    "fen": "r5k1/4pp1p/p1p1b1p1/qp1BP3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 20",
+    "root": "d5e6",
+    "visits": 3591,
+    "forward": {
+      "bound": 230,
+      "paths": [
+        {
+          "moves": [
+            "a8b8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a8c8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a8d8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a8e8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a8f8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a8a7",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g8f8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g8h8",
+            "e6f7"
+          ],
+          "bound": 430
+        },
+        {
+          "moves": [
+            "g8g7",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f7e6",
+            "c2c1"
+          ],
+          "bound": 230
+        },
+        {
+          "moves": [
+            "h7h6",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h7h5",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c6c5",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g6g5",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5d8",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5c7",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5b6",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5a4",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5b4",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5a3",
+            "e6d7"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a5c3",
+            "c2c3"
+          ],
+          "bound": 800
+        },
+        {
+          "moves": [
+            "a5a2",
+            "e6a2"
+          ],
+          "bound": 1130
+        },
+        {
+          "moves": [
+            "b5b4",
+            "c2c1"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1h6",
+            "e6d7"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1g5",
+            "f3g5"
+          ],
+          "bound": 430
+        },
+        {
+          "moves": [
+            "c1f4",
+            "h2f4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1a3",
+            "e6d7"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1e3",
+            "f2e3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1b2",
+            "c2b2"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1d2",
+            "f3d2"
+          ],
+          "bound": 330
+        }
+      ]
+    },
+    "reverse": {
+      "prefix": [
+        "c2c1",
+        "e6d5"
+      ],
+      "bound": 330,
+      "paths": [
+        {
+          "moves": [
+            "c1a1",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1b1",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1d1",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1b2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1c2",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1d2",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1a3",
+            "a5a3"
+          ],
+          "bound": 1230
+        },
+        {
+          "moves": [
+            "c1e3",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1f4",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1g5",
+            "a5a3"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "c1h6",
+            "f7f6"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1d1",
+            "a5b6"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1f1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1h1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1d2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e1e2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h1f1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h1g1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a2a3",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "a2a4",
+            "a5b6"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g2g3",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "g2g4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h2g1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h2g3",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h2f4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3g1",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3d2",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3h4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "f3g5",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "h3h4",
+            "a5a4"
+          ],
+          "bound": 330
+        },
+        {
+          "moves": [
+            "e5e6",
+            "a5a4"
+          ],
+          "bound": 330
+        }
+      ]
+    }
+  }
+]

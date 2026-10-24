@@ -39,11 +39,12 @@ const tacticalMotifEvidenceSchema = z.object({
     label: z.string(),
     confidence: z.enum(["high", "medium", "low"]),
     evidence: z.string(),
-    source: z.enum(["allowed", "missed"]),
+    source: z.enum(["allowed", "missed", "available"]),
     ply: z.number().int().positive().nullable(),
     moveUci: z.string().nullable(),
     relevance: z.enum(["primary", "secondary"]).optional(),
     value: z.number().optional(),
+    outcome: z.literal("mate").optional(),
     verifiedCombination: z.literal(true).optional(),
     actor: z.enum(["white", "black"]).optional(),
     comparison: z.enum(["prevented", "persists", "reduced"]).optional(),
@@ -166,6 +167,7 @@ export const positionSchema = z.object({
             winProbabilityDrop: z.number().optional(),
             cpBefore: z.number().optional(),
             cpAfter: z.number().optional(),
+            cpPerspective: z.literal("white").optional(),
             requestedDepth: z.number().optional(),
             reachedDepth: z.number().optional(),
             analysisMode: z.enum(["single", "layered"]).optional(),
@@ -195,6 +197,7 @@ export const positionSchema = z.object({
             missedNature: z.enum(["tactical", "positional", "unknown"]).optional(),
             missedNatureReason: z.string().optional(),
             natureClassifierVersion: z.number().optional(),
+            natureMotifClassifierVersion: z.string().optional(),
             allowedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
             missedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
             allowedTimeline: z.array(tacticalMotifEvidenceSchema).optional(),
@@ -331,6 +334,7 @@ export type Position = {
         winProbabilityDrop?: number;
         cpBefore?: number;
         cpAfter?: number;
+        cpPerspective?: "white";
         requestedDepth?: number;
         reachedDepth?: number;
         analysisMode?: "single" | "layered";
@@ -361,6 +365,7 @@ export type Position = {
         missedNature?: "tactical" | "positional" | "unknown";
         missedNatureReason?: string;
         natureClassifierVersion?: number;
+        natureMotifClassifierVersion?: string;
         allowedMotifs?: TacticalMotifEvidence[];
         missedMotifs?: TacticalMotifEvidence[];
         allowedTimeline?: TacticalMotifEvidence[];

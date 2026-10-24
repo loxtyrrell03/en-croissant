@@ -18,7 +18,7 @@ import {
     withTacticalReplyCandidates,
     needsMissedAlternativeSearch,
 } from "../src/web/mistakeReview";
-import { sharedReviewDeck, mergeSharedProgress, SHARED_REVIEW_FILE } from "../src/web/sharedReview";
+import { sharedReviewDeck, mergeSharedProgress, reconcileSharedReviewScores, SHARED_REVIEW_FILE } from "../src/web/sharedReview";
 import type { WebEngineLine, WebGame } from "../src/web/model";
 import type { MistakeReviewDeck } from "../src/utils/mistakeReview";
 import { positionFromFen } from "../src/utils/chessops";
@@ -174,6 +174,7 @@ export class SharedReviewService {
                     ? {
                           ...p,
                           ...old,
+                          mistakeReview: reconcileSharedReviewScores(p, old),
                           tags: p.tags,
                           card:
                               !p.tags?.includes("Hidden") &&

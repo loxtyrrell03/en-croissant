@@ -1,5 +1,11 @@
 cg-board {
-  background-image: var(--board-image, url("/board/gray.svg"));
+  /* Keep all 64 squares visible if a saved board image cannot be loaded. */
+  background-color: #e9ecef;
+  background-image:
+    var(--board-image, none), conic-gradient(#868e96 25%, #e9ecef 0 50%, #868e96 0 75%, #e9ecef 0);
+  background-size:
+    cover,
+    25% 25%;
   border-radius: var(--mantine-radius-default);
   overflow: hidden;
 }
@@ -40,7 +46,11 @@ cg-board {
 }
 
 .cg-wrap[data-board-style="chess-com"] cg-board square.oc.move-dest {
-  background: radial-gradient(transparent 0%, transparent 78%, rgba(20, 85, 30, 0.46) 80%) !important;
+  background: radial-gradient(
+    transparent 0%,
+    transparent 78%,
+    rgba(20, 85, 30, 0.46) 80%
+  ) !important;
   border: 0 !important;
 }
 

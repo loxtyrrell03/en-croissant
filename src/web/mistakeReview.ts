@@ -4,6 +4,7 @@ import { normalizeWebFen } from "./pgn";
 import { tacticalGameHistory, type TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import {
     buildMistakeReviewTacticalExplanation,
+    isRetainedForkChoice,
     classifyMistakeReviewMotifs,
     isImmediateTacticalLesson,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
@@ -206,7 +207,7 @@ export function createPhoneReviewCard(
         after,
         drop: before - after,
         explanation: tacticalExplanation
-            ? `${tacticalExplanation.primary.alternativeCapture ? tacticalExplanation.title : tacticalExplanation.primary.label}: ${tacticalExplanation.text}`
+            ? `${tacticalExplanation.primary.alternativeCapture || isRetainedForkChoice(tacticalExplanation.primary) ? tacticalExplanation.title : tacticalExplanation.primary.label}: ${tacticalExplanation.text}`
             : `Keep the position's chances with ${best.sanMoves[0] ?? best.uciMoves[0]}. Compare the best line with the reply to ${move.san}.`,
         createdAt: now,
         due: now,

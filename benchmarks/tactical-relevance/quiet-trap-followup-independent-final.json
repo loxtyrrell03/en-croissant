@@ -1,0 +1,1184 @@
+{
+  "schemaVersion": 1,
+  "checker": "python-chess 1.11.2",
+  "scope": "Exact legal-move and finite material/geometry witnesses only, not an all-defence strategic proof.",
+  "sourceSha256": "839df3c00a2282f0a9dbff8439aeedbb535a0b1f71be9dfbf3852754ad4fadc9",
+  "observations": [
+    {
+      "id": "lichess:gMkbY",
+      "reflected": false,
+      "fen": "r1bq3r/p4kp1/2p4p/2ppP1nQ/8/P1P2P2/1P4PP/RNB1R1K1 b - - 4 19",
+      "sourceAccounting": [
+        0,
+        -320,
+        10,
+        -490,
+        410
+      ],
+      "replies": [
+        {
+          "uci": "h5h6",
+          "san": "Qxh6",
+          "check": false
+        },
+        {
+          "uci": "h5g6",
+          "san": "Qxg6+",
+          "check": true
+        },
+        {
+          "uci": "h5g5",
+          "san": "Qxg5",
+          "check": false
+        },
+        {
+          "uci": "h5h4",
+          "san": "Qh4",
+          "check": false
+        },
+        {
+          "uci": "h5g4",
+          "san": "Qg4",
+          "check": false
+        },
+        {
+          "uci": "h5h3",
+          "san": "Qh3",
+          "check": false
+        },
+        {
+          "uci": "g1f2",
+          "san": "Kf2",
+          "check": false
+        },
+        {
+          "uci": "g1h1",
+          "san": "Kh1",
+          "check": false
+        },
+        {
+          "uci": "g1f1",
+          "san": "Kf1",
+          "check": false
+        },
+        {
+          "uci": "e1e4",
+          "san": "Re4",
+          "check": false
+        },
+        {
+          "uci": "e1e3",
+          "san": "Re3",
+          "check": false
+        },
+        {
+          "uci": "e1e2",
+          "san": "Re2",
+          "check": false
+        },
+        {
+          "uci": "e1f1",
+          "san": "Rf1",
+          "check": false
+        },
+        {
+          "uci": "e1d1",
+          "san": "Rd1",
+          "check": false
+        },
+        {
+          "uci": "c1g5",
+          "san": "Bxg5",
+          "check": false
+        },
+        {
+          "uci": "c1f4",
+          "san": "Bf4",
+          "check": false
+        },
+        {
+          "uci": "c1e3",
+          "san": "Be3",
+          "check": false
+        },
+        {
+          "uci": "c1d2",
+          "san": "Bd2",
+          "check": false
+        },
+        {
+          "uci": "b1d2",
+          "san": "Nd2",
+          "check": false
+        },
+        {
+          "uci": "a1a2",
+          "san": "Ra2",
+          "check": false
+        },
+        {
+          "uci": "e5e6",
+          "san": "e6+",
+          "check": true
+        },
+        {
+          "uci": "f3f4",
+          "san": "f4",
+          "check": false
+        },
+        {
+          "uci": "c3c4",
+          "san": "c4",
+          "check": false
+        },
+        {
+          "uci": "a3a4",
+          "san": "a4",
+          "check": false
+        },
+        {
+          "uci": "h2h3",
+          "san": "h3",
+          "check": false
+        },
+        {
+          "uci": "g2g3",
+          "san": "g3",
+          "check": false
+        },
+        {
+          "uci": "b2b3",
+          "san": "b3",
+          "check": false
+        },
+        {
+          "uci": "h2h4",
+          "san": "h4",
+          "check": false
+        },
+        {
+          "uci": "g2g4",
+          "san": "g4",
+          "check": false
+        },
+        {
+          "uci": "b2b4",
+          "san": "b4",
+          "check": false
+        }
+      ],
+      "Qh4CheckingForkAllEvasions": [
+        {
+          "reply": "g1f2",
+          "queenCollectors": [
+            "d8h4",
+            "f3h4"
+          ]
+        },
+        {
+          "reply": "g1h1",
+          "queenCollectors": [
+            "d8h4",
+            "f3h4"
+          ]
+        },
+        {
+          "reply": "g1f1",
+          "queenCollectors": [
+            "d8h4",
+            "f3h4"
+          ]
+        },
+        {
+          "reply": "g2f3",
+          "queenCollectors": [
+            "d8h4"
+          ]
+        }
+      ],
+      "missingRookQh7HasNoImmediateLegalCapturer": true,
+      "extraF6PawnBlocksDiscoveredQueenCollectorAfterGxf3": true
+    },
+    {
+      "id": "lichess:gMkbY",
+      "reflected": true,
+      "fen": "rnb1r1k1/1p4pp/p1p2p2/8/2PPp1Nq/2P4P/P4KP1/R1BQ3R w - - 4 19",
+      "sourceAccounting": [
+        0,
+        -320,
+        10,
+        -490,
+        410
+      ],
+      "replies": [
+        {
+          "uci": "g8h8",
+          "san": "Kh8",
+          "check": false
+        },
+        {
+          "uci": "g8f8",
+          "san": "Kf8",
+          "check": false
+        },
+        {
+          "uci": "g8f7",
+          "san": "Kf7",
+          "check": false
+        },
+        {
+          "uci": "e8f8",
+          "san": "Rf8",
+          "check": false
+        },
+        {
+          "uci": "e8d8",
+          "san": "Rd8",
+          "check": false
+        },
+        {
+          "uci": "e8e7",
+          "san": "Re7",
+          "check": false
+        },
+        {
+          "uci": "e8e6",
+          "san": "Re6",
+          "check": false
+        },
+        {
+          "uci": "e8e5",
+          "san": "Re5",
+          "check": false
+        },
+        {
+          "uci": "c8d7",
+          "san": "Bd7",
+          "check": false
+        },
+        {
+          "uci": "c8e6",
+          "san": "Be6",
+          "check": false
+        },
+        {
+          "uci": "c8f5",
+          "san": "Bf5",
+          "check": false
+        },
+        {
+          "uci": "c8g4",
+          "san": "Bxg4",
+          "check": false
+        },
+        {
+          "uci": "b8d7",
+          "san": "Nd7",
+          "check": false
+        },
+        {
+          "uci": "a8a7",
+          "san": "Ra7",
+          "check": false
+        },
+        {
+          "uci": "h4h6",
+          "san": "Qh6",
+          "check": false
+        },
+        {
+          "uci": "h4h5",
+          "san": "Qh5",
+          "check": false
+        },
+        {
+          "uci": "h4g5",
+          "san": "Qg5",
+          "check": false
+        },
+        {
+          "uci": "h4g4",
+          "san": "Qxg4",
+          "check": false
+        },
+        {
+          "uci": "h4h3",
+          "san": "Qxh3",
+          "check": false
+        },
+        {
+          "uci": "h4g3",
+          "san": "Qxg3+",
+          "check": true
+        },
+        {
+          "uci": "h7h6",
+          "san": "h6",
+          "check": false
+        },
+        {
+          "uci": "g7g6",
+          "san": "g6",
+          "check": false
+        },
+        {
+          "uci": "b7b6",
+          "san": "b6",
+          "check": false
+        },
+        {
+          "uci": "f6f5",
+          "san": "f5",
+          "check": false
+        },
+        {
+          "uci": "c6c5",
+          "san": "c5",
+          "check": false
+        },
+        {
+          "uci": "a6a5",
+          "san": "a5",
+          "check": false
+        },
+        {
+          "uci": "e4e3",
+          "san": "e3+",
+          "check": true
+        },
+        {
+          "uci": "h7h5",
+          "san": "h5",
+          "check": false
+        },
+        {
+          "uci": "g7g5",
+          "san": "g5",
+          "check": false
+        },
+        {
+          "uci": "b7b5",
+          "san": "b5",
+          "check": false
+        }
+      ],
+      "Qh4CheckingForkAllEvasions": [
+        {
+          "reply": "g8h8",
+          "queenCollectors": [
+            "f6h5",
+            "d1h5"
+          ]
+        },
+        {
+          "reply": "g8f8",
+          "queenCollectors": [
+            "f6h5",
+            "d1h5"
+          ]
+        },
+        {
+          "reply": "g8f7",
+          "queenCollectors": [
+            "f6h5",
+            "d1h5"
+          ]
+        },
+        {
+          "reply": "g7f6",
+          "queenCollectors": [
+            "d1h5"
+          ]
+        }
+      ],
+      "missingRookQh7HasNoImmediateLegalCapturer": true,
+      "extraF6PawnBlocksDiscoveredQueenCollectorAfterGxf3": true
+    },
+    {
+      "id": "lichess:9YfbQ",
+      "reflected": false,
+      "fen": "3r2k1/4bp2/p3p1pP/1bN1P1P1/1P3Q2/2P5/4pK2/2Rq3R b - - 5 35",
+      "sourceAccounting": [
+        0,
+        0,
+        500,
+        -400,
+        -400,
+        -400,
+        -300
+      ],
+      "replies": [
+        {
+          "uci": "c5d7",
+          "san": "Nd7",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c5b7",
+          "san": "Nb7",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c5e6",
+          "san": "Nxe6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c5a6",
+          "san": "Nxa6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c5e4",
+          "san": "Ne4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c5a4",
+          "san": "Na4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c5d3",
+          "san": "Nd3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c5b3",
+          "san": "Nb3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4f7",
+          "san": "Qxf7+",
+          "check": true
+        },
+        {
+          "uci": "f4f6",
+          "san": "Qf6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4f5",
+          "san": "Qf5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4h4",
+          "san": "Qh4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4g4",
+          "san": "Qg4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4e4",
+          "san": "Qe4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4d4",
+          "san": "Qd4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4c4",
+          "san": "Qc4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4g3",
+          "san": "Qg3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4f3",
+          "san": "Qf3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4e3",
+          "san": "Qe3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4h2",
+          "san": "Qh2",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "f4d2",
+          "san": "Qxd2",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e1"
+          ]
+        },
+        {
+          "uci": "f2g3",
+          "san": "Kg3",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e1"
+          ]
+        },
+        {
+          "uci": "f2f3",
+          "san": "Kf3",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "d1"
+          ]
+        },
+        {
+          "uci": "f2e3",
+          "san": "Ke3",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e1"
+          ]
+        },
+        {
+          "uci": "f2g2",
+          "san": "Kg2",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "d2"
+          ]
+        },
+        {
+          "uci": "h1h5",
+          "san": "Rh5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "h1h4",
+          "san": "Rh4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "h1h3",
+          "san": "Rh3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "h1h2",
+          "san": "Rh2",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "h1g1",
+          "san": "Rg1",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "h1f1",
+          "san": "Rf1",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "h1e1",
+          "san": "Re1",
+          "check": false
+        },
+        {
+          "uci": "h1d1",
+          "san": "Rhxd1",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c1c2",
+          "san": "Rc2",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c1d1",
+          "san": "Rcxd1",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c1b1",
+          "san": "Rb1",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "c1a1",
+          "san": "Ra1",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        },
+        {
+          "uci": "h6h7",
+          "san": "h7+",
+          "check": true
+        },
+        {
+          "uci": "c3c4",
+          "san": "c4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "e1",
+            "d2"
+          ]
+        }
+      ],
+      "Ra1AllowsPromotionDoubleCheckmate": true,
+      "immediatePromotionBeforeRd2AllowsRh1xe1": true,
+      "pawnRemovedRootBecomesCheckDifferentMechanism": true,
+      "directQxc1PermitsQf4xc1": true,
+      "Rd2BlocksThatExactQueenRecapture": true,
+      "Qxd2Qxd2LocalGain": 400,
+      "directQxc1Qxc1Rd1Rxd1exd1QQxd1LocalGain": -500
+    },
+    {
+      "id": "lichess:9YfbQ",
+      "reflected": true,
+      "fen": "2rQ3r/4Pk2/2p5/1p3q2/1Bn1p1p1/P3P1Pp/4BP2/3R2K1 w - - 5 35",
+      "sourceAccounting": [
+        0,
+        0,
+        500,
+        -400,
+        -400,
+        -400,
+        -300
+      ],
+      "replies": [
+        {
+          "uci": "h8g8",
+          "san": "Rg8",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "h8f8",
+          "san": "Rf8",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "h8e8",
+          "san": "Re8",
+          "check": false
+        },
+        {
+          "uci": "h8d8",
+          "san": "Rhxd8",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "h8h7",
+          "san": "Rh7",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "h8h6",
+          "san": "Rh6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "h8h5",
+          "san": "Rh5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "h8h4",
+          "san": "Rh4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c8d8",
+          "san": "Rcxd8",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c8b8",
+          "san": "Rb8",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c8a8",
+          "san": "Ra8",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c8c7",
+          "san": "Rc7",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f7g7",
+          "san": "Kg7",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "d7"
+          ]
+        },
+        {
+          "uci": "f7g6",
+          "san": "Kg6",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e8"
+          ]
+        },
+        {
+          "uci": "f7f6",
+          "san": "Kf6",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "d8"
+          ]
+        },
+        {
+          "uci": "f7e6",
+          "san": "Ke6",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5h7",
+          "san": "Qh7",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5d7",
+          "san": "Qxd7",
+          "check": false,
+          "promotionMate": false,
+          "checkingPieces": [
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5g6",
+          "san": "Qg6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5f6",
+          "san": "Qf6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5e6",
+          "san": "Qe6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5h5",
+          "san": "Qh5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5g5",
+          "san": "Qg5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5e5",
+          "san": "Qe5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5d5",
+          "san": "Qd5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5c5",
+          "san": "Qc5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5f4",
+          "san": "Qf4",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5f3",
+          "san": "Qf3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "f5f2",
+          "san": "Qxf2+",
+          "check": true
+        },
+        {
+          "uci": "c4d6",
+          "san": "Nd6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c4b6",
+          "san": "Nb6",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c4e5",
+          "san": "Ne5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c4a5",
+          "san": "Na5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c4e3",
+          "san": "Nxe3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c4a3",
+          "san": "Nxa3",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c4d2",
+          "san": "Nd2",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c4b2",
+          "san": "Nb2",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "c6c5",
+          "san": "c5",
+          "check": false,
+          "promotionMate": true,
+          "checkingPieces": [
+            "d7",
+            "e8"
+          ]
+        },
+        {
+          "uci": "h3h2",
+          "san": "h2+",
+          "check": true
+        }
+      ],
+      "Ra1AllowsPromotionDoubleCheckmate": true,
+      "immediatePromotionBeforeRd2AllowsRh1xe1": true,
+      "pawnRemovedRootBecomesCheckDifferentMechanism": true,
+      "directQxc1PermitsQf4xc1": true,
+      "Rd2BlocksThatExactQueenRecapture": true,
+      "Qxd2Qxd2LocalGain": 400,
+      "directQxc1Qxc1Rd1Rxd1exd1QQxd1LocalGain": -500
+    }
+  ]
+}

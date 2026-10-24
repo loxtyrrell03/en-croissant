@@ -1,0 +1,316 @@
+{
+  "scope": "Two already-used public development positions, not a new holdout or overall accuracy estimate. Source labels nominated cases but did not supply expected mechanisms.",
+  "baselineCommit": "662b8e574f8e1bd25485d9cf3b220fb4154367e0",
+  "baselineAdapter": 167,
+  "finalAdapter": 168,
+  "finalPipeline": 175,
+  "pairedSummary": {
+    "total": 30,
+    "beforePassed": 12,
+    "beforeFailed": 18,
+    "afterPassed": 30
+  },
+  "pairedCases": [
+    {
+      "name": "checking castle wins the attacked rook, mirror=false, e8c8, full=false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "checking castle wins the attacked rook, mirror=false, e8c8, full=true",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "checking castle wins the attacked rook, mirror=false, e8a8, full=false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "checking castle wins the attacked rook, mirror=false, e8a8, full=true",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=false, role=null",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=false, role=q",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=false, role=r",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=false, role=b",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=false, role=n",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with missing victim, mirror=false",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with guarded victim, mirror=false",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with no check, mirror=false",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with draw claim, mirror=false",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion x-ray abstains with missing supporting queen, mirror=false",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion x-ray abstains with unprofitable minor-piece exchange, mirror=false",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "checking castle wins the attacked rook, mirror=true, e8c8, full=false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "checking castle wins the attacked rook, mirror=true, e8c8, full=true",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "checking castle wins the attacked rook, mirror=true, e8a8, full=false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "checking castle wins the attacked rook, mirror=true, e8a8, full=true",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=true, role=null",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=true, role=q",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=true, role=r",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=true, role=b",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion-aware x-ray counts exchange compensation, mirror=true, role=n",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with missing victim, mirror=true",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with guarded victim, mirror=true",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with no check, mirror=true",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "castling is not a material double threat with draw claim, mirror=true",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion x-ray abstains with missing supporting queen, mirror=true",
+      "before": "passed",
+      "after": "passed"
+    },
+    {
+      "name": "promotion x-ray abstains with unprofitable minor-piece exchange, mirror=true",
+      "before": "passed",
+      "after": "passed"
+    }
+  ],
+  "extraFinalControls": [
+    {
+      "name": "castling certificates cover every actual reply and both moved pieces, mirror=false",
+      "status": "passed"
+    },
+    {
+      "name": "promotion certificate covers capture/noncapture and every promotion role, mirror=false",
+      "status": "passed"
+    },
+    {
+      "name": "short castling cannot borrow an already free Rxh7 capture, mirror=false",
+      "status": "passed"
+    },
+    {
+      "name": "a nonpromotion check cannot bypass the remaining promotion liability, mirror=false",
+      "status": "passed"
+    },
+    {
+      "name": "castling certificates cover every actual reply and both moved pieces, mirror=true",
+      "status": "passed"
+    },
+    {
+      "name": "promotion certificate covers capture/noncapture and every promotion role, mirror=true",
+      "status": "passed"
+    },
+    {
+      "name": "short castling cannot borrow an already free Rxh7 capture, mirror=true",
+      "status": "passed"
+    },
+    {
+      "name": "a nonpromotion check cannot bypass the remaining promotion liability, mirror=true",
+      "status": "passed"
+    },
+    {
+      "name": "special-move proofs abstain on exhausted/invalid budget 0",
+      "status": "passed"
+    },
+    {
+      "name": "special-move proofs abstain on exhausted/invalid budget 1",
+      "status": "passed"
+    },
+    {
+      "name": "special-move proofs abstain on exhausted/invalid budget -1",
+      "status": "passed"
+    },
+    {
+      "name": "special-move proofs abstain on exhausted/invalid budget NaN",
+      "status": "passed"
+    },
+    {
+      "name": "special-move proofs abstain on exhausted/invalid budget Infinity",
+      "status": "passed"
+    },
+    {
+      "name": "special-move proofs abstain on exhausted/invalid budget 1.5",
+      "status": "passed"
+    }
+  ],
+  "focusedVerification": {
+    "files": 3,
+    "passed": 126,
+    "failed": 0,
+    "skipped": 0,
+    "suites": {
+      "compoundSpecialMoveProof": 44,
+      "castlingTacticalRelevance": 55,
+      "secondaryThemeJudgement": 27
+    },
+    "wallSeconds": 5.58,
+    "lint": "0 warnings, 0 errors",
+    "whitespace": "Passed"
+  },
+  "evidence": {
+    "Vk1Ud": {
+      "root": "O-O-O+",
+      "legalRepliesEachColour": 7,
+      "mechanism": "The rook checks while the king newly attacks Rb7. All six king flights permit Kxb7; Rd7 interposition also loses that same rook. Exact legal captures retain 500 cp locally.",
+      "classification": "doubleThreat / Castling Double Attack",
+      "payoff": "The exact certificate-matching later capture is Castling Payoff without a second gain value.",
+      "aliases": "King-destination and king-to-rook UCI retain identical board meaning and later timeline evidence."
+    },
+    "UohLn": {
+      "root": "Rxc8",
+      "legalRepliesEachColour": 29,
+      "promotionRepliesEachColour": 8,
+      "mechanism": "Qf5 supports the capture through Pd7. All four dxc8 promotions vacate the ray and permit Qxc8. All four d8 promotions permit Rxd8. Charge the lost rook, promoted pawn replacement value, recaptures and other local liabilities.",
+      "classification": "xRayAttack / X-Ray Support",
+      "capturePromotionBoundCp": 500,
+      "noncapturePromotionBoundCp": 900,
+      "rootBoundCp": 500
+    },
+    "independentChecks": {
+      "implementation": "python-chess 1.11.2; separate legal reply and optional same-square exchange enumeration",
+      "completeFirstReplyEdges": 72,
+      "colourReflections": 2,
+      "engine": {
+        "name": "Stockfish 18",
+        "author": "the Stockfish developers (see AUTHORS file)"
+      },
+      "engineSearches": 76,
+      "engineLimits": {
+        "threads": 1,
+        "hashMiB": 32,
+        "depth": 16,
+        "nodes": 300000,
+        "secondsPerSearch": 2
+      },
+      "achievedDepthCounts": {
+        "14": 1,
+        "15": 2,
+        "16": 73
+      },
+      "engineWallSeconds": 5.57,
+      "engineInterpretation": "Bounded corroborating searches, not all-defence certificates or game-theoretic truth."
+    }
+  },
+  "proofBounds": {
+    "castling": 4096,
+    "xray": 4096,
+    "globalPromotionVeto": "Unchanged. Only the exact connected x-ray path may answer actual promotions; all roles and off-square choices require checked captures.",
+    "nonpromotionChecks": "Require a legal evasion with the existing material-liability/countercheck leaf; unproved remaining promotions still abstain.",
+    "exhaustion": "No partial defensive tree may prove a gain.",
+    "preservedPendingWork": "Unrelated checking-ray diff remains separate (46 additions / 4 deletions)."
+  },
+  "correctedHypotheses": [
+    "The constructed short-castling position already offers a free Rxh7 capture; it is a noncausal control, not a recall success.",
+    "The noncapture-promotion branches retain a conservative 900 cp bound, not an exact 1000 cp, because subsequent liabilities are charged. The overall x-ray bound remains 500 cp.",
+    "A board permitting Re8+ with a surviving promotion threat remains unproved by this bounded extension; it is not adjudicated as a negative position."
+  ],
+  "sourceSha256": {
+    "beforeCore": "9f9ba822b995f13c2f6318a0e3eecc7408e305b502b15ea74d324390a9ca6f60",
+    "finalCore": "fcd90ae864970dc93a1cfa4a88f63657cbfbdbd8ffb1fb19da35560d83dfe66e",
+    "finalAdapter": "728b5145960e6e5ff7e01856a17933bc3eee5cd562bb98bbd58fdccde6d69fd9",
+    "finalTests": "87d55fb4b00f7076a08988d9b1db70f50a40f942756204600b29b45dbe588bcc"
+  },
+  "temporaryReceipts": {
+    "directory": "C:/Users/Lox/AppData/Local/Temp/en-tactical-public-regression-693e0d898c6240b08c4ca4fb6a25789e/",
+    "files": [
+      "compound-special-baseline.json",
+      "compound-special-final.json",
+      "frontier-pair-independent.json",
+      "compound-special-certificates.json",
+      "compound-special-owned.patch",
+      "causalTactics-before-compound-special.ts"
+    ]
+  },
+  "limitations": [
+    "No full corpus, private owner data, holdout, browser/native runtime or service change.",
+    "Global classification accuracy and longer quiet/checking continuations remain unmeasured.",
+    "Root owns final broad regression, type/build checks, scoped commit and delivery status."
+  ]
+}

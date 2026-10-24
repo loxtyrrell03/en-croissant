@@ -1,0 +1,749 @@
+{
+  "schemaVersion": 1,
+  "sourceRef": "b75c13e2f3a63d69cf60bd9e0b4221f884a9e190",
+  "sourceHashes": {
+    "causalTactics.ts": "74696f6a7d303dfe8c2656eea68d66e2a910b9a184175882f4c523e242b73210",
+    "mistakeReviewAdapter.ts": "d06aa1a4e2138289aae1f6301dec25a0091e8cf4b67b77369e7395d15ebae42b",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "liveTactics.ts": "831f44cbd6ace78f85f4f7313b2fd43c5a9b703e7ff8a29ac388558cd3be1e08"
+  },
+  "version": "site-55.adapter-174",
+  "scope": "Eight fixed public API variants of one development position; contract observations are not population accuracy.",
+  "rows": [
+    {
+      "reflected": false,
+      "history": false,
+      "length": 1,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on g3. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": false,
+      "history": false,
+      "length": 3,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6",
+          "d1d6",
+          "g7e5"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on g3. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": false,
+      "history": true,
+      "length": 1,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6"
+        ],
+        "previousFen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+        "previousMoveUci": "f3e5",
+        "tacticalHistory": {
+          "fen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+          "moves": [
+            "f3e5"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on g3. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd6 retains at least 2.2 pawns locally after including the piece just lost to Nxe5. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd6 retains at least 2.2 pawns locally after including the piece just lost to Nxe5. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": false,
+      "history": true,
+      "length": 3,
+      "input": {
+        "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+        "pvUci": [
+          "b6d6",
+          "d1d6",
+          "g7e5"
+        ],
+        "previousFen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+        "previousMoveUci": "f3e5",
+        "tacticalHistory": {
+          "fen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+          "moves": [
+            "f3e5"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on g3. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd6 retains at least 2.2 pawns locally after including the piece just lost to Nxe5. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd6 retains at least 2.2 pawns locally after including the piece just lost to Nxe5. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": false,
+      "length": 1,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on c6. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": false,
+      "length": 3,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3",
+          "d8d3",
+          "g2e4"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on c6. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": true,
+      "length": 1,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3"
+        ],
+        "previousFen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+        "previousMoveUci": "f6e4",
+        "tacticalHistory": {
+          "fen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+          "moves": [
+            "f6e4"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on c6. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd3 retains at least 2.2 pawns locally after including the piece just lost to Nxe4. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd3 retains at least 2.2 pawns locally after including the piece just lost to Nxe4. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    },
+    {
+      "reflected": true,
+      "history": true,
+      "length": 3,
+      "input": {
+        "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 20",
+        "pvUci": [
+          "b3d3",
+          "d8d3",
+          "g2e4"
+        ],
+        "previousFen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+        "previousMoveUci": "f6e4",
+        "tacticalHistory": {
+          "fen": "1r1r2k1/pp2ppbp/2p2np1/8/4PPP1/1Q1qP2P/PP4BK/R1B2R2 b - - 2 19",
+          "moves": [
+            "f6e4"
+          ]
+        }
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on c6. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd3 retains at least 2.2 pawns locally after including the piece just lost to Nxe4. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd3 retains at least 2.2 pawns locally after including the piece just lost to Nxe4. Recovering that exchange is not an additional free-piece gain.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      },
+      "contracts": {
+        "namedPrimary": false,
+        "correctPrimaryBound": false,
+        "noRearPawnSkewers": false,
+        "payoffNotCountedTwice": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "purpose": "Saved mistake-nature provenance and honest empty-result consumers; contract checks, not a classifier accuracy estimate.",
+  "baseCommit": "3756c4bd",
+  "testedMotifVersion": "site-55.adapter-168",
+  "natureAlgorithmVersion": 4,
+  "newDependencyField": "natureMotifClassifierVersion",
+  "pairedContracts": {
+    "test": "src/utils/tests/mistakeNatureProvenance.test.ts",
+    "frozenTestSha256": "0fb1952812def4be0dbce38fae97d538f0eaabdf0d92cb00a5a7236fe3be1481",
+    "before": { "passed": 3, "failed": 18, "skipped": 0, "reportSha256": "bdbf560ba29c77d6133f73ccc5b969f407dbed7c38cf33315c5933aa0f85f0b6" },
+    "after": { "passed": 21, "failed": 0, "skipped": 0, "reportSha256": "89c40bc5cfebeb26f1cef3ee5b56c62443166343d1bba86a68a30d77150a826e" },
+    "identity": "The after run loaded the exact frozen before test source at its original resolved path; a pre-load hook asserted use. Later checked-in changes only make the minimal migration fixture and deserialized metadata type-safe.",
+    "beforeMistakeReviewSha256": "e8dd32abcc35a9f5cc80a19e32c47b918140556dc1ca1d238cfa4dce71c91599",
+    "afterMistakeReviewSha256": "b321936c24e9f2be16f8f30c1fab94b8090d06dbbf4519840a76013adc75b332"
+  },
+  "broaderVerification": {
+    "passed": 146,
+    "skipped": 2,
+    "failed": 0,
+    "suites": ["mistakeNatureProvenance", "mistakeNatureProvenanceConsumers", "mistakeReview", "mistakeNature", "discoveredCapture", "retainedForkConsumers"],
+    "reportSha256": "9a05e8248bef116db0642d7f4a4ea7f6445a8623329c6a7a7c2e85388291b0c5",
+    "typecheck": "Whole-project tsgo --noEmit --incremental false passed. Default incremental invocation could not write the preexisting tsconfig.tsbuildinfo; no ownership or permissions were changed.",
+    "lint": "Seven scoped TypeScript/TSX files: zero errors and warnings."
+  },
+  "observableBoundaries": [
+    "Kn14A with known root score +487, DVs4F and the queen-ending promotion gap remain unknown from their frozen evidence. Constructed played alternatives are legal; their relative quality is not adjudicated here.",
+    "Old positional/high and tactical/high labels cannot override current unknown evidence, supply contradictory confidence/reasons, or route those cards into positional practice.",
+    "Current nature-algorithm version alone is insufficient: a separately stamped current motif dependency and complete classification fields are required.",
+    "Nature-only migration does not falsely update old motif-array versions. The new dependency stamp survives saved-card schema and JSON round trips.",
+    "Unrevealed board/workspace reads use the cheap stored-only guard. Large counts classify stale records as unknown without synchronous proof work. Normal detail/filter getters reuse cached fresh classification.",
+    "Current complete tactical judgments and quiet medium-confidence positional estimates remain available. Malformed or partial stored records are rejected atomically.",
+    "Live rendering already says no theme verified, not no tactic exists; all three public unresolved cases retain this distinction. No live classifier/UI wording change was needed.",
+    "The fresh positional heuristic and chess proof core are unchanged. Empty proof output is not proof of absence. This receipt does not claim improved tactical recall or resolved queen-ending/zugzwang/defensive-proof gaps.",
+    "No owner-store scans, writes, browser/native interaction, service operations, deployment, or generated-worker build were performed for this consumer check. Final milestone artifact/version verification is separate."
+  ],
+  "sourceHashesAfter": {
+    "src/components/files/opening.ts": "00377f9dcb10d96e8b61d9b3eab784181b830a6da6a784cb9584d9e53ea49dee",
+    "src/components/review/OpeningReviewWorkspace.tsx": "71a39a84f02b53ab4c3c50c779379154c47a9bbed84593217f220764b180ba50",
+    "src/components/boards/Board.tsx": "4dc21dca250dd14bb5d53447d248b4ebae32bdac8878bec89dba6c1359f09d8b",
+    "src/utils/tests/mistakeNatureProvenance.test.ts": "91a999f0526988baf885d1813c978cfaf1923e75a811ff5e21402b26441afd8c",
+    "src/utils/tests/mistakeNatureProvenanceConsumers.test.tsx": "908e56838bfa563c5f81f12831314702b5b30799bf41acc624f83c19219b328f",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "728b5145960e6e5ff7e01856a17933bc3eee5cd562bb98bbd58fdccde6d69fd9",
+    "src/utils/tacticalMotifs/causalTactics.ts": "421c1dbdf4ce668d5742c768753f0738601bcd3595d155afc17c6ed5a5c1b5b9"
+  },
+  "unrelatedChanges": "Board.tsx already contained two FideInfo prop changes. Only the nature import, old local getter removal and nature-read hunks belong to this fix. The core hash includes the separately preserved checking-ray work; this is not a staged-core receipt."
+}

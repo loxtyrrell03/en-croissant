@@ -1,0 +1,1262 @@
+{
+  "ref": "9fad2cd685d88d10e962bd80384eb9aaf117072e",
+  "classifierVersion": "site-55.adapter-175",
+  "startingHashes": {
+    "causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+    "mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+    "continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+    "gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+    "quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097"
+  },
+  "endingHashes": {
+    "causalTactics.ts": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+    "mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+    "continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+    "gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+    "quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097"
+  },
+  "inputHashes": {
+    "selection": "b7246b1b58fa75e8685831ad14b9ec0fb5c96e1e1777dc92a08de24a044f1f93",
+    "hypotheses": "291d69fcfc397503a076b15c466826b0ccecca41fc677f0fa799ff2ff50df338"
+  },
+  "observations": [
+    {
+      "id": "lichess:eAHH6",
+      "reflected": false,
+      "kind": "root",
+      "fen": "4r2n/6RP/8/8/4k1K1/8/8/8 w - - 3 74",
+      "line": [
+        "g7g8"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 blocks the rook on e8 from defending the knight on h8. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 attacks the rook on e8 and threatens Rxe8+, a checking fork of the king on e4 and knight on h8. After Kd3, Rxe8 wins material; after Ke3, Rxe8+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 blocks the rook on e8 from defending the knight on h8. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 attacks the rook on e8 and threatens Rxe8+, a checking fork of the king on e4 and knight on h8. After Kd3, Rxe8 wins material; after Ke3, Rxe8+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:eAHH6",
+      "reflected": false,
+      "kind": "full",
+      "fen": "4r2n/6RP/8/8/4k1K1/8/8/8 w - - 3 74",
+      "line": [
+        "g7g8",
+        "e8e7",
+        "g8h8"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 blocks the rook on e8 from defending the knight on h8. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 attacks the rook on e8 and threatens Rxe8+, a checking fork of the king on e4 and knight on h8. After Re7, Rxh8 wins material; after Ke3, Rxe8+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 blocks the rook on e8 from defending the knight on h8. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 320,
+            "evidence": "Rg8 attacks the rook on e8 and threatens Rxe8+, a checking fork of the king on e4 and knight on h8. After Re7, Rxh8 wins material; after Ke3, Rxe8+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxh8 wins the loose knight on h8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g8h8",
+            "value": 320,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:eAHH6",
+      "reflected": true,
+      "kind": "root",
+      "fen": "8/8/8/4K1k1/8/8/6rp/4R2N b - - 3 73",
+      "line": [
+        "g2g1"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 blocks the rook on e1 from defending the knight on h1. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 attacks the rook on e1 and threatens Rxe1+, a checking fork of the knight on h1 and king on e5. After Ra1, Rxa1 wins material; after Ke4, Rxe1+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 blocks the rook on e1 from defending the knight on h1. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 attacks the rook on e1 and threatens Rxe1+, a checking fork of the knight on h1 and king on e5. After Ra1, Rxa1 wins material; after Ke4, Rxe1+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:eAHH6",
+      "reflected": true,
+      "kind": "full",
+      "fen": "8/8/8/4K1k1/8/8/6rp/4R2N b - - 3 73",
+      "line": [
+        "g2g1",
+        "e1e2",
+        "g1h1"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 blocks the rook on e1 from defending the knight on h1. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 attacks the rook on e1 and threatens Rxe1+, a checking fork of the knight on h1 and king on e5. After Re2, Rxh1 wins material; after Ke4, Rxe1+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 blocks the rook on e1 from defending the knight on h1. It also attacks that rook, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "doubleThreat",
+            "label": "Double Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g1",
+            "value": 320,
+            "evidence": "Rg1 attacks the rook on e1 and threatens Rxe1+, a checking fork of the knight on h1 and king on e5. After Re2, Rxh1 wins material; after Ke4, Rxe1+ uses the fork instead. All 16 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxh1 wins the loose knight on h1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g1h1",
+            "value": 320,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": false,
+      "kind": "root",
+      "fen": "3r2k1/p1p3pp/2p4r/2P5/4RP2/PP2K3/R6P/8 b - - 4 26",
+      "line": [
+        "h6h3"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 600,
+            "evidence": "Rh3+ forces the defender to block its own rook's protection of the pawn on h2. After Ke2, Rxh2+ checks and forces Rxa2, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 100,
+            "evidence": "Rh3+ skewers the king on e3 and the pawn on b3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 600,
+            "evidence": "Rh3+ forces the defender to block its own rook's protection of the pawn on h2. After Ke2, Rxh2+ checks and forces Rxa2, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 100,
+            "evidence": "Rh3+ skewers the king on e3 and the pawn on b3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": false,
+      "kind": "full",
+      "fen": "3r2k1/p1p3pp/2p4r/2P5/4RP2/PP2K3/R6P/8 b - - 4 26",
+      "line": [
+        "h6h3",
+        "e3f2",
+        "h3h2",
+        "f2g3",
+        "h2a2"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 600,
+            "evidence": "Rh3+ forces the defender to block its own rook's protection of the pawn on h2. After Ke2, Rxh2+ checks and forces Rxa2, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 100,
+            "evidence": "Rh3+ skewers the king on e3 and the pawn on b3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h3h2 lets the rook on h2 skewer the king on f2, exposing the rook on a2.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h3h2",
+            "relevance": "secondary",
+            "value": 600
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 600,
+            "evidence": "Rh3+ forces the defender to block its own rook's protection of the pawn on h2. After Ke2, Rxh2+ checks and forces Rxa2, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6h3",
+            "value": 100,
+            "evidence": "Rh3+ skewers the king on e3 and the pawn on b3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "selfInterference",
+            "label": "Self-Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 2,
+            "moveUci": "e3f2",
+            "value": 600,
+            "evidence": "Kf2 blocks White's rook on a2 from defending the pawn on h2. Rxh2+ now checks and forces Rxa2, collecting that same guard; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by White.",
+            "actor": "white",
+            "relevance": "secondary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h3h2 lets the rook on h2 skewer the king on f2, exposing the rook on a2.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h3h2",
+            "relevance": "secondary",
+            "value": 600,
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxa2 wins the loose rook on a2.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h2a2",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": true,
+      "kind": "root",
+      "fen": "8/r6p/pp2k3/4rp2/2p5/2P4R/P1P3PP/3R2K1 w - - 4 27",
+      "line": [
+        "h3h6"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 600,
+            "evidence": "Rh6+ forces the defender to block its own rook's protection of the pawn on h7. After Ke7, Rxh7+ checks and forces Rxa7, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 100,
+            "evidence": "Rh6+ skewers the king on e6 and the pawn on b6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 600,
+            "evidence": "Rh6+ forces the defender to block its own rook's protection of the pawn on h7. After Ke7, Rxh7+ checks and forces Rxa7, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 100,
+            "evidence": "Rh6+ skewers the king on e6 and the pawn on b6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": true,
+      "kind": "full",
+      "fen": "8/r6p/pp2k3/4rp2/2p5/2P4R/P1P3PP/3R2K1 w - - 4 27",
+      "line": [
+        "h3h6",
+        "e6f7",
+        "h6h7",
+        "f7g6",
+        "h7a7"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 600,
+            "evidence": "Rh6+ forces the defender to block its own rook's protection of the pawn on h7. After Ke7, Rxh7+ checks and forces Rxa7, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 100,
+            "evidence": "Rh6+ skewers the king on e6 and the pawn on b6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h6h7 lets the rook on h7 skewer the king on f7, exposing the rook on a7.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h6h7",
+            "relevance": "secondary",
+            "value": 600
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Forced Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 600,
+            "evidence": "Rh6+ forces the defender to block its own rook's protection of the pawn on h7. After Ke7, Rxh7+ checks and forces Rxa7, collecting that same guard after every legal reply. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h3h6",
+            "value": 100,
+            "evidence": "Rh6+ skewers the king on e6 and the pawn on b6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "selfInterference",
+            "label": "Self-Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 2,
+            "moveUci": "e6f7",
+            "value": 600,
+            "evidence": "Kf7 blocks Black's rook on a7 from defending the pawn on h7. Rxh7+ now checks and forces Rxa7, collecting that same guard; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by Black.",
+            "actor": "black",
+            "relevance": "secondary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h6h7 lets the rook on h7 skewer the king on f7, exposing the rook on a7.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h6h7",
+            "relevance": "secondary",
+            "value": 600,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxa7 wins the loose rook on a7.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h7a7",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:WhAca",
+      "reflected": false,
+      "kind": "root",
+      "fen": "5r1k/pp5p/2np2pQ/4p3/4P3/1NK3P1/PPP2r2/R7 b - - 1 25",
+      "line": [
+        "f8f3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:WhAca",
+      "reflected": false,
+      "kind": "full",
+      "fen": "5r1k/pp5p/2np2pQ/4p3/4P3/1NK3P1/PPP2r2/R7 b - - 1 25",
+      "line": [
+        "f8f3",
+        "c3c4",
+        "f2c2",
+        "c4b5",
+        "f3b3",
+        "b5a4",
+        "b3f3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:WhAca",
+      "reflected": true,
+      "kind": "root",
+      "fen": "r7/ppp2R2/1nk3p1/4p3/4P3/2NP2Pq/PP5P/5R1K w - - 1 26",
+      "line": [
+        "f1f6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:WhAca",
+      "reflected": true,
+      "kind": "full",
+      "fen": "r7/ppp2R2/1nk3p1/4p3/4P3/2NP2Pq/PP5P/5R1K w - - 1 26",
+      "line": [
+        "f1f6",
+        "c6c5",
+        "f7c7",
+        "c5b4",
+        "f6b6",
+        "b4a5",
+        "b6f6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:o4FrE",
+      "reflected": false,
+      "kind": "root",
+      "fen": "6k1/6np/pp1p1PP1/4p3/3pP3/Pq1P4/5Q1K/8 w - - 0 51",
+      "line": [
+        "f6f7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:o4FrE",
+      "reflected": false,
+      "kind": "full",
+      "fen": "6k1/6np/pp1p1PP1/4p3/3pP3/Pq1P4/5Q1K/8 w - - 0 51",
+      "line": [
+        "f6f7",
+        "g8f8",
+        "g6h7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:o4FrE",
+      "reflected": true,
+      "kind": "root",
+      "fen": "8/5q1k/pQ1p4/3Pp3/4P3/PP1P1pp1/6NP/6K1 b - - 0 50",
+      "line": [
+        "f3f2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:o4FrE",
+      "reflected": true,
+      "kind": "full",
+      "fen": "8/5q1k/pQ1p4/3Pp3/4P3/PP1P1pp1/6NP/6K1 b - - 0 50",
+      "line": [
+        "f3f2",
+        "g1f1",
+        "g3h2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": false,
+      "kind": "root",
+      "fen": "2kr3r/pp4p1/2B2p2/2B5/2P2n2/8/PP3PPP/R4RK1 b - - 0 17",
+      "line": [
+        "f4e2"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4e2",
+            "value": 10000,
+            "evidence": "Ne2+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne2+ Kh1 Rxh2+ Kxh2 Rh8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4e2",
+            "value": 10000,
+            "evidence": "Ne2+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne2+ Kh1 Rxh2+ Kxh2 Rh8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": false,
+      "kind": "full",
+      "fen": "2kr3r/pp4p1/2B2p2/2B5/2P2n2/8/PP3PPP/R4RK1 b - - 0 17",
+      "line": [
+        "f4e2",
+        "g1h1",
+        "h8h2",
+        "h1h2",
+        "d8h8"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4e2",
+            "value": 10000,
+            "evidence": "Ne2+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne2+ Kh1 Rxh2+ Kxh2 Rh8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh2+ offers the rook on h2. Accepting with Kxh2 permits the mating continuation Kxh2 Rh8#.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h8h2",
+            "value": 10000,
+            "outcome": "mate",
+            "relevance": "secondary"
+          },
+          {
+            "id": "anastasiaMate",
+            "label": "Anastasia Mate",
+            "confidence": "medium",
+            "evidence": "Rh8# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "d8h8",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4e2",
+            "value": 10000,
+            "evidence": "Ne2+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne2+ Kh1 Rxh2+ Kxh2 Rh8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh2+ offers the rook on h2. Accepting with Kxh2 permits the mating continuation Kxh2 Rh8#.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h8h2",
+            "value": 10000,
+            "outcome": "mate",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "clearance",
+            "label": "Mating Clearance",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h8h2",
+            "value": 10000,
+            "verifiedCombination": true,
+            "evidence": "Rxh2+ clears h8 for the rook on d8. In this continuation, Kxh2 allows Rh8#, leading to forced mate. Every legal defence is separately mated; clearance explains this branch, not a compulsory reply or an extra material win.",
+            "actor": "black",
+            "relevance": "secondary"
+          },
+          {
+            "id": "anastasiaMate",
+            "label": "Anastasia Mate",
+            "confidence": "medium",
+            "evidence": "Rh8# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "d8h8",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": true,
+      "kind": "root",
+      "fen": "r4rk1/pp3ppp/8/2p2N2/2b5/2b2P2/PP4P1/2KR3R w - - 0 18",
+      "line": [
+        "f5e7"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5e7",
+            "value": 10000,
+            "evidence": "Ne7+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne7+ Kh8 Rxh7+ Kxh7 Rh1#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5e7",
+            "value": 10000,
+            "evidence": "Ne7+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne7+ Kh8 Rxh7+ Kxh7 Rh1#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": true,
+      "kind": "full",
+      "fen": "r4rk1/pp3ppp/8/2p2N2/2b5/2b2P2/PP4P1/2KR3R w - - 0 18",
+      "line": [
+        "f5e7",
+        "g8h8",
+        "h1h7",
+        "h8h7",
+        "d1h1"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5e7",
+            "value": 10000,
+            "evidence": "Ne7+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne7+ Kh8 Rxh7+ Kxh7 Rh1#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh7+ offers the rook on h7. Accepting with Kxh7 permits the mating continuation Kxh7 Rh1#.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h1h7",
+            "value": 10000,
+            "outcome": "mate",
+            "relevance": "secondary"
+          },
+          {
+            "id": "anastasiaMate",
+            "label": "Anastasia Mate",
+            "confidence": "medium",
+            "evidence": "Rh1# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "d1h1",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5e7",
+            "value": 10000,
+            "evidence": "Ne7+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Ne7+ Kh8 Rxh7+ Kxh7 Rh1#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh7+ offers the rook on h7. Accepting with Kxh7 permits the mating continuation Kxh7 Rh1#.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h1h7",
+            "value": 10000,
+            "outcome": "mate",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "clearance",
+            "label": "Mating Clearance",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h1h7",
+            "value": 10000,
+            "verifiedCombination": true,
+            "evidence": "Rxh7+ clears h1 for the rook on d1. In this continuation, Kxh7 allows Rh1#, leading to forced mate. Every legal defence is separately mated; clearance explains this branch, not a compulsory reply or an extra material win.",
+            "actor": "white",
+            "relevance": "secondary"
+          },
+          {
+            "id": "anastasiaMate",
+            "label": "Anastasia Mate",
+            "confidence": "medium",
+            "evidence": "Rh1# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "d1h1",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:SzulO",
+      "reflected": false,
+      "kind": "root",
+      "fen": "4rrk1/2p5/1p5p/pPqP4/P1P1B3/2Q1RPpb/8/4R2K b - - 1 31",
+      "line": [
+        "e8e4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:SzulO",
+      "reflected": false,
+      "kind": "full",
+      "fen": "4rrk1/2p5/1p5p/pPqP4/P1P1B3/2Q1RPpb/8/4R2K b - - 1 31",
+      "line": [
+        "e8e4",
+        "f3e4",
+        "f8f1",
+        "e1f1",
+        "g3g2",
+        "h1h2",
+        "g2f1n"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g3g2 forks the king on h1 and rook on f1. The bishop on h3 protects g2, so the king cannot capture the pawn. The line continues with g2f1n, winning the rook.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g3g2",
+            "value": 970,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "forkPreparation",
+            "label": "Fork Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f8f1",
+            "value": 470,
+            "evidence": "Rf1+ prepares a checking fork. After Rxf1, g2+ forks the rook on f1 and king on h1. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g3g2 forks the king on h1 and rook on f1. The bishop on h3 protects g2, so the king cannot capture the pawn. The line continues with g2f1n, winning the rook.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g3g2",
+            "value": 970,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "underPromotion",
+            "label": "Under-Promotion",
+            "source": "available",
+            "confidence": "high",
+            "ply": 7,
+            "moveUci": "g2f1n",
+            "actor": "black",
+            "relevance": "secondary",
+            "evidence": "gxf1=N+ promotes the pawn to a knight."
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "gxf1=N+ forks the king on h2 and rook on e3. The checked defences retain at least 8.9 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g2f1n",
+            "value": 890,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:SzulO",
+      "reflected": true,
+      "kind": "root",
+      "fen": "4r2k/8/2q1rpPB/p1p1b3/PpQp4/1P5P/2P5/4RRK1 w - - 1 32",
+      "line": [
+        "e1e5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    },
+    {
+      "id": "lichess:SzulO",
+      "reflected": true,
+      "kind": "full",
+      "fen": "4r2k/8/2q1rpPB/p1p1b3/PpQp4/1P5P/2P5/4RRK1 w - - 1 32",
+      "line": [
+        "e1e5",
+        "f6e5",
+        "f1f8",
+        "e8f8",
+        "g6g7",
+        "h8h7",
+        "g7f8n"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g6g7 forks the king on h8 and rook on f8. The bishop on h6 protects g7, so the king cannot capture the pawn. The line continues with g7f8n, winning the rook.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g6g7",
+            "value": 970,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "forkPreparation",
+            "label": "Fork Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f1f8",
+            "value": 470,
+            "evidence": "Rf8+ prepares a checking fork. After Rxf8, g7+ forks the rook on f8 and king on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g6g7 forks the king on h8 and rook on f8. The bishop on h6 protects g7, so the king cannot capture the pawn. The line continues with g7f8n, winning the rook.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g6g7",
+            "value": 970,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "underPromotion",
+            "label": "Under-Promotion",
+            "source": "available",
+            "confidence": "high",
+            "ply": 7,
+            "moveUci": "g7f8n",
+            "actor": "white",
+            "relevance": "secondary",
+            "evidence": "gxf8=N+ promotes the pawn to a knight."
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "gxf8=N+ forks the rook on e6 and king on h7. The checked defences retain at least 8.9 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g7f8n",
+            "value": 890,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-175"
+      }
+    }
+  ]
+}

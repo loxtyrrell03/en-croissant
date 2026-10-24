@@ -1,5 +1,10 @@
+import { publishedGameResult, publishedPairingScore } from "./publishedPairingResult";
+import { hasUnknownPriorPairingResults, UNKNOWN_PRIOR_RESULTS_HELP } from "./pairingHistoryCompleteness";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
+import { cachedTournamentEvidence, prepareTournamentForecastEvidence, forecastEvidenceHelp, hasConflictingTournamentTarget } from "./tournamentForecastEvidence";
 import { swissAccelerationPoints } from "./swissPairingSettings";
-import { publishedNoOpponentScore, hasUnscoredNoOpponentHistory } from "./publishedNoOpponentScore";
+import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
 import type {
   TournamentPairing,
   TournamentPlayer,
@@ -20,7 +25,8 @@ export type PairingForecastKind =
 
 export interface PairingCandidate {
   player: TournamentPlayer;
-  probability: number;
+  /** Null means no validated probability is available; never interpret as zero. */
+  probability: number | null;
   color: "white" | "black" | null;
   board: number | null;
   reasons: string[];
@@ -31,7 +37,7 @@ export interface PairingForecast {
   round: number | null;
   confidence: "confirmed" | "high" | "medium" | "low" | "unavailable";
   candidates: PairingCandidate[];
-  otherProbability: number;
+  otherProbability: number | null;
   summary: string;
   caveat: string | null;
 }
@@ -105,18 +111,6 @@ function playerMap(snapshot: TournamentSnapshot): Map<number, TournamentPlayer> 
   return new Map(snapshot.players.map((player) => [player.startNumber, player]));
 }
 
-function pairingFor(
-  snapshot: TournamentSnapshot,
-  round: number,
-  startNumber: number,
-): TournamentPairing | undefined {
-  return snapshot.pairings.find(
-    (pairing) =>
-      pairing.round === round &&
-      (pairing.whiteStartNumber === startNumber || pairing.blackStartNumber === startNumber),
-  );
-}
-
 function opponentNumber(pairing: TournamentPairing, startNumber: number): number | null {
   if (pairing.whiteStartNumber === startNumber) return pairing.blackStartNumber;
   if (pairing.blackStartNumber === startNumber) return pairing.whiteStartNumber;
@@ -127,10 +121,6 @@ function colorIn(pairing: TournamentPairing, startNumber: number): "white" | "bl
   if (pairing.whiteStartNumber === startNumber) return "white";
   if (pairing.blackStartNumber === startNumber) return "black";
   return null;
-}
-
-function compactResult(value: string | null): string {
-  return (value ?? "").replace(/\s+/g, "").toLocaleLowerCase();
 }
 
 /** A published one-seat assignment confirms no opponent, not the reason for
@@ -152,21 +142,7 @@ function publishedNoOpponentCopy(pairing: TournamentPairing, round: number): Pic
 }
 
 function scoreFromResult(pairing: TournamentPairing, startNumber: number): number | null {
-  if (pairing.whiteStartNumber !== startNumber && pairing.blackStartNumber !== startNumber) return null;
-  if (pairing.whiteStartNumber === null || pairing.blackStartNumber === null) return publishedNoOpponentScore(pairing);
-  const result = compactResult(pairing.result);
-  if (!pairing.decided || !result) return null;
-  if (["0-0", "0f-0f", "---"].includes(result)) return 0;
-  const isWhite = pairing.whiteStartNumber === startNumber;
-  if (!isWhite && pairing.blackStartNumber !== startNumber) return null;
-  if (result.includes("½") || result.includes("1/2") || result.includes(".5")) return 0.5;
-  if (result.startsWith("1-") || result.startsWith("1f-") || result.startsWith("+-")) {
-    return isWhite ? 1 : 0;
-  }
-  if (result.endsWith("-1") || result.endsWith("-1f") || result.endsWith("-+")) {
-    return isWhite ? 0 : 1;
-  }
-  return null;
+  return publishedPairingScore(pairing, startNumber);
 }
 
 function outcomeWeights(
@@ -200,7 +176,8 @@ function combineDistribution(
   const buckets = new Map<number, number>();
   for (const state of current) {
     for (const outcome of outcomes) {
-      const points = Math.round((state.points + outcome.score) * 2) / 2;
+      // Preserve the organiser's score basis, including fractional adjustments.
+      const points = state.points + outcome.score;
       buckets.set(points, (buckets.get(points) ?? 0) + state.weight * outcome.weight);
     }
   }
@@ -224,13 +201,22 @@ function projectedPoints(
         (pairing.whiteStartNumber === startNumber || pairing.blackStartNumber === startNumber),
     )
     .sort((left, right) => left.round - right.round);
+  const resolvedRounds = snapshot.evidenceVersion === 1
+    ? cachedTournamentEvidence(snapshot, targetRound)?.players.find(player => player.startNumber === startNumber)?.rounds : undefined;
   for (const pairing of unsettled) {
-    const settledScore = scoreFromResult(pairing, startNumber);
+    const settledScore = snapshot.evidenceVersion === 1
+      ? resolvedRounds?.find(row => row.round === pairing.round)?.award ?? null
+      : scoreFromResult(pairing, startNumber);
     const outcomes =
       settledScore === null
         ? outcomeWeights(player, players.get(opponentNumber(pairing, startNumber) ?? -1))
         : [{ score: settledScore, weight: 1 }];
     distribution = combineDistribution(distribution, outcomes);
+  }
+  for (const status of resolvedRounds ?? []) {
+    if (status.round <= snapshot.completedRound || status.round >= targetRound ||
+        status.award === null || unsettled.some(pairing => pairing.round === status.round)) continue;
+    distribution = combineDistribution(distribution, [{ score: status.award, weight: 1 }]);
   }
   return distribution;
 }
@@ -253,8 +239,7 @@ function scoreGroupOverlap(left: WeightedPoints[], right: WeightedPoints[]): num
 }
 
 function unplayedResult(pairing: TournamentPairing): boolean {
-  const result = compactResult(pairing.result);
-  return /[f+]/.test(result) || ["0-0", "---"].includes(result);
+  return Boolean(publishedGameResult(pairing)?.forfeit);
 }
 
 const colorHistories = new WeakMap<TournamentSnapshot, Map<string, Array<"white" | "black">>>();
@@ -479,7 +464,7 @@ function liveRoundResolvedFraction(snapshot: TournamentSnapshot): number | null 
       pairing.blackStartNumber !== null,
   );
   if (pairings.length === 0) return 0;
-  return pairings.filter((pairing) => pairing.decided).length / pairings.length;
+  return pairings.filter((pairing) => publishedGameResult(pairing) !== null).length / pairings.length;
 }
 
 export function calculatePairingForecast(
@@ -487,10 +472,21 @@ export function calculatePairingForecast(
   myStartNumber: number,
   options?: PairingForecastCalculationOptions,
 ): PairingForecast {
+  // A malformed explicit target must decline before field preparation. Null
+  // retains its distinct source meaning: there is no later target to predict.
+  if (snapshot.nextRound !== null && !isValidTournamentTargetRound(snapshot, snapshot.nextRound)) {
+    return {
+      kind: "unavailable", round: null, confidence: "unavailable",
+      candidates: [], otherProbability: 0,
+      summary: "The next round could not be verified",
+      caveat: "The tournament's round information is inconsistent. Refresh after the organizer updates it.",
+    };
+  }
+  snapshot = normalizeTournamentResults(snapshot);
   const model =
     snapshot.liveRound === null ? BETWEEN_ROUND_PRIMARY_MODEL : LIVE_ROUND_PRIMARY_MODEL;
-  const players = playerMap(snapshot);
-  const me = players.get(myStartNumber);
+  let players = playerMap(snapshot);
+  let me = players.get(myStartNumber);
   const targetRound = snapshot.nextRound;
   if (!me) {
     return {
@@ -530,9 +526,28 @@ export function calculatePairingForecast(
     };
   }
 
-  const published = pairingFor(snapshot, targetRound, myStartNumber);
+  const publishedRows = snapshot.pairings.filter((pairing) => pairing.round === targetRound &&
+    (pairing.whiteStartNumber === myStartNumber || pairing.blackStartNumber === myStartNumber));
+  const published = publishedRows[0];
   if (published) {
     const publishedOpponent = opponentNumber(published, myStartNumber);
+    const involved = publishedOpponent === null ? [myStartNumber] : [myStartNumber, publishedOpponent];
+    // A source assignment is authoritative only when both identities and their
+    // assignments are unambiguous. Never confirm the first of conflicting rows.
+    const inconsistent = publishedRows.length !== 1 || publishedOpponent === myStartNumber ||
+      involved.some((number) => snapshot.players.filter((player) => player.startNumber === number).length > 1 ||
+        snapshot.pairings.filter((pairing) => pairing.round === targetRound &&
+          (pairing.whiteStartNumber === number || pairing.blackStartNumber === number)).length > 1) ||
+      (snapshot.evidenceVersion === 1 && cachedTournamentEvidence(snapshot, targetRound)?.players.some(player =>
+        involved.includes(player.startNumber) && player.target.assignment === "conflict") === true);
+    if (inconsistent) {
+      return {
+        kind: "unavailable", round: targetRound, confidence: "unavailable",
+        candidates: [], otherProbability: 0,
+        summary: `Round ${targetRound} pairing has conflicting source data`,
+        caveat: "The pairing or player list contains conflicting entries. Refresh the tournament after the organizer updates it.",
+      };
+    }
     const opponent = publishedOpponent === null ? undefined : players.get(publishedOpponent);
     if (opponent) {
       return fixedForecast(
@@ -563,8 +578,16 @@ export function calculatePairingForecast(
       ...publishedNoOpponentCopy(published, targetRound),
     };
   }
-  if (!me.active || me.notPairedRounds?.includes(targetRound)) {
-    const requestedBye = me.halfPointByeRounds?.includes(targetRound) ?? false;
+  const targetEvidence = snapshot.evidenceVersion === 1
+    ? cachedTournamentEvidence(snapshot, targetRound)?.players.find(player => player.startNumber === myStartNumber)?.target : null;
+  const explicitNoGame = targetEvidence?.assignment === "not-paired" || targetEvidence?.assignment === "not-yet-entered";
+  if (explicitNoGame || (snapshot.evidenceVersion !== 1 && (!me.active || me.notPairedRounds?.includes(targetRound)))) {
+    if (!explicitNoGame) return {
+      kind: "unavailable", round: targetRound, confidence: "unavailable", candidates: [], otherProbability: null,
+      summary: "Recorded participation could not be verified",
+      caveat: forecastEvidenceHelp("unknown-availability"),
+    };
+    const requestedBye = targetEvidence?.award === 0.5;
     return {
       kind: "scheduled",
       round: targetRound,
@@ -572,10 +595,10 @@ export function calculatePairingForecast(
       candidates: [],
       otherProbability: 0,
       summary: requestedBye
-        ? `Round ${targetRound} requested bye recorded`
+        ? `Round ${targetRound} half-point bye recorded`
         : `${me.name} is not listed for pairing in round ${targetRound}`,
       caveat: requestedBye
-        ? "Chess-Results lists this as a requested bye, so there is no opponent to prepare for."
+        ? "Chess-Results records a half-point no-game award for this round."
         : "Chess-Results marks this player as not paired for the round.",
     };
   }
@@ -592,6 +615,11 @@ export function calculatePairingForecast(
   }
 
   if (snapshot.format === "round-robin") {
+    const resolved = snapshot.evidenceVersion === 1 ? cachedTournamentEvidence(snapshot, targetRound) : null;
+    if (snapshot.evidenceVersion === 1 && hasConflictingTournamentTarget(resolved)) {
+      return { kind: "unavailable", round: targetRound, confidence: "unavailable", candidates: [], otherProbability: null,
+        summary: "The next-round assignments could not be verified", caveat: forecastEvidenceHelp("conflicting-target") };
+    }
     // Only earlier published assignments may validate the assumed schedule.
     // Check actual opponents even when the result is unfinished or forfeited.
     const conflicts = snapshot.pairings.some((pairing) => {
@@ -615,12 +643,16 @@ export function calculatePairingForecast(
     const scheduled = roundRobinOpponent(snapshot.players, myStartNumber, targetRound);
     const opponent = scheduled === null ? undefined : players.get(scheduled);
     if (opponent) {
-      if (!opponent.active || opponent.notPairedRounds?.includes(targetRound)) {
+      const assignment = resolved?.players.find(player => player.startNumber === opponent.startNumber)?.target.assignment;
+      const unavailable = snapshot.evidenceVersion === 1
+        ? assignment === "not-paired" || assignment === "not-yet-entered"
+        : !opponent.active || opponent.notPairedRounds?.includes(targetRound);
+      if (unavailable) {
         return {
           kind: "unavailable", round: targetRound, confidence: "unavailable",
           candidates: [], otherProbability: 0,
-          summary: "The expected opponent is not listed for pairing",
-          caveat: "Wait for the organizer to confirm a replacement pairing or bye.",
+          summary: snapshot.evidenceVersion === 1 ? "The expected opponent is not listed for pairing" : "The expected opponent's participation could not be verified",
+          caveat: snapshot.evidenceVersion === 1 ? "Wait for the organizer to confirm a replacement pairing or bye." : forecastEvidenceHelp("unknown-availability"),
         };
       }
       return fixedForecast("inferred", targetRound, opponent, null, null);
@@ -652,6 +684,10 @@ export function calculatePairingForecast(
     };
   }
 
+  const sourceEvidence = prepareTournamentForecastEvidence(snapshot, targetRound);
+  snapshot = sourceEvidence.snapshot;
+  players = playerMap(snapshot);
+  me = players.get(myStartNumber)!;
   const priorOpponents = alreadyPlayed(snapshot, myStartNumber);
   const { field, byStartNumber: projectedByStartNumber, positions: groupPositionCache } = preparedField(snapshot, targetRound, players);
   const mineRow = projectedByStartNumber.get(myStartNumber);
@@ -714,12 +750,12 @@ export function calculatePairingForecast(
         ratingFit * coverageModel.ratingWeight,
     );
     const reasons = [
-      Math.abs(mineExpected - theirsExpected) <= 0.12
+      !sourceEvidence.evidence?.allAggregateScoresKnown ? "Score history is incomplete" : Math.abs(mineExpected - theirsExpected) <= 0.12
         ? "Same projected score group"
         : Math.abs(mineExpected - theirsExpected) <= 0.55
           ? "Adjacent score group"
           : "Possible floater",
-      band >= 0.55 ? "Matches the likely top-half / bottom-half slot" : null,
+      sourceEvidence.evidence?.allAggregateScoresKnown && band >= 0.55 ? "Matches the likely top-half / bottom-half slot" : null,
       colorFit >= 0.9 ? "Colour histories fit" : null,
     ].filter((reason): reason is string => reason !== null);
     ranked.push({ player, raw, coverageRaw, color, reasons });
@@ -747,8 +783,8 @@ export function calculatePairingForecast(
     }
   };
   const historyIncomplete = snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound) ?? false;
-  const unscoredHistory = hasUnscoredNoOpponentHistory(snapshot, targetRound);
-  const exact = historyIncomplete || unscoredHistory ? null : options?.exactSwiss ?? null;
+  const priorResultsUnknown = hasUnknownPriorPairingResults(snapshot, targetRound);
+  const exact = !sourceEvidence.solverCompatible || historyIncomplete || priorResultsUnknown ? null : options?.exactSwiss ?? null;
   const exactSystemLabel = exact
     ? `${exact.system.charAt(0).toLocaleUpperCase()}${exact.system.slice(1)}`
     : "Dutch";
@@ -785,20 +821,28 @@ export function calculatePairingForecast(
   ranked.forEach(appendUnique);
   // Use only the selected player's visible preceding assignment. Missing rows
   // remain unknown; future results and standings never determine this feature.
-  const ownLiveResultKnown = snapshot.liveRound === targetRound - 1
+  const ownLivePairing = snapshot.liveRound === targetRound - 1
     ? snapshot.pairings.find(pairing => pairing.round === snapshot.liveRound &&
-      (pairing.whiteStartNumber === myStartNumber || pairing.blackStartNumber === myStartNumber))?.decided ?? null
-    : null;
+      (pairing.whiteStartNumber === myStartNumber || pairing.blackStartNumber === myStartNumber))
+    : undefined;
+  const ownLiveResultKnown = ownLivePairing ? publishedPairingScore(ownLivePairing, myStartNumber) !== null : null;
   const probabilities = contextualSwissProbabilities(
     calibratedRankProbabilities(exactUsed, targetRound, liveRoundResolvedFraction(snapshot), snapshot.players.length, ownLiveResultKnown),
     exact, exactUsed, targetRound, snapshot.players.length, Math.min(6, selected.length),
   );
   const attendance = estimatedAttendance(snapshot, myStartNumber, targetRound);
   const participationAssumed = attendance < 1 || swissParticipationScenario(snapshot, targetRound) !== snapshot;
+  // A historical rank table is not validated confidence for a new first-round
+  // field or incomplete pairing history. Missing rows can make every listed
+  // result look settled without establishing full coverage. Preserve the
+  // conditional opponent order; published assignments above stay authoritative.
+  const firstRoundProbabilityUnknown = snapshot.format === "swiss" && targetRound === 1;
+  const probabilityUnknown = firstRoundProbabilityUnknown || !sourceEvidence.numericalAvailable ||
+    (snapshot.format === "swiss" && (historyIncomplete || priorResultsUnknown));
   const candidates = selected.slice(0, 6).map<PairingCandidate>((candidate, index) => ({
-    player: candidate.player, probability: probabilities[index] * attendance, color: candidate.color, board: null, reasons: candidate.reasons,
+    player: candidate.player, probability: probabilityUnknown ? null : probabilities[index] * attendance, color: candidate.color, board: null, reasons: candidate.reasons,
   }));
-  const otherProbability = Math.max(0, 1 - candidates.reduce((sum, item) => sum + item.probability, 0));
+  const otherProbability = probabilityUnknown ? null : Math.max(0, 1 - probabilities.slice(0, candidates.length).reduce((sum, value) => sum + value * attendance, 0));
   const top = candidates[0]?.probability ?? 0;
   const confidence = top >= 0.7 ? "high" : top >= 0.32 ? "medium" : "low";
   const sectionSuffix = snapshot.section ? ` in ${snapshot.section}` : "";
@@ -809,7 +853,7 @@ export function calculatePairingForecast(
   return {
     kind: candidates.length > 0 ? "estimated" : "unavailable",
     round: targetRound,
-    confidence: candidates.length > 0 ? confidence : "unavailable",
+    confidence: candidates.length > 0 && !probabilityUnknown ? confidence : "unavailable",
     candidates,
     otherProbability: candidates.length > 0 ? otherProbability : 0,
     summary:
@@ -821,10 +865,14 @@ export function calculatePairingForecast(
     caveat:
       candidates.length === 0
         ? "Withdrawals or unpublished pairing settings may explain the missing candidates."
-        : unscoredHistory
-          ? "An earlier no-opponent row has no score. Estimates may change when the organizer publishes it."
+        : firstRoundProbabilityUnknown
+          ? "Round 1 pairing chances are not calibrated. The opponent order assumes pairing rules and starting order; final entries and organiser settings can change it."
+        : sourceEvidence.issue
+          ? forecastEvidenceHelp(sourceEvidence.issue)
         : historyIncomplete
-          ? "Some published pairing rows could not be read. These estimates use incomplete history; refresh the tournament to check for updated source data."
+          ? "Some earlier pairing rows are missing, so pairing chances are unavailable. Candidates use incomplete history; refresh to check for the complete list."
+        : priorResultsUnknown
+          ? UNKNOWN_PRIOR_RESULTS_HELP
           : participationAssumed
           ? `Recent zero-point absences are treated as continued absences in the pairing estimate. Players can return; this is not a confirmed withdrawal. Other includes a possible bye or continued absence.${sectionScope}`
           : sampledUsed
@@ -841,13 +889,15 @@ export function calculatePairingForecast(
   };
 }
 
-export function formatForecastPercent(probability: number): string {
+export function formatForecastPercent(probability: number | null): string {
+  if (probability === null) return "Unknown";
   if (!Number.isFinite(probability) || probability <= 0) return "--";
   if (probability < 0.01) return "<1%";
   return `~${Math.max(1, Math.round(probability * 100))}%`;
 }
 
 export function tournamentPhaseLabel(snapshot: TournamentSnapshot): string {
+  snapshot = normalizeTournamentResults(snapshot);
   switch (snapshot.phase) {
     case "registration":
       return "Registration open";

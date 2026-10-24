@@ -37,7 +37,7 @@ describe("live tactical classifier", () => {
         });
         expect(scan.arrows.map((a) => `${a.from}${a.to}`)).toEqual(["e5f7", "f7d8", "f7h8"]);
     });
-    test("turns a named mating pattern into board labels and forcing arrows", () => {
+    test("keeps branch-only mating patterns below the proved root mate", () => {
         const scan = buildLiveTacticalScan({
             fen: "rr6/p3p2k/3pNpp1/1pp5/2q1P3/5R2/P2Q2PP/6K1 w - - 0 27",
             pvUci: ["d2h6", "h7h6", "f3h3"],
@@ -46,15 +46,14 @@ describe("live tactical classifier", () => {
             depth: 18,
         });
 
-        expect(scan.motifs.map((motif) => motif.id)).toEqual(["attraction"]);
+        expect(scan.motifs.map((motif) => motif.id)).toEqual(["mateIn2"]);
         expect(scan.variations[0].motifs.map((motif) => motif.id)).toContain("anastasiaMate");
         expect(scan.labels).toEqual(
-            expect.arrayContaining([expect.objectContaining({ text: "Attraction", square: "h6" })]),
+            expect.arrayContaining([expect.objectContaining({ text: "Forcing Mate", square: "h6" })]),
         );
+        // The starting board must not imply that the optional king capture is forced.
         expect(scan.arrows).toEqual([
-            expect.objectContaining({ from: "d2", to: "h6", ply: 1 }),
-            expect.objectContaining({ from: "h7", to: "h6", ply: 2 }),
-            expect.objectContaining({ from: "f3", to: "h3", ply: 3, role: "trigger" }),
+            expect.objectContaining({ from: "d2", to: "h6", ply: 1, role: "trigger" }),
         ]);
         expect(scan.side).toBe("white");
     });

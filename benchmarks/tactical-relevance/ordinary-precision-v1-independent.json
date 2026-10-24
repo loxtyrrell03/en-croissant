@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "scope": "Independent python-chess verification of exact legal history, forced mate and finite local material; no engine, classifier, network or owner data",
+  "legalContexts": 24,
+  "inputSha256Lf": {
+    "ordinary-precision-v1-selection.json": "4ef8b2d1c656c0b9c149107cc8135c7aa1deaba308972e29523bdbc954f82082",
+    "ordinary-precision-v1-adjacent-selection.json": "9c8725e90fbcd1c6e9023c1770df0cfddbb831ef00aeb5644cd847519bcce0e7",
+    "ordinary-precision-v1-verify.py": "e699ace25c42dd2cfe6f5cc0d2afeb10f4b42244cd2f716839ede48a142436ff"
+  },
+  "witnesses": [
+    {
+      "kind": "opponent-only-forced-mate",
+      "reflected": false,
+      "rootReplyCount": 1,
+      "matingMoveDefences": 1,
+      "ending": "checkmate"
+    },
+    {
+      "kind": "protected-pawn-capture",
+      "reflected": false,
+      "legalRecaptures": [
+        "d8c7"
+      ],
+      "queenRecaptureNet": -580,
+      "immediateProfitableCountercapture": false,
+      "counterchecks": [
+        {
+          "uci": "b4d3",
+          "retentionAtLeast": 420
+        },
+        {
+          "uci": "b4c2",
+          "retentionAtLeast": 320
+        }
+      ],
+      "alteredHistory": "Earlier Bf4 replaced by legal Bg5; Qxc7 wins the knight",
+      "alteredHistoryNetFromNxc7": -220
+    },
+    {
+      "kind": "opponent-only-forced-mate",
+      "reflected": true,
+      "rootReplyCount": 1,
+      "matingMoveDefences": 1,
+      "ending": "checkmate"
+    },
+    {
+      "kind": "protected-pawn-capture",
+      "reflected": true,
+      "legalRecaptures": [
+        "d1c2"
+      ],
+      "queenRecaptureNet": -580,
+      "immediateProfitableCountercapture": false,
+      "counterchecks": [
+        {
+          "uci": "b5c7",
+          "retentionAtLeast": 320
+        },
+        {
+          "uci": "b5d6",
+          "retentionAtLeast": 420
+        }
+      ],
+      "alteredHistory": "Earlier Bf4 replaced by legal Bg5; Qxc7 wins the knight",
+      "alteredHistoryNetFromNxc7": -220
+    }
+  ],
+  "boundary": "Countercheck numbers are finite capture-exchange witnesses, not whole-game values. The all-legal-reply mate tree is complete for this short sequence; the material claim does not rule out arbitrary future quiet play."
+}

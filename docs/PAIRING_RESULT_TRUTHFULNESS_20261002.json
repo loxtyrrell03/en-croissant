@@ -1,0 +1,241 @@
+{
+  "date": "2026-10-02",
+  "source": {
+    "src-tauri/tournament-core/src/tournament.rs": {
+      "feature": "070ecdd912c5ea485cbb779eaea3a416a32e79716b253f7214327fda805db4fc",
+      "primary": "070ecdd912c5ea485cbb779eaea3a416a32e79716b253f7214327fda805db4fc"
+    },
+    "src/features/tournaments/AGENTS.md": {
+      "feature": "e5f0ed32eb5f99193a961e1c886d9ec26c42f6db161f54ed0798048247e07cf6",
+      "primary": "e5f0ed32eb5f99193a961e1c886d9ec26c42f6db161f54ed0798048247e07cf6"
+    },
+    "src/features/tournaments/TournamentPrepModal.tsx": {
+      "feature": "9ece51705166effa824b6c435646a5a6aa4f4b750e355474f04a26e5c680478e",
+      "primary": "9ece51705166effa824b6c435646a5a6aa4f4b750e355474f04a26e5c680478e"
+    },
+    "src/features/tournaments/TournamentTrackerView.tsx": {
+      "feature": "3165f388a37966ba967d9905078e6739ee95f5e9d962df28f4968da6e4ac8465",
+      "primary": "b38cf156b8a1b05de8ed0e257ecc915b91ddfdb3699ae2a168281ae532745188"
+    },
+    "src/features/tournaments/exactSwissForecast.ts": {
+      "feature": "79f13c975ac21f41d9314001f993478031364c163137101cf718fe6acf1bab28",
+      "primary": "79f13c975ac21f41d9314001f993478031364c163137101cf718fe6acf1bab28"
+    },
+    "src/features/tournaments/forecastPresentation.ts": {
+      "feature": "0fc628ff4b08d8904180175829114eb315d93e9cd651d2380abb6315551e5d65",
+      "primary": "0fc628ff4b08d8904180175829114eb315d93e9cd651d2380abb6315551e5d65"
+    },
+    "src/features/tournaments/pairingForecast.ts": {
+      "feature": "48949998ce96fd7cde75648541cb90277afb7943299179eed7fb16f0c9f4fa05",
+      "primary": "48949998ce96fd7cde75648541cb90277afb7943299179eed7fb16f0c9f4fa05"
+    },
+    "src/features/tournaments/pairingHistoryReliability.ts": {
+      "feature": "e2d2d595e657ada9ffedc455322dc8b856b92c9c2b84439371aecada50113afb",
+      "primary": "e2d2d595e657ada9ffedc455322dc8b856b92c9c2b84439371aecada50113afb"
+    },
+    "src/features/tournaments/publishedNoOpponentScore.ts": {
+      "feature": "4946e95541ff9334e2f4971911cf0e96a0d853f03f55cd4509a60a6831f17dfb",
+      "primary": "4946e95541ff9334e2f4971911cf0e96a0d853f03f55cd4509a60a6831f17dfb"
+    },
+    "src/features/tournaments/sampledSwissForecast.ts": {
+      "feature": "3d99ec996c57d266cc4c994a10c26b059e8b7ed35a7267ce0c47dd47932cc94e",
+      "primary": "3d99ec996c57d266cc4c994a10c26b059e8b7ed35a7267ce0c47dd47932cc94e"
+    },
+    "src/features/tournaments/tests/forecastPresentation.test.tsx": {
+      "feature": "feb6924182ac2309732fdd79ce422e745e46f5c19cffce51c2745a0ee23126a4",
+      "primary": "feb6924182ac2309732fdd79ce422e745e46f5c19cffce51c2745a0ee23126a4"
+    },
+    "src/features/tournaments/tests/sampledSwissForecast.test.ts": {
+      "feature": "4bc13df5807112f57f8e534a2fc0661c76862a1f978f8b6d5038b1bc96ed4717",
+      "primary": "4bc13df5807112f57f8e534a2fc0661c76862a1f978f8b6d5038b1bc96ed4717"
+    },
+    "src/features/tournaments/tournamentInsights.ts": {
+      "feature": "b0f627e50f8438849ef919855e1a967816e20316277dc3646147b0b29491936c",
+      "primary": "b0f627e50f8438849ef919855e1a967816e20316277dc3646147b0b29491936c"
+    },
+    "src/features/tournaments/usePairingForecast.ts": {
+      "feature": "32610b54bb6b7b5f1af5719db0f8034c49231358b8334c159245d49489a17662",
+      "primary": "32610b54bb6b7b5f1af5719db0f8034c49231358b8334c159245d49489a17662"
+    },
+    "scripts/check-pairing-results-parity.mjs": {
+      "feature": "63be021da68b69cc6c421b729a342650f39c1addde56552a630c8e0a4e9bc0d2",
+      "primary": "63be021da68b69cc6c421b729a342650f39c1addde56552a630c8e0a4e9bc0d2"
+    },
+    "scripts/qa-pairing-results.mjs": {
+      "feature": "418e854985ee66cb6321521bb6ac636e3444a940b468834e27771b4a14f5bbb0",
+      "primary": "418e854985ee66cb6321521bb6ac636e3444a940b468834e27771b4a14f5bbb0"
+    },
+    "src-tauri/tournament-core/AGENTS.md": {
+      "feature": "441a3d4fb44dd4dd284a08c04d72dcf176c464c05379157133510e27926ffa60",
+      "primary": "441a3d4fb44dd4dd284a08c04d72dcf176c464c05379157133510e27926ffa60"
+    },
+    "src/features/tournaments/completedForecastHeading.ts": {
+      "feature": "d3007019c0808bac095655690f152c366b7a8c45738527e8d00813f7b6c6eee5",
+      "primary": "d3007019c0808bac095655690f152c366b7a8c45738527e8d00813f7b6c6eee5"
+    },
+    "src/features/tournaments/normalizeTournamentResults.ts": {
+      "feature": "707295216fff518c6e524bdf7077dea3fd7ccd88ce4dc2a149586479277e3278",
+      "primary": "707295216fff518c6e524bdf7077dea3fd7ccd88ce4dc2a149586479277e3278"
+    },
+    "src/features/tournaments/publishedPairingResult.ts": {
+      "feature": "0ed0e64fc84f157474a5b3c4bb822729a81655253215ed91fca90d3d73764ae9",
+      "primary": "0ed0e64fc84f157474a5b3c4bb822729a81655253215ed91fca90d3d73764ae9"
+    },
+    "src/features/tournaments/tests/completedForecastHeading.test.tsx": {
+      "feature": "e7431dd8b72b9d8ba1d4f9053a98e746344cf6fd67e2a4dc31141cb9fee350a9",
+      "primary": "e7431dd8b72b9d8ba1d4f9053a98e746344cf6fd67e2a4dc31141cb9fee350a9"
+    },
+    "src/features/tournaments/tests/publishedPairingResult.test.ts": {
+      "feature": "31e82b72f9b2e490368c9d7c4c05b4fabcc2b8f4c94945e2fe10d80dd8812994",
+      "primary": "31e82b72f9b2e490368c9d7c4c05b4fabcc2b8f4c94945e2fe10d80dd8812994"
+    }
+  },
+  "browser": {
+    "checkout": "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927",
+    "checks": [
+      "final-live at 1280px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "before-play at 1280px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "complete at 1280px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "mid-live at 1280px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "hidden at 1280px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "final-live at 760px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "before-play at 760px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "complete at 760px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "mid-live at 760px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "hidden at 760px: source-aware heading, strict result labels/count, no horizontal overflow",
+      "final-live at 390px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "before-play at 390px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "complete at 390px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "mid-live at 390px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "hidden at 390px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "final-live at 360px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "before-play at 360px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "complete at 360px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "mid-live at 360px touch: source-aware heading, strict result labels/count, no horizontal overflow",
+      "hidden at 360px touch: source-aware heading, strict result labels/count, no horizontal overflow"
+    ],
+    "errors": [],
+    "external": [],
+    "scope": "Actual shared En Croissant desktop/phone Tracker with Mantine theme in headless WebKit. Strict result labels and final-round states at 1280/760/390/360px. Native service and worker boundaries isolated; no installed desktop or live/physical phone proof."
+  },
+  "crossProductParity": {
+    "fixturesSHA256": "6066bc96b92f54d64b5d366391bb8a53f92755dea172f21eb3b2ac19a9c43fe8",
+    "replaySHA256": "3c2723f187bcaa4badd5b2531aafe62dfe8a6e81aa9ae0f65a62399aa6d29adc",
+    "sourceSHA256": {
+      "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\en-tournament-parity-20260927": "48949998ce96fd7cde75648541cb90277afb7943299179eed7fb16f0c9f4fa05",
+      "C:\\Users\\Lox\\Desktop\\repo\\outpost-chess-tournament-integration": "e1675f0322108b42776fa3c65bec9f7ca2651658bd9b2f252afc914002771693"
+    },
+    "events": 4,
+    "snapshots": 316,
+    "states": 11403,
+    "baselinePreserved": 0,
+    "intentionalAbstentions": 0,
+    "dependencies": {
+      "publishedPairingResult.ts": {
+        "canonicalSHA256": "567b354434f1cd9bb721ffc1559b358f9a25c108c7f1d959522d42b60a2dd958",
+        "enSHA256": "0ed0e64fc84f157474a5b3c4bb822729a81655253215ed91fca90d3d73764ae9",
+        "noveltySHA256": "067ce6bf9d04988dfbc5b5ff162399bd067bfae4551f4039de430219e2d465ef"
+      },
+      "normalizeTournamentResults.ts": {
+        "canonicalSHA256": "ee0a0cbdc19c4af17001d4116b0f99ab6d49e3657c5754889b87227435f3279a",
+        "enSHA256": "707295216fff518c6e524bdf7077dea3fd7ccd88ce4dc2a149586479277e3278",
+        "noveltySHA256": "bbe058410a6284b9d5f5a03c1e2d99670f965b1650b9f1f4b90d2f1db5974166"
+      },
+      "pairingHistoryReliability.ts": {
+        "canonicalSHA256": "d81bd83fbff813896e9a75d9918a323fc8e5ff5afe850ac07a26253d855bf089",
+        "enSHA256": "e2d2d595e657ada9ffedc455322dc8b856b92c9c2b84439371aecada50113afb",
+        "noveltySHA256": "1aab093e799f37d80c7ce4609217a323f9b771609b45d121b5b7cef235688a75"
+      },
+      "pairingCalibration.ts": {
+        "canonicalSHA256": "08aac0285efe7e952428b4e4ce37c21e60100e3db4b89463169b457bd29f4d40",
+        "enSHA256": "9ddcd493cac5b6df6acf7e5ad7ac633151e61a7c37d274b898a9a9533eb7fa1f",
+        "noveltySHA256": "d17139556eb67ff5c3bd09bf0d214ef3be55b0fdf288884fe3e1f4d24bd7efab"
+      },
+      "pairingHistoryCalibration.ts": {
+        "canonicalSHA256": "f04834a11abab7921a95108c88a80ae509065e829bc22fc93918a623b6c0238f",
+        "enSHA256": "bb532d45c2b6aa7c15443ebf16c727d2e95e27a40fac1f24b39fb749a00d7139",
+        "noveltySHA256": "c56e13337d6e858f3232da0605310ec43a6df38f307a26cad4d8a11e27ccb331"
+      },
+      "swissParticipation.ts": {
+        "canonicalSHA256": "95f2facdc1a9794e46964e897e40d757ce3268eee4a1885fb573cf6ffac123d9",
+        "enSHA256": "415ed382a894cf77f98cfcd750c4d3f1462a78518f0138042112e87394206218",
+        "noveltySHA256": "58f37f1cb0122976d8aa8c42c984c2a7a8981e3b788cc0c6fdbd60bd82e1f63d"
+      },
+      "swissPairingSettings.ts": {
+        "canonicalSHA256": "698c1c9d30a75f273c931533884e3eec2e158dc598c56f86ceccc3eeb4bf1fc1",
+        "enSHA256": "d80fd3c153986e2fa19d701caf12fba7f32a0be3b3790374f5307f10d1dd9a29",
+        "noveltySHA256": "f77c6f3ffb41703fb021773e14b2c86b11dd2b4ac10e91e602fd36b58c785d36"
+      },
+      "publishedNoOpponentScore.ts": {
+        "canonicalSHA256": "857b6e9fce3a131ec96301dc7c75bcefb964742f5d47c4aa05edd34c087400f8",
+        "enSHA256": "4946e95541ff9334e2f4971911cf0e96a0d853f03f55cd4509a60a6831f17dfb",
+        "noveltySHA256": "abfa5f9f09f11cb8a97cb7209c842e3760316be9cecaaac9829689b24e3cf01a"
+      },
+      "exactSwissForecast.ts": {
+        "canonicalSHA256": "c403b89fe6d0c0a2bf0f5ca9afcabcd630ffd77e386ba7c693716ce629d9b250",
+        "enSHA256": "79f13c975ac21f41d9314001f993478031364c163137101cf718fe6acf1bab28",
+        "noveltySHA256": "401b3e9ef12cbe26068f2e754b56a3d25b26b9fad44b8f6c0a3c381fd57b74c4"
+      },
+      "sampledSwissForecast.ts": {
+        "canonicalSHA256": "f1c2635e0cd5018db6c3d46a57d7f956a38d22b9eb6aa9d1d65afa98551b4a32",
+        "enSHA256": "3d99ec996c57d266cc4c994a10c26b059e8b7ed35a7267ce0c47dd47932cc94e",
+        "noveltySHA256": "ba297a221d8f834d820113429126053d2dc94a6f2f205e79ec72e6fbc01c6b4e"
+      },
+      "adaptiveSwissWeights.json": {
+        "canonicalSHA256": "6d50b1f505d3efe562ee4d9d9027f402ac459a3e0de61fa7ebed6b35aab9410c",
+        "enSHA256": "ba0173e9307ad35a8a20897fd92974e65ac302ed77ea05e792168e7fdc867442",
+        "noveltySHA256": "7f3b18fb2b1fa37180d84ac8c4eb570a42a66a679f52ec0274c75ac1c8b409f8"
+      },
+      "firstRoundCalibrationWeights.json": {
+        "canonicalSHA256": "176289843f5805d84bd900e86ff061c7e47f74d5010035e8b9079475d8977212",
+        "enSHA256": "ed656cbe3e694f19c17a837db36899a0615f196d8876b2e6e6f1cb73c2e91121",
+        "noveltySHA256": "ed656cbe3e694f19c17a837db36899a0615f196d8876b2e6e6f1cb73c2e91121"
+      },
+      "largeFallbackWeights.json": {
+        "canonicalSHA256": "c960de3ba6f341ef579a7e7f6be18bf5111001292565b1645345342f3a8a2739",
+        "enSHA256": "641b5a94b3adbb285bfeb5fa43963ce99155bf10a576d08ba646e1b9bdc15705",
+        "noveltySHA256": "641b5a94b3adbb285bfeb5fa43963ce99155bf10a576d08ba646e1b9bdc15705"
+      },
+      "ownResultCalibrationWeights.json": {
+        "canonicalSHA256": "f04bbb5c4a56922f26e7649270214d7fd7fc03a130c720ca840321f91369b4f6",
+        "enSHA256": "a4205f51d6947fc93db166c4d9a1b6cf9a83ad9614521c4b52a646479ac5523a",
+        "noveltySHA256": "fed7a1ce0e33edce82cf51226eaca3e9078206a078db2a43ac30dd153a1b537c"
+      },
+      "pairingCalibrationWeights.json": {
+        "canonicalSHA256": "ec9a345aa774db7664f3263ad8b325919308c439b4a49eb80714398b03d9ab15",
+        "enSHA256": "222484bb3a2f9657a6b1fdbb3a2b9b824a5d0543a4379cc97c6b4aff85b628c8",
+        "noveltySHA256": "222484bb3a2f9657a6b1fdbb3a2b9b824a5d0543a4379cc97c6b4aff85b628c8"
+      },
+      "swissAttendanceWeights.json": {
+        "canonicalSHA256": "a2b2c675f74744b9d34e6bbf345f81d8aefae6a9eed3d1cf42a5a13e6bd26870",
+        "enSHA256": "0aa7b00f3a2282d15d854cc7895bc8e80f997ac3cee076fc3c1399a7e6c9282a",
+        "noveltySHA256": "1fc7da44dbb64114f4e6a1da843ad03affc1e905d14b44d9a13a1a7f2ae98c86"
+      },
+      "@echecs/swiss": {
+        "treeSHA256": "f7ef3030edda6a6a11b81cc9b3d60c8cc35545876d473c612337f2d860d2182e",
+        "files": 35
+      },
+      "@echecs/tournament": {
+        "treeSHA256": "40f18dca39c05ee66090fce2284b795751d580446c13c18c4723d3a80a4830ef",
+        "files": 7
+      }
+    },
+    "scope": "Pure fallback forecasts compared for ids, order, probabilities, colours, kind, round, confidence, Other and displayed labels; no worker runs or delivery. Branding/caveats excluded."
+  },
+  "native": {
+    "featurePassed": 28,
+    "primaryPassed": 28,
+    "collectorSHA256BeforeAndAfter": "ada05a59096d5067d4e8ba3eada7f0bae2b8c89b9cae36ebcb013d212ded3a00",
+    "harness": "Novelty scripts/pairing-20260912-fixed-board-native; PAIRING_NATIVE_SOURCE explicit; shared existing target, sequential builds"
+  },
+  "frontend": {
+    "feature": "112 tests/11files then final8-test sampled-seed file;113 unique forecast/presentation tests; additional3 Prep/handoff tests",
+    "primary": "113 tests/11files; project types passed before final identical PrepModal normalization delta",
+    "types": "feature project typecheck passed after all changes; primary passed before final identical PrepModal normalization delta"
+  },
+  "limits": [
+    "No installed runtime, native window, live service, physical phone or deployment verification",
+    "Cross-product fallback parity only; no full exact-worker corpus validation",
+    "No calibration or unseen-event accuracy improvement claimed"
+  ]
+}

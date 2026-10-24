@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["quiet-trap-followup.test.ts", "quiet-trap-followup.vitest.ts"],
+  "exclude": ["../../node_modules", "../../src-tauri"]
+}

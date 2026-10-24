@@ -1,4 +1,7 @@
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { prepareTournamentForecastEvidence } from "./tournamentForecastEvidence";
 import {
   swissPairingSystemFor,
   type ExactSwissForecast,
@@ -37,7 +40,7 @@ export function exactSwissWorkerTimeoutMs(
   snapshot: TournamentSnapshot,
   targetRound: number,
 ): number {
-  const activePlayers = snapshot.players.filter(
+  const activePlayers = prepareTournamentForecastEvidence(snapshot, targetRound).snapshot.players.filter(
     (player) => player.active && !player.notPairedRounds?.includes(targetRound),
   ).length;
   if (activePlayers > 330) return HUGE_EXACT_SWISS_WORKER_TIMEOUT_MS;
@@ -156,6 +159,9 @@ export function requestExactSwissForecast(
   signal?: AbortSignal,
 ): Promise<ExactSwissForecast | null> {
   if (signal?.aborted) return Promise.resolve(null);
+  if (!isValidTournamentTargetRound(snapshot, targetRound)) return Promise.resolve(null);
+  snapshot = normalizeTournamentResults(snapshot);
+  if (!prepareTournamentForecastEvidence(snapshot, targetRound).solverCompatible) return Promise.resolve(null);
   if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return Promise.resolve(null);
   const key = exactSwissForecastKey(snapshot, targetRound, myStartNumber);
   const refreshKey = JSON.stringify([snapshot.fetchedAt, snapshot.sourceUpdatedAt]);

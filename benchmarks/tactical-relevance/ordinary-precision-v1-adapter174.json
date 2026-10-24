@@ -1,0 +1,1472 @@
+{
+  "classifierVersion": "site-55.adapter-174",
+  "sourceRef": "b75c13e2f3a63d69cf60bd9e0b4221f884a9e190",
+  "startingHashes": {
+    "causalTactics.ts": "74696f6a7d303dfe8c2656eea68d66e2a910b9a184175882f4c523e242b73210",
+    "mistakeReviewAdapter.ts": "d06aa1a4e2138289aae1f6301dec25a0091e8cf4b67b77369e7395d15ebae42b",
+    "continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+    "gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+    "quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097"
+  },
+  "hashes": {
+    "causalTactics.ts": "74696f6a7d303dfe8c2656eea68d66e2a910b9a184175882f4c523e242b73210",
+    "mistakeReviewAdapter.ts": "d06aa1a4e2138289aae1f6301dec25a0091e8cf4b67b77369e7395d15ebae42b",
+    "continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+    "gameHistory.ts": "2337e1ff53b3b0902cdc56ba3dc587b8ef9094061ee6237ebedf46dfb5b5a9f9",
+    "quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097"
+  },
+  "sourcesUnchanged": true,
+  "scope": "Output-blind ordinary public-game contexts. These observations are not tactical/positional gold labels or an accuracy metric.",
+  "observations": [
+    {
+      "id": "context:QZDg7vtX:ply15",
+      "kind": "played-root",
+      "line": [
+        "e7f5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply15",
+      "kind": "played-full",
+      "line": [
+        "e7f5",
+        "d1d2",
+        "f8b4",
+        "e1a1",
+        "a7a5",
+        "a2a3",
+        "b4c3",
+        "d2c3",
+        "b7b5",
+        "f1b5",
+        "a8c8",
+        "c3b3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply15",
+      "kind": "quiet-1",
+      "line": [
+        "d8c7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply15",
+      "kind": "quiet-2",
+      "line": [
+        "e7g6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply33",
+      "kind": "played-root",
+      "line": [
+        "c6a7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply33",
+      "kind": "played-full",
+      "line": [
+        "c6a7",
+        "f4f5",
+        "b8b6",
+        "f5e6",
+        "f7e6",
+        "h1f1",
+        "f8f1",
+        "d1f1",
+        "d8b8",
+        "b3f3",
+        "a7b5",
+        "f3f7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply33",
+      "kind": "quiet-1",
+      "line": [
+        "g7g6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply33",
+      "kind": "quiet-2",
+      "line": [
+        "d8c7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply45",
+      "kind": "played-root",
+      "line": [
+        "g8h8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply45",
+      "kind": "played-full",
+      "line": [
+        "g8h8",
+        "f7f8",
+        "b8f8",
+        "f1f8"
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 2,
+            "moveUci": "f7f8",
+            "value": 10000,
+            "evidence": "Qf8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qf8+ Qxf8 Rxf8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "f1f8",
+            "value": 10000,
+            "evidence": "Rxf8# is checkmate: the king is in check and there is no legal reply.",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply15",
+      "kind": "played-root",
+      "line": [
+        "e8h8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply15",
+      "kind": "played-full",
+      "line": [
+        "e8h8",
+        "b5c7",
+        "a8b8",
+        "c7b5",
+        "b8a8",
+        "a2a3",
+        "b4c2",
+        "e2c2",
+        "d8a5",
+        "b5c3",
+        "h7h5",
+        "b2b4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply15",
+      "kind": "quiet-1",
+      "line": [
+        "b4c6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply15",
+      "kind": "quiet-2",
+      "line": [
+        "c8g4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply33",
+      "kind": "played-root",
+      "line": [
+        "b7b6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply33",
+      "kind": "played-full",
+      "line": [
+        "b7b6",
+        "h2h3",
+        "a7a5",
+        "b4b5",
+        "c8d7",
+        "a3a4",
+        "d6b4",
+        "c1f4",
+        "a8c8",
+        "f1b1",
+        "b4c3",
+        "f4e3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply33",
+      "kind": "quiet-1",
+      "line": [
+        "g7g6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply33",
+      "kind": "quiet-2",
+      "line": [
+        "f6g4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply45",
+      "kind": "played-root",
+      "line": [
+        "e7d6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply45",
+      "kind": "played-full",
+      "line": [
+        "e7d6",
+        "b1c1",
+        "c3b2",
+        "h3h4",
+        "f6g4",
+        "e3g5",
+        "g4f2",
+        "d3f5",
+        "c8c1",
+        "g5c1",
+        "b2e2",
+        "f5d7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply45",
+      "kind": "quiet-1",
+      "line": [
+        "f6h7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply45",
+      "kind": "quiet-2",
+      "line": [
+        "f6g4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply15",
+      "kind": "played-root",
+      "line": [
+        "e8h8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply15",
+      "kind": "played-full",
+      "line": [
+        "e8h8",
+        "e1h1",
+        "b8d7",
+        "f1e1",
+        "c6c5",
+        "d3e4",
+        "c5d4",
+        "e3d4",
+        "a8b8",
+        "d4a7",
+        "b8a8",
+        "a7d4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply15",
+      "kind": "quiet-1",
+      "line": [
+        "e7a3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply15",
+      "kind": "quiet-2",
+      "line": [
+        "c6c5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply33",
+      "kind": "played-root",
+      "line": [
+        "d7f6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply33",
+      "kind": "played-full",
+      "line": [
+        "d7f6",
+        "d1d8",
+        "f8d8",
+        "b2b3",
+        "d8c8",
+        "f3e5",
+        "f6g4",
+        "e5g4",
+        "f5g4",
+        "c6e4",
+        "f7f5",
+        "e4d3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply33",
+      "kind": "quiet-1",
+      "line": [
+        "e6c4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply33",
+      "kind": "quiet-2",
+      "line": [
+        "g7g5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply45",
+      "kind": "played-root",
+      "line": [
+        "g8f7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply45",
+      "kind": "played-full",
+      "line": [
+        "g8f7",
+        "a2a4",
+        "h7h5",
+        "a4a5",
+        "b8a8",
+        "b3b4",
+        "e6c4",
+        "d3f5",
+        "c8c7",
+        "e1d1",
+        "c4b5",
+        "f5d3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply45",
+      "kind": "quiet-1",
+      "line": [
+        "f5f4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply45",
+      "kind": "quiet-2",
+      "line": [
+        "g7g6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply15",
+      "kind": "played-root",
+      "line": [
+        "c5b6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply15",
+      "kind": "played-full",
+      "line": [
+        "c5b6",
+        "c4c5",
+        "b6c7",
+        "c1b2",
+        "b7b6",
+        "c5b6",
+        "c7b6",
+        "f1b5",
+        "c8b7",
+        "f3e5",
+        "d8c7",
+        "b1d2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply15",
+      "kind": "quiet-1",
+      "line": [
+        "c5f8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply15",
+      "kind": "quiet-2",
+      "line": [
+        "c5d6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply33",
+      "kind": "played-root",
+      "line": [
+        "c7e5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply33",
+      "kind": "played-full",
+      "line": [
+        "c7e5",
+        "e1h1",
+        "a7a6",
+        "b5e2",
+        "e5b2",
+        "d1b3",
+        "b2e5",
+        "d2f3",
+        "e5d6",
+        "f1d1",
+        "a8c8",
+        "f3d4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply33",
+      "kind": "quiet-1",
+      "line": [
+        "b7c6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply33",
+      "kind": "quiet-2",
+      "line": [
+        "a8c8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply45",
+      "kind": "played-root",
+      "line": [
+        "f6e4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply45",
+      "kind": "played-full",
+      "line": [
+        "f6e4",
+        "e2f3",
+        "e4c3",
+        "d1e1",
+        "c3b5",
+        "d4b5",
+        "a6b5",
+        "e3e4",
+        "c8c4",
+        "e4d5",
+        "b7d5",
+        "f3d5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply45",
+      "kind": "quiet-1",
+      "line": [
+        "f6e8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply45",
+      "kind": "quiet-2",
+      "line": [
+        "c8c5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply16",
+      "kind": "played-root",
+      "line": [
+        "d1d2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply16",
+      "kind": "played-full",
+      "line": [
+        "d1d2",
+        "f8b4",
+        "e1a1",
+        "a7a5",
+        "a2a3",
+        "b4c3",
+        "d2c3",
+        "b7b5",
+        "f1b5",
+        "a8c8",
+        "c3b3",
+        "e8h8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply16",
+      "kind": "quiet-1",
+      "line": [
+        "f1e2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply16",
+      "kind": "quiet-2",
+      "line": [
+        "f3h4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply34",
+      "kind": "played-root",
+      "line": [
+        "f4f5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply34",
+      "kind": "played-full",
+      "line": [
+        "f4f5",
+        "b8b6",
+        "f5e6",
+        "f7e6",
+        "h1f1",
+        "f8f1",
+        "d1f1",
+        "d8b8",
+        "b3f3",
+        "a7b5",
+        "f3f7",
+        "g8h8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply34",
+      "kind": "quiet-1",
+      "line": [
+        "b3e3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply34",
+      "kind": "quiet-2",
+      "line": [
+        "d1g1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply46",
+      "kind": "played-root",
+      "line": [
+        "f7f8"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f8",
+            "value": 10000,
+            "evidence": "Qf8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qf8+ Qxf8 Rxf8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f8",
+            "value": 10000,
+            "evidence": "Qf8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qf8+ Qxf8 Rxf8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply46",
+      "kind": "played-full",
+      "line": [
+        "f7f8",
+        "b8f8",
+        "f1f8"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f8",
+            "value": 10000,
+            "evidence": "Qf8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qf8+ Qxf8 Rxf8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          },
+          {
+            "id": "backRankMate",
+            "label": "Back Rank Mate",
+            "confidence": "medium",
+            "evidence": "Rxf8# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f1f8",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f8",
+            "value": 10000,
+            "evidence": "Qf8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qf8+ Qxf8 Rxf8#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "backRankMate",
+            "label": "Back Rank Mate",
+            "confidence": "medium",
+            "evidence": "Rxf8# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f1f8",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply46",
+      "kind": "quiet-1",
+      "line": [
+        "f7f6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:QZDg7vtX:ply46",
+      "kind": "quiet-2",
+      "line": [
+        "f1f2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply16",
+      "kind": "played-root",
+      "line": [
+        "b5c7"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Pawn",
+            "value": 100,
+            "evidence": "Nxc7 wins the pawn on c7. Its apparent defence is too costly: Qxc7 allows Bxc7, giving up the queen for the knight. Every legal recapture has a checked losing exchange; the pawn gain also accounts for immediate counterplay. This is why recapturing fails, not a forced continuation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5c7",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Pawn",
+            "value": 100,
+            "evidence": "Nxc7 wins the pawn on c7. Its apparent defence is too costly: Qxc7 allows Bxc7, giving up the queen for the knight. Every legal recapture has a checked losing exchange; the pawn gain also accounts for immediate counterplay. This is why recapturing fails, not a forced continuation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5c7",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply16",
+      "kind": "played-full",
+      "line": [
+        "b5c7",
+        "a8b8",
+        "c7b5",
+        "b8a8",
+        "a2a3",
+        "b4c2",
+        "e2c2",
+        "d8a5",
+        "b5c3",
+        "h7h5",
+        "b2b4",
+        "a5c7"
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Pawn",
+            "value": 100,
+            "evidence": "Nxc7 wins the pawn on c7. Its apparent defence is too costly: Qxc7 allows Bxc7, giving up the queen for the knight. Every legal recapture has a checked losing exchange; the pawn gain also accounts for immediate counterplay. This is why recapturing fails, not a forced continuation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5c7",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Pawn",
+            "value": 100,
+            "evidence": "Nxc7 wins the pawn on c7. Its apparent defence is too costly: Qxc7 allows Bxc7, giving up the queen for the knight. Every legal recapture has a checked losing exchange; the pawn gain also accounts for immediate counterplay. This is why recapturing fails, not a forced continuation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5c7",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply16",
+      "kind": "quiet-1",
+      "line": [
+        "e2e3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply16",
+      "kind": "quiet-2",
+      "line": [
+        "e2d3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply34",
+      "kind": "played-root",
+      "line": [
+        "h2h3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply34",
+      "kind": "played-full",
+      "line": [
+        "h2h3",
+        "a7a5",
+        "b4b5",
+        "c8d7",
+        "a3a4",
+        "d6b4",
+        "c1f4",
+        "a8c8",
+        "f1b1",
+        "b4c3",
+        "f4e3",
+        "e7d6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply34",
+      "kind": "quiet-1",
+      "line": [
+        "f3h4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply34",
+      "kind": "quiet-2",
+      "line": [
+        "c1h6"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply46",
+      "kind": "played-root",
+      "line": [
+        "b1c1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply46",
+      "kind": "played-full",
+      "line": [
+        "b1c1",
+        "c3b2",
+        "h3h4",
+        "f6g4",
+        "e3g5",
+        "g4f2",
+        "d3f5",
+        "c8c1",
+        "g5c1",
+        "b2e2",
+        "f5d7",
+        "d6a3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply46",
+      "kind": "quiet-1",
+      "line": [
+        "a1a2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply46",
+      "kind": "quiet-2",
+      "line": [
+        "g2g3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply16",
+      "kind": "played-root",
+      "line": [
+        "e1h1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply16",
+      "kind": "played-full",
+      "line": [
+        "e1h1",
+        "b8d7",
+        "f1e1",
+        "c6c5",
+        "d3e4",
+        "c5d4",
+        "e3d4",
+        "a8b8",
+        "d4a7",
+        "b8a8",
+        "a7d4",
+        "f6f5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply16",
+      "kind": "quiet-1",
+      "line": [
+        "c2c3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply16",
+      "kind": "quiet-2",
+      "line": [
+        "g2g4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply34",
+      "kind": "played-root",
+      "line": [
+        "d1d8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply34",
+      "kind": "played-full",
+      "line": [
+        "d1d8",
+        "f8d8",
+        "b2b3",
+        "d8c8",
+        "f3e5",
+        "f6g4",
+        "e5g4",
+        "f5g4",
+        "c6e4",
+        "f7f5",
+        "e4d3",
+        "g8f7"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply34",
+      "kind": "quiet-1",
+      "line": [
+        "c2c4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply34",
+      "kind": "quiet-2",
+      "line": [
+        "d1e2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply46",
+      "kind": "played-root",
+      "line": [
+        "a2a4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply46",
+      "kind": "played-full",
+      "line": [
+        "a2a4",
+        "h7h5",
+        "a4a5",
+        "b8a8",
+        "b3b4",
+        "e6c4",
+        "d3f5",
+        "c8c7",
+        "e1d1",
+        "c4b5",
+        "f5d3",
+        "b5d3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply46",
+      "kind": "quiet-1",
+      "line": [
+        "e1b1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:C9q6jvtW:ply46",
+      "kind": "quiet-2",
+      "line": [
+        "d3f1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply16",
+      "kind": "played-root",
+      "line": [
+        "c4c5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply16",
+      "kind": "played-full",
+      "line": [
+        "c4c5",
+        "b6c7",
+        "c1b2",
+        "b7b6",
+        "c5b6",
+        "c7b6",
+        "f1b5",
+        "c8b7",
+        "f3e5",
+        "d8c7",
+        "b1d2",
+        "e8h8"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply16",
+      "kind": "quiet-1",
+      "line": [
+        "e1d2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply16",
+      "kind": "quiet-2",
+      "line": [
+        "d1e2"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply34",
+      "kind": "played-root",
+      "line": [
+        "e1h1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply34",
+      "kind": "played-full",
+      "line": [
+        "e1h1",
+        "a7a6",
+        "b5e2",
+        "e5b2",
+        "d1b3",
+        "b2e5",
+        "d2f3",
+        "e5d6",
+        "f1d1",
+        "a8c8",
+        "f3d4",
+        "f6e4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply34",
+      "kind": "quiet-1",
+      "line": [
+        "d1f3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply34",
+      "kind": "quiet-2",
+      "line": [
+        "e3e4"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply46",
+      "kind": "played-root",
+      "line": [
+        "e2f3"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply46",
+      "kind": "played-full",
+      "line": [
+        "e2f3",
+        "e4c3",
+        "d1e1",
+        "c3b5",
+        "d4b5",
+        "a6b5",
+        "e3e4",
+        "c8c4",
+        "e4d5",
+        "b7d5",
+        "f3d5",
+        "e6d5"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply46",
+      "kind": "quiet-1",
+      "line": [
+        "b3b1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "id": "context:Gectvn7R:ply46",
+      "kind": "quiet-2",
+      "line": [
+        "e2f1"
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    }
+  ]
+}

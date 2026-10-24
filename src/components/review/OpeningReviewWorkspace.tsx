@@ -149,13 +149,17 @@ import {
   getMistakeReviewDailyBatchIndices,
   getMistakeReviewDailyProgress,
   getMistakeReviewAllowedMotifs,
+  getMistakeReviewAllowedTimeline,
   getMistakeReviewMissedMotifs,
+  getMistakeReviewMissedTimeline,
+  getStoredMistakeReviewMotifClassification,
   getMistakeReviewMotifBatchIndices,
   getMistakeReviewMotifCounts,
   getMistakeReviewMotifs,
   getMistakeReviewNature,
   getMistakeReviewNatureBatchIndices,
   getMistakeReviewNatureConfidence,
+  getStoredMistakeReviewNatureClassification,
   getMistakeReviewNatureCounts,
   getMistakeReviewPhase,
   getMistakeReviewPhaseBatchIndices,
@@ -185,6 +189,7 @@ import {
 } from "@/utils/mistakeReview";
 import {
   buildMistakeReviewTacticalExplanation,
+  isRetainedForkChoice,
   tacticalMotifPerspective,
   tacticalMotifColor,
   tacticalMotifLabel,
@@ -814,10 +819,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 const migrated = migratedByKey.get(mistakeReviewPositionKey(position));
                 const migratedMistake = migrated?.mistakeReview;
                 if (!migratedMistake || !position.mistakeReview) return position;
-                if (
-                  position.mistakeReview.natureClassifierVersion ===
-                  migratedMistake.natureClassifierVersion
-                ) {
+                if (getStoredMistakeReviewNatureClassification(position.mistakeReview)) {
                   return position;
                 }
 
@@ -837,6 +839,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     missedNature: migratedMistake.missedNature,
                     missedNatureReason: migratedMistake.missedNatureReason,
                     natureClassifierVersion: migratedMistake.natureClassifierVersion,
+                    natureMotifClassifierVersion: migratedMistake.natureMotifClassifierVersion,
                   },
                 };
               }),
@@ -899,6 +902,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 const migratedMistake = migrated?.mistakeReview;
                 if (!migratedMistake || !position.mistakeReview) return position;
                 if (
+                  getStoredMistakeReviewMotifClassification(position.mistakeReview) &&
                   position.mistakeReview.motifClassifierVersion ===
                   migratedMistake.motifClassifierVersion
                 ) {
@@ -6452,12 +6456,13 @@ function MistakeReviewGameInfoPanel({
     mistake,
     playerColor === "white" ? "black" : "white",
   );
-  const storedNature = getStoredMistakeReviewNature(position);
+  const storedNatureClassification = getStoredMistakeReviewNatureClassification(position.mistakeReview);
+  const storedNature = storedNatureClassification?.nature ?? "unknown";
   const nature = revealAnswer ? getMistakeReviewNature(position) : storedNature;
   const natureLabel = nature ? mistakeReviewNatureLabel(nature) : null;
   const natureConfidence = revealAnswer
     ? getMistakeReviewNatureConfidence(position)
-    : getStoredMistakeReviewNatureConfidence(position);
+    : storedNatureClassification?.confidence ?? "low";
   const revealedMotifs = revealAnswer
     ? [...getMistakeReviewAllowedMotifs(position), ...getMistakeReviewMissedMotifs(position)]
     : [];
@@ -6487,7 +6492,7 @@ function MistakeReviewGameInfoPanel({
                 key={`${motif.source}:${motif.id}:${index}`}
                 label={`${tacticalMotifPerspective(motif)} motif, ${
                   motif.confidence
-                } confidence: ${motif.evidence}`}
+                } confidence: ${isRetainedForkChoice(motif) ? motif.comparisonEvidence ?? motif.evidence : motif.evidence}`}
                 multiline
                 maw={360}
               >
@@ -6547,12 +6552,12 @@ function MistakeReviewGameInfoPanel({
                   ? mistake.refutationSan
                   : (mistake.refutationUci ?? [])
               }
-              motifs={mistake.allowedTimeline ?? getMistakeReviewAllowedMotifs(position)}
+              motifs={getMistakeReviewAllowedTimeline(position)}
             />
             <TacticalLineExplanation
               title="Better move, move by move"
               moves={mistake.pvSan?.length ? mistake.pvSan : (mistake.pvUci ?? [])}
-              motifs={mistake.missedTimeline ?? getMistakeReviewMissedMotifs(position)}
+              motifs={getMistakeReviewMissedTimeline(position)}
             />
           </Stack>
         )}
@@ -6931,18 +6936,6 @@ function normalizeMistakeReviewName(value?: string | null) {
   const name = value?.trim();
   if (!name || name === "?" || name === "-") return "";
   return name;
-}
-
-function getStoredMistakeReviewNature(position: Position | null | undefined) {
-  const metadata = position?.mistakeReview;
-  const candidate = metadata?.nature ?? metadata?.mistakeNature ?? metadata?.summary?.nature;
-  return candidate === "tactical" || candidate === "positional" || candidate === "unknown" ? candidate : null;
-}
-
-function getStoredMistakeReviewNatureConfidence(position: Position | null | undefined) {
-  const metadata = position?.mistakeReview;
-  const candidate = metadata?.natureConfidence ?? metadata?.summary?.natureConfidence;
-  return candidate === "high" || candidate === "medium" || candidate === "low" ? candidate : null;
 }
 
 function normalizeMistakeReviewRating(value?: number | null) {

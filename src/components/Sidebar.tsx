@@ -8,6 +8,7 @@ import {
   IconFiles,
   IconHome,
   IconSettings,
+  IconUser,
 } from "@tabler/icons-react";
 import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router";
 import cx from "clsx";
@@ -39,6 +40,7 @@ function NavbarLink({ url, icon: Icon, label, onClick, onMouseEnter }: NavbarLin
     <Tooltip label={label} position="right">
       <Link
         to={url}
+        aria-label={label}
         className={cx(classes.link, {
           [classes.active]: active,
         })}
@@ -55,6 +57,7 @@ function NavbarLink({ url, icon: Icon, label, onClick, onMouseEnter }: NavbarLin
 const linksdata: Pick<NavbarLinkProps, "icon" | "label" | "url">[] = [
   { icon: IconHome, label: "Home", url: "/home" },
   { icon: IconChess, label: "Board", url: "/" },
+  { icon: IconUser, label: "User", url: "/accounts" },
   { icon: IconFiles, label: "Files", url: "/files" },
   {
     icon: IconDatabase,
@@ -66,6 +69,7 @@ const linksdata: Pick<NavbarLinkProps, "icon" | "label" | "url">[] = [
 
 const routePreloads: Record<string, () => Promise<unknown>> = {
   "/": () => import("@/components/tabs/BoardsPage"),
+  "/accounts": () => import("@/components/home/AccountsPage"),
   "/home": () => import("@/components/tabs/NewTabHome"),
   "/files": () => import("@/components/files/FilesPage"),
   "/databases": () => import("@/components/databases/DatabasesPage"),

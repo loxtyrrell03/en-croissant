@@ -1,0 +1,315 @@
+{
+  "source": "lichess:wN37d",
+  "fen": "8/2R3pp/5p2/4p3/rbNk4/6PP/5PK1/8 w - - 0 44",
+  "root": "c4b2",
+  "localBound": 180,
+  "visits": 990,
+  "branches": {
+    "a4a1": {
+      "move": "c7c4",
+      "replies": {
+        "d4d5": {
+          "move": "c4b4"
+        }
+      }
+    },
+    "a4a2": {
+      "move": "c7c4",
+      "replies": {
+        "d4d5": {
+          "move": "c4b4"
+        }
+      }
+    },
+    "a4a3": {
+      "move": "c7c4",
+      "replies": {
+        "d4d5": {
+          "move": "c4b4"
+        }
+      }
+    },
+    "a4a5": {
+      "move": "c7c4",
+      "replies": {
+        "d4d5": {
+          "move": "c4b4"
+        }
+      }
+    },
+    "a4a6": {
+      "move": "c7c4",
+      "replies": {
+        "d4d5": {
+          "move": "c4b4"
+        }
+      }
+    },
+    "a4a7": {
+      "move": "c7a7"
+    },
+    "a4a8": {
+      "move": "c7c4",
+      "replies": {
+        "d4d5": {
+          "move": "c4b4"
+        }
+      }
+    },
+    "b4e1": {
+      "move": "b2a4"
+    },
+    "b4d2": {
+      "move": "b2a4"
+    },
+    "b4a3": {
+      "move": "b2a4"
+    },
+    "b4c3": {
+      "move": "b2a4"
+    },
+    "b4a5": {
+      "move": "c7d7",
+      "replies": {
+        "d4c3": {
+          "move": "b2a4",
+          "replies": {
+            "c3c2": {
+              "move": "a4b2"
+            },
+            "c3b3": {
+              "move": "a4b2"
+            },
+            "c3b4": {
+              "move": "a4b2"
+            },
+            "c3c4": {
+              "move": "a4c3"
+            }
+          }
+        },
+        "d4e4": {
+          "move": "b2a4"
+        },
+        "d4c5": {
+          "move": "b2a4",
+          "replies": {
+            "c5b4": {
+              "move": "a4b2"
+            },
+            "c5c4": {
+              "move": "a4c3"
+            },
+            "c5b5": {
+              "move": "a4b2"
+            },
+            "c5c6": {
+              "move": "a4c5"
+            }
+          }
+        }
+      }
+    },
+    "b4c5": {
+      "move": "b2a4"
+    },
+    "b4d6": {
+      "move": "c7c6",
+      "replies": {
+        "a4a1": {
+          "move": "c6d6",
+          "replies": {
+            "d4c3": {
+              "move": "b2d3"
+            },
+            "d4e4": {
+              "move": "b2d1"
+            },
+            "d4c5": {
+              "move": "d6d1"
+            }
+          }
+        },
+        "a4a2": {
+          "move": "c6d6",
+          "replies": {
+            "d4c3": {
+              "move": "b2d3"
+            },
+            "d4e4": {
+              "move": "b2d1"
+            },
+            "d4c5": {
+              "move": "d6d2"
+            }
+          }
+        },
+        "a4a3": {
+          "move": "c6d6",
+          "replies": {
+            "d4c3": {
+              "move": "b2d3"
+            },
+            "d4e4": {
+              "move": "b2d1"
+            },
+            "d4c5": {
+              "move": "d6d1"
+            }
+          }
+        },
+        "a4b4": {
+          "move": "c6d6",
+          "replies": {
+            "d4c3": {
+              "move": "b2d3"
+            },
+            "d4e4": {
+              "move": "b2d1"
+            },
+            "d4c5": {
+              "move": "d6d2"
+            }
+          }
+        },
+        "a4c4": {
+          "move": "b2c4"
+        },
+        "a4a5": {
+          "move": "c6d6",
+          "replies": {
+            "d4c3": {
+              "move": "b2d3"
+            },
+            "d4e4": {
+              "move": "b2d1"
+            },
+            "d4c5": {
+              "move": "d6d1"
+            },
+            "a5d5": {
+              "move": "d6a6"
+            }
+          }
+        },
+        "a4a6": {
+          "move": "c6a6"
+        },
+        "a4a7": {
+          "move": "c6d6",
+          "replies": {
+            "d4c3": {
+              "move": "b2d3"
+            },
+            "d4e4": {
+              "move": "b2d1"
+            },
+            "d4c5": {
+              "move": "d6d1"
+            }
+          }
+        },
+        "a4a8": {
+          "move": "c6d6",
+          "replies": {
+            "d4c3": {
+              "move": "b2d3"
+            },
+            "d4e4": {
+              "move": "b2d1"
+            },
+            "d4c5": {
+              "move": "d6d1"
+            }
+          }
+        },
+        "d4e4": {
+          "move": "b2a4"
+        },
+        "d4d5": {
+          "move": "c6d6",
+          "replies": {
+            "d5e4": {
+              "move": "b2a4"
+            },
+            "d5c5": {
+              "move": "d6d1"
+            },
+            "d5d6": {
+              "move": "b2a4"
+            }
+          }
+        },
+        "e5e4": {
+          "move": "b2a4"
+        },
+        "d6a3": {
+          "move": "b2a4"
+        },
+        "d6b4": {
+          "move": "b2a4"
+        },
+        "d6c5": {
+          "move": "b2a4"
+        },
+        "d6c7": {
+          "move": "b2a4"
+        },
+        "d6e7": {
+          "move": "b2a4"
+        },
+        "d6b8": {
+          "move": "b2a4"
+        },
+        "d6f8": {
+          "move": "b2a4"
+        },
+        "f6f5": {
+          "move": "b2a4"
+        },
+        "g7g5": {
+          "move": "b2a4"
+        },
+        "g7g6": {
+          "move": "b2a4"
+        },
+        "h7h5": {
+          "move": "b2a4"
+        },
+        "h7h6": {
+          "move": "b2a4"
+        }
+      }
+    },
+    "b4e7": {
+      "move": "b2a4"
+    },
+    "b4f8": {
+      "move": "b2a4"
+    },
+    "d4e4": {
+      "move": "b2a4"
+    },
+    "d4d5": {
+      "move": "b2a4"
+    },
+    "e5e4": {
+      "move": "b2a4"
+    },
+    "f6f5": {
+      "move": "b2a4"
+    },
+    "g7g5": {
+      "move": "b2a4"
+    },
+    "g7g6": {
+      "move": "b2a4"
+    },
+    "h7h5": {
+      "move": "b2a4"
+    },
+    "h7h6": {
+      "move": "b2a4"
+    }
+  }
+}

@@ -1,0 +1,361 @@
+{
+  "classifierVersion": "site-55.adapter-165",
+  "sourceSha256LF": "d163b6ee39d23162dee4a68605bb9ac339667be191ce4dec2acea38aa9b8d163",
+  "note": "Synthetic engineering judgments, not a population accuracy estimate. Existing checking-ray work is verified separately.",
+  "contracts": 16,
+  "passed": 6,
+  "cases": [
+    {
+      "id": "forced rook deflection retains its actual mechanism:reflected=false",
+      "kind": "root-primary",
+      "fen": "3r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+      "pvUci": [
+        "e4e8",
+        "d8e8",
+        "f3d5"
+      ],
+      "expected": "deflection",
+      "actual": [
+        "deflection",
+        "discoveredAttack"
+      ],
+      "pass": true
+    },
+    {
+      "id": "forced rook deflection retains its actual mechanism:reflected=true",
+      "kind": "root-primary",
+      "fen": "6k1/p5pp/1p2pq2/4r3/2PQ4/1P6/P4PPP/3R2K1 b - - 0 24",
+      "pvUci": [
+        "e5e1",
+        "d1e1",
+        "f6d4"
+      ],
+      "expected": "deflection",
+      "actual": [
+        "deflection",
+        "discoveredAttack"
+      ],
+      "pass": true
+    },
+    {
+      "id": "declining a deflection cannot fund a discovery with an old attack:reflected=false",
+      "kind": "root-primary",
+      "fen": "3r2k1/p4pp1/1p5p/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+      "pvUci": [
+        "e4e8",
+        "d8e8",
+        "f3d5"
+      ],
+      "expected": null,
+      "actual": [
+        "discoveredAttack"
+      ],
+      "pass": false
+    },
+    {
+      "id": "declining a deflection cannot fund a discovery with an old attack:reflected=true",
+      "kind": "root-primary",
+      "fen": "6k1/p5pp/1p2pq2/4r3/2PQ4/1P5P/P4PP1/3R2K1 b - - 0 24",
+      "pvUci": [
+        "e5e1",
+        "d1e1",
+        "f6d4"
+      ],
+      "expected": null,
+      "actual": [
+        "discoveredAttack"
+      ],
+      "pass": false
+    },
+    {
+      "id": "removing the rook permits a capture-created passed pawn:reflected=false",
+      "kind": "root-primary",
+      "fen": "6k1/p6r/1P6/8/8/8/8/6KR w - - 0 1",
+      "pvUci": [
+        "h1h7",
+        "g8h7",
+        "b6a7",
+        "h7g6",
+        "a7a8q"
+      ],
+      "expected": "promotionCombination",
+      "actual": [],
+      "pass": false
+    },
+    {
+      "id": "removing the rook permits a capture-created passed pawn:reflected=true",
+      "kind": "root-primary",
+      "fen": "6kr/8/8/8/8/1p6/P6R/6K1 b - - 0 1",
+      "pvUci": [
+        "h8h2",
+        "g1h2",
+        "b3a2",
+        "h2g3",
+        "a2a1q"
+      ],
+      "expected": "promotionCombination",
+      "actual": [],
+      "pass": false
+    },
+    {
+      "id": "a second rook refutes the cooperative promotion:reflected=false",
+      "kind": "root-primary",
+      "fen": "1r4k1/p6r/1P6/8/8/8/8/6KR w - - 0 1",
+      "pvUci": [
+        "h1h7",
+        "g8h7",
+        "b6a7",
+        "h7g6",
+        "a7a8q",
+        "b8a8"
+      ],
+      "expected": null,
+      "actual": [],
+      "pass": true
+    },
+    {
+      "id": "a second rook refutes the cooperative promotion:reflected=true",
+      "kind": "root-primary",
+      "fen": "6kr/8/8/8/8/1p6/P6R/1R4K1 b - - 0 1",
+      "pvUci": [
+        "h8h2",
+        "g1h2",
+        "b3a2",
+        "h2g3",
+        "a2a1q",
+        "b1a1"
+      ],
+      "expected": null,
+      "actual": [],
+      "pass": true
+    },
+    {
+      "id": "declining the king bait preserves the forced mate lesson:reflected=false",
+      "kind": "root-primary",
+      "fen": "rr6/p3p2k/3pNpp1/1pp5/2q1P3/5R2/P2Q2PP/6K1 w - - 0 27",
+      "pvUci": [
+        "d2h6",
+        "h7g8",
+        "h6g7"
+      ],
+      "expected": "mateIn2",
+      "actual": [
+        "mateIn2"
+      ],
+      "pass": true
+    },
+    {
+      "id": "declining the king bait preserves the forced mate lesson:reflected=true",
+      "kind": "root-primary",
+      "fen": "6k1/p2q2pp/5r2/2Q1p3/1PP5/3PnPP1/P3P2K/RR6 b - - 0 27",
+      "pvUci": [
+        "d7h3",
+        "h2g1",
+        "h3g2"
+      ],
+      "expected": "mateIn2",
+      "actual": [
+        "mateIn2"
+      ],
+      "pass": true
+    },
+    {
+      "id": "accepting the king bait does not change the root mate lesson:reflected=false",
+      "kind": "root-primary",
+      "fen": "rr6/p3p2k/3pNpp1/1pp5/2q1P3/5R2/P2Q2PP/6K1 w - - 0 27",
+      "pvUci": [
+        "d2h6",
+        "h7h6",
+        "f3h3"
+      ],
+      "expected": "mateIn2",
+      "actual": [
+        "attraction"
+      ],
+      "pass": false
+    },
+    {
+      "id": "accepting the king bait does not change the root mate lesson:reflected=true",
+      "kind": "root-primary",
+      "fen": "6k1/p2q2pp/5r2/2Q1p3/1PP5/3PnPP1/P3P2K/RR6 b - - 0 27",
+      "pvUci": [
+        "d7h3",
+        "h2h3",
+        "f6h6"
+      ],
+      "expected": "mateIn2",
+      "actual": [
+        "attraction"
+      ],
+      "pass": false
+    },
+    {
+      "id": "promotion-proof:reflected=false",
+      "kind": "proof-and-budget",
+      "fen": "6k1/p6r/1P6/8/8/8/8/6KR w - - 0 1",
+      "pvUci": [
+        "h1h7"
+      ],
+      "expected": "all replies, promotion witness, one-ply root, bounded cache",
+      "actual": {
+        "proof": null,
+        "budgetExhausted": true,
+        "rootPrimary": null
+      },
+      "pass": false
+    },
+    {
+      "id": "promotion-proof:reflected=true",
+      "kind": "proof-and-budget",
+      "fen": "6kr/8/8/8/8/1p6/P6R/6K1 b - - 0 1",
+      "pvUci": [
+        "h8h2"
+      ],
+      "expected": "all replies, promotion witness, one-ply root, bounded cache",
+      "actual": {
+        "proof": null,
+        "budgetExhausted": true,
+        "rootPrimary": null
+      },
+      "pass": false
+    },
+    {
+      "id": "discovery-target-scope:reflected=false",
+      "kind": "proof-and-budget",
+      "fen": "3r2k1/p4pp1/1p5p/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+      "pvUci": [
+        "e4e8",
+        "d8e8",
+        "f3d5"
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ],
+      "actual": [
+        {
+          "gain": 100,
+          "example": [
+            "Kh7",
+            "Rxd8"
+          ],
+          "exchangeFrom": 60,
+          "exchangeTarget": 59,
+          "branches": [
+            {
+              "reply": "Rxe8",
+              "answer": "Qxd5",
+              "gain": 300,
+              "extended": false,
+              "nodesUsed": 5
+            },
+            {
+              "reply": "Kh7",
+              "answer": "Rxd8",
+              "gain": 100,
+              "extended": true,
+              "nodesUsed": 138
+            }
+          ]
+        },
+        {
+          "gain": 100,
+          "example": [
+            "Kh7",
+            "Rxd8"
+          ],
+          "exchangeFrom": 60,
+          "exchangeTarget": 59,
+          "branches": [
+            {
+              "reply": "Rxe8",
+              "answer": "Qxd5",
+              "gain": 300,
+              "extended": false,
+              "nodesUsed": 5
+            },
+            {
+              "reply": "Kh7",
+              "answer": "Rxd8",
+              "gain": 100,
+              "extended": true,
+              "nodesUsed": 138
+            }
+          ]
+        },
+        null
+      ],
+      "pass": false
+    },
+    {
+      "id": "discovery-target-scope:reflected=true",
+      "kind": "proof-and-budget",
+      "fen": "6k1/p5pp/1p2pq2/4r3/2PQ4/1P5P/P4PP1/3R2K1 b - - 0 24",
+      "pvUci": [
+        "e5e1",
+        "d1e1",
+        "f6d4"
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ],
+      "actual": [
+        {
+          "gain": 100,
+          "example": [
+            "Kh2",
+            "Rxd1"
+          ],
+          "exchangeFrom": 4,
+          "exchangeTarget": 3,
+          "branches": [
+            {
+              "reply": "Rxe1",
+              "answer": "Qxd4",
+              "gain": 300,
+              "extended": false,
+              "nodesUsed": 5
+            },
+            {
+              "reply": "Kh2",
+              "answer": "Rxd1",
+              "gain": 100,
+              "extended": true,
+              "nodesUsed": 138
+            }
+          ]
+        },
+        {
+          "gain": 100,
+          "example": [
+            "Kh2",
+            "Rxd1"
+          ],
+          "exchangeFrom": 4,
+          "exchangeTarget": 3,
+          "branches": [
+            {
+              "reply": "Rxe1",
+              "answer": "Qxd4",
+              "gain": 300,
+              "extended": false,
+              "nodesUsed": 5
+            },
+            {
+              "reply": "Kh2",
+              "answer": "Rxd1",
+              "gain": 100,
+              "extended": true,
+              "nodesUsed": 138
+            }
+          ]
+        },
+        null
+      ],
+      "pass": false
+    }
+  ]
+}

@@ -1,0 +1,554 @@
+{
+  "schema": 1,
+  "classifierVersion": "site-55.adapter-172",
+  "sourceRef": "80155c616cf2dd0d45cb764c060d7e60b7df5ede",
+  "scope": "Eight paired history/colour/prefix variants of one constructed mechanism, not population accuracy",
+  "passed": 6,
+  "total": 8,
+  "rows": [
+    {
+      "mirrored": false,
+      "repeated": false,
+      "length": 3,
+      "input": {
+        "fen": "q4k2/8/8/8/3N4/8/P6K/8 w - - 14 8",
+        "tacticalHistory": {
+          "fen": "q3k3/8/8/1N6/8/8/P6K/8 w - - 0 1",
+          "moves": [
+            "b5c3",
+            "e8f8",
+            "c3e4",
+            "f8e8",
+            "e4c3",
+            "e8f8",
+            "c3b5",
+            "f8e8",
+            "b5d6",
+            "e8f8",
+            "d6f5",
+            "f8g8",
+            "f5d4",
+            "g8f8"
+          ]
+        },
+        "pvUci": [
+          "d4e6",
+          "f8e8",
+          "e6c7"
+        ]
+      },
+      "expectedFork": false,
+      "actualFork": false,
+      "expectedPayoff": false,
+      "actualPayoff": false,
+      "passed": true,
+      "output": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6c7 forks the king on e8 and queen on a8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6c7",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    },
+    {
+      "mirrored": false,
+      "repeated": false,
+      "length": 5,
+      "input": {
+        "fen": "q4k2/8/8/8/3N4/8/P6K/8 w - - 14 8",
+        "tacticalHistory": {
+          "fen": "q3k3/8/8/1N6/8/8/P6K/8 w - - 0 1",
+          "moves": [
+            "b5c3",
+            "e8f8",
+            "c3e4",
+            "f8e8",
+            "e4c3",
+            "e8f8",
+            "c3b5",
+            "f8e8",
+            "b5d6",
+            "e8f8",
+            "d6f5",
+            "f8g8",
+            "f5d4",
+            "g8f8"
+          ]
+        },
+        "pvUci": [
+          "d4e6",
+          "f8e8",
+          "e6c7",
+          "e8d7",
+          "c7a8"
+        ]
+      },
+      "expectedFork": true,
+      "actualFork": true,
+      "expectedPayoff": true,
+      "actualPayoff": true,
+      "passed": true,
+      "output": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6c7 forks the king on e8 and queen on a8. The line continues with c7a8, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6c7",
+            "value": 900,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6c7 forks the king on e8 and queen on a8. The line continues with c7a8, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6c7",
+            "value": 900,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Nxa8 collects the queen on a8, the material payoff of the earlier fork (Nc7+).",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "c7a8",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    },
+    {
+      "mirrored": false,
+      "repeated": true,
+      "length": 3,
+      "input": {
+        "fen": "q4k2/8/8/8/3N4/8/P6K/8 w - - 14 8",
+        "tacticalHistory": {
+          "fen": "q3k3/8/8/1N6/8/8/P6K/8 w - - 0 1",
+          "moves": [
+            "b5c7",
+            "e8f8",
+            "c7b5",
+            "f8e8",
+            "b5c7",
+            "e8f8",
+            "c7b5",
+            "f8e8",
+            "b5d6",
+            "e8f8",
+            "d6f5",
+            "f8g8",
+            "f5d4",
+            "g8f8"
+          ]
+        },
+        "pvUci": [
+          "d4e6",
+          "f8e8",
+          "e6c7"
+        ]
+      },
+      "expectedFork": false,
+      "actualFork": false,
+      "expectedPayoff": false,
+      "actualPayoff": false,
+      "passed": true,
+      "output": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6c7 forks the king on e8 and queen on a8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6c7",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    },
+    {
+      "mirrored": false,
+      "repeated": true,
+      "length": 5,
+      "input": {
+        "fen": "q4k2/8/8/8/3N4/8/P6K/8 w - - 14 8",
+        "tacticalHistory": {
+          "fen": "q3k3/8/8/1N6/8/8/P6K/8 w - - 0 1",
+          "moves": [
+            "b5c7",
+            "e8f8",
+            "c7b5",
+            "f8e8",
+            "b5c7",
+            "e8f8",
+            "c7b5",
+            "f8e8",
+            "b5d6",
+            "e8f8",
+            "d6f5",
+            "f8g8",
+            "f5d4",
+            "g8f8"
+          ]
+        },
+        "pvUci": [
+          "d4e6",
+          "f8e8",
+          "e6c7",
+          "e8d7",
+          "c7a8"
+        ]
+      },
+      "expectedFork": false,
+      "actualFork": true,
+      "expectedPayoff": false,
+      "actualPayoff": true,
+      "passed": false,
+      "output": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6c7 forks the king on e8 and queen on a8. The line continues with c7a8, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6c7",
+            "value": 900,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6c7 forks the king on e8 and queen on a8. The line continues with c7a8, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6c7",
+            "value": 900,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Nxa8 collects the queen on a8, the material payoff of the earlier fork (Nc7+).",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "c7a8",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    },
+    {
+      "mirrored": true,
+      "repeated": false,
+      "length": 3,
+      "input": {
+        "fen": "8/p6k/8/3n4/8/8/8/Q4K2 b - - 14 8",
+        "tacticalHistory": {
+          "fen": "8/p6k/8/8/1n6/8/8/Q3K3 b - - 0 1",
+          "moves": [
+            "b4c6",
+            "e1f1",
+            "c6e5",
+            "f1e1",
+            "e5c6",
+            "e1f1",
+            "c6b4",
+            "f1e1",
+            "b4d3",
+            "e1f1",
+            "d3f4",
+            "f1g1",
+            "f4d5",
+            "g1f1"
+          ]
+        },
+        "pvUci": [
+          "d5e3",
+          "f1e1",
+          "e3c2"
+        ]
+      },
+      "expectedFork": false,
+      "actualFork": false,
+      "expectedPayoff": false,
+      "actualPayoff": false,
+      "passed": true,
+      "output": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3c2 forks the king on e1 and queen on a1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3c2",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    },
+    {
+      "mirrored": true,
+      "repeated": false,
+      "length": 5,
+      "input": {
+        "fen": "8/p6k/8/3n4/8/8/8/Q4K2 b - - 14 8",
+        "tacticalHistory": {
+          "fen": "8/p6k/8/8/1n6/8/8/Q3K3 b - - 0 1",
+          "moves": [
+            "b4c6",
+            "e1f1",
+            "c6e5",
+            "f1e1",
+            "e5c6",
+            "e1f1",
+            "c6b4",
+            "f1e1",
+            "b4d3",
+            "e1f1",
+            "d3f4",
+            "f1g1",
+            "f4d5",
+            "g1f1"
+          ]
+        },
+        "pvUci": [
+          "d5e3",
+          "f1e1",
+          "e3c2",
+          "e1d2",
+          "c2a1"
+        ]
+      },
+      "expectedFork": true,
+      "actualFork": true,
+      "expectedPayoff": true,
+      "actualPayoff": true,
+      "passed": true,
+      "output": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3c2 forks the king on e1 and queen on a1. The line continues with c2a1, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3c2",
+            "value": 900,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3c2 forks the king on e1 and queen on a1. The line continues with c2a1, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3c2",
+            "value": 900,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Nxa1 collects the queen on a1, the material payoff of the earlier fork (Nc2+).",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "c2a1",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    },
+    {
+      "mirrored": true,
+      "repeated": true,
+      "length": 3,
+      "input": {
+        "fen": "8/p6k/8/3n4/8/8/8/Q4K2 b - - 14 8",
+        "tacticalHistory": {
+          "fen": "8/p6k/8/8/1n6/8/8/Q3K3 b - - 0 1",
+          "moves": [
+            "b4c2",
+            "e1f1",
+            "c2b4",
+            "f1e1",
+            "b4c2",
+            "e1f1",
+            "c2b4",
+            "f1e1",
+            "b4d3",
+            "e1f1",
+            "d3f4",
+            "f1g1",
+            "f4d5",
+            "g1f1"
+          ]
+        },
+        "pvUci": [
+          "d5e3",
+          "f1e1",
+          "e3c2"
+        ]
+      },
+      "expectedFork": false,
+      "actualFork": false,
+      "expectedPayoff": false,
+      "actualPayoff": false,
+      "passed": true,
+      "output": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3c2 forks the king on e1 and queen on a1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3c2",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    },
+    {
+      "mirrored": true,
+      "repeated": true,
+      "length": 5,
+      "input": {
+        "fen": "8/p6k/8/3n4/8/8/8/Q4K2 b - - 14 8",
+        "tacticalHistory": {
+          "fen": "8/p6k/8/8/1n6/8/8/Q3K3 b - - 0 1",
+          "moves": [
+            "b4c2",
+            "e1f1",
+            "c2b4",
+            "f1e1",
+            "b4c2",
+            "e1f1",
+            "c2b4",
+            "f1e1",
+            "b4d3",
+            "e1f1",
+            "d3f4",
+            "f1g1",
+            "f4d5",
+            "g1f1"
+          ]
+        },
+        "pvUci": [
+          "d5e3",
+          "f1e1",
+          "e3c2",
+          "e1d2",
+          "c2a1"
+        ]
+      },
+      "expectedFork": false,
+      "actualFork": true,
+      "expectedPayoff": false,
+      "actualPayoff": true,
+      "passed": false,
+      "output": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3c2 forks the king on e1 and queen on a1. The line continues with c2a1, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3c2",
+            "value": 900,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3c2 forks the king on e1 and queen on a1. The line continues with c2a1, winning the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3c2",
+            "value": 900,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Nxa1 collects the queen on a1, the material payoff of the earlier fork (Nc2+).",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "c2a1",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      }
+    }
+  ]
+}

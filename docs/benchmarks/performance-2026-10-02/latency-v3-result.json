@@ -1,0 +1,403 @@
+{
+  "scope": "Synthetic 5000-game model computation, excluding rendering/network. Same process, two warmups and alternating order. Baseline panel has three passes; candidate panel reuses its period graph for the headline. Numerical correction benchmark, not empirical predictive acceptance.",
+  "node": "v24.19.0",
+  "cpu": "Intel(R) Core(TM) Ultra 7 265K",
+  "logicalCpuCount": 20,
+  "repetitions": 20,
+  "fixtureHash": "41f054d99836f16bdc54f461f77b3e3a6c4f30ba543f514f9110acc00dddd418",
+  "baseline": {
+    "version": "bayes-grid-v2-log-support",
+    "hashes": {
+      "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\outpost-true-performance\\tmp\\performance-v2-baseline.ts": "4458b77d5e0ad52ef8acdc99348c7572e88c68325d2c1c4b2cb084f331118857"
+    }
+  },
+  "candidate": {
+    "version": "bayes-continuous-v3",
+    "hashes": {
+      "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\outpost-true-performance\\src\\shared\\performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+      "C:\\Users\\Lox\\Desktop\\repo\\.worktrees\\outpost-true-performance\\src\\shared\\truePerformance.ts": "f02ab98332e6ce59152483df30482f3925729de3fe5c2a28804dab7096e93f93"
+    }
+  },
+  "samples": {
+    "baseline": [
+      {
+        "historyMs": 1319.0231000000003,
+        "periodGraphMs": 1181.2808999999997,
+        "separateHeadlineMs": 1186.690200000001,
+        "panelComputationMs": 3686.994200000001,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1313.3093999999983,
+        "periodGraphMs": 1157.7322000000022,
+        "separateHeadlineMs": 1067.9484999999986,
+        "panelComputationMs": 3538.990099999999,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1433.1404000000002,
+        "periodGraphMs": 1276.571,
+        "separateHeadlineMs": 1191.0303999999996,
+        "panelComputationMs": 3900.7418,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1465.8597999999984,
+        "periodGraphMs": 1197.9950000000026,
+        "separateHeadlineMs": 1157.8720999999932,
+        "panelComputationMs": 3821.726899999994,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1535.4151999999958,
+        "periodGraphMs": 1397.727700000003,
+        "separateHeadlineMs": 1268.3062999999966,
+        "panelComputationMs": 4201.4491999999955,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1546.1214999999938,
+        "periodGraphMs": 1446.5017000000007,
+        "separateHeadlineMs": 1260.991200000004,
+        "panelComputationMs": 4253.614399999999,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1621.3039999999964,
+        "periodGraphMs": 1220.7727000000014,
+        "separateHeadlineMs": 1257.170600000005,
+        "panelComputationMs": 4099.247300000003,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1620.5455999999976,
+        "periodGraphMs": 1284.1552000000083,
+        "separateHeadlineMs": 1182.408099999986,
+        "panelComputationMs": 4087.108899999992,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1553.0815000000002,
+        "periodGraphMs": 1369.5908000000054,
+        "separateHeadlineMs": 1182.1347999999998,
+        "panelComputationMs": 4104.807100000005,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1455.4982000000018,
+        "periodGraphMs": 1342.9801000000007,
+        "separateHeadlineMs": 1283.924800000008,
+        "panelComputationMs": 4082.4031000000105,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1614.5216000000073,
+        "periodGraphMs": 1445.9858999999997,
+        "separateHeadlineMs": 1205.660899999988,
+        "panelComputationMs": 4266.168399999995,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1644.5304000000033,
+        "periodGraphMs": 1392.2537000000011,
+        "separateHeadlineMs": 1179.5592000000033,
+        "panelComputationMs": 4216.343300000008,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1602.7543000000005,
+        "periodGraphMs": 1319.2127999999939,
+        "separateHeadlineMs": 1286.1857000000018,
+        "panelComputationMs": 4208.152799999996,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1491.1377000000066,
+        "periodGraphMs": 1241.6630999999907,
+        "separateHeadlineMs": 1251.4064000000071,
+        "panelComputationMs": 3984.2072000000044,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1452.631699999998,
+        "periodGraphMs": 1416.604800000001,
+        "separateHeadlineMs": 1274.9667000000045,
+        "panelComputationMs": 4144.203200000004,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1567.934500000003,
+        "periodGraphMs": 1417.6804999999877,
+        "separateHeadlineMs": 1285.823000000004,
+        "panelComputationMs": 4271.437999999995,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1426.5152000000235,
+        "periodGraphMs": 1270.2029999999795,
+        "separateHeadlineMs": 1206.3873000000021,
+        "panelComputationMs": 3903.105500000005,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1591.8263999999908,
+        "periodGraphMs": 1330.4838000000163,
+        "separateHeadlineMs": 1285.2284999999974,
+        "panelComputationMs": 4207.538700000005,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1640.7054000000062,
+        "periodGraphMs": 1442.9783999999927,
+        "separateHeadlineMs": 1191.1359999999986,
+        "panelComputationMs": 4274.8197999999975,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      },
+      {
+        "historyMs": 1465.9715000000142,
+        "periodGraphMs": 1421.5249999999942,
+        "separateHeadlineMs": 1226.72080000001,
+        "panelComputationMs": 4114.217300000018,
+        "strength": 1799.1276792816907,
+        "performance": 1799.125268621791
+      }
+    ],
+    "candidate": [
+      {
+        "historyMs": 1324.5378999999994,
+        "periodGraphMs": 2156.5375999999997,
+        "separateHeadlineMs": 0.004199999999400461,
+        "panelComputationMs": 3481.0796999999984,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1491.709600000002,
+        "periodGraphMs": 2122.393899999999,
+        "separateHeadlineMs": 0.0034999999988940544,
+        "panelComputationMs": 3614.107,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1477.5013999999937,
+        "periodGraphMs": 2294.9720000000016,
+        "separateHeadlineMs": 0.013700000003154855,
+        "panelComputationMs": 3772.4870999999985,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1406.6458000000057,
+        "periodGraphMs": 2173.6689999999944,
+        "separateHeadlineMs": 0.005900000003748573,
+        "panelComputationMs": 3580.320700000004,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1556.0399999999936,
+        "periodGraphMs": 2229.758200000004,
+        "separateHeadlineMs": 0.004000000000814907,
+        "panelComputationMs": 3785.8021999999983,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1533.153099999996,
+        "periodGraphMs": 2267.4513000000006,
+        "separateHeadlineMs": 0.00450000000273576,
+        "panelComputationMs": 3800.6088999999993,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1377.1880999999994,
+        "periodGraphMs": 2146.8610000000044,
+        "separateHeadlineMs": 0.003499999991618097,
+        "panelComputationMs": 3524.0525999999954,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1307.2641999999905,
+        "periodGraphMs": 2154.7862000000023,
+        "separateHeadlineMs": 0.003899999996065162,
+        "panelComputationMs": 3462.054299999989,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1269.5478000000003,
+        "periodGraphMs": 2141.182700000005,
+        "separateHeadlineMs": 0.003700000001117587,
+        "panelComputationMs": 3410.7342000000062,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1607.921199999997,
+        "periodGraphMs": 2109.7307,
+        "separateHeadlineMs": 0.0031000000017229468,
+        "panelComputationMs": 3717.654999999999,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1296.5141000000003,
+        "periodGraphMs": 2104.297599999991,
+        "separateHeadlineMs": 0.003000000011525117,
+        "panelComputationMs": 3400.8147000000026,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1449.775800000003,
+        "periodGraphMs": 2243.309600000008,
+        "separateHeadlineMs": 0.0027999999874737114,
+        "panelComputationMs": 3693.0881999999983,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1241.5323999999964,
+        "periodGraphMs": 2198.981899999999,
+        "separateHeadlineMs": 0.003700000001117587,
+        "panelComputationMs": 3440.5179999999964,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1557.6168000000034,
+        "periodGraphMs": 2304.9743000000017,
+        "separateHeadlineMs": 0.005799999998998828,
+        "panelComputationMs": 3862.596900000004,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1417.8561000000045,
+        "periodGraphMs": 2259.770000000004,
+        "separateHeadlineMs": 0.005299999989802018,
+        "panelComputationMs": 3677.6313999999984,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1382.3205999999918,
+        "periodGraphMs": 2160.001799999998,
+        "separateHeadlineMs": 0.005399999994551763,
+        "panelComputationMs": 3542.3277999999846,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1331.78330000001,
+        "periodGraphMs": 2193.451399999991,
+        "separateHeadlineMs": 0.005499999999301508,
+        "panelComputationMs": 3525.2402,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1541.997399999993,
+        "periodGraphMs": 2225.3666000000085,
+        "separateHeadlineMs": 0.003499999991618097,
+        "panelComputationMs": 3767.367499999993,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1349.8491000000213,
+        "periodGraphMs": 2189.7863999999827,
+        "separateHeadlineMs": 0.005700000008800998,
+        "panelComputationMs": 3539.6412000000128,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      },
+      {
+        "historyMs": 1303.5126000000164,
+        "periodGraphMs": 2159.7283999999927,
+        "separateHeadlineMs": 0.003599999996367842,
+        "panelComputationMs": 3463.2446000000054,
+        "strength": 1799.12767930268,
+        "performance": 1799.0817581961128
+      }
+    ]
+  },
+  "stats": {
+    "baseline": {
+      "historyMs": {
+        "median": 1546.1214999999938,
+        "p95": 1640.7054000000062,
+        "min": 1313.3093999999983,
+        "max": 1644.5304000000033
+      },
+      "periodGraphMs": {
+        "median": 1342.9801000000007,
+        "p95": 1445.9858999999997,
+        "min": 1157.7322000000022,
+        "max": 1446.5017000000007
+      },
+      "separateHeadlineMs": {
+        "median": 1226.72080000001,
+        "p95": 1285.823000000004,
+        "min": 1067.9484999999986,
+        "max": 1286.1857000000018
+      },
+      "panelComputationMs": {
+        "median": 4114.217300000018,
+        "p95": 4271.437999999995,
+        "min": 3538.990099999999,
+        "max": 4274.8197999999975
+      }
+    },
+    "candidate": {
+      "historyMs": {
+        "median": 1406.6458000000057,
+        "p95": 1557.6168000000034,
+        "min": 1241.5323999999964,
+        "max": 1607.921199999997
+      },
+      "periodGraphMs": {
+        "median": 2189.7863999999827,
+        "p95": 2294.9720000000016,
+        "min": 2104.297599999991,
+        "max": 2304.9743000000017
+      },
+      "separateHeadlineMs": {
+        "median": 0.004000000000814907,
+        "p95": 0.005900000003748573,
+        "min": 0.0027999999874737114,
+        "max": 0.013700000003154855
+      },
+      "panelComputationMs": {
+        "median": 3580.320700000004,
+        "p95": 3800.6088999999993,
+        "min": 3400.8147000000026,
+        "max": 3862.596900000004
+      }
+    }
+  },
+  "panelP95Ratio": 0.8897726948161261,
+  "heapUsedBytesAtEnd": 7225952
+}

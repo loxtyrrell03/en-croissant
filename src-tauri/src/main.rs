@@ -23,6 +23,7 @@ mod pgn;
 mod progress;
 mod puzzle;
 mod sound;
+mod study_resources;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -161,6 +162,7 @@ fn main() {
     let specta_builder = tauri_specta::Builder::new()
         .commands(tauri_specta::collect_commands!(
             close_splashscreen,
+            study_resources::open_study_resource,
             get_best_moves,
             lookup_local_lichess_cloud_eval,
             get_local_lichess_eval_db_status,

@@ -1,0 +1,77 @@
+{
+  "scope": "Eight output-blind development-only nominations from the already-used CC0 fixture. New relative to recorded public cases, not an independent holdout or eight correct answers. Initial board hypotheses preceded classifier output; only the stated controls have been independently adjudicated.",
+  "license": "CC0-1.0",
+  "sourceFixture": "chessmistaketrainer/benchmarks/tactical-classifier/lichess-2026-08-02-fixture-v1.jsonl",
+  "sourceSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "selectionArchiveCommit": "18255054",
+  "seed": "public-mechanism-noise-audit-2026-10-02",
+  "selection": "One SHA-256(seed:id)-ordered development row per ordered stratum, excluding 131 actual previously recorded puzzle IDs and 131 source games and retaining distinct source games within this batch. Exclusion metadata was ignored. Selection preceded chess hypotheses and classifier execution. Holdout rows were neither selected nor classified.",
+  "orderedStrata": ["intermezzo", "skewer", "underPromotion", "discoveredCheck", "pin", "defensiveMove", "xRayAttack", "zugzwang"],
+  "observedClassifier": "adapter-166",
+  "cases": [
+    {
+      "id": "lichess:KmpJY", "stratum": "intermezzo", "sourceGroup": "game:QPNg8ZHh", "sourceGameUrl": "https://lichess.org/QPNg8ZHh/black#22",
+      "sourceFen": "r1bqk2r/pppnp1b1/3p2pp/6B1/2PPQ3/5N2/PP4PP/R3KB1R b KQkq - 2 11", "precedingMove": "h6g5",
+      "startFen": "r1bqk2r/pppnp1b1/3p2p1/6p1/2PPQ3/5N2/PP4PP/R3KB1R w KQkq - 0 12", "bestLine": ["e4g6", "e8f8", "f3g5", "d7e5", "d4e5"],
+      "selectionHash": "05a8a9b1bf15c92027e45fbe8c57849da55204e8470d1799b3f6826eec5c7651",
+      "adjudication": "unresolved-root-mechanism", "observedRoot": [],
+      "judgement": "Qxg6+ captures with check before recovering g5 and also attacks Bg7. Immediate fork versus intermediate-check move order needs all king replies and counterattacks reviewed. The classifier proves a mating attack only at actual ply 3; empty root is not a correct negative."
+    },
+    {
+      "id": "lichess:pXSKy", "stratum": "skewer", "sourceGroup": "game:icQaIE9m", "sourceGameUrl": "https://lichess.org/icQaIE9m#185",
+      "sourceFen": "4R3/8/8/5K2/r4P2/5k2/8/8 w - - 1 93", "precedingMove": "f5e5",
+      "startFen": "4R3/8/8/4K3/r4P2/5k2/8/8 b - - 2 93", "bestLine": ["a4e4", "e5d6", "e4e8", "f4f5", "e8f8"],
+      "selectionHash": "13b6cf4614727d60bf4aa7f534698a7b6c2a7dd76db32b3a15bc5506027706a8",
+      "adjudication": "mechanism-plausible-not-independently-certified", "observedRoot": ["skewer"],
+      "judgement": "Re4+ skewers Ke5 to Re8. The emitted 500 cp local bound is not an independently reviewed whole-endgame result; the pawn race remains a separate question."
+    },
+    {
+      "id": "lichess:ZrgCo", "stratum": "underPromotion", "sourceGroup": "game:wOOnQcXR", "sourceGameUrl": "https://lichess.org/wOOnQcXR/black#104",
+      "sourceFen": "8/p3P2R/1p1k4/2p2K1p/2P4r/1P6/P6p/8 b - - 0 52", "precedingMove": "h2h1q",
+      "startFen": "8/p3P2R/1p1k4/2p2K1p/2P4r/1P6/P7/7q w - - 0 53", "bestLine": ["e7e8n", "d6c6", "h7c7"],
+      "selectionHash": "05c1939eacbf2a0ed361dda0e01446b3b1f2059dba9031da40a52c4f0a02a88c",
+      "adjudication": "confirmed-secondary-noise", "observedRoot": ["mateIn2", "discoveredAttack", "underPromotion"], "expectedPrimary": "mateIn2", "forbiddenRootSupport": ["discoveredAttack"],
+      "judgement": "Independent exhaustive legal reply/next-mate enumeration proves e8=N+ Kc6 Rc7# in both colours, unchanged after removing the a7 discovery victim. The original root/timeline adds an irrelevant 320 cp pawn-discovery badge alongside the 220 cp promotion. Q/R/B promotions do not force mate within two; this does not prove they lose."
+    },
+    {
+      "id": "lichess:Vk1Ud", "stratum": "discoveredCheck", "sourceGroup": "game:cS8sT93s", "sourceGameUrl": "https://lichess.org/cS8sT93s#31",
+      "sourceFen": "r3k2r/pp2pp1p/2n3p1/8/4P3/5BP1/P2K1P1P/1R5R w kq - 1 16", "precedingMove": "b1b7",
+      "startFen": "r3k2r/pR2pp1p/2n3p1/8/4P3/5BP1/P2K1P1P/7R b kq - 0 16", "bestLine": ["e8c8", "d2e3", "c8b7"],
+      "selectionHash": "01703974180ac6a061f49865442cadde5280fd681f0cef8982a8d96059d7e0b0",
+      "adjudication": "unresolved-checking-castling-combination", "observedRoot": [],
+      "judgement": "Castling brings Rd8 into check and Kc8 next to Rb7. Every block and countercheck requires review before claiming a rook gain; the compound castling mechanism is unexplained, not a certified quiet position."
+    },
+    {
+      "id": "lichess:ilrgH", "stratum": "pin", "sourceGroup": "game:mQUbKUdO", "sourceGameUrl": "https://lichess.org/mQUbKUdO/black#40",
+      "sourceFen": "3r1r1k/pbq1bBpp/5p2/4pPPQ/7P/2N5/PPP5/2KR3R b - - 2 20", "precedingMove": "b7h1",
+      "startFen": "3r1r1k/p1q1bBpp/5p2/4pPPQ/7P/2N5/PPP5/2KR3b w - - 0 21", "bestLine": ["f7g6", "d8d1", "c3d1"],
+      "selectionHash": "0c9512914a260db61730391f5feabfa7990041694234680ec1fcb00c621df366",
+      "adjudication": "unresolved-mating-threat-defences", "observedRoot": [],
+      "judgement": "Bg6 exploits the h7 pin and threatens Qxh7 mate. Rxd1+ Nxd1 does not itself finish mate; all defensive checks and the causal pin support remain to be adjudicated."
+    },
+    {
+      "id": "lichess:Kn14A", "stratum": "defensiveMove", "sourceGroup": "game:pxdMS4ar", "sourceGameUrl": "https://lichess.org/pxdMS4ar/black#78",
+      "sourceFen": "1k2b2R/2p5/Qp1p4/3Pp3/N3P3/PK6/1P6/1q3r2 b - - 14 39", "precedingMove": "f1f3",
+      "startFen": "1k2b2R/2p5/Qp1p4/3Pp3/N3P3/PK3r2/1P6/1q6 w - - 15 40", "bestLine": ["a4c3", "f3c3", "b3c3", "b1c1", "c3b3"],
+      "selectionHash": "0cd60e8fe5521c2a11216b564ced8629b8af08b40790ce63bc1a316aa1ad06b7",
+      "adjudication": "unresolved-defensive-mechanism", "observedRoot": [],
+      "judgement": "Nc3 interposes against the rook check while preserving pressure against Black's king. Rxc3+ is only one reply; the source defensiveMove tag is not a proof of material gain or the root's correct primary."
+    },
+    {
+      "id": "lichess:UohLn", "stratum": "xRayAttack", "sourceGroup": "game:Unhq2NQb", "sourceGameUrl": "https://lichess.org/Unhq2NQb#73",
+      "sourceFen": "2Qr1k1r/3Pb1p1/5p2/2p1pq2/2P4p/PP1RR2P/3B2P1/7K w - - 2 37", "precedingMove": "b3b4",
+      "startFen": "2Qr1k1r/3Pb1p1/5p2/2p1pq2/1PP4p/P2RR2P/3B2P1/7K b - - 0 37", "bestLine": ["d8c8", "d7c8r", "f5c8"],
+      "selectionHash": "0a48770f63abe1069b5b2c6a866d37a8a3259af29fdbb856db11075afd0d6005",
+      "adjudication": "unresolved-xray-promotion-compensation", "observedRoot": [],
+      "judgement": "Rxc8 uses Qf5 behind Pd7 to recapture after the pawn promotes. The eventual captured rook is promoted compensation, not an independent free piece; all alternatives still need independent verification."
+    },
+    {
+      "id": "lichess:DVs4F", "stratum": "zugzwang", "sourceGroup": "game:fu4ZkxrA", "sourceGameUrl": "https://lichess.org/fu4ZkxrA#99",
+      "sourceFen": "8/8/k2p4/pp1P4/P1K5/1P6/8/8 w - - 0 50", "precedingMove": "c4d4",
+      "startFen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 1 50", "bestLine": ["a6b6", "a4b5", "b6b5"],
+      "selectionHash": "0a87481d6eb436741d69357250ac791fcd85efe7b73cba80b67f5f0dc5c2cab2",
+      "adjudication": "unresolved-endgame-causality", "observedRoot": [],
+      "judgement": "Kb6 takes opposition. All pawn tempi, king replies and a clearly labelled pass comparison need checking; the later pawn capture is not root zugzwang proof."
+    }
+  ]
+}

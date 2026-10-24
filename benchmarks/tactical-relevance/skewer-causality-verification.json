@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "baseCommit": "b75c13e2f3a63d69cf60bd9e0b4221f884a9e190",
+  "classifierVersion": "site-55.adapter-175",
+  "pipelineVersion": 182,
+  "scope": "En Croissant causal primary and skewer relevance milestone. Public development cases, constructed controls and output-blind contexts; not population accuracy or holdout validation.",
+  "broad": {
+    "started": "2026-10-02T22:06:05.659Z",
+    "finished": "2026-10-02T22:09:54.307Z",
+    "selectedFiles": 248,
+    "activeFiles": 227,
+    "passed": 3687,
+    "knownExpectedFailures": 1,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "sourceUnchangedDuringRun": true,
+    "reportSha256": "73a9d3c665fe099804c8f4b829f5ec56bbe871792082e926993b68bb5b546823"
+  },
+  "newSourceContracts": {
+    "total": 26,
+    "skewerRearWitness": 8,
+    "retainedDefenderRemoval": 10,
+    "ordinaryContext": 8,
+    "scope": "Paired and constructed regression contracts, not 26 independent positions."
+  },
+  "primary": {
+    "cases": 32,
+    "byteIdenticalToAdapter174": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "exactCore": {
+    "files": 42,
+    "passed": 901,
+    "skipped": 5,
+    "failed": 0,
+    "blob": "cdec0ea486dde67507c39da91f5fe9df2e14a5c9",
+    "sha256LF": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+    "sourceUnchangedDuringRun": true,
+    "pendingCheckingRayExcluded": true,
+    "reportSha256": "a6742db6cac500c26eca3cd75e4e82061353001995c5f924fdbe8e931b629305"
+  },
+  "compiledTrainer": {
+    "files": 6,
+    "passed": 113,
+    "skipped": 1,
+    "failed": 0,
+    "newRoundtrips": 8,
+    "skip": "Opt-in real background-engine test",
+    "generatedSha256": "03d64b1b58e6acb038a6c218bb1459c1e7ad0d3074d0be872bdd53d9978d2dae",
+    "sourceUnchangedDuringRun": true,
+    "ownerDataUsed": false,
+    "receiptSha256": "4c7feead2e3d6bef4d0a878a728682aa3fc9492cc31eb831b92b8cab02dc47d5"
+  },
+  "fixedPrimaryBenchmark": {
+    "id": "EpYOT",
+    "variants": 8,
+    "beforePassed": 0,
+    "afterPassed": 8,
+    "contractFields": [
+      "namedPrimary",
+      "correctPrimaryBound",
+      "noRearPawnSkewers",
+      "payoffNotCountedTwice"
+    ],
+    "scope": "Eight variants of one reviewed development position, not eight independent puzzles or a population accuracy estimate."
+  },
+  "ordinaryAudit": {
+    "contexts": 24,
+    "gameGroups": 4,
+    "variants": 94,
+    "quietAlternatives": 46,
+    "newConfirmedFalsePrimaries": 0,
+    "independentlyAdjudicatedRootClaims": 2,
+    "scope": "New exact contexts in reused public puzzle-source games. Neighboring and reflected cases are dependent. Empty output is not a positional gold label; this sample does not measure recall.",
+    "receipt": "ordinary-precision-v1-verification.json"
+  },
+  "retainedPublicCohort": {
+    "inputs": 56,
+    "testsPassed": 14,
+    "changedObservations": 0,
+    "unchangedObservations": 56,
+    "changes": [],
+    "sourceLabelsAreNotTruth": true,
+    "reportSha256": "2aa21fa2100cfecb3ea64fa9e79cfd4cef9574eb3679456e6dfe856fb341f0c1"
+  },
+  "checks": {
+    "wholeProjectTypes": "Passed --noEmit --incremental false",
+    "scopedLint": "Nine root-selected source/trainer files, zero warnings/errors; additional benchmark checks in their receipts",
+    "frontendAndReviewBuild": "Passed 8971 frontend / 49 shared review / 21 OTB helper modules; existing chunk-size, third-party bigint and plugin-time warnings",
+    "diffCheck": "Passed"
+  },
+  "sourceHashesLF": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "f888298e2c9f9aa2550bc4061342d0155012ae785d78ca820be1d67f59000ae3",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "8286a918c80f65f1be843ae0554daf14f18b25904c95b303860105fa0932b66b",
+    "src/utils/tacticalMotifs/liveTactics.ts": "fd140c4e84448d9ddffb1272e916f210f1585a5cd77e50db314b90d4d4af55f8",
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "src/utils/tacticalMotifs/continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+    "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "src/utils/tacticalMotifs/quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "src/components/files/opening.ts": "014bc3d4cf6c3e9916b2e14068a9c16ccbd760d6241ce4c2cc49e760a89b104d",
+    "src/utils/mistakeReview.ts": "0364e7b5ef84e92eed9539b8b2b9e929ce33616057c84cd464fae74cc4734e6c",
+    "src/utils/tests/skewerRearWitness.test.ts": "a47075dfe8e5fcd1f24b3d8a47545cb09a338bad70b8c7a2bbf9276666af5780",
+    "src/utils/tests/retainedDefenderRemoval.test.ts": "195e81d9e64df031dae2171d9b8f5eb140f03c1107d40d8c35b4346fd45779c8",
+    "src/utils/tests/ordinaryPrecisionContext.test.ts": "0d53d5436bb9f92bd06ddc998ee1e8097acc075f8372b73ba1f9da9642ae3ab4",
+    "scripts/tests/repetition-history-review-service.test.mjs": "9903db234ce05582b9f62c7660dcc04edc60928ce0ddd27107efcb6748192508",
+    "scripts/tests/frontier-motif-review-service.test.mjs": "ec054ce209cd37ecc7cf31f43be599c2be45f6d6bde2663f2c66b55cbf230189",
+    "scripts/tests/quiet-intermediate-review-service.test.mjs": "71ce9494887c50d915ceea19562f9e755660f170225238cca010338cdc8594b6"
+  },
+  "evidenceReceipts": {
+    "epyot-causal-verification.json": "96309f2ed8aa0e4ff8c0bb0b4ba561999fde688a217b8ee4819112c6b09f7c7f",
+    "epyot-independent-verification.json": "0b63f266f59ccbfd187562ce7d0830faa75d2d608371c98e6c39fb465ca4c1ec",
+    "ordinary-precision-v1-verification.json": "669c3b503cf4424067dc9e0bf8bbfb1e51b94b2ca6e801633b6d82c1a58dc8e4",
+    "ordinary-precision-v1-independent.json": "fb34da658c8c0e434a7f1d1d0cdd3c2cfd82ae9409e1525d401084423bbdad54"
+  },
+  "preservedPendingCore": {
+    "insertions": 46,
+    "deletions": 4
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "limitations": [
+    "Finite material certificates do not establish whole-game advantage against unlimited quiet counterplay.",
+    "The known queen-ending promotion failure and broader recall remain open.",
+    "Missing or exhausted proof remains unknown, not positional.",
+    "Working-tree builds include preserved unrelated source; exact-core checks exclude the pending checking-ray patch.",
+    "No holdout was consumed and no population accuracy is claimed."
+  ]
+}

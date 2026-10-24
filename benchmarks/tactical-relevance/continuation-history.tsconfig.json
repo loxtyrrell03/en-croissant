@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["./continuation-history-benchmark.test.ts", "./continuation-history.vitest.ts"],
+  "exclude": ["../../node_modules", "../../src-tauri"]
+}

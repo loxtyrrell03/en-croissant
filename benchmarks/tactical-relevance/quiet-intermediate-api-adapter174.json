@@ -1,0 +1,211 @@
+{
+  "sourceRef": "current worktree",
+  "contracts": 8,
+  "passed": 8,
+  "rows": [
+    {
+      "reflected": false,
+      "withHistory": false,
+      "length": 1,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d5e6"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d5e6"
+        }
+      ],
+      "contract": true
+    },
+    {
+      "reflected": false,
+      "withHistory": false,
+      "length": 3,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d5e6"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d5e6"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Intermediate Capture Payoff",
+          "ply": 3,
+          "moveUci": "c2c1"
+        }
+      ],
+      "contract": true
+    },
+    {
+      "reflected": false,
+      "withHistory": true,
+      "length": 1,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d5e6"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d5e6"
+        }
+      ],
+      "contract": true
+    },
+    {
+      "reflected": false,
+      "withHistory": true,
+      "length": 3,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d5e6"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d5e6"
+        }
+      ],
+      "contract": true
+    },
+    {
+      "reflected": true,
+      "withHistory": false,
+      "length": 1,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d4e3"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d4e3"
+        }
+      ],
+      "contract": true
+    },
+    {
+      "reflected": true,
+      "withHistory": false,
+      "length": 3,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d4e3"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 230,
+          "moveUci": "d4e3"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Intermediate Capture Payoff",
+          "ply": 3,
+          "moveUci": "c7c8"
+        }
+      ],
+      "contract": true
+    },
+    {
+      "reflected": true,
+      "withHistory": true,
+      "length": 1,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d4e3"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d4e3"
+        }
+      ],
+      "contract": true
+    },
+    {
+      "reflected": true,
+      "withHistory": true,
+      "length": 3,
+      "motifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d4e3"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Capture",
+          "ply": 1,
+          "value": 0,
+          "moveUci": "d4e3"
+        }
+      ],
+      "contract": true
+    }
+  ]
+}

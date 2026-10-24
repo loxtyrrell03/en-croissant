@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "stage": "Frozen before any classifier or shared-kernel output on these two positions",
+  "scope": "Two remaining eligible source-game-disjoint quiet-capture nominations, not labels or accuracy ground truth",
+  "cases": [
+    {
+      "id": "lichess:Qq0JW",
+      "root": "g4f3",
+      "deferred": "f6d5",
+      "reversedRecoveryCandidate": "f3g4",
+      "hypothesis": "Trade queens with Qxf3 before Nxd5. The white queen on f3 both defends Nd5 along f3-e4-d5 and attacks Qg4. Taking Nd5 first may allow either Qxd5 or Qxg4. Removal of the defender is a competing primary mechanism, not automatically a second independent gain.",
+      "debt": "White's preceding Nxd5 captured a black pawn; account100 separately from root material.",
+      "unknown": "All legal declines/counterchecks and retention of each recovery remain unproved before this audit. Source capturingDefender/intermezzo tags are nominations only."
+    },
+    {
+      "id": "lichess:EpYOT",
+      "root": "b6d6",
+      "deferred": "g7e5",
+      "reversedRecoveryCandidate": "d6b6",
+      "hypothesis": "Trade queens with Qxd6 before Bxe5. Qd6 defends Ne5 and attacks Qb6. Immediate Bxe5 may allow Qxe5 or Qxb6. Removing that defender may own the primary lesson; no duplicate move-order payoff should be inferred.",
+      "debt": "White's preceding Nxe5 captured a black pawn; account100 separately from root material.",
+      "unknown": "All legal declines/counterchecks and retention of each recovery remain unproved before this audit. Source labels are not truth."
+    }
+  ],
+  "syntheticContrasts": [
+    "Two unrelated captures do not imply move-order necessity; the reversed order must contain an independently retained recovery by the actual removed piece.",
+    "A reversed capture loss can be cancelled by a legal recapture, so an immediate material snapshot cannot establish lost material.",
+    "In Ltbye, removing Rc8 preserves a quiet-retention branch and must remain positive.",
+    "Forward and reversed proof amounts use their own root positions; original capture and deferred capture must each be charged only once. Prior-move debt is separate from a local move-order advantage."
+  ]
+}

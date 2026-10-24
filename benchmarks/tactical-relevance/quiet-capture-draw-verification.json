@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "baseCommit": "9756fd271f0e293b3d2b4a2bbffadc51c85588f3",
+  "classifierVersion": "site-55.adapter-174",
+  "pipelineVersion": 181,
+  "scope": "En Croissant quiet capture-order and trap draw-boundary milestone; reviewed public development cases plus constructed controls, not population accuracy or holdout validation",
+  "broad": {
+    "started": "2026-10-02T21:25:10.193Z",
+    "finished": "2026-10-02T21:28:52.090Z",
+    "selectedFiles": 245,
+    "activeFiles": 224,
+    "passed": 3661,
+    "knownExpectedFailures": 1,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "sourceUnchangedDuringRun": true,
+    "reportSha256": "8c2d9bc482e4392e783ee771fd94899b93f5be706e92dfb1699b2d3724417d35"
+  },
+  "newSourceContracts": {
+    "total": 68,
+    "quietIntermediate": 36,
+    "trapDrawBoundary": 32,
+    "scope": "Paired and constructed regression contracts, not68independentpositions"
+  },
+  "primary": {
+    "cases": 32,
+    "byteIdenticalToAdapter173": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "exactCore": {
+    "files": 39,
+    "passed": 875,
+    "skipped": 5,
+    "failed": 0,
+    "blob": "052904c173e53e46f9187d61ae4fba7b8d32091c",
+    "sha256": "74696f6a7d303dfe8c2656eea68d66e2a910b9a184175882f4c523e242b73210",
+    "sourceUnchangedDuringRun": true,
+    "pendingCheckingRayExcluded": true,
+    "reportSha256": "9fb00ed464a1ea68c222820af27c574eeba65d5ae86967b5459c38b56af65253"
+  },
+  "compiledTrainer": {
+    "files": 6,
+    "passed": 105,
+    "skipped": 1,
+    "failed": 0,
+    "newRoundtrips": 20,
+    "quietCaptureRoundtrips": 16,
+    "frontierRoundtripsTotal": 24,
+    "skip": "Opt-in real background-engine test",
+    "generatedSha256": "2104746ffb40d27269c327d6302529239ad2b234d444f617476e03a149921203",
+    "ownerDataUsed": false,
+    "initialTestCorrections": [
+      "Four trap cases used an illegal filler king move into the d6 bishop ray; changed to an independently enumerated legal move.",
+      "Eight Qq0JW tests assumed all matching reversed losses should be hidden. Preserved the stronger890 allowed queen loss, beyond the quiet proof570 lower bound, alongside the missed320/220 order lesson. No production rules were weakened."
+    ]
+  },
+  "fixedBenchmarks": {
+    "ltbyeApi": {
+      "beforePassed": 0,
+      "afterPassed": 8,
+      "total": 8,
+      "scope": "One public puzzle; short/full lines, both colours, prior history present/absent"
+    },
+    "trapClock": {
+      "beforePassed": 8,
+      "afterPassed": 18,
+      "total": 18,
+      "additionalFinalContracts": 14,
+      "receipt": "quiet-trap-adversarial-verification.json"
+    },
+    "newDevelopment": {
+      "nominations": 2,
+      "pairedBenchmarkChecks": 20,
+      "receipt": "quiet-intermediate-development-verification.json",
+      "unresolvedPrimary": "EpYOT"
+    },
+    "trapClearanceAudit": {
+      "nominations": 6,
+      "benchmarkChecks": 16,
+      "unadjudicatedNominations": 4,
+      "receipt": "quiet-trap-adversarial-verification.json"
+    }
+  },
+  "independent": {
+    "quietCaptureStrategy": "quiet-intermediate-independent-adapter174.json",
+    "trapClockWitnesses": 26,
+    "trapReceipt": "quiet-trap-adversarial-verification.json",
+    "scope": "Independent finite legal/material or draw-rule checks, not full strategic proofs"
+  },
+  "retainedPublicCohort": {
+    "inputs": 56,
+    "sourcePuzzles": 8,
+    "ordinaryContexts": 6,
+    "testsPassed": 14,
+    "changedObservations": 4,
+    "unchangedObservations": 52,
+    "sourceLabelsAreNotTruth": true,
+    "reportSha256": "f55464c0144fca0899f1f40de667f093dbe9be08e91cf7f01c9914bac5b34ae2",
+    "changes": [
+      {
+        "id": "lichess:Ltbye",
+        "reflected": false,
+        "scope": "root-only",
+        "before": [],
+        "after": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d5e6",
+            "value": 0,
+            "evidence": "Bxe6 makes the near-equal exchange before Qxc1. Every legal answer preserves the follow-up exchange. Playing Qxc1 first instead permits Bxd5 by the piece removed on e6. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 230 centipawns, compared with at most 0 after that reversed-order recovery: a move-order improvement of at least 230 centipawns. This is not a forced reply, free bishop, or whole-position evaluation. This completes the exchange begun by Bxc1, not a fresh material win. The earlier loss is 500 centipawns; including it gives a local recovery bound of -270 centipawns. The move-order advantage does not erase that debt.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:Ltbye",
+        "reflected": false,
+        "scope": "source-line",
+        "before": [],
+        "after": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d5e6",
+            "value": 0,
+            "evidence": "Bxe6 makes the near-equal exchange before Qxc1. Every legal answer preserves the follow-up exchange. Playing Qxc1 first instead permits Bxd5 by the piece removed on e6. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 230 centipawns, compared with at most 0 after that reversed-order recovery: a move-order improvement of at least 230 centipawns. This is not a forced reply, free bishop, or whole-position evaluation. This completes the exchange begun by Bxc1, not a fresh material win. The earlier loss is 500 centipawns; including it gives a local recovery bound of -270 centipawns. The move-order advantage does not erase that debt.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:Ltbye",
+        "reflected": true,
+        "scope": "root-only",
+        "before": [],
+        "after": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d4e3",
+            "value": 0,
+            "evidence": "Bxe3 makes the near-equal exchange before Qxc8. Every legal answer preserves the follow-up exchange. Playing Qxc8 first instead permits Bxd4 by the piece removed on e3. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 230 centipawns, compared with at most 0 after that reversed-order recovery: a move-order improvement of at least 230 centipawns. This is not a forced reply, free bishop, or whole-position evaluation. This completes the exchange begun by Bxc8, not a fresh material win. The earlier loss is 500 centipawns; including it gives a local recovery bound of -270 centipawns. The move-order advantage does not erase that debt.",
+            "relevance": "primary"
+          }
+        ]
+      },
+      {
+        "id": "lichess:Ltbye",
+        "reflected": true,
+        "scope": "source-line",
+        "before": [],
+        "after": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Capture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d4e3",
+            "value": 0,
+            "evidence": "Bxe3 makes the near-equal exchange before Qxc8. Every legal answer preserves the follow-up exchange. Playing Qxc8 first instead permits Bxd4 by the piece removed on e3. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least 230 centipawns, compared with at most 0 after that reversed-order recovery: a move-order improvement of at least 230 centipawns. This is not a forced reply, free bishop, or whole-position evaluation. This completes the exchange begun by Bxc8, not a fresh material win. The earlier loss is 500 centipawns; including it gives a local recovery bound of -270 centipawns. The move-order advantage does not erase that debt.",
+            "relevance": "primary"
+          }
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "wholeProjectTypes": "passed --noEmit --incremental false",
+    "scopedLint": "11 root-selected files 0warnings/errors; final edited trainer files rerun0/0; delegated benchmark checks in their receipts",
+    "frontendAndReviewBuild": "passed8971frontendmodules/49sharedreviewmodules/21OTBhelpermodules; existing chunk-size, third-party bigint and plugin-time warnings",
+    "diffCheck": "passed"
+  },
+  "sourceHashesLF": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "7b28a8f2ba552e8c9e0b69d3880e910e213ae71640cd8a106d36a7ab9ad6f9c4",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "d06aa1a4e2138289aae1f6301dec25a0091e8cf4b67b77369e7395d15ebae42b",
+    "src/utils/tacticalMotifs/liveTactics.ts": "831f44cbd6ace78f85f4f7313b2fd43c5a9b703e7ff8a29ac388558cd3be1e08",
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "src/utils/tacticalMotifs/continuationHistory.ts": "5291e97c9b9c1cabe31fbea7654e8f94788869a65543cdddebd6a5f3767cd7e2",
+    "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "src/utils/tacticalMotifs/quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9",
+    "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "src/components/files/opening.ts": "014bc3d4cf6c3e9916b2e14068a9c16ccbd760d6241ce4c2cc49e760a89b104d",
+    "src/utils/mistakeReview.ts": "0364e7b5ef84e92eed9539b8b2b9e929ce33616057c84cd464fae74cc4734e6c",
+    "src/utils/tests/quietIntermediateCapture.test.ts": "afc46ae1e6235c660f6c81733855369f3094cc23303127e4e461ad2ddbfd77a2",
+    "src/utils/tests/fixtures/quietIntermediate.ts": "090216a94b6e72623779b928a06d3256ff55ef0568c64ba3daa0aac8e3d6571a",
+    "src/utils/tests/trapDrawBoundary.test.ts": "b7c639a86e49d973bd895dda6d2dd53abf12574c3b513190c1741f3784aa7e35",
+    "scripts/tests/frontier-motif-review-service.test.mjs": "4265d55337fe6d4ad68f809017d2076346e746a0c8228f217fedf68cbe850781",
+    "scripts/tests/repetition-history-review-service.test.mjs": "d491b0d76a596a98499ba5f1b5d9731de4eb7f6ef1da973057fd15ca95f49196",
+    "scripts/tests/quiet-intermediate-review-service.test.mjs": "96cd0183e25951358d852c88a23c0a3bf546a45cea7119ecce5a5c8fa353085e"
+  },
+  "evidenceReceipts": {
+    "quiet-intermediate-development-verification.json": "f54261df7b26b3e59e8347e0487f60a65d0b2ad3fecc20ea185ae3385a56cd1f",
+    "quiet-trap-adversarial-verification.json": "44602b8835befcd8a5719b09063ada1fa31cd1abbf0c84ea4383743a02efb4ce",
+    "quiet-intermediate-independent-adapter174.json": "cd464841dfe2e5fa564b6443a5aba116e3ecc6ba404750998dd3e13ac75cd791",
+    "quiet-intermediate-proof-adapter174.json": "d55024a3b2fdd6e390f3b5129a90ae76e4addc4b3004168188e9171e6a4e3e96"
+  },
+  "preservedPendingCore": {
+    "insertions": 46,
+    "deletions": 4
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "limitations": [
+    "Finite local material certificates do not establish whole-game advantage against unlimited quiet counterplay.",
+    "EpYOT primary competition and four fresh trap/clearance nominations remain unresolved.",
+    "The known queen-ending promotion expected failure remains open.",
+    "Missing or exhausted proof remains unknown, not positional.",
+    "Working-tree builds include preserved unrelated source; exact-core checks exclude the pending checking-ray patch.",
+    "No holdout was consumed and no population accuracy is claimed."
+  ]
+}

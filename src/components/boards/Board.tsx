@@ -1,4 +1,5 @@
 import type { DrawBrushes, DrawShape } from "@lichess-org/chessground/draw";
+import { boardDrawings } from "@/utils/boardDrawings";
 import {
   ActionIcon,
   Badge,
@@ -112,6 +113,7 @@ import {
   formatMistakeReviewLastSeen,
   getMistakeReviewNature,
   getMistakeReviewNatureConfidence,
+  getStoredMistakeReviewNatureClassification,
   mistakeReviewNatureColor,
   mistakeReviewNatureLabel,
   mistakeReviewSeverityLabel,
@@ -271,20 +273,6 @@ const BoardEvalBar = memo(function BoardEvalBar({
 function sameBoardPosition(a: string | undefined, b: string | undefined) {
   if (!a || !b) return false;
   return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
-}
-
-function getStoredMistakeReviewNatureForBoard(
-  metadata: ReviewPosition["mistakeReview"] | undefined,
-) {
-  const candidate = metadata?.nature ?? metadata?.mistakeNature ?? metadata?.summary?.nature;
-  return candidate === "tactical" || candidate === "positional" || candidate === "unknown" ? candidate : null;
-}
-
-function getStoredMistakeReviewNatureConfidenceForBoard(
-  metadata: ReviewPosition["mistakeReview"] | undefined,
-) {
-  const candidate = metadata?.natureConfidence ?? metadata?.summary?.natureConfidence;
-  return candidate === "high" || candidate === "medium" || candidate === "low" ? candidate : null;
 }
 
 function mistakeReviewColor(severity: MistakeReviewAttemptLabel | undefined) {
@@ -520,7 +508,6 @@ function Board({
   const storeMakeMove = useStore(store, (s) => s.makeMove);
   const setPracticePath = useStore(store, (s) => s.setPracticePath);
   const setHeaders = useStore(store, (s) => s.setHeaders);
-  const clearShapes = useStore(store, (s) => s.clearShapes);
   const setShapes = useStore(store, (s) => s.setShapes);
   const setFen = useStore(store, (s) => s.setFen);
 
@@ -1406,13 +1393,6 @@ function Board({
       nextShapes = nextShapes.concat(boardPreviewShapes.shapes);
     }
 
-    const visibleNodeShapes = planExplorerPreviewLine
-      ? currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush))
-      : currentNode.shapes;
-    if (visibleNodeShapes.length > 0) {
-      nextShapes = nextShapes.concat(visibleNodeShapes);
-    }
-
     if (activeMistakeReviewReveal) {
       const revealShape = uciArrowShape(
         activeMistakeReviewReveal.moveUci,
@@ -1473,7 +1453,6 @@ function Board({
     boardFen,
     boardPreviewShapes,
     currentNode.children,
-    currentNode.shapes,
     currentTab?.gameOrigin.kind,
     currentTabSelected,
     hideMistakeReviewPreAttemptGreenArrows,
@@ -1820,14 +1799,15 @@ function Board({
   ].filter(Boolean);
   const canClassifyMistakeReviewNature =
     Boolean(trainerMistakeReviewPosition?.mistakeReview) && !hiddenReviewPractice;
+  const storedMistakeReviewNature = getStoredMistakeReviewNatureClassification(mistakeReviewMetadata);
   const mistakeReviewNature =
     trainerMistakeReviewPosition?.mistakeReview && canClassifyMistakeReviewNature
       ? getMistakeReviewNature(trainerMistakeReviewPosition)
-      : getStoredMistakeReviewNatureForBoard(mistakeReviewMetadata);
+      : storedMistakeReviewNature?.nature ?? (mistakeReviewMetadata ? "unknown" : null);
   const mistakeReviewNatureConfidence =
     trainerMistakeReviewPosition?.mistakeReview && canClassifyMistakeReviewNature
       ? getMistakeReviewNatureConfidence(trainerMistakeReviewPosition)
-      : getStoredMistakeReviewNatureConfidenceForBoard(mistakeReviewMetadata);
+      : storedMistakeReviewNature?.confidence ?? (mistakeReviewMetadata ? "low" : null);
   const mistakeReviewLastSeen = formatMistakeReviewLastSeen(trainerMistakeReviewPosition);
   const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
 
@@ -1975,11 +1955,6 @@ function Board({
                 onContextMenu={drawPlanFromContextMenu}
                 onMouseEnter={clearBoardPositionPreview}
                 onPointerDownCapture={clearBoardPositionPreview}
-                onClick={() => {
-                  if (eraseDrawablesOnClick) {
-                    clearShapes();
-                  }
-                }}
                 onMouseMove={previewPlanFromPointer}
                 onMouseLeave={clearPlanHoverPreview}
                 onWheel={(e) => {
@@ -2091,7 +2066,14 @@ function Board({
                     enabled: true,
                     visible: true,
                     defaultSnapToValidMove: snapArrows,
-                    autoShapes: shapes,
+                    ...boardDrawings({
+                      saved: currentNode.shapes,
+                      overlays: shapes,
+                      visible: (shape) => (!planExplorerPreviewLine || !isPlanBrush(shape.brush)) &&
+                        (!hideMistakeReviewPreAttemptGreenArrows || !isGreenBoardArrowShape(shape)),
+                      eraseOnClick: eraseDrawablesOnClick,
+                      save: setShapes,
+                    }),
                     brushes: {
                       variation: {
                         key: "v",
@@ -2142,9 +2124,6 @@ function Board({
                         lineWidth: 10,
                       },
                     } as unknown as DrawBrushes,
-                    onChange: (shapes) => {
-                      setShapes(shapes);
-                    },
                   }}
                 />
                 {currentTabSelected === "tactics" &&
@@ -2498,8 +2477,8 @@ function Board({
       </Box>
       {(whiteFideOpen || blackFideOpen) && (
         <Suspense fallback={null}>
-          <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} />
-          <FideInfo opened={blackFideOpen} setOpened={setBlackFideOpen} name={headers.black} />
+          <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} fideId={headers.other?.WhiteFideId} />
+          <FideInfo opened={blackFideOpen} setOpened={setBlackFideOpen} name={headers.black} fideId={headers.other?.BlackFideId} />
         </Suspense>
       )}
     </>

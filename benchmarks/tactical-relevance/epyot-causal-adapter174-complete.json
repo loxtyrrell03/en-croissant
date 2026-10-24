@@ -1,0 +1,6394 @@
+{
+  "schemaVersion": 1,
+  "scope": "Benchmark-only bounded legal/material adjudication, not whole-game proof or accuracy. Relocated boards are counterfactual positions, not legal variations.",
+  "sourceRef": "b75c13e2f3a63d69cf60bd9e0b4221f884a9e190",
+  "sourceHashes": {
+    "causalTactics.ts": "74696f6a7d303dfe8c2656eea68d66e2a910b9a184175882f4c523e242b73210",
+    "mistakeReviewAdapter.ts": "d06aa1a4e2138289aae1f6301dec25a0091e8cf4b67b77369e7395d15ebae42b",
+    "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9"
+  },
+  "version": "site-55.adapter-174",
+  "hypothesesSha256": "968d8135e31a41c16ce5a7b4aedabd26eef6653a938c7b434682018538a88a9e",
+  "observations": [
+    {
+      "kind": "original",
+      "reflected": false,
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "rootReplyCount": 40,
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 318,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b1a1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1c1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1c1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1e1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1f1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d2",
+              "d6d2"
+            ],
+            "moveUci": "d6d2",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d4",
+              "d6d4"
+            ],
+            "moveUci": "d6d4",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d5",
+              "d6d5"
+            ],
+            "moveUci": "d6d5",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d6",
+              "g7e5"
+            ],
+            "moveUci": "g7e5",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b2b3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b2b4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2h3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2d5",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2b7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h2h3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h2h4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c3c4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g3g4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5c4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5g4",
+              "f5g4"
+            ],
+            "moveUci": "f5g4",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5g6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "frontDepartures": [
+        {
+          "uci": "e5d3",
+          "san": "Nd3",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d6a6",
+            "san": "Qa6",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5f3",
+          "san": "Nf3",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d6c5",
+            "san": "Qc5",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5c4",
+          "san": "Nc4",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 5,
+          "queenFlightExample": {
+            "uci": "d6c5",
+            "san": "Qc5",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5g4",
+          "san": "Ng4",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d6c5",
+            "san": "Qc5",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5c6",
+          "san": "Nc6",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 2,
+          "queenFlightExample": {
+            "uci": "d6c5",
+            "san": "Qc5",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5g6",
+          "san": "Ng6",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 5,
+          "queenFlightExample": {
+            "uci": "d6c5",
+            "san": "Qc5",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5d7",
+          "san": "Nd7",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 3,
+          "queenFlightExample": {
+            "uci": "d6a6",
+            "san": "Qa6",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5f7",
+          "san": "Nf7",
+          "rearCaptures": [
+            {
+              "uci": "d6g3",
+              "san": "Qxg3",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            },
+            {
+              "uci": "g7c3",
+              "san": "Bxc3",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d6c5",
+            "san": "Qc5",
+            "directTakers": []
+          }
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on g3. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "remove-rear-keep-b3-block",
+      "reflected": false,
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/1P6/P3PPB1/1R1R2K1 b - - 0 19",
+      "rootReplyCount": 37,
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 299,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b1a1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1c1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1b2",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1c1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1e1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1f1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d2",
+              "d6d2"
+            ],
+            "moveUci": "d6d2",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d4",
+              "d6d4"
+            ],
+            "moveUci": "d6d4",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d5",
+              "d6d5"
+            ],
+            "moveUci": "d6d5",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d6",
+              "g7e5"
+            ],
+            "moveUci": "g7e5",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1h2",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2h3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2d5",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2b7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5c4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5g4",
+              "f5g4"
+            ],
+            "moveUci": "f5g4",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5g6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "frontDepartures": [
+        {
+          "uci": "e5d3",
+          "san": "Nd3",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5f3",
+          "san": "Nf3",
+          "rearCaptures": [],
+          "queenFlightCount": 10,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5c4",
+          "san": "Nc4",
+          "rearCaptures": [],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d6b4",
+            "san": "Qb4",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5g4",
+          "san": "Ng4",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5c6",
+          "san": "Nc6",
+          "rearCaptures": [],
+          "queenFlightCount": 4,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5g6",
+          "san": "Ng6",
+          "rearCaptures": [],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5d7",
+          "san": "Nd7",
+          "rearCaptures": [],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5f7",
+          "san": "Nf7",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "relocate-four-pawns",
+      "reflected": false,
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/2P3P1/1P5P/P3PPB1/1R1R2K1 b - - 0 19",
+      "rootReplyCount": 37,
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 331,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b1a1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1c1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1b2",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1c1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1e1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1f1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d2",
+              "d6d2"
+            ],
+            "moveUci": "d6d2",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d4",
+              "d6d4"
+            ],
+            "moveUci": "d6d4",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d5",
+              "d6d5"
+            ],
+            "moveUci": "d6d5",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d6",
+              "g7e5"
+            ],
+            "moveUci": "g7e5",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1h2",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2d5",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2b7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h3h4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c4c5",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g4f5",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5g6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "frontDepartures": [
+        {
+          "uci": "e5d3",
+          "san": "Nd3",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5f3",
+          "san": "Nf3",
+          "rearCaptures": [],
+          "queenFlightCount": 10,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5c6",
+          "san": "Nc6",
+          "rearCaptures": [],
+          "queenFlightCount": 4,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5g6",
+          "san": "Ng6",
+          "rearCaptures": [],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5d7",
+          "san": "Nd7",
+          "rearCaptures": [],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e5f7",
+          "san": "Nf7",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d6a3",
+            "san": "Qa3",
+            "directTakers": []
+          }
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "reversed-order",
+      "reflected": false,
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "line": [
+        "g7e5",
+        "d6e5"
+      ],
+      "after": "r1b2r2/pp5k/1q2p2p/4Qpp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 20",
+      "materialForOriginalSide": -10,
+      "replyCount": 29,
+      "requestedCapturedValue": {
+        "minimum": 330,
+        "gain": 330,
+        "visits": 1567,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a8b8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "c8d7",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8d8",
+              "c3c4"
+            ],
+            "moveUci": "c3c4",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8e8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8g8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8h8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8f7",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8f6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a7a5",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h7g8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h7g6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6d8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6c7",
+              "e5c7"
+            ],
+            "moveUci": "e5c7",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6a6",
+              "e5c7"
+            ],
+            "moveUci": "e5c7",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6c6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6d6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6a5",
+              "e5a5"
+            ],
+            "moveUci": "e5a5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b5",
+              "e5b5"
+            ],
+            "moveUci": "e5b5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6c5",
+              "e5c5"
+            ],
+            "moveUci": "e5c5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b4",
+              "e5c7"
+            ],
+            "moveUci": "e5c7",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6d4",
+              "e5d4"
+            ],
+            "moveUci": "e5d4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b3",
+              "a2b3"
+            ],
+            "moveUci": "a2b3",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6e3",
+              "e5e3"
+            ],
+            "moveUci": "e5e3",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b2",
+              "b1b2"
+            ],
+            "moveUci": "b1b2",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6f2",
+              "g1f2"
+            ],
+            "moveUci": "g1f2",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h6h5",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f5f4",
+              "e5d4"
+            ],
+            "moveUci": "e5d4",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "g5g4",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          }
+        ],
+        "trace": []
+      },
+      "minimum90": {
+        "minimum": 90,
+        "gain": 230,
+        "visits": 1183,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a8b8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "c8d7",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8d8",
+              "e5f6"
+            ],
+            "moveUci": "e5f6",
+            "balance": 330,
+            "gain": 230,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8e8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8g8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8h8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8f7",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8f6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a7a5",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h7g8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h7g6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6d8",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6c7",
+              "e5c7"
+            ],
+            "moveUci": "e5c7",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6a6",
+              "e5c7"
+            ],
+            "moveUci": "e5c7",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6c6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6d6",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6a5",
+              "e5a5"
+            ],
+            "moveUci": "e5a5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b5",
+              "e5b5"
+            ],
+            "moveUci": "e5b5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6c5",
+              "e5c5"
+            ],
+            "moveUci": "e5c5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b4",
+              "e5c7"
+            ],
+            "moveUci": "e5c7",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b6d4",
+              "e5d4"
+            ],
+            "moveUci": "e5d4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b3",
+              "a2b3"
+            ],
+            "moveUci": "a2b3",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6e3",
+              "e5e3"
+            ],
+            "moveUci": "e5e3",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b2",
+              "b1b2"
+            ],
+            "moveUci": "b1b2",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6f2",
+              "g1f2"
+            ],
+            "moveUci": "g1f2",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h6h5",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f5f4",
+              "e5d4"
+            ],
+            "moveUci": "e5d4",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "g5g4",
+              "e5d6"
+            ],
+            "moveUci": "e5d6",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          }
+        ],
+        "trace": []
+      }
+    },
+    {
+      "kind": "reversed-order",
+      "reflected": false,
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "line": [
+        "g7e5",
+        "d6b6"
+      ],
+      "after": "r1b2r2/pp5k/1Q2p2p/4bpp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 20",
+      "materialForOriginalSide": -580,
+      "replyCount": 28,
+      "requestedCapturedValue": {
+        "minimum": 900,
+        "gain": null,
+        "visits": 300,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a8b8",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 1000,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c8d7",
+              "b6a5"
+            ],
+            "moveUci": "b6a5",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8d8",
+              "b6a5"
+            ],
+            "moveUci": "b6a5",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8e8",
+              "b6a5"
+            ],
+            "moveUci": "b6a5",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8g8",
+              "b6a5"
+            ],
+            "moveUci": "b6a5",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8h8",
+              "b6a5"
+            ],
+            "moveUci": "b6a5",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8f7",
+              "b6d8"
+            ],
+            "moveUci": "b6d8",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f8f6",
+              "b6d8"
+            ],
+            "moveUci": "b6d8",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "b6a5"
+            ],
+            "moveUci": "b6a5",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          }
+        ],
+        "trace": [
+          {
+            "fen": "r1b2r2/pp5k/1Q2p2p/4bpp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 20",
+            "replyUci": "a7b6",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      },
+      "minimum90": {
+        "minimum": 90,
+        "gain": null,
+        "visits": 104,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a8b8",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 1000,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c8d7",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f8d8",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f8e8",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f8g8",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f8h8",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f8f7",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f8f6",
+              "b6a7"
+            ],
+            "moveUci": "b6a7",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "b6d8"
+            ],
+            "moveUci": "b6d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": true
+          }
+        ],
+        "trace": [
+          {
+            "fen": "r1b2r2/pp5k/1Q2p2p/4bpp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 20",
+            "replyUci": "a7b6",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      }
+    },
+    {
+      "kind": "guard-contrast",
+      "contrast": "original",
+      "reflected": false,
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 318,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b1a1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1c1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1c1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1e1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1f1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d2",
+              "d6d2"
+            ],
+            "moveUci": "d6d2",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d4",
+              "d6d4"
+            ],
+            "moveUci": "d6d4",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d5",
+              "d6d5"
+            ],
+            "moveUci": "d6d5",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d6",
+              "g7e5"
+            ],
+            "moveUci": "g7e5",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g1h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b2b3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b2b4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f2f4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2h1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2h3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2e4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2d5",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g2b7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h2h3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h2h4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c3c4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g3g4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f3",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5c4",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5g4",
+              "f5g4"
+            ],
+            "moveUci": "f5g4",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5c6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5g6",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5d7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e5f7",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "acceptedTargetCaptures": [
+        "g7e5"
+      ]
+    },
+    {
+      "kind": "guard-contrast",
+      "contrast": "missing-g7-bishop",
+      "reflected": false,
+      "fen": "r1b2r2/pp5k/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "proof": {
+        "minimum": 320,
+        "gain": null,
+        "visits": 68,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b1a1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1c1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1c1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1e1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1f1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d2",
+              "d6d2"
+            ],
+            "moveUci": "d6d2",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d4",
+              "d6d4"
+            ],
+            "moveUci": "d6d4",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d5",
+              "d6d5"
+            ],
+            "moveUci": "d6d5",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          }
+        ],
+        "trace": [
+          {
+            "fen": "r1b2r2/pp5k/3qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 w - - 0 20",
+            "replyUci": "d1d6",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      },
+      "acceptedTargetCaptures": []
+    },
+    {
+      "kind": "guard-contrast",
+      "contrast": "additional-f4-guard",
+      "reflected": false,
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/5P2/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "proof": {
+        "minimum": 320,
+        "gain": null,
+        "visits": 109,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b1a1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b1c1",
+              "d6d1"
+            ],
+            "moveUci": "d6d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1c1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 420,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1e1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 420,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1f1",
+              "d6e5"
+            ],
+            "moveUci": "d6e5",
+            "balance": 900,
+            "gain": 420,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d2",
+              "d6d2"
+            ],
+            "moveUci": "d6d2",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d3",
+              "d6d3"
+            ],
+            "moveUci": "d6d3",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d4",
+              "d6d4"
+            ],
+            "moveUci": "d6d4",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d1d5",
+              "d6d5"
+            ],
+            "moveUci": "d6d5",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          }
+        ],
+        "trace": [
+          {
+            "fen": "r1b2r2/pp4bk/3qp2p/4Npp1/5P2/2P3P1/PP2PPBP/1R1R2K1 w - - 0 20",
+            "replyUci": "d1d6",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      },
+      "acceptedTargetCaptures": [
+        "g7e5"
+      ]
+    },
+    {
+      "kind": "original",
+      "reflected": true,
+      "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "rootReplyCount": 40,
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 318,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b8a8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8c8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8c8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8e8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8f8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d7",
+              "d3d7"
+            ],
+            "moveUci": "d3d7",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d5",
+              "d3d5"
+            ],
+            "moveUci": "d3d5",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d4",
+              "d3d4"
+            ],
+            "moveUci": "d3d4",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d3",
+              "g2e4"
+            ],
+            "moveUci": "g2e4",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b7b6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b7b5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7h6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7d4",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7b2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h7h6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h7h5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c6c5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g6g5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4c5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4g5",
+              "f4g5"
+            ],
+            "moveUci": "f4g5",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4g3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "frontDepartures": [
+        {
+          "uci": "e4d2",
+          "san": "Nd2",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 3,
+          "queenFlightExample": {
+            "uci": "d3c2",
+            "san": "Qc2",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4f2",
+          "san": "Nf2",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4c3",
+          "san": "Nc3",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 2,
+          "queenFlightExample": {
+            "uci": "d3c2",
+            "san": "Qc2",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4g3",
+          "san": "Ng3",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 5,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4c5",
+          "san": "Nc5",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 5,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4g5",
+          "san": "Ng5",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4d6",
+          "san": "Nd6",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4f6",
+          "san": "Nf6",
+          "rearCaptures": [
+            {
+              "uci": "g2c6",
+              "san": "Bxc6",
+              "capture": 100,
+              "see": -230,
+              "delta": 1000
+            },
+            {
+              "uci": "d3g6",
+              "san": "Qxg6",
+              "capture": 100,
+              "see": -800,
+              "delta": 1000
+            }
+          ],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on c6. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "remove-rear-keep-b3-block",
+      "reflected": true,
+      "fen": "1r1r2k1/p3ppb1/1p6/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "rootReplyCount": 37,
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 299,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b8a8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8c8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8b7",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8c8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8e8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8f8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d7",
+              "d3d7"
+            ],
+            "moveUci": "d3d7",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d5",
+              "d3d5"
+            ],
+            "moveUci": "d3d5",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d4",
+              "d3d4"
+            ],
+            "moveUci": "d3d4",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d3",
+              "g2e4"
+            ],
+            "moveUci": "g2e4",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8h7",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7h6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7d4",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7b2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4c5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4g5",
+              "f4g5"
+            ],
+            "moveUci": "f4g5",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4g3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "frontDepartures": [
+        {
+          "uci": "e4d2",
+          "san": "Nd2",
+          "rearCaptures": [],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d3c2",
+            "san": "Qc2",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4f2",
+          "san": "Nf2",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4c3",
+          "san": "Nc3",
+          "rearCaptures": [],
+          "queenFlightCount": 4,
+          "queenFlightExample": {
+            "uci": "d3c2",
+            "san": "Qc2",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4g3",
+          "san": "Ng3",
+          "rearCaptures": [],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4c5",
+          "san": "Nc5",
+          "rearCaptures": [],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4g5",
+          "san": "Ng5",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4d6",
+          "san": "Nd6",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4f6",
+          "san": "Nf6",
+          "rearCaptures": [],
+          "queenFlightCount": 10,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "relocate-four-pawns",
+      "reflected": true,
+      "fen": "1r1r2k1/p3ppb1/1p5p/2p3p1/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "rootReplyCount": 37,
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 331,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b8a8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8c8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8b7",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8c8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8e8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8f8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d7",
+              "d3d7"
+            ],
+            "moveUci": "d3d7",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d5",
+              "d3d5"
+            ],
+            "moveUci": "d3d5",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d4",
+              "d3d4"
+            ],
+            "moveUci": "d3d4",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d3",
+              "g2e4"
+            ],
+            "moveUci": "g2e4",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8h7",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7d4",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7b2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b6b5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h6h5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c5c4",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g5f4",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4g3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "frontDepartures": [
+        {
+          "uci": "e4d2",
+          "san": "Nd2",
+          "rearCaptures": [],
+          "queenFlightCount": 6,
+          "queenFlightExample": {
+            "uci": "d3c2",
+            "san": "Qc2",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4f2",
+          "san": "Nf2",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4c3",
+          "san": "Nc3",
+          "rearCaptures": [],
+          "queenFlightCount": 4,
+          "queenFlightExample": {
+            "uci": "d3c2",
+            "san": "Qc2",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4g3",
+          "san": "Ng3",
+          "rearCaptures": [],
+          "queenFlightCount": 7,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4d6",
+          "san": "Nd6",
+          "rearCaptures": [],
+          "queenFlightCount": 9,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        },
+        {
+          "uci": "e4f6",
+          "san": "Nf6",
+          "rearCaptures": [],
+          "queenFlightCount": 10,
+          "queenFlightExample": {
+            "uci": "d3b1",
+            "san": "Qb1",
+            "directTakers": []
+          }
+        }
+      ],
+      "classification": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "reversed-order",
+      "reflected": true,
+      "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "line": [
+        "g2e4",
+        "d3e4"
+      ],
+      "after": "1r1r2k1/pp2ppbp/2p3p1/8/4qPP1/1Q2P2P/PP5K/R1B2R2 w - - 0 20",
+      "materialForOriginalSide": -10,
+      "replyCount": 29,
+      "requestedCapturedValue": {
+        "minimum": 330,
+        "gain": 330,
+        "visits": 1567,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a1b1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "c1d2",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1d1",
+              "c6c5"
+            ],
+            "moveUci": "c6c5",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1e1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1g1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1h1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1f2",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1f3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a2a4",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h2g1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h2g3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3d1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3c2",
+              "e4c2"
+            ],
+            "moveUci": "e4c2",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3a3",
+              "e4c2"
+            ],
+            "moveUci": "e4c2",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3c3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3d3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3a4",
+              "e4a4"
+            ],
+            "moveUci": "e4a4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b4",
+              "e4b4"
+            ],
+            "moveUci": "e4b4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3c4",
+              "e4c4"
+            ],
+            "moveUci": "e4c4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b5",
+              "e4c2"
+            ],
+            "moveUci": "e4c2",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3d5",
+              "e4d5"
+            ],
+            "moveUci": "e4d5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b6",
+              "a7b6"
+            ],
+            "moveUci": "a7b6",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3e6",
+              "e4e6"
+            ],
+            "moveUci": "e4e6",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b7",
+              "b8b7"
+            ],
+            "moveUci": "b8b7",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3f7",
+              "g8f7"
+            ],
+            "moveUci": "g8f7",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h3h4",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f4f5",
+              "e4d5"
+            ],
+            "moveUci": "e4d5",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "g4g5",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          }
+        ],
+        "trace": []
+      },
+      "minimum90": {
+        "minimum": 90,
+        "gain": 230,
+        "visits": 1183,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a1b1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "c1d2",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1d1",
+              "e4f3"
+            ],
+            "moveUci": "e4f3",
+            "balance": 330,
+            "gain": 230,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1e1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1g1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1h1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1f2",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1f3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a2a4",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h2g1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "h2g3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3d1",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3c2",
+              "e4c2"
+            ],
+            "moveUci": "e4c2",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3a3",
+              "e4c2"
+            ],
+            "moveUci": "e4c2",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3c3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3d3",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3a4",
+              "e4a4"
+            ],
+            "moveUci": "e4a4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b4",
+              "e4b4"
+            ],
+            "moveUci": "e4b4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3c4",
+              "e4c4"
+            ],
+            "moveUci": "e4c4",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b5",
+              "e4c2"
+            ],
+            "moveUci": "e4c2",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "b3d5",
+              "e4d5"
+            ],
+            "moveUci": "e4d5",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b6",
+              "a7b6"
+            ],
+            "moveUci": "a7b6",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3e6",
+              "e4e6"
+            ],
+            "moveUci": "e4e6",
+            "balance": 330,
+            "gain": 1230,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3b7",
+              "b8b7"
+            ],
+            "moveUci": "b8b7",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b3f7",
+              "g8f7"
+            ],
+            "moveUci": "g8f7",
+            "balance": 230,
+            "gain": 1130,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h3h4",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f4f5",
+              "e4d5"
+            ],
+            "moveUci": "e4d5",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "g4g5",
+              "e4d3"
+            ],
+            "moveUci": "e4d3",
+            "balance": 330,
+            "gain": 330,
+            "quiet": true
+          }
+        ],
+        "trace": []
+      }
+    },
+    {
+      "kind": "reversed-order",
+      "reflected": true,
+      "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "line": [
+        "g2e4",
+        "d3b3"
+      ],
+      "after": "1r1r2k1/pp2ppbp/2p3p1/8/4BPP1/1q2P2P/PP5K/R1B2R2 w - - 0 20",
+      "materialForOriginalSide": -580,
+      "replyCount": 28,
+      "requestedCapturedValue": {
+        "minimum": 900,
+        "gain": null,
+        "visits": 300,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a1b1",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 1000,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c1d2",
+              "b3a4"
+            ],
+            "moveUci": "b3a4",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1d1",
+              "b3a4"
+            ],
+            "moveUci": "b3a4",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1e1",
+              "b3a4"
+            ],
+            "moveUci": "b3a4",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1g1",
+              "b3a4"
+            ],
+            "moveUci": "b3a4",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1h1",
+              "b3a4"
+            ],
+            "moveUci": "b3a4",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1f2",
+              "b3d1"
+            ],
+            "moveUci": "b3d1",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "f1f3",
+              "b3d1"
+            ],
+            "moveUci": "b3d1",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "b3a4"
+            ],
+            "moveUci": "b3a4",
+            "balance": 900,
+            "gain": 900,
+            "quiet": true
+          }
+        ],
+        "trace": [
+          {
+            "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4BPP1/1q2P2P/PP5K/R1B2R2 w - - 0 20",
+            "replyUci": "a2b3",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      },
+      "minimum90": {
+        "minimum": 90,
+        "gain": null,
+        "visits": 104,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "a1b1",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 1000,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c1d2",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f1d1",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f1e1",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f1g1",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f1h1",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f1f2",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f1f3",
+              "b3a2"
+            ],
+            "moveUci": "b3a2",
+            "balance": 900,
+            "gain": 100,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a2a3",
+              "b3d1"
+            ],
+            "moveUci": "b3d1",
+            "balance": 900,
+            "gain": 500,
+            "quiet": true
+          }
+        ],
+        "trace": [
+          {
+            "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4BPP1/1q2P2P/PP5K/R1B2R2 w - - 0 20",
+            "replyUci": "a2b3",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      }
+    },
+    {
+      "kind": "guard-contrast",
+      "contrast": "original",
+      "reflected": true,
+      "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "proof": {
+        "minimum": 320,
+        "gain": 320,
+        "visits": 318,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b8a8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8c8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8c8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8e8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8f8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d7",
+              "d3d7"
+            ],
+            "moveUci": "d3d7",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d5",
+              "d3d5"
+            ],
+            "moveUci": "d3d5",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d4",
+              "d3d4"
+            ],
+            "moveUci": "d3d4",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d3",
+              "g2e4"
+            ],
+            "moveUci": "g2e4",
+            "balance": 0,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g8h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "a7a5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b7b6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b7b5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "f7f5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7h8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7h6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7e5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7d4",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g7b2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 800,
+            "gain": 400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h7h6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "h7h5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "c6c5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "g6g5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f6",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4c5",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4g5",
+              "f4g5"
+            ],
+            "moveUci": "f4g5",
+            "balance": 900,
+            "gain": 320,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4c3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4g3",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4d2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "e4f2",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          }
+        ],
+        "trace": []
+      },
+      "acceptedTargetCaptures": [
+        "g2e4"
+      ]
+    },
+    {
+      "kind": "guard-contrast",
+      "contrast": "missing-g7-bishop",
+      "reflected": true,
+      "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP5K/R1B2R2 w - - 0 19",
+      "proof": {
+        "minimum": 320,
+        "gain": null,
+        "visits": 68,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b8a8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8c8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8c8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8e8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8f8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 1220,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d7",
+              "d3d7"
+            ],
+            "moveUci": "d3d7",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d5",
+              "d3d5"
+            ],
+            "moveUci": "d3d5",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d4",
+              "d3d4"
+            ],
+            "moveUci": "d3d4",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          }
+        ],
+        "trace": [
+          {
+            "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/3QP2P/PP5K/R1B2R2 b - - 0 19",
+            "replyUci": "d8d3",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      },
+      "acceptedTargetCaptures": []
+    },
+    {
+      "kind": "guard-contrast",
+      "contrast": "additional-f4-guard",
+      "reflected": true,
+      "fen": "1r1r2k1/pp2ppbp/2p3p1/5p2/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "proof": {
+        "minimum": 320,
+        "gain": null,
+        "visits": 109,
+        "exhausted": false,
+        "leaves": [
+          {
+            "lineUci": [
+              "b8a8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "b8c8",
+              "d3d8"
+            ],
+            "moveUci": "d3d8",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8c8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 420,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8e8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 420,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8f8",
+              "d3e4"
+            ],
+            "moveUci": "d3e4",
+            "balance": 900,
+            "gain": 420,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d7",
+              "d3d7"
+            ],
+            "moveUci": "d3d7",
+            "balance": 900,
+            "gain": 1400,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d6",
+              "d3d6"
+            ],
+            "moveUci": "d3d6",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d5",
+              "d3d5"
+            ],
+            "moveUci": "d3d5",
+            "balance": 900,
+            "gain": 500,
+            "quiet": false
+          },
+          {
+            "lineUci": [
+              "d8d4",
+              "d3d4"
+            ],
+            "moveUci": "d3d4",
+            "balance": 900,
+            "gain": 830,
+            "quiet": false
+          }
+        ],
+        "trace": [
+          {
+            "fen": "1r1r2k1/pp2ppbp/2p3p1/5p2/4nPP1/3QP2P/PP4BK/R1B2R2 b - - 0 19",
+            "replyUci": "d8d3",
+            "balance": 900,
+            "evasion": 1
+          }
+        ]
+      },
+      "acceptedTargetCaptures": [
+        "g2e4"
+      ]
+    }
+  ]
+}

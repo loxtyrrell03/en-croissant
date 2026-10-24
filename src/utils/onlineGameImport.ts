@@ -21,6 +21,7 @@ import type {
 } from "@/state/atoms";
 import type { OnlineGameSource } from "@/utils/onlineGameSource";
 import { query_games } from "@/utils/db";
+import { parsePgnDateTime } from "@/utils/pgnTimestamp";
 import { unwrap } from "@/utils/unwrap";
 
 export type { OnlineGameSource } from "@/utils/onlineGameSource";
@@ -409,10 +410,8 @@ export async function getLastOnlineDatabaseGameDate(dbPath: string) {
         },
     });
 
-    if (games.count! > 0 && games.data[0].date && games.data[0].time) {
-        const [year, month, day] = games.data[0].date.split(".").map(Number);
-        const [hour, minute, second] = games.data[0].time.split(":").map(Number);
-        return Date.UTC(year, month - 1, day, hour, minute, second);
+    if (games.count! > 0 && games.data[0].date) {
+        return parsePgnDateTime(games.data[0].date, games.data[0].time);
     }
 
     return null;

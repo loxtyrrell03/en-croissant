@@ -1,4 +1,7 @@
 import { TruePerformancePanel } from "../shared/TruePerformancePanel";
+import { PERFORMANCE_PERIODS, type PerformancePeriod } from "../shared/truePerformance";
+import { customPerformancePeriod, performanceDurationLabel, type PerformanceDurationUnit } from "../shared/performancePeriod";
+import { initialPerformancePeriodSelection, rememberPerformancePeriod } from "../shared/performancePeriodSelection";
 import { toPerformanceGames } from "./statsRating";
 import {
   ActionIcon,
@@ -39,6 +42,7 @@ import {
 import {
   fetchCurrentRating,
   fetchStatsGames,
+  statsPerformanceFetchRequest,
   type StatsGame,
   type StatsRatedFilter,
   type StatsSource,
@@ -58,7 +62,6 @@ import {
 
 const STATS_SETTINGS_STORAGE_KEY = "en-croissant-web-stats-settings";
 const STATS_MAX_GAMES = 5000;
-const STATS_BASE_HISTORY_DAYS = 3650;
 
 // EloGuard data-semantics colors (hero/deltas/records keep the extension's
 // green/red meaning while everything else stays Mantine dark + blue).
@@ -1282,6 +1285,9 @@ export default function StatsWorkspace() {
   }, [activeUsername]);
 
   const [data, setData] = useState<StatsCacheEntry | null>(null);
+  const [overviewRange, setOverviewRange] = useState(initialPerformancePeriodSelection);
+  const overviewPeriod = overviewRange.period;
+  const customPeriod = customPerformancePeriod(overviewRange.amount, overviewRange.unit);
   const [loading, setLoading] = useState(false);
   const gamesAbortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1299,12 +1305,18 @@ export default function StatsWorkspace() {
     setAnalyzedEntries(loadAnalyzedEntries());
   }, []);
 
-  const requestedDays = Math.max(STATS_BASE_HISTORY_DAYS, getStatsPeriodDays(settings.period));
+  const request =
+    settings.tab === "overview"
+      ? statsPerformanceFetchRequest(overviewPeriod)
+      : { maxGames: STATS_MAX_GAMES, maxDays: getStatsPeriodDays(settings.period) };
+  const requestedDays = request.maxDays;
+  const requestedMaxGames = request.maxGames;
   const effectiveRated = settings.rated;
-  const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${effectiveRated}`;
+  const requestRange = settings.tab === "overview" ? overviewPeriod : settings.period;
+  const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${effectiveRated}|${settings.tab}|${requestRange}`;
 
-  // Completed-game fetch. Period switches inside the cached coverage
-  // only re-filter; only a larger period (or manual refresh) refetches.
+  // Completed-game fetch. Each visible range has its own bounded cache entry,
+  // so a short period never inherits a broader ten-year request.
   useEffect(() => {
     if (!trimmedUsername) {
       setData(null);
@@ -1329,7 +1341,7 @@ export default function StatsWorkspace() {
       username: trimmedUsername,
       timeClass: settings.timeClass,
       ratedFilter: effectiveRated,
-      maxGames: STATS_MAX_GAMES,
+      maxGames: requestedMaxGames,
       maxDays: requestedDays,
       monthsCap: Math.ceil(requestedDays / 28) + 1,
       signal: controller.signal,
@@ -1360,6 +1372,7 @@ export default function StatsWorkspace() {
     cacheKey,
     refreshKey,
     requestedDays,
+    requestedMaxGames,
     effectiveRated,
     settings.source,
     settings.timeClass,
@@ -1567,20 +1580,57 @@ export default function StatsWorkspace() {
             allowDeselect={false}
             aria-label="Rated filter"
           />
-          {settings.tab !== "overview" && (
-          <Select
-            size="xs"
-            value={settings.period}
-            onChange={(value) => value && updateSettings({ period: value as StatsPeriodKey })}
-            data={STATS_PERIOD_OPTIONS.map((option) => ({
-              value: option.value,
-              label: option.label,
-            }))}
-            allowDeselect={false}
-            aria-label="Stats period"
-          />
+          {settings.tab === "overview" ? (
+            <Select
+              size="xs"
+              value={overviewRange.choice}
+              onChange={(value) => {
+                if (!value) return;
+                const next = value as PerformancePeriod | "custom";
+                if (next === "custom") {
+                  setOverviewRange((v) => ({ ...v, choice: next }));
+                } else {
+                  setOverviewRange((v) => ({ ...v, choice: next, period: next }));
+                  rememberPerformancePeriod(next);
+                }
+              }}
+              data={[...PERFORMANCE_PERIODS.map(([value, label]) => ({ value, label })), { value: "custom", label: "Custom…" }]}
+              allowDeselect={false}
+              aria-label="Performance period"
+            />
+          ) : (
+            <Select
+              size="xs"
+              value={settings.period}
+              onChange={(value) => value && updateSettings({ period: value as StatsPeriodKey })}
+              data={STATS_PERIOD_OPTIONS.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              allowDeselect={false}
+              aria-label="Stats period"
+            />
           )}
         </div>
+        {settings.tab === "overview" && overviewRange.choice === "custom" && (
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (!customPeriod) return;
+            setOverviewRange((v) => ({ ...v, period: customPeriod }));
+            rememberPerformancePeriod("custom", customPeriod);
+            if (customPeriod === overviewPeriod) handleRefresh();
+          }}>
+            <div className={styles.customPeriod}>
+              <TextInput size="xs" label="Last" aria-label="Custom duration" type="number" min="0" step="any" required
+                value={overviewRange.amount} onChange={(e) => setOverviewRange((v) => ({ ...v, amount: e.target.value }))} />
+              <Select size="xs" label="Unit" aria-label="Custom duration unit" allowDeselect={false}
+                value={overviewRange.unit} onChange={(value) => value && setOverviewRange((v) => ({ ...v, unit: value as PerformanceDurationUnit }))}
+                data={[{ value: "h", label: "Hours" }, { value: "d", label: "Days" }, { value: "w", label: "Weeks" }]} />
+              <Button size="xs" type="submit" disabled={!customPeriod}>Apply</Button>
+            </div>
+            {!customPeriod && <Text size="xs" mt={4} role="alert">Enter a positive duration.</Text>}
+          </form>
+        )}
       </Box>
 
       <SegmentedControl
@@ -1601,7 +1651,13 @@ export default function StatsWorkspace() {
         <Box className={`${classes.panel} ${styles.emptyState}`}>
           <IconChartLine size={30} stroke={1.5} />
           <Text fw={600}>Add an online account for Stats</Text>
-          <Button onClick={() => document.querySelector<HTMLInputElement>('[aria-label="Username"]')?.focus()}>Add account</Button>
+          <Button
+            onClick={() =>
+              document.querySelector<HTMLInputElement>('[aria-label="Username"]')?.focus()
+            }
+          >
+            Add account
+          </Button>
           <Text size="xs" c="dimmed" maw="22rem">
             Pick a source above, type the account name, and press Enter. Games load straight from
             the public APIs.
@@ -1614,7 +1670,9 @@ export default function StatsWorkspace() {
             <Text size="xs" c="dimmed">
               Loading your games...
             </Text>
-            <Button size="xs" variant="light" onClick={() => gamesAbortRef.current?.abort()}>Stop</Button>
+            <Button size="xs" variant="light" onClick={() => gamesAbortRef.current?.abort()}>
+              Stop
+            </Button>
           </Stack>
         </Center>
       ) : error ? (
@@ -1627,13 +1685,17 @@ export default function StatsWorkspace() {
       ) : data ? (
         settings.tab === "overview" ? (
           <TruePerformancePanel
-            key={`${settings.source}:${trimmedUsername}:${settings.timeClass}`}
+            key={`${settings.source}:${trimmedUsername}:${settings.timeClass}:${overviewPeriod}`}
             games={toPerformanceGames(data.games)}
             gameType={effectiveRated === "casual" ? "unrated" : effectiveRated}
+            period={overviewPeriod}
             poolLabel={`${getStatsSourceLabel(settings.source)} · ${settings.timeClass}`}
             asOf={data.nowSec}
-            coverage={`${data.games.length.toLocaleString()} games loaded · Up to 5,000 games / 10 years of available history`}
-            onOpenGame={(game) => { if (game.url && /^https:\/\/(?:lichess\.org|(?:www\.)?chess\.com)\//i.test(game.url)) window.open(game.url, "_blank", "noopener,noreferrer"); }}
+            coverage={`${data.games.length.toLocaleString()} games fetched for ${PERFORMANCE_PERIODS.find(([value]) => value === overviewPeriod)?.[1] ?? `the last ${performanceDurationLabel(overviewPeriod)}`}${overviewPeriod === "all" ? " · Up to 5,000 games / 10 years of available history" : ""}`}
+            onOpenGame={(game) => {
+              if (game.url && /^https:\/\/(?:lichess\.org|(?:www\.)?chess\.com)\//i.test(game.url))
+                window.open(game.url, "_blank", "noopener,noreferrer");
+            }}
           />
         ) : settings.tab === "strength" ? (
           <StatsStrengthSection

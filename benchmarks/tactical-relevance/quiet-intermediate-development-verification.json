@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "scope": "Independent benchmark-only audit: two additional public development nominations, their colour reflections and synthetic/removed-target contrasts. Fresh only relative to recorded public development review, not a clean holdout or population accuracy estimate.",
+  "sourceCheckpoints": {
+    "baseline173": {
+      "ref": "9756fd271f0e293b3d2b4a2bbffadc51c85588f3",
+      "coreSha256": "72125e4c52b276e351a9caa47e306d9a4098d5a7c143fd8f701adc2153dc8261",
+      "loader": "Read-only exact-ref tactical module loader"
+    },
+    "final174": {
+      "ref": "working-source frozen checkpoint",
+      "version": "site-55.adapter-174",
+      "sourceHashes": {
+        "causalTactics.ts": "7b28a8f2ba552e8c9e0b69d3880e910e213ae71640cd8a106d36a7ab9ad6f9c4",
+        "mistakeReviewAdapter.ts": "d06aa1a4e2138289aae1f6301dec25a0091e8cf4b67b77369e7395d15ebae42b",
+        "quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9"
+      },
+      "stableWithinFinalRuns": true,
+      "boundary": "Working-source evidence; the preserved unrelated checking-ray patch remains present. This is not staged-only or deployed runtime verification."
+    }
+  },
+  "selection": {
+    "additionalPuzzles": 2,
+    "ids": [
+      "lichess:Qq0JW",
+      "lichess:EpYOT"
+    ],
+    "sourceGames": [
+      "game:nkPf2Bb8",
+      "game:ExhbBzsF"
+    ],
+    "sourceFixtureSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+    "selectionSha256": "343af0f54471f2c679d11ea22c9017380443f31ecd8c4fc171482b84c6ea15cd",
+    "initialHypothesesSha256": "cd0063f7bca738763420ac39aa7c65fafa66595863e008063af72e7a1e257f10",
+    "classifierInputsPaired": true
+  },
+  "verification": {
+    "exact172Ltbye": {
+      "passed": 8,
+      "failed": 0
+    },
+    "exact173Ltbye": {
+      "passed": 8,
+      "failed": 0
+    },
+    "exact173NewDevelopment": {
+      "passed": 7,
+      "failed": 0
+    },
+    "exact173Contrasts": {
+      "passed": 5,
+      "failed": 0
+    },
+    "final174Ltbye": {
+      "passed": 8,
+      "failed": 0
+    },
+    "final174NewDevelopment": {
+      "passed": 7,
+      "failed": 0
+    },
+    "final174Contrasts": {
+      "passed": 5,
+      "failed": 0
+    },
+    "final174Total": 20,
+    "typescript": "targeted project pass",
+    "lint": "0 errors and0 warnings, six owned code files",
+    "format": "seven owned code/config files pass",
+    "baselineReceipts": "Previously retained172/173 Ltbye and newly frozen173 development/expanded contrasts left immutable; later test-only assertions strengthen independent checks."
+  },
+  "findings": [
+    {
+      "id": "lichess:Qq0JW",
+      "legalRootReplies": 42,
+      "counterchecks": 3,
+      "sourceLineCurrentRoot": 320,
+      "priorPawnDebt": 100,
+      "finalHistoryValue": 220,
+      "finalPrimary": "intermezzo / Intermediate Capture",
+      "laterPayoff": "Intermediate Capture Payoff, no second positive material value",
+      "independentBoundary": "All legal first replies and retained leaf legality/material verified; shared finite kernel is not an independent complete game proof.",
+      "strongerDiagnostic": {
+        "forward320Visits": 929,
+        "reverse570Visits": 1821,
+        "reverse900": "fails without exhaustion; do not credit nominal queen900"
+      }
+    },
+    {
+      "id": "lichess:EpYOT",
+      "legalRootReplies": 40,
+      "counterchecks": 0,
+      "connectedRootBound": 320,
+      "historyInclusive": 220,
+      "reversedQueenRecovery": "Qxb6 is recaptured by axb6; no retained queen proof",
+      "finalPrimary": "unchanged skewer100, primary competition unresolved",
+      "rearTargetRemoval": "Removing both named rear pawns preserves320 but exposes further rear pawns. Removing all four opens Rxb7 and drops observed bound to220; not a valid proof of skewer irrelevance."
+    },
+    {
+      "id": "lichess:Ltbye",
+      "role": "Existing audit preserved and updated for intentional174 admission; not an additional newly sampled puzzle",
+      "rootBound": 230,
+      "priorRookDebt": 500,
+      "finalHistoryValue": 0,
+      "productionQuietProofVisits": 3317,
+      "missingRc8": "positive230",
+      "offSquareQueenLiability": "budget-limited unknown"
+    },
+    {
+      "id": "synthetic free root capture",
+      "bothColours": true,
+      "finalPrimary": "hangingPiece330, not intermediate"
+    }
+  ],
+  "artifacts": {
+    "initial174AccountingWitness": "quiet-intermediate-initial174-accounting.json preserves only the unique before-fix pawn-debt and duplicate-payoff outputs; its earlier source watch was core-only, explicitly marked.",
+    "supersededExploratoryReceipt": "Moved recoverably to C:/Users/Lox/AppData/Local/Temp/quiet-intermediate-contrasts-initial-adapter173.json; not part of this milestone."
+  },
+  "ownership": "This agent changed benchmark code/evidence only. No production, versions, AGENTS, Git staging/commit, owner data, download, service or runtime edits.",
+  "files": [
+    {
+      "name": "ltbye-intermediate-audit.test.ts",
+      "bytes": 14694,
+      "sha256": "a4f117593d6494191a3206ab6854f5a48abe696a017a6b0afdb9ebd02ea48fa1"
+    },
+    {
+      "name": "ltbye-intermediate-adapter174.json",
+      "bytes": 282219,
+      "sha256": "1154b8e78f8e71e8038b9c87f8a111064ecf84919fea0dc27c02075f39889fe7"
+    },
+    {
+      "name": "quiet-intermediate-contrasts-adapter173-expanded.json",
+      "bytes": 134881,
+      "sha256": "617940593edcb1106f6bd49ff9c2c842c00d3782479d601d0198b3560908e141"
+    },
+    {
+      "name": "quiet-intermediate-contrasts-adapter174.json",
+      "bytes": 134855,
+      "sha256": "2b4871cbb8891ea4a7eb5115a89be2c706b9b57ad60a65deaab50f1aa99481d8"
+    },
+    {
+      "name": "quiet-intermediate-contrasts.test.ts",
+      "bytes": 6119,
+      "sha256": "dab882ce8037b3b466e780ca619ca53a1a1d0f2c71be8bdba8b459707e69d2f4"
+    },
+    {
+      "name": "quiet-intermediate-contrasts.vitest.ts",
+      "bytes": 214,
+      "sha256": "8d5779263a8f90ae41b093a4141ac964919b5ced60f52e8e8773d62f8339f1bd"
+    },
+    {
+      "name": "quiet-intermediate-development-adapter173.json",
+      "bytes": 158337,
+      "sha256": "3b51c4df916ccf0504dfac33d135a7dd13387d36ecd91e60df3f43881b0f4b59"
+    },
+    {
+      "name": "quiet-intermediate-development-adapter174.json",
+      "bytes": 161745,
+      "sha256": "0182187386a66a9643341c4f2972f075d37e87fa78204e0eb1c3f7c4ef9eb00c"
+    },
+    {
+      "name": "quiet-intermediate-development-hypotheses.json",
+      "bytes": 2194,
+      "sha256": "cd0063f7bca738763420ac39aa7c65fafa66595863e008063af72e7a1e257f10"
+    },
+    {
+      "name": "quiet-intermediate-development-review.md",
+      "bytes": 5601,
+      "sha256": "992a7f57d3a24a2a64fa986507166cea454a25cd96f60d67d5d703868a64620d"
+    },
+    {
+      "name": "quiet-intermediate-development-select.mjs",
+      "bytes": 4003,
+      "sha256": "ae4fb857e989f5738a3cedeac5b1739bc1b98bbdca74a90a276bf0a009bd1a56"
+    },
+    {
+      "name": "quiet-intermediate-development-selection.json",
+      "bytes": 2894,
+      "sha256": "343af0f54471f2c679d11ea22c9017380443f31ecd8c4fc171482b84c6ea15cd"
+    },
+    {
+      "name": "quiet-intermediate-development.test.ts",
+      "bytes": 11076,
+      "sha256": "82b8956ca2ff1005118dd2132908dcc7f7721bb90c4be53fa08715bf6682003f"
+    },
+    {
+      "name": "quiet-intermediate-development.tsconfig.json",
+      "bytes": 385,
+      "sha256": "0c6fde1863a90a641d3754a2b13864192cff1798ae8a6f6c9411763de2233964"
+    },
+    {
+      "name": "quiet-intermediate-development.vitest.ts",
+      "bytes": 216,
+      "sha256": "3e3a9e600b52c98b129773fc97b0f526a57019a68c35aedc2b9397a07b3bec01"
+    },
+    {
+      "name": "quiet-intermediate-initial174-accounting.json",
+      "bytes": 5513,
+      "sha256": "22462b565567fbb1266e35b4599ea0abd34ab0efa6f0e73d37b5a2b232e51bec"
+    }
+  ]
+}

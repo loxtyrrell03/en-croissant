@@ -1,0 +1,473 @@
+{
+  "schemaVersion": 1,
+  "selectionSha256": "b7246b1b58fa75e8685831ad14b9ec0fb5c96e1e1777dc92a08de24a044f1f93",
+  "scope": "Independent python-chess legal finite witnesses, not whole-position evaluations or a population accuracy measure. Captures/evasions close locally; quiet continuations outside these witnesses remain unproved.",
+  "legalSources": [
+    {
+      "id": "lichess:eAHH6",
+      "reflected": false,
+      "plies": 3
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": false,
+      "plies": 5
+    },
+    {
+      "id": "lichess:WhAca",
+      "reflected": false,
+      "plies": 7
+    },
+    {
+      "id": "lichess:o4FrE",
+      "reflected": false,
+      "plies": 3
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": false,
+      "plies": 5
+    },
+    {
+      "id": "lichess:SzulO",
+      "reflected": false,
+      "plies": 7
+    },
+    {
+      "id": "lichess:eAHH6",
+      "reflected": true,
+      "plies": 3
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": true,
+      "plies": 5
+    },
+    {
+      "id": "lichess:WhAca",
+      "reflected": true,
+      "plies": 7
+    },
+    {
+      "id": "lichess:o4FrE",
+      "reflected": true,
+      "plies": 3
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": true,
+      "plies": 5
+    },
+    {
+      "id": "lichess:SzulO",
+      "reflected": true,
+      "plies": 7
+    }
+  ],
+  "witnesses": [
+    {
+      "id": "lichess:eAHH6",
+      "reflected": false,
+      "branches": [
+        {
+          "reply": "h8f7",
+          "collection": "g8e8",
+          "localGain": 500
+        },
+        {
+          "reply": "h8g6",
+          "collection": "g8e8",
+          "localGain": 500
+        },
+        {
+          "reply": "e8g8",
+          "collection": "h7g8q",
+          "localGain": 800
+        },
+        {
+          "reply": "e8f8",
+          "collection": "g8f8",
+          "localGain": 500
+        },
+        {
+          "reply": "e8d8",
+          "collection": "g8d8",
+          "localGain": 500
+        },
+        {
+          "reply": "e8c8",
+          "collection": "g8c8",
+          "localGain": 500
+        },
+        {
+          "reply": "e8b8",
+          "collection": "g8b8",
+          "localGain": 500
+        },
+        {
+          "reply": "e8a8",
+          "collection": "g8a8",
+          "localGain": 500
+        },
+        {
+          "reply": "e8e7",
+          "collection": "g8h8",
+          "localGain": 320
+        },
+        {
+          "reply": "e8e6",
+          "collection": "g8h8",
+          "localGain": 320
+        },
+        {
+          "reply": "e8e5",
+          "collection": "g8h8",
+          "localGain": 320
+        },
+        {
+          "reply": "e4e5",
+          "collection": "g8e8",
+          "localGain": 820
+        },
+        {
+          "reply": "e4d5",
+          "collection": "g8e8",
+          "localGain": 500
+        },
+        {
+          "reply": "e4d4",
+          "collection": "g8e8",
+          "localGain": 500
+        },
+        {
+          "reply": "e4e3",
+          "collection": "g8e8",
+          "localGain": 820
+        },
+        {
+          "reply": "e4d3",
+          "collection": "g8e8",
+          "localGain": 500
+        }
+      ],
+      "guardRemoval": "Removing h7 permits Rxg8+ with no legal recapture; rook loss 500."
+    },
+    {
+      "id": "constructed:eAHH6-plus-Nb8",
+      "reflected": false,
+      "scope": "An actual extra fork victim, not merely a renamed same-target proof. The larger branch gain is not a root minimum.",
+      "extraVictimBranches": [
+        {
+          "evasion": "e3d4",
+          "capture": "e8b8",
+          "localGain": 820
+        },
+        {
+          "evasion": "e3d3",
+          "capture": "e8b8",
+          "localGain": 820
+        },
+        {
+          "evasion": "e3f2",
+          "capture": "e8b8",
+          "localGain": 820
+        },
+        {
+          "evasion": "e3d2",
+          "capture": "e8b8",
+          "localGain": 820
+        }
+      ]
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": false,
+      "branches": [
+        {
+          "reply": "e3f2",
+          "afterPawnCapture": [
+            {
+              "reply": "f2g3",
+              "gain": 600
+            },
+            {
+              "reply": "f2f3",
+              "gain": 600
+            },
+            {
+              "reply": "f2e3",
+              "gain": 600
+            },
+            {
+              "reply": "f2g1",
+              "gain": 600
+            },
+            {
+              "reply": "f2f1",
+              "gain": 600
+            },
+            {
+              "reply": "f2e1",
+              "gain": 600
+            }
+          ]
+        },
+        {
+          "reply": "e3e2",
+          "afterPawnCapture": [
+            {
+              "reply": "e2f3",
+              "gain": 600
+            },
+            {
+              "reply": "e2e3",
+              "gain": 600
+            },
+            {
+              "reply": "e2f1",
+              "gain": 600
+            },
+            {
+              "reply": "e2e1",
+              "gain": 600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": false,
+      "route": [
+        {
+          "move": "f4e2",
+          "san": "Ne2+",
+          "legalRepliesBefore": 37
+        },
+        {
+          "move": "g1h1",
+          "san": "Kh1",
+          "legalRepliesBefore": 1
+        },
+        {
+          "move": "h8h2",
+          "san": "Rxh2+",
+          "legalRepliesBefore": 35
+        },
+        {
+          "move": "h1h2",
+          "san": "Kxh2",
+          "legalRepliesBefore": 1
+        },
+        {
+          "move": "d8h8",
+          "san": "Rh8#",
+          "legalRepliesBefore": 27
+        }
+      ],
+      "escapeControl": "Removing g2 allows Kg2 after the same final rook check; no Anastasia mate."
+    },
+    {
+      "id": "lichess:eAHH6",
+      "reflected": true,
+      "branches": [
+        {
+          "reply": "e5e6",
+          "collection": "g1e1",
+          "localGain": 820
+        },
+        {
+          "reply": "e5d6",
+          "collection": "g1e1",
+          "localGain": 500
+        },
+        {
+          "reply": "e5d5",
+          "collection": "g1e1",
+          "localGain": 500
+        },
+        {
+          "reply": "e5e4",
+          "collection": "g1e1",
+          "localGain": 820
+        },
+        {
+          "reply": "e5d4",
+          "collection": "g1e1",
+          "localGain": 500
+        },
+        {
+          "reply": "h1g3",
+          "collection": "g1e1",
+          "localGain": 500
+        },
+        {
+          "reply": "h1f2",
+          "collection": "g1e1",
+          "localGain": 500
+        },
+        {
+          "reply": "e1e4",
+          "collection": "g1h1",
+          "localGain": 320
+        },
+        {
+          "reply": "e1e3",
+          "collection": "g1h1",
+          "localGain": 320
+        },
+        {
+          "reply": "e1e2",
+          "collection": "g1h1",
+          "localGain": 320
+        },
+        {
+          "reply": "e1g1",
+          "collection": "h2g1q",
+          "localGain": 800
+        },
+        {
+          "reply": "e1f1",
+          "collection": "g1f1",
+          "localGain": 500
+        },
+        {
+          "reply": "e1d1",
+          "collection": "g1d1",
+          "localGain": 500
+        },
+        {
+          "reply": "e1c1",
+          "collection": "g1c1",
+          "localGain": 500
+        },
+        {
+          "reply": "e1b1",
+          "collection": "g1b1",
+          "localGain": 500
+        },
+        {
+          "reply": "e1a1",
+          "collection": "g1a1",
+          "localGain": 500
+        }
+      ],
+      "guardRemoval": "Removing h7 permits Rxg8+ with no legal recapture; rook loss 500."
+    },
+    {
+      "id": "constructed:eAHH6-plus-Nb8",
+      "reflected": true,
+      "scope": "An actual extra fork victim, not merely a renamed same-target proof. The larger branch gain is not a root minimum.",
+      "extraVictimBranches": [
+        {
+          "evasion": "e6f7",
+          "capture": "e1b1",
+          "localGain": 820
+        },
+        {
+          "evasion": "e6d7",
+          "capture": "e1b1",
+          "localGain": 820
+        },
+        {
+          "evasion": "e6d6",
+          "capture": "e1b1",
+          "localGain": 820
+        },
+        {
+          "evasion": "e6d5",
+          "capture": "e1b1",
+          "localGain": 820
+        }
+      ]
+    },
+    {
+      "id": "lichess:fVyR4",
+      "reflected": true,
+      "branches": [
+        {
+          "reply": "e6f7",
+          "afterPawnCapture": [
+            {
+              "reply": "f7g8",
+              "gain": 600
+            },
+            {
+              "reply": "f7f8",
+              "gain": 600
+            },
+            {
+              "reply": "f7e8",
+              "gain": 600
+            },
+            {
+              "reply": "f7g6",
+              "gain": 600
+            },
+            {
+              "reply": "f7f6",
+              "gain": 600
+            },
+            {
+              "reply": "f7e6",
+              "gain": 600
+            }
+          ]
+        },
+        {
+          "reply": "e6e7",
+          "afterPawnCapture": [
+            {
+              "reply": "e7f8",
+              "gain": 600
+            },
+            {
+              "reply": "e7e8",
+              "gain": 600
+            },
+            {
+              "reply": "e7f6",
+              "gain": 600
+            },
+            {
+              "reply": "e7e6",
+              "gain": 600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:UpwI4",
+      "reflected": true,
+      "route": [
+        {
+          "move": "f5e7",
+          "san": "Ne7+",
+          "legalRepliesBefore": 37
+        },
+        {
+          "move": "g8h8",
+          "san": "Kh8",
+          "legalRepliesBefore": 1
+        },
+        {
+          "move": "h1h7",
+          "san": "Rxh7+",
+          "legalRepliesBefore": 35
+        },
+        {
+          "move": "h8h7",
+          "san": "Kxh7",
+          "legalRepliesBefore": 1
+        },
+        {
+          "move": "d1h1",
+          "san": "Rh1#",
+          "legalRepliesBefore": 27
+        }
+      ],
+      "escapeControl": "Removing g2 allows Kg2 after the same final rook check; no Anastasia mate."
+    }
+  ]
+}

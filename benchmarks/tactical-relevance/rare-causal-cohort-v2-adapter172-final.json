@@ -1,0 +1,2513 @@
+{
+  "schemaVersion": 1,
+  "version": "site-55.adapter-172",
+  "productionRef": "working-source",
+  "scope": "56 exact-input observations, not56correctanswers; source/root/colour are paired, not independent cases",
+  "sourceHashes": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "888a923ef38934ba532d682207876e750480ffe6aa1932f711802d7991690f15",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "193cbac014bb43f3061ba32b8379b57ff0bfb7a99740e1ed0958a2fac397c225",
+    "src/utils/tacticalMotifs/historyAwareMate.ts": "4d9598a6ab8e4fde11972210fa3a1141bd3a0538c28b498de6eb87b29a90d2fe",
+    "src/utils/tacticalMotifs/repetitionHistory.ts": "6bd9fd4f76abbd3b16e9739b1beb77571912235e51aea09d39c546320c5827bc",
+    "src/utils/tacticalMotifs/types.ts": "cd5a1dc8ca694a18d202b89e3479bdb3655d8fa64217b37142f29a6f4be75097",
+    "src/utils/tacticalMotifs/liveTactics.ts": "f1f1f45f1fea92f83ebe9bc9910194331a6e0ad285eb8490da8b375f107c745c",
+    "benchmarks/tactical-relevance/rare-causal-cohort-v2-selection.json": "62224616d8bda068e96b83d8c5fed6ad4668c5b263b21277fc8335dd9fc8512b",
+    "benchmarks/tactical-relevance/rare-causal-cohort-v2-inputs.json": "1e9b386c37d03eb28c1a6044d8da4f4bfe2dbd926b916c91e33ebb6ed2e58d5f",
+    "benchmarks/tactical-relevance/rare-causal-cohort-v2-hypotheses.json": "bfaff5a0db65e6cbb1a33a4bdbf320455d97ad07a698a4981403fd948d9b8131"
+  },
+  "observations": [
+    {
+      "id": "lichess:rqcm3",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r1b2rk1/p1qn1pp1/2pb4/1p1p3p/3P2N1/3BB2P/PPP2PP1/R2Q1RK1 w - - 0 15",
+        "previousFen": "r1b2rk1/p1qn1pp1/2pb3p/1p1p4/3P2N1/3BB2P/PPP2PP1/R2Q1RK1 b - - 3 14",
+        "previousMoveUci": "h6h5",
+        "pvUci": [
+          "g4h6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 11.14469999999983
+    },
+    {
+      "id": "lichess:rqcm3",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "r1b2rk1/p1qn1pp1/2pb4/1p1p3p/3P2N1/3BB2P/PPP2PP1/R2Q1RK1 w - - 0 15",
+        "previousFen": "r1b2rk1/p1qn1pp1/2pb3p/1p1p4/3P2N1/3BB2P/PPP2PP1/R2Q1RK1 b - - 3 14",
+        "previousMoveUci": "h6h5",
+        "pvUci": [
+          "g4h6",
+          "g7h6",
+          "d1h5",
+          "d7f6",
+          "h5h6",
+          "f6e4",
+          "f2f3",
+          "d6h2",
+          "g1h1",
+          "e4g3",
+          "h1h2",
+          "g3f1",
+          "h2g1"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "forkPreparation",
+            "label": "Fork Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 8,
+            "moveUci": "d6h2",
+            "value": 170,
+            "evidence": "Bh2+ prepares a checking fork. After Kh1, Ng3+ forks the rook on f1 and king on h1. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "Ng3+ forks the rook on f1 and king on h1. The checked defences retain at least 1.7 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 10,
+            "moveUci": "e4g3",
+            "value": 170,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Nxf1+ collects the rook on f1, the material payoff of the earlier fork (Ng3+).",
+            "source": "available",
+            "ply": 12,
+            "moveUci": "g3f1",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 220.48529999999982
+    },
+    {
+      "id": "lichess:wN37d",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "8/2R3pp/5p2/4p3/rbNk4/6PP/5PK1/8 w - - 0 44",
+        "previousFen": "8/2R3pp/r4p2/4p3/PbNk4/6PP/5PK1/8 b - - 0 43",
+        "previousMoveUci": "a6a4",
+        "pvUci": [
+          "c4b2"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 7.895399999999881
+    },
+    {
+      "id": "lichess:wN37d",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "8/2R3pp/5p2/4p3/rbNk4/6PP/5PK1/8 w - - 0 44",
+        "previousFen": "8/2R3pp/r4p2/4p3/PbNk4/6PP/5PK1/8 b - - 0 43",
+        "previousMoveUci": "a6a4",
+        "pvUci": [
+          "c4b2",
+          "a4a1",
+          "c7c4",
+          "d4d5",
+          "c4b4"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c7c4 forks the king on d4 and bishop on b4. The knight on b2 protects c4, so the king cannot capture the rook. The line continues with c4b4, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c7c4",
+            "value": 330,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c7c4 forks the king on d4 and bishop on b4. The knight on b2 protects c4, so the king cannot capture the rook. The line continues with c4b4, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c7c4",
+            "value": 330,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Rxb4 collects the bishop on b4, the material payoff of the earlier fork (Rc4+).",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "c4b4",
+            "value": 330,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 16.977200000000266
+    },
+    {
+      "id": "lichess:CY182",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "6k1/4p2p/3pP1p1/PPpK4/5Q2/2r4P/5q2/R4R2 b - - 0 41",
+        "previousFen": "6k1/4p2p/3pP1p1/PPpK4/4Qn2/2r4P/5q2/R4R2 w - - 4 41",
+        "previousMoveUci": "e4f4",
+        "pvUci": [
+          "f2g2"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 49.44430000000011
+    },
+    {
+      "id": "lichess:CY182",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "6k1/4p2p/3pP1p1/PPpK4/5Q2/2r4P/5q2/R4R2 b - - 0 41",
+        "previousFen": "6k1/4p2p/3pP1p1/PPpK4/4Qn2/2r4P/5q2/R4R2 w - - 4 41",
+        "previousMoveUci": "e4f4",
+        "pvUci": [
+          "f2g2",
+          "f4e4",
+          "c3d3",
+          "d5c6",
+          "g2e4"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2g2",
+            "value": 400,
+            "evidence": "Qg2+ starts a checking attack that wins material or mates against every legal reply. After Qe4, Rd3+ Kc4 Qxe4# wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2g2",
+            "value": 400,
+            "evidence": "Qg2+ starts a checking attack that wins material or mates against every legal reply. After Qe4, Rd3+ Kc4 Qxe4# wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxe4+ wins the loose queen on e4.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g2e4",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 15.794799999999668
+    },
+    {
+      "id": "lichess:GFfWQ",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "5rk1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BBP1/R2Q2K1 b - - 3 23",
+        "previousFen": "5rk1/1p1b2pp/p7/3pP3/3P3q/4B1nP/P3B1P1/R2Q2K1 w - - 2 23",
+        "previousMoveUci": "e3f2",
+        "pvUci": [
+          "f8f2"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 32.380699999999706
+    },
+    {
+      "id": "lichess:GFfWQ",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "5rk1/1p1b2pp/p7/3pP3/3P3q/6nP/P3BBP1/R2Q2K1 b - - 3 23",
+        "previousFen": "5rk1/1p1b2pp/p7/3pP3/3P3q/4B1nP/P3B1P1/R2Q2K1 w - - 2 23",
+        "previousMoveUci": "e3f2",
+        "pvUci": [
+          "f8f2",
+          "g1f2",
+          "g3e4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 39.70640000000003
+    },
+    {
+      "id": "lichess:YvGsE",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "2b1Qn1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R w - - 2 28",
+        "previousFen": "2b1Q2k/3n3P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R b - - 1 27",
+        "previousMoveUci": "d7f8",
+        "pvUci": [
+          "e8f8"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "value": 10000,
+            "evidence": "Qxf8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf8+ Rxf8 Rxf8+ Kg7 h8=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf8+ offers the queen to deflect the rook from f5. Accepting with Rxf8 allows a verified mate starting with Rxf8+ (Kg7 h8=Q#): the rook no longer blocks the slider's approach to f8. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "value": 10000,
+            "evidence": "Qxf8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf8+ Rxf8 Rxf8+ Kg7 h8=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf8+ offers the queen to deflect the rook from f5. Accepting with Rxf8 allows a verified mate starting with Rxf8+ (Kg7 h8=Q#): the rook no longer blocks the slider's approach to f8. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "evidence": "Qxf8+ uses the rook on f1 behind the opposing rook on f5. If Rxf8, that piece vacates the ray and allows Rxf8+, with a separately verified forced mate. This is support for the exchange on f8, not another attack at its eventual payoff.",
+            "actor": "white",
+            "relevance": "secondary"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 10.331299999999828
+    },
+    {
+      "id": "lichess:YvGsE",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "2b1Qn1k/7P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R w - - 2 28",
+        "previousFen": "2b1Q2k/3n3P/p2p2p1/q1pP1r2/2P5/8/Pr2B1K1/2q2R1R b - - 1 27",
+        "previousMoveUci": "d7f8",
+        "pvUci": [
+          "e8f8",
+          "f5f8",
+          "f1f8",
+          "h8g7",
+          "h7h8q"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "value": 10000,
+            "evidence": "Qxf8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf8+ Rxf8 Rxf8+ Kg7 h8=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          },
+          {
+            "id": "triangleMate",
+            "label": "Triangle Mate",
+            "confidence": "medium",
+            "evidence": "h8=Q# is checkmate (Triangle Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h7h8q",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf8+ offers the queen to deflect the rook from f5. Accepting with Rxf8 allows a verified mate starting with Rxf8+ (Kg7 h8=Q#): the rook no longer blocks the slider's approach to f8. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "value": 10000,
+            "evidence": "Qxf8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf8+ Rxf8 Rxf8+ Kg7 h8=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf8+ offers the queen to deflect the rook from f5. Accepting with Rxf8 allows a verified mate starting with Rxf8+ (Kg7 h8=Q#): the rook no longer blocks the slider's approach to f8. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8f8",
+            "evidence": "Qxf8+ uses the rook on f1 behind the opposing rook on f5. If Rxf8, that piece vacates the ray and allows Rxf8+, with a separately verified forced mate. This is support for the exchange on f8, not another attack at its eventual payoff.",
+            "actor": "white",
+            "relevance": "secondary"
+          },
+          {
+            "id": "triangleMate",
+            "label": "Triangle Mate",
+            "confidence": "medium",
+            "evidence": "h8=Q# is checkmate (Triangle Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h7h8q",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "promotion",
+            "label": "Promotion",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h7h8q",
+            "actor": "white",
+            "relevance": "secondary",
+            "evidence": "h8=Q# promotes the pawn to a queen."
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 26.50520000000006
+    },
+    {
+      "id": "lichess:Ltbye",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r1r3k1/4pp1p/p1p1b1p1/qp1BP3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 20",
+        "previousFen": "r1r3k1/4pp1p/p1p1b1pb/qp1BP3/3P4/2P2N1P/P1Q2PPB/2R1K2R b K - 0 19",
+        "previousMoveUci": "h6c1",
+        "pvUci": [
+          "d5e6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 47.03530000000001
+    },
+    {
+      "id": "lichess:Ltbye",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "r1r3k1/4pp1p/p1p1b1p1/qp1BP3/3P4/2P2N1P/P1Q2PPB/2b1K2R w K - 0 20",
+        "previousFen": "r1r3k1/4pp1p/p1p1b1pb/qp1BP3/3P4/2P2N1P/P1Q2PPB/2R1K2R b K - 0 19",
+        "previousMoveUci": "h6c1",
+        "pvUci": [
+          "d5e6",
+          "f7e6",
+          "c2c1"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 23.059699999999793
+    },
+    {
+      "id": "lichess:ySzc4",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "8/3k1n2/8/4PKp1/1Pp5/2P5/8/8 w - - 1 56",
+        "previousFen": "8/4kn2/8/4PKp1/1Pp5/2P5/8/8 b - - 0 55",
+        "previousMoveUci": "e7d7",
+        "pvUci": [
+          "e5e6"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e6",
+            "evidence": "e6+ forks the king on d7 and knight on f7. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "value": 220,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e6",
+            "evidence": "e6+ forks the king on d7 and knight on f7. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "value": 220,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 1.9230999999999767
+    },
+    {
+      "id": "lichess:ySzc4",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "8/3k1n2/8/4PKp1/1Pp5/2P5/8/8 w - - 1 56",
+        "previousFen": "8/4kn2/8/4PKp1/1Pp5/2P5/8/8 b - - 0 55",
+        "previousMoveUci": "e7d7",
+        "pvUci": [
+          "e5e6",
+          "d7e8",
+          "e6f7",
+          "e8f7",
+          "f5g5",
+          "f7e6",
+          "g5f4"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6+ forks the king on d7 and knight on f7. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e5e6",
+            "value": 220,
+            "relevance": "primary"
+          },
+          {
+            "id": "attackingF2F7",
+            "label": "Weak f7",
+            "confidence": "high",
+            "evidence": "e6f7 exploits f7, which is attacked once and defended once, and gives check.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6f7",
+            "value": 220,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e6+ forks the king on d7 and knight on f7. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e5e6",
+            "value": 220,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "attackingF2F7",
+            "label": "Weak f7",
+            "confidence": "high",
+            "evidence": "e6f7 exploits f7, which is attacked once and defended once, and gives check.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e6f7",
+            "value": 220,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "e6f7",
+            "value": 320,
+            "evidence": "exf7+ removes the knight on f7 guarding the pawn on g5. The king could not legally take that pawn before; after Kxf7, Kxg5 is safe. Declining with Kd8 allows Ke6, retaining material instead. Every legal reply retains a checked material gain, including the offered piece, other friendly-piece losses and immediate counterchecks.",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 7.0996000000000095
+    },
+    {
+      "id": "lichess:Xg7Rd",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PpP/R3KB1R w KQkq - 0 13",
+        "previousFen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1Pp2/PP1N1PPP/R3KB1R b KQkq - 0 12",
+        "previousMoveUci": "f3g2",
+        "pvUci": [
+          "f1g2"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 24.735599999999977
+    },
+    {
+      "id": "lichess:Xg7Rd",
+      "reflected": false,
+      "scope": "source-line",
+      "input": {
+        "fen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1P3/PP1N1PpP/R3KB1R w KQkq - 0 13",
+        "previousFen": "r3kb1r/2B2ppp/p4n2/n7/6b1/2P1Pp2/PP1N1PPP/R3KB1R b KQkq - 0 12",
+        "previousMoveUci": "f3g2",
+        "pvUci": [
+          "f1g2",
+          "a8c8",
+          "c7a5"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 47.477400000000216
+    },
+    {
+      "id": "context:QZDg7vtX:ply12",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r1bqkb1r/pp2nppp/2n1p3/3pP3/3B1P2/8/PPP3PP/RN1QKBNR w KQkq - 1 7",
+        "previousFen": "rnbqkb1r/pp2nppp/4p3/3pP3/3B1P2/8/PPP3PP/RN1QKBNR b KQkq - 0 6",
+        "previousMoveUci": "b8c6",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "e2e4",
+            "e7e6",
+            "f2f4",
+            "d7d5",
+            "e4e5",
+            "g8e7",
+            "d2d4",
+            "c7c5",
+            "c1e3",
+            "c5d4",
+            "e3d4",
+            "b8c6"
+          ]
+        },
+        "pvUci": [
+          "g1f3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 2.7373999999999796
+    },
+    {
+      "id": "context:QZDg7vtX:ply12",
+      "reflected": false,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r1bqkb1r/pp2nppp/2n1p3/3pP3/3B1P2/8/PPP3PP/RN1QKBNR w KQkq - 1 7",
+        "previousFen": "rnbqkb1r/pp2nppp/4p3/3pP3/3B1P2/8/PPP3PP/RN1QKBNR b KQkq - 0 6",
+        "previousMoveUci": "b8c6",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "e2e4",
+            "e7e6",
+            "f2f4",
+            "d7d5",
+            "e4e5",
+            "g8e7",
+            "d2d4",
+            "c7c5",
+            "c1e3",
+            "c5d4",
+            "e3d4",
+            "b8c6"
+          ]
+        },
+        "pvUci": [
+          "g1f3",
+          "c8d7",
+          "b1c3",
+          "e7f5",
+          "d1d2",
+          "f8b4",
+          "e1a1",
+          "a7a5"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.6520999999997912
+    },
+    {
+      "id": "context:QZDg7vtX:ply20",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r2qk2r/1p1b1ppp/2n1p3/p2pPn2/1b1B1P2/2N2N2/PPPQ2PP/2KR1B1R w kq - 0 11",
+        "previousFen": "r2qk2r/pp1b1ppp/2n1p3/3pPn2/1b1B1P2/2N2N2/PPPQ2PP/2KR1B1R b kq - 8 10",
+        "previousMoveUci": "a7a5",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "e2e4",
+            "e7e6",
+            "f2f4",
+            "d7d5",
+            "e4e5",
+            "g8e7",
+            "d2d4",
+            "c7c5",
+            "c1e3",
+            "c5d4",
+            "e3d4",
+            "b8c6",
+            "g1f3",
+            "c8d7",
+            "b1c3",
+            "e7f5",
+            "d1d2",
+            "f8b4",
+            "e1a1",
+            "a7a5"
+          ]
+        },
+        "pvUci": [
+          "a2a3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 17.672700000000077
+    },
+    {
+      "id": "context:QZDg7vtX:ply20",
+      "reflected": false,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r2qk2r/1p1b1ppp/2n1p3/p2pPn2/1b1B1P2/2N2N2/PPPQ2PP/2KR1B1R w kq - 0 11",
+        "previousFen": "r2qk2r/pp1b1ppp/2n1p3/3pPn2/1b1B1P2/2N2N2/PPPQ2PP/2KR1B1R b kq - 8 10",
+        "previousMoveUci": "a7a5",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "e2e4",
+            "e7e6",
+            "f2f4",
+            "d7d5",
+            "e4e5",
+            "g8e7",
+            "d2d4",
+            "c7c5",
+            "c1e3",
+            "c5d4",
+            "e3d4",
+            "b8c6",
+            "g1f3",
+            "c8d7",
+            "b1c3",
+            "e7f5",
+            "d1d2",
+            "f8b4",
+            "e1a1",
+            "a7a5"
+          ]
+        },
+        "pvUci": [
+          "a2a3",
+          "b4c3",
+          "d2c3",
+          "b7b5",
+          "f1b5",
+          "a8c8",
+          "c3b3",
+          "e8h8"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 164.3092999999999
+    },
+    {
+      "id": "context:QZDg7vtX:ply28",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "2rq1rk1/3b1ppp/2n1p3/pB1pPn2/3B1P2/PQ3N2/1PP3PP/2KR3R w - - 3 15",
+        "previousFen": "2rqk2r/3b1ppp/2n1p3/pB1pPn2/3B1P2/PQ3N2/1PP3PP/2KR3R b k - 2 14",
+        "previousMoveUci": "e8h8",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "e2e4",
+            "e7e6",
+            "f2f4",
+            "d7d5",
+            "e4e5",
+            "g8e7",
+            "d2d4",
+            "c7c5",
+            "c1e3",
+            "c5d4",
+            "e3d4",
+            "b8c6",
+            "g1f3",
+            "c8d7",
+            "b1c3",
+            "e7f5",
+            "d1d2",
+            "f8b4",
+            "e1a1",
+            "a7a5",
+            "a2a3",
+            "b4c3",
+            "d2c3",
+            "b7b5",
+            "f1b5",
+            "a8c8",
+            "c3b3",
+            "e8h8"
+          ]
+        },
+        "pvUci": [
+          "a3a4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 2.5592999999998938
+    },
+    {
+      "id": "context:QZDg7vtX:ply28",
+      "reflected": false,
+      "scope": "actual-line",
+      "input": {
+        "fen": "2rq1rk1/3b1ppp/2n1p3/pB1pPn2/3B1P2/PQ3N2/1PP3PP/2KR3R w - - 3 15",
+        "previousFen": "2rqk2r/3b1ppp/2n1p3/pB1pPn2/3B1P2/PQ3N2/1PP3PP/2KR3R b k - 2 14",
+        "previousMoveUci": "e8h8",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "e2e4",
+            "e7e6",
+            "f2f4",
+            "d7d5",
+            "e4e5",
+            "g8e7",
+            "d2d4",
+            "c7c5",
+            "c1e3",
+            "c5d4",
+            "e3d4",
+            "b8c6",
+            "g1f3",
+            "c8d7",
+            "b1c3",
+            "e7f5",
+            "d1d2",
+            "f8b4",
+            "e1a1",
+            "a7a5",
+            "a2a3",
+            "b4c3",
+            "d2c3",
+            "b7b5",
+            "f1b5",
+            "a8c8",
+            "c3b3",
+            "e8h8"
+          ]
+        },
+        "pvUci": [
+          "a3a4",
+          "c8b8",
+          "g2g4",
+          "f5d4",
+          "f3d4",
+          "c6a7",
+          "f4f5",
+          "b8b6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.5808999999999287
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply12",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r1bqk2r/ppp1bppp/2n2n2/3p4/3P4/2N2N2/PPP1QPPP/R1B1KB1R w KQkq - 2 7",
+        "previousFen": "r1bqkb1r/ppp2ppp/2n2n2/3p4/3P4/2N2N2/PPP1QPPP/R1B1KB1R b KQkq - 1 6",
+        "previousMoveUci": "f8e7",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "d2d4",
+            "d7d5",
+            "g1f3",
+            "e7e6",
+            "b1c3",
+            "b8c6",
+            "e2e4",
+            "g8f6",
+            "e4d5",
+            "e6d5",
+            "d1e2",
+            "f8e7"
+          ]
+        },
+        "pvUci": [
+          "c1f4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 4.260399999999663
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply12",
+      "reflected": false,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r1bqk2r/ppp1bppp/2n2n2/3p4/3P4/2N2N2/PPP1QPPP/R1B1KB1R w KQkq - 2 7",
+        "previousFen": "r1bqkb1r/ppp2ppp/2n2n2/3p4/3P4/2N2N2/PPP1QPPP/R1B1KB1R b KQkq - 1 6",
+        "previousMoveUci": "f8e7",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "d2d4",
+            "d7d5",
+            "g1f3",
+            "e7e6",
+            "b1c3",
+            "b8c6",
+            "e2e4",
+            "g8f6",
+            "e4d5",
+            "e6d5",
+            "d1e2",
+            "f8e7"
+          ]
+        },
+        "pvUci": [
+          "c1f4",
+          "c6b4",
+          "c3b5",
+          "e8h8",
+          "b5c7",
+          "a8b8",
+          "c7b5",
+          "b8a8"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.5722000000000662
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply20",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r1bq1rk1/pp2bppp/5n2/1N1p4/1n1P1B2/5N2/PPP1QPPP/R3KB1R w KQ - 3 11",
+        "previousFen": "1rbq1rk1/pp2bppp/5n2/1N1p4/1n1P1B2/5N2/PPP1QPPP/R3KB1R b KQ - 2 10",
+        "previousMoveUci": "b8a8",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "d2d4",
+            "d7d5",
+            "g1f3",
+            "e7e6",
+            "b1c3",
+            "b8c6",
+            "e2e4",
+            "g8f6",
+            "e4d5",
+            "e6d5",
+            "d1e2",
+            "f8e7",
+            "c1f4",
+            "c6b4",
+            "c3b5",
+            "e8h8",
+            "b5c7",
+            "a8b8",
+            "c7b5",
+            "b8a8"
+          ]
+        },
+        "pvUci": [
+          "a2a3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 12.340799999999945
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply20",
+      "reflected": false,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r1bq1rk1/pp2bppp/5n2/1N1p4/1n1P1B2/5N2/PPP1QPPP/R3KB1R w KQ - 3 11",
+        "previousFen": "1rbq1rk1/pp2bppp/5n2/1N1p4/1n1P1B2/5N2/PPP1QPPP/R3KB1R b KQ - 2 10",
+        "previousMoveUci": "b8a8",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "d2d4",
+            "d7d5",
+            "g1f3",
+            "e7e6",
+            "b1c3",
+            "b8c6",
+            "e2e4",
+            "g8f6",
+            "e4d5",
+            "e6d5",
+            "d1e2",
+            "f8e7",
+            "c1f4",
+            "c6b4",
+            "c3b5",
+            "e8h8",
+            "b5c7",
+            "a8b8",
+            "c7b5",
+            "b8a8"
+          ]
+        },
+        "pvUci": [
+          "a2a3",
+          "b4c2",
+          "e2c2",
+          "d8a5",
+          "b5c3",
+          "h7h5",
+          "b2b4",
+          "a5c7"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 106.05439999999999
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply28",
+      "reflected": false,
+      "scope": "root-only",
+      "input": {
+        "fen": "r1b2rk1/ppq1bpp1/5n2/3p3p/1P1P1B2/P1N2N2/2Q2PPP/R3KB1R w KQ - 1 15",
+        "previousFen": "r1b2rk1/pp2bpp1/5n2/q2p3p/1P1P1B2/P1N2N2/2Q2PPP/R3KB1R b KQ - 0 14",
+        "previousMoveUci": "a5c7",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "d2d4",
+            "d7d5",
+            "g1f3",
+            "e7e6",
+            "b1c3",
+            "b8c6",
+            "e2e4",
+            "g8f6",
+            "e4d5",
+            "e6d5",
+            "d1e2",
+            "f8e7",
+            "c1f4",
+            "c6b4",
+            "c3b5",
+            "e8h8",
+            "b5c7",
+            "a8b8",
+            "c7b5",
+            "b8a8",
+            "a2a3",
+            "b4c2",
+            "e2c2",
+            "d8a5",
+            "b5c3",
+            "h7h5",
+            "b2b4",
+            "a5c7"
+          ]
+        },
+        "pvUci": [
+          "f1d3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 5.2116000000000895
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply28",
+      "reflected": false,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r1b2rk1/ppq1bpp1/5n2/3p3p/1P1P1B2/P1N2N2/2Q2PPP/R3KB1R w KQ - 1 15",
+        "previousFen": "r1b2rk1/pp2bpp1/5n2/q2p3p/1P1P1B2/P1N2N2/2Q2PPP/R3KB1R b KQ - 0 14",
+        "previousMoveUci": "a5c7",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "moves": [
+            "d2d4",
+            "d7d5",
+            "g1f3",
+            "e7e6",
+            "b1c3",
+            "b8c6",
+            "e2e4",
+            "g8f6",
+            "e4d5",
+            "e6d5",
+            "d1e2",
+            "f8e7",
+            "c1f4",
+            "c6b4",
+            "c3b5",
+            "e8h8",
+            "b5c7",
+            "a8b8",
+            "c7b5",
+            "b8a8",
+            "a2a3",
+            "b4c2",
+            "e2c2",
+            "d8a5",
+            "b5c3",
+            "h7h5",
+            "b2b4",
+            "a5c7"
+          ]
+        },
+        "pvUci": [
+          "f1d3",
+          "c7f4",
+          "c2c1",
+          "f4d6",
+          "e1h1",
+          "b7b6",
+          "h2h3",
+          "a7a5"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.6467999999999847
+    },
+    {
+      "id": "lichess:rqcm3",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "r2q1rk1/ppp2pp1/3bb2p/3p2n1/1P1P3P/2PB4/P1QN1PP1/R1B2RK1 b - - 0 14",
+        "previousFen": "r2q1rk1/ppp2pp1/3bb2p/3p2n1/1P1P4/2PB3P/P1QN1PP1/R1B2RK1 w - - 3 14",
+        "previousMoveUci": "h3h4",
+        "pvUci": [
+          "g5h3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 6.071899999999914
+    },
+    {
+      "id": "lichess:rqcm3",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "r2q1rk1/ppp2pp1/3bb2p/3p2n1/1P1P3P/2PB4/P1QN1PP1/R1B2RK1 b - - 0 14",
+        "previousFen": "r2q1rk1/ppp2pp1/3bb2p/3p2n1/1P1P4/2PB3P/P1QN1PP1/R1B2RK1 w - - 3 14",
+        "previousMoveUci": "h3h4",
+        "pvUci": [
+          "g5h3",
+          "g2h3",
+          "d8h4",
+          "d2f3",
+          "h4h3",
+          "f3e5",
+          "f7f6",
+          "d3h7",
+          "g8h8",
+          "e5g6",
+          "h8h7",
+          "g6f8",
+          "h7g8"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "forkPreparation",
+            "label": "Fork Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 8,
+            "moveUci": "d3h7",
+            "value": 170,
+            "evidence": "Bh7+ prepares a checking fork. After Kh8, Ng6+ forks the rook on f8 and king on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "Ng6+ forks the rook on f8 and king on h8. The checked defences retain at least 1.7 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 10,
+            "moveUci": "e5g6",
+            "value": 170,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Nxf8+ collects the rook on f8, the material payoff of the earlier fork (Ng6+).",
+            "source": "available",
+            "ply": 12,
+            "moveUci": "g6f8",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 157.70319999999992
+    },
+    {
+      "id": "lichess:wN37d",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "8/5pk1/6pp/RBnK4/4P3/5P2/2r3PP/8 b - - 0 43",
+        "previousFen": "8/5pk1/6pp/pBnK4/4P3/R4P2/2r3PP/8 w - - 0 43",
+        "previousMoveUci": "a3a5",
+        "pvUci": [
+          "c5b7"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 6.904100000000199
+    },
+    {
+      "id": "lichess:wN37d",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "8/5pk1/6pp/RBnK4/4P3/5P2/2r3PP/8 b - - 0 43",
+        "previousFen": "8/5pk1/6pp/pBnK4/4P3/R4P2/2r3PP/8 w - - 0 43",
+        "previousMoveUci": "a3a5",
+        "pvUci": [
+          "c5b7",
+          "a5a8",
+          "c2c5",
+          "d5d4",
+          "c5b5"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c2c5 forks the king on d5 and bishop on b5. The knight on b7 protects c5, so the king cannot capture the rook. The line continues with c5b5, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c2c5",
+            "value": 330,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "c2c5 forks the king on d5 and bishop on b5. The knight on b7 protects c5, so the king cannot capture the rook. The line continues with c5b5, winning the bishop.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c2c5",
+            "value": 330,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Fork Payoff",
+            "confidence": "high",
+            "evidence": "Rxb5 collects the bishop on b5, the material payoff of the earlier fork (Rc5+).",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "c5b5",
+            "value": 330,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 13.879300000000057
+    },
+    {
+      "id": "lichess:CY182",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "r4r2/5Q2/2R4p/5q2/ppPk4/3Pp1P1/4P2P/6K1 w - - 0 42",
+        "previousFen": "r4r2/5Q2/2R4p/4qN2/ppPk4/3Pp1P1/4P2P/6K1 b - - 4 41",
+        "previousMoveUci": "e5f5",
+        "pvUci": [
+          "f7g7"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 16.232100000000173
+    },
+    {
+      "id": "lichess:CY182",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "r4r2/5Q2/2R4p/5q2/ppPk4/3Pp1P1/4P2P/6K1 w - - 0 42",
+        "previousFen": "r4r2/5Q2/2R4p/4qN2/ppPk4/3Pp1P1/4P2P/6K1 b - - 4 41",
+        "previousMoveUci": "e5f5",
+        "pvUci": [
+          "f7g7",
+          "f5e5",
+          "c6d6",
+          "d4c3",
+          "g7e5"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7g7",
+            "value": 300,
+            "evidence": "Qg7+ starts a checking attack that wins material or mates against every legal reply. After Qe5, Rd6+ Kc3 Qxe5+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7g7",
+            "value": 300,
+            "evidence": "Qg7+ starts a checking attack that wins material or mates against every legal reply. After Qe5, Rd6+ Kc3 Qxe5+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxe5+ wins the loose queen on e5.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g7e5",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 17.125
+    },
+    {
+      "id": "lichess:GFfWQ",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "r2q2k1/p3bbp1/6Np/3p3Q/3Pp3/P7/1P1B2PP/5RK1 w - - 3 24",
+        "previousFen": "r2q2k1/p3b1p1/4b1Np/3p3Q/3Pp3/P7/1P1B2PP/5RK1 b - - 2 23",
+        "previousMoveUci": "e6f7",
+        "pvUci": [
+          "f1f7"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 34.05690000000004
+    },
+    {
+      "id": "lichess:GFfWQ",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "r2q2k1/p3bbp1/6Np/3p3Q/3Pp3/P7/1P1B2PP/5RK1 w - - 3 24",
+        "previousFen": "r2q2k1/p3b1p1/4b1Np/3p3Q/3Pp3/P7/1P1B2PP/5RK1 b - - 2 23",
+        "previousMoveUci": "e6f7",
+        "pvUci": [
+          "f1f7",
+          "g8f7",
+          "g6e5"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 97.40160000000014
+    },
+    {
+      "id": "lichess:YvGsE",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "2Q2r1r/pR2b1k1/8/2p5/Q1Pp1R2/P2P2P1/7p/2B1qN1K b - - 2 27",
+        "previousFen": "2Q2r1r/pR2b1k1/8/2p5/Q1Pp1R2/P2P2P1/3N3p/2B1q2K w - - 1 27",
+        "previousMoveUci": "d2f1",
+        "pvUci": [
+          "e1f1"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "value": 10000,
+            "evidence": "Qxf1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf1+ Rxf1 Rxf1+ Kg2 h1=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf1+ offers the queen to deflect the rook from f4. Accepting with Rxf1 allows a verified mate starting with Rxf1+ (Kg2 h1=Q#): the rook no longer blocks the slider's approach to f1. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "value": 10000,
+            "evidence": "Qxf1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf1+ Rxf1 Rxf1+ Kg2 h1=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf1+ offers the queen to deflect the rook from f4. Accepting with Rxf1 allows a verified mate starting with Rxf1+ (Kg2 h1=Q#): the rook no longer blocks the slider's approach to f1. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "evidence": "Qxf1+ uses the rook on f8 behind the opposing rook on f4. If Rxf1, that piece vacates the ray and allows Rxf1+, with a separately verified forced mate. This is support for the exchange on f1, not another attack at its eventual payoff.",
+            "actor": "black",
+            "relevance": "secondary"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 9.228599999999915
+    },
+    {
+      "id": "lichess:YvGsE",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "2Q2r1r/pR2b1k1/8/2p5/Q1Pp1R2/P2P2P1/7p/2B1qN1K b - - 2 27",
+        "previousFen": "2Q2r1r/pR2b1k1/8/2p5/Q1Pp1R2/P2P2P1/3N3p/2B1q2K w - - 1 27",
+        "previousMoveUci": "d2f1",
+        "pvUci": [
+          "e1f1",
+          "f4f1",
+          "f8f1",
+          "h1g2",
+          "h2h1q"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "value": 10000,
+            "evidence": "Qxf1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf1+ Rxf1 Rxf1+ Kg2 h1=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary"
+          },
+          {
+            "id": "triangleMate",
+            "label": "Triangle Mate",
+            "confidence": "medium",
+            "evidence": "h1=Q# is checkmate (Triangle Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h2h1q",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf1+ offers the queen to deflect the rook from f4. Accepting with Rxf1 allows a verified mate starting with Rxf1+ (Kg2 h1=Q#): the rook no longer blocks the slider's approach to f1. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "value": 10000,
+            "evidence": "Qxf1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxf1+ Rxf1 Rxf1+ Kg2 h1=Q#. The exact continuation depends on the defence.",
+            "outcome": "mate",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "verifiedCombination": true,
+            "outcome": "mate",
+            "evidence": "Qxf1+ offers the queen to deflect the rook from f4. Accepting with Rxf1 allows a verified mate starting with Rxf1+ (Kg2 h1=Q#): the rook no longer blocks the slider's approach to f1. Every legal defence permits mate. This is the supporting mechanism, not an extra material win.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1f1",
+            "evidence": "Qxf1+ uses the rook on f8 behind the opposing rook on f4. If Rxf1, that piece vacates the ray and allows Rxf1+, with a separately verified forced mate. This is support for the exchange on f1, not another attack at its eventual payoff.",
+            "actor": "black",
+            "relevance": "secondary"
+          },
+          {
+            "id": "triangleMate",
+            "label": "Triangle Mate",
+            "confidence": "medium",
+            "evidence": "h1=Q# is checkmate (Triangle Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h2h1q",
+            "outcome": "mate",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "promotion",
+            "label": "Promotion",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h2h1q",
+            "actor": "black",
+            "relevance": "secondary",
+            "evidence": "h1=Q# promotes the pawn to a queen."
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 21.13220000000001
+    },
+    {
+      "id": "lichess:Ltbye",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "2B1k2r/p1q2ppb/2p2n1p/3p4/QP1bp3/P1P1B1P1/4PP1P/R1R3K1 b k - 0 19",
+        "previousFen": "2r1k2r/p1q2ppb/2p2n1p/3p4/QP1bp3/P1P1B1PB/4PP1P/R1R3K1 w k - 0 19",
+        "previousMoveUci": "h3c8",
+        "pvUci": [
+          "d4e3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 39.391799999999876
+    },
+    {
+      "id": "lichess:Ltbye",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "2B1k2r/p1q2ppb/2p2n1p/3p4/QP1bp3/P1P1B1P1/4PP1P/R1R3K1 b k - 0 19",
+        "previousFen": "2r1k2r/p1q2ppb/2p2n1p/3p4/QP1bp3/P1P1B1PB/4PP1P/R1R3K1 w k - 0 19",
+        "previousMoveUci": "h3c8",
+        "pvUci": [
+          "d4e3",
+          "f2e3",
+          "c7c8"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 23.145100000000184
+    },
+    {
+      "id": "lichess:ySzc4",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "8/8/2p5/1pP5/4pkP1/8/3K1N2/8 b - - 1 55",
+        "previousFen": "8/8/2p5/1pP5/4pkP1/8/4KN2/8 w - - 0 55",
+        "previousMoveUci": "e2d2",
+        "pvUci": [
+          "e4e3"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4e3",
+            "evidence": "e3+ forks the king on d2 and knight on f2. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "value": 220,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4e3",
+            "evidence": "e3+ forks the king on d2 and knight on f2. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "value": 220,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 1.6914000000001579
+    },
+    {
+      "id": "lichess:ySzc4",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "8/8/2p5/1pP5/4pkP1/8/3K1N2/8 b - - 1 55",
+        "previousFen": "8/8/2p5/1pP5/4pkP1/8/4KN2/8 w - - 0 55",
+        "previousMoveUci": "e2d2",
+        "pvUci": [
+          "e4e3",
+          "d2e1",
+          "e3f2",
+          "e1f2",
+          "f4g4",
+          "f2e3",
+          "g4f5"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3+ forks the king on d2 and knight on f2. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4e3",
+            "value": 220,
+            "relevance": "primary"
+          },
+          {
+            "id": "attackingF2F7",
+            "label": "Weak f2",
+            "confidence": "high",
+            "evidence": "e3f2 exploits f2, which is attacked once and defended once, and gives check.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3f2",
+            "value": 220,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e3+ forks the king on d2 and knight on f2. The checked defences retain at least 2.2 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4e3",
+            "value": 220,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "attackingF2F7",
+            "label": "Weak f2",
+            "confidence": "high",
+            "evidence": "e3f2 exploits f2, which is attacked once and defended once, and gives check.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e3f2",
+            "value": 220,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "e3f2",
+            "value": 320,
+            "evidence": "exf2+ removes the knight on f2 guarding the pawn on g4. The king could not legally take that pawn before; after Kxf2, Kxg4 is safe. Declining with Kd1 allows Ke3, retaining material instead. Every legal reply retains a checked material gain, including the offered piece, other friendly-piece losses and immediate counterchecks.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 5.960900000000038
+    },
+    {
+      "id": "lichess:Xg7Rd",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "r3kb1r/pp1n1pPp/2p1p3/6B1/N7/P4N2/2b2PPP/R3KB1R b KQkq - 0 12",
+        "previousFen": "r3kb1r/pp1n1ppp/2p1pP2/6B1/N7/P4N2/2b2PPP/R3KB1R w KQkq - 0 12",
+        "previousMoveUci": "f6g7",
+        "pvUci": [
+          "f8g7"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 19.885800000000017
+    },
+    {
+      "id": "lichess:Xg7Rd",
+      "reflected": true,
+      "scope": "source-line",
+      "input": {
+        "fen": "r3kb1r/pp1n1pPp/2p1p3/6B1/N7/P4N2/2b2PPP/R3KB1R b KQkq - 0 12",
+        "previousFen": "r3kb1r/pp1n1ppp/2p1pP2/6B1/N7/P4N2/2b2PPP/R3KB1R w KQkq - 0 12",
+        "previousMoveUci": "f6g7",
+        "pvUci": [
+          "f8g7",
+          "a1c1",
+          "c2a4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 44.3753999999999
+    },
+    {
+      "id": "context:QZDg7vtX:ply12",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "rn1qkbnr/ppp3pp/8/3b1p2/3Pp3/2N1P3/PP2NPPP/R1BQKB1R b KQkq - 1 7",
+        "previousFen": "rn1qkbnr/ppp3pp/8/3b1p2/3Pp3/4P3/PP2NPPP/RNBQKB1R w KQkq - 0 7",
+        "previousMoveUci": "b1c3",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "e7e5",
+            "e2e3",
+            "f7f5",
+            "d2d4",
+            "e5e4",
+            "g1e2",
+            "d7d5",
+            "c2c4",
+            "c8e6",
+            "c4d5",
+            "e6d5",
+            "b1c3"
+          ]
+        },
+        "pvUci": [
+          "g8f6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 2.3114999999997963
+    },
+    {
+      "id": "context:QZDg7vtX:ply12",
+      "reflected": true,
+      "scope": "actual-line",
+      "input": {
+        "fen": "rn1qkbnr/ppp3pp/8/3b1p2/3Pp3/2N1P3/PP2NPPP/R1BQKB1R b KQkq - 1 7",
+        "previousFen": "rn1qkbnr/ppp3pp/8/3b1p2/3Pp3/4P3/PP2NPPP/RNBQKB1R w KQkq - 0 7",
+        "previousMoveUci": "b1c3",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "e7e5",
+            "e2e3",
+            "f7f5",
+            "d2d4",
+            "e5e4",
+            "g1e2",
+            "d7d5",
+            "c2c4",
+            "c8e6",
+            "c4d5",
+            "e6d5",
+            "b1c3"
+          ]
+        },
+        "pvUci": [
+          "g8f6",
+          "c1d2",
+          "b8c6",
+          "e2f4",
+          "d8d7",
+          "f1b5",
+          "e8a8",
+          "a2a4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.5934999999999491
+    },
+    {
+      "id": "context:QZDg7vtX:ply20",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "2kr1b1r/pppq2pp/2n2n2/1B1b1p2/P2PpN2/2N1P3/1P1B1PPP/R2QK2R b KQ - 0 11",
+        "previousFen": "2kr1b1r/pppq2pp/2n2n2/1B1b1p2/3PpN2/2N1P3/PP1B1PPP/R2QK2R w KQ - 8 11",
+        "previousMoveUci": "a2a4",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "e7e5",
+            "e2e3",
+            "f7f5",
+            "d2d4",
+            "e5e4",
+            "g1e2",
+            "d7d5",
+            "c2c4",
+            "c8e6",
+            "c4d5",
+            "e6d5",
+            "b1c3",
+            "g8f6",
+            "c1d2",
+            "b8c6",
+            "e2f4",
+            "d8d7",
+            "f1b5",
+            "e8a8",
+            "a2a4"
+          ]
+        },
+        "pvUci": [
+          "a7a6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 38.74980000000005
+    },
+    {
+      "id": "context:QZDg7vtX:ply20",
+      "reflected": true,
+      "scope": "actual-line",
+      "input": {
+        "fen": "2kr1b1r/pppq2pp/2n2n2/1B1b1p2/P2PpN2/2N1P3/1P1B1PPP/R2QK2R b KQ - 0 11",
+        "previousFen": "2kr1b1r/pppq2pp/2n2n2/1B1b1p2/3PpN2/2N1P3/PP1B1PPP/R2QK2R w KQ - 8 11",
+        "previousMoveUci": "a2a4",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "e7e5",
+            "e2e3",
+            "f7f5",
+            "d2d4",
+            "e5e4",
+            "g1e2",
+            "d7d5",
+            "c2c4",
+            "c8e6",
+            "c4d5",
+            "e6d5",
+            "b1c3",
+            "g8f6",
+            "c1d2",
+            "b8c6",
+            "e2f4",
+            "d8d7",
+            "f1b5",
+            "e8a8",
+            "a2a4"
+          ]
+        },
+        "pvUci": [
+          "a7a6",
+          "b5c6",
+          "d7c6",
+          "b2b4",
+          "f8b4",
+          "a1c1",
+          "c6b6",
+          "e1h1"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 100.78369999999995
+    },
+    {
+      "id": "context:QZDg7vtX:ply28",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "2kr3r/1pp3pp/pq3n2/3b1p2/Pb1PpN2/2N1P3/3B1PPP/2RQ1RK1 b - - 3 15",
+        "previousFen": "2kr3r/1pp3pp/pq3n2/3b1p2/Pb1PpN2/2N1P3/3B1PPP/2RQK2R w K - 2 15",
+        "previousMoveUci": "e1h1",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "e7e5",
+            "e2e3",
+            "f7f5",
+            "d2d4",
+            "e5e4",
+            "g1e2",
+            "d7d5",
+            "c2c4",
+            "c8e6",
+            "c4d5",
+            "e6d5",
+            "b1c3",
+            "g8f6",
+            "c1d2",
+            "b8c6",
+            "e2f4",
+            "d8d7",
+            "f1b5",
+            "e8a8",
+            "a2a4",
+            "a7a6",
+            "b5c6",
+            "d7c6",
+            "b2b4",
+            "f8b4",
+            "a1c1",
+            "c6b6",
+            "e1h1"
+          ]
+        },
+        "pvUci": [
+          "a6a5"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 2.5357999999996537
+    },
+    {
+      "id": "context:QZDg7vtX:ply28",
+      "reflected": true,
+      "scope": "actual-line",
+      "input": {
+        "fen": "2kr3r/1pp3pp/pq3n2/3b1p2/Pb1PpN2/2N1P3/3B1PPP/2RQ1RK1 b - - 3 15",
+        "previousFen": "2kr3r/1pp3pp/pq3n2/3b1p2/Pb1PpN2/2N1P3/3B1PPP/2RQK2R w K - 2 15",
+        "previousMoveUci": "e1h1",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "e7e5",
+            "e2e3",
+            "f7f5",
+            "d2d4",
+            "e5e4",
+            "g1e2",
+            "d7d5",
+            "c2c4",
+            "c8e6",
+            "c4d5",
+            "e6d5",
+            "b1c3",
+            "g8f6",
+            "c1d2",
+            "b8c6",
+            "e2f4",
+            "d8d7",
+            "f1b5",
+            "e8a8",
+            "a2a4",
+            "a7a6",
+            "b5c6",
+            "d7c6",
+            "b2b4",
+            "f8b4",
+            "a1c1",
+            "c6b6",
+            "e1h1"
+          ]
+        },
+        "pvUci": [
+          "a6a5",
+          "c1b1",
+          "g7g5",
+          "f4d5",
+          "f6d5",
+          "c3a2",
+          "f5f4",
+          "b1b3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.5356999999994514
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply12",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "r1b1kb1r/ppp1qppp/2n2n2/3p4/3P4/2N2N2/PPP1BPPP/R1BQK2R b KQkq - 2 7",
+        "previousFen": "r1b1kb1r/ppp1qppp/2n2n2/3p4/3P4/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 1 7",
+        "previousMoveUci": "f1e2",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "d7d5",
+            "d2d4",
+            "g8f6",
+            "e2e3",
+            "b8c6",
+            "b1c3",
+            "e7e5",
+            "g1f3",
+            "e5d4",
+            "e3d4",
+            "d8e7",
+            "f1e2"
+          ]
+        },
+        "pvUci": [
+          "c8f5"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 4.516400000000431
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply12",
+      "reflected": true,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r1b1kb1r/ppp1qppp/2n2n2/3p4/3P4/2N2N2/PPP1BPPP/R1BQK2R b KQkq - 2 7",
+        "previousFen": "r1b1kb1r/ppp1qppp/2n2n2/3p4/3P4/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 1 7",
+        "previousMoveUci": "f1e2",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "d7d5",
+            "d2d4",
+            "g8f6",
+            "e2e3",
+            "b8c6",
+            "b1c3",
+            "e7e5",
+            "g1f3",
+            "e5d4",
+            "e3d4",
+            "d8e7",
+            "f1e2"
+          ]
+        },
+        "pvUci": [
+          "c8f5",
+          "c3b5",
+          "c6b4",
+          "e1h1",
+          "b4c2",
+          "a1b1",
+          "c2b4",
+          "b1a1"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.511899999999514
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply20",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "r3kb1r/ppp1qppp/5n2/1N1p1b2/1n1P4/5N2/PP2BPPP/R1BQ1RK1 b kq - 3 11",
+        "previousFen": "r3kb1r/ppp1qppp/5n2/1N1p1b2/1n1P4/5N2/PP2BPPP/1RBQ1RK1 w kq - 2 11",
+        "previousMoveUci": "b1a1",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "d7d5",
+            "d2d4",
+            "g8f6",
+            "e2e3",
+            "b8c6",
+            "b1c3",
+            "e7e5",
+            "g1f3",
+            "e5d4",
+            "e3d4",
+            "d8e7",
+            "f1e2",
+            "c8f5",
+            "c3b5",
+            "c6b4",
+            "e1h1",
+            "b4c2",
+            "a1b1",
+            "c2b4",
+            "b1a1"
+          ]
+        },
+        "pvUci": [
+          "a7a6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 16.601800000000367
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply20",
+      "reflected": true,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r3kb1r/ppp1qppp/5n2/1N1p1b2/1n1P4/5N2/PP2BPPP/R1BQ1RK1 b kq - 3 11",
+        "previousFen": "r3kb1r/ppp1qppp/5n2/1N1p1b2/1n1P4/5N2/PP2BPPP/1RBQ1RK1 w kq - 2 11",
+        "previousMoveUci": "b1a1",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "d7d5",
+            "d2d4",
+            "g8f6",
+            "e2e3",
+            "b8c6",
+            "b1c3",
+            "e7e5",
+            "g1f3",
+            "e5d4",
+            "e3d4",
+            "d8e7",
+            "f1e2",
+            "c8f5",
+            "c3b5",
+            "c6b4",
+            "e1h1",
+            "b4c2",
+            "a1b1",
+            "c2b4",
+            "b1a1"
+          ]
+        },
+        "pvUci": [
+          "a7a6",
+          "b5c7",
+          "e7c7",
+          "d1a4",
+          "b4c6",
+          "h2h4",
+          "b7b5",
+          "a4c2"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 95.20790000000034
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply28",
+      "reflected": true,
+      "scope": "root-only",
+      "input": {
+        "fen": "r3kb1r/2q2ppp/p1n2n2/1p1p1b2/3P3P/5N2/PPQ1BPP1/R1B2RK1 b kq - 1 15",
+        "previousFen": "r3kb1r/2q2ppp/p1n2n2/1p1p1b2/Q2P3P/5N2/PP2BPP1/R1B2RK1 w kq - 0 15",
+        "previousMoveUci": "a4c2",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "d7d5",
+            "d2d4",
+            "g8f6",
+            "e2e3",
+            "b8c6",
+            "b1c3",
+            "e7e5",
+            "g1f3",
+            "e5d4",
+            "e3d4",
+            "d8e7",
+            "f1e2",
+            "c8f5",
+            "c3b5",
+            "c6b4",
+            "e1h1",
+            "b4c2",
+            "a1b1",
+            "c2b4",
+            "b1a1",
+            "a7a6",
+            "b5c7",
+            "e7c7",
+            "d1a4",
+            "b4c6",
+            "h2h4",
+            "b7b5",
+            "a4c2"
+          ]
+        },
+        "pvUci": [
+          "f8d6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 5.64429999999993
+    },
+    {
+      "id": "context:Z1Tw5YR3:ply28",
+      "reflected": true,
+      "scope": "actual-line",
+      "input": {
+        "fen": "r3kb1r/2q2ppp/p1n2n2/1p1p1b2/3P3P/5N2/PPQ1BPP1/R1B2RK1 b kq - 1 15",
+        "previousFen": "r3kb1r/2q2ppp/p1n2n2/1p1p1b2/Q2P3P/5N2/PP2BPP1/R1B2RK1 w kq - 0 15",
+        "previousMoveUci": "a4c2",
+        "tacticalHistory": {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+          "moves": [
+            "d7d5",
+            "d2d4",
+            "g8f6",
+            "e2e3",
+            "b8c6",
+            "b1c3",
+            "e7e5",
+            "g1f3",
+            "e5d4",
+            "e3d4",
+            "d8e7",
+            "f1e2",
+            "c8f5",
+            "c3b5",
+            "c6b4",
+            "e1h1",
+            "b4c2",
+            "a1b1",
+            "c2b4",
+            "b1a1",
+            "a7a6",
+            "b5c7",
+            "e7c7",
+            "d1a4",
+            "b4c6",
+            "h2h4",
+            "b7b5",
+            "a4c2"
+          ]
+        },
+        "pvUci": [
+          "f8d6",
+          "c2f5",
+          "c7c8",
+          "f5d3",
+          "e8h8",
+          "b2b3",
+          "h7h6",
+          "a2a4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-172"
+      },
+      "elapsedMs": 0.5378000000000611
+    }
+  ]
+}

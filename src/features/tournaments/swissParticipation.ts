@@ -1,25 +1,34 @@
-import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
+import { cachedTournamentEvidence } from "./tournamentForecastEvidence";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
 import attendance from "./swissAttendanceWeights.json" with { type: "json" };
 
 const projected = new WeakMap<TournamentSnapshot, Map<number, TournamentSnapshot>>();
+const absenceCounts = new WeakMap<TournamentSnapshot, Map<number, Map<number, number>>>();
 
 /** Only explicit earlier zero-point absences count. A played loss, requested
  * half-point bye, unreadable round or unscored bye is not withdrawal evidence. */
 export function priorZeroPointAbsences(snapshot: TournamentSnapshot, player: number, targetRound: number): number {
-  const entry = snapshot.players.find(p => p.startNumber === player);
-  if (!entry) return 0;
-  let count = 0;
-  for (let round = targetRound - 1; round > 0; round--) {
-    if (snapshot.incompletePairingRounds?.includes(round) || entry.halfPointByeRounds?.includes(round)) break;
-    const game = snapshot.pairings.find(p => p.round === round && (p.whiteStartNumber === player || p.blackStartNumber === player));
-    if (game) {
-      if (game.whiteStartNumber !== null && game.blackStartNumber !== null) break;
-      if (publishedNoOpponentScore(game) !== 0) break;
-    } else if (!entry.notPairedRounds?.includes(round)) break;
-    count++;
+  let rounds = absenceCounts.get(snapshot);
+  const saved = rounds?.get(targetRound);
+  if (saved) return saved.get(player) ?? 0;
+  const evidence = cachedTournamentEvidence(snapshot, targetRound), counts = new Map<number, number>();
+  if (evidence && evidence.evidenceIssues.length === 0) {
+    const incomplete = new Set(evidence.roundIssues.map(row => row.round));
+    for (const entry of evidence.players) {
+      let count = 0;
+      for (let round = targetRound - 1; round > 0; round--) {
+        const assignment = entry.rounds[round - 1];
+        if (incomplete.has(round) || !assignment || assignment.issues.length ||
+          !["solo", "not-paired"].includes(assignment.assignment) ||
+          assignment.result !== "known" || assignment.award !== 0) break;
+        count++;
+      }
+      counts.set(entry.startNumber, count);
+    }
   }
-  return count;
+  if (!rounds) { rounds = new Map(); absenceCounts.set(snapshot, rounds); }
+  rounds.set(targetRound, counts);
+  return counts.get(player) ?? 0;
 }
 
 export function estimatedAttendance(snapshot: TournamentSnapshot, player: number, targetRound: number): number {

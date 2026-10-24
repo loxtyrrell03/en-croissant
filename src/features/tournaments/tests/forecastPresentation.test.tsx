@@ -38,3 +38,19 @@ describe("round context in the tracker", () => {
     expect(forecastHeading({ ...fixture.forecast, kind: "inferred" }, false)).toBe("Round 5 · Expected pairing");
   });
 });
+
+
+describe("strict source result presentation", () => {
+  test("unreadable true flags do not count as results; completion heading retains live final-round meaning", () => {
+    const { record, forecast } = trackerFixture();
+    const base = record.snapshot.pairings[0];
+    record.snapshot.pairings = [
+      { ...base, round: 4, result: "1-0", decided: true },
+      { ...base, round: 4, board: 2, result: "garbage.5", decided: true },
+      { ...base, round: 4, board: 3, result: "1-0", decided: false },
+    ];
+    expect(precedingResultContext(record.snapshot, forecast)?.reported).toBe(1);
+    expect(forecastHeading({ ...forecast, kind: "complete", summary: "Round 7 is the final round" }, false)).toBe("Round 7 is the final round");
+    expect(forecastHeading({ ...forecast, kind: "complete", summary: "Tournament complete" }, false)).toBe("Tournament complete");
+  });
+});

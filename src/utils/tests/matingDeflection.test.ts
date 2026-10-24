@@ -67,9 +67,10 @@ test("constructed blocked mating ray", () => {
     expect(proof?.mating).toEqual([
         expect.objectContaining({ reply: "gxf5", mate: "Bf7#", mode: "block" }),
     ]);
+    expect(replayTacticalLine(fen, ["d7f5", "g6g5", "f5f7"])[2].after.isCheckmate()).toBe(true);
     expect(proof?.declined).toEqual([
         expect.objectContaining({ reply: "Qg5", answer: "Bxg5", gain: 320 }),
-        expect.objectContaining({ reply: "g5", gain: 320 }),
+        expect.objectContaining({ reply: "g5", answer: "Qf7#", gain: 10000 }),
     ]);
     expect(classifyPositionTacticalMotifs({ fen, pvUci: ["d7f5"] }).motifs[0]).toMatchObject({
         id: "deflection",

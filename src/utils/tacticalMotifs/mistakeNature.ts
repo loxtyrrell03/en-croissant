@@ -8,6 +8,7 @@ import {
     buildMistakeReviewTacticalExplanation,
     classifyMistakeReviewMotifs,
     isImmediateTacticalLesson,
+    isRetainedForkChoice,
     type MistakeReviewMotifInput,
 } from "./mistakeReviewAdapter";
 
@@ -136,7 +137,9 @@ export function classifyProvedMistakeNature(
         };
     }
     return uncertain(
-        classification.missedMotifs.some((m) => m.alternativeCapture)
+        classification.missedMotifs.some(isRetainedForkChoice)
+            ? "Both moves create the same independently verified fork. That shared tactic alone does not establish why one move was worse."
+            : classification.missedMotifs.some((m) => m.alternativeCapture)
             ? "The better move and played move have comparable immediate captures. Their tactical difference is not established by those captures alone."
             : classification.allowedMotifs.some((m) => m.comparison === "persists")
               ? "The opponent's tactical danger also exists after the better move. It is not an established cause of this mistake."

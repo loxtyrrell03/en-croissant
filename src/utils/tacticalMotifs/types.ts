@@ -28,6 +28,9 @@ export type TacticalMotifEvidence = {
      * perpetual or defensive deflection uses zero: preventing/forcing a
      * checking resource is not a material-gain claim. */
     value?: number;
+    /** Proof dependency, including mating support with no material value.
+     * It must be requalified when exact history invalidates a mating route. */
+    outcome?: "mate";
     /** Set by an all-defence compound or mating proof, never inferred from
      * a PV tag or score. A material residual may be smaller than a pawn. */
     verifiedCombination?: true;
