@@ -23,6 +23,14 @@ committing unrelated work.
 
 ## Verified milestones
 
+Native file transactions now capture source identities, find fresh game spans,
+stage atomic replacements and preserve neighbouring bytes. New filenames and
+metadata cannot clobber existing entries. Per-file UI ordering, list/preview
+request generations, deletion identity and append guards are included. Eighteen
+native filesystem and 93 frontend checks, types, scoped lint and a full native
+check pass. See `NATIVE_PGN_FILES.md` for source/delivery boundaries and remaining
+database-row/Clear-tabs work.
+
 Native tab saves and close requests now retain the original tab/source and
 immutable annotated PGN, check native errors, serialize/coalesce automatic writes,
 and keep cancelled, failed or newly edited work open. Canonical live trees also

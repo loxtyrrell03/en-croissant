@@ -447,6 +447,38 @@ async readGames(file: string, start: number, end: number) : Promise<Result<strin
     else return { status: "error", error: e  as any };
 }
 },
+async readPgnGame(filePath: string, index: number) : Promise<Result<PgnGameSnapshot, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("read_pgn_game", { filePath, index }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async readPgnGames(filePath: string, start: number, end: number) : Promise<Result<PgnGameBatch, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("read_pgn_games", { filePath, start, end }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async createPgnGame(filePath: string, pgn: string, metadata: string, source: PgnSourceRef | null) : Promise<Result<PgnWriteResult, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("create_pgn_game", { filePath, pgn, metadata, source }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async appendPgnGame(filePath: string, pgn: string, metadata: string) : Promise<Result<PgnWriteResult, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("append_pgn_game", { filePath, pgn, metadata }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async splitPgnToFiles(file: string, targetDir: string, fileType: string) : Promise<Result<PgnSplitReport, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("split_pgn_to_files", { file, targetDir, fileType }) };
@@ -466,9 +498,9 @@ async lexPgn(pgn: string) : Promise<Result<Token[], string>> {
 async isBmi2Compatible() : Promise<boolean> {
     return await TAURI_INVOKE("is_bmi2_compatible");
 },
-async deleteGame(file: string, n: number) : Promise<Result<null, string>> {
+async deleteGame(file: string, n: number, expectedIdentity: string | null) : Promise<Result<PgnWriteResult, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("delete_game", { file, n }) };
+    return { status: "ok", data: await TAURI_INVOKE("delete_game", { file, n, expectedIdentity }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -581,9 +613,9 @@ async authenticate(username: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async writeGame(filePath: string, n: number, pgn: string) : Promise<Result<null, string>> {
+async writeGame(filePath: string, n: number, pgn: string, expectedIdentity: string | null, metadata: string | null) : Promise<Result<PgnWriteResult, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("write_game", { filePath, n, pgn }) };
+    return { status: "ok", data: await TAURI_INVOKE("write_game", { filePath, n, pgn, expectedIdentity, metadata }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -910,7 +942,11 @@ export type OtbImportSourceReport = { source: string;
 elapsedMs: number; archivesChecked: number; cachedArchives: number; matchedGames: number; uniqueGamesAdded: number; errors: string[] }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
+export type PgnGameBatch = { games: PgnGameSnapshot[]; gameCount: number }
+export type PgnGameSnapshot = { pgn: string; index: number; identity: string; gameCount: number }
+export type PgnSourceRef = { file: string; index: number; identity: string }
 export type PgnSplitReport = { created: number; targetDir: string }
+export type PgnWriteResult = { file: string; index: number; identity: string; gameCount: number }
 export type PlanCoachRequest = { fen: string; sideToMove: string; surface: string; subjectKind: string; title: string; summary: string; planLines?: string[]; stats?: string[]; evidence?: string[]; settings: PlanCoachSettings }
 export type PlanCoachResponse = { answer: string; model: string }
 export type PlanCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel?: string; timeoutSecs: number }

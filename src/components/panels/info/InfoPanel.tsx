@@ -1,3 +1,4 @@
+import type { PgnGameListEntry } from "@/utils/pgnGameList";
 import {
   Accordion,
   ActionIcon,
@@ -11,13 +12,15 @@ import {
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useStore as useAtomStore } from "jotai";
 import { use, useEffect, useRef, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
-import { commands } from "@/bindings";
+import { pgnFiles } from "@/bindings/pgnFiles";
+import { notePgnFileWrite } from "@/utils/pgnSourceTabs";
+import { withPgnFileTask } from "@/utils/pgnFileQueue";
 import GameInfo from "@/components/common/GameInfo";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import ConfirmChangesModal from "@/components/tabs/ConfirmChangesModal";
@@ -27,7 +30,6 @@ import { parsePGN } from "@/utils/chess";
 import { formatNumber } from "@/utils/format";
 import { getTabFile, getTabGameNumber } from "@/utils/tabs";
 import { useTabSaveTargets } from "@/utils/tabSaveTarget";
-import { unwrap } from "@/utils/unwrap";
 import FenSearch from "./FenSearch";
 import FileInfo from "./FileInfo";
 import GameSelector from "./GameSelector";
@@ -39,11 +41,11 @@ import { getDatabaseFolderPath, getDatabases } from "@/utils/db";
 import { useNavigate } from "@tanstack/react-router";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 
-function InfoPanel({ addGame }: { addGame?: () => void }) {
+function InfoPanel({ addGame, addingGame }: { addGame?: () => void; addingGame?: boolean }) {
   const store = use(TreeStateContext)!;
   const stats = useStore(store, getStats);
   const headers = useStore(store, (s) => s.headers);
-  const [games, setGames] = useState<Map<number, string>>(new Map());
+  const [games, setGames] = useState<Map<number, PgnGameListEntry>>(new Map());
   const currentTab = useAtomValue(currentTabAtom);
   const tabFile = getTabFile(currentTab);
   const gameNumber = getTabGameNumber(currentTab);
@@ -56,7 +58,12 @@ function InfoPanel({ addGame }: { addGame?: () => void }) {
       {currentTab?.gameOrigin.kind === "database" && (
         <DatabaseInfo path={currentTab.gameOrigin.database} id={currentTab.gameOrigin.gameId} />
       )}
-      <GameSelectorAccordion games={games} setGames={setGames} addGame={addGame} />
+      <GameSelectorAccordion
+        games={games}
+        setGames={setGames}
+        addGame={addGame}
+        addingGame={addingGame}
+      />
       <ScrollArea pb="sm">
         <FileInfo setGames={setGames} />
         <Stack px="sm">
@@ -66,7 +73,8 @@ function InfoPanel({ addGame }: { addGame?: () => void }) {
             changeTitle={(title: string) => {
               setGames((prev) => {
                 const newGames = new Map(prev);
-                newGames.set(gameNumber, title);
+                const existing = newGames.get(gameNumber);
+                if (existing) newGames.set(gameNumber, { ...existing, name: title });
                 return newGames;
               });
             }}
@@ -133,15 +141,18 @@ export function GameSelectorAccordion({
   games,
   setGames,
   addGame,
+  addingGame,
 }: {
-  games: Map<number, string>;
-  setGames: React.Dispatch<React.SetStateAction<Map<number, string>>>;
+  games: Map<number, PgnGameListEntry>;
+  setGames: React.Dispatch<React.SetStateAction<Map<number, PgnGameListEntry>>>;
   addGame?: () => void;
+  addingGame?: boolean;
 }) {
   const store = use(TreeStateContext)!;
   const setState = useStore(store, (s) => s.setState);
   const currentTab = useAtomValue(currentTabAtom);
   const saveTargetFor = useTabSaveTargets();
+  const atomStore = useAtomStore();
   const pageRequest = useRef(0);
   useEffect(
     () => () => {
@@ -151,11 +162,11 @@ export function GameSelectorAccordion({
   );
 
   const [confirmChanges, toggleConfirmChanges] = useToggle();
-  const [tempPage, setTempPage] = useState(0);
+  const [tempPage, setTempPage] = useState<{ page: number; identity?: string }>({ page: 0 });
 
   const tabFile = getTabFile(currentTab);
   const gameNumber = getTabGameNumber(currentTab);
-  const currentName = games.get(gameNumber) || "Untitled";
+  const currentName = games.get(gameNumber)?.name || "Untitled";
 
   const keyMap = useAtomValue(keyMapAtom);
   const { t } = useTranslation();
@@ -178,28 +189,42 @@ export function GameSelectorAccordion({
   if (!tabFile) return null;
   const filePath = tabFile.path;
 
-  async function setPage(page: number, forced?: boolean) {
+  async function setPage(page: number, forced?: boolean, expectedIdentity?: string) {
     const ticket = ++pageRequest.current;
     if (!currentTab) return;
     if (!forced && store.getState().dirty) {
-      setTempPage(page);
+      setTempPage({ page, identity: expectedIdentity });
       toggleConfirmChanges();
       return;
     }
 
     const target = saveTargetFor(currentTab.value);
+    const owner = target.get();
+    const sourceFile = getTabFile(owner);
+    if (!owner || !sourceFile) return;
+    const sourceIndex = getTabGameNumber(owner);
+    const sourceIdentity =
+      owner.gameOrigin.kind === "file" || owner.gameOrigin.kind === "temp_file"
+        ? owner.gameOrigin.sourceIdentity
+        : undefined;
+    if (!forced && (sourceFile.path !== filePath || sourceIndex !== gameNumber)) return;
     const requestedRoot = store.getState().root,
       requestedHeaders = store.getState().headers;
     const owns = () => {
       const latest = target.get();
       return (
-        latest && getTabFile(latest)?.path === filePath && getTabGameNumber(latest) === gameNumber
+        latest &&
+        getTabFile(latest)?.path === sourceFile.path &&
+        getTabGameNumber(latest) === sourceIndex &&
+        (latest.gameOrigin.kind === "file" || latest.gameOrigin.kind === "temp_file") &&
+        latest.gameOrigin.sourceIdentity === sourceIdentity
       );
     };
     try {
-      const data = unwrap(await commands.readGames(filePath, page, page));
-      if (!data[0]) throw new Error("That game is no longer in this file. Refresh the game list.");
-      const tree = await parsePGN(data[0]);
+      const captured = await pgnFiles.read(sourceFile.path, page);
+      if (expectedIdentity && captured.identity !== expectedIdentity)
+        throw new Error("This game changed. Reload the game list before opening it.");
+      const tree = await parsePGN(captured.pgn);
       if (pageRequest.current !== ticket || !owns()) return;
       if (store.getState().root !== requestedRoot || store.getState().headers !== requestedHeaders)
         throw new Error(
@@ -214,6 +239,8 @@ export function GameSelectorAccordion({
           gameOrigin: {
             ...prev.gameOrigin,
             gameNumber: page,
+            sourceIdentity: captured.identity,
+            file: { ...prev.gameOrigin.file, numGames: captured.gameCount, numGamesKnown: true },
           },
         };
       });
@@ -226,31 +253,17 @@ export function GameSelectorAccordion({
     }
   }
 
-  async function deleteGame(index: number) {
+  async function deleteGame(index: number, identity: string) {
     try {
-      unwrap(await commands.deleteGame(filePath, index));
-      saveTargetFor(currentTab?.value).update((prev) => {
-        if (
-          (prev.gameOrigin.kind !== "file" && prev.gameOrigin.kind !== "temp_file") ||
-          getTabFile(prev)?.path !== filePath
-        ) {
-          return prev;
-        }
-        return {
-          ...prev,
-          gameOrigin: {
-            ...prev.gameOrigin,
-            file: {
-              ...prev.gameOrigin.file,
-              numGames: prev.gameOrigin.file.numGames - 1,
-              numGamesKnown: true,
-            },
-          },
-        };
+      await withPgnFileTask(filePath, async () => {
+        const result = await pgnFiles.remove(filePath, index, identity);
+        notePgnFileWrite(atomStore, filePath, result, { requestedIndex: index, identity });
+        setGames(new Map());
       });
-      setGames(new Map());
+      return true;
     } catch (error) {
       notifications.show({ title: "Could not remove game", message: String(error), color: "red" });
+      return false;
     }
   }
 
@@ -260,7 +273,7 @@ export function GameSelectorAccordion({
         <ConfirmChangesModal
           opened={confirmChanges}
           onClose={() => toggleConfirmChanges(false)}
-          closeTab={() => setPage(tempPage, true)}
+          closeTab={() => setPage(tempPage.page, true, tempPage.identity)}
           tab={currentTab}
           target={saveTargetFor(currentTab.value)}
           store={store}
@@ -288,6 +301,8 @@ export function GameSelectorAccordion({
                   <ActionIcon
                     size="sm"
                     variant="subtle"
+                    loading={addingGame}
+                    aria-label="Add game"
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
@@ -305,11 +320,34 @@ export function GameSelectorAccordion({
               <GameSelector
                 games={games}
                 setGames={setGames}
-                setPage={setPage}
+                setPage={(page, identity) => void setPage(page, false, identity)}
                 deleteGame={deleteGame}
                 path={filePath}
                 activePage={gameNumber || 0}
                 total={tabFile.numGames}
+                version={tabFile.lastModified}
+                onCountChange={(count) =>
+                  saveTargetFor(currentTab?.value).update((tab) => {
+                    const origin = tab.gameOrigin;
+                    if (
+                      (origin.kind !== "file" && origin.kind !== "temp_file") ||
+                      origin.file.path !== filePath
+                    )
+                      return tab;
+                    return {
+                      ...tab,
+                      gameOrigin: {
+                        ...origin,
+                        file: {
+                          ...origin.file,
+                          numGames: count,
+                          numGamesKnown: true,
+                          lastModified: Math.max(Date.now(), origin.file.lastModified + 1),
+                        },
+                      },
+                    };
+                  })
+                }
               />
             </Box>
           </Accordion.Panel>

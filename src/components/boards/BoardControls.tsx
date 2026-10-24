@@ -37,6 +37,7 @@ interface BoardControlsProps {
   toggleEditingMode: () => void;
   dirty: boolean;
   saveFile?: () => void;
+  savingFile?: boolean;
   onOpenCoach?: () => void;
   canTakeBack?: boolean;
   onTakeBack?: () => void;
@@ -49,6 +50,7 @@ function BoardControls({
   toggleEditingMode,
   dirty,
   saveFile,
+  savingFile,
   onOpenCoach,
   canTakeBack,
   onTakeBack,
@@ -204,6 +206,8 @@ function BoardControls({
             label={t("Board.Action.SavePGN", { key: keyMap.SAVE_FILE.keys })}
           >
             <ActionIcon
+              aria-label={savingFile ? "Saving game" : "Save game"}
+              loading={savingFile}
               onClick={() => saveFile()}
               variant={dirty && !autoSave ? "default" : "transparent"}
             >

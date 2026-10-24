@@ -1,9 +1,10 @@
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
-import { copyFile, exists, writeTextFile } from "@tauri-apps/plugin-fs";
+import { copyFile, exists } from "@tauri-apps/plugin-fs";
 import { z } from "zod";
 import type { StoreApi } from "zustand";
 import { commands } from "@/bindings";
+import { pgnFiles } from "@/bindings/pgnFiles";
 import { type FileMetadata, fileMetadataSchema } from "@/components/files/file";
 import type { TreeStoreState } from "@/state/store/tree";
 import {
@@ -18,12 +19,16 @@ import { explicitPgnOrientation } from "./pgnOrientation";
 import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
 import type { TabSaveTarget } from "./tabSaveTarget";
 import { tabTreeOwner } from "@/state/store/treeOwner";
+import { withPgnFileTask } from "./pgnFileQueue";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
-const DEFAULT_GAME_FILE_METADATA = JSON.stringify({
-    type: "game",
-    tags: [],
-});
+
+export function normalizeSourcePgn(pgn: string): string {
+    return pgn
+        .replace(/^\uFEFF/, "")
+        .trim()
+        .replace(/\r\n/g, "\n");
+}
 
 const reviewInitialPracticeSchema = z.object({
     mode: z.enum(["due", "all"]),
@@ -65,11 +70,13 @@ const gameOriginSchema = z.discriminatedUnion("kind", [
         kind: z.literal("file"),
         file: fileMetadataSchema,
         gameNumber: z.number(),
+        sourceIdentity: z.string().optional(),
     }),
     z.object({
         kind: z.literal("temp_file"),
         file: fileMetadataSchema,
         gameNumber: z.number(),
+        sourceIdentity: z.string().optional(),
     }),
     z.object({
         kind: z.literal("database"),
@@ -182,6 +189,27 @@ export async function createTab({
     initialState?: TreeState;
 }) {
     const id = genID();
+    if (
+        gameOrigin &&
+        (gameOrigin.kind === "file" || gameOrigin.kind === "temp_file") &&
+        !gameOrigin.sourceIdentity
+    ) {
+        if (initialState)
+            throw new Error(
+                "A file-origin board needs its captured source identity. Reopen the file or save a separate copy.",
+            );
+        const captured = await pgnFiles.read(gameOrigin.file.path, gameOrigin.gameNumber);
+        if (pgn !== undefined && normalizeSourcePgn(pgn) !== normalizeSourcePgn(captured.pgn))
+            throw new Error(
+                "The PGN changed while opening it. Refresh the game list and open it again.",
+            );
+        pgn = captured.pgn;
+        gameOrigin = {
+            ...gameOrigin,
+            sourceIdentity: captured.identity,
+            file: { ...gameOrigin.file, numGames: captured.gameCount, numGamesKnown: true },
+        };
+    }
 
     if (initialState !== undefined || pgn !== undefined) {
         const hydratedPgn =
@@ -189,6 +217,12 @@ export async function createTab({
                 ? await hydrateOnlinePgnClocks(pgn)
                 : pgn;
         const tree = initialState ?? (await parsePGN(hydratedPgn ?? "", headers?.fen));
+        if (
+            gameOrigin &&
+            (gameOrigin.kind === "file" || gameOrigin.kind === "temp_file") &&
+            hydratedPgn !== pgn
+        )
+            tree.dirty = true;
         if (headers) {
             tree.headers = {
                 ...headers,
@@ -226,14 +260,6 @@ export async function isInTempDir(filePath: string): Promise<boolean> {
     return normalize(filePath).startsWith(normalize(tmp));
 }
 
-async function ensureGameInfoSidecar(filePath: string) {
-    const metadataPath = filePath.replace(/\.pgn$/i, ".info");
-    if (metadataPath === filePath || (await exists(metadataPath))) {
-        return;
-    }
-    await writeTextFile(metadataPath, DEFAULT_GAME_FILE_METADATA);
-}
-
 type SaveRequest = {
     dir: string;
     tab: Tab;
@@ -259,7 +285,12 @@ function saveBinding(tab: Tab) {
     switch (origin.kind) {
         case "file":
         case "temp_file":
-            return JSON.stringify([origin.kind, origin.file.path, origin.gameNumber]);
+            return JSON.stringify([
+                origin.kind,
+                origin.file.path,
+                origin.gameNumber,
+                origin.sourceIdentity ?? null,
+            ]);
         case "database":
             return JSON.stringify([origin.kind, origin.database, origin.gameId]);
         default:
@@ -364,6 +395,18 @@ export function saveToFile({
 }
 
 async function performSave(request: SaveRequest, queue: SaveQueue): Promise<boolean> {
+    const origin = request.target.get()?.gameOrigin;
+    if (
+        origin &&
+        (origin.kind === "file" || origin.kind === "temp_file") &&
+        !request.forceSaveAs &&
+        !(origin.kind === "temp_file" && request.isUserSave)
+    )
+        return withPgnFileTask(origin.file.path, () => performOwnedSave(request, queue));
+    return performOwnedSave(request, queue);
+}
+
+async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise<boolean> {
     const { dir, tab, target, store, isUserSave, forceSaveAs, copyOnly, pgn } = request;
     if (copyOnly && !forceSaveAs) throw new Error("A copy must use a separate destination.");
     const current = target.get();
@@ -380,9 +423,28 @@ async function performSave(request: SaveRequest, queue: SaveQueue): Promise<bool
         if (!stillOwnsSource()) return false;
         if (copyOnly) return true;
         const nextBinding = saveBinding({ ...current, gameOrigin: nextOrigin });
-        target.update((owner) =>
-            saveBinding(owner) === binding ? { ...owner, gameOrigin: nextOrigin } : owner,
-        );
+        target.update((owner) => {
+            if (saveBinding(owner) !== binding) return owner;
+            const origin = owner.gameOrigin;
+            if (
+                (origin.kind === "file" || origin.kind === "temp_file") &&
+                (nextOrigin.kind === "file" || nextOrigin.kind === "temp_file") &&
+                origin.file.path === nextOrigin.file.path
+            )
+                return {
+                    ...owner,
+                    gameOrigin: {
+                        ...nextOrigin,
+                        file: {
+                            ...origin.file,
+                            numGames: nextOrigin.file.numGames,
+                            numGamesKnown: true,
+                            lastModified: Math.max(Date.now(), origin.file.lastModified + 1),
+                        },
+                    },
+                };
+            return { ...owner, gameOrigin: nextOrigin };
+        });
         for (const [from, to] of queue.rebindings)
             if (to === binding) queue.rebindings.set(from, nextBinding);
         queue.rebindings.set(binding, nextBinding);
@@ -409,67 +471,89 @@ async function performSave(request: SaveRequest, queue: SaveQueue): Promise<bool
         return complete();
     }
 
+    const metadata = JSON.stringify(fileOrigin?.file.metadata ?? { tags: [], type: "game" });
     if (fileOrigin && !forceSaveAs && !(isTempFile && isUserSave)) {
+        if (!fileOrigin.sourceIdentity)
+            throw new Error(
+                "Original game identity is missing. Your changes are still open; reopen the source or save a separate copy.",
+            );
+        const written = await pgnFiles.write(
+            fileOrigin.file.path,
+            fileOrigin.gameNumber,
+            fileOrigin.sourceIdentity,
+            pgn,
+            metadata,
+        );
         filePath = fileOrigin.file.path;
+        nextOrigin = {
+            ...fileOrigin,
+            gameNumber: written.index,
+            sourceIdentity: written.identity,
+            file: {
+                ...fileOrigin.file,
+                numGames: written.gameCount,
+                numGamesKnown: true,
+                lastModified: Date.now(),
+            },
+        };
     } else {
         const headers = request.headers;
         const suggestedName = getDefaultGameFilename(headers) || "Game";
         const defaultPath = await resolve(dir, `${suggestedName}.pgn`);
         const userChoice = await save({
             defaultPath,
-            filters: [
-                {
-                    name: "PGN",
-                    extensions: ["pgn"],
-                },
-            ],
+            filters: [{ name: "PGN", extensions: ["pgn"] }],
         });
-        if (userChoice === null) {
-            return false;
-        }
-        if (/\.pgn$/i.test(userChoice)) {
-            filePath = userChoice;
-        } else {
-            // on Linux filters for userChoice seemingly don't work
-            // so userChoice can end without 'pgn' extension
-            filePath = userChoice.concat(".pgn");
-        }
-
+        if (userChoice === null) return false;
+        const destination = /\.pgn$/i.test(userChoice) ? userChoice : userChoice.concat(".pgn");
         if (!stillOwnsSource())
             throw new Error(
                 "The original game changed while choosing a file. It has not been saved.",
             );
-
-        if (isTempFile && fileOrigin && !forceSaveAs) {
-            await copyFile(fileOrigin.file.path, filePath);
+        const promoting = isTempFile && fileOrigin && !forceSaveAs;
+        if (promoting && !fileOrigin.sourceIdentity)
+            throw new Error(
+                "Original temporary-game identity is missing. Save a separate copy to preserve your current game.",
+            );
+        const created = await pgnFiles.create(
+            destination,
+            pgn,
+            metadata,
+            promoting
+                ? {
+                      file: fileOrigin.file.path,
+                      index: fileOrigin.gameNumber,
+                      identity: fileOrigin.sourceIdentity!,
+                  }
+                : null,
+        );
+        filePath = created.file;
+        if (promoting) {
             const sourceCoachPath = getAiCoachSidecarPath(fileOrigin.file.path);
-            if (await exists(sourceCoachPath)) {
-                await copyFile(sourceCoachPath, getAiCoachSidecarPath(filePath));
+            const destinationCoachPath = getAiCoachSidecarPath(filePath);
+            if ((await exists(sourceCoachPath)) && !(await exists(destinationCoachPath))) {
+                try {
+                    await copyFile(sourceCoachPath, destinationCoachPath);
+                } catch {
+                    /* Optional analysis never invalidates a saved PGN. */
+                }
             }
         }
-
-        const numGames = forceSaveAs ? 1 : isTempFile && fileOrigin ? fileOrigin.file.numGames : 1;
-        const gameNumber = forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0);
         nextOrigin = {
             kind: "file",
-            gameNumber,
+            gameNumber: created.index,
+            sourceIdentity: created.identity,
             file: {
                 type: "file",
                 name: filePath,
                 path: filePath,
-                numGames,
+                numGames: created.gameCount,
                 numGamesKnown: true,
-                metadata: fileOrigin?.file.metadata ?? {
-                    tags: [],
-                    type: "game",
-                },
+                metadata: fileOrigin?.file.metadata ?? { tags: [], type: "game" },
                 lastModified: Date.now(),
             },
         };
     }
-    assertWriteSucceeded(
-        await commands.writeGame(filePath, forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0), pgn),
-    );
     if (forceSaveAs && sourceCoachTarget) {
         try {
             const savedReview = await loadPersistedAiCoachReview(sourceCoachTarget);
@@ -487,6 +571,5 @@ async function performSave(request: SaveRequest, queue: SaveQueue): Promise<bool
             // Saving the PGN must still succeed if its optional coach sidecar cannot be copied.
         }
     }
-    await ensureGameInfoSidecar(filePath);
     return complete(nextOrigin);
 }

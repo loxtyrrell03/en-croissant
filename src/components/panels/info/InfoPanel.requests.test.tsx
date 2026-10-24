@@ -10,8 +10,19 @@ import { defaultTree } from "@/utils/treeReducer";
 import type { Tab } from "@/utils/tabs";
 import { GameSelectorAccordion } from "./InfoPanel";
 
-const io = vi.hoisted(() => ({ read: vi.fn(), parse: vi.fn(), toast: vi.fn() }));
-vi.mock("@/bindings", () => ({ commands: { readGames: io.read } }));
+const io = vi.hoisted(() => ({ read: vi.fn(), parse: vi.fn(), toast: vi.fn(), save: vi.fn() }));
+vi.mock("@/utils/tabs", async (original) => ({
+  ...(await original<typeof import("@/utils/tabs")>()),
+  saveToFile: io.save,
+}));
+vi.mock("@/bindings/pgnFiles", () => ({
+  pgnFiles: {
+    read: async (path: string, index: number) => {
+      const value = await io.read(path, index);
+      return { pgn: value.data[0], index, identity: "b".repeat(64), gameCount: 3 };
+    },
+  },
+}));
 vi.mock("@/utils/chess", () => ({ parsePGN: io.parse }));
 vi.mock("@/utils/sound", () => ({ playSound: vi.fn() }));
 vi.mock("@/utils/unwrap", () => ({ unwrap: (result: { data: string[] }) => result.data }));
@@ -28,10 +39,11 @@ vi.mock("@/state/keybinds", () => ({
   keyMapAtom: atom({ NEXT_GAME: { keys: ["x"] }, PREVIOUS_GAME: { keys: ["y"] } }),
 }));
 vi.mock("./GameSelector", () => ({
-  default: ({ setPage }: { setPage: (page: number) => void }) => (
+  default: ({ setPage }: { setPage: (page: number, identity?: string) => void }) => (
     <>
       <button onClick={() => setPage(1)}>Open first</button>
       <button onClick={() => setPage(2)}>Open second</button>
+      <button onClick={() => setPage(1, "stale")}>Open stale row</button>
     </>
   ),
 }));
@@ -69,6 +81,7 @@ async function mount() {
     type: "analysis",
     gameOrigin: {
       kind: "file",
+      sourceIdentity: "a".repeat(64),
       gameNumber: 0,
       file: {
         type: "file",
@@ -156,6 +169,54 @@ it("cannot apply an old file read after its tab has switched sources", async () 
     await act(async () => pending.resolve({ data: ["Old source"] }));
     expect(view.tree.getState().headers.white).toBe("");
     expect(view.atoms.get(currentTabAtom)?.gameOrigin.kind).toBe("none");
+  } finally {
+    await view.dispose();
+  }
+});
+
+it("refuses a list row whose displayed source identity is stale", async () => {
+  io.read.mockResolvedValue({ data: ["New contents"] });
+  const view = await mount();
+  try {
+    await view.click("Open stale row");
+    expect(view.tree.getState().headers.white).toBe("");
+    expect(view.atoms.get(currentTabAtom)?.gameOrigin).toMatchObject({ gameNumber: 0 });
+    expect(io.toast).toHaveBeenCalledWith(
+      expect.objectContaining({ message: expect.stringContaining("game changed") }),
+    );
+  } finally {
+    await view.dispose();
+  }
+});
+
+it("Save and Open follows the identity established by its own completed save", async () => {
+  io.read.mockResolvedValue({ data: ["Next game"] });
+  const view = await mount();
+  io.save.mockImplementation(
+    async ({ target, store }: Parameters<typeof import("@/utils/tabs").saveToFile>[0]) => {
+      target.update((tab) =>
+        tab.gameOrigin.kind === "file"
+          ? { ...tab, gameOrigin: { ...tab.gameOrigin, sourceIdentity: "saved-source" } }
+          : tab,
+      );
+      store.getState().save();
+      return true;
+    },
+  );
+  try {
+    await act(async () => view.tree.getState().setComment("Save me before switching"));
+    await view.click("Open first");
+    expect(io.read).not.toHaveBeenCalled();
+    await act(async () =>
+      [...document.querySelectorAll("button")]
+        .find((button) => button.textContent === "Save and Open Game")!
+        .click(),
+    );
+    expect(view.tree.getState().headers.white).toBe("Next game");
+    expect(view.atoms.get(currentTabAtom)?.gameOrigin).toMatchObject({
+      gameNumber: 1,
+      sourceIdentity: "b".repeat(64),
+    });
   } finally {
     await view.dispose();
   }

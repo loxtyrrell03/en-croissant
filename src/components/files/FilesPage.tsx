@@ -1,3 +1,4 @@
+import type { PgnGameListEntry } from "@/utils/pgnGameList";
 import {
   ActionIcon,
   Center,
@@ -288,7 +289,7 @@ function FilesPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Entry | null>(null);
   const [renameTarget, setRenameTarget] = useState<Entry | null>(null);
-  const [games, setGames] = useState<Map<number, string>>(new Map());
+  const [games, setGames] = useState<Map<number, PgnGameListEntry>>(new Map());
   const [filter, setFilter] = useState<FileType | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 

@@ -1,18 +1,17 @@
 import { Result } from "@badrap/result";
 import { resolve } from "@tauri-apps/api/path";
-import { exists, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists } from "@tauri-apps/plugin-fs";
 import { warn } from "@tauri-apps/plugin-log";
 import { platform } from "@tauri-apps/plugin-os";
 import { defaultGame, makePgn } from "chessops/pgn";
 import { getDefaultStore } from "jotai";
 import useSWR from "swr";
-import { commands } from "@/bindings";
+import { pgnFiles } from "@/bindings/pgnFiles";
 import type { FileMetadata, PgnFileType } from "@/components/files/file";
 import { addRecentFileAtom, tabFamily } from "@/state/atoms";
-import { unwrap } from "@/utils/unwrap";
 import { parsePGN } from "./chess";
 import { hydrateOnlinePgnClocks } from "./onlinePgnClocks";
-import { createTab, isInTempDir, type Tab } from "./tabs";
+import { createTab, isInTempDir, normalizeSourcePgn, type Tab } from "./tabs";
 import { getGameName, type TreeState } from "./treeReducer";
 
 export function usePlatform() {
@@ -29,23 +28,21 @@ export async function openFile(
     options?: {
         gameNumber?: number;
         pgn?: string;
+        expectedIdentity?: string;
     },
 ) {
     const store = getDefaultStore();
     const gameNumber = options?.gameNumber ?? 0;
     let fileInfo: FileMetadata;
     let isTempOrigin = false;
-    let pgn = options?.pgn;
+    let pgn: string;
     let tabName = "Untitled";
     let recentName = "Untitled";
     let initialState: TreeState | undefined;
 
-    async function hydrateFilePgn(filePath: string, gameIndex: number, rawPgn: string) {
+    async function hydrateFilePgn(rawPgn: string) {
         try {
             const hydrated = await hydrateOnlinePgnClocks(rawPgn);
-            if (hydrated !== rawPgn) {
-                await commands.writeGame(filePath, gameIndex, hydrated);
-            }
             return hydrated;
         } catch (error) {
             warn(`Could not hydrate online PGN clocks: ${error}`);
@@ -53,15 +50,23 @@ export async function openFile(
         }
     }
 
+    const path = typeof file === "string" ? file : file.path;
+    const captured = await pgnFiles.read(path, gameNumber);
+    if (
+        (options?.expectedIdentity && captured.identity !== options.expectedIdentity) ||
+        (options?.pgn !== undefined &&
+            normalizeSourcePgn(options.pgn) !== normalizeSourcePgn(captured.pgn))
+    )
+        throw new Error(
+            "The PGN changed while opening it. Refresh the game list and open it again.",
+        );
+    pgn = await hydrateFilePgn(captured.pgn);
+    initialState = await parsePGN(pgn);
+    if (pgn !== captured.pgn) initialState.dirty = true;
+
     if (typeof file === "string") {
-        const count = unwrap(await commands.countPgnGames(file));
+        const count = captured.gameCount;
         isTempOrigin = await isInTempDir(file);
-        if (pgn === undefined) {
-            pgn = unwrap(await commands.readGames(file, gameNumber, gameNumber))[0];
-        }
-        if (pgn) {
-            pgn = await hydrateFilePgn(file, gameNumber, pgn);
-        }
 
         fileInfo = {
             type: "file" as const,
@@ -77,7 +82,6 @@ export async function openFile(
         };
 
         if (pgn) {
-            initialState = await parsePGN(pgn);
             tabName = getGameName(initialState.headers);
             recentName = tabName;
         } else {
@@ -85,22 +89,13 @@ export async function openFile(
             recentName = file;
         }
     } else {
-        const count =
-            file.numGamesKnown === false
-                ? unwrap(await commands.countPgnGames(file.path))
-                : file.numGames;
+        const count = captured.gameCount;
         fileInfo = {
             ...file,
             numGames: count,
             numGamesKnown: true,
         };
         isTempOrigin = await isInTempDir(file.path);
-        if (pgn === undefined) {
-            pgn = unwrap(await commands.readGames(file.path, gameNumber, gameNumber))[0];
-        }
-        if (pgn) {
-            pgn = await hydrateFilePgn(file.path, gameNumber, pgn);
-        }
         tabName = file.name || "Untitled";
         recentName = tabName;
     }
@@ -118,6 +113,7 @@ export async function openFile(
             kind: isTempOrigin ? "temp_file" : "file",
             file: fileInfo,
             gameNumber,
+            sourceIdentity: captured.identity,
         },
     });
 
@@ -155,15 +151,22 @@ export async function createFile({
         type: filetype,
         tags: [],
     };
-    await writeTextFile(file, pgn || makePgn(defaultGame()));
-    await writeTextFile(file.replace(".pgn", ".info"), JSON.stringify(metadata));
-    const numGames = unwrap(await commands.countPgnGames(file));
+    const created = await pgnFiles.create(
+        file,
+        pgn || makePgn(defaultGame()),
+        JSON.stringify(metadata),
+    );
+    const actualName =
+        created.file
+            .split(/[\\/]/)
+            .at(-1)
+            ?.replace(/\.pgn$/i, "") ?? filename;
     return Result.ok({
         type: "file",
-        name: filename,
-        path: file,
+        name: actualName,
+        path: created.file,
         extension: "pgn",
-        numGames,
+        numGames: created.gameCount,
         numGamesKnown: true,
         metadata,
         lastModified: new Date().getUTCSeconds(),
