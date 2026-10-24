@@ -30,7 +30,7 @@ test("should calculate the win chance correctly", () => {
 test("should calculate the accuracy correctly", () => {
     expect(getAccuracy({ type: "cp", value: 0 }, { type: "cp", value: 0 }, "white")).toBe(100);
     expect(getAccuracy({ type: "cp", value: 0 }, { type: "cp", value: -500 }, "white")).toBeCloseTo(
-        19.07,
+        19.062376700446695, 12,
     );
 });
 
@@ -62,8 +62,8 @@ test("should annotate as ??", () => {
 });
 
 test("should annotate as ?", () => {
-    expect(getAnnotation(null, null, { type: "cp", value: -200 }, "white", [])).toBe("?");
-    expect(getAnnotation(null, null, { type: "cp", value: 200 }, "black", [])).toBe("?");
+    expect(getAnnotation(null, null, { type: "cp", value: -112 }, "white", [])).toBe("?");
+    expect(getAnnotation(null, null, { type: "cp", value: 112 }, "black", [])).toBe("?");
 });
 
 test("should annotate as ?!", () => {

@@ -2,16 +2,16 @@ import type { Chess, Color } from "chessops";
 import type { ScoreValue } from "@/bindings";
 import { positionFromFen } from "@/utils/chessops";
 import { getGamePhases, type GamePhases } from "@/utils/phase";
+import { gameAnalysisEvidence } from "./gameAnalysisEvidence";
 import {
     getCPLoss,
     getLichessGameAccuracy,
     getLichessJudgement,
     getWinningChances,
-    INITIAL_SCORE,
     scoreValueToCentipawns,
     type LichessJudgement,
 } from "@/utils/score";
-import { type GameHeaders, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
+import { type GameHeaders, type TreeNode } from "@/utils/treeReducer";
 
 export type GameAnalysisSideStats = {
     name: string;
@@ -51,17 +51,17 @@ export function buildGameAnalysisReport(root: TreeNode, headers: GameHeaders): G
     };
     const centipawns: (number | null)[] = [];
     const chart: GameAnalysisChartPoint[] = [];
-    const mainline = [...treeIteratorMainLine(root)].slice(1);
+    const { entries: mainline, initialScore, startColor, scores } = gameAnalysisEvidence(root);
     const boards = mainline
         .map((entry) => positionFromFen(entry.node.fen)[0])
         .filter((board): board is Chess => board !== null);
 
-    let prevScore: ScoreValue | null = INITIAL_SCORE.value;
+    let prevScore: ScoreValue | null = initialScore;
 
     for (const [index, entry] of mainline.entries()) {
         const node = entry.node;
-        const color: Color = node.halfMoves % 2 === 1 ? "white" : "black";
-        const score = node.score?.value ?? null;
+        const color: Color = index % 2 === 0 ? startColor : startColor === "white" ? "black" : "white";
+        const score = scores[index];
         const cp = score ? scoreValueToCentipawns(score) : null;
         centipawns.push(cp);
 
@@ -82,7 +82,8 @@ export function buildGameAnalysisReport(root: TreeNode, headers: GameHeaders): G
                 }`.trim(),
                 path: entry.position,
                 y: getWinningChances(cp),
-                scoreText: formatCentipawns(cp),
+                scoreText: score.type === "mate" ? positionFromFen(node.fen)[0]?.isCheckmate()
+                    ? `${score.value > 0 ? "White" : "Black"} mates` : `${score.value > 0 ? "+" : "-"}M${Math.abs(score.value)}` : formatCentipawns(cp),
                 judgement: prevScore ? getLichessJudgement(prevScore, score, color) : null,
             });
         }
@@ -90,8 +91,8 @@ export function buildGameAnalysisReport(root: TreeNode, headers: GameHeaders): G
         prevScore = score;
     }
 
-    const startColor: Color = root.halfMoves % 2 === 0 ? "white" : "black";
-    const accuracy = getLichessGameAccuracy(centipawns, startColor);
+    const accuracy = getLichessGameAccuracy(centipawns, startColor,
+        initialScore ? scoreValueToCentipawns(initialScore) : null);
 
     return {
         white: {
@@ -122,16 +123,12 @@ export function buildGameAnalysisReport(root: TreeNode, headers: GameHeaders): G
 
 export function hasCompleteGameAnalysis(root: TreeNode): boolean {
     if (root.children.length === 0) return false;
-    const mainline = [...treeIteratorMainLine(root)].slice(1);
-    if (mainline.length < 2) return false;
-
-    const startColor: Color = root.halfMoves % 2 === 0 ? "white" : "black";
+    const { scores, initialScore, startColor } = gameAnalysisEvidence(root);
     return (
         getLichessGameAccuracy(
-            mainline.map((entry) =>
-                entry.node.score ? scoreValueToCentipawns(entry.node.score.value) : null,
-            ),
+            scores.map(score => score ? scoreValueToCentipawns(score) : null),
             startColor,
+            initialScore ? scoreValueToCentipawns(initialScore) : null,
         ) !== null
     );
 }
@@ -147,7 +144,6 @@ function displayPlayerName(value: string | null | undefined): string {
 }
 
 function formatCentipawns(cp: number): string {
-    if (Math.abs(cp) >= 1000) return cp > 0 ? "+M" : "-M";
     if (cp === 0) return "0.00";
     return `${cp > 0 ? "+" : ""}${(cp / 100).toFixed(2)}`;
 }

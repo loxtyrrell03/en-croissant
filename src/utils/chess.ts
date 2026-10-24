@@ -8,13 +8,12 @@ import { commands, type Outcome, type Score, type Token } from "@/bindings";
 import { ANNOTATION_INFO, isBasicAnnotation, NAG_INFO } from "./annotation";
 import { BoundedMap } from "./boundedCache";
 import { parseSanOrUci, positionFromFen } from "./chessops";
-import { harmonicMean, isPrefix, mean } from "./misc";
+import { isPrefix } from "./misc";
+import { gameAnalysisEvidence } from "./gameAnalysisEvidence";
 import {
     formatScore,
-    getAccuracy,
     getCPLoss,
     getLichessGameAccuracy,
-    INITIAL_SCORE,
     scoreValueToCentipawns,
 } from "./score";
 import {
@@ -625,55 +624,48 @@ export function getGameStats(root: TreeNode) {
 
     if (root.children.length === 0) {
         return {
-            whiteCPL: 0,
-            blackCPL: 0,
-            whiteAccuracy: 0,
-            blackAccuracy: 0,
+            whiteCPL: null,
+            blackCPL: null,
+            whiteAccuracy: null,
+            blackAccuracy: null,
             whiteAnnotations,
             blackAnnotations,
         };
     }
 
-    let prevScore: Score = root.score ?? INITIAL_SCORE;
+    const { entries, initialScore, startColor, scores } = gameAnalysisEvidence(root);
+    let prevScore = initialScore;
     const centipawns: (number | null)[] = [];
     const cplosses: ColorMap<number[]> = {
         white: [],
         black: [],
     };
-    const accuracies: ColorMap<number[]> = {
-        white: [],
-        black: [],
-    };
-    let node = root;
-    while (node.children.length > 0) {
-        node = node.children[0];
+    for (const [index, { node }] of entries.entries()) {
+        const color = index % 2 === 0 ? startColor : startColor === "white" ? "black" : "white";
         for (const annotation of node.annotations) {
             if (isBasicAnnotation(annotation)) {
-                if (node.halfMoves % 2 === 1) {
+                if (color === "white") {
                     whiteAnnotations[annotation]++;
                 } else {
                     blackAnnotations[annotation]++;
                 }
             }
         }
-        const color = node.halfMoves % 2 === 1 ? "white" : "black";
-        if (node.score) {
-            centipawns.push(scoreValueToCentipawns(node.score.value));
-            cplosses[color].push(getCPLoss(prevScore.value, node.score.value, color));
-            accuracies[color].push(getAccuracy(prevScore.value, node.score.value, color));
-            prevScore = node.score;
-        } else {
-            centipawns.push(null);
-        }
+        const score = scores[index];
+        centipawns.push(score ? scoreValueToCentipawns(score) : null);
+        if (score && prevScore) cplosses[color].push(getCPLoss(prevScore, score, color));
+        prevScore = score;
     }
-    const whiteCPL = mean(cplosses.white);
-    const blackCPL = mean(cplosses.black);
+    const averageLoss = (values: number[]) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+    const whiteCPL = averageLoss(cplosses.white);
+    const blackCPL = averageLoss(cplosses.black);
     const lichessAccuracy = getLichessGameAccuracy(
         centipawns,
-        root.halfMoves % 2 === 0 ? "white" : "black",
+        startColor,
+        initialScore ? scoreValueToCentipawns(initialScore) : null,
     );
-    const whiteAccuracy = lichessAccuracy?.white ?? harmonicMean(accuracies.white);
-    const blackAccuracy = lichessAccuracy?.black ?? harmonicMean(accuracies.black);
+    const whiteAccuracy = lichessAccuracy?.white ?? null;
+    const blackAccuracy = lichessAccuracy?.black ?? null;
 
     return {
         whiteCPL,
