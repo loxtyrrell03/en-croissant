@@ -34,6 +34,12 @@ installed-native interaction remain separate. Browser control currently reports
 disabled in Work settings. The phone already uses its root-owned durable
 workspace writer and has no native multi-tab close path to copy.
 
+Clean delivery source `6549365d` independently passes the same 41 checks, full
+TypeScript, 20-file lint with zero warnings/errors and the production Vite build
+(21.77 seconds). All twenty owned source/test files match primary after line
+ending normalization. No native executable or hosted app was published for this
+frontend foundation.
+
 The underlying native PGN writer still needs source fingerprint checks, fresh
 offsets and atomic replacement. Cross-tab/external file changes can therefore
 still conflict. The virtual game-list header cache and deletion/index-shift

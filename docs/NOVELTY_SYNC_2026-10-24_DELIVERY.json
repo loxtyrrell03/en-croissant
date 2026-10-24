@@ -224,5 +224,22 @@
     "responsiveVisualVerified": false,
     "published": false,
     "reason": "Browser control disabled; source/component checks pass, rendered phone checks pending"
+  },
+  "pendingNativeTabSaves": {
+    "primarySourceCommit": "e56fa47ae8cdc4cd5bd4c5e5c50382735a05edbf",
+    "cleanSourceCommit": "6549365d53d832bb5976ba6a2a36b147d888746c",
+    "checks": {
+      "tests": 41,
+      "files": 10,
+      "types": true,
+      "scopedLintWarnings": 0,
+      "scopedLintErrors": 0,
+      "productionBuildSeconds": 21.77
+    },
+    "nativeIoMocked": true,
+    "browserVerified": false,
+    "nativeBinaryRebuilt": false,
+    "phonePublished": false,
+    "remaining": "Native fingerprint/offset/atomic file protections, cross-tab conflicts, virtual header cache/deletion identity and automatic Clear tabs"
   }
 }
