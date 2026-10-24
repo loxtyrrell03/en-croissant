@@ -32,15 +32,16 @@ For a source-bound game, each edit legally replays its complete root/path before
 finding or creating the exact portable node. Only that node's drawing tags are
 replaced. Notes, glyphs, clocks, evaluations, timestamps, other nodes and side
 lines survive. Root diagrams and unplayed custom/Black-to-move FENs round-trip.
-Prep/draft drawings stay in their own workspace. Ordinary phone board taps and
+Prep/draft drawings stay in their own workspace. Creating Prep from a board
+carries its actual starting FEN, root drawings and marked branch history. Ordinary phone board taps and
 play retain saved marks; removal is explicit. Desktop's existing erase-on-click
 preference is unchanged by this phone slice.
 
-Fourteen new checks cover ownership/portable persistence and actual WebApp plus
+Fifteen new checks cover ownership/portable persistence and actual WebApp plus
 Chessground rendering/handlers. The latter uses controlled JSDOM geometry and
 fixture-only synthetic input permission; production keeps Chessground's trusted
 event check. Related phone annotation/parser/report/storage checks bring the
-selected suite to 84 tests across eight files. One old Strength fixture expected
+selected suite to 85 tests across eight files. One old Strength fixture expected
 the obsolete label Engine best; the same failure was reproduced on clean HEAD
 and its assertion now matches the existing Local eval best provenance wording.
 That expectation repair changes no scoring behavior.
@@ -49,5 +50,8 @@ Types and scoped lint pass; WebApp retains its 25 baseline warnings. Clean
 build confirmation is recorded separately. Browser control remains disabled in
 Work settings, so 320/390px, large-text and real touch/focus layout verification
 and runtime delivery are pending. JSDOM SVG/interaction checks are not physical
-phone or browser screenshot proof. The live phone remains at its earlier
-verified release until the delivery receipt changes.
+phone or browser screenshot proof. A fresh HTTPS read observes the concurrent tournament publication from
+`dfc21831` (see `TOURNAMENT_PREDICTION_HISTORY.md`). It includes the earlier
+Analysis source, but excludes this new drawings slice. Its Analysis rendering
+has not been verified by this audit. Delivery identities are recorded separately
+in `NOVELTY_SYNC_2026-10-24_DELIVERY.json`.

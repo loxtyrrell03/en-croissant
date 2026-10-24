@@ -145,6 +145,22 @@ export function savedPhoneDrawings(state: WebCompanionState) {
     return phoneDrawingsFromComments(portable?.comments);
 }
 
+/** Carry the real root and its annotations when the board becomes a Prep. */
+export function phonePrepAnnotationContext(state: WebCompanionState) {
+    const seat = phoneDrawingSeat(state);
+    const workspace = seat.prep ?? state.board;
+    return {
+        startFen: seat.startFen,
+        rootShapes: savedPhoneDrawings({ ...state, board: { ...state.board, cursor: 0 } }),
+        drawings: Object.fromEntries(
+            Object.entries(workspace.drawings ?? {}).map(([node, shapes]) => [
+                node,
+                normalizePhoneDrawings(shapes),
+            ]),
+        ),
+    };
+}
+
 export function annotatePhoneDrawings(
     state: WebCompanionState,
     expectedOwner: string,

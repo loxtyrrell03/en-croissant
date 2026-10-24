@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { createEmptyWebState } from "../storage";
 import { createWebStateSession } from "../webStateSession";
 import { parsePgnDatabase, webGameToLine, webGameToRootLines } from "../pgn";
-import { annotatePhoneDrawings, annotatePhoneMove, savedPhoneDrawings } from "../phoneAnnotations";
+import {
+    annotatePhoneDrawings,
+    annotatePhoneMove,
+    phonePrepAnnotationContext,
+    savedPhoneDrawings,
+} from "../phoneAnnotations";
 import { normalizePhoneDrawings, phoneDrawingSeat, togglePhoneDrawing } from "../phoneDrawings";
 import type { WebCompanionState, WebDrawing } from "../model";
 
@@ -186,6 +191,37 @@ describe("phone saved-node drawing ownership", () => {
         expect(parsePgnDatabase("Reload", game(state).pgn).games[0].rootShapes).toEqual([circle]);
     });
 
+    it("carries a custom starting root and its marks into a new independent Prep", () => {
+        const startFen = "7k/8/8/8/8/8/8/K7 b - - 11 37";
+        let state = fixture(`[SetUp "1"]\n[FEN "${startFen}"]\n{[%csl Gh8]} *`);
+        state.board.startFen = startFen;
+        state = draw(at(state, 0), [circle]);
+        const sourcePgn = game(state).pgn;
+        const context = phonePrepAnnotationContext(state);
+        expect(context.startFen).toBe(startFen);
+        expect(context.rootShapes).toEqual([circle]);
+        expect(context.drawings).not.toBe(state.board.drawings);
+        const prep = {
+            ...context,
+            id: "custom-prep",
+            name: "Custom",
+            opponent: "Opponent",
+            userColor: "black" as const,
+            sourceIds: [],
+            line: state.board.line,
+            notesByFen: {},
+            preparedMoves: {},
+            createdAt: 1,
+            updatedAt: 1,
+        };
+        const selected = { ...state, activePrepId: prep.id, prepWorkspaces: [prep] };
+        expect(savedPhoneDrawings(selected)).toEqual([circle]);
+        const edited = draw(selected, [arrow]);
+        expect(savedPhoneDrawings(edited)).toEqual([arrow]);
+        expect(savedPhoneDrawings({ ...edited, activePrepId: null })).toEqual([circle]);
+        expect(game(edited).pgn).toBe(sourcePgn);
+    });
+
     it("keeps drawing edits through a failed workspace commit and retries the newest evidence", async () => {
         let failing = true;
         const session = createWebStateSession({
@@ -194,6 +230,7 @@ describe("phone saved-node drawing ownership", () => {
                 if (failing) throw new Error("Storage full");
             },
         });
+
         await session.load();
         session.setState((state) => draw(state, [circle]));
         await expect(session.flush()).rejects.toThrow("Storage full");
