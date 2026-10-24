@@ -24,7 +24,6 @@ function ReportPanel() {
 
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
-  const headers = useStore(store, (s) => s.headers);
 
   const [reportingMode, toggleReportingMode] = useToggle();
 
@@ -65,7 +64,7 @@ function ReportPanel() {
           setInProgress={setInProgress}
         />
 
-        {stats.whiteAccuracy > 0 && stats.blackAccuracy > 0 && (
+        {(stats.whiteAccuracy !== null || stats.blackAccuracy !== null) && (
           <Group grow>
             <AccuracyCard
               color={t("Common.WHITE")}
@@ -162,7 +161,7 @@ const GameStats = memo(
   },
 );
 
-function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; accuracy: number }) {
+function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number | null; accuracy: number | null }) {
   const { t } = useTranslation();
 
   return (
@@ -170,11 +169,11 @@ function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number; ac
       <Group justify="space-between">
         <Stack gap={0} align="start">
           <Text c="dimmed">{color}</Text>
-          <Text fz="sm">{cpl.toFixed(1)} ACPL</Text>
+          <Text fz="sm">{cpl === null ? "—" : cpl.toFixed(1)} ACPL</Text>
         </Stack>
         <Stack gap={0} align="center">
           <Text fz="xl" lh="normal">
-            {accuracy.toFixed(1)}%
+            {accuracy === null ? "—" : `${accuracy.toFixed(1)}%`}
           </Text>
           <Text fz="sm" c="dimmed" lh="normal">
             {t("Board.Analysis.Accuracy")}

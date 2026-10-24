@@ -25,16 +25,16 @@ committing unrelated work.
 
 | Improvement | Desktop | Phone | Verification / delivery |
 | --- | --- | --- | --- |
-| Strict online PGN dates, Novelty `33978469` | Incremental database cursor rejects impossible calendar dates; unknown time retains the valid UTC day | Online PGN imports use the same validator for ordering and filtering | 28 focused tests, whole-project TypeScript, scoped lint. Source committed; binary/runtime delivery pending |
+| Strict online PGN dates, Novelty `33978469` | Incremental database cursor rejects impossible calendar dates; unknown time retains the valid UTC day | Online PGN imports use the same validator for ordering and filtering | 28 focused tests, whole-project TypeScript, scoped lint. First batch: phone deployed, desktop executable rebuilt |
 
 The date fix preserves completion-header precedence, valid leap days and ISO
 offsets. It does not rewrite existing databases. Provider-native epoch timestamps
 remain authoritative where already available.
 
-| Shared performance inference, cancellable workers, rated/unrated filters and short/custom periods | Reconciled native Account Stats integration, preserving engine-based analysis | Reconciled Overview and provider bounds, including pre-game rating/provisional uncertainty adapter | 193 focused tests, whole-project TypeScript, production Vite build; source saved, runtime delivery pending |
-| Saved board drawing ownership, Novelty `5f3ea481` | Saved arrows/circles are editable shapes; temporary engine/hover arrows stay in `autoShapes`. Hidden saved plans survive edits. Existing erase-on-click preference is passed to Chessground | Existing phone boards use transient drawings and need a separate saved-mark integration | 11 drawing/PGN/comment tests, project TypeScript. Desktop source saved; native and phone delivery pending |
-| Tournament evidence and manual results | Reconciled strict known/unknown result and availability evidence, valid rounds/targets, published assignments, private manual-result projection, serialized writes and shared native snapshot assembly | Same shared Tracker, Prep and service contract; publishing must retain October phone handoff changes | 316 frontend tests; 84 native core/CLI tests pass, 3 opt-in checks ignored. Full TypeScript and main Vite build pass. Installed/hosted delivery pending |
-| Exact FIDE identity, ambiguity and retry | Reconciled keyboard-accessible board/Game info entry points, PGN FIDE-ID precedence, explicit match selection, aborted/stale request guards and retryable profile opening | Existing shared request-lifetime and identity helpers retain the same identity/failure contract | 25 utility/actual React component tests, project TypeScript and scoped lint. Desktop source saved; binary delivery pending |
+| Shared performance inference, cancellable workers, rated/unrated filters and short/custom periods | Reconciled native Account Stats integration, preserving engine-based analysis | Reconciled Overview and provider bounds, including pre-game rating/provisional uncertainty adapter | 193 focused tests, whole-project TypeScript, production Vite build; First batch: phone deployed, desktop executable rebuilt |
+| Saved board drawing ownership, Novelty `5f3ea481` | Saved arrows/circles are editable shapes; temporary engine/hover arrows stay in `autoShapes`. Hidden saved plans survive edits. Existing erase-on-click preference is passed to Chessground | Existing phone boards use transient drawings and need a separate saved-mark integration | 11 drawing/PGN/comment tests, project TypeScript. Desktop executable rebuilt; phone saved-mark integration remains pending |
+| Tournament evidence and manual results | Reconciled strict known/unknown result and availability evidence, valid rounds/targets, published assignments, private manual-result projection, serialized writes and shared native snapshot assembly | Same shared Tracker, Prep and service contract; publishing must retain October phone handoff changes | 316 frontend tests; 84 native core/CLI tests pass, 3 opt-in checks ignored. Full TypeScript and main Vite build pass. First batch: phone helpers deployed, desktop executable rebuilt |
+| Exact FIDE identity, ambiguity and retry | Reconciled keyboard-accessible board/Game info entry points, PGN FIDE-ID precedence, explicit match selection, aborted/stale request guards and retryable profile opening | Existing shared request-lifetime and identity helpers retain the same identity/failure contract | 25 utility/actual React component tests, project TypeScript and scoped lint. Desktop executable rebuilt; native interaction unperformed |
 
 ## Integration inventory in progress
 
@@ -43,9 +43,8 @@ The existing sparse phone delivery checkout now merges primary source through
 were resolved to the verified October estimator, workers and range transport;
 October phone opponent-picker, orientation, direct-link and installed-root
 handoff changes are retained. No new checkout, dependency tree or corpus copy was
-created. The clean combined source passes 548 focused tests, an additional
-69 phone storage/import/Prep tests, 62 service/build/controller tests (one optional
-engine check skipped), full TypeScript and the complete frontend/worker build.
+created. The clean combined source passes 548 focused tests, 69 phone storage/import/Prep tests, 62 service/build/controller tests (one optional
+engine check skipped); these focused suites overlap, full TypeScript and the complete frontend/worker build.
 The existing shared review runtime was regenerated from committed source;
 uncommitted checking-ray research in primary remains excluded.
 
@@ -54,7 +53,7 @@ activation when Windows PowerShell could not resolve `Get-FileHash`. The shared
 streaming .NET SHA-256 helper now removes that command dependency for manifest
 and native-helper verification. The publish-guard suite passes, including the
 standard `abc` digest with module auto-loading disabled; no ancestry, clean-source
-or integrity check was removed. Delivery status remains pending the retry.
+or integrity check was removed. The guarded retry succeeded as source `8ff91aaa`.
 
 | Area | Initial finding | Next verification |
 | --- | --- | --- |
@@ -69,3 +68,55 @@ or integrity check was removed. Delivery status remains pending the retry.
 This is an active audit ledger, not a claim of complete feature or deployment
 parity. Installed desktop, served phone and physical-device evidence must be
 recorded separately as work progresses.
+
+## First phone delivery
+
+Source `8ff91aaac8bb1c4cea21a35fc285368601781d1c` is live at
+`https://lox-pc.tail89d19b.ts.net/`. Canonical HTTPS health and app-version
+source/hash agree; the publisher verified native settings RPC and both rebuilt
+helper hashes. Chrome renders the connected Board and Ready service status,
+and Stats exposes Last day, Last 3 days, Custom duration/unit and Apply before
+loading an account. This is desktop-browser delivery proof, not physical-phone
+verification. The desktop release executable was rebuilt separately from the same product source; embedded worker/FIDE/root-style asset identities match the build. Native-window interaction was not performed.
+
+The remaining source differences are tracked in
+`NOVELTY_SYNC_GAPS_2026-10-24.md`; the all-branch candidate inventory is
+`NOVELTY_SYNC_2026-10-24_INVENTORY.json`. The goal remains active.
+
+## Main source and desktop artifact
+
+The first-batch product source is also merged into the main development branch,
+retaining newer phone code. Pre-existing edits in overlapping guidance/package/
+generated-runtime files were saved exactly and reapplied separately; the tactical
+research source, native export work, generated bindings and other unfinished
+changes remain outside the delivery commits. The Dev App shortcut continues to
+use its existing primary-source launcher and was not changed or launched.
+
+The standalone native artifact at `src-tauri/target/release/en-croissant-fork.exe`
+contains 51,106,816 bytes; SHA-256
+`4b6499ae43479b076a6532addd4fe8fbadf3c8368249bca6043021f156b83f9d`.
+A verified pre-build rollback copy is retained under the ignored task directory.
+This proves build/linkage and file replacement, not native-window interaction.
+Canonical HTTPS library manifest and workspace reads and a native tournament
+settings RPC also pass; the full Serve configuration is byte-identical to its
+pre-publication snapshot. See the compact delivery JSON.
+
+## Engine Plans source port
+
+The native chessops implementation now validates legal/unique root evidence,
+retains actual source ranks, uses depth 17 for fresh preferences, and displays
+all first-five root choices with their own exact scores. Quiet rook/queen moves,
+competitive alternative pawn breaks, castling and short minor-piece routes keep
+their exact preparation/arrival snapshot. Different origins and preparation
+routes cannot manufacture recurrence. Immediate/medium/long horizons filter
+each occurrence before grouping and use cached lines without an engine restart.
+
+Later ideas display a labelled conditional score from the highest-ranked
+supporting root PV, with accessible help explaining its source and White
+perspective. That value never enters independent plan/setup strength arithmetic.
+En Croissant's existing setup mining remains intact. Sixty-six focused
+plan/presentation/strength checks, full types, scoped lint and frontend build pass.
+Actual changed Mantine components were checked in Chrome at 390px, including
+bounded help, dismissal and horizon selection, using an invented fixture.
+This is source/component evidence; the standalone desktop binary still contains
+the preceding batch. Phone Engine Plans capability remains a separate gap.

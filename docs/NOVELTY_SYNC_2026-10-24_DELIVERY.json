@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "status": "first-batch-delivered",
+  "goalComplete": false,
+  "phone": {
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "schemaVersion": 1,
+    "releaseId": "8ff91aaac8bb-96154a421e0d",
+    "sourceCommit": "8ff91aaac8bb1c4cea21a35fc285368601781d1c",
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "builtAt": "2026-10-24T13:53:34.7953272Z",
+    "appShellSha256": "96154a421e0dcd93a57b5c56037093d8ee1ee7413d16e32662aa4444abdc1a00",
+    "verified": [
+      "matching canonical HTTPS health/version metadata",
+      "library manifest GET",
+      "workspace GET",
+      "native tournament settings RPC",
+      "Chrome connected Board/Ready",
+      "Stats short/custom controls"
+    ],
+    "physicalPhoneVerified": false
+  },
+  "desktop": {
+    "exeBytes": 51106816,
+    "exeSha256": "4b6499ae43479b076a6532addd4fe8fbadf3c8368249bca6043021f156b83f9d",
+    "assets": [
+      {
+        "asset": "assets/truePerformance.worker-CZuRYx7W.js",
+        "embedded": true,
+        "sha256": "d1e7d65fbbb85ee0d90e165a51c999fd457849f8d0e6350386fd5c6600de3c8f"
+      },
+      {
+        "asset": "assets/FideInfo-BJjQzwi2.js",
+        "embedded": true,
+        "sha256": "9ebf04e84d89abff318bc221367bbae2643c3ad505c0f7951c57037faf94358a"
+      },
+      {
+        "asset": "assets/FideInfo-C_-BftdK.js",
+        "embedded": true,
+        "sha256": "3b9e8a408612679e10565c7d1c04fc3efe07ff14b5cffc89b9959d9150f6ba02"
+      },
+      {
+        "asset": "assets/WebApp-DEkUMNea.js",
+        "embedded": true,
+        "sha256": "a636742d6f972f089974d6744d7d2bc22e1b07b42b551b4127800a232a8f846c"
+      },
+      {
+        "asset": "assets/App-DXJraGpt.css",
+        "embedded": true,
+        "sha256": "30bbcd1dd6958610aba1e3bc38b76db0aaf2b9665ff38ef3108c30cd923bc7cf"
+      }
+    ],
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "nativeWindowVerified": false,
+    "devShortcutChanged": false,
+    "rollback": "task-owned ignored rollback directory"
+  },
+  "checks": {
+    "combinedFrontend": {
+      "passed": 548,
+      "files": 66
+    },
+    "phonePersistenceImportPrep": {
+      "passed": 69,
+      "files": 7
+    },
+    "serviceControllerBuild": {
+      "passed": 62,
+      "skipped": 1
+    },
+    "nativeCoreAndCli": {
+      "passed": 84,
+      "ignored": 3
+    },
+    "suiteCountsMayOverlap": true,
+    "types": "passed",
+    "frontendAndWorkersBuild": "passed",
+    "publishGuard": "passed including known digest without module auto-loading"
+  },
+  "tailscaleServeUnchanged": true,
+  "remainingWork": "NOVELTY_SYNC_GAPS_2026-10-24.md"
+}

@@ -94,3 +94,54 @@ test("search keeps focus and selection across the phone keyboard viewport resize
   expect(select).toHaveBeenCalledExactlyOnceWith("alex");
   expect(document.querySelector('input[aria-label="Search databases"]')).toBeNull();
 });
+
+test("refreshing an open list preserves its search and selection until an item is chosen", async () => {
+  let finish!: () => void;
+  const request = new Promise<void>(resolve => { finish = resolve; });
+  const refresh = vi.fn();
+  function Harness() {
+    const [items, setItems] = useState([{ value: "old", label: "Old source" }]);
+    return <MantineProvider env="test"><DatabaseFolderSelect label="Source" value="old" onChange={select}
+      data={[{ group: "Desktop", items }]}
+      onRefresh={async () => { refresh(); await request; setItems([...items, { value: "new", label: "New source" }]); }} /></MantineProvider>;
+  }
+  await act(async () => root.render(<Harness />));
+  await act(async () => container.querySelector("button")!.click());
+  expect(refresh).toHaveBeenCalledTimes(1);
+  expect(document.querySelector('[role="status"]')?.textContent).toContain("Refreshing");
+  const search = document.querySelector<HTMLInputElement>('input[aria-label="Search databases"]')!;
+  await act(async () => { search.focus(); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(search, "New"); search.dispatchEvent(new Event("input", { bubbles: true })); });
+  await act(async () => finish());
+  expect(document.activeElement).toBe(search); expect(search.value).toBe("New");
+  expect(container.querySelector("button")?.textContent).toContain("Old source");
+  expect(select).not.toHaveBeenCalled();
+  const result = [...document.querySelectorAll("button")].find(button => button.textContent?.includes("New source"))!;
+  await act(async () => result.click());
+  expect(select).toHaveBeenCalledExactlyOnceWith("new");
+});
+
+test("a failed refresh retains existing choices and offers a working retry", async () => {
+  const refresh = vi.fn().mockRejectedValueOnce(new Error("PC offline")).mockResolvedValue(undefined);
+  await act(async () => root.render(<MantineProvider env="test"><DatabaseFolderSelect value="old" onChange={select}
+    data={[{ group: "Unfiled", items: [{ value: "old", label: "Old source" }] }]} onRefresh={refresh} /></MantineProvider>));
+  await act(async () => container.querySelector("button")!.click());
+  expect(document.querySelector('[role="alert"]')?.textContent).toContain("PC offline");
+  expect(container.querySelector("button")?.textContent).toContain("Old source");
+  expect(select).not.toHaveBeenCalled();
+  await act(async () => [...document.querySelectorAll("button")].find(button => button.textContent === "Retry refresh")!.click());
+  expect(refresh).toHaveBeenCalledTimes(2); expect(document.querySelector('[role="alert"]')).toBeNull();
+});
+
+test("closing cancels the picker-owned refresh and an obsolete failure cannot replace a reopened list", async () => {
+  let fail!: (error: Error) => void;
+  const refresh = vi.fn().mockImplementationOnce(() => new Promise((_, reject) => { fail = reject; })).mockResolvedValue(undefined);
+  await act(async () => root.render(<MantineProvider env="test"><DatabaseFolderSelect value="old" onChange={select}
+    data={[{ group: "Unfiled", items: [{ value: "old", label: "Old source" }] }]} onRefresh={refresh} /></MantineProvider>));
+  await act(async () => container.querySelector("button")!.click());
+  const signal = refresh.mock.calls[0][0] as AbortSignal;
+  await act(async () => container.querySelector("button")!.click());
+  expect(signal.aborted).toBe(true);
+  await act(async () => container.querySelector("button")!.click());
+  await act(async () => fail(new Error("Old failure")));
+  expect(document.querySelector('[role="alert"]')).toBeNull(); expect(select).not.toHaveBeenCalled();
+});

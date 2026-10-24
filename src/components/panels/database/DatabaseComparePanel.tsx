@@ -20,7 +20,7 @@ import useSWR from "swr/immutable";
 import equal from "fast-deep-equal";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
-import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
+import DatabaseFolderSelect from "@/components/common/LiveDatabaseFolderSelect";
 import {
   comparePanelSettingsByFileAtom,
   type ComparePanelFileSettings,

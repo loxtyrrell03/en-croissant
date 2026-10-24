@@ -28,6 +28,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type CSSProperties,
@@ -44,10 +45,11 @@ type DatabaseFolderSelectGroup = {
   items: DatabaseFolderSelectItem[];
 };
 
-type DatabaseFolderSelectProps = {
+export type DatabaseFolderSelectProps = {
   data: DatabaseFolderSelectGroup[];
   value: string | null;
   onChange: (value: string | null) => void;
+  onRefresh?: (signal: AbortSignal) => Promise<unknown> | void;
   placeholder?: string;
   size?: MantineSize;
   disabled?: boolean;
@@ -236,6 +238,7 @@ export default function DatabaseFolderSelect({
   data,
   value,
   onChange,
+  onRefresh,
   placeholder = "Select database",
   size = "sm",
   disabled = false,
@@ -253,6 +256,24 @@ export default function DatabaseFolderSelect({
   const [opened, setOpened] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const refreshGeneration = useRef(0);
+  const refreshController = useRef<AbortController | null>(null);
+  useEffect(() => () => { refreshGeneration.current++; refreshController.current?.abort(); }, []);
+  const refreshSources = async () => {
+    if (!onRefresh) return;
+    const generation = ++refreshGeneration.current;
+    refreshController.current?.abort();
+    const controller = new AbortController(); refreshController.current = controller;
+    setRefreshing(true); setRefreshError(null);
+    try { await onRefresh(controller.signal); }
+    catch (error) {
+      if (generation === refreshGeneration.current) setRefreshError(error instanceof Error ? error.message : "The source list could not be refreshed.");
+    } finally {
+      if (generation === refreshGeneration.current) setRefreshing(false);
+    }
+  };
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   useEffect(() => {
     if (!opened) return;
@@ -309,8 +330,13 @@ export default function DatabaseFolderSelect({
     setActiveGroup(null);
     setQuery("");
     setOpened(true);
+    void refreshSources();
   };
   const closePicker = () => {
+    refreshGeneration.current++;
+    refreshController.current?.abort();
+    setRefreshing(false);
+    setRefreshError(null);
     setActiveGroup(null);
     setQuery("");
     setOpened(false);
@@ -595,6 +621,8 @@ export default function DatabaseFolderSelect({
         maw="min(420px, calc(100vw - 16px))"
       >
         <Stack gap={6}>
+          {refreshing && <Group gap={6}><Loader size="xs" /><Text size="xs" c="dimmed" role="status">Refreshing sources…</Text></Group>}
+          {refreshError && <Stack gap={4}><Text size="xs" c="red" role="alert">{refreshError}{allItems.length ? " Existing sources are still available." : " Try refreshing again."}</Text><Button size="compact-xs" variant="subtle" onClick={() => void refreshSources()}>Retry refresh</Button></Stack>}
           {showSearch ? (
             <TextInput
               aria-label="Search databases"

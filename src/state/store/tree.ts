@@ -789,15 +789,15 @@ function addAnalysis(
             let prevprevScore = null;
             let prevMoves: BestMoves[] = [];
             if (i > 0) {
-                prevScore = analysis[i - 1].best[0].score;
+                prevScore = analysis[i - 1].best[0]?.score ?? null;
                 prevMoves = analysis[i - 1].best;
             }
             if (i > 1) {
-                prevprevScore = analysis[i - 2].best[0].score;
+                prevprevScore = analysis[i - 2].best[0]?.score ?? null;
             }
             const curScore = analysis[i].best[0].score;
             const color = cur.halfMoves % 2 === 1 ? "white" : "black";
-            const annotation = getAnnotation(
+            const annotation = i > 0 && prevScore ? getAnnotation(
                 prevprevScore?.value || null,
                 prevScore?.value || null,
                 curScore.value,
@@ -805,7 +805,7 @@ function addAnalysis(
                 prevMoves,
                 analysis[i].is_sacrifice,
                 cur.san || "",
-            );
+            ) : "";
             if (annotation) {
                 cur.annotations = [...cur.annotations, annotation];
 

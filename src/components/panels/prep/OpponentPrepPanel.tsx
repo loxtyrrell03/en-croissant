@@ -59,7 +59,7 @@ import dayjs from "dayjs";
 import { commands, type NormalizedGame } from "@/bindings";
 import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
-import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
+import DatabaseFolderSelect from "@/components/common/LiveDatabaseFolderSelect";
 import {
   activeTabAtom,
   currentBoardPreviewShapesAtom,

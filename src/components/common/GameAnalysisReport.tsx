@@ -1,5 +1,5 @@
-import { Box, Divider, Group, LoadingOverlay, Stack, Text, Tooltip } from "@mantine/core";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { Box, Divider, Group, LoadingOverlay, Stack, Text } from "@mantine/core";
+import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import equal from "fast-deep-equal";
 import type React from "react";
 import { useContext, useMemo } from "react";
@@ -156,9 +156,7 @@ function PlayerStats({ color, stats }: { color: "white" | "black"; stats: GameAn
           <Text span size="xs" className={classes.statLabel}>
             Accuracy
           </Text>
-          <Tooltip label="Lichess-style game accuracy: a blend of volatility-weighted mean and harmonic mean over move accuracies.">
-            <IconInfoCircle size={13} className={classes.infoIcon} />
-          </Tooltip>
+          <TournamentHelp label="Game accuracy">Accuracy combines each move's loss of winning chances with game volatility. It requires complete adjacent evaluations and the actual starting score for custom positions.</TournamentHelp>
         </Group>
       </Stack>
     </Group>

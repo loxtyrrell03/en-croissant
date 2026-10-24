@@ -1029,6 +1029,7 @@ function OpeningReviewSettingsModal({
           />
           <DatabaseFolderSelect
             label="My online games database"
+            onRefresh={async (signal) => { const next = (await getDatabases()).filter((db): db is SuccessDatabaseInfo => db.type === "success"); if (!signal.aborted) setDatabases(next); }}
             data={databaseOptions}
             value={playerDb}
             onChange={(value) => {
@@ -1059,6 +1060,7 @@ function OpeningReviewSettingsModal({
           />
           <DatabaseFolderSelect
             label="Strong-games source"
+            onRefresh={async (signal) => { const next = (await getDatabases()).filter((db): db is SuccessDatabaseInfo => db.type === "success"); if (!signal.aborted) setDatabases(next); }}
             data={referenceOptions}
             value={referenceDb}
             onChange={setReferenceDb}
@@ -1642,6 +1644,7 @@ function MistakeReviewScanModal({
           </Text>
           <DatabaseFolderSelect
             label="Games database"
+            onRefresh={async (signal) => { const next = (await getDatabases()).filter((db): db is SuccessDatabaseInfo => db.type === "success"); if (!signal.aborted) setDatabases(next); }}
             data={databaseOptions}
             value={database}
             onChange={setDatabase}

@@ -90,7 +90,7 @@ describe("Engine Plan Explorer", () => {
             BREAK_FEN,
             [
                 pv(1, ["g1f3", "g8f6", "e2e4", "b8d7", "d2d4", "d7c5"], 30),
-                pv(2, ["g1f3", "b8d7", "e2e4", "g8f6", "d2d4", "c7c5"], 10),
+                pv(2, ["b1c3", "b8d7", "g1f3", "g8f6", "e2e4", "c7c5", "d2d4"], 10),
                 pv(3, ["c2c4", "g8f6", "b1c3", "e7e5"], 0),
             ],
             {
@@ -124,7 +124,8 @@ describe("Engine Plan Explorer", () => {
         const singleMoveKnightDestination = report.plans.find(
             (plan) => plan.signature === "piece_destination:white:knight:f3",
         );
-        expect(singleMoveKnightDestination?.supportCount).toBe(2);
+        expect(singleMoveKnightDestination?.supportCount).toBe(1);
+        expect(singleMoveKnightDestination?.conditionalSupportCount).toBe(1);
         expect(singleMoveKnightDestination?.label).toBe("White knight reaches f3");
         expect(
             report.plans.find((plan) => plan.signature === "piece_route:white:Ng1-f3"),
@@ -230,9 +231,9 @@ describe("Engine Plan Explorer", () => {
                 pv(
                     2,
                     [
-                        "d2d4",
-                        "g8f6",
                         "g1f3",
+                        "g8f6",
+                        "d2d4",
                         "g7g6",
                         "c1f4",
                         "f8g7",
@@ -243,7 +244,7 @@ describe("Engine Plan Explorer", () => {
                     ],
                     20,
                 ),
-                pv(3, ["d2d4", "d7d5", "c1f4", "g8f6", "e2e3", "e7e6"], 0),
+                pv(3, ["c2c4", "d7d5", "d2d4", "g8f6", "c1f4", "e7e6"], 0),
             ],
             {
                 requestedMultipv: 3,
@@ -287,7 +288,7 @@ describe("Engine Plan Explorer", () => {
             QUEENS_GAMBIT_NF3_FEN,
             [
                 pv(1, ["g2g3", "f8e7", "f1g2", "e8g8", "e1g1", "c7c6"], 34),
-                pv(2, ["g2g3", "d5c4", "f1g2", "f8e7", "e1g1", "e8g8"], 24),
+                pv(2, ["b1d2", "d5c4", "g2g3", "f8e7", "f1g2", "e8g8", "e1g1"], 24),
                 pv(3, ["b1c3", "f8e7", "c1g5", "e8g8", "e2e3", "c7c6"], 8),
             ],
             {
@@ -316,9 +317,9 @@ describe("Engine Plan Explorer", () => {
         expect(catalan?.appearsInTopPv).toBe(true);
         expect(catalan?.weightedEvalCp).toBeNull();
         // d4/c4/Nf3 are already on the board and are ignored as completion
-        // evidence. The PV moves g3 (0), Bg2 (2) and O-O (4) drive completion,
-        // so both PVs finish the setup at ply 4.
-        expect(catalan?.medianCompletionPly).toBe(4);
+        // evidence. The independent move orders finish the setup at indices
+        // 4 and 6; their median completion is 5, not a fabricated shared time.
+        expect(catalan?.medianCompletionPly).toBe(5);
         expect(
             catalan?.plans.some(
                 (plan) =>
@@ -511,7 +512,9 @@ describe("Engine Plan Explorer", () => {
         const kingside = report.plans.find((plan) => plan.signature === "castling:black:kingside");
         expect(kingside?.category).toBe("castling");
         expect(kingside?.label).toBe("Black castles kingside");
-        expect(kingside?.supportCount).toBe(2);
+        expect(kingside?.supportCount).toBe(1);
+        expect(report.totalPvs).toBe(2);
+        expect(report.pvs.map(line => line.rank)).toEqual([1, 3]);
         expect(kingside?.routeSquares).toEqual(["e8", "g8"]);
 
         const queenside = report.plans.find(
@@ -608,7 +611,7 @@ describe("Engine Plan Explorer", () => {
             BREAK_FEN,
             [
                 pv(1, ["g1f3", "g8f6", "e2e4"], 30),
-                pv(2, ["g1f3", "g8f6", "e2e4"], 20),
+                pv(2, ["b1c3", "g8f6", "e2e4"], 20),
                 pv(3, ["c2c4", "g8f6"], 0),
             ],
             {
@@ -642,7 +645,7 @@ describe("Engine Plan Explorer", () => {
             AFTER_D4_D5_FEN,
             [
                 pv(1, ["g2g3", "g8f6", "f1g2"], 30),
-                pv(2, ["g2g3", "e7e6", "f1g2"], 20),
+                pv(2, ["g1f3", "g8f6", "g2g3", "e7e6", "f1g2"], 20),
                 pv(3, ["c2c4", "g8f6"], 0),
             ],
             {
@@ -739,9 +742,9 @@ describe("Engine Plan Explorer", () => {
                 pv(
                     2,
                     [
-                        "d2d4",
-                        "d7d5",
                         "e2e3",
+                        "d7d5",
+                        "d2d4",
                         "g8f6",
                         "f2f4",
                         "e7e6",
@@ -853,7 +856,8 @@ describe("Engine Plan Explorer", () => {
             supportCount: 2,
             appearsInTopPv: false,
         });
-        expect(report.displayPlans).toContain(f6);
+        expect(report.displayPlans.find(plan => plan.signature === `${f6!.signature}:from:g8`))
+            .toMatchObject({ routeSquares: ["g8", "f6"], supportCount: 2, appearsInTopPv: false });
     });
 
     test("keeps heavy-piece routes internally without presenting tactical paths as plans", () => {

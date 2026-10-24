@@ -33,6 +33,7 @@ import {
 } from "@/utils/databaseArchive";
 import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines";
 import type { EnginePlanReport } from "@/utils/enginePlanExplorer";
+import type { PlanHorizon } from "@/utils/planHorizon";
 import { DEFAULT_MOVE_STRENGTH_SETTINGS, type MoveStrengthSettings } from "@/utils/moveStrength";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import type { OnlineGameSource } from "@/utils/onlineGameSource";
@@ -327,13 +328,14 @@ export const enginePlanLimitModeAtom = atomWithStorage<"depth" | "time">(
     "engine-plan-limit-mode",
     "depth",
 );
-export const enginePlanDepthAtom = atomWithStorage<number>("engine-plan-depth", 12);
+export const enginePlanDepthAtom = atomWithStorage<number>("engine-plan-depth", 17);
 export const enginePlanTimeMsAtom = atomWithStorage<number>("engine-plan-time-ms", 2000);
 export const enginePlanSideFilterAtom = atomWithStorage<"all" | "white" | "black">(
     "engine-plan-side-filter",
     "all",
 );
 export const enginePlanViewAtom = atomWithStorage<"plans" | "setups">("engine-plan-view", "plans");
+export const enginePlanHorizonAtom = atomWithStorage<PlanHorizon>("engine-plan-horizon", "all");
 export const eraseDrawablesOnClickAtom = atomWithStorage<boolean>(
     "erase-drawables-on-click",
     false,
