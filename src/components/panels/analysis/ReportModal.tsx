@@ -1,34 +1,26 @@
-import { Button, Checkbox, Group, Modal, NumberInput, Select, Stack } from "@mantine/core";
+import { Button, Checkbox, Group, Modal, Select, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useAtom, useAtomValue } from "jotai";
-import { atomWithStorage } from "jotai/utils";
-import { memo, useContext, useEffect, useMemo } from "react";
+import { memo, useContext, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
-import { commands, type GoMode } from "@/bindings";
+import { commands } from "@/bindings";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { enginesAtom, referenceDbAtom } from "@/state/atoms";
 import type { LocalEngine } from "@/utils/engines";
-
-const reportSettingsAtom = atomWithStorage("report-settings", {
-  novelty: true,
-  reversed: true,
-  variations: true,
-  goMode: { t: "Time", c: 500 } as Exclude<GoMode, { t: "Infinite" }>,
-  engine: "",
-});
+import { reportSettingsAtom } from "@/state/gameAnalysisSettings";
+import { nativeGameReportLimits, validGameReportLimit } from "@/utils/gameAnalysisSettings";
+import { beginGameReport } from "@/utils/gameReportOwnership";
+import GameAnalysisLimitControls from "./GameAnalysisLimitControls";
+import { getMainLine } from "@/utils/chess";
 
 function ReportModal({
   tab,
-  initialFen,
-  moves,
   reportingMode,
   toggleReportingMode,
   setInProgress,
 }: {
   tab: string;
-  initialFen: string;
-  moves: string[];
   reportingMode: boolean;
   toggleReportingMode: () => void;
   setInProgress: (value: boolean) => void;
@@ -49,6 +41,7 @@ function ReportModal({
   const form = useForm({
     initialValues: reportSettings,
     validate: {
+      goMode: (value) => (validGameReportLimit(value) ? null : "Choose valid analysis limits."),
       engine: (value) => {
         if (!value) return t("Board.Analysis.EngineRequired");
       },
@@ -58,49 +51,91 @@ function ReportModal({
     },
   });
 
+  const setFormValues = form.setValues;
+  const setFormField = form.setFieldValue;
+  const selectedEngine = form.values.engine;
+  const hydrated = useRef(false);
   useEffect(() => {
+    if (!reportingMode) {
+      hydrated.current = false;
+      return;
+    }
+    const preferredEngine = hydrated.current
+      ? selectedEngine || reportSettings.engine
+      : reportSettings.engine;
     const engine =
       localEngines.length === 0
         ? ""
-        : !reportSettings.engine || !localEngines.some((l) => l.id === reportSettings.engine)
+        : !preferredEngine || !localEngines.some((l) => l.id === preferredEngine)
           ? localEngines[0].id
-          : reportSettings.engine;
+          : preferredEngine;
 
-    form.setValues({ ...reportSettings, engine });
-  }, [localEngines, reportSettings]);
+    if (!hydrated.current) {
+      setFormValues({ ...reportSettings, engine });
+      hydrated.current = true;
+    } else if (engine !== selectedEngine) setFormField("engine", engine);
+  }, [localEngines, reportSettings, reportingMode, selectedEngine, setFormField, setFormValues]);
 
-  function analyze() {
-    setReportSettings(form.values);
+  async function analyze() {
+    const settings = form.values;
+    const limits = nativeGameReportLimits(settings.goMode);
+    const engine = localEngines.find((e) => e.id === settings.engine);
+    if (!engine) {
+      form.setFieldError("engine", t("Board.Analysis.EngineRequired"));
+      return;
+    }
+    const id = `report_${tab}`;
+    const snapshot = store.getState().root;
+    let owner: ReturnType<typeof beginGameReport>;
+    try {
+      owner = beginGameReport(store, () => {
+        store.getState().setReportError("The game changed. Run analysis again for this line.");
+        void commands.cancelAnalysis(id).catch(() => {});
+      });
+    } catch (error) {
+      store.getState().setReportError(error instanceof Error ? error.message : String(error));
+      toggleReportingMode();
+      return;
+    }
+    store.getState().setReportError(null);
+    setReportSettings(settings);
     setInProgress(true);
     toggleReportingMode();
-    const engine = localEngines.find((e) => e.id === form.values.engine);
-    const engineSettings = (engine?.settings ?? []).map((s) => ({
+    const engineSettings = (engine.settings ?? []).map((s) => ({
       ...s,
       value: s.value?.toString() ?? "",
     }));
 
-    commands
-      .analyzeGame(
-        `report_${tab}`,
-        engine?.path ?? "",
-        form.values.goMode,
+    try {
+      const analysis = await commands.analyzeGame(
+        id,
+        engine.path,
+        limits.goMode,
         {
-          annotateNovelties: form.values.novelty,
-          fen: initialFen,
+          annotateNovelties: settings.novelty,
+          fen: snapshot.fen,
           referenceDb,
-          reversed: form.values.reversed,
-          moves,
+          reversed: settings.reversed,
+          moves: getMainLine(snapshot),
+          searchLimits: limits.searchLimits,
         },
         engineSettings,
-      )
-      .then((analysis) => {
-        if (analysis.status === "ok") {
-          addAnalysis(analysis.data, {
-            showVariations: form.values.variations,
-          });
-        }
-      })
-      .finally(() => setInProgress(false));
+      );
+      if (!owner.isOwner() || !owner.hasSameGame()) return;
+      if (analysis.status === "ok") {
+        addAnalysis(analysis.data, {
+          showVariations: settings.variations,
+        });
+      } else if (!/cancel/i.test(analysis.error)) {
+        store.getState().setReportError(analysis.error);
+      }
+    } catch (error) {
+      if (owner.isOwner() && owner.hasSameGame())
+        store.getState().setReportError(error instanceof Error ? error.message : String(error));
+    } finally {
+      if (owner.isOwner()) setInProgress(false);
+      owner.finish();
+    }
   }
 
   return (
@@ -126,36 +161,11 @@ function ReportModal({
             }
             {...form.getInputProps("engine")}
           />
-          <Group wrap="nowrap">
-            <Select
-              allowDeselect={false}
-              comboboxProps={{
-                position: "bottom",
-                middlewares: { flip: false, shift: false },
-              }}
-              data={[
-                { label: t("GoMode.Depth"), value: "Depth" },
-                { label: t("Board.Analysis.Time"), value: "Time" },
-                { label: t("GoMode.Nodes"), value: "Nodes" },
-              ]}
-              value={form.values.goMode.t}
-              onChange={(v) => {
-                const newGo = form.values.goMode;
-                newGo.t = v as "Depth" | "Time" | "Nodes";
-                form.setFieldValue("goMode", newGo);
-              }}
-            />
-            <NumberInput
-              min={1}
-              value={form.values.goMode.c as number}
-              onChange={(v) =>
-                form.setFieldValue("goMode", {
-                  ...(form.values.goMode as any),
-                  c: (v || 1) as number,
-                })
-              }
-            />
-          </Group>
+          <GameAnalysisLimitControls
+            value={form.values.goMode}
+            onChange={(value) => form.setFieldValue("goMode", value)}
+            error={form.errors.goMode}
+          />
 
           <Checkbox
             label={t("Board.Analysis.Reversed")}

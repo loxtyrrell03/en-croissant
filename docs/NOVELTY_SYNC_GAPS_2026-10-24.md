@@ -12,7 +12,7 @@ the history inventory, not counted as separate missing features.
 
 | Novelty improvement | Source evidence | En Croissant follow-up |
 | --- | --- | --- |
-| Fast game-analysis presets and combined depth/time bounds | `b6089855`; Low 8/50ms, Medium 16/250ms, High 22/1s, custom limits | Native `ReportModal` still sends one Depth/Time/Nodes `GoMode`; evaluate native runner and phone batch analysis separately before porting bounds |
+| Fast game-analysis presets and combined depth/time bounds | `b6089855`; Low 8/50ms, Medium 16/250ms, High 22/1s, custom limits | Native optional bounds/exact selected-move recovery and both desktop actions are now implemented. Fresh Medium and saved finite legacy modes, cancellation/ownership and responsive controls pass protocol/component/type/build checks. Saved run-limit metadata, actual whole-game Stockfish acceptance, phone transport/control integration and runtime delivery remain; see `GAME_ANALYSIS_LIMITS.md` |
 | Exact game-accuracy math and custom starts | `a923445e`, `docs/GAME_ACCURACY.md` | Native score/report paths now use exact constants, the harmonic floor, actual custom starts, complete adjacent evidence and legal terminal/repetition history; 45 focused checks pass and the standalone artifact is rebuilt. Phone `statsStrength.ts` is separately calibrated: its constants/exclusions are preserved; a canonical phone report metric still needs target integration |
 | Engine Plans default depth 17 | `ff7e42db` / `a212c9e1` | Native source and rebuilt standalone artifact now use 17 for fresh preferences/empty input; explicit saved choices remain. Phone does not expose this separate desktop panel |
 | Legal, unique PV evidence and continuation coverage | `35e19846` | Native chessops implementation now retains real ranks, legal/unique roots, exact continuation snapshots, competitive alternative ideas, cached horizons and conditional scores. All 66 plan/presentation/strength checks pass; changed controls verified at 390px and the new module is embedded in the rebuilt artifact. Phone has no separate Engine Plans surface; equivalent phone capability needs design/target evaluation |
@@ -28,6 +28,7 @@ the history inventory, not counted as separate missing features.
 | Automatic meaningful-tab save before Clear tabs | Current Novelty `clearTabs.ts` / `ClearTabsButton` | Audit En tab closing/source binding and save failures. Preserve comments, variations, marks and nonstandard starts and keep tabs open when saving fails |
 | Preview annotations, variations and starting-position notes | `ef05c032`, current annotation editor | Evaluate En native preview renderer and phone PGN parsing/navigation; preserve existing full game trees rather than flattening them |
 | Startup engine score coalescing and stable evaluation display | `58741060`, earlier retarget fixes | Compare En's existing engine lifecycle, saved score and board overlay ownership before porting the state machine |
+| Always-visible Database W/D/L percentages | `de844abd` (new since the first inventory) | Both native `DatabaseWdlBar` and phone `WebWdlBar` still hide labels for small segments. Port the separate label space through their existing Mantine styling, including zero results and missing-data distinction |
 
 ## Already present or deliberately separate
 

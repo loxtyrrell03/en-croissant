@@ -30,6 +30,27 @@ runs the opt-in protocol tests and removes its generated executable/debug file.
 Eleven focused limit/protocol checks pass (13 native checks match the filter,
 including two pre-existing unrelated checks). No full dataset is used.
 
-This first milestone verifies the native API, wire compatibility and protocol.
-Preset controls, shared desktop entry points, saved run limits, phone bounds and
-runtime delivery remain part of the active parity task.
+The desktop form now offers Low/Medium/High/Custom within the existing Mantine
+controls. Fresh reports use Medium; saved depth/time/node-only settings retain
+their units and values. Custom depth/time inputs are independent, and the
+current limits have a visible label. Both desktop report actions share these
+preferences, while the quick action also exposes cancellation during a run.
+Engine-list updates do not overwrite an open form's unsaved limits.
+
+`gameReportOwnership.ts` scopes results to their original store, legal main-line
+identity and request. Changed games cancel once; an old result cannot apply
+evidence or clear a replacement request's progress. Navigation, comments and
+live evaluations do not change game identity. Failed/cancelled searches keep
+prior evidence, and failures offer Retry analysis beside the action. Collected
+scores retain their actual reported depth.
+
+Verification: 48 selected frontend checks include actual modal command wiring,
+legacy settings, failure preservation, changed-game cancellation, ownership and
+accuracy regressions. Whole-project TypeScript, scoped lint and the frontend
+build pass. The real controls were checked in Chrome at 320/390px, with doubled
+text, bounded/dismissible help, Low and custom request wiring. This is isolated
+source/component proof, not a native-window or hosted-phone delivery.
+
+Saved run-limit metadata, actual Stockfish whole-game acceptance, phone bounds
+and runtime delivery remain part of the active parity task. The existing phone
+playing-strength calibration must remain separate from a canonical game report.

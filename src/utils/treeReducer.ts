@@ -199,4 +199,5 @@ export function getTreeStructureHash(node: TreeNode): string {
 
 export interface ReportState {
     inProgress: boolean;
+    error?: string | null;
 }

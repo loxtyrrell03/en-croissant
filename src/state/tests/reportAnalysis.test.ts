@@ -19,6 +19,7 @@ test("analysis never annotates the root as a played move and uses the shared jud
     ]);
     expect(state.getState().root.annotations).toEqual([]);
     expect(state.getState().root.children[0].annotations).toContain("??");
+    expect(state.getState().root.children[0].depth).toBe(17);
 });
 test("an empty earlier engine result remains missing instead of throwing or inventing a loss", () => {
     const state = store();

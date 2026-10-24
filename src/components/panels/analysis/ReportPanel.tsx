@@ -1,4 +1,4 @@
-import { Grid, Group, Paper, ScrollArea, Stack, Text } from "@mantine/core";
+import { Alert, Button, Grid, Group, Paper, ScrollArea, Stack, Text } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { IconZoomCheck } from "@tabler/icons-react";
 import cx from "clsx";
@@ -13,7 +13,7 @@ import ProgressButton from "@/components/common/ProgressButton";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { activeTabAtom } from "@/state/atoms";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
-import { getGameStats, getMainLine } from "@/utils/chess";
+import { getGameStats } from "@/utils/chess";
 import classes from "./AnalysisPanel.module.css";
 import ReportModal from "./ReportModal";
 
@@ -29,6 +29,7 @@ function ReportPanel() {
 
   const inProgress = useStore(store, (s) => s.report.inProgress);
   const setInProgress = useStore(store, (s) => s.setReportInProgress);
+  const reportError = useStore(store, (s) => s.report.error);
 
   const stats = useMemo(() => getGameStats(root), [root]);
 
@@ -40,8 +41,6 @@ function ReportPanel() {
     <ScrollArea offsetScrollbars>
       <ReportModal
         tab={activeTab!}
-        initialFen={root.fen}
-        moves={getMainLine(root)}
         reportingMode={reportingMode}
         toggleReportingMode={toggleReportingMode}
         setInProgress={setInProgress}
@@ -63,6 +62,21 @@ function ReportPanel() {
           inProgress={inProgress}
           setInProgress={setInProgress}
         />
+
+        {reportError && (
+          <Alert color="red" title="Game analysis did not finish">
+            <Text size="sm">{reportError}</Text>
+            <Button
+              mt="xs"
+              size="xs"
+              variant="light"
+              disabled={inProgress}
+              onClick={() => toggleReportingMode()}
+            >
+              Retry analysis
+            </Button>
+          </Alert>
+        )}
 
         {(stats.whiteAccuracy !== null || stats.blackAccuracy !== null) && (
           <Group grow>
@@ -161,7 +175,15 @@ const GameStats = memo(
   },
 );
 
-function AccuracyCard({ color, cpl, accuracy }: { color: string; cpl: number | null; accuracy: number | null }) {
+function AccuracyCard({
+  color,
+  cpl,
+  accuracy,
+}: {
+  color: string;
+  cpl: number | null;
+  accuracy: number | null;
+}) {
   const { t } = useTranslation();
 
   return (

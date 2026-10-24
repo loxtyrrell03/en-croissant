@@ -89,6 +89,7 @@ export interface TreeStoreState extends TreeState {
     ) => void;
 
     setReportInProgress: (value: boolean) => void;
+    setReportError: (value: string | null) => void;
 
     practicePath: number[] | null;
     setPracticePath: (path: number[] | null) => void;
@@ -554,6 +555,10 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
             );
         },
 
+        setReportError: (value) => set(produce((state: Draft<TreeStoreState>) => {
+            state.report.error = value;
+        })),
+
         clearShapes: () =>
             set(
                 produce((state) => {
@@ -785,6 +790,7 @@ function addAnalysis(
         const [pos] = positionFromFen(cur.fen);
         if (pos && !pos.isEnd() && analysis[i].best.length > 0) {
             cur.score = analysis[i].best[0].score;
+            cur.depth = analysis[i].best[0].depth;
             let prevScore = null;
             let prevprevScore = null;
             let prevMoves: BestMoves[] = [];

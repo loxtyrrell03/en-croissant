@@ -1,6 +1,8 @@
 import {
   ActionIcon,
+  Alert,
   Box,
+  Button,
   Divider,
   Group,
   Menu,
@@ -41,7 +43,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { useStoreWithEqualityFn } from "zustand/traditional";
-import { commands, type GoMode } from "@/bindings";
+import { commands } from "@/bindings";
 import Comment from "@/components/common/Comment";
 import GameAnalysisReport from "@/components/common/GameAnalysisReport";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
@@ -60,6 +62,9 @@ import { getMainLine, getPGN } from "@/utils/chess";
 import { hideMoveQualityComments } from "@/utils/commentAnnotations";
 import type { Engine, LocalEngine } from "@/utils/engines";
 import { hasCompleteGameAnalysis } from "@/utils/gameAnalysisReport";
+import { reportSettingsAtom } from "@/state/gameAnalysisSettings";
+import { nativeGameReportLimits } from "@/utils/gameAnalysisSettings";
+import { beginGameReport } from "@/utils/gameReportOwnership";
 import { formatScore } from "@/utils/score";
 import { getTabFile, getTabGameNumber, saveToFile } from "@/utils/tabs";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
@@ -320,8 +325,10 @@ function NotationHeader({
   const addAnalysis = useStore(store, (s) => s.addAnalysis);
   const reportInProgress = useStore(store, (s) => s.report.inProgress);
   const setReportInProgress = useStore(store, (s) => s.setReportInProgress);
+  const reportError = useStore(store, (s) => s.report.error);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const engines = useAtomValue(enginesAtom);
+  const reportSettings = useAtomValue(reportSettingsAtom);
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
   const [invisible, setInvisible] = useAtom(currentInvisibleAtom);
   const [showComments, setShowComments] = useAtom(currentShowCommentsAtom);
@@ -387,18 +394,18 @@ function NotationHeader({
     }
   }
 
-  async function analyzeGame() {
-    if (reportVisible) {
+  async function analyzeGame(force = false) {
+    if (!force && reportVisible) {
       setReportVisible(false);
       return;
     }
 
-    if (hasGameAnalysis) {
+    if (!force && hasCompleteGameAnalysis(store.getState().root)) {
       setReportVisible(true);
       return;
     }
 
-    const engine = selectLocalAnalysisEngine(engines ?? []);
+    const engine = selectLocalAnalysisEngine(engines ?? [], reportSettings.engine);
     if (!engine) {
       notifications.show({
         title: "Choose an analysis engine",
@@ -408,18 +415,28 @@ function NotationHeader({
       return;
     }
 
-    setReportInProgress(true);
+    const id = `report_${currentTab?.value ?? "notation"}`;
+    let owner: ReturnType<typeof beginGameReport> | undefined;
     try {
+      const snapshot = store.getState().root;
+      owner = beginGameReport(store, () => {
+        store.getState().setReportError("The game changed. Run analysis again for this line.");
+        void commands.cancelAnalysis(id).catch(() => {});
+      });
+      store.getState().setReportError(null);
+      setReportInProgress(true);
+      const limits = nativeGameReportLimits(reportSettings.goMode);
       const analysis = await commands.analyzeGame(
-        `report_${currentTab?.value ?? "notation"}`,
+        id,
         engine.path,
-        getReportGoMode(engine),
+        limits.goMode,
         {
           annotateNovelties: false,
-          fen: root.fen,
+          fen: snapshot.fen,
           referenceDb: null,
-          reversed: true,
-          moves: getMainLine(root),
+          reversed: reportSettings.reversed,
+          moves: getMainLine(snapshot),
+          searchLimits: limits.searchLimits,
         },
         (engine.settings ?? []).map((setting) => ({
           name: setting.name,
@@ -427,25 +444,20 @@ function NotationHeader({
         })),
       );
 
+      if (!owner.isOwner() || !owner.hasSameGame()) return;
       if (analysis.status === "ok") {
-        addAnalysis(analysis.data, { showVariations: true });
+        addAnalysis(analysis.data, { showVariations: reportSettings.variations });
         await saveAnalysisIfPersistent();
-        setReportVisible(true);
-      } else {
-        notifications.show({
-          title: "Could not analyze game",
-          message: analysis.error,
-          color: "red",
-        });
+        if (owner.isOwner() && owner.hasSameGame()) setReportVisible(true);
+      } else if (!/cancel/i.test(analysis.error)) {
+        store.getState().setReportError(analysis.error);
       }
     } catch (error) {
-      notifications.show({
-        title: "Could not analyze game",
-        message: error instanceof Error ? error.message : String(error),
-        color: "red",
-      });
+      if (!owner || (owner.isOwner() && owner.hasSameGame()))
+        store.getState().setReportError(error instanceof Error ? error.message : String(error));
     } finally {
-      setReportInProgress(false);
+      if (owner?.isOwner()) setReportInProgress(false);
+      owner?.finish();
     }
   }
 
@@ -473,11 +485,13 @@ function NotationHeader({
   }
 
   const copyPgnLabel = copied ? t("Common.Copied") : `${t("Menu.Edit.Copy") || "Copy"} PGN`;
-  const analyzeLabel = reportVisible
-    ? "Show moves"
-    : hasGameAnalysis
-      ? "Show game report"
-      : "Analyze game with local engine";
+  const analyzeLabel = reportInProgress
+    ? "Cancel game analysis"
+    : reportVisible
+      ? "Show moves"
+      : hasGameAnalysis
+        ? "Show game report"
+        : "Analyze game with local engine";
   const notationDetailsHidden = !evalOpen || !showComments || !showMoveAnnotations;
   const focusNotationLabel = notationDetailsHidden
     ? "Show eval bar and move-quality annotations"
@@ -498,6 +512,20 @@ function NotationHeader({
 
   return (
     <Stack gap={compact ? 2 : "xs"} pt={compact ? 3 : "xs"}>
+      {reportError && (
+        <Alert color="red" title="Game analysis did not finish" mx={compact ? 8 : "sm"}>
+          <Text size="sm">{reportError}</Text>
+          <Button
+            mt="xs"
+            size="xs"
+            variant="light"
+            disabled={reportInProgress}
+            onClick={() => void analyzeGame(true)}
+          >
+            Retry analysis
+          </Button>
+        </Alert>
+      )}
       <Group justify="space-between" px={compact ? 8 : "sm"} gap={compact ? 4 : "sm"}>
         <Box miw={0} style={{ flex: "1 1 11rem" }}>
           <OpeningName compact={compact} />
@@ -528,11 +556,27 @@ function NotationHeader({
             <ActionIcon
               aria-label={analyzeLabel}
               size={actionIconSize}
-              loading={reportInProgress}
-              disabled={root.children.length === 0}
-              onClick={() => void analyzeGame()}
+              color={reportInProgress ? "red" : undefined}
+              disabled={!reportInProgress && root.children.length === 0}
+              onClick={() => {
+                if (reportInProgress)
+                  void commands
+                    .cancelAnalysis(`report_${currentTab?.value ?? "notation"}`)
+                    .catch((error) =>
+                      store
+                        .getState()
+                        .setReportError(error instanceof Error ? error.message : String(error)),
+                    );
+                else void analyzeGame();
+              }}
             >
-              {reportVisible ? <IconList size={iconSize} /> : <IconChartBar size={iconSize} />}
+              {reportInProgress ? (
+                <IconX size={iconSize} />
+              ) : reportVisible ? (
+                <IconList size={iconSize} />
+              ) : (
+                <IconChartBar size={iconSize} />
+              )}
             </ActionIcon>
           </Tooltip>
           <Tooltip label={invisible ? t("Notation.ShowMoves") : t("Notation.HideMoves")}>
@@ -568,17 +612,11 @@ function NotationHeader({
   );
 }
 
-function selectLocalAnalysisEngine(engines: Engine[]): LocalEngine | null {
+function selectLocalAnalysisEngine(engines: Engine[], preferredId: string): LocalEngine | null {
   const loadedLocal = engines.filter(
     (engine): engine is LocalEngine => engine.type === "local" && Boolean(engine.loaded),
   );
-  return loadedLocal[0] ?? null;
-}
-
-function getReportGoMode(engine: LocalEngine): Exclude<GoMode, { t: "Infinite" | "PlayersTime" }> {
-  const go = engine.go;
-  if (go?.t === "Depth" || go?.t === "Time" || go?.t === "Nodes") return go;
-  return { t: "Time", c: 500 };
+  return loadedLocal.find((engine) => engine.id === preferredId) ?? loadedLocal[0] ?? null;
 }
 
 const RenderVariationTree = memo(
