@@ -1,4 +1,5 @@
 import type { DrawBrushes, DrawShape } from "@lichess-org/chessground/draw";
+import { boardDrawings } from "@/utils/boardDrawings";
 import {
   ActionIcon,
   Badge,
@@ -507,7 +508,6 @@ function Board({
   const storeMakeMove = useStore(store, (s) => s.makeMove);
   const setPracticePath = useStore(store, (s) => s.setPracticePath);
   const setHeaders = useStore(store, (s) => s.setHeaders);
-  const clearShapes = useStore(store, (s) => s.clearShapes);
   const setShapes = useStore(store, (s) => s.setShapes);
   const setFen = useStore(store, (s) => s.setFen);
 
@@ -1393,13 +1393,6 @@ function Board({
       nextShapes = nextShapes.concat(boardPreviewShapes.shapes);
     }
 
-    const visibleNodeShapes = planExplorerPreviewLine
-      ? currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush))
-      : currentNode.shapes;
-    if (visibleNodeShapes.length > 0) {
-      nextShapes = nextShapes.concat(visibleNodeShapes);
-    }
-
     if (activeMistakeReviewReveal) {
       const revealShape = uciArrowShape(
         activeMistakeReviewReveal.moveUci,
@@ -1460,7 +1453,6 @@ function Board({
     boardFen,
     boardPreviewShapes,
     currentNode.children,
-    currentNode.shapes,
     currentTab?.gameOrigin.kind,
     currentTabSelected,
     hideMistakeReviewPreAttemptGreenArrows,
@@ -1963,11 +1955,6 @@ function Board({
                 onContextMenu={drawPlanFromContextMenu}
                 onMouseEnter={clearBoardPositionPreview}
                 onPointerDownCapture={clearBoardPositionPreview}
-                onClick={() => {
-                  if (eraseDrawablesOnClick) {
-                    clearShapes();
-                  }
-                }}
                 onMouseMove={previewPlanFromPointer}
                 onMouseLeave={clearPlanHoverPreview}
                 onWheel={(e) => {
@@ -2079,7 +2066,14 @@ function Board({
                     enabled: true,
                     visible: true,
                     defaultSnapToValidMove: snapArrows,
-                    autoShapes: shapes,
+                    ...boardDrawings({
+                      saved: currentNode.shapes,
+                      overlays: shapes,
+                      visible: (shape) => (!planExplorerPreviewLine || !isPlanBrush(shape.brush)) &&
+                        (!hideMistakeReviewPreAttemptGreenArrows || !isGreenBoardArrowShape(shape)),
+                      eraseOnClick: eraseDrawablesOnClick,
+                      save: setShapes,
+                    }),
                     brushes: {
                       variation: {
                         key: "v",
@@ -2130,9 +2124,6 @@ function Board({
                         lineWidth: 10,
                       },
                     } as unknown as DrawBrushes,
-                    onChange: (shapes) => {
-                      setShapes(shapes);
-                    },
                   }}
                 />
                 {currentTabSelected === "tactics" &&
