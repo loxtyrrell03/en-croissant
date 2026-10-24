@@ -56,7 +56,7 @@ function PersonalPlayerCard({
       <Box pos="relative">
         {name !== "Stats" && (
           <MTTooltip label={t("Databases.FIDE.Info")}>
-            <ActionIcon pos="absolute" right={0} onClick={() => setOpened(true)}>
+            <ActionIcon aria-label={t("Databases.FIDE.Info")} pos="absolute" right={0} onClick={() => setOpened(true)}>
               <IconInfoCircle />
             </ActionIcon>
           </MTTooltip>
