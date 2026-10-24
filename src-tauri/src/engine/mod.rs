@@ -1,3 +1,4 @@
+pub(crate) mod live_output;
 mod process;
 mod types;
 mod uci;

@@ -12,6 +12,7 @@ import type { Lc0NetworkProfile, PcEngineKind } from "@/utils/lc0Networks";
 import type { EnginePerformancePreset } from "@/utils/enginePerformance";
 import { validReportSearchLimits, type ReportSearchLimits } from "../../scripts/uci-report-search.mjs";
 import { analyzeBoundedWebReport } from "./reportStockfishEngine";
+import { coalescedUpdates } from "@/utils/coalescedUpdates";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
@@ -465,7 +466,11 @@ async function analyzeWithRemoteStockfish18({
             controller.abort();
         }, 15_000);
     };
-    let lastUpdateAt = 0;
+    const output = coalescedUpdates<WebEngineLine[]>(
+        (lines) => onUpdate?.(lines),
+        () => activeSearchId === searchId && !controller.signal.aborted,
+        STOCKFISH_MIN_UPDATE_INTERVAL_MS,
+    );
     let firstLineTimedOut = false;
     const firstLineGuardMs = engineKind === "lc0" ? 15_000 : REMOTE_STOCKFISH_FIRST_LINE_TIMEOUT_MS;
     let firstLineTimeoutId: number | null = window.setTimeout(() => {
@@ -480,11 +485,10 @@ async function analyzeWithRemoteStockfish18({
     };
 
     const publish = (force = false) => {
-        if (!onUpdate || activeSearchId !== searchId) return;
-        const now = Date.now();
-        if (!force && now - lastUpdateAt < STOCKFISH_MIN_UPDATE_INTERVAL_MS) return;
-        lastUpdateAt = now;
-        onUpdate(sortEngineLines(linesByPv));
+        if (!onUpdate) return;
+        const lines = sortEngineLines(linesByPv);
+        if (force) output.finish(lines);
+        else output.push(lines);
     };
 
     try {
@@ -523,6 +527,7 @@ async function analyzeWithRemoteStockfish18({
         } = { engineKind };
 
         const consumeLine = (rawLine: string) => {
+            if (completed) return;
             const line = rawLine.trim();
             if (!line) return;
             const message = JSON.parse(line) as {
@@ -538,7 +543,11 @@ async function analyzeWithRemoteStockfish18({
                 remoteError = new Error(message.message || "Gaming PC Stockfish failed.");
                 return;
             }
-            if (message.type === "done") { completed = true; return; }
+            if (message.type === "done") {
+                completed = true;
+                if (!remoteError && linesByPv.size > 0) publish(true);
+                return;
+            }
             if (message.type === "meta") {
                 remoteMeta = { ...remoteMeta, ...message };
                 return;
@@ -562,6 +571,10 @@ async function analyzeWithRemoteStockfish18({
             const lines = buffer.split(/\r?\n/);
             buffer = done ? "" : (lines.pop() ?? "");
             for (const line of lines) consumeLine(line);
+            if (completed) {
+                void Promise.resolve().then(() => reader.cancel?.()).catch(() => {});
+                break;
+            }
             if (done) {
                 if (buffer.trim()) consumeLine(buffer);
                 break;
@@ -584,6 +597,7 @@ async function analyzeWithRemoteStockfish18({
         }
         throw error;
     } finally {
+        output.cancel();
         markAnalysisStarted();
         if (stallTimeoutId !== null) window.clearTimeout(stallTimeoutId);
         signal?.removeEventListener("abort", onAbort);
@@ -619,7 +633,6 @@ async function analyzeWithLocalStockfish18({
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
     const requestedDepth = Math.max(1, Math.min(STOCKFISH_MAX_DEPTH, Math.round(depth)));
     const linesByPv = new Map<number, WebEngineLine>();
-    let lastUpdateAt = 0;
 
     await ensureStockfishReady();
     throwIfAborted(signal);
@@ -630,7 +643,13 @@ async function analyzeWithLocalStockfish18({
 
     return await new Promise<WebEngineLine[]>((resolve, reject) => {
         let settled = false;
+        const output = coalescedUpdates<WebEngineLine[]>(
+            (lines) => onUpdate?.(lines),
+            () => !settled && activeSearchId === searchId && !signal?.aborted,
+            STOCKFISH_MIN_UPDATE_INTERVAL_MS,
+        );
         const cleanup = () => {
+            output.cancel();
             settled = true;
             removeStockfishListener(onLine);
             signal?.removeEventListener("abort", onAbort);
@@ -650,11 +669,10 @@ async function analyzeWithLocalStockfish18({
         };
 
         const publish = (force = false) => {
-            if (!onUpdate || activeSearchId !== searchId) return;
-            const now = Date.now();
-            if (!force && now - lastUpdateAt < STOCKFISH_MIN_UPDATE_INTERVAL_MS) return;
-            lastUpdateAt = now;
-            onUpdate(sortEngineLines(linesByPv));
+            if (!onUpdate) return;
+            const lines = sortEngineLines(linesByPv);
+            if (force) output.finish(lines);
+            else output.push(lines);
         };
 
         const onAbort = () => {
@@ -842,7 +860,8 @@ function parseStockfishInfoLine(
     if (!position) return null;
 
     const tokens = line.trim().split(/\s+/);
-    if (requireExactLegalPv && (tokens.includes("lowerbound") || tokens.includes("upperbound"))) return null;
+    // A bound is not an exact evaluation, including during ordinary live analysis.
+    if (tokens.includes("lowerbound") || tokens.includes("upperbound")) return null;
     if (requireExactLegalPv && (!/^\d+$/.test(tokens[tokens.indexOf("depth") + 1] ?? "") ||
         (tokens.includes("multipv") && !/^\d+$/.test(tokens[tokens.indexOf("multipv") + 1] ?? "")))) return null;
     const pvIndex = tokens.indexOf("pv");

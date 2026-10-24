@@ -10,9 +10,7 @@ use std::{
 };
 
 use derivative::Derivative;
-use governor::{Quota, RateLimiter};
 use log::{info, warn};
-use nonzero_ext::*;
 use serde::{Deserialize, Serialize};
 use shakmaty::{
     fen::Fen, san::SanPlus, uci::UciMove, ByColor, CastlingMode, Chess, Color, EnPassantMode,
@@ -38,6 +36,7 @@ use crate::{
         MistakeReviewMoveEvalEntry, PositionQueryJs,
     },
     engine::{
+        live_output::{next_line_or_publication, EngineInput, LiveOutput},
         normalize_uci_search_moves, parse_fen_and_apply_moves, BaseEngine, EngineLog, EngineOption,
         EngineReader, GoMode,
     },
@@ -52,6 +51,7 @@ use crate::{
 
 const MISTAKE_REVIEW_EVAL_CACHE_BATCH_SIZE: usize = 200;
 const ENGINE_IDLE_SHUTDOWN_AFTER: Duration = Duration::from_secs(180);
+const LOCAL_ENGINE_OUTPUT_INTERVAL: Duration = Duration::from_millis(500);
 const KEEP_RUNNING_ON_INACTIVE_ENGINE_TAB_MARKERS: &[&str] = &["opening-health-verify"];
 
 pub struct EngineProcess {
@@ -70,6 +70,7 @@ pub struct EngineProcess {
     // Anything above 1 means output currently read belongs to a superseded search.
     pending_gos: u32,
     restricted_roots: Vec<String>,
+    live_output: LiveOutput<(f64, Vec<BestMoves>)>,
 }
 
 impl EngineProcess {
@@ -93,6 +94,7 @@ impl EngineProcess {
                 start: Instant::now(),
                 pending_gos: 0,
                 restricted_roots: Vec::new(),
+                live_output: LiveOutput::new(LOCAL_ENGINE_OUTPUT_INTERVAL),
             },
             reader,
         ))
@@ -179,6 +181,7 @@ impl EngineProcess {
 
     async fn go_command(&mut self, command: &str) -> Result<(), Error> {
         self.base.send(command).await?;
+        self.live_output.reset();
         self.running = true;
         self.idle_generation = self.idle_generation.wrapping_add(1);
         self.start = Instant::now();
@@ -195,7 +198,7 @@ impl EngineProcess {
 
     /// Whether engine output currently being read belongs to the latest search.
     fn reading_latest_search(&self) -> bool {
-        self.pending_gos <= 1
+        self.pending_gos == 1
     }
 
     fn accepts_root(&self, line: &BestMoves) -> bool {
@@ -207,6 +210,7 @@ impl EngineProcess {
     }
 
     async fn stop(&mut self) -> Result<u64, Error> {
+        self.live_output.cancel_pending();
         if self.running {
             self.base.stop().await?;
         }
@@ -222,6 +226,7 @@ impl EngineProcess {
     }
 
     async fn kill(&mut self) -> Result<(), Error> {
+        self.live_output.cancel_pending();
         self.base.quit().await?;
         self.running = false;
         self.idle_generation = self.idle_generation.wrapping_add(1);
@@ -229,6 +234,7 @@ impl EngineProcess {
     }
 
     pub fn kill_sync(&mut self) {
+        self.live_output.cancel_pending();
         self.base.kill_sync();
     }
 
@@ -273,6 +279,75 @@ impl EngineProcess {
         let complete_lines = self.best_moves.clone();
         self.best_moves.clear();
         Some(complete_lines)
+    }
+
+    fn record_live_info(
+        &mut self,
+        attrs: Vec<UciInfoAttribute>,
+        now: Instant,
+    ) -> Result<(), Error> {
+        if !self.reading_latest_search() {
+            return Ok(());
+        }
+        let best_moves = parse_uci_attrs(attrs, &self.options.fen.parse()?, &self.options.moves)?;
+        if !self.accepts_root(&best_moves)
+            || best_moves.score.lower_bound == Some(true)
+            || best_moves.score.upper_bound == Some(true)
+        {
+            return Ok(());
+        }
+        let depth = best_moves.depth;
+        let nodes = best_moves.nodes;
+        let Some(lines) = self.record_best_moves(best_moves) else {
+            return Ok(());
+        };
+        let progress = match self.go_mode {
+            GoMode::Depth(limit) => (depth as f64 / limit as f64) * 100.0,
+            GoMode::Time(limit) => (self.start.elapsed().as_millis() as f64 / limit as f64) * 100.0,
+            GoMode::Nodes(limit) => (nodes as f64 / limit as f64) * 100.0,
+            GoMode::PlayersTime(_) | GoMode::Infinite => 99.99,
+        };
+        if update_latest_search_snapshot(
+            &mut self.last_depth,
+            &mut self.last_best_moves,
+            &mut self.last_progress,
+            depth,
+            lines,
+            progress,
+        ) && self.running
+        {
+            self.live_output
+                .push((progress, self.last_best_moves.clone()), now);
+        }
+        Ok(())
+    }
+
+    fn take_live_payload(
+        &mut self,
+        id: &str,
+        tab: &str,
+        finished: bool,
+        now: Instant,
+    ) -> Option<BestMovesPayload> {
+        let (progress, best_lines) = if finished {
+            self.live_output
+                .finish((100.0, self.last_best_moves.clone()))
+        } else {
+            if !self.reading_latest_search() || !self.running {
+                self.live_output.cancel_pending();
+                return None;
+            }
+            self.live_output.take_due(now)?
+        };
+        Some(BestMovesPayload {
+            best_lines,
+            progress,
+            engine: id.into(),
+            tab: tab.into(),
+            fen: self.options.fen.clone(),
+            moves: self.options.moves.clone(),
+            search_moves: self.options.search_moves.clone(),
+        })
     }
 }
 
@@ -569,10 +644,10 @@ pub async fn get_best_moves(
         let process = state.engine_processes.get_mut(&key).unwrap();
         let mut process = process.lock().await;
         if options == process.options && go_mode == process.go_mode && process.running {
-            return Ok(Some((
-                process.last_progress,
-                process.last_best_moves.clone(),
-            )));
+            return Ok(process
+                .live_output
+                .published()
+                .map(|(progress, lines)| (*progress as f32, lines.clone())));
         }
         if process.running {
             process.stop().await?;
@@ -593,115 +668,48 @@ pub async fn get_best_moves(
 
     state.engine_processes.insert(key.clone(), process.clone());
 
-    let lim = RateLimiter::direct(Quota::per_second(nonzero!(2u32)));
-
-    while let Some(line) = reader.next_line().await? {
+    loop {
+        let deadline = process.lock().await.live_output.deadline();
+        let input = next_line_or_publication(&mut reader, deadline).await?;
+        let line = match input {
+            EngineInput::Line(Some(line)) => line,
+            EngineInput::Line(None) => break,
+            EngineInput::Publish => {
+                let mut proc = process.lock().await;
+                if let Some(payload) = proc.take_live_payload(&id, &tab, false, Instant::now()) {
+                    payload.emit(&app)?;
+                }
+                continue;
+            }
+        };
         let mut idle_generation = None;
         let mut proc = process.lock().await;
         match parse_one(&line) {
             UciMessage::Info(attrs) => {
-                if !proc.reading_latest_search() {
-                    // Output from a superseded search; parsing it against the new
-                    // position would produce wrong lines.
-                    proc.base.log_engine(&line);
-                    drop(proc);
-                    continue;
-                }
-                match parse_uci_attrs(attrs, &proc.options.fen.parse()?, &proc.options.moves) {
-                    Ok(best_moves) => {
-                        if !proc.accepts_root(&best_moves) {
-                            // An engine which ignores searchmoves must not
-                            // masquerade as an independently checked candidate.
-                            continue;
-                        }
-                        if best_moves.score.lower_bound == Some(true)
-                            || best_moves.score.upper_bound == Some(true)
-                        {
-                            continue;
-                        }
-                        let cur_depth = best_moves.depth;
-                        let cur_nodes = best_moves.nodes;
-                        if let Some(best_lines) = proc.record_best_moves(best_moves) {
-                            if cur_depth >= proc.last_depth {
-                                let progress = match proc.go_mode {
-                                    GoMode::Depth(depth) => {
-                                        (cur_depth as f64 / depth as f64) * 100.0
-                                    }
-                                    GoMode::Time(time) => {
-                                        (proc.start.elapsed().as_millis() as f64 / time as f64)
-                                            * 100.0
-                                    }
-                                    GoMode::Nodes(nodes) => {
-                                        (cur_nodes as f64 / nodes as f64) * 100.0
-                                    }
-                                    GoMode::PlayersTime(_) => 99.99,
-                                    GoMode::Infinite => 99.99,
-                                };
-                                let emitted_best_lines =
-                                    lim.check().is_ok().then(|| best_lines.clone());
-                                let updated = {
-                                    let EngineProcess {
-                                        last_depth,
-                                        last_best_moves,
-                                        last_progress,
-                                        ..
-                                    } = &mut *proc;
-                                    update_latest_search_snapshot(
-                                        last_depth,
-                                        last_best_moves,
-                                        last_progress,
-                                        cur_depth,
-                                        best_lines,
-                                        progress,
-                                    )
-                                };
-                                if !updated {
-                                    continue;
-                                }
-                                if let Some(best_lines) = emitted_best_lines {
-                                    BestMovesPayload {
-                                        best_lines,
-                                        engine: id.clone(),
-                                        tab: tab.clone(),
-                                        fen: proc.options.fen.clone(),
-                                        moves: proc.options.moves.clone(),
-                                        search_moves: proc.options.search_moves.clone(),
-                                        progress,
-                                    }
-                                    .emit(&app)?;
-                                }
-                            }
-                        }
+                if let Err(error) = proc.record_live_info(attrs, Instant::now()) {
+                    if !matches!(error, Error::NoMovesFound) {
+                        warn!("Failed to parse info line: {}, error: {:?}", line, error);
                     }
-                    Err(e) => match e {
-                        Error::NoMovesFound => {}
-                        _ => {
-                            warn!("Failed to parse info line: {}, error: {:?}", line, e);
-                        }
-                    },
                 }
             }
             UciMessage::BestMove { .. } => {
                 if proc.note_bestmove() {
-                    BestMovesPayload {
-                        best_lines: proc.last_best_moves.clone(),
-                        engine: id.clone(),
-                        tab: tab.clone(),
-                        fen: proc.options.fen.clone(),
-                        moves: proc.options.moves.clone(),
-                        search_moves: proc.options.search_moves.clone(),
-                        progress: 100.0,
+                    if let Some(payload) = proc.take_live_payload(&id, &tab, true, Instant::now()) {
+                        payload.emit(&app)?;
                     }
-                    .emit(&app)?;
                     proc.last_progress = 100.0;
                     idle_generation = Some(proc.mark_finished());
                 }
             }
             _ => {}
         }
+        // Push the newest complete exact batch before publishing at a boundary.
+        // A timer also flushes pending output if the engine subsequently goes quiet.
+        if let Some(payload) = proc.take_live_payload(&id, &tab, false, Instant::now()) {
+            payload.emit(&app)?;
+        }
         proc.base.log_engine(&line);
         drop(proc);
-
         if let Some(generation) = idle_generation {
             schedule_idle_engine_shutdown(&app, key.clone(), generation);
         }
@@ -4138,3 +4146,7 @@ mod low_stockfish_acceptance_tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "engine/live_output_process_tests.rs"]
+mod live_output_process_tests;
