@@ -1,3 +1,4 @@
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import {
   ActionIcon,
   Button,
@@ -162,6 +163,7 @@ function BoardAnalysis() {
   const [tacticalScan, setTacticalScan] = useState<LiveTacticalScan | null>(null);
   const [topBarActionsTarget, setTopBarActionsTarget] = useState<HTMLElement | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const saveTargetFor = useTabSaveTargets();
   const tabFile = getTabFile(currentTab);
   const isReviewOrigin =
     currentTab?.gameOrigin.kind === "opening_review" ||
@@ -186,6 +188,8 @@ function BoardAnalysis() {
   const store = useContext(TreeStateContext)!;
 
   const dirty = useStore(store, (s) => s.dirty);
+  const saveRoot = useStore(store, (s) => s.root);
+  const saveHeaders = useStore(store, (s) => s.headers);
 
   const reset = useStore(store, (s) => s.reset);
   const clearShapes = useStore(store, (s) => s.clearShapes);
@@ -197,34 +201,41 @@ function BoardAnalysis() {
     setTopBarActionsTarget(document.getElementById("analysisTopLeftActions"));
   }, []);
 
-  const saveFile = useCallback(async () => {
-    saveToFile({
-      dir: documentDir,
-      setCurrentTab,
-      tab: currentTab,
-      store,
-    });
-  }, [setCurrentTab, currentTab, documentDir, store]);
-  const userSaveFile = useCallback(async () => {
-    saveToFile({
-      dir: documentDir,
-      setCurrentTab,
-      tab: currentTab,
-      store,
-      isUserSave: true,
-    });
-  }, [setCurrentTab, currentTab, documentDir, store]);
+  const saveFile = useCallback(
+    async (isUserSave = false) => {
+      try {
+        return await saveToFile({
+          dir: documentDir,
+          target: saveTargetFor(currentTab?.value),
+          tab: currentTab,
+          store,
+          isUserSave,
+        });
+      } catch (error) {
+        notifications.show({
+          id: `save-${currentTab?.value}`,
+          title: "Could not save game",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+        return false;
+      }
+    },
+    [saveTargetFor, currentTab, documentDir, store],
+  );
+  const userSaveFile = useCallback(() => saveFile(true), [saveFile]);
   const saveGameCopy = useCallback(async () => {
     if (savingCopy) return;
     setSavingCopy(true);
     try {
       const saved = await saveToFile({
         dir: documentDir,
-        setCurrentTab,
+        target: saveTargetFor(currentTab?.value),
         tab: currentTab,
         store,
         isUserSave: true,
         forceSaveAs: true,
+        copyOnly: true,
       });
       if (saved) {
         notifications.show({
@@ -242,12 +253,13 @@ function BoardAnalysis() {
     } finally {
       setSavingCopy(false);
     }
-  }, [currentTab, documentDir, savingCopy, setCurrentTab, store]);
+  }, [currentTab, documentDir, savingCopy, saveTargetFor, store]);
   useEffect(() => {
     if (hasPersistentOrigin && autoSave && dirty) {
-      saveFile();
+      const timer = window.setTimeout(() => void saveFile(), 500);
+      return () => window.clearTimeout(timer);
     }
-  }, [hasPersistentOrigin, saveFile, autoSave, dirty]);
+  }, [hasPersistentOrigin, saveFile, autoSave, dirty, saveRoot, saveHeaders]);
 
   const addGame = useCallback(() => {
     if (!tabFile) return;

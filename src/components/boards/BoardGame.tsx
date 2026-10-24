@@ -1,3 +1,4 @@
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import {
   ActionIcon,
   Box,
@@ -191,6 +192,7 @@ function BoardGame() {
 
   const [, setTabs] = useAtom(tabsAtom);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const saveTargetFor = useTabSaveTargets();
   const [savedBlindfoldGames, setSavedBlindfoldGames] = useAtom(blindfoldSavedGamesAtom);
   const [blindfoldSessionId, setBlindfoldSessionId] = useAtom(currentBlindfoldSessionIdAtom);
   const [blindfoldMarks, setBlindfoldMarks] = useAtom(currentBlindfoldMarksAtom);
@@ -828,10 +830,11 @@ function BoardGame() {
       const saved = await saveToFile({
         dir: documentDir,
         tab: currentTab ?? undefined,
-        setCurrentTab,
+        target: saveTargetFor(currentTab?.value),
         store,
         isUserSave: true,
         forceSaveAs: true,
+        copyOnly: true,
       });
       if (saved) {
         notifications.show({
@@ -846,7 +849,7 @@ function BoardGame() {
         message: err instanceof Error ? err.message : String(err),
       });
     }
-  }, [currentTab, documentDir, setCurrentTab, store]);
+  }, [currentTab, documentDir, saveTargetFor, store]);
 
   const handleLoadSavedBlindfoldGame = useCallback(
     async (id: string) => {

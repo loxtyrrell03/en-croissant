@@ -68,7 +68,10 @@ export function BoardTab({
           leftSection={<TabIcon tab={tab} tabType={tabType} />}
           rightSection={
             <ActionIcon
-              component="div"
+              component="button"
+              type="button"
+              aria-label={`Close ${tab.name}`}
+              onPointerDown={(event) => event.stopPropagation()}
               className={classes.closeTabBtn}
               onClick={(e) => {
                 closeTab(tab.value);

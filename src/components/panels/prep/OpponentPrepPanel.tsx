@@ -1,3 +1,4 @@
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import { WdlResultBar } from "@/components/common/WdlResultBar";
 import {
   ActionIcon,
@@ -496,7 +497,8 @@ function OpponentPrepPanel({
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
   const [, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
-  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const currentTab = useAtomValue(currentTabAtom);
+  const saveTargetFor = useTabSaveTargets();
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
   const { documentDir } = useLoaderData({ from: "/" });
@@ -3492,7 +3494,7 @@ function OpponentPrepPanel({
         const saved = await saveToFile({
           dir: documentDir,
           tab: currentTab,
-          setCurrentTab,
+          target: saveTargetFor(currentTab?.value),
           store,
           forceSaveAs: mode === "new",
         });
@@ -3517,7 +3519,7 @@ function OpponentPrepPanel({
         setSavingBuilderResult(null);
       }
     },
-    [currentTab, documentDir, savingBuilderResult, setCurrentTab, store],
+    [currentTab, documentDir, savingBuilderResult, saveTargetFor, store],
   );
 
   const playGamePlanLine = useCallback(
@@ -6772,7 +6774,14 @@ function BranchStatsCell({
 
 function PrepResultBar({ row }: { row: Pick<Opening, "white" | "draw" | "black"> }) {
   return (
-    <WdlResultBar white={row.white} draw={row.draw} black={row.black} precision={0} compact tone="prep" />
+    <WdlResultBar
+      white={row.white}
+      draw={row.draw}
+      black={row.black}
+      precision={0}
+      compact
+      tone="prep"
+    />
   );
 }
 

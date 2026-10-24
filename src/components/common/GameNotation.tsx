@@ -1,3 +1,4 @@
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import {
   ActionIcon,
   Alert,
@@ -336,7 +337,8 @@ function NotationHeader({
   const reportInProgress = useStore(store, (s) => s.report.inProgress);
   const setReportInProgress = useStore(store, (s) => s.setReportInProgress);
   const reportError = useStore(store, (s) => s.report.error);
-  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const currentTab = useAtomValue(currentTabAtom);
+  const saveTargetFor = useTabSaveTargets();
   const engines = useAtomValue(enginesAtom);
   const reportSettings = useAtomValue(reportSettingsAtom);
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
@@ -484,7 +486,7 @@ function NotationHeader({
     try {
       await saveToFile({
         dir: documentDir,
-        setCurrentTab,
+        target: saveTargetFor(currentTab?.value),
         tab: currentTab,
         store,
       });

@@ -11,8 +11,9 @@ import {
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
-import { useAtom, useAtomValue } from "jotai";
-import { use, useState } from "react";
+import { useAtomValue } from "jotai";
+import { use, useEffect, useRef, useState } from "react";
+import { notifications } from "@mantine/notifications";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
@@ -25,6 +26,7 @@ import { keyMapAtom } from "@/state/keybinds";
 import { parsePGN } from "@/utils/chess";
 import { formatNumber } from "@/utils/format";
 import { getTabFile, getTabGameNumber } from "@/utils/tabs";
+import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import { unwrap } from "@/utils/unwrap";
 import FenSearch from "./FenSearch";
 import FileInfo from "./FileInfo";
@@ -127,7 +129,7 @@ function DatabaseInfo({ path, id: _id }: { path: string; id: number }) {
   );
 }
 
-function GameSelectorAccordion({
+export function GameSelectorAccordion({
   games,
   setGames,
   addGame,
@@ -137,9 +139,16 @@ function GameSelectorAccordion({
   addGame?: () => void;
 }) {
   const store = use(TreeStateContext)!;
-  const dirty = useStore(store, (s) => s.dirty);
   const setState = useStore(store, (s) => s.setState);
-  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const currentTab = useAtomValue(currentTabAtom);
+  const saveTargetFor = useTabSaveTargets();
+  const pageRequest = useRef(0);
+  useEffect(
+    () => () => {
+      pageRequest.current += 1;
+    },
+    [],
+  );
 
   const [confirmChanges, toggleConfirmChanges] = useToggle();
   const [tempPage, setTempPage] = useState(0);
@@ -170,60 +179,96 @@ function GameSelectorAccordion({
   const filePath = tabFile.path;
 
   async function setPage(page: number, forced?: boolean) {
-    if (!forced && dirty) {
+    const ticket = ++pageRequest.current;
+    if (!currentTab) return;
+    if (!forced && store.getState().dirty) {
       setTempPage(page);
       toggleConfirmChanges();
       return;
     }
 
-    const data = unwrap(await commands.readGames(filePath, page, page));
-    const tree = await parsePGN(data[0]);
-    setState(tree);
-
-    setCurrentTab((prev) => {
-      if (prev.gameOrigin.kind !== "file" && prev.gameOrigin.kind !== "temp_file") {
-        return prev;
+    const target = saveTargetFor(currentTab.value);
+    const requestedRoot = store.getState().root,
+      requestedHeaders = store.getState().headers;
+    const owns = () => {
+      const latest = target.get();
+      return (
+        latest && getTabFile(latest)?.path === filePath && getTabGameNumber(latest) === gameNumber
+      );
+    };
+    try {
+      const data = unwrap(await commands.readGames(filePath, page, page));
+      if (!data[0]) throw new Error("That game is no longer in this file. Refresh the game list.");
+      const tree = await parsePGN(data[0]);
+      if (pageRequest.current !== ticket || !owns()) return;
+      if (store.getState().root !== requestedRoot || store.getState().headers !== requestedHeaders)
+        throw new Error(
+          "New changes arrived while loading. Your current game has been kept open; select the other game again.",
+        );
+      target.update((prev) => {
+        if (prev.gameOrigin.kind !== "file" && prev.gameOrigin.kind !== "temp_file") {
+          return prev;
+        }
+        return {
+          ...prev,
+          gameOrigin: {
+            ...prev.gameOrigin,
+            gameNumber: page,
+          },
+        };
+      });
+      setState(tree);
+    } catch (error) {
+      if (pageRequest.current === ticket && owns()) {
+        if (forced) throw error;
+        notifications.show({ title: "Game not changed", message: String(error), color: "red" });
       }
-      return {
-        ...prev,
-        gameOrigin: {
-          ...prev.gameOrigin,
-          gameNumber: page,
-        },
-      };
-    });
+    }
   }
 
   async function deleteGame(index: number) {
-    await commands.deleteGame(filePath, index);
-    setCurrentTab((prev) => {
-      if (prev.gameOrigin.kind !== "file" && prev.gameOrigin.kind !== "temp_file") {
-        return prev;
-      }
-      return {
-        ...prev,
-        gameOrigin: {
-          ...prev.gameOrigin,
-          file: {
-            ...prev.gameOrigin.file,
-            numGames: prev.gameOrigin.file.numGames - 1,
-            numGamesKnown: true,
+    try {
+      unwrap(await commands.deleteGame(filePath, index));
+      saveTargetFor(currentTab?.value).update((prev) => {
+        if (
+          (prev.gameOrigin.kind !== "file" && prev.gameOrigin.kind !== "temp_file") ||
+          getTabFile(prev)?.path !== filePath
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          gameOrigin: {
+            ...prev.gameOrigin,
+            file: {
+              ...prev.gameOrigin.file,
+              numGames: prev.gameOrigin.file.numGames - 1,
+              numGamesKnown: true,
+            },
           },
-        },
-      };
-    });
-    setGames(new Map());
+        };
+      });
+      setGames(new Map());
+    } catch (error) {
+      notifications.show({ title: "Could not remove game", message: String(error), color: "red" });
+    }
   }
 
   return (
     <>
-      <ConfirmChangesModal
-        opened={confirmChanges}
-        toggle={toggleConfirmChanges}
-        closeTab={() => {
-          void setPage(tempPage, true);
-        }}
-      />
+      {currentTab && (
+        <ConfirmChangesModal
+          opened={confirmChanges}
+          onClose={() => toggleConfirmChanges(false)}
+          closeTab={() => setPage(tempPage, true)}
+          tab={currentTab}
+          target={saveTargetFor(currentTab.value)}
+          store={store}
+          saveLabel="Save and Open Game"
+          discardLabel="Open Without Saving"
+          description="Save your current changes before opening the selected game?"
+        />
+      )}
       <Accordion
         styles={{
           control: {

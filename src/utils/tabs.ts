@@ -16,6 +16,8 @@ import { getPGN, parsePGN } from "./chess";
 import { hydrateOnlinePgnClocks } from "./onlinePgnClocks";
 import { explicitPgnOrientation } from "./pgnOrientation";
 import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
+import type { TabSaveTarget } from "./tabSaveTarget";
+import { tabTreeOwner } from "@/state/store/treeOwner";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 const DEFAULT_GAME_FILE_METADATA = JSON.stringify({
@@ -190,7 +192,8 @@ export async function createTab({
         if (headers) {
             tree.headers = {
                 ...headers,
-                orientation: explicitPgnOrientation(headers.orientation) ?? tree.headers.orientation,
+                orientation:
+                    explicitPgnOrientation(headers.orientation) ?? tree.headers.orientation,
             };
             if (position) {
                 tree.position = position;
@@ -231,48 +234,185 @@ async function ensureGameInfoSidecar(filePath: string) {
     await writeTextFile(metadataPath, DEFAULT_GAME_FILE_METADATA);
 }
 
-export async function saveToFile({
-    dir,
-    tab,
-    setCurrentTab,
-    store,
-    isUserSave,
-    forceSaveAs,
-}: {
+type SaveRequest = {
     dir: string;
-    tab: Tab | undefined;
-    setCurrentTab: React.Dispatch<React.SetStateAction<Tab>>;
+    tab: Tab;
+    target: TabSaveTarget;
     store: StoreApi<TreeStoreState>;
     isUserSave?: boolean;
     forceSaveAs?: boolean;
+    copyOnly?: boolean;
+    pgn: string;
+    headers: GameHeaders;
+    binding: string;
+};
+type SaveJob = {
+    request: SaveRequest;
+    resolve: (value: boolean) => void;
+    reject: (error: unknown) => void;
+};
+type SaveQueue = { running: boolean; jobs: SaveJob[]; rebindings: Map<string, string> };
+const saveQueues = new WeakMap<StoreApi<TreeStoreState>, SaveQueue>();
+
+function saveBinding(tab: Tab) {
+    const origin = tab.gameOrigin;
+    switch (origin.kind) {
+        case "file":
+        case "temp_file":
+            return JSON.stringify([origin.kind, origin.file.path, origin.gameNumber]);
+        case "database":
+            return JSON.stringify([origin.kind, origin.database, origin.gameId]);
+        default:
+            return JSON.stringify([origin.kind]);
+    }
+}
+
+function savePgn(state: Pick<TreeState, "root" | "headers">) {
+    return `${getPGN(state.root, { headers: state.headers, comments: true, extraMarkups: true, glyphs: true, variations: true })}\n\n`;
+}
+
+function assertWriteSucceeded(
+    result: { status: "ok"; data: unknown } | { status: "error"; error: string },
+) {
+    if (result.status === "error")
+        throw new Error(result.error || "The game could not be written.");
+}
+
+export function saveToFile({
+    dir,
+    tab,
+    target,
+    store,
+    isUserSave,
+    forceSaveAs,
+    copyOnly,
+}: {
+    dir: string;
+    tab: Tab | undefined;
+    target: TabSaveTarget;
+    store: StoreApi<TreeStoreState>;
+    isUserSave?: boolean;
+    forceSaveAs?: boolean;
+    copyOnly?: boolean;
 }) {
+    if (!tab) return Promise.reject(new Error("This game tab is no longer open."));
+    const owner = tabTreeOwner(store);
+    if (owner !== undefined && owner !== tab.value)
+        return Promise.reject(
+            new Error("This board belongs to a different tab. Select the game and save again."),
+        );
+    const state = store.getState();
+    const request: SaveRequest = {
+        dir,
+        tab,
+        target,
+        store,
+        isUserSave,
+        forceSaveAs,
+        copyOnly,
+        pgn: savePgn(state),
+        headers: structuredClone(state.headers),
+        binding: saveBinding(tab),
+    };
+    let queue = saveQueues.get(store);
+    if (!queue) {
+        queue = { running: false, jobs: [], rebindings: new Map() };
+        saveQueues.set(store, queue);
+    }
+    const ownerQueue = queue;
+    const pending = new Promise<boolean>((resolve, reject) => {
+        const latest = ownerQueue.jobs.at(-1);
+        if (
+            !isUserSave &&
+            !forceSaveAs &&
+            latest &&
+            !latest.request.isUserSave &&
+            !latest.request.forceSaveAs &&
+            latest.request.binding === request.binding
+        ) {
+            const previousResolve = latest.resolve,
+                previousReject = latest.reject;
+            latest.request = request;
+            latest.resolve = (value) => {
+                previousResolve(value);
+                resolve(value);
+            };
+            latest.reject = (error) => {
+                previousReject(error);
+                reject(error);
+            };
+        } else ownerQueue.jobs.push({ request, resolve, reject });
+    });
+    if (!ownerQueue.running) {
+        ownerQueue.running = true;
+        void Promise.resolve().then(async () => {
+            try {
+                while (ownerQueue.jobs.length) {
+                    const job = ownerQueue.jobs.shift()!;
+                    try {
+                        job.resolve(await performSave(job.request, ownerQueue));
+                    } catch (error) {
+                        job.reject(error);
+                    }
+                }
+            } finally {
+                ownerQueue.running = false;
+            }
+        });
+    }
+    return pending;
+}
+
+async function performSave(request: SaveRequest, queue: SaveQueue): Promise<boolean> {
+    const { dir, tab, target, store, isUserSave, forceSaveAs, copyOnly, pgn } = request;
+    if (copyOnly && !forceSaveAs) throw new Error("A copy must use a separate destination.");
+    const current = target.get();
+    if (!current || current.value !== tab.value)
+        throw new Error("This game tab is no longer open.");
+    const binding = saveBinding(current);
+    if (binding !== request.binding && queue.rebindings.get(request.binding) !== binding)
+        throw new Error("This tab now points to another game. Save it again from that game.");
+    const stillOwnsSource = () => {
+        const latest = target.get();
+        return !!latest && latest.value === tab.value && saveBinding(latest) === binding;
+    };
+    const complete = (nextOrigin = current.gameOrigin) => {
+        if (!stillOwnsSource()) return false;
+        if (copyOnly) return true;
+        const nextBinding = saveBinding({ ...current, gameOrigin: nextOrigin });
+        target.update((owner) =>
+            saveBinding(owner) === binding ? { ...owner, gameOrigin: nextOrigin } : owner,
+        );
+        for (const [from, to] of queue.rebindings)
+            if (to === binding) queue.rebindings.set(from, nextBinding);
+        queue.rebindings.set(binding, nextBinding);
+        const latest = target.get();
+        if (!latest || saveBinding(latest) !== nextBinding) return false;
+        if (savePgn(store.getState()) === pgn) store.getState().save();
+        return true;
+    };
     let filePath: string;
-    const currentOrigin = tab?.gameOrigin;
+    let nextOrigin = current.gameOrigin;
+    const currentOrigin = current.gameOrigin;
     const fileOrigin =
         currentOrigin?.kind === "file" || currentOrigin?.kind === "temp_file"
             ? currentOrigin
             : undefined;
     const databaseOrigin = currentOrigin?.kind === "database" ? currentOrigin : undefined;
-    const sourceCoachTarget = getAiCoachPersistenceTarget(tab);
+    const sourceCoachTarget = getAiCoachPersistenceTarget(current);
     const isTempFile = currentOrigin?.kind === "temp_file";
-    const pgn = `${getPGN(store.getState().root, {
-        headers: store.getState().headers,
-        comments: true,
-        extraMarkups: true,
-        glyphs: true,
-        variations: true,
-    })}\n\n`;
 
     if (databaseOrigin && !forceSaveAs) {
-        await commands.writeDbGame(databaseOrigin.database, databaseOrigin.gameId, pgn);
-        store.getState().save();
-        return true;
+        assertWriteSucceeded(
+            await commands.writeDbGame(databaseOrigin.database, databaseOrigin.gameId, pgn),
+        );
+        return complete();
     }
 
     if (fileOrigin && !forceSaveAs && !(isTempFile && isUserSave)) {
         filePath = fileOrigin.file.path;
     } else {
-        const headers = store.getState().headers;
+        const headers = request.headers;
         const suggestedName = getDefaultGameFilename(headers) || "Game";
         const defaultPath = await resolve(dir, `${suggestedName}.pgn`);
         const userChoice = await save({
@@ -287,13 +427,18 @@ export async function saveToFile({
         if (userChoice === null) {
             return false;
         }
-        if (userChoice.endsWith(".pgn")) {
+        if (/\.pgn$/i.test(userChoice)) {
             filePath = userChoice;
         } else {
             // on Linux filters for userChoice seemingly don't work
             // so userChoice can end without 'pgn' extension
             filePath = userChoice.concat(".pgn");
         }
+
+        if (!stillOwnsSource())
+            throw new Error(
+                "The original game changed while choosing a file. It has not been saved.",
+            );
 
         if (isTempFile && fileOrigin && !forceSaveAs) {
             await copyFile(fileOrigin.file.path, filePath);
@@ -305,29 +450,26 @@ export async function saveToFile({
 
         const numGames = forceSaveAs ? 1 : isTempFile && fileOrigin ? fileOrigin.file.numGames : 1;
         const gameNumber = forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0);
-        setCurrentTab((prev) => {
-            return {
-                ...prev,
-                gameOrigin: {
-                    kind: "file",
-                    gameNumber,
-                    file: {
-                        type: "file",
-                        name: filePath,
-                        path: filePath,
-                        numGames,
-                        numGamesKnown: true,
-                        metadata: fileOrigin?.file.metadata ?? {
-                            tags: [],
-                            type: "game",
-                        },
-                        lastModified: Date.now(),
-                    },
+        nextOrigin = {
+            kind: "file",
+            gameNumber,
+            file: {
+                type: "file",
+                name: filePath,
+                path: filePath,
+                numGames,
+                numGamesKnown: true,
+                metadata: fileOrigin?.file.metadata ?? {
+                    tags: [],
+                    type: "game",
                 },
-            };
-        });
+                lastModified: Date.now(),
+            },
+        };
     }
-    await commands.writeGame(filePath, forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0), pgn);
+    assertWriteSucceeded(
+        await commands.writeGame(filePath, forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0), pgn),
+    );
     if (forceSaveAs && sourceCoachTarget) {
         try {
             const savedReview = await loadPersistedAiCoachReview(sourceCoachTarget);
@@ -346,6 +488,5 @@ export async function saveToFile({
         }
     }
     await ensureGameInfoSidecar(filePath);
-    store.getState().save();
-    return true;
+    return complete(nextOrigin);
 }

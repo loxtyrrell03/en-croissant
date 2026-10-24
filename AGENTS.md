@@ -1,3 +1,25 @@
+## 2026-10-24 tab-owned saves and close requests
+
+- Native saves capture the original tab/source and immutable annotated PGN,
+  serialize same-tree writes and coalesce queued automatic snapshots. Tagged
+  native failures propagate; successful completion binds only that owner and
+  clears dirty only if the current PGN still matches. Explicit copies preserve
+  the original binding/dirty state.
+- A canonical live tree per tab serves boards, saves and close requests. Pending
+  session hydration drops old action closures; duplication reads the live tree.
+  Save and Close waits, and cancellation/failure/newer edits keep the captured
+  tab open. Background close controls preserve the active tab. Game selection
+  guards latest request, source and edits while loading.
+- Forty-one source/component checks across ten files, full TypeScript and
+  20-file lint pass. Native I/O is mocked in these fixtures; browser control is
+  disabled in Work settings. Installed-native/browser delivery remains separate.
+  Phone already owns its single durable workspace writer.
+- Native PGN source fingerprints/fresh offsets/atomic replacement, cross-tab
+  conflicts, virtual header-cache/deletion identity and automatic Clear tabs
+  remain open. Custom-root move-counter export also needs repair. See
+  docs/TAB_SAVE_OWNERSHIP.md; do not claim complete no-clobber writes from this
+  frontend foundation. No hosting, service, native binary or owner data change.
+
 ## Tournament prediction history (2026-10-24)
 
 - Phone delivery: the feature was published from dfc2183148a4ee80a523e420cdfe452d9b332b78 at the canonical private URL. HTTPS health/native settings RPC and connected Chrome navigation through the real tracker, automatic comparison and another player's history passed. The later duplicate-completion-text cleanup is source-only; subsequent unrelated phone-drawing work shares the delivery branch and was not published by this task. See docs/TOURNAMENT_PREDICTION_HISTORY.md.
