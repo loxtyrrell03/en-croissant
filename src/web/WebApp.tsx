@@ -302,6 +302,16 @@ import {
 } from "./pgn";
 import { createEmptyWebBoardState } from "./storage";
 import {
+  alignPhoneBoard,
+  flipPhoneBoard,
+  phoneBoardOrientation,
+  phoneWorkspaceOwner,
+  phoneWorkspaceKey,
+  rememberPhonePrepSource,
+  restorePhonePrepSource,
+} from "./workspacePreferences";
+import { usePhoneDatabasePreference } from "./useWorkspacePreferences";
+import {
   getWebBoardPlayerLabels,
   getWebBoardSourceTitle,
   type WebBoardPlayerLabel,
@@ -1531,22 +1541,13 @@ function BoardWorkspace({
   const liveReplayTimeoutRef = useRef<number | null>(null);
   const liveReplayTickRef = useRef<number | null>(null);
   const board = state.board ?? createEmptyWebBoardState();
-  const baseOrientation = activePrep?.userColor ?? board.orientation;
-  const [orientationOverride, setOrientationOverride] = useState<WebColor | null>(null);
+  const workspaceOwner = phoneWorkspaceOwner(state);
   const alignBoardToPrepSide = useCallback(
-    (color: WebColor) => {
-      setOrientationOverride(null);
-      setState((current) =>
-        current.board.orientation === color
-          ? current
-          : { ...current, board: { ...current.board, orientation: color } },
-      );
+    (color: WebColor, explicit = false) => {
+      setState((current) => alignPhoneBoard(current, workspaceOwner, color, explicit));
     },
-    [setState],
+    [setState, workspaceOwner],
   );
-  useEffect(() => {
-    setOrientationOverride(null);
-  }, [activePrep?.id, baseOrientation, board.sourceDatabaseId, board.sourceGameId, board.startFen]);
   const activeLine = activePrep?.line ?? board.line;
   const startFen = activePrep?.startFen ?? board.startFen;
   const cursor = clampCursor(board.cursor, activeLine.length);
@@ -2030,15 +2031,15 @@ function BoardWorkspace({
   };
 
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
-  const orientation = orientationOverride ?? baseOrientation;
+  const orientation = phoneBoardOrientation(state);
   const isViewingFile = !activePrep && Boolean(board.sourceDatabaseId || board.sourceGameId);
   const boardPlayers = sourceGame ? getWebBoardPlayerLabels(sourceGame, orientation) : null;
   const flipBoard = () => {
-    setOrientationOverride((current) => oppositeWebColor(current ?? baseOrientation));
+    setState((current) => flipPhoneBoard(current, workspaceOwner));
   };
   const resetBoard = () => {
-    setOrientationOverride(null);
     if (activePrep) {
+      setState((current) => alignPhoneBoard(current, workspaceOwner, activePrep.userColor));
       setCursor(prepRootPly);
     } else if (isViewingFile) {
       setCursor(0);
@@ -2223,9 +2224,10 @@ function BoardWorkspace({
                 />
               ) : panelMode === "database" ? (
                 <DatabaseUnderBoardPanel
+                  key={phoneWorkspaceKey(state)}
+                  state={state}
+                  setState={setState}
                   currentFen={currentFen}
-                  databases={state.databases}
-                  gamesByDatabase={state.gamesByDatabase}
                   importHostedFolder={importHostedFolder}
                   onPlayMove={playMove}
                   onOpenSourceGame={loadGameOnBoard}
@@ -2233,6 +2235,7 @@ function BoardWorkspace({
                 />
               ) : panelMode === "prep" ? (
                 <PrepUnderBoardPanel
+                  key={phoneWorkspaceKey(state)}
                   state={state}
                   setState={setState}
                   onUserColorChange={alignBoardToPrepSide}
@@ -3637,23 +3640,25 @@ type WebDatabasePanelSource = "local" | WebDatabaseExplorerSource;
 type WebDatabasePanelView = "stats" | "games" | "options";
 
 function DatabaseUnderBoardPanel({
+  state,
+  setState,
   currentFen,
-  databases,
-  gamesByDatabase,
   importHostedFolder,
   onPlayMove,
   onOpenSourceGame,
   lichessToken,
 }: {
+  state: WebCompanionState;
+  setState: Dispatch<SetStateAction<WebCompanionState>>;
   currentFen: string;
-  databases: WebDatabase[];
-  gamesByDatabase: Record<string, WebGame[]>;
   importHostedFolder: WebHostedFolderImportHandler;
   onPlayMove: (stat: WebPrepMoveStat) => void;
   onOpenSourceGame: (game: WebGame) => void;
   lichessToken: string;
 }) {
-  const [storedSource, setStoredSource] = usePersistentString(
+  const { databases, gamesByDatabase } = state;
+  const [storedSource, setStoredSource] = usePhoneDatabasePreference(
+    state, setState, "source",
     WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY,
     "local",
   );
@@ -3679,7 +3684,8 @@ function DatabaseUnderBoardPanel({
     normalizeWebPrepStrengthSettings(null),
     normalizeWebPrepStrengthSettings,
   );
-  const [selectedLocalIdValue, setSelectedLocalIdValue] = usePersistentString(
+  const [selectedLocalIdValue, setSelectedLocalIdValue] = usePhoneDatabasePreference(
+    state, setState, "local",
     WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY,
     "",
   );
@@ -3687,24 +3693,29 @@ function DatabaseUnderBoardPanel({
     () => getWebDatabaseHostedPathFromSourceStorageValue(selectedLocalIdValue),
     [selectedLocalIdValue],
   );
-  const [localPlayerName, setLocalPlayerName] = usePersistentString(
+  const [localPlayerName, setLocalPlayerName] = usePhoneDatabasePreference(
+    state, setState, "player",
     WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY,
     "",
   );
-  const [localColorValue, setLocalColorValue] = usePersistentString(
+  const [localColorValue, setLocalColorValue] = usePhoneDatabasePreference(
+    state, setState, "color",
     WEB_DATABASE_PANEL_COLOR_STORAGE_KEY,
     "white",
   );
   const localColor: WebColor = localColorValue === "black" ? "black" : "white";
-  const [localStartDate, setLocalStartDate] = usePersistentString(
+  const [localStartDate, setLocalStartDate] = usePhoneDatabasePreference(
+    state, setState, "startDate",
     WEB_DATABASE_PANEL_START_DATE_STORAGE_KEY,
     "",
   );
-  const [localEndDate, setLocalEndDate] = usePersistentString(
+  const [localEndDate, setLocalEndDate] = usePhoneDatabasePreference(
+    state, setState, "endDate",
     WEB_DATABASE_PANEL_END_DATE_STORAGE_KEY,
     "",
   );
-  const [localResultValue, setLocalResultValue] = usePersistentString(
+  const [localResultValue, setLocalResultValue] = usePhoneDatabasePreference(
+    state, setState, "result",
     WEB_DATABASE_PANEL_RESULT_STORAGE_KEY,
     "any",
   );
@@ -5133,7 +5144,7 @@ function PrepUnderBoardPanel({
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
-  onUserColorChange: (color: WebColor) => void;
+  onUserColorChange: (color: WebColor, explicit?: boolean) => void;
   activePrep: WebPrepWorkspace | null;
   currentFen: string;
   stats: WebPrepMoveStat[];
@@ -5155,17 +5166,36 @@ function PrepUnderBoardPanel({
     DEFAULT_WEB_PREP_SETUP,
     normalizeWebPrepStoredSetup,
   );
+  const preferenceKey = phoneWorkspaceKey(state);
+  const preferenceOwner = phoneWorkspaceOwner(state);
+  const rememberedPrep = state.workspacePreferences?.[preferenceKey]?.prep;
+  const initialPrepMode = rememberedPrep?.mode ?? storedPrepSetup.mode;
+  const initialPrepSource = rememberedPrep?.sources?.[initialPrepMode];
+  const initialPrepSourceRef = initialPrepSource
+    ? initialPrepSource.sourceRef
+    : storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId;
+  const mountedPreferenceOwner = useRef(true);
+  const currentPreferenceOwner = useRef(preferenceOwner);
+  currentPreferenceOwner.current = preferenceOwner;
+  const ownsPreferences = () =>
+    mountedPreferenceOwner.current && currentPreferenceOwner.current === preferenceOwner;
+  useEffect(() => {
+    mountedPreferenceOwner.current = true;
+    return () => { mountedPreferenceOwner.current = false; };
+  }, []);
   const [opponent, setOpponent] = useState(storedPrepSetup.opponent);
   const [userColor, setUserColor] = useState<WebColor>(storedPrepSetup.userColor);
-  const [prepMode, setPrepMode] = useState<WebPrepMode>(storedPrepSetup.mode);
-  const [prepSource, setPrepSource] = useState<WebPrepSource>(storedPrepSetup.source);
+  const [prepMode, setPrepMode] = useState<WebPrepMode>(initialPrepMode);
+  const [prepSource, setPrepSource] = useState<WebPrepSource>(
+    initialPrepSource?.source ?? storedPrepSetup.source,
+  );
   const [prepStartDate, setPrepStartDate] = useState(storedPrepSetup.startDate ?? "");
   const [prepEndDate, setPrepEndDate] = useState(storedPrepSetup.endDate ?? "");
   const [prepResult, setPrepResult] = useState<WebLocalResultFilter>(storedPrepSetup.result);
   const [sourceId, setSourceId] = useState<string | null>(
     () =>
       resolveWebDatabaseSourceId(
-        storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId,
+        initialPrepSourceRef,
         state.databases,
       ) ??
       state.databases[0]?.id ??
@@ -5333,9 +5363,16 @@ function PrepUnderBoardPanel({
     [activePrep?.sortDefaults, storedPrepSetup.sortDefaults],
   );
   const selectedUserColor = activePrep?.userColor ?? userColor;
+  const prepSideOwner = phoneWorkspaceKey(state);
+  const previousPrepSide = useRef({ owner: prepSideOwner, color: selectedUserColor });
   useEffect(() => {
-    onUserColorChange(selectedUserColor);
-  }, [onUserColorChange, selectedUserColor]);
+    const previous = previousPrepSide.current;
+    previousPrepSide.current = { owner: prepSideOwner, color: selectedUserColor };
+    onUserColorChange(
+      selectedUserColor,
+      previous.owner === prepSideOwner && previous.color !== selectedUserColor,
+    );
+  }, [onUserColorChange, prepSideOwner, selectedUserColor]);
   const selectedPlayerColor = oppositeWebColor(selectedUserColor);
   const selectedOpponentName = activePrep?.opponent ?? opponent;
   const trimmedSelectedOpponentName = selectedOpponentName.trim();
@@ -5569,6 +5606,8 @@ function PrepUnderBoardPanel({
   };
 
   const persistPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    if (!ownsPreferences()) return;
+    setState(current => rememberPhonePrepSource(current, preferenceOwner, selection));
     const selectedDatabase =
       selection.source === "local" && selection.sourceId
         ? (state.databases.find((database) => database.id === selection.sourceId) ?? null)
@@ -5594,12 +5633,12 @@ function PrepUnderBoardPanel({
         return current;
       }
       const storedSourceId = resolveWebDatabaseSourceId(
-        storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId,
+        initialPrepSourceRef,
         selectableDatabases,
       );
       if (storedSourceId) return storedSourceId;
       const storedHostedPath = getWebDatabaseHostedPathFromSourceStorageValue(
-        storedPrepSetup.sourceRef,
+        initialPrepSourceRef,
       );
       if (
         storedHostedPath &&
@@ -5616,8 +5655,7 @@ function PrepUnderBoardPanel({
     hostedDatabases.library,
     hostedDatabases.loading,
     selectableDatabases,
-    storedPrepSetup.sourceId,
-    storedPrepSetup.sourceRef,
+    initialPrepSourceRef,
   ]);
 
   useEffect(() => {
@@ -5928,7 +5966,7 @@ function PrepUnderBoardPanel({
 
   const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
     if (!activePrep) return;
-    setState((current) => ({
+    setState((current) => phoneWorkspaceOwner(current) !== preferenceOwner ? current : ({
       ...current,
       prepWorkspaces: current.prepWorkspaces.map((prep) =>
         prep.id === activePrep.id ? updater(prep) : prep,
@@ -6056,6 +6094,7 @@ function PrepUnderBoardPanel({
   };
 
   const applyDraftPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    if (!ownsPreferences()) return;
     setPrepMode(selection.mode);
     setPrepSource(selection.source);
     setSourceId(selection.sourceId);
@@ -6066,6 +6105,7 @@ function PrepUnderBoardPanel({
   };
 
   const applyPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    if (!ownsPreferences()) return;
     persistPrepSetupSelection(selection);
     if (activePrep) {
       updateActivePrepSettings(getWebPrepWorkspacePatchFromSelection(activePrep, selection));
@@ -6104,7 +6144,10 @@ function PrepUnderBoardPanel({
   };
 
   const updatePrepMode = (mode: WebPrepMode) => {
-    applyPrepSetupSelection(applyWebPrepModeChange(currentPrepSetupSelection, mode));
+    setState(current => rememberPhonePrepSource(current, preferenceOwner, currentPrepSetupSelection));
+    applyPrepSetupSelection(
+      restorePhonePrepSource(state, applyWebPrepModeChange(currentPrepSetupSelection, mode)),
+    );
   };
 
   const updatePrepMinGames = (value: number) => {
@@ -6222,6 +6265,7 @@ function PrepUnderBoardPanel({
   };
 
   const attachImportedDatabase = (database: WebDatabase) => {
+    if (!ownsPreferences()) return;
     setStoredPrepSetup((current) =>
       normalizeWebPrepStoredSetup({
         ...current,

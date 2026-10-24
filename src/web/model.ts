@@ -197,7 +197,29 @@ export type WebEngineLine = {
     sanMoves: string[];
 };
 
+export type WebDatabasePreferenceKey =
+    | "source"
+    | "local"
+    | "player"
+    | "color"
+    | "startDate"
+    | "endDate"
+    | "result";
+export type WebWorkspacePreferences = {
+    orientation?: WebColor;
+    database?: Partial<Record<WebDatabasePreferenceKey, string>>;
+    prep?: {
+        mode?: WebPrepMode;
+        sources?: Partial<
+            Record<
+                WebPrepMode,
+                { source: Exclude<WebPrepSource, "temporary">; sourceRef: string | null }
+            >
+        >;
+    };
+};
 export type WebCompanionState = {
+    workspacePreferences?: Record<string, WebWorkspacePreferences>;
     gameReports?: Record<string, import("./gameReport").SavedWebGameReport>;
     lastAppliedPhonePrepRequestId?: string;
     completedOtbImports?: Record<string, { databaseId: string; prepId: string }>;

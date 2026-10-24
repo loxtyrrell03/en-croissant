@@ -127,3 +127,36 @@ it("aborts a stalled transaction and reopens after a connection version change",
     fixture.transactions[1].oncomplete!();
     await next;
 });
+
+it("loads optional board/source preferences and rejects malformed maps without replacing saved data", async () => {
+    const fixture = storageFixture();
+    const { loadWebState, createEmptyWebState } = await import("../storage");
+    const state = {
+        ...createEmptyWebState(),
+        workspacePreferences: {
+            "invented-file": {
+                orientation: "black",
+                database: { source: "local", startDate: "2026-09-01" },
+                prep: {
+                    mode: "general",
+                    sources: { general: { source: "lichess-masters", sourceRef: null } },
+                },
+            },
+        },
+    };
+    const loaded = loadWebState();
+    fixture.opens[0].onsuccess!();
+    await Promise.resolve();
+    fixture.transactions[0].request.result = state;
+    fixture.transactions[0].request.onsuccess!();
+    fixture.transactions[0].oncomplete!();
+    expect((await loaded).workspacePreferences).toEqual(state.workspacePreferences);
+    const invalid = { ...state, workspacePreferences: { file: { database: { source: 42 } } } };
+    const rejected = loadWebState().catch((error) => error);
+    await Promise.resolve();
+    fixture.transactions[1].request.result = invalid;
+    fixture.transactions[1].request.onsuccess!();
+    fixture.transactions[1].oncomplete!();
+    expect((await rejected).message).toContain("preserved");
+    expect(fixture.transactions[1].request.result).toBe(invalid);
+});
