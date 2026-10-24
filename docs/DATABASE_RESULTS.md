@@ -5,6 +5,9 @@ Database, Prep, opening review, opening health and the phone's Database/Prep
 rows. Percentages have separate label space above the proportional bar, so
 small and zero segments remain visible. Narrow cells wrap labels instead of
 clipping them. Existing database/prep colours and decimal precision are retained.
+Segment colours are passed through Mantine's `Progress.Section` colour property
+using the shared CSS variables. This preserves them regardless of the production
+stylesheet order; class-only overrides were insufficient in the published app.
 
 Black-perspective Database rows keep their existing result order and explicitly
 name the winning colour in accessible text and each label's title. No completed

@@ -42,12 +42,14 @@ export const WdlResultBar = forwardRef<HTMLDivElement, Props>(function WdlResult
       name: firstIsBlack ? "Black wins" : "White wins",
       count: firstIsBlack ? black : white,
       color: classes.white,
+      barColor: "var(--wdl-white)",
     },
-    { name: "Draws", count: draw, color: classes.draw },
+    { name: "Draws", count: draw, color: classes.draw, barColor: "var(--wdl-draw)" },
     {
       name: firstIsBlack ? "White wins" : "Black wins",
       count: firstIsBlack ? white : black,
       color: classes.black,
+      barColor: "var(--wdl-black)",
     },
   ].map((outcome) => ({ ...outcome, percent: available ? (outcome.count / total) * 100 : 0 }));
   const label = available
@@ -75,8 +77,8 @@ export const WdlResultBar = forwardRef<HTMLDivElement, Props>(function WdlResult
         ))}
       </div>
       <Progress.Root size={5} className={classes.bar} aria-hidden="true">
-        {outcomes.map(({ name, percent, color }) => (
-          <Progress.Section key={name} value={percent} className={color} />
+        {outcomes.map(({ name, percent, barColor }) => (
+          <Progress.Section key={name} value={percent} color={barColor} />
         ))}
       </Progress.Root>
     </div>

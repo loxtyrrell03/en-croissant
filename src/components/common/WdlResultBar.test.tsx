@@ -48,6 +48,11 @@ test("phone/Prep integer labels retain zero segments and the Prep palette", asyn
   expect(container.querySelector('[data-tone="prep"]')).not.toBeNull();
   expect(container.textContent).toContain("100%0%0%");
   expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("Draws 0%");
+  expect(
+    Array.from(container.querySelectorAll('[role="progressbar"]')).map((section) =>
+      (section as HTMLElement).style.getPropertyValue("--progress-section-color"),
+    ),
+  ).toEqual(["var(--wdl-white)", "var(--wdl-draw)", "var(--wdl-black)"]);
 });
 test.each([
   [0, 0, 0, "No completed game results"],
