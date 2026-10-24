@@ -240,7 +240,7 @@
     "browserVerified": false,
     "nativeBinaryRebuilt": false,
     "phonePublished": false,
-    "remaining": "Native runtime delivery, database-row compare-before-write and automatic Clear tabs; native PGN safeguards are now source-verified"
+    "remaining": "Native runtime delivery; database identity, practice source preservation and automatic Clear tabs are now source-verified"
   },
   "pendingPgnExport": {
     "primarySourceCommit": "577b1b87111bfbb72eb8ea2ce29dc7fea9aab898",
@@ -293,5 +293,32 @@
     "published": false,
     "browserReverifiedByThisAudit": false,
     "relatedBrowserEvidence": "TOURNAMENT_SEARCH_QUALITY_2026-10-24.md"
+  },
+  "pendingNativeSourceSafety": {
+    "primarySourceCommit": "f8bfbff1f0713cbaeca6433cf43778fc8900f188",
+    "cleanSourceCommit": "9b2d0b5a9979739d655266f931121a5d413ba21a",
+    "databasePrimarySourceCommit": "6d2e586391505d686842ca587dde0a6858b51282",
+    "databaseCleanSourceCommit": "b8b1bb3acd7889903c95b9668194041af8362014",
+    "practicePrimarySourceCommit": "fcd72b3b4c8a7abc2c7492349a1b9f348812e9a1",
+    "practiceCleanSourceCommit": "5f14e29e82ff9dfe62013d875469d8155542f950",
+    "checks": {
+      "frontendTests": 95,
+      "frontendFiles": 11,
+      "nativeSqliteTests": 7,
+      "wholeNativeCheck": true,
+      "nativeBaselineWarnings": 22,
+      "types": true,
+      "lintFiles": 18,
+      "lintWarnings": 1,
+      "lintErrors": 0,
+      "productionBuildSeconds": 22.56
+    },
+    "matchingOwnedSourceFiles": 24,
+    "nativeIoMockedInFrontend": true,
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "standalonePublished": false,
+    "phoneApplicable": false,
+    "phoneReason": "Native database-row/multi-tab practice and clear controls; phone keeps its separate root-owned workspace protocol"
   }
 }
