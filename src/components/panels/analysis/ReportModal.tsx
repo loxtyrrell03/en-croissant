@@ -9,6 +9,7 @@ import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { enginesAtom, referenceDbAtom } from "@/state/atoms";
 import type { LocalEngine } from "@/utils/engines";
 import { reportSettingsAtom } from "@/state/gameAnalysisSettings";
+import { recordGameReportRun } from "@/utils/gameReportRun";
 import { nativeGameReportLimits, validGameReportLimit } from "@/utils/gameAnalysisSettings";
 import { beginGameReport } from "@/utils/gameReportOwnership";
 import GameAnalysisLimitControls from "./GameAnalysisLimitControls";
@@ -126,6 +127,11 @@ function ReportModal({
         addAnalysis(analysis.data, {
           showVariations: settings.variations,
         });
+        await recordGameReportRun(
+          store,
+          { engine: engine.name, limit: settings.goMode },
+          () => owner.isOwner() && owner.hasSameGame(),
+        );
       } else if (!/cancel/i.test(analysis.error)) {
         store.getState().setReportError(analysis.error);
       }

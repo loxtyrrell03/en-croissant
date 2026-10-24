@@ -65,6 +65,7 @@ import { hasCompleteGameAnalysis } from "@/utils/gameAnalysisReport";
 import { reportSettingsAtom } from "@/state/gameAnalysisSettings";
 import { nativeGameReportLimits } from "@/utils/gameAnalysisSettings";
 import { beginGameReport } from "@/utils/gameReportOwnership";
+import { recordGameReportRun } from "@/utils/gameReportRun";
 import { formatScore } from "@/utils/score";
 import { getTabFile, getTabGameNumber, saveToFile } from "@/utils/tabs";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
@@ -447,6 +448,12 @@ function NotationHeader({
       if (!owner.isOwner() || !owner.hasSameGame()) return;
       if (analysis.status === "ok") {
         addAnalysis(analysis.data, { showVariations: reportSettings.variations });
+        await recordGameReportRun(
+          store,
+          { engine: engine.name, limit: reportSettings.goMode },
+          () => !!owner?.isOwner() && owner.hasSameGame(),
+        );
+        if (!owner.isOwner() || !owner.hasSameGame()) return;
         await saveAnalysisIfPersistent();
         if (owner.isOwner() && owner.hasSameGame()) setReportVisible(true);
       } else if (!/cancel/i.test(analysis.error)) {

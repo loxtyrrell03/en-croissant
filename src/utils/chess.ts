@@ -112,10 +112,11 @@ export function getMoveText(
 
         if (opt.extraMarkups) {
             if (tree.score !== null) {
+                const depth = Number.isInteger(tree.depth) && tree.depth! >= 0 ? `,${tree.depth}` : "";
                 if (tree.score.value.type === "cp") {
-                    content += `[%eval ${formatScore(tree.score.value)}] `;
+                    content += `[%eval ${formatScore(tree.score.value)}${depth}] `;
                 } else {
-                    content += `[%eval #${tree.score.value.value}] `;
+                    content += `[%eval #${tree.score.value.value}${depth}] `;
                 }
             }
             if (tree.clock !== undefined) {
@@ -413,6 +414,7 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
             const comment = parseComment(token.value);
 
             if (comment.evaluation) {
+                root.depth = comment.evaluation.depth ?? null;
                 if (isPawns(comment.evaluation)) {
                     root.score = {
                         value: {

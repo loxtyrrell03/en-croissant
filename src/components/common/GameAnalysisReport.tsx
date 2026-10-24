@@ -7,6 +7,7 @@ import { useStore } from "zustand";
 import { buildGameAnalysisReport, type GameAnalysisSideStats } from "@/utils/gameAnalysisReport";
 import { TreeStateContext } from "./TreeStateContext";
 import classes from "./GameAnalysisReport.module.css";
+import { GameReportRunLabel } from "./GameReportRunLabel";
 
 function GameAnalysisReport({ isAnalysing }: { isAnalysing: boolean }) {
   const store = useContext(TreeStateContext)!;
@@ -19,6 +20,7 @@ function GameAnalysisReport({ isAnalysing }: { isAnalysing: boolean }) {
 
   return (
     <Box className={classes.report}>
+      <GameReportRunLabel />
       <Box className={classes.reportGrid}>
         <EvalReportChart
           report={report}
@@ -156,7 +158,10 @@ function PlayerStats({ color, stats }: { color: "white" | "black"; stats: GameAn
           <Text span size="xs" className={classes.statLabel}>
             Accuracy
           </Text>
-          <TournamentHelp label="Game accuracy">Accuracy combines each move's loss of winning chances with game volatility. It requires complete adjacent evaluations and the actual starting score for custom positions.</TournamentHelp>
+          <TournamentHelp label="Game accuracy">
+            Accuracy combines each move's loss of winning chances with game volatility. It requires
+            complete adjacent evaluations and the actual starting score for custom positions.
+          </TournamentHelp>
         </Group>
       </Stack>
     </Group>

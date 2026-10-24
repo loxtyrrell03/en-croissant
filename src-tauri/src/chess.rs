@@ -945,6 +945,11 @@ pub async fn analyze_game(
 ) -> Result<Vec<MoveAnalysis>, Error> {
     validate_report_limits(&go_mode, options.search_limits.as_ref())
         .map_err(|message| Error::InvalidAnalysisLimits(message.into()))?;
+    if options.moves.len() > 2000 {
+        return Err(Error::InvalidAnalysisLimits(
+            "Game analysis supports at most 2,000 moves.".into(),
+        ));
+    }
     let cancel_flag = Arc::new(AtomicBool::new(false));
     if let Some(previous) = state
         .analysis_cancel_flags
@@ -4028,5 +4033,108 @@ mod report_protocol_tests {
         assert!(started.elapsed() < Duration::from_secs(1));
         task.await.unwrap();
         tokio::time::sleep(Duration::from_millis(30)).await;
+    }
+}
+
+#[cfg(test)]
+mod low_stockfish_acceptance_tests {
+    use super::*;
+
+    // Kept outside report_protocol_tests so the deterministic peer command
+    // cannot accidentally run a real engine acceptance or depend on its path.
+    #[tokio::test]
+    #[ignore = "requires EN_CROISSANT_STOCKFISH_ACCEPTANCE_ENGINE"]
+    async fn whole_game_low_completes_two_synthetic_games_with_exact_legal_evidence() {
+        let path = std::env::var("EN_CROISSANT_STOCKFISH_ACCEPTANCE_ENGINE")
+            .expect("Set the explicit path of an existing Stockfish executable");
+        for seed in [17_u32, 41] {
+            let mut chess = Chess::default();
+            let mut prefixes = vec![vec![]];
+            let mut moves = vec![];
+            let mut random = seed;
+            for _ in 0..80 {
+                let legal = chess.legal_moves();
+                random = random.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                let mut selected = None;
+                for offset in 0..legal.len() {
+                    let mv = legal[(random as usize + offset) % legal.len()].clone();
+                    let mut next = chess.clone();
+                    next.play_unchecked(&mv);
+                    if !next.is_game_over() {
+                        selected = Some((mv, next));
+                        break;
+                    }
+                }
+                let (mv, next) = selected.expect("a nonterminal synthetic continuation");
+                moves.push(UciMove::from_move(&mv, CastlingMode::Standard).to_string());
+                prefixes.push(moves.clone());
+                chess = next;
+            }
+            if seed == 41 {
+                prefixes.reverse();
+            }
+            let started = Instant::now();
+            let (mut proc, mut reader) = EngineProcess::new(path.clone().into()).await.unwrap();
+            let limits = GameAnalysisLimits {
+                depth: Some(8),
+                time_ms: Some(50),
+            };
+            let mut min_depth = u32::MAX;
+            let mut max_depth = 0;
+            for moves in &prefixes {
+                proc.set_options(EngineOptions {
+                    fen: Fen::from_position(Chess::default(), EnPassantMode::Legal).to_string(),
+                    moves: moves.clone(),
+                    search_moves: None,
+                    extra_options: vec![
+                        EngineOption {
+                            name: "MultiPV".into(),
+                            value: "2".into(),
+                        },
+                        EngineOption {
+                            name: "Threads".into(),
+                            value: "1".into(),
+                        },
+                        EngineOption {
+                            name: "Hash".into(),
+                            value: "32".into(),
+                        },
+                    ],
+                })
+                .await
+                .unwrap();
+                let best = analyze_report_position(
+                    &mut proc,
+                    &mut reader,
+                    &GoMode::Time(50),
+                    Some(&limits),
+                    &AtomicBool::new(false),
+                )
+                .await
+                .unwrap_or_else(|error| panic!("seed {seed}, prefix {}: {error:?}", moves.len()));
+                assert!(!best.is_empty());
+                let exact = &best[0];
+                assert!(exact.depth <= 8 && exact.depth > 0);
+                assert!(!exact.uci_moves.is_empty());
+                let mut pos = parse_fen_and_apply_moves(&proc.options.fen, moves).unwrap();
+                for uci in &exact.uci_moves {
+                    let mv = UciMove::from_ascii(uci.as_bytes())
+                        .unwrap()
+                        .to_move(&pos)
+                        .unwrap();
+                    pos.play_unchecked(&mv);
+                }
+                min_depth = min_depth.min(exact.depth);
+                max_depth = max_depth.max(exact.depth);
+            }
+            proc.kill().await.unwrap();
+            let elapsed_ms = started.elapsed().as_millis();
+            println!("LOW_ACCEPTANCE seed={seed} positions={} elapsed_ms={elapsed_ms} min_depth={min_depth} max_depth={max_depth}", prefixes.len());
+            assert_eq!(prefixes.len(), 81);
+            assert!(
+                elapsed_ms < 8000,
+                "Low must finish the whole synthetic game in seconds: {elapsed_ms}ms"
+            );
+        }
     }
 }

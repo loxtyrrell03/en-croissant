@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { commands } from "@/bindings";
 import EvalChart from "@/components/common/EvalChart";
+import { GameReportRunLabel } from "@/components/common/GameReportRunLabel";
 import ProgressButton from "@/components/common/ProgressButton";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { activeTabAtom } from "@/state/atoms";
@@ -78,6 +79,7 @@ function ReportPanel() {
           </Alert>
         )}
 
+        {(stats.whiteAccuracy !== null || stats.blackAccuracy !== null) && <GameReportRunLabel />}
         {(stats.whiteAccuracy !== null || stats.blackAccuracy !== null) && (
           <Group grow>
             <AccuracyCard

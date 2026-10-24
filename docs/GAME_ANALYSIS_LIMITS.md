@@ -51,6 +51,25 @@ build pass. The real controls were checked in Chrome at 320/390px, with doubled
 text, bounded/dismissible help, Low and custom request wiring. This is isolated
 source/component proof, not a native-window or hosted-phone delivery.
 
-Saved run-limit metadata, actual Stockfish whole-game acceptance, phone bounds
-and runtime delivery remain part of the active parity task. The existing phone
-playing-strength calibration must remain separate from a canonical game report.
+Completed desktop runs retain their engine display name, exact selected limits,
+completion time and a SHA-256 fingerprint of the legal main line and saved
+score/depth evidence in the portable `ECGameAnalysis` PGN header. The existing
+session store retains the same header. Standard `[%eval score,depth]` marks now
+preserve actual depth on PGN export/import. Comments, drawings and navigation
+do not invalidate a run; changed games, scores or depths do. A late checksum
+cannot attach metadata to a replacement request. Reports without verified run
+metadata show “Analysis limits not recorded” instead of borrowing preferences.
+
+Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-game-report-stockfish.ps1 -EnginePath ABSOLUTE_STOCKFISH_PATH`
+for explicit real-engine acceptance. The installed Stockfish completed two
+synthetic 80-ply games (81 exact legal scores each) at Low in 1,656 / 1,041 ms,
+including a reversed-order run; maximum reported depth was 8. This checks the
+actual native search helper with MultiPV 2, one thread and 32 MiB hash. It does
+not use the running shared engine server, a downloaded corpus or owner games.
+Native requests also reject more than 2,000 moves before starting an engine.
+
+Three persistence checks cover session/PGN restoration, stale evidence, malformed
+records and obsolete checksum completion; an actual Mantine report label/help
+check covers verified and invalidated labels. Phone bounds and runtime delivery
+remain part of the active parity task. The existing phone playing-strength
+calibration must remain separate from a canonical game report.

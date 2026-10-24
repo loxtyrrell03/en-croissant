@@ -12,6 +12,7 @@ import { getPGN } from "@/utils/chess";
 import { parseSanOrUci, positionFromFen } from "@/utils/chessops";
 import { isPrefix } from "@/utils/misc";
 import { getAnnotation } from "@/utils/score";
+import { GAME_REPORT_RUN_HEADER } from "@/utils/gameReportRun";
 import { playSound } from "@/utils/sound";
 import {
     createNode,
@@ -90,6 +91,7 @@ export interface TreeStoreState extends TreeState {
 
     setReportInProgress: (value: boolean) => void;
     setReportError: (value: string | null) => void;
+    setReportRun: (value: string) => void;
 
     practicePath: number[] | null;
     setPracticePath: (path: number[] | null) => void;
@@ -557,6 +559,11 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
 
         setReportError: (value) => set(produce((state: Draft<TreeStoreState>) => {
             state.report.error = value;
+        })),
+
+        setReportRun: (value) => set(produce((state: Draft<TreeStoreState>) => {
+            state.dirty = true;
+            state.headers.other = { ...state.headers.other, [GAME_REPORT_RUN_HEADER]: value };
         })),
 
         clearShapes: () =>
