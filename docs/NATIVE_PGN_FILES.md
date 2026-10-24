@@ -71,5 +71,5 @@ This is source and temporary-filesystem/component evidence. Browser control is
 disabled in Work settings; rendered layouts and installed-native interaction
 remain unverified, and no standalone/hosted release was published for this slice.
 The phone has its own single root-owned durable workspace writer rather than
-native file tabs. Database-row compare-before-write and automatic Clear tabs are
-separate remaining work; do not infer them from these file safeguards.
+native file tabs. Database-row compare-before-write is now source-verified in
+`DATABASE_SAVE_OWNERSHIP.md`; automatic Clear tabs remains separate work.

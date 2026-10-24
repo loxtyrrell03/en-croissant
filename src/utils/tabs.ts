@@ -82,6 +82,7 @@ const gameOriginSchema = z.discriminatedUnion("kind", [
         kind: z.literal("database"),
         database: z.string(),
         gameId: z.number(),
+        sourceIdentity: z.string().optional(),
     }),
     z.object({
         kind: z.literal("opening_review"),
@@ -292,7 +293,7 @@ function saveBinding(tab: Tab) {
                 origin.sourceIdentity ?? null,
             ]);
         case "database":
-            return JSON.stringify([origin.kind, origin.database, origin.gameId]);
+            return JSON.stringify([origin.kind, origin.database, origin.gameId, origin.sourceIdentity ?? null]);
         default:
             return JSON.stringify([origin.kind]);
     }
@@ -302,12 +303,6 @@ function savePgn(state: Pick<TreeState, "root" | "headers">) {
     return `${getPGN(state.root, { headers: state.headers, comments: true, extraMarkups: true, glyphs: true, variations: true })}\n\n`;
 }
 
-function assertWriteSucceeded(
-    result: { status: "ok"; data: unknown } | { status: "error"; error: string },
-) {
-    if (result.status === "error")
-        throw new Error(result.error || "The game could not be written.");
-}
 
 export function saveToFile({
     dir,
@@ -465,10 +460,18 @@ async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise
     const isTempFile = currentOrigin?.kind === "temp_file";
 
     if (databaseOrigin && !forceSaveAs) {
-        assertWriteSucceeded(
-            await commands.writeDbGame(databaseOrigin.database, databaseOrigin.gameId, pgn),
+        if (!databaseOrigin.sourceIdentity)
+            throw new Error(
+                "Original database-game identity is missing. Your changes are still open; reopen the source or save a separate copy.",
+            );
+        const written = await commands.writeDbGame(
+            databaseOrigin.database,
+            databaseOrigin.gameId,
+            pgn,
+            databaseOrigin.sourceIdentity,
         );
-        return complete();
+        if (written.status === "error") throw new Error(written.error);
+        return complete({ ...databaseOrigin, sourceIdentity: written.data });
     }
 
     const metadata = JSON.stringify(fileOrigin?.file.metadata ?? { tags: [], type: "game" });

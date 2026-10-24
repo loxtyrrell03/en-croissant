@@ -1,10 +1,11 @@
 pub(crate) mod encoding;
-pub mod tournament_import;
+mod game_save;
 mod models;
 mod ops;
 mod schema;
 mod search;
 mod search_index;
+pub mod tournament_import;
 
 use crate::{
     coach_persistence::ai_coach_sidecar_path_for_source,
@@ -1642,6 +1643,7 @@ fn normalize_games(games: Vec<(Game, Player, Player, Event, Site)>) -> Vec<Norma
     games
         .into_iter()
         .map(|(game, white, black, event, site)| {
+            let source_identity = game_save::identity(&game, &white, &black, &event, &site);
             let fen: Fen = game
                 .fen
                 .map(|f| Fen::from_ascii(f.as_bytes()).unwrap())
@@ -1655,6 +1657,7 @@ fn normalize_games(games: Vec<(Game, Player, Player, Event, Site)>) -> Vec<Norma
 
             NormalizedGame {
                 id: game.id,
+                source_identity: Some(source_identity),
                 event: event.name.unwrap_or_default(),
                 event_id: event.id,
                 site: site.name.unwrap_or_default(),
@@ -3075,10 +3078,24 @@ pub async fn write_db_game(
     file: PathBuf,
     game_id: i32,
     pgn: String,
+    expected_identity: Option<String>,
     state: tauri::State<'_, AppState>,
-) -> Result<(), Error> {
+) -> Result<String, Error> {
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    let identity = write_db_game_checked(db, game_id, &pgn, expected_identity.as_deref())?;
+    invalidate_database_search_index(&state, &file);
+    Ok(identity)
+}
 
+fn write_db_game_checked(
+    db: &mut SqliteConnection,
+    game_id: i32,
+    pgn: &str,
+    expected_identity: Option<&str>,
+) -> Result<String, Error> {
+    let expected = expected_identity.filter(|value| !value.is_empty()).ok_or_else(|| {
+        Error::DatabaseGameConflict("Original database-game identity is missing. Your changes are still open; reopen the source or save a separate copy.".into())
+    })?;
     let mut importer = Importer::new(None);
     let mut parsed = BufferedReader::new(pgn.as_bytes())
         .into_iter(&mut importer)
@@ -3086,63 +3103,66 @@ pub async fn write_db_game(
         .flatten();
     let temp_game = parsed.next().ok_or(Error::NoMovesFound)?;
 
-    let white_id = if let Some(name) = temp_game.white_name.as_deref() {
-        create_player(db, name)?.id
-    } else {
-        0
-    };
-    let black_id = if let Some(name) = temp_game.black_name.as_deref() {
-        create_player(db, name)?.id
-    } else {
-        0
-    };
-    let event_id = if let Some(name) = temp_game.event_name.as_deref() {
-        create_event(db, name)?.id
-    } else {
-        0
-    };
-    let site_id = if let Some(name) = temp_game.site_name.as_deref() {
-        create_site(db, name)?.id
-    } else {
-        0
-    };
+    db.immediate_transaction::<_, Error, _>(|db| {
+        if game_save::read_identity(db, game_id)? != expected {
+            return Err(Error::DatabaseGameConflict("This database game changed outside this tab. Your changes are still open; save a separate copy or reopen the source.".into()));
+        }
+        let white_id = if let Some(name) = temp_game.white_name.as_deref() {
+            create_player(db, name)?.id
+        } else {
+            0
+        };
+        let black_id = if let Some(name) = temp_game.black_name.as_deref() {
+            create_player(db, name)?.id
+        } else {
+            0
+        };
+        let event_id = if let Some(name) = temp_game.event_name.as_deref() {
+            create_event(db, name)?.id
+        } else {
+            0
+        };
+        let site_id = if let Some(name) = temp_game.site_name.as_deref() {
+            create_site(db, name)?.id
+        } else {
+            0
+        };
 
-    let final_material = get_material_count(temp_game.position.board());
-    let minimal_white_material = temp_game.material_count.white.min(final_material.white) as i32;
-    let minimal_black_material = temp_game.material_count.black.min(final_material.black) as i32;
-    let pawn_home = get_pawn_home(temp_game.position.board()) as i32;
-    let ply_count = iter_mainline_move_bytes(&temp_game.moves).count() as i32;
+        let final_material = get_material_count(temp_game.position.board());
+        let minimal_white_material = temp_game.material_count.white.min(final_material.white) as i32;
+        let minimal_black_material = temp_game.material_count.black.min(final_material.black) as i32;
+        let pawn_home = get_pawn_home(temp_game.position.board()) as i32;
+        let ply_count = iter_mainline_move_bytes(&temp_game.moves).count() as i32;
 
-    let updated_rows = diesel::update(games::table.filter(games::id.eq(game_id)))
-        .set((
-            games::event_id.eq(event_id),
-            games::site_id.eq(site_id),
-            games::date.eq(temp_game.date),
-            games::time.eq(temp_game.time),
-            games::round.eq(temp_game.round),
-            games::white_id.eq(white_id),
-            games::white_elo.eq(temp_game.white_elo),
-            games::black_id.eq(black_id),
-            games::black_elo.eq(temp_game.black_elo),
-            games::white_material.eq(minimal_white_material),
-            games::black_material.eq(minimal_black_material),
-            games::result.eq(temp_game.result),
-            games::time_control.eq(temp_game.time_control),
-            games::eco.eq(temp_game.eco),
-            games::ply_count.eq(ply_count),
-            games::fen.eq(temp_game.fen),
-            games::moves.eq(temp_game.moves),
-            games::pawn_home.eq(pawn_home),
-        ))
-        .execute(db)?;
+        let updated_rows = diesel::update(games::table.filter(games::id.eq(game_id)))
+            .set((
+                games::event_id.eq(event_id),
+                games::site_id.eq(site_id),
+                games::date.eq(temp_game.date),
+                games::time.eq(temp_game.time),
+                games::round.eq(temp_game.round),
+                games::white_id.eq(white_id),
+                games::white_elo.eq(temp_game.white_elo),
+                games::black_id.eq(black_id),
+                games::black_elo.eq(temp_game.black_elo),
+                games::white_material.eq(minimal_white_material),
+                games::black_material.eq(minimal_black_material),
+                games::result.eq(temp_game.result),
+                games::time_control.eq(temp_game.time_control),
+                games::eco.eq(temp_game.eco),
+                games::ply_count.eq(ply_count),
+                games::fen.eq(temp_game.fen),
+                games::moves.eq(temp_game.moves),
+                games::pawn_home.eq(pawn_home),
+            ))
+            .execute(db)?;
 
-    if updated_rows == 0 {
-        return Err(Error::GameNotFound(game_id.to_string()));
-    }
+        if updated_rows == 0 {
+            return Err(Error::GameNotFound(game_id.to_string()));
+        }
 
-    invalidate_database_search_index(&state, &file);
-
-    Ok(())
+        game_save::read_identity(db, game_id)
+    })
 }
 
 #[tauri::command]
@@ -3223,6 +3243,7 @@ pub async fn preload_reference_db(
 #[cfg(test)]
 mod tests {
     use super::*;
+    include!("game_save_tests.rs");
 
     #[test]
     fn otb_database_native_save_command_matches_generated_binding() {

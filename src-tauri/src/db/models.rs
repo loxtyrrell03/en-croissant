@@ -147,6 +147,8 @@ impl FromStr for Outcome {
 #[derive(Serialize, Deserialize, Clone, Type)]
 pub struct NormalizedGame {
     pub id: i32,
+    #[specta(optional)]
+    pub source_identity: Option<String>,
     pub fen: String,
     pub event: String,
     pub event_id: i32,

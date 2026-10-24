@@ -50,6 +50,7 @@ function GameCard({
                       kind: "database",
                       database: file,
                       gameId: game.id,
+                      sourceIdentity: game.source_identity ?? undefined,
                     },
                   });
                   navigate({ to: "/" });

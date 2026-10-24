@@ -155,6 +155,7 @@ function GamesTable({
               kind: "database",
               database: databasePath,
               gameId: game.id,
+              sourceIdentity: game.source_identity ?? undefined,
             }
           : undefined,
       });

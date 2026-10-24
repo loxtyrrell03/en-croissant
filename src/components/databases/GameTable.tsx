@@ -231,6 +231,7 @@ function GameTable() {
                 kind: "database",
                 database: file,
                 gameId: record.id,
+                sourceIdentity: record.source_identity ?? undefined,
               },
             });
             navigate({ to: "/" });
