@@ -1,3 +1,19 @@
+## 2026-10-25 phone workspace preferences
+
+- Phone Flip and per-workspace Database sources/local filters now use the
+  existing durable root writer. Hosted file/folder identity survives refresh;
+  device collections, Prep workspaces and blank boards remain separate.
+  Manual orientation does not change the training side or saved source games.
+- Player/General Prep source defaults are independent, explicit source choices
+  win, and stale/unmounted source callbacks cannot replace another workspace's
+  selections. Invalid preference maps preserve the saved workspace on load.
+  Legacy global settings remain defaults for new scopes; temporary imports
+  stay in their existing owner. Remaining date scopes are tracked separately.
+- All 434 phone tests/54 files, types and seven-file lint pass. WebApp retains
+  25 existing warnings and zero errors. Native clean source 75ea649f passes
+  76 checks/types and the production build (23.58 s). Clean phone verification
+  and hosted/rendered delivery remain; see docs/FILE_BOARD_PREFERENCES.md.
+
 ## 2026-10-25 file board and source preferences
 
 - Native file orientation is a presentation choice, restored on opening a file

@@ -24,10 +24,47 @@ Updates merge with the current saved map, preserve unrelated files/placements,
 and report invalid or unwritable storage without replacing malformed data.
 Optional preference failures do not fail a successfully written PGN.
 
-Primary verification: 76 checks across eight files, full TypeScript and scoped
+Native verification: primary and clean delivery source `75ea649f` pass 76 checks
+across eight files and full TypeScript. Primary scoped
 23-file lint pass. Fixtures exercise actual Flip/Rename controls, source/tab
 ownership, first-save rebinding, corrupt storage and pending-save orientation.
 Native filesystem I/O is mocked in these frontend checks. Browser control is
 disabled in Work settings; rendered/native-window and runtime delivery remain
-pending. Phone per-workspace view/source behavior is a separate outstanding
-slice; no phone service or owner data was changed by this milestone.
+pending. The clean production build passes in 23.58 seconds. No phone service or
+owner data was changed by the native milestone.
+
+## Phone workspace choices
+
+The optional `workspacePreferences` map lives in the existing root-owned
+IndexedDB workspace transaction. Files use their hosted file/folder identity;
+device-only imports use their collection ID. A hosted folder is one collection
+because the phone catalogue does not expose a per-game original file path.
+Prep workspaces and blank analysis boards retain separate identities. This map
+does not share Novelty's settings or IDs.
+
+Flip is durable across navigation, reopening games in the same file and remount.
+It leaves moves, saved source games and the Prep training side unchanged. Opening
+Prep preserves an explicit manual view; changing the training side or resetting
+Prep realigns it. Imported orientation and the existing training side remain the
+fallback when no manual choice exists. File cursor reset retains its saved view.
+
+Database source, local collection, player/colour, date bounds and result choices
+are independent per workspace. Legacy global preferences seed new scopes. Prep
+remembers its last mode and independent Player/General sources; explicit source
+choices win over mode restore. Hosted source references survive collection-ID
+refresh. Unsaved temporary Prep imports remain owned by their current workspace
+and do not become reusable source defaults. View/sort/strength/explorer defaults
+retain their existing architecture; rolling date/source scopes are tracked
+separately in the parity ledger.
+
+Source controls and in-flight callbacks check the actual displayed owner. Panels
+reset transient requests when switching workspace, while successful imports keep
+their durable data even if the original panel has closed. Malformed preference
+maps fail the existing preserved-workspace load path; save failures use the
+existing retained snapshot and retry UI.
+
+All 434 phone tests across 54 files, full types and seven-file lint pass. WebApp
+retains its 25 existing lint warnings, with zero errors. New checks include actual
+Flip/Database/Prep controls, file switching, mode restore, remount, stale owners,
+source identity refresh and saved-state validation. Browser/physical-device
+verification and hosted publication remain pending.
