@@ -52,6 +52,7 @@ test.each([false, true])(
       },
     );
     Element.prototype.scrollIntoView = vi.fn();
+    Element.prototype.scrollTo = vi.fn();
     const tree = parsePgnTokens([
       { type: "Comment", value: "Starting explanation" },
       { type: "San", value: "e4" },
