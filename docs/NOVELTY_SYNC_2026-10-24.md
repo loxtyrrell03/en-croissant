@@ -146,6 +146,40 @@ warnings). Embedded Engine Plans, analysis, live database selector and root-styl
 asset identities match the clean build. No native window was launched or
 controlled; the existing Dev App launcher continues to use primary source.
 
-The broader parity goal remains active. Analysis presets/budgets, phone canonical
-reports/Engine Plans/saved marks, date scopes and the remaining persistence
-families still require implementation or target-specific evaluation.
+The broader parity goal remains active. Phone analysis bounds/canonical reports,
+Engine Plans/saved marks, date scopes and the remaining persistence families
+still require implementation or target-specific evaluation.
+
+## Third verified delivery
+
+Clean source `5f5f45c48820d58e8f5d6edbeca70cf792d78190` includes native report
+presets/combined limits, exact selected-move recovery, request/game ownership,
+cancel/retry controls and verified PGN/session run-limit metadata. It also brings
+the newly added Novelty result-label fix into native Database/Prep/review/health
+and phone Database/Prep. Source details are in `GAME_ANALYSIS_LIMITS.md` and
+`DATABASE_RESULTS.md`.
+
+The clean delivery passes 54 selected checks across 11 files, full TypeScript
+and frontend/worker builds. The nine result checks pass again after the colour
+correction. Earlier native protocol checks and two real Stockfish 81-position
+Low runs establish the search behavior; the real runs finish in 1.66/1.04 s with
+legal exact evidence and depth no greater than 8. Suite counts overlap.
+
+Phone release `5f5f45c48820-ea68491a9bec` is live at the canonical HTTPS root.
+Health/version metadata agree, and library/workspace/native tournament settings
+reads pass. Connected Chrome at 390px verifies tiny/zero result labels, no row
+clipping/page overflow and actual White/draw/Black segment colours. Production
+verification caught stylesheet precedence overriding class-only colours; the
+final component binds them through Mantine's colour property. Original source,
+Database setup stage and Moves view are restored, with board/engine state
+preserved. This is PC-browser proof, not physical-phone interaction.
+
+Serve JSON is byte-identical and controller PID 24080 is retained; only the
+intended home server restarts. Owner enabled state and both native helper hashes
+are preserved. The standalone desktop rebuild passes with 22 existing warnings:
+51,084,800 bytes, SHA-256
+`6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d`.
+Embedded analysis, notation, result-bar and stylesheet keys match the clean
+build. The previous executable is retained for rollback. The active Dev session
+and shortcut remain; native-window interaction is unverified. Separate ongoing
+primary edits are excluded from the delivery.

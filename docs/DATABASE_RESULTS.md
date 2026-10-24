@@ -23,3 +23,9 @@ Chrome at 390px in light/dark themes and at 320px with doubled text, including
 the phone's minimum 3.9rem bar width, without clipped labels or page overflow.
 This is source/component proof; runtime delivery is recorded in the parity
 delivery receipt separately.
+
+Delivered from clean `5f5f45c4` in the standalone desktop and hosted phone.
+Connected Chrome at 390px verifies real saved-source result rows, including
+14% and 0% labels, bounded layout and computed White/draw/Black colours.
+Original source/setup/view/board state and the engine's Off state are restored.
+Physical-phone/native-window interaction remains unverified.

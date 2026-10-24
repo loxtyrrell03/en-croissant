@@ -1,42 +1,48 @@
 {
   "schema": 1,
-  "status": "second-batch-delivered",
+  "status": "third-batch-delivered",
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
     "schemaVersion": 1,
-    "releaseId": "cc3e71d20bca-95ba505d5b32",
-    "sourceCommit": "cc3e71d20bcaffc0604a6bb9ac0aae0ef9cce170",
+    "releaseId": "5f5f45c48820-ea68491a9bec",
+    "sourceCommit": "5f5f45c48820d58e8f5d6edbeca70cf792d78190",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "builtAt": "2026-10-24T15:00:46.9742238Z",
-    "appShellSha256": "95ba505d5b323385e005c0c101066d2087fbf5b8059776c4bc82a7fb725e3e65",
+    "builtAt": "2026-10-24T16:28:22.1104405Z",
+    "appShellSha256": "ea68491a9bec5f33eaafdfc33305f7c4bc522326ea91bba3da13dc466a525bec",
     "verified": [
       "matching canonical HTTPS health/version metadata",
       "library/workspace/native tournament settings reads",
       "Chrome connected Ready at 390px",
-      "source refresh progress, retained selected source and search focus",
-      "original source/view/board restored"
+      "real source tiny/zero result labels with no clipping or page overflow",
+      "computed White/draw/Black segment colours match theme",
+      "original source/setup/view/board/engine restored"
     ],
     "physicalPhoneVerified": false
   },
   "desktop": {
-    "exeBytes": 51086336,
-    "exeSha256": "e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952",
+    "exeBytes": 51084800,
+    "exeSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
     "assets": [
       {
-        "asset": "assets/EnginePlanExplorerPanel-DTOzPlfX.js",
+        "asset": "assets/AnalysisPanel-C_y_9SD9.js",
         "embedded": true,
-        "sha256": "01e6386968875aa93a2f32102fc50739c13934b2be913564b5598be84cf72dff"
+        "sha256": "238949ac8332a20f875418b0420d7ac6692ddc2589b4ec38db5f72d814ad46f5"
       },
       {
-        "asset": "assets/AnalysisPanel-D-HXxn2g.js",
+        "asset": "assets/GameNotation-C00bmFbg.js",
         "embedded": true,
-        "sha256": "428862788ffdb8e1a21da218eb09510ae0a15b5a1a06783cd236af471d17f58e"
+        "sha256": "0e0f8c899ad7cffbf66e4493c96a67ea1ec4ab98092ffa46689c2c689f9cb690"
       },
       {
-        "asset": "assets/LiveDatabaseFolderSelect-e8KwmuGH.js",
+        "asset": "assets/WdlResultBar-D7zA8rMs.js",
         "embedded": true,
-        "sha256": "b0854aef39bf427d94d9ec3eae2bcd33247fdf6fe3504051a7a9eaa3dcd259d8"
+        "sha256": "20ad59e4fc42b806e9bc75b9c3d08eb0a92186b2e2a15b28ee01d503854e0c79"
+      },
+      {
+        "asset": "assets/WdlResultBar-C7GRRlSC.css",
+        "embedded": true,
+        "sha256": "b31cfcc5ade5e28ee6540882a2e586afba61853281c6eed53cff1c7f6d623711"
       },
       {
         "asset": "assets/App-DXJraGpt.css",
@@ -48,7 +54,9 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "cc3e71d20bcaffc0604a6bb9ac0aae0ef9cce170"
+    "sourceCommit": "5f5f45c48820d58e8f5d6edbeca70cf792d78190",
+    "activeDevSessionPreserved": true,
+    "rollbackSha256": "e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952"
   },
   "checks": {
     "combinedFrontend": {
@@ -80,15 +88,40 @@
       "frontendAndWorkerBuilds": "passed",
       "nativeReleaseBuild": "passed with 22 existing warnings",
       "countsOverlapEarlierSuites": true
+    },
+    "thirdBatch": {
+      "passed": 54,
+      "files": 11,
+      "source": "5f5f45c48820d58e8f5d6edbeca70cf792d78190",
+      "resultColourCorrectionSubsetPassed": 9,
+      "types": "passed in clean delivery",
+      "scopedLint": "passed; WebApp has exactly 25 unchanged baseline warnings",
+      "frontendAndWorkerBuilds": "passed",
+      "nativeReleaseBuild": "passed with 22 existing warnings",
+      "realStockfishLow": [
+        {
+          "positions": 81,
+          "elapsedMs": 1656,
+          "minDepth": 8,
+          "maxDepth": 8
+        },
+        {
+          "positions": 81,
+          "elapsedMs": 1041,
+          "minDepth": 2,
+          "maxDepth": 8
+        }
+      ],
+      "countsOverlapEarlierSuites": true
     }
   },
   "tailscaleServeUnchanged": true,
   "remainingWork": "NOVELTY_SYNC_GAPS_2026-10-24.md",
   "previousBatch": {
-    "sourceCommit": "8ff91aaac8bb1c4cea21a35fc285368601781d1c",
-    "phoneShellSha256": "96154a421e0dcd93a57b5c56037093d8ee1ee7413d16e32662aa4444abdc1a00",
-    "exeSha256": "4b6499ae43479b076a6532addd4fe8fbadf3c8368249bca6043021f156b83f9d",
-    "exeBytes": 51106816
+    "sourceCommit": "cc3e71d20bcaffc0604a6bb9ac0aae0ef9cce170",
+    "phoneShellSha256": "95ba505d5b323385e005c0c101066d2087fbf5b8059776c4bc82a7fb725e3e65",
+    "exeSha256": "e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952",
+    "exeBytes": 51086336
   },
   "controllerPid": 24080,
   "ownerServicesEnabled": true

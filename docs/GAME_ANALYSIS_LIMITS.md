@@ -73,3 +73,7 @@ records and obsolete checksum completion; an actual Mantine report label/help
 check covers verified and invalidated labels. Phone bounds and runtime delivery
 remain part of the active parity task. The existing phone playing-strength
 calibration must remain separate from a canonical game report.
+
+The native controls/runner/metadata are included in the clean `5f5f45c4`
+standalone rebuild; see the parity delivery receipt. The native window was not
+controlled. Phone analysis bounds remain a separate implementation task.
