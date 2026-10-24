@@ -97,7 +97,7 @@ export function setPhoneDatabasePreference(
         previous = state.workspacePreferences?.[key];
     const value =
         typeof update === "function" ? update(previous?.database?.[field] ?? fallback) : update;
-    if ((previous?.database?.[field] ?? fallback) === value) return state;
+    if (previous?.database?.[field] === value) return state;
     return {
         ...state,
         workspacePreferences: {

@@ -78,6 +78,20 @@ test("the phone PGN import action opens an unplayed FEN and respects a later exp
         });
         expect(container.querySelector(`.orientation-${orientation ?? "black"}`)).not.toBeNull();
       });
+      const importedId = webStateSession.getSnapshot().state.board.sourceDatabaseId;
+      await act(async () =>
+        (container.querySelector('button[data-view="import"]') as HTMLButtonElement).click(),
+      );
+      const open = Array.from(
+        container.querySelectorAll<HTMLButtonElement>(`[data-import-id="${importedId}"] button`),
+      ).find((button) => button.textContent === "Open")!;
+      await act(async () => open.click());
+      expect(webStateSession.getSnapshot().state.board).toMatchObject({
+        startFen: fen,
+        orientation: orientation ?? "black",
+        line: [],
+      });
+      expect(container.querySelector(`.orientation-${orientation ?? "black"}`)).not.toBeNull();
     }
     expect(container.textContent).not.toContain("This view could not open");
   } finally {

@@ -1,6 +1,7 @@
 import { INITIAL_FEN } from "chessops/fen";
 import type { WebCompanionState } from "./model";
 import { validPhoneWorkspacePreferences } from "./workspacePreferences";
+import { validPhoneSourceArchives } from "./sourceArchives";
 
 const DB_NAME = "en-croissant-web-companion";
 const DB_VERSION = 1;
@@ -158,6 +159,7 @@ function isValidState(value: unknown): value is WebCompanionState {
     return (
         candidate.version === 1 &&
         validPhoneWorkspacePreferences(candidate.workspacePreferences) &&
+        validPhoneSourceArchives(candidate.sourceArchives) &&
         Array.isArray(candidate.databases) &&
         candidate.databases.every(
             (database) =>

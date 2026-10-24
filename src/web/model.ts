@@ -219,6 +219,7 @@ export type WebWorkspacePreferences = {
     };
 };
 export type WebCompanionState = {
+    sourceArchives?: import("./sourceArchives").PhoneSourceArchives;
     workspacePreferences?: Record<string, WebWorkspacePreferences>;
     gameReports?: Record<string, import("./gameReport").SavedWebGameReport>;
     lastAppliedPhonePrepRequestId?: string;
