@@ -1,4 +1,9 @@
-import { publishedNoOpponentScore, hasUnscoredNoOpponentHistory } from "./publishedNoOpponentScore";
+import { publishedGameResult } from "./publishedPairingResult";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
+import { prepareTournamentForecastEvidence } from "./tournamentForecastEvidence";
+import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
+import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import { pair as pairDutch } from "@echecs/swiss/dutch";
 import { pair as pairBurstein } from "@echecs/swiss/burstein";
 import { pair as pairDubov } from "@echecs/swiss/dubov";
@@ -64,40 +69,14 @@ function virtualAccelerationRound(
   };
 }
 
-function compactResult(value: string | null): string {
-  return (value ?? "").replace(/\s+/g, "").toLocaleLowerCase();
-}
-
-function resultIsDraw(result: string): boolean {
-  return (
-    result.includes("\u00bd") ||
-    result.includes("1/2") ||
-    result.includes(".5")
-  );
-}
-
 function playedGame(pairing: TournamentPairing): Game | null {
-  if (pairing.whiteStartNumber === null || pairing.blackStartNumber === null) return null;
-  const base = {
-    white: String(pairing.whiteStartNumber),
-    black: String(pairing.blackStartNumber),
-  };
-  const result = compactResult(pairing.result);
+  const result = publishedGameResult(pairing);
   if (!result) return null;
-  if (result === "0-0" || result === "0f-0f" || result === "---") {
-    return { ...base, result: "none", forfeit: "both" };
-  }
-  if (!pairing.decided) return null;
-  if (resultIsDraw(result)) return { ...base, result: "draw" };
-  if (result.startsWith("1f-") || result.startsWith("+-")) {
-    return { ...base, result: "white", forfeit: "black" };
-  }
-  if (result.endsWith("-1f") || result.endsWith("-+")) {
-    return { ...base, result: "black", forfeit: "white" };
-  }
-  if (result.startsWith("1-")) return { ...base, result: "white" };
-  if (result.endsWith("-1")) return { ...base, result: "black" };
-  return null;
+  const base = { white: String(pairing.whiteStartNumber), black: String(pairing.blackStartNumber) };
+  if (result.forfeit === "both") return { ...base, result: "none", forfeit: "both" };
+  if (result.forfeit === "white") return { ...base, result: "black", forfeit: "white" };
+  if (result.forfeit === "black") return { ...base, result: "white", forfeit: "black" };
+  return result.result === "none" ? null : { ...base, result: result.result };
 }
 
 function mostLikelyGame(
@@ -145,12 +124,14 @@ function completedRounds(
       return estimated ? [estimated] : [];
     });
     const byes = rows.map(pairingBye).filter((bye): bye is Bye => bye !== null);
-    for (const player of snapshot.players) {
-      if (
-        player.halfPointByeRounds?.includes(round) &&
-        !byes.some((bye) => bye.player === String(player.startNumber))
-      ) {
-        byes.push({ player: String(player.startNumber), kind: "half" });
+    // These are actual source no-game awards, not invented games used to
+    // force an aggregate adjustment into the history-only engine.
+    if (snapshot.evidenceVersion === 1) for (const status of snapshot.roundStatus ?? []) {
+      if (status.round === round && status.award !== null &&
+          !byes.some(bye => bye.player === String(status.startNumber)) &&
+          !rows.some(row => row.whiteStartNumber !== null && row.blackStartNumber !== null &&
+            (row.whiteStartNumber === status.startNumber || row.blackStartNumber === status.startNumber))) {
+        byes.push({ player: String(status.startNumber), kind: status.award === 1 ? "pairing" : status.award === 0.5 ? "half" : "zero" });
       }
     }
     return { games, byes };
@@ -181,7 +162,12 @@ export function calculateExactSwissForecast(
   system: SwissPairingSystem = "dutch",
   accelerationOverride: SwissAcceleration | null | "auto" = "auto",
 ): ExactSwissForecast | null {
-  if (hasUnscoredNoOpponentHistory(snapshot, targetRound)) return null;
+  if (!isValidTournamentTargetRound(snapshot, targetRound)) return null;
+  snapshot = normalizeTournamentResults(snapshot);
+  const evidence = prepareTournamentForecastEvidence(snapshot, targetRound);
+  if (!evidence.solverCompatible) return null;
+  snapshot = evidence.snapshot;
+  if (hasUnknownPriorPairingResults(snapshot, targetRound)) return null;
   snapshot = swissParticipationScenario(snapshot, targetRound);
   if (snapshot.incompletePairingRounds?.some(round => round > 0 && round < targetRound)) return null;
   const acceleration =

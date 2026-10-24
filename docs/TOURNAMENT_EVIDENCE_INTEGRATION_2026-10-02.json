@@ -1,0 +1,109 @@
+{
+  "schema": "forecast-evidence-integration-verification-v1",
+  "externalBase": "C:\\Users\\Lox\\Documents\\Novelty\\PairingResearch\\2026-10-02",
+  "receipts": [
+    {
+      "path": "evidence-admission/synthetic-run-10.json",
+      "sha256": "6cfcfae29c29acc7b58d0800d2bdc284dcb82c2ca0b5d856548b066b324a8719"
+    },
+    {
+      "path": "evidence-admission/en-synthetic-run-3.json",
+      "sha256": "20f6c03746a9f3ea84a43348c02e88a4ee149d7632fd55948a340c4080a12fb1"
+    },
+    {
+      "path": "evidence-admission/novelty-primary-final-1.json",
+      "sha256": "4c1dfd1fd2f9136aba26a14bb562c93a834546f23bf2a37a232c6fcdffc4339c"
+    },
+    {
+      "path": "evidence-admission/en-primary-final-1.json",
+      "sha256": "642693fa6dc62ed1eec6aeda8645767fd54c6cd2a46eb37c719449025d8ef759"
+    },
+    {
+      "path": "evidence-consumers/20261002T191613244477Z-068cfb80/novelty.json",
+      "sha256": "fae1fcbe003ea69df5259f5bc52ce5c456231f93a0baf0ff5cb4e00302b07eff"
+    },
+    {
+      "path": "evidence-consumers/20261002T191613244477Z-068cfb80/en-feature.json",
+      "sha256": "da1b9a904283888e65c5477d1081ac946c4c4ea54e30be5d4d8532d40a8af2f5"
+    },
+    {
+      "path": "primary-mirror-preflight/20261002T192611943269Z-applied-2b94f5a0/novelty-primary-consumers.json",
+      "sha256": "f1f78ad3c96d81c635459a74c695357dca26bafe95832e6e2153c90c5421fe6d"
+    },
+    {
+      "path": "primary-mirror-preflight/20261002T192611943269Z-applied-2b94f5a0/en-primary-consumers.json",
+      "sha256": "2d257f87a6cd856303634ac9e94508c105c142c34c3a1d53d9a0ed6b2d88770a"
+    },
+    {
+      "path": "primary-mirror-preflight/20261002T192611943269Z-applied-2b94f5a0/applied.json",
+      "sha256": "71f10086684d8283edb246230eac1ca46fc18a98d7a164ae002723540c909bac"
+    },
+    {
+      "path": "prior-result-fixture-check/novelty-run-1.json",
+      "sha256": "6c94fcda37659ff8c0eae2eafb9f80817644d5aa731cb4247a3507c40af846eb"
+    },
+    {
+      "path": "prior-result-fixture-check/en-run-1.json",
+      "sha256": "8abc240db3d9de62f30d7644abd7ebf30ab2440857f6b60f0219b85834d986d1"
+    },
+    {
+      "path": "prior-result-fixture-check/novelty-primary-run-1.json",
+      "sha256": "0bf29acad8232e473471e34602c59b7dedc9bc8faab108cfa713d06d06ca3be3"
+    },
+    {
+      "path": "prior-result-fixture-check/en-primary-run-1.json",
+      "sha256": "c7523d2892a88d8ed17ccccb1c5d0b60b6e80bfbd188921c7d6e9b14d05398b2"
+    },
+    {
+      "path": "prior-result-fixture-check/novelty-pure-run-1.json",
+      "sha256": "a0b5c48e29353c7a69f16eca94b29208c715ba07a717676adc06108a2fd986f1"
+    },
+    {
+      "path": "prior-result-fixture-check/en-pure-run-1.json",
+      "sha256": "c30eba18264caf89a2a49226f8080dc42f6f232e9dd04840a772fffa4adde421"
+    },
+    {
+      "path": "prior-result-fixture-check/novelty-primary-pure-run-1.json",
+      "sha256": "10a4d5d540261fe7788d1f73791d27927a75a9a34edefaedbbf3d575caf26ad6"
+    },
+    {
+      "path": "prior-result-fixture-check/en-primary-pure-run-1.json",
+      "sha256": "a7a23f50ad7a418401f6a1144d00bfc4cc28f2ad9fa78fe2c6452a0238836ebf"
+    },
+    {
+      "path": "native-evidence-prep/test-fixture-admission-v1.json",
+      "sha256": "41eeea6ae9d06de96bef84b3c953d608916771da4dc8e56ebca2228e57e75a29"
+    },
+    {
+      "path": "native-evidence-prep/en-test-fixture-admission-v1.json",
+      "sha256": "bd733ac66a7729bf71b3cb934ee82a1cb7a8012ef51b2b76982527c0a1d772f8"
+    },
+    {
+      "path": "evidence-tests-primary-mirror-v1/receipt.json",
+      "sha256": "b86e91cca2bada412373e1f7fc7582b96ede4b9a4380d23204da67b659f702f5"
+    },
+    {
+      "path": "evidence-tests-primary-mirror-v2/receipt.json",
+      "sha256": "e014dfbe2b7674b68eb3560c62664639959c5abd46e7167482473ce8d7e24bb1"
+    },
+    {
+      "path": "native-evidence-prep/frontend-prepared-serialization-probe-v3.json",
+      "sha256": "8fce46ff63cd61f334cf2931273ea6025d6b4e0b9c37e5de13cda480bf4ec5bd"
+    },
+    {
+      "path": "native-evidence-prep/final-headings-source-preparation-v1.json",
+      "sha256": "92d901b3cd75a59f6f9b05f77dca650dfe2c64961a7d4330246181d9ee4c6c06"
+    }
+  ],
+  "scope": "Actual-source tiny admission/consumer/fixture adapters. No real solver, worker, native, browser, full Vitest or project type checking.",
+  "remaining": [
+    "Coordinated full types/Vitest and real-engine fixtures",
+    "Native compile/tests: producer is prepared separately and intentionally not committed in frontend milestone",
+    "Rendered UX and separately verified desktop/phone delivery",
+    "Traced/offline fresh acquisition and complete generator/scorer/source/runtime freeze"
+  ],
+  "nativePreparationOnly": {
+    "noveltySha256": "4334b21ff6d2739c9fa5233bb05d1f3de123575ab3456abcadca5ba36375d296",
+    "enSha256": "a4414cad73e51773ba2c3832b9e4a413f9848599f9d6852b23fe6755a0f1e120"
+  }
+}

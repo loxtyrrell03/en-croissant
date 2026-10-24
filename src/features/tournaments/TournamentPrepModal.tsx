@@ -1,3 +1,6 @@
+import { updateTournamentPrep } from "./tournamentPrepUpdates";
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
+import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pushToast } from "@/features/tournaments/ui";
 import { confirmDialog } from "@/features/tournaments/ui";
@@ -12,6 +15,7 @@ import {
 import { TournamentDiscovery } from "./TournamentDiscovery";
 import { TournamentEventPreview } from "./TournamentEventPreview";
 import { selectTournamentEntry, matchTournamentImportOpponent } from "./tournamentRoster";
+import { setManualResult, type ManualTournamentResult, type ManualGameResult } from "./manualTournamentResults";
 import { TournamentTrackerView, opponentReady, type OpponentAction } from "./TournamentTrackerView";
 import {
   isChessResultsTournamentUrl,
@@ -120,6 +124,7 @@ export function TournamentPrepModal({
   const { forecast, isCalculating: isCalculatingForecast } = usePairingForecast(
     record?.snapshot ?? null,
     record?.userStartNumber ?? null,
+    record?.manualResults,
   );
   function cancelInspect() { inspectSequence.current++; setInspectBusy(false); }
   async function inspectTournament(sourceUrl: string) {
@@ -235,15 +240,17 @@ export function TournamentPrepModal({
       (candidate) => candidate.player.startNumber === startNumber,
     )?.color;
     if (forecastSide) return forecastSide;
-    const directPairing = record.snapshot.pairings.find(
+    const snapshot = normalizeTournamentResults(record.snapshot);
+    const targetRound = snapshot.nextRound;
+    const directPairing = isValidTournamentTargetRound(snapshot, targetRound) ? snapshot.pairings.find(
       (pairing) =>
-        pairing.round === record.snapshot.nextRound &&
+        pairing.round === targetRound &&
         ((pairing.whiteStartNumber === record.userStartNumber && pairing.blackStartNumber === startNumber) ||
           (pairing.blackStartNumber === record.userStartNumber && pairing.whiteStartNumber === startNumber)),
-    );
+    ) : undefined;
     if (directPairing?.whiteStartNumber === record.userStartNumber) return "white";
     if (directPairing?.blackStartNumber === record.userStartNumber) return "black";
-    return projectedSideFromHistory(record.snapshot, record.userStartNumber);
+    return projectedSideFromHistory(snapshot, record.userStartNumber);
   }
 
   function openPreparedOpponent(opponent: TournamentOpponentDatabase, userSide: TournamentSide) {
@@ -310,6 +317,17 @@ export function TournamentPrepModal({
     } catch (caught) { if (mounted.current) setError(caught instanceof Error ? caught.message : String(caught)); }
     finally { if (mounted.current) setSettingBusy(false); }
   }
+  async function changeManualResult(input: ManualTournamentResult, result: ManualGameResult | null) {
+    if (!record || settingBusy) return;
+    setSettingBusy(true); setError(null);
+    try {
+      const saved = await updateTournamentPrep(record.id, current => ({ ...current,
+        manualResults: setManualResult(current.snapshot, current.manualResults, input, result) }));
+      if (!saved) throw new Error("This tracker is no longer available.");
+      if (mounted.current) await refreshRecords();
+    } catch (caught) { if (mounted.current) setError(caught instanceof Error ? caught.message : String(caught)); }
+    finally { if (mounted.current) setSettingBusy(false); }
+  }
   async function markReviewed() {
     if (!record || settingBusy) return;
     setSettingBusy(true); setError(null);
@@ -368,7 +386,7 @@ export function TournamentPrepModal({
         projectedSideFor={projectedSideFor} onOpponent={startOpponentPrep} onOpenDatabase={onOpenDatabase}
         onToggleUpdate={toggleAutoUpdate} onCheck={() => startSync("roster")}
         onStop={() => cancelTournamentPrepSync(record.id)} onRemove={stopTracking}
-        onBack={() => {navigateTo(null); setPreview(null); setError(null);}} onChooseEntry={chooseEntry} onReviewed={markReviewed} onUnfollow={unfollow} />
+        onBack={() => {navigateTo(null); setPreview(null); setError(null);}} onChooseEntry={chooseEntry} onManualResult={changeManualResult} onReviewed={markReviewed} onUnfollow={unfollow} />
     </HomeModal>
   );
 }

@@ -1,15 +1,14 @@
+import { publishedGameResult, publishedResultLabel } from "./publishedPairingResult";
+import { completedForecastHeading } from "./completedForecastHeading";
 import type { TournamentPairing, TournamentSnapshot } from "@/features/tournaments/platform";
 import type { PairingForecast } from "./pairingForecast";
 
 export function tournamentResultLabel(pairing: TournamentPairing, snapshot: TournamentSnapshot): string {
-  const result = pairing.result?.trim();
-  if (result && !["*", "-", "--", "..."].includes(result)) return result;
-  if (pairing.whiteStartNumber === null || pairing.blackStartNumber === null) return "Score not reported";
-  return pairing.round === snapshot.liveRound || pairing.round <= snapshot.completedRound ? "Awaiting result" : "Scheduled";
+  return publishedResultLabel(pairing, snapshot);
 }
 
 export function forecastHeading(forecast: PairingForecast | null, beforePlay: boolean): string {
-  if (forecast?.kind === "complete") return "Tournament complete";
+  if (forecast?.kind === "complete") return completedForecastHeading(forecast);
   const round = forecast?.round;
   const prefix = round ? `Round ${round} · ` : "";
   if (forecast?.kind === "confirmed") return `${prefix}Published pairing`;
@@ -26,7 +25,7 @@ export function precedingResultContext(snapshot: TournamentSnapshot, forecast: P
   const round = forecast.round - 1;
   const games = snapshot.pairings.filter(pairing => pairing.round === round &&
     pairing.whiteStartNumber !== null && pairing.blackStartNumber !== null);
-  const reported = games.filter(pairing => pairing.decided).length;
+  const reported = games.filter(pairing => publishedGameResult(pairing) !== null).length;
   const incomplete = snapshot.incompletePairingRounds?.includes(round) ?? false;
   const label = !games.length ? `Round ${round} results not available` :
     `Round ${round}: ${reported} of ${games.length} listed games have results${incomplete ? " · list incomplete" : ""}`;

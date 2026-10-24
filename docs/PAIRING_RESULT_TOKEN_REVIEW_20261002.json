@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-02",
+  "supersedesTokenScopeOf": "349c12636832e1007326f277b46045401d295d07",
+  "removedUnsupportedTokens": [
+    "1w-0l",
+    "0l-1w"
+  ],
+  "recognition": "unknown; no score or forfeit implication",
+  "checks": {
+    "featureTinyTokens": 2,
+    "primaryTinyTokens": 2,
+    "native": "Static exact decoder omission and unknown-token regression assertions only; no native build during coordinated timing"
+  },
+  "sourceHashes": {
+    "src/features/tournaments/publishedPairingResult.ts": {
+      "feature": "2bc2a9644f09703e581e66f745722e62bdc58d2dc9c3ec934fffa7bfea69afe7",
+      "primary": "2bc2a9644f09703e581e66f745722e62bdc58d2dc9c3ec934fffa7bfea69afe7"
+    },
+    "src/features/tournaments/tests/publishedPairingResult.test.ts": {
+      "feature": "394efc244430c76b94f5fbfa65745fe5b143f2f698c1efa4e1380a6d4ffe2c76",
+      "primary": "394efc244430c76b94f5fbfa65745fe5b143f2f698c1efa4e1380a6d4ffe2c76"
+    },
+    "src-tauri/tournament-core/src/tournament.rs": {
+      "feature": "84ad0c369bc9c6d83baff98613c63e3e413b2dacd274361032936a8b3d5f77f4",
+      "primary": "84ad0c369bc9c6d83baff98613c63e3e413b2dacd274361032936a8b3d5f77f4"
+    }
+  },
+  "limits": "The broad frontend/native/browser/replay receipt predates this two-token narrowing. No deployment or service restart."
+}

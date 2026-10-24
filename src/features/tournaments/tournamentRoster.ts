@@ -1,6 +1,8 @@
 import type { TournamentPlayer, TournamentSnapshot } from "@/features/tournaments/platform";
 import { tournamentPlayerKey, type TournamentOpponentDatabase, type TournamentPrepRecord } from "./tournamentPrepStore";
 
+import { reconcileManualResults } from "./manualTournamentResults";
+
 export type TournamentIdentity = Pick<TournamentPlayer, "fideId" | "name">;
 
 function identityLookup<T extends TournamentIdentity>(values: T[]): (identity: TournamentIdentity) => T | null | undefined {
@@ -70,7 +72,7 @@ export function mergeTournamentRoster(record: TournamentPrepRecord, snapshot: To
   }
   return {newOpponents, record: {...record, url:snapshot.sourceUrl, title:snapshot.title,
     userStartNumber:user?.startNumber ?? null, userName:user?.name ?? record.userName, userFideId:user?.fideId ?? record.userFideId,
-    snapshot, opponents, seenPlayerKeys:[...seenPlayerKeys], retiredOpponents:previous.filter(item=>!used.has(item) && item.collectionId !== null),
+    snapshot, manualResults: reconcileManualResults(snapshot, record.manualResults), opponents, seenPlayerKeys:[...seenPlayerKeys], retiredOpponents:previous.filter(item=>!used.has(item) && item.collectionId !== null),
     lastRosterSyncAt:new Date().toISOString()}};
 }
 

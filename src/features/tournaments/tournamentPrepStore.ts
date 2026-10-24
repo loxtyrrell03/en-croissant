@@ -1,5 +1,7 @@
 import { desktopApi, isDesktop, type TournamentSnapshot } from "@/features/tournaments/platform";
 
+import { reconcileManualResults, type ManualTournamentResult } from "./manualTournamentResults";
+
 export const TOURNAMENT_PREP_KEY = "encroissant.tournamentPrep";
 export const TOURNAMENT_PREP_UPDATED_EVENT = "encroissant:tournament-prep-updated";
 
@@ -41,6 +43,7 @@ export interface TournamentPrepRecord {
   /** Imported identities no longer in the active roster; never discard their games. */
   retiredOpponents?: TournamentOpponentDatabase[];
   seenPlayerKeys?: string[];
+  manualResults?: ManualTournamentResult[];
 }
 
 export type TournamentPrepMap = Record<string, TournamentPrepRecord>;
@@ -161,6 +164,7 @@ export function parseTournamentPreps(raw: string | null): TournamentPrepMap {
           : Math.max(2020, CURRENT_YEAR - 3),
       autoUpdate: value.autoUpdate === true,
       createdAt,
+      manualResults: reconcileManualResults(value.snapshot, value.manualResults),
       lastRosterSyncAt: validIso(value.lastRosterSyncAt),
       lastDatabaseSyncAt: validIso(value.lastDatabaseSyncAt),
       snapshot: {
