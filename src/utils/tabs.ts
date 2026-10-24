@@ -50,7 +50,15 @@ function getDefaultGameFilename(headers: GameHeaders) {
         filename = filename ? `${date}_${filename}` : date;
     }
 
-    filename = filename.replace(INVALID_FILENAME_CHARS, " ").replace(/\s+/g, " ").trim();
+    filename = filename.replace(INVALID_FILENAME_CHARS, " ").replace(/\p{Cc}/gu, " ").replace(/\s+/g, " ").trim().replace(/[. ]+$/, "");
+    let bounded = "";
+    const encoder = new TextEncoder();
+    for (const character of filename) {
+        if (encoder.encode(bounded + character).length > 160) break;
+        bounded += character;
+    }
+    filename = bounded.replace(/[. ]+$/, "");
+    if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(filename)) filename = `Game ${filename}`;
 
     if (filename.length > 0) {
         return filename;
@@ -269,6 +277,7 @@ type SaveRequest = {
     isUserSave?: boolean;
     forceSaveAs?: boolean;
     copyOnly?: boolean;
+    automaticName?: boolean;
     pgn: string;
     headers: GameHeaders;
     binding: string;
@@ -312,6 +321,7 @@ export function saveToFile({
     isUserSave,
     forceSaveAs,
     copyOnly,
+    automaticName,
 }: {
     dir: string;
     tab: Tab | undefined;
@@ -320,6 +330,7 @@ export function saveToFile({
     isUserSave?: boolean;
     forceSaveAs?: boolean;
     copyOnly?: boolean;
+    automaticName?: boolean;
 }) {
     if (!tab) return Promise.reject(new Error("This game tab is no longer open."));
     const owner = tabTreeOwner(store);
@@ -336,6 +347,7 @@ export function saveToFile({
         isUserSave,
         forceSaveAs,
         copyOnly,
+        automaticName,
         pgn: savePgn(state),
         headers: structuredClone(state.headers),
         binding: saveBinding(tab),
@@ -402,7 +414,7 @@ async function performSave(request: SaveRequest, queue: SaveQueue): Promise<bool
 }
 
 async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise<boolean> {
-    const { dir, tab, target, store, isUserSave, forceSaveAs, copyOnly, pgn } = request;
+    const { dir, tab, target, store, isUserSave, forceSaveAs, copyOnly, automaticName, pgn } = request;
     if (copyOnly && !forceSaveAs) throw new Error("A copy must use a separate destination.");
     const current = target.get();
     if (!current || current.value !== tab.value)
@@ -503,7 +515,7 @@ async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise
         const headers = request.headers;
         const suggestedName = getDefaultGameFilename(headers) || "Game";
         const defaultPath = await resolve(dir, `${suggestedName}.pgn`);
-        const userChoice = await save({
+        const userChoice = automaticName ? defaultPath : await save({
             defaultPath,
             filters: [{ name: "PGN", extensions: ["pgn"] }],
         });
@@ -532,14 +544,14 @@ async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise
         );
         filePath = created.file;
         if (promoting) {
-            const sourceCoachPath = getAiCoachSidecarPath(fileOrigin.file.path);
-            const destinationCoachPath = getAiCoachSidecarPath(filePath);
-            if ((await exists(sourceCoachPath)) && !(await exists(destinationCoachPath))) {
-                try {
+            try {
+                const sourceCoachPath = getAiCoachSidecarPath(fileOrigin.file.path);
+                const destinationCoachPath = getAiCoachSidecarPath(filePath);
+                if ((await exists(sourceCoachPath)) && !(await exists(destinationCoachPath))) {
                     await copyFile(sourceCoachPath, destinationCoachPath);
-                } catch {
-                    /* Optional analysis never invalidates a saved PGN. */
                 }
+            } catch {
+                /* Optional analysis never invalidates a saved PGN. */
             }
         }
         nextOrigin = {

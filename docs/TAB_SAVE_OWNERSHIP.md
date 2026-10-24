@@ -18,7 +18,7 @@ Save and Close waits for completion. Cancellation, write failure or newer edits
 keep the original tab open with retry available. Background close controls do not
 activate or save another tab. Unsaved meaningful draft boards also receive the
 existing close confirmation. Ordinary close still offers explicit discard;
-the separate automatic Clear tabs workflow has not yet been added.
+the automatic Clear tabs workflow is now source-verified in `CLEAR_TABS.md`.
 
 Game selection captures its source and latest request. Late reads/parses cannot
 replace another source, overtake a newer request, or overwrite edits made while
@@ -51,5 +51,5 @@ save, drawing, report and phone checks total 55 checks across seven files, with
 types and scoped lint passing. Clean delivery source `549faef9` independently
 passes those same checks and the production Vite build (23.64 seconds); both
 owned exporter files match primary. This repair is also source-only.
-Database-row compare-before-write is now source-verified in `DATABASE_SAVE_OWNERSHIP.md`; automatic Clear tabs remains separate work.
+Database-row compare-before-write is now source-verified in `DATABASE_SAVE_OWNERSHIP.md`; automatic Clear tabs is source-verified in `CLEAR_TABS.md`.
 Do not infer runtime delivery from these source checks.
