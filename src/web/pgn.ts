@@ -12,6 +12,7 @@ import {
 } from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
+import { phoneDrawingsFromComments } from "./phoneDrawings";
 import type {
     WebColor,
     WebDatabase,
@@ -93,6 +94,7 @@ export function parsePgnDatabase(
         countPlayer(players, black);
 
         const webGame: WebGame = {
+            rootShapes: phoneDrawingsFromComments(game.comments),
             id: `${id}:${index + 1}`,
             databaseId: id,
             databaseName: name,
@@ -334,6 +336,7 @@ function buildWebMove({
     const annotations = formatWebNags(child.data.nags);
     const startingComments = formatWebComments(child.data.startingComments);
     const comments = formatWebComments(child.data.comments);
+    const shapes = phoneDrawingsFromComments(child.data.comments);
     const variations = buildWebVariationLines({
         children: child.children.slice(1),
         position: positionAfter,
@@ -347,6 +350,7 @@ function buildWebMove({
     if (annotations.length > 0) webMove.annotations = annotations;
     if (startingComments.length > 0) webMove.startingComments = startingComments;
     if (comments.length > 0) webMove.comments = comments;
+    if (shapes.length > 0) webMove.shapes = shapes;
     if (variations.length > 0) webMove.variations = variations;
 
     return {
@@ -395,6 +399,7 @@ function webMoveToLineMove(move: WebMove): WebPrepLineMove {
         clockSeconds: move.clockSeconds,
         timestampSeconds: move.timestampSeconds,
         annotations: move.annotations,
+        shapes: move.shapes,
         comments: move.comments,
         startingComments: move.startingComments,
     };

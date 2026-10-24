@@ -686,7 +686,7 @@ describe("web companion PGN prep index", () => {
         const e4 = stats.find((stat) => stat.move === "e4");
 
         expect(d4?.strength?.engineCpLoss).toBe(0);
-        expect(d4?.strength?.detail).toContain("Engine best");
+        expect(d4?.strength?.detail).toContain("Local eval best");
         expect(e4?.strength?.engineCpLoss).toBe(40);
         expect(sortWebDatabaseMoveStats(stats, "engineHigh").map((stat) => stat.move)).toEqual([
             "d4",
