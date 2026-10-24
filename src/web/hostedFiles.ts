@@ -83,6 +83,7 @@ const WEB_LIBRARY_BASE = `${import.meta.env.BASE_URL}web-library/`;
 const HOSTED_DATABASE_ROOT = "Databases";
 let hostedLibraryCache: WebHostedLibrary | null = null;
 let hostedLibraryRequest: Promise<WebHostedLibrary> | null = null;
+let hostedCacheGeneration = 0;
 const hostedPathCache = new Map<string, WebHostedPathLoadResult>();
 const hostedPathRequests = new Map<string, Promise<WebHostedPathLoadResult>>();
 const hostedScopeCache = new Map<string, WebHostedLibrary>();
@@ -95,11 +96,12 @@ export async function getHostedWebLibrary(options?: {
     if (hostedLibraryCache) return hostedLibraryCache;
     if (hostedLibraryRequest) return hostedLibraryRequest;
 
+    const generation = hostedCacheGeneration;
     const request = fetchHostedJson(`${WEB_LIBRARY_BASE}manifest.json`).then((data) => {
         const library = data
             ? { available: true, manifest: normalizeManifest(data) }
             : { available: false, manifest: null };
-        hostedLibraryCache = library;
+        if (generation === hostedCacheGeneration) hostedLibraryCache = library;
         return library;
     });
     hostedLibraryRequest = request;
@@ -124,13 +126,14 @@ export async function getHostedWebLibraryPath(
     const url = new URL(`${WEB_LIBRARY_BASE}manifest.json`, window.location.href);
     url.searchParams.set("scope", "directory");
     url.searchParams.set("path", normalizedPath);
+    const generation = hostedCacheGeneration;
     const request = fetchHostedJson(url.toString())
         .then((data) => normalizeHostedPathResponse(data, normalizedPath))
         .then((result) => {
-            hostedPathCache.set(normalizedPath, result);
+            if (generation === hostedCacheGeneration) hostedPathCache.set(normalizedPath, result);
             return result;
         })
-        .finally(() => hostedPathRequests.delete(normalizedPath));
+        .finally(() => { if (hostedPathRequests.get(normalizedPath) === request) hostedPathRequests.delete(normalizedPath); });
     hostedPathRequests.set(normalizedPath, request);
     return request;
 }
@@ -149,20 +152,22 @@ export async function getHostedWebLibraryScope(
     const url = new URL(`${WEB_LIBRARY_BASE}manifest.json`, window.location.href);
     url.searchParams.set("scope", "recursive");
     url.searchParams.set("path", normalizedPath);
+    const generation = hostedCacheGeneration;
     const request = fetchHostedJson(url.toString())
         .then((data) => {
             if (!data) return { available: false, manifest: null } satisfies WebHostedLibrary;
             const fullLibrary = { available: true, manifest: normalizeManifest(data) };
             const library = scopeHostedLibrary(fullLibrary, normalizedPath);
-            hostedScopeCache.set(normalizedPath, library);
+            if (generation === hostedCacheGeneration) hostedScopeCache.set(normalizedPath, library);
             return library;
         })
-        .finally(() => hostedScopeRequests.delete(normalizedPath));
+        .finally(() => { if (hostedScopeRequests.get(normalizedPath) === request) hostedScopeRequests.delete(normalizedPath); });
     hostedScopeRequests.set(normalizedPath, request);
     return request;
 }
 
 export function clearHostedWebLibraryCache() {
+    hostedCacheGeneration++;
     hostedLibraryCache = null;
     hostedLibraryRequest = null;
     hostedPathCache.clear();

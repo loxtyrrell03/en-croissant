@@ -184,9 +184,7 @@ import {
 } from "./hostedDatabaseIndex";
 import {
   getHostedRawFileUrl,
-  getHostedDatabaseFolders,
   getHostedPgnFilesInPath,
-  getHostedWebLibrary,
   getHostedWebLibraryPath,
   getHostedWebLibraryScope,
   readHostedPgnFolder,
@@ -197,6 +195,7 @@ import {
   type WebHostedFolderReadProgress,
   type WebHostedLibrary,
 } from "./hostedFiles";
+import { useHostedDatabaseFolders } from "./useHostedDatabaseFolders";
 import type {
   WebBoardState,
   WebCoachReviewRecord,
@@ -4246,6 +4245,7 @@ function DatabaseUnderBoardPanel({
               <>
                 <DatabaseFolderSelect
                   size="xs"
+                  onRefresh={hostedDatabases.refresh}
                   value={selectedLocalPickerValue}
                   onChange={(value) => void chooseLocalDatabase(value)}
                   data={sourceOptions}
@@ -6425,6 +6425,7 @@ function PrepUnderBoardPanel({
             />
             <DatabaseFolderSelect
               data={sourceOptions}
+              onRefresh={hostedDatabases.refresh}
               value={selectedPrepSourceValue}
               onChange={(value) => void choosePrepSource(value)}
               placeholder="Prep source"
@@ -9562,42 +9563,6 @@ function useWebExplorerOptions() {
     mastersOptions,
     setMastersOptions,
     explorerOptions,
-  };
-}
-
-function useHostedDatabaseFolders() {
-  const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setLibrary(await getHostedWebLibrary());
-    } catch (loadError) {
-      console.error(loadError);
-      setLibrary(null);
-      setError(
-        loadError instanceof Error ? loadError.message : "The hosted database list did not load.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const folders = useMemo(() => (library ? getHostedDatabaseFolders(library) : []), [library]);
-
-  return {
-    library,
-    folders,
-    loading,
-    error,
-    refresh: load,
   };
 }
 

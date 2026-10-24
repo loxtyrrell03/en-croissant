@@ -56,7 +56,7 @@ import useSWR from "swr/immutable";
 import { useStore } from "zustand";
 import PieceComponent from "@/components/common/Piece";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
-import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
+import DatabaseFolderSelect from "@/components/common/LiveDatabaseFolderSelect";
 import {
   currentLocalOptionsAtom,
   currentPlanExplorerDataAtom,

@@ -57,7 +57,7 @@ import {
   type RepertoireGapReport,
 } from "@/bindings";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
-import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
+import DatabaseFolderSelect from "@/components/common/LiveDatabaseFolderSelect";
 import { createOpeningHealthTrainingItem } from "@/components/files/opening";
 import {
   activeTabAtom,
