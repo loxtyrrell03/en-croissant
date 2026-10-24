@@ -204,5 +204,25 @@
     "sourceIncludesDrawings": false,
     "renderedByThisAudit": false,
     "relatedDeliveryReceipt": "TOURNAMENT_PREDICTION_HISTORY.md"
+  },
+  "pendingPhoneDrawings": {
+    "sourceCommit": "405eceada931c8e0cc3988a13b6f62c36f1daf75",
+    "checks": {
+      "tests": 85,
+      "files": 8,
+      "types": true,
+      "scopedLintWarnings": 0,
+      "scopedLintErrors": 0,
+      "webAppBaselineWarnings": 25,
+      "canonicalPhoneBuildSeconds": 19.92
+    },
+    "bundle": {
+      "path": "WebApp-BjM7w_44.js",
+      "bytes": 423964,
+      "sha256": "d3d59430ce0fea281d29b0c716aeeb77e0872c32c9ceb82115c27465e9a04b2d"
+    },
+    "responsiveVisualVerified": false,
+    "published": false,
+    "reason": "Browser control disabled; source/component checks pass, rendered phone checks pending"
   }
 }
