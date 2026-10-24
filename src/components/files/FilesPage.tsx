@@ -39,8 +39,6 @@ import {
   filesSortModeAtom,
   manualFileEntryOrderAtom,
   pinnedFileEntriesAtom,
-  recentFilesAtom,
-  tabsAtom,
   type FilesSortMode,
 } from "@/state/atoms";
 import { capitalize } from "@/utils/format";
@@ -277,8 +275,6 @@ function FilesPage() {
     loadDirectory,
     loadAllDirectories,
   } = useFileDirectory(documentDir);
-  const setTabs = useSetAtom(tabsAtom);
-  const setRecentFiles = useSetAtom(recentFilesAtom);
   const [pinnedFiles, setPinnedFiles] = useAtom(pinnedFileEntriesAtom);
   const setArchivedFiles = useSetAtom(archivedFileEntriesAtom);
   const [manualOrder, setManualOrder] = useAtom(manualFileEntryOrderAtom);
@@ -536,96 +532,10 @@ function FilesPage() {
   );
 
   const handleRenamed = useCallback(
-    ({ oldPath, newPath, oldEntry, newEntry }: RenameResult) => {
-      setTabs((currentTabs) =>
-        currentTabs.map((tab) => {
-          if (tab.gameOrigin.kind !== "file" && tab.gameOrigin.kind !== "temp_file") {
-            return tab;
-          }
-
-          const file = tab.gameOrigin.file;
-          const isAffected =
-            oldEntry.type === "directory"
-              ? isSameOrDescendantPath(file.path, oldPath)
-              : file.path === oldPath;
-
-          if (!isAffected) {
-            return tab;
-          }
-
-          const isRenamedFile = oldEntry.type === "file" && file.path === oldPath;
-          const nextFile = {
-            ...file,
-            path: replacePathPrefix(file.path, oldPath, newPath),
-            name: isRenamedFile && newEntry.type === "file" ? newEntry.name : file.name,
-          };
-
-          return {
-            ...tab,
-            name:
-              isRenamedFile && newEntry.type === "file" && tab.name === file.name
-                ? newEntry.name
-                : tab.name,
-            gameOrigin: {
-              ...tab.gameOrigin,
-              file: nextFile,
-            },
-          };
-        }),
-      );
-
-      setRecentFiles((recentFiles) =>
-        recentFiles.map((file) => {
-          const isAffected =
-            oldEntry.type === "directory"
-              ? isSameOrDescendantPath(file.path, oldPath)
-              : file.path === oldPath;
-
-          if (!isAffected) {
-            return file;
-          }
-
-          const isRenamedFile = oldEntry.type === "file" && file.path === oldPath;
-
-          return {
-            ...file,
-            path: replacePathPrefix(file.path, oldPath, newPath),
-            name: isRenamedFile && newEntry.type === "file" ? newEntry.name : file.name,
-          };
-        }),
-      );
-
-      setPinnedFiles((pinnedFiles) =>
-        Array.from(
-          new Set(
-            pinnedFiles.map((path) => {
-              const isAffected =
-                oldEntry.type === "directory"
-                  ? isSameOrDescendantPath(path, oldPath)
-                  : path === oldPath;
-
-              return isAffected ? replacePathPrefix(path, oldPath, newPath) : path;
-            }),
-          ),
-        ),
-      );
-      setArchivedFiles((archivedFiles) =>
-        Array.from(
-          new Set(
-            archivedFiles.map((path) => {
-              const isAffected =
-                oldEntry.type === "directory"
-                  ? isSameOrDescendantPath(path, oldPath)
-                  : path === oldPath;
-
-              return isAffected ? replacePathPrefix(path, oldPath, newPath) : path;
-            }),
-          ),
-        ),
-      );
+    ({ oldPath, newPath }: RenameResult) => {
       replaceManualOrderPathPrefix(oldPath, newPath);
     },
-    [replaceManualOrderPathPrefix, setArchivedFiles, setPinnedFiles, setRecentFiles, setTabs],
+    [replaceManualOrderPathPrefix],
   );
 
   const refreshDirectory = useCallback(() => mutate(), [mutate]);

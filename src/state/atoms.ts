@@ -53,6 +53,8 @@ import { getTabGameNumber, getTabPracticeKey, type Tab, tabSchema } from "@/util
 import { getEnginesDir } from "../utils/directories";
 import type { Session } from "../utils/session";
 import { createAsyncZodStorage, createZodStorage } from "./utils";
+import { workspacePreferenceStorage } from "@/utils/workspacePreferences";
+import { reportFilePreferenceFailure } from "@/utils/fileBoardPreferences";
 
 const zodArray = <Input, Output>(itemSchema: z.ZodType<Output, z.ZodTypeDef, Input>) => {
     const catchValue = {} as never;
@@ -486,11 +488,15 @@ export type DatabaseSourcePreference =
 export const defaultDatabaseSourceAtom = atomWithStorage<DatabaseSourcePreference>(
     "default-database-source",
     { type: "lch_all" },
+    undefined,
+    { getOnInit: true },
 );
 
 export const defaultCompareDatabasesAtom = atomWithStorage<(string | null)[]>(
     "default-compare-databases",
     [],
+    undefined,
+    { getOnInit: true },
 );
 
 export type StoredDatabaseLocalOptions = Omit<LocalOptions, "fen" | "path">;
@@ -506,7 +512,9 @@ export type DatabasePanelFileSettings = {
 
 export const databasePanelSettingsByFileAtom = atomWithStorage<
     Record<string, DatabasePanelFileSettings>
->("database-panel-settings-by-file", {});
+>("database-panel-settings-by-file", {}, workspacePreferenceStorage(reportFilePreferenceFailure), {
+    getOnInit: true,
+});
 
 export type ComparePanelSlotSettings = {
     sourceValue: string | null;
@@ -522,7 +530,12 @@ export type ComparePanelFileSettings = {
 
 export const comparePanelSettingsByFileAtom = atomWithStorage<
     Record<string, ComparePanelFileSettings>
->("database-compare-settings-by-file", {});
+>(
+    "database-compare-settings-by-file",
+    {},
+    workspacePreferenceStorage(reportFilePreferenceFailure),
+    { getOnInit: true },
+);
 
 export type OpponentPrepPanelStage = "setup" | "train";
 

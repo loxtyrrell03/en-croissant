@@ -1,3 +1,5 @@
+import { findWorkspacePreference, setWorkspacePreference } from "@/utils/workspacePreferences";
+import { reportFilePreferenceFailure } from "@/utils/fileBoardPreferences";
 import {
   Alert,
   Box,
@@ -140,7 +142,7 @@ function DatabaseComparePanel() {
     rememberedCompareDatabasesAtom,
   );
   const [compareSettingsByFile, setCompareSettingsByFile] = useAtom(comparePanelSettingsByFileAtom);
-  const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
+  const savedCompareSettings = findWorkspacePreference(compareSettingsByFile, settingsKey);
   const [moveHealthSide, setMoveHealthSide] = useAtom(databaseMoveHealthSideAtom);
   const [slotLocalOptions, setSlotLocalOptions] = useState<StoredDatabaseLocalOptions[]>(() => [
     getDefaultCompareSlotOptions(baseLocalOptions),
@@ -148,6 +150,7 @@ function DatabaseComparePanel() {
   ]);
   const [openingsBySearchId, setOpeningsBySearchId] = useState<Record<string, Opening[]>>({});
   const appliedSettingsKeyRef = useRef<string | null>(null);
+  const appliedOwnerRef = useRef<string | null>(null);
   const skipNextPersistKeyRef = useRef<string | null>(null);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
@@ -191,11 +194,19 @@ function DatabaseComparePanel() {
 
   useEffect(() => {
     const hydrationKey = settingsKey ?? "__default-compare-settings__";
-    if (appliedSettingsKeyRef.current === hydrationKey) return;
+    if (
+      appliedSettingsKeyRef.current === hydrationKey &&
+      appliedOwnerRef.current === (tab?.value ?? null)
+    )
+      return;
 
     if (!savedCompareSettings && !databasesLoaded) return;
+    const rebind =
+      appliedSettingsKeyRef.current !== null && appliedOwnerRef.current === (tab?.value ?? null);
     appliedSettingsKeyRef.current = hydrationKey;
-    if (settingsKey) skipNextPersistKeyRef.current = settingsKey;
+    appliedOwnerRef.current = tab?.value ?? null;
+    skipNextPersistKeyRef.current = rebind ? null : settingsKey;
+    if (rebind) return;
 
     const defaultSlotOptions = getDefaultCompareSlotOptions(baseLocalOptions);
     if (savedCompareSettings) {
@@ -238,6 +249,7 @@ function DatabaseComparePanel() {
     setMoveHealthSide,
     setSelectedDatabases,
     settingsKey,
+    tab?.value,
   ]);
 
   useEffect(() => {
@@ -333,13 +345,15 @@ function DatabaseComparePanel() {
       moveHealthSide,
     };
 
-    setCompareSettingsByFile((current) => {
-      if (equal(current[settingsKey], nextSettings)) return current;
-      return {
-        ...current,
-        [settingsKey]: nextSettings,
-      };
-    });
+    try {
+      setCompareSettingsByFile((current) =>
+        equal(findWorkspacePreference(current, settingsKey), nextSettings)
+          ? current
+          : setWorkspacePreference(current, settingsKey, nextSettings),
+      );
+    } catch (error) {
+      reportFilePreferenceFailure(error);
+    }
   }, [
     baseLocalOptions,
     lichessOptions,

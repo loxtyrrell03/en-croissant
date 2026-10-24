@@ -17,7 +17,8 @@ import { basename, join, sep } from "@tauri-apps/api/path";
 import { rename } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
 import Fuse from "fuse.js";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useSetAtom, useStore as useAtomStore } from "jotai";
+import { noteFileMove } from "@/utils/fileSourceMoves";
 import { useContextMenu } from "mantine-contextmenu";
 import Draggable, { type DraggableEvent } from "react-draggable";
 import {
@@ -154,18 +155,6 @@ function getEventPoint(event: DraggableEvent): { x: number; y: number } | null {
 
 function getEntryTimestamp(entry: Entry): number {
   return entry.lastModified;
-}
-
-function replacePathPrefix(path: string, oldPath: string, newPath: string) {
-  if (path === oldPath) {
-    return newPath;
-  }
-
-  if (path.startsWith(`${oldPath}/`) || path.startsWith(`${oldPath}\\`)) {
-    return `${newPath}${path.slice(oldPath.length)}`;
-  }
-
-  return path;
 }
 
 function isSameOrDescendantPath(path: string, parent: string) {
@@ -580,6 +569,7 @@ function DirectoryNode({
   parentPath: string;
   children?: React.ReactNode;
 }) {
+  const atomStore = useAtomStore();
   const rowRef = useRef<HTMLDivElement>(null);
   const didDragRef = useRef(false);
   const suppressClickRef = useRef(false);
@@ -722,6 +712,7 @@ function DirectoryNode({
 
       try {
         await rename(sourcePath, targetPath);
+        noteFileMove(atomStore, sourcePath, targetPath, node.type === "directory");
         if (node.type !== "directory" && isPgnFile(node)) {
           await rename(
             sourcePath.replace(/\.pgn$/i, ".info"),
@@ -732,16 +723,6 @@ function DirectoryNode({
           );
         }
         await refreshDirectory();
-        setPinnedPaths((current) =>
-          Array.from(
-            new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
-          ),
-        );
-        setArchivedPaths((current) =>
-          Array.from(
-            new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
-          ),
-        );
         dragContext.replaceOrderedPathPrefix(sourcePath, targetPath);
         if (target.path !== dragContext.documentDir) {
           setExpandedIds((prev) => (prev.includes(target.path) ? prev : [...prev, target.path]));

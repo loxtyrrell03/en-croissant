@@ -1,3 +1,18 @@
+## 2026-10-25 file board and source preferences
+
+- Native file orientation is a presentation choice, restored on opening a file
+  or selecting its games without dirtying saved content. First Save/Save as
+  preserve the live view. Prep sources/modes are independent by file, mode and
+  side/under-board placement, with current-owner guards and explicit handoffs.
+- Existing Database/Compare maps hydrate synchronously and accept legacy path
+  aliases. Successful file/folder moves migrate all preference maps and source
+  bindings before optional sidecars. Corrupt/unwritable preferences are reported
+  and preserved; optional view persistence cannot fail a successful PGN write.
+- Seventy-six frontend checks across eight files, full types and 23-file lint
+  pass. Actual Flip/Rename controls are covered; native I/O remains mocked.
+  Clean/build verification, phone workspace preferences and runtime/rendered
+  delivery remain separate. See docs/FILE_BOARD_PREFERENCES.md.
+
 ## 2026-10-24 clean PGN transaction verification
 
 - Clean delivery source 094b2b0e independently passes 18 filesystem tests,

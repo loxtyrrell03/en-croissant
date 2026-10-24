@@ -1,3 +1,5 @@
+import { findWorkspacePreference, setWorkspacePreference } from "@/utils/workspacePreferences";
+import { reportFilePreferenceFailure } from "@/utils/fileBoardPreferences";
 import {
   ActionIcon,
   Alert,
@@ -337,7 +339,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     () => getScopedDatabasePanelSettingsKey(getTabWorkspaceKey(tab), scope),
     [scope, tab],
   );
-  const savedPanelSettings = settingsKey ? databasePanelSettingsByFile[settingsKey] : undefined;
+  const savedPanelSettings = findWorkspacePreference(databasePanelSettingsByFile, settingsKey);
   const sessions = useAtomValue(sessionsAtom);
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsStateAtom);
@@ -433,6 +435,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
 
   const [tabType, setTabType] = useAtom(dbTabAtom);
   const appliedSettingsKeyRef = useRef<string | null>(null);
+  const appliedOwnerRef = useRef<string | null>(null);
   const skipNextPersistKeyRef = useRef<string | null>(null);
   const effectiveDefaultDatabaseSource = useMemo(
     () => effectiveDatabaseSourcePreference(defaultDatabaseSource),
@@ -441,9 +444,17 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
 
   useEffect(() => {
     const hydrationKey = settingsKey ?? "__default-database-settings__";
-    if (appliedSettingsKeyRef.current === hydrationKey) return;
+    if (
+      appliedSettingsKeyRef.current === hydrationKey &&
+      appliedOwnerRef.current === (tab?.value ?? null)
+    )
+      return;
+    const rebind =
+      appliedSettingsKeyRef.current !== null && appliedOwnerRef.current === (tab?.value ?? null);
     appliedSettingsKeyRef.current = hydrationKey;
-    if (settingsKey) skipNextPersistKeyRef.current = settingsKey;
+    appliedOwnerRef.current = tab?.value ?? null;
+    skipNextPersistKeyRef.current = rebind ? null : settingsKey;
+    if (rebind) return;
 
     const source = effectiveDatabaseSourcePreference(
       savedPanelSettings?.source ?? effectiveDefaultDatabaseSource,
@@ -476,6 +487,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     setReferenceDatabase,
     setTabType,
     settingsKey,
+    tab?.value,
   ]);
 
   const selectedDefaultSource = useMemo(() => {
@@ -510,13 +522,15 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
       tabType,
     };
 
-    setDatabasePanelSettingsByFile((current) => {
-      if (equal(current[settingsKey], nextSettings)) return current;
-      return {
-        ...current,
-        [settingsKey]: nextSettings,
-      };
-    });
+    try {
+      setDatabasePanelSettingsByFile((current) =>
+        equal(findWorkspacePreference(current, settingsKey), nextSettings)
+          ? current
+          : setWorkspacePreference(current, settingsKey, nextSettings),
+      );
+    } catch (error) {
+      reportFilePreferenceFailure(error);
+    }
   }, [
     lichessOptions,
     localOptions,

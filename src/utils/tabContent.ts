@@ -1,5 +1,17 @@
 import { INITIAL_FEN } from "chessops/fen";
 import type { TreeState } from "./treeReducer";
+import { getPGN } from "./chess";
+
+/** Orientation is a remembered view choice, not an unsaved game edit. */
+export function getTabContentPgn(state: Pick<TreeState, "root" | "headers">): string {
+    return getPGN(state.root, {
+        headers: { ...state.headers, orientation: undefined },
+        comments: true,
+        extraMarkups: true,
+        glyphs: true,
+        variations: true,
+    });
+}
 
 export function hasMeaningfulTabContent(state: TreeState): boolean {
     const root = state.root;

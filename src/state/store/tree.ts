@@ -72,6 +72,7 @@ export interface TreeStoreState extends TreeState {
         shapes?: DrawShape[];
     }) => void;
     setHeaders: (payload: GameHeaders) => void;
+    setOrientation: (orientation: "white" | "black") => void;
     setResult: (payload: Outcome) => void;
     setShapes: (shapes: DrawShape[]) => void;
     setScore: (score: Score) => void;
@@ -502,6 +503,12 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                     }
                 }),
             ),
+        setOrientation: (orientation) =>
+            set(
+                produce((state) => {
+                    state.headers.orientation = orientation;
+                }),
+            ),
         setHeaders: (headers) =>
             set(
                 produce((state) => {
@@ -557,14 +564,23 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
             );
         },
 
-        setReportError: (value) => set(produce((state: Draft<TreeStoreState>) => {
-            state.report.error = value;
-        })),
+        setReportError: (value) =>
+            set(
+                produce((state: Draft<TreeStoreState>) => {
+                    state.report.error = value;
+                }),
+            ),
 
-        setReportRun: (value) => set(produce((state: Draft<TreeStoreState>) => {
-            state.dirty = true;
-            state.headers.other = { ...state.headers.other, [GAME_REPORT_RUN_HEADER]: value };
-        })),
+        setReportRun: (value) =>
+            set(
+                produce((state: Draft<TreeStoreState>) => {
+                    state.dirty = true;
+                    state.headers.other = {
+                        ...state.headers.other,
+                        [GAME_REPORT_RUN_HEADER]: value,
+                    };
+                }),
+            ),
 
         clearShapes: () =>
             set(
@@ -810,15 +826,18 @@ function addAnalysis(
             }
             const curScore = analysis[i].best[0].score;
             const color = cur.halfMoves % 2 === 1 ? "white" : "black";
-            const annotation = i > 0 && prevScore ? getAnnotation(
-                prevprevScore?.value || null,
-                prevScore?.value || null,
-                curScore.value,
-                color,
-                prevMoves,
-                analysis[i].is_sacrifice,
-                cur.san || "",
-            ) : "";
+            const annotation =
+                i > 0 && prevScore
+                    ? getAnnotation(
+                          prevprevScore?.value || null,
+                          prevScore?.value || null,
+                          curScore.value,
+                          color,
+                          prevMoves,
+                          analysis[i].is_sacrifice,
+                          cur.san || "",
+                      )
+                    : "";
             if (annotation) {
                 cur.annotations = [...cur.annotations, annotation];
 

@@ -20,6 +20,13 @@ import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
 import type { TabSaveTarget } from "./tabSaveTarget";
 import { tabTreeOwner } from "@/state/store/treeOwner";
 import { withPgnFileTask } from "./pgnFileQueue";
+import {
+    applyFileOrientation,
+    reportFilePreferenceFailure,
+    saveFileBoardPreferences,
+} from "./fileBoardPreferences";
+import { filePreferenceIdentity } from "./workspacePreferences";
+import { getTabContentPgn } from "./tabContent";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 
@@ -50,7 +57,12 @@ function getDefaultGameFilename(headers: GameHeaders) {
         filename = filename ? `${date}_${filename}` : date;
     }
 
-    filename = filename.replace(INVALID_FILENAME_CHARS, " ").replace(/\p{Cc}/gu, " ").replace(/\s+/g, " ").trim().replace(/[. ]+$/, "");
+    filename = filename
+        .replace(INVALID_FILENAME_CHARS, " ")
+        .replace(/\p{Cc}/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/[. ]+$/, "");
     let bounded = "";
     const encoder = new TextEncoder();
     for (const character of filename) {
@@ -58,7 +70,8 @@ function getDefaultGameFilename(headers: GameHeaders) {
         bounded += character;
     }
     filename = bounded.replace(/[. ]+$/, "");
-    if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(filename)) filename = `Game ${filename}`;
+    if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(filename))
+        filename = `Game ${filename}`;
 
     if (filename.length > 0) {
         return filename;
@@ -151,7 +164,7 @@ export function getTabWorkspaceKey(tab?: Tab | null): string | null {
     switch (tab.gameOrigin.kind) {
         case "file":
         case "temp_file":
-            return tab.gameOrigin.file.path;
+            return filePreferenceIdentity(tab.gameOrigin.file.path);
         case "database":
             return `database:${tab.gameOrigin.database}:${tab.gameOrigin.gameId}`;
         case "opening_review":
@@ -225,7 +238,7 @@ export async function createTab({
             initialState === undefined && pgn !== undefined
                 ? await hydrateOnlinePgnClocks(pgn)
                 : pgn;
-        const tree = initialState ?? (await parsePGN(hydratedPgn ?? "", headers?.fen));
+        let tree = initialState ?? (await parsePGN(hydratedPgn ?? "", headers?.fen));
         if (
             gameOrigin &&
             (gameOrigin.kind === "file" || gameOrigin.kind === "temp_file") &&
@@ -242,6 +255,8 @@ export async function createTab({
                 tree.position = position;
             }
         }
+        if (gameOrigin?.kind === "file" || gameOrigin?.kind === "temp_file")
+            tree = applyFileOrientation(tree, gameOrigin.file.path);
         sessionStorage.setItem(id, JSON.stringify({ version: 0, state: tree }));
     }
 
@@ -279,6 +294,7 @@ type SaveRequest = {
     copyOnly?: boolean;
     automaticName?: boolean;
     pgn: string;
+    contentPgn: string;
     headers: GameHeaders;
     binding: string;
 };
@@ -302,7 +318,12 @@ function saveBinding(tab: Tab) {
                 origin.sourceIdentity ?? null,
             ]);
         case "database":
-            return JSON.stringify([origin.kind, origin.database, origin.gameId, origin.sourceIdentity ?? null]);
+            return JSON.stringify([
+                origin.kind,
+                origin.database,
+                origin.gameId,
+                origin.sourceIdentity ?? null,
+            ]);
         default:
             return JSON.stringify([origin.kind]);
     }
@@ -311,7 +332,6 @@ function saveBinding(tab: Tab) {
 function savePgn(state: Pick<TreeState, "root" | "headers">) {
     return `${getPGN(state.root, { headers: state.headers, comments: true, extraMarkups: true, glyphs: true, variations: true })}\n\n`;
 }
-
 
 export function saveToFile({
     dir,
@@ -349,6 +369,7 @@ export function saveToFile({
         copyOnly,
         automaticName,
         pgn: savePgn(state),
+        contentPgn: getTabContentPgn(state),
         headers: structuredClone(state.headers),
         binding: saveBinding(tab),
     };
@@ -414,7 +435,8 @@ async function performSave(request: SaveRequest, queue: SaveQueue): Promise<bool
 }
 
 async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise<boolean> {
-    const { dir, tab, target, store, isUserSave, forceSaveAs, copyOnly, automaticName, pgn } = request;
+    const { dir, tab, target, store, isUserSave, forceSaveAs, copyOnly, automaticName, pgn } =
+        request;
     if (copyOnly && !forceSaveAs) throw new Error("A copy must use a separate destination.");
     const current = target.get();
     if (!current || current.value !== tab.value)
@@ -429,6 +451,18 @@ async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise
     const complete = (nextOrigin = current.gameOrigin) => {
         if (!stillOwnsSource()) return false;
         if (copyOnly) return true;
+        if (
+            (nextOrigin.kind === "file" || nextOrigin.kind === "temp_file") &&
+            ((current.gameOrigin.kind !== "file" && current.gameOrigin.kind !== "temp_file") ||
+                nextOrigin.file.path !== current.gameOrigin.file.path)
+        ) {
+            const orientation = store.getState().headers.orientation ?? "white";
+            try {
+                saveFileBoardPreferences(nextOrigin.file.path, { orientation });
+            } catch (error) {
+                reportFilePreferenceFailure(error);
+            }
+        }
         const nextBinding = saveBinding({ ...current, gameOrigin: nextOrigin });
         target.update((owner) => {
             if (saveBinding(owner) !== binding) return owner;
@@ -457,7 +491,7 @@ async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise
         queue.rebindings.set(binding, nextBinding);
         const latest = target.get();
         if (!latest || saveBinding(latest) !== nextBinding) return false;
-        if (savePgn(store.getState()) === pgn) store.getState().save();
+        if (getTabContentPgn(store.getState()) === request.contentPgn) store.getState().save();
         return true;
     };
     let filePath: string;
@@ -515,10 +549,12 @@ async function performOwnedSave(request: SaveRequest, queue: SaveQueue): Promise
         const headers = request.headers;
         const suggestedName = getDefaultGameFilename(headers) || "Game";
         const defaultPath = await resolve(dir, `${suggestedName}.pgn`);
-        const userChoice = automaticName ? defaultPath : await save({
-            defaultPath,
-            filters: [{ name: "PGN", extensions: ["pgn"] }],
-        });
+        const userChoice = automaticName
+            ? defaultPath
+            : await save({
+                  defaultPath,
+                  filters: [{ name: "PGN", extensions: ["pgn"] }],
+              });
         if (userChoice === null) return false;
         const destination = /\.pgn$/i.test(userChoice) ? userChoice : userChoice.concat(".pgn");
         if (!stillOwnsSource())

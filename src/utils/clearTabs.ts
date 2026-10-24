@@ -9,9 +9,8 @@ import {
 } from "@/state/atoms";
 import { removeDebouncedSessionStorageItem } from "@/state/store/debouncedStorage";
 import { getTabTreeStore, releaseTabTreeStore } from "@/state/store/treeRegistry";
-import { getPGN } from "./chess";
 import { flushReviewDeckWrites, pendingReviewDeck } from "./reviewDeckWrites";
-import { hasMeaningfulTabContent } from "./tabContent";
+import { getTabContentPgn, hasMeaningfulTabContent } from "./tabContent";
 import { createTabSaveTarget } from "./tabSaveTarget";
 import { saveToFile, type Tab } from "./tabs";
 
@@ -28,13 +27,7 @@ const sourceKey = (tab: Tab) => JSON.stringify([tab.type, tab.gameOrigin]);
 const isGame = (tab: Tab) => tab.type === "analysis" || tab.type === "play";
 const pgnOf = (tree: ReturnType<typeof getTabTreeStore>) => {
     const state = tree.getState();
-    return getPGN(state.root, {
-        headers: state.headers,
-        comments: true,
-        extraMarkups: true,
-        glyphs: true,
-        variations: true,
-    });
+    return getTabContentPgn(state);
 };
 
 /** Save every original first, then remove them together without an async gap. */
