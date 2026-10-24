@@ -1,5 +1,6 @@
 import { desktopApi, type TournamentDiscoveryRequest, type TournamentDiscoveryResponse, type TournamentEventMetadata } from "@/features/tournaments/platform";
 import countries from "./tournamentCountries.json";
+import { createTournamentSearchCache } from "./tournamentSearchCache";
 export { countries };
 export const regions = ["UK & Ireland", "Europe", "Asia", "Africa", "Americas", "Oceania"];
 export interface DiscoveryFilters {query:string; region:string; country:string; dates:string; from:string; to:string; location:string; timeControl:string; period:TournamentDiscoveryRequest["period"]; includeUndated:boolean;}
@@ -12,7 +13,7 @@ export function discoveryRequest(filters:DiscoveryFilters, now=new Date()):Tourn
   if(filters.period==="past")shift(start,-months);else shift(end,months);
   return {query:filters.query.trim(),country:filters.country,federations:filters.region?countries.filter(c=>c.regions.includes(filters.region)).map(c=>c.code):[],
     location:filters.location.trim(),timeControl:filters.timeControl,today,period:filters.period,includeUndated:filters.includeUndated,
-    from:filters.dates==="custom"?filters.from:dateOnly(start),to:filters.dates==="custom"?filters.to:dateOnly(end)};
+    from:filters.dates==="any"?"1900-01-01":filters.dates==="custom"?filters.from:dateOnly(start),to:filters.dates==="any"?"9999-12-31":filters.dates==="custom"?filters.to:dateOnly(end)};
 }
 export function readableDate(value:string|null|undefined):string{
   if(!value)return "Date to be confirmed";
@@ -22,10 +23,35 @@ export function readableDate(value:string|null|undefined):string{
 }
 export function countryName(code:string|null|undefined):string{return countries.find(c=>c.code===code)?.name??code??"";}
 export const discoveryCache=new Map<string,TournamentDiscoveryResponse>();
+export function cacheDiscoveryResponse(key:string,response:TournamentDiscoveryResponse){
+  discoveryCache.set(key,response);
+  while(discoveryCache.size>20)discoveryCache.delete(discoveryCache.keys().next().value!);
+}
+export const discoverySource=createTournamentSearchCache(request=>desktopApi.discoverTournaments(request));
 // User review/navigation retains the form without making saved settings part
 // of every keystroke. No user location is inferred.
 export let lastDiscoveryFilters:DiscoveryFilters|null=null;
-export function rememberDiscoveryFilters(filters:DiscoveryFilters){lastDiscoveryFilters=filters;}
+const AREA_KEY="outpost.tournaments.area.v1";
+/** Only the chosen area survives a restart; queries and date ranges stay fresh. */
+export function initialDiscoveryFilters():DiscoveryFilters{
+  if(lastDiscoveryFilters)return {...lastDiscoveryFilters};
+  const defaults=defaultDiscoveryFilters();
+  try{
+    const saved=JSON.parse(localStorage.getItem(AREA_KEY)??"null");
+    if(!saved||typeof saved!=="object")return defaults;
+    if(saved.region!==""&&!regions.includes(saved.region))return defaults;
+    const region=regions.includes(saved.region)?saved.region:"";
+    const country=countries.find(c=>c.code===saved.country&&(!region||c.regions.includes(region)))?.code??"";
+    return {...defaults,region,country};
+  }catch{return defaults;}
+}
+export function rememberDiscoveryFilters(filters:DiscoveryFilters){
+  lastDiscoveryFilters={...filters};
+  try{
+    const area=JSON.stringify({region:filters.region,country:filters.country});
+    if(localStorage.getItem(AREA_KEY)!==area)localStorage.setItem(AREA_KEY,area);
+  }catch{/* Keep session navigation usable when browser storage is unavailable. */}
+}
 const metadataCache=new Map<string,{value:TournamentEventMetadata;expires:number}>();
 let activeMetadata=0;
 const metadataQueue:Array<()=>void>=[];

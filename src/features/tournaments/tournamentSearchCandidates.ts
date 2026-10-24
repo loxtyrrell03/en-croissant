@@ -1,22 +1,38 @@
 import type { TournamentDiscoveryRequest, TournamentDiscoveryResponse } from "@/features/tournaments/platform";
+import { tournamentSearchSeeds } from "./tournamentSearch";
 
-/** Keep useful source-prefix searches for events outside a capped browse page. */
+/** Recover candidates outside the source cap, then let the complete query rank them. */
 export async function supplementTournamentCandidates(
   request: TournamentDiscoveryRequest,
   query: string,
   browse: TournamentDiscoveryResponse,
   fetch: (request: TournamentDiscoveryRequest) => Promise<TournamentDiscoveryResponse>,
   current: () => boolean,
+  progress?: (response: TournamentDiscoveryResponse) => void,
 ): Promise<TournamentDiscoveryResponse> {
   if (!browse.sourceLimitReached || !query.trim() || !current()) return browse;
-  const phrase = query.trim().replace(/\s+/g, " ");
-  // The source name field only accepts 50 characters. Fetch a bounded set of
-  // prefixes; the caller still applies the complete fuzzy query to the union.
-  const words = phrase.split(/[^\p{L}\p{N}]+/u).filter(word => word.length >= 4)
-    .sort((a, b) => b.length - a.length);
-  const seeds = [...new Set([phrase, ...words].map(seed => Array.from(seed).slice(0, 50).join("")))].slice(0, 3);
-  const pages = await Promise.all(seeds.map(query => fetch({ ...request, query })));
-  const events = new Map(browse.events.map(event => [event.tournamentId, event]));
-  for (const page of pages) for (const event of page.events) events.set(event.tournamentId, event);
-  return { ...browse, events: [...events.values()] };
+  const phrase=Array.from(query.trim().replace(/\s+/g," ")).slice(0,50).join("");
+  const seeds=tournamentSearchSeeds(query,browse.events);
+  const requests=[...new Set([phrase,...seeds].map(seed=>Array.from(seed).slice(0,50).join("")))].map(query=>({...request,query}));
+  // A remembered venue may never occur in the title. Preserve an explicit city filter.
+  if(!request.location&&seeds.length)requests.push({...request,query:"",location:seeds[0].slice(0,30)});
+  const events=new Map(browse.events.map(event=>[event.tournamentId,event]));
+  const response=():TournamentDiscoveryResponse=>({...browse,events:[...events.values()]});
+  const errors:string[]=[];
+  let next=0;
+  async function worker(){
+    while(current()&&next<requests.length){
+      const scoped=requests[next++];
+      try{
+        const page=await fetch(scoped);
+        if(!current())return;
+        for(const event of page.events)events.set(event.tournamentId,event);
+        progress?.(response());
+      }catch(error){errors.push(error instanceof Error?error.message:String(error));}
+    }
+  }
+  // Bounded concurrency, incremental display, and no new requests after cancellation.
+  await Promise.all([worker(),worker()]);
+  if(current()&&errors.length)throw new Error(`Some tournament searches failed. ${errors[0]}`);
+  return response();
 }
