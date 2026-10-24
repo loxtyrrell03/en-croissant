@@ -2019,6 +2019,7 @@ function OpponentPrepPanel({
             kind: "database",
             database: prep.databasePath,
             gameId: match.game.id,
+            sourceIdentity: match.game.source_identity ?? undefined,
           },
         });
         navigate({ to: "/" });

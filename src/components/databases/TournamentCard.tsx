@@ -156,6 +156,7 @@ function TournamentCard({ tournament, file }: { tournament: Event; file: string 
                             kind: "database",
                             database: file,
                             gameId: game.id,
+                            sourceIdentity: game.source_identity ?? undefined,
                           },
                         });
                         navigate({ to: "/" });

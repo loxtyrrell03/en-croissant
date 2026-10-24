@@ -573,9 +573,9 @@ async deleteDbGame(file: string, gameId: number) : Promise<Result<null, string>>
     else return { status: "error", error: e  as any };
 }
 },
-async writeDbGame(file: string, gameId: number, pgn: string) : Promise<Result<null, string>> {
+async writeDbGame(file: string, gameId: number, pgn: string, expectedIdentity: string | null) : Promise<Result<string, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("write_db_game", { file, gameId, pgn }) };
+    return { status: "ok", data: await TAURI_INVOKE("write_db_game", { file, gameId, pgn, expectedIdentity }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -924,7 +924,7 @@ export type MistakeReviewSeverityFilter = { inaccuracy: boolean; mistake: boolea
 export type MistakeReviewThresholds = { inaccuracy: number; mistake: number; blunder: number }
 export type MistakeReviewTimeManagementSettings = { enabled: boolean; minMoveSeconds: number }
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
-export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
+export type NormalizedGame = { id: number; source_identity?: string | null; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
 export type OpeningBookConfig = { path: string; maxPly?: bigint }
 export type OpeningHealthPlayerPosition = { fen: string; normalizedFen: string; ply: number; sideToMove: string; moveSequence: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerPositionGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; lastPlayed: string | null; sampleGameIds: number[] }
 export type OpeningHealthPlayerPositionsReport = { playerGames: number; candidatePositions: number; positions: OpeningHealthPlayerPosition[] }

@@ -66,7 +66,7 @@ function tab(id = "original", kind: "none" | "file" | "database" = "file"): Tab 
             kind === "none"
                 ? { kind }
                 : kind === "database"
-                  ? { kind, database: "/library/fixture.db3", gameId: 17 }
+                  ? { kind, database: "/library/fixture.db3", gameId: 17, sourceIdentity: "db-original" }
                   : {
                         kind,
                         gameNumber: 2,
@@ -96,7 +96,7 @@ function setup(origin = tab()) {
 beforeEach(() => {
     vi.resetAllMocks();
     io.write.mockResolvedValue(ok);
-    io.writeDb.mockResolvedValue(ok);
+    io.writeDb.mockResolvedValue({ status: "ok", data: "db-written" });
     io.exists.mockResolvedValue(true);
     io.sidecar.mockResolvedValue(undefined);
     io.copy.mockResolvedValue(undefined);
@@ -104,6 +104,55 @@ beforeEach(() => {
 });
 
 describe("tab-owned saves", () => {
+    it("refuses legacy database bindings without touching the row", async () => {
+        const original = tab("original", "database");
+        if (original.gameOrigin.kind === "database") delete original.gameOrigin.sourceIdentity;
+        const state = setup(original);
+        await expect(state.request()).rejects.toThrow("identity is missing");
+        expect(io.writeDb).not.toHaveBeenCalled();
+        expect(state.tree.getState().dirty).toBe(true);
+        expect(state.target.get()).toEqual(original);
+    });
+
+    it("queues database snapshots with the identity from the preceding successful save", async () => {
+        const state = setup(tab("original", "database"));
+        const first = deferred<{ status: "ok"; data: string }>();
+        io.writeDb.mockReturnValueOnce(first.promise);
+        const saving = state.request();
+        await vi.waitFor(() => expect(io.writeDb).toHaveBeenCalledOnce());
+        state.tree.getState().setComment("Newer database annotation");
+        const second = state.request();
+        expect(io.writeDb.mock.calls[0][3]).toBe("db-original");
+        first.resolve({ status: "ok", data: "first-written" });
+        expect(await saving).toBe(true);
+        expect(await second).toBe(true);
+        expect(io.writeDb.mock.calls[1][3]).toBe("first-written");
+        expect(io.writeDb.mock.calls[1][2]).toContain("Newer database annotation");
+        expect(state.target.get()?.gameOrigin).toMatchObject({ sourceIdentity: "db-written" });
+        expect(state.tree.getState().dirty).toBe(false);
+    });
+
+    it("keeps the database source identity and edits when saving a separate copy", async () => {
+        const state = setup(tab("original", "database"));
+        expect(await state.request({ isUserSave: true, forceSaveAs: true, copyOnly: true })).toBe(true);
+        expect(io.writeDb).not.toHaveBeenCalled();
+        expect(state.target.get()).toEqual(state.origin);
+        expect(state.tree.getState().dirty).toBe(true);
+    });
+
+    it("does not clean or rebind a different database game after a pending write", async () => {
+        const state = setup(tab("original", "database"));
+        const pending = deferred<{ status: "ok"; data: string }>();
+        io.writeDb.mockReturnValueOnce(pending.promise);
+        const saving = state.request();
+        await vi.waitFor(() => expect(io.writeDb).toHaveBeenCalledOnce());
+        state.target.update((tab) => ({ ...tab, gameOrigin: { kind: "database", database: "/other.db3", gameId: 99, sourceIdentity: "other-row" } }));
+        pending.resolve({ status: "ok", data: "written-original" });
+        expect(await saving).toBe(false);
+        expect(state.target.get()?.gameOrigin).toMatchObject({ gameId: 99, sourceIdentity: "other-row" });
+        expect(state.tree.getState().dirty).toBe(true);
+    });
+
     it("rechecks the binding after a preceding deletion before issuing a queued write", async () => {
         const state = setup();
         let finish!: () => void;
