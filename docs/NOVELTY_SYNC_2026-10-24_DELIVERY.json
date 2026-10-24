@@ -1,48 +1,42 @@
 {
   "schema": 1,
-  "status": "first-batch-delivered",
+  "status": "second-batch-delivered",
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
     "schemaVersion": 1,
-    "releaseId": "8ff91aaac8bb-96154a421e0d",
-    "sourceCommit": "8ff91aaac8bb1c4cea21a35fc285368601781d1c",
+    "releaseId": "cc3e71d20bca-95ba505d5b32",
+    "sourceCommit": "cc3e71d20bcaffc0604a6bb9ac0aae0ef9cce170",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "builtAt": "2026-10-24T13:53:34.7953272Z",
-    "appShellSha256": "96154a421e0dcd93a57b5c56037093d8ee1ee7413d16e32662aa4444abdc1a00",
+    "builtAt": "2026-10-24T15:00:46.9742238Z",
+    "appShellSha256": "95ba505d5b323385e005c0c101066d2087fbf5b8059776c4bc82a7fb725e3e65",
     "verified": [
       "matching canonical HTTPS health/version metadata",
-      "library manifest GET",
-      "workspace GET",
-      "native tournament settings RPC",
-      "Chrome connected Board/Ready",
-      "Stats short/custom controls"
+      "library/workspace/native tournament settings reads",
+      "Chrome connected Ready at 390px",
+      "source refresh progress, retained selected source and search focus",
+      "original source/view/board restored"
     ],
     "physicalPhoneVerified": false
   },
   "desktop": {
-    "exeBytes": 51106816,
-    "exeSha256": "4b6499ae43479b076a6532addd4fe8fbadf3c8368249bca6043021f156b83f9d",
+    "exeBytes": 51086336,
+    "exeSha256": "e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952",
     "assets": [
       {
-        "asset": "assets/truePerformance.worker-CZuRYx7W.js",
+        "asset": "assets/EnginePlanExplorerPanel-DTOzPlfX.js",
         "embedded": true,
-        "sha256": "d1e7d65fbbb85ee0d90e165a51c999fd457849f8d0e6350386fd5c6600de3c8f"
+        "sha256": "01e6386968875aa93a2f32102fc50739c13934b2be913564b5598be84cf72dff"
       },
       {
-        "asset": "assets/FideInfo-BJjQzwi2.js",
+        "asset": "assets/AnalysisPanel-D-HXxn2g.js",
         "embedded": true,
-        "sha256": "9ebf04e84d89abff318bc221367bbae2643c3ad505c0f7951c57037faf94358a"
+        "sha256": "428862788ffdb8e1a21da218eb09510ae0a15b5a1a06783cd236af471d17f58e"
       },
       {
-        "asset": "assets/FideInfo-C_-BftdK.js",
+        "asset": "assets/LiveDatabaseFolderSelect-e8KwmuGH.js",
         "embedded": true,
-        "sha256": "3b9e8a408612679e10565c7d1c04fc3efe07ff14b5cffc89b9959d9150f6ba02"
-      },
-      {
-        "asset": "assets/WebApp-DEkUMNea.js",
-        "embedded": true,
-        "sha256": "a636742d6f972f089974d6744d7d2bc22e1b07b42b551b4127800a232a8f846c"
+        "sha256": "b0854aef39bf427d94d9ec3eae2bcd33247fdf6fe3504051a7a9eaa3dcd259d8"
       },
       {
         "asset": "assets/App-DXJraGpt.css",
@@ -53,7 +47,8 @@
     "artifact": "src-tauri/target/release/en-croissant-fork.exe",
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
-    "rollback": "task-owned ignored rollback directory"
+    "rollback": "task-owned ignored rollback directory",
+    "sourceCommit": "cc3e71d20bcaffc0604a6bb9ac0aae0ef9cce170"
   },
   "checks": {
     "combinedFrontend": {
@@ -75,8 +70,26 @@
     "suiteCountsMayOverlap": true,
     "types": "passed",
     "frontendAndWorkersBuild": "passed",
-    "publishGuard": "passed including known digest without module auto-loading"
+    "publishGuard": "passed including known digest without module auto-loading",
+    "secondBatch": {
+      "passed": 151,
+      "files": 23,
+      "source": "cc3e71d2",
+      "types": "passed",
+      "scopedLint": "passed",
+      "frontendAndWorkerBuilds": "passed",
+      "nativeReleaseBuild": "passed with 22 existing warnings",
+      "countsOverlapEarlierSuites": true
+    }
   },
   "tailscaleServeUnchanged": true,
-  "remainingWork": "NOVELTY_SYNC_GAPS_2026-10-24.md"
+  "remainingWork": "NOVELTY_SYNC_GAPS_2026-10-24.md",
+  "previousBatch": {
+    "sourceCommit": "8ff91aaac8bb1c4cea21a35fc285368601781d1c",
+    "phoneShellSha256": "96154a421e0dcd93a57b5c56037093d8ee1ee7413d16e32662aa4444abdc1a00",
+    "exeSha256": "4b6499ae43479b076a6532addd4fe8fbadf3c8368249bca6043021f156b83f9d",
+    "exeBytes": 51106816
+  },
+  "controllerPid": 24080,
+  "ownerServicesEnabled": true
 }

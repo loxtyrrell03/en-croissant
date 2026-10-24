@@ -118,5 +118,34 @@ En Croissant's existing setup mining remains intact. Sixty-six focused
 plan/presentation/strength checks, full types, scoped lint and frontend build pass.
 Actual changed Mantine components were checked in Chrome at 390px, including
 bounded help, dismissal and horizon selection, using an invented fixture.
-This is source/component evidence; the standalone desktop binary still contains
-the preceding batch. Phone Engine Plans capability remains a separate gap.
+The standalone desktop binary has subsequently been rebuilt as recorded below.
+Phone Engine Plans capability remains a separate gap.
+
+## Second verified delivery
+
+Clean source `cc3e71d20bcaffc0604a6bb9ac0aae0ef9cce170` combines the native
+Engine Plans/accuracy ports and source-picker refresh on both targets. It passes
+151 selected checks across 23 files. Types, scoped lint, frontend/worker builds
+and the existing guarded publisher pass. Unrelated primary source edits remain
+outside this clean delivery snapshot.
+
+Phone release `cc3e71d20bca-95ba505d5b32` is live at the canonical HTTPS root.
+Health/version metadata agree with the source and shell SHA-256; library,
+workspace and native tournament settings reads pass. Chrome at 390px verifies
+Ready, the selected local database, refresh progress and retained search focus.
+Original database/view/board state was restored after verification. This is PC
+browser evidence, not a physical-phone check. Serve configuration is unchanged,
+controller PID remains 24080, and the owner's enabled state is preserved. The
+publisher restarted only the intended home server; native helper hashes are
+unchanged.
+
+The standalone desktop executable contains 51,086,336 bytes, SHA-256
+`e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952`.
+The normal native frontend and Cargo release build pass (22 existing native
+warnings). Embedded Engine Plans, analysis, live database selector and root-style
+asset identities match the clean build. No native window was launched or
+controlled; the existing Dev App launcher continues to use primary source.
+
+The broader parity goal remains active. Analysis presets/budgets, phone canonical
+reports/Engine Plans/saved marks, date scopes and the remaining persistence
+families still require implementation or target-specific evaluation.

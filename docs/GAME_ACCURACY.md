@@ -42,5 +42,6 @@ The specification and provenance were established in Novelty's
 
 Verification on 2026-10-24: 45 focused numerical, report, tree-annotation,
 account and actual Mantine component checks, full TypeScript, scoped lint and
-frontend build. This is source/component evidence. The standalone desktop
-artifact and hosted phone still identify the preceding delivery batch.
+frontend build. The standalone desktop artifact was subsequently rebuilt from
+clean source `cc3e71d2`, with its analysis module identity checked in the binary.
+Native-window interaction is unverified. Phone EloGuard remains separate.
