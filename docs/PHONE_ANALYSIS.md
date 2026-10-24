@@ -71,8 +71,12 @@ evidence and an ordinary finite depth-2 search. The first request includes
 engine startup (939 ms total); its selected exact depth is 8. No queue remains.
 The existing config, task, routes and owner enabled choice are preserved.
 
-The new phone UI remains unpublished pending rendered verification. Its live
-release and standalone desktop remain at the preceding `44c37e09` delivery.
+The concurrent tournament publication from `dfc21831` includes the earlier
+Analysis source. Canonical HTTPS version metadata confirms that bundle (see
+`TOURNAMENT_PREDICTION_HISTORY.md`); this supersedes the earlier unpublished
+status. This audit still lacks responsive/end-to-end checks of the new Analysis
+controls. Its latest verified standalone desktop remains `44c37e09`. The later
+drawing slice is pending its own visual verification and delivery.
 See `NOVELTY_SYNC_2026-10-24_DELIVERY.json` for separate UI/backend receipts.
 Install the UCI report helper before the engine entry point; never interrupt an
 active shared engine. No full corpus test or database migration is required.

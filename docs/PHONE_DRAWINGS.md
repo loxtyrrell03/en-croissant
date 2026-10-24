@@ -46,8 +46,11 @@ the obsolete label Engine best; the same failure was reproduced on clean HEAD
 and its assertion now matches the existing Local eval best provenance wording.
 That expectation repair changes no scoring behavior.
 
-Types and scoped lint pass; WebApp retains its 25 baseline warnings. Clean
-build confirmation is recorded separately. Browser control remains disabled in
+Types and scoped lint pass; WebApp retains its 25 baseline warnings. Clean `405ecead` independently passes all 85 checks, whole-project types,
+eight-file lint (zero warnings/errors) and the canonical-home phone build
+(19.92 seconds). Nine owned product/test files match primary after line-ending
+normalization; the compiled phone entry contains the new controls and excludes
+the invented test fixture. Browser control remains disabled in
 Work settings, so 320/390px, large-text and real touch/focus layout verification
 and runtime delivery are pending. JSDOM SVG/interaction checks are not physical
 phone or browser screenshot proof. A fresh HTTPS read observes the concurrent tournament publication from
