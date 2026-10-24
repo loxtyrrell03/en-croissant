@@ -63,6 +63,9 @@ $engineConfig | Add-Member -NotePropertyName backendIdleMs -NotePropertyValue 0 
 [IO.File]::WriteAllText("$engineConfigPath.next", ($engineConfig | ConvertTo-Json -Depth 10), [Text.UTF8Encoding]::new($false))
 Move-Item -LiteralPath "$engineConfigPath.next" -Destination $engineConfigPath -Force
 $engineServerPath = Join-Path $engineRoot 'server\stockfish-remote-server.mjs'
+$reportSearchPath = Join-Path $engineRoot 'server\uci-report-search.mjs'
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'uci-report-search.mjs') -Destination "$reportSearchPath.next" -Force
+Move-Item -LiteralPath "$reportSearchPath.next" -Destination $reportSearchPath -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'stockfish-remote-server.mjs') -Destination "$engineServerPath.next" -Force
 Move-Item -LiteralPath "$engineServerPath.next" -Destination $engineServerPath -Force
 if ([IO.Path]::GetFileName($engineAction.Execute) -ieq 'node.exe') {

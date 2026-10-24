@@ -77,3 +77,38 @@ calibration must remain separate from a canonical game report.
 The native controls/runner/metadata are included in the clean `5f5f45c4`
 standalone rebuild; see the parity delivery receipt. The native window was not
 controlled. Phone analysis bounds remain a separate implementation task.
+
+## Bounded phone report transport
+
+Phone `analyzeWithWebStockfish18` now accepts explicit `reportLimits` with depth
+2–30 and time 50–5,000 ms. This selects a fresh Stockfish report search, independent
+of interactive/cloud and calibrated-strength callers. Limits are frozen before
+startup. A report never substitutes stored evaluations or automatically repeats
+a failed position. Both remote searches and an owned local worker use combined
+UCI bounds and one shared recovery budget; recovery depth is capped at 12.
+
+The browser requires the remote service's `reportProtocolVersion: 1` before
+searching and an exact limits acknowledgement in the response. Completed report
+evidence must match final bestmove, retain its latest exact depth/score and replay
+the entire PV legally. Bounds, malformed/illegal PVs, deeper-than-selected output
+and an incomplete response remain failures. Scores use White's perspective and
+castling encodings share legal move identity. Only completed chosen evidence is
+published; cached/interactive line semantics remain separate.
+
+The engine queue holds one slot through recovery. Aborting a queued request
+releases that request immediately while its successors still wait for the
+preceding active search. An unresponsive stopped engine has a bounded process
+watchdog. The existing installers include the new dependency before replacing
+the server entry point; do not copy the entry point alone.
+
+Verification: 30 selected frontend tests, 19 Node protocol/standby/performance/
+LCZero tests, full TypeScript, scoped lint and frontend bundle pass. Explicit
+`EN_CROISSANT_REPORT_TEST_ENGINE=ABSOLUTE_STOCKFISH_PATH node --test scripts/tests/engine-report-service.test.mjs`
+uses isolated temporary ports/data and one thread/16 MiB hash. The real-service
+test passes invalid-limit rejection, cancelled queued ownership without skipping
+the active predecessor, subsequent bounded completion and the depth cap.
+
+This is a source/protocol milestone. Phone report controls, whole-game canonical
+report integration/persistence and clean deployment of the engine service remain
+open. The live engine service, hosted app and active desktop were not restarted
+for these tests; the earlier verified runtime delivery remains authoritative.

@@ -8,6 +8,7 @@ import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
 import { LC0_PROFILE_OPTIONS, selectLc0Network } from "./lc0-network-routing.mjs";
+import { runBoundedUciReport, validReportSearchLimits } from "./uci-report-search.mjs";
 import {
   ENGINE_PERFORMANCE_PRESETS,
   enginePerformanceSettings,
@@ -231,6 +232,7 @@ async function handleHttpRequest(request, response) {
       ok: true,
       service: "stockfish-18-remote",
       version: 18,
+      reportProtocolVersion: 1,
       build: "x86-64-bmi2",
       enginePath,
       threads,
@@ -340,12 +342,16 @@ async function handleHttpRequest(request, response) {
   const multipv = positiveInteger(body?.multipv, 3, 1, maxMultiPv);
   const depth = positiveInteger(body?.depth, 70, 1, maxDepth);
   const infinite = body?.infinite === true;
+  const reportLimits = body?.reportLimits;
   const engineKind = String(body?.engineKind || body?.engine || "stockfish").toLowerCase();
   const hasPerformancePreset = body?.performancePreset != null;
   const performancePreset = normalizeEnginePerformancePreset(body?.performancePreset);
   if (!fen) return writeJson(response, 400, { error: "A valid FEN is required." });
   if (!new Set(["stockfish", "lc0"]).has(engineKind)) {
     return writeJson(response, 400, { error: "engineKind must be stockfish or lc0." });
+  }
+  if (reportLimits != null && (!validReportSearchLimits(reportLimits) || infinite || engineKind !== "stockfish")) {
+    return writeJson(response, 400, { error: "Bounded reports require Stockfish, depth 2–30 and time 50–5000 ms." });
   }
   if (hasPerformancePreset && !performancePreset) {
     return writeJson(response, 400, {
@@ -465,6 +471,7 @@ async function handleHttpRequest(request, response) {
   response.write(
     `${JSON.stringify({
       type: "meta",
+      reportLimits,
       engine: engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18",
       engineKind,
       build: engineKind === "lc0" ? lc0Tuning.backend : "bmi2",
@@ -487,7 +494,7 @@ async function handleHttpRequest(request, response) {
 
   try {
     const bestmove = await selectedEngine.analyze(
-      { fen, multipv, depth, infinite },
+      { fen, multipv, depth, infinite, reportLimits },
       (line) => {
         if (!response.destroyed) response.write(`${JSON.stringify({ type: "uci", line })}\n`);
       },
@@ -580,12 +587,15 @@ class PersistentUciEngine {
     this.queued += 1;
     let release;
     const previous = this.queueTail;
-    this.queueTail = new Promise((resolvePromise) => {
+    const slot = new Promise((resolvePromise) => {
       release = resolvePromise;
     });
+    // A cancelled queued request can release its own slot immediately, while
+    // its successors must still wait for the preceding active search.
+    this.queueTail = previous.then(() => slot);
 
-    await previous;
     try {
+      await waitForUciTurn(previous, signal);
       if (signal?.aborted) throw abortError();
       await this.start();
       this.setOptionIfChanged("MultiPV", params.multipv);
@@ -595,6 +605,13 @@ class PersistentUciEngine {
       await this.sendAndWaitReady();
       if (signal?.aborted) throw abortError();
       this.send(`position fen ${params.fen}`);
+      if (params.reportLimits) {
+        return await runBoundedUciReport({
+          limits: params.reportLimits, multipv: params.multipv, onInfo, signal,
+          runSearch: (command, collect, jobSignal, timeoutMs) => this.runSearch(command, collect, jobSignal, timeoutMs),
+          setMultiPv: (value) => this.setOptionIfChanged("MultiPV", value),
+        });
+      }
       return await this.runSearch(
         params.infinite ? "go infinite" : `go depth ${params.depth}`,
         onInfo,
@@ -658,29 +675,42 @@ class PersistentUciEngine {
     return this.waitFor((line) => line === "readyok", 30_000, "readyok");
   }
 
-  runSearch(command, onInfo, signal) {
+  runSearch(command, onInfo, signal, timeoutMs = 180_000) {
     if (this.activeJob) throw new Error(`${this.label} already has an active search.`);
+    if (signal?.aborted) return Promise.reject(abortError());
     return new Promise((resolvePromise, rejectPromise) => {
-      const timeoutId = setTimeout(() => {
-        if (!this.activeJob) return;
-        this.activeJob.abortReason = new Error(`${this.label} analysis timed out.`);
+      let stopGuard;
+      let job;
+      const stop = (reason) => {
+        if (this.activeJob !== job || job.abortReason) return;
+        job.abortReason = reason;
         this.send("stop");
-      }, 180_000);
+        // A silent engine must release the queue even if it ignores stop.
+        stopGuard = setTimeout(() => {
+          if (this.activeJob !== job) return;
+          const child = this.child;
+          child?.kill();
+          this.handleExit(reason, child);
+        }, 1000);
+        stopGuard.unref();
+      };
+      const timeoutId = setTimeout(() => {
+        stop(new Error(`${this.label} analysis timed out.`));
+      }, timeoutMs);
       timeoutId.unref();
 
       const onAbort = () => {
-        if (!this.activeJob) return;
-        this.activeJob.abortReason = abortError();
-        this.send("stop");
+        stop(abortError());
       };
       signal?.addEventListener("abort", onAbort, { once: true });
-      this.activeJob = {
+      job = this.activeJob = {
         onInfo,
         resolve: resolvePromise,
         reject: rejectPromise,
         abortReason: null,
         cleanup: () => {
           clearTimeout(timeoutId);
+          clearTimeout(stopGuard);
           signal?.removeEventListener("abort", onAbort);
         },
       };
@@ -777,6 +807,19 @@ class PersistentUciEngine {
     if (this.child.stdin.writable) this.child.stdin.write("quit\n");
     this.child.kill();
   }
+}
+
+function waitForUciTurn(previous, signal) {
+  if (signal?.aborted) return Promise.reject(abortError());
+  if (!signal) return previous;
+  return new Promise((resolvePromise, rejectPromise) => {
+    const abort = () => rejectPromise(abortError());
+    signal.addEventListener("abort", abort, { once: true });
+    previous.then(
+      () => { signal.removeEventListener("abort", abort); resolvePromise(); },
+      (error) => { signal.removeEventListener("abort", abort); rejectPromise(error); },
+    );
+  });
 }
 
 httpEngine = new PersistentUciEngine(enginePath, {

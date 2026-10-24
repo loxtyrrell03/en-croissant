@@ -10,6 +10,8 @@ import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessC
 import { WEB_SERVER_BASE_URL, resolvePrivateServiceUrl } from "./serverUrl";
 import type { Lc0NetworkProfile, PcEngineKind } from "@/utils/lc0Networks";
 import type { EnginePerformancePreset } from "@/utils/enginePerformance";
+import { validReportSearchLimits, type ReportSearchLimits } from "../../scripts/uci-report-search.mjs";
+import { analyzeBoundedWebReport } from "./reportStockfishEngine";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
@@ -44,6 +46,8 @@ export type WebStockfishAnalyzeRequest = {
     multipv: number;
     depth: number;
     infinite?: boolean;
+    /** Fresh exact chosen-move report evidence, with no stored-eval fallback or retry. */
+    reportLimits?: ReportSearchLimits;
     signal?: AbortSignal;
     prefetchFens?: string[];
     /**
@@ -64,6 +68,7 @@ export async function analyzeWithWebStockfish18({
     multipv,
     depth,
     infinite = false,
+    reportLimits,
     signal,
     prefetchFens = [],
     preferStoredEvaluation = false,
@@ -74,6 +79,37 @@ export async function analyzeWithWebStockfish18({
     lc0Network = "none",
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
+    if (reportLimits !== undefined) {
+        if (!validReportSearchLimits(reportLimits) || infinite || engineKind !== "stockfish" ||
+            !Number.isSafeInteger(multipv) || multipv < 1 || multipv > 8)
+            throw new Error("Choose valid Stockfish report limits (depth 2–30, time 50–5000 ms).");
+        const selectedLimits = { ...reportLimits };
+        throwIfAborted(signal);
+        const searchId = ++activeSearchId;
+        activeRemoteController?.abort();
+        postStockfish("stop");
+        const controller = new AbortController();
+        activeRemoteController = controller;
+        const abort = () => controller.abort();
+        signal?.addEventListener("abort", abort, { once: true });
+        let expired = false;
+        const timeout = window.setTimeout(() => { expired = true; controller.abort(); }, 45_000);
+        try {
+            if (REMOTE_STOCKFISH_URL) await ensureRemoteEngineService(controller.signal);
+            return await analyzeBoundedWebReport(REMOTE_STOCKFISH_URL, {
+                fen, multipv, reportLimits: selectedLimits, signal: controller.signal,
+                onUpdate: (lines) => { if (activeSearchId === searchId) onUpdate?.(lines); },
+            });
+        } catch (error) {
+            if (expired && !signal?.aborted) throw new Error("The report engine did not finish in time. Try again.");
+            throw error;
+        } finally {
+            window.clearTimeout(timeout);
+            signal?.removeEventListener("abort", abort);
+            controller.abort();
+            if (activeRemoteController === controller) activeRemoteController = null;
+        }
+    }
     if (!REMOTE_STOCKFISH_URL) {
         if (engineKind === "lc0") {
             throw new Error("Gaming PC LCZero is unavailable; LCZero never runs on the phone.");
