@@ -133,6 +133,10 @@ it("loads optional board/source preferences and rejects malformed maps without r
     const { loadWebState, createEmptyWebState } = await import("../storage");
     const state = {
         ...createEmptyWebState(),
+        sourceArchives: {
+            databaseIds: ["invented-device-source"],
+            hostedPaths: ["Databases/Prep"],
+        },
         workspacePreferences: {
             "invented-file": {
                 orientation: "black",
@@ -150,7 +154,9 @@ it("loads optional board/source preferences and rejects malformed maps without r
     fixture.transactions[0].request.result = state;
     fixture.transactions[0].request.onsuccess!();
     fixture.transactions[0].oncomplete!();
-    expect((await loaded).workspacePreferences).toEqual(state.workspacePreferences);
+    const restored = await loaded;
+    expect(restored.workspacePreferences).toEqual(state.workspacePreferences);
+    expect(restored.sourceArchives).toEqual(state.sourceArchives);
     const invalid = { ...state, workspacePreferences: { file: { database: { source: 42 } } } };
     const rejected = loadWebState().catch((error) => error);
     await Promise.resolve();
@@ -159,4 +165,12 @@ it("loads optional board/source preferences and rejects malformed maps without r
     fixture.transactions[1].oncomplete!();
     expect((await rejected).message).toContain("preserved");
     expect(fixture.transactions[1].request.result).toBe(invalid);
+    const invalidArchives = { ...state, sourceArchives: { databaseIds: [], hostedPaths: [42] } };
+    const rejectedArchives = loadWebState().catch((error) => error);
+    await Promise.resolve();
+    fixture.transactions[2].request.result = invalidArchives;
+    fixture.transactions[2].request.onsuccess!();
+    fixture.transactions[2].oncomplete!();
+    expect((await rejectedArchives).message).toContain("preserved");
+    expect(fixture.transactions[2].request.result).toBe(invalidArchives);
 });

@@ -1,3 +1,20 @@
+## 2026-10-25 phone source archive labels
+
+- Phone file/folder and device-collection archive labels use the existing root
+  workspace writer. They hide items and new source defaults, preserve hosted
+  identity across refresh, and expose explicit Show archived/Unarchive controls.
+  Native markers and owner files/data remain separate. Folder restores retain
+  independently archived children; inherited labels identify their scope.
+- Existing Database/Prep choices remain available with an Archived label, and
+  active games/notes/progress are retained. Aggregate folder datasets and reviews
+  are not filtered or rewritten. Saved imports also reopen no-move starting
+  positions through the existing PGN opening path.
+- Primary passes 414 product phone tests/55 files, types and nine-file lint;
+  WebApp keeps 25 baseline warnings/zero errors. Eighteen focused checks include
+  actual controls, owner data retention, refresh, folder boundaries and help.
+  Clean/build and rendered/runtime verification remain. Browser control was
+  freshly checked and is still disabled. See docs/PHONE_SOURCE_ARCHIVES.md.
+
 ## 2026-10-25 phone workspace preferences
 
 - Phone Flip and per-workspace Database sources/local filters now use the

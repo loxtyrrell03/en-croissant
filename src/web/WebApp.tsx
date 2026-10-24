@@ -47,6 +47,8 @@ import { useMediaQuery } from "@mantine/hooks";
 import { notifications, Notifications } from "@mantine/notifications";
 import {
   IconArrowBackUp,
+  IconArchive,
+  IconArchiveOff,
   IconArrowsSort,
   IconBook,
   IconCheck,
@@ -311,6 +313,8 @@ import {
   restorePhonePrepSource,
 } from "./workspacePreferences";
 import { usePhoneDatabasePreference } from "./useWorkspacePreferences";
+import { PhoneArchiveFilter, PhoneSavedImports } from "./PhoneSourceArchives";
+import { phoneDatabaseArchive, phoneHostedArchiveAncestor, phoneHostedEntries, phoneVisibleDatabases, phoneVisibleHostedFolders, setPhoneHostedArchived } from "./sourceArchives";
 import {
   getWebBoardPlayerLabels,
   getWebBoardSourceTitle,
@@ -1427,48 +1431,25 @@ function WebAppContent() {
                 <Button variant="light" onClick={() => setView("review")}>
                   Review mistakes across my games
                 </Button>
-                {state.databases.map((database) => (
-                  <Group key={database.id} justify="space-between" wrap="wrap">
-                    <Text size="sm" style={{ overflowWrap: "anywhere", flex: 1 }}>
-                      {database.name} · {database.gameCount} games
-                    </Text>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      onClick={() => {
-                        const game = state.gamesByDatabase[database.id]?.find(
-                          (g) => g.moves.length,
-                        );
-                        if (game) {
-                          loadGameOnBoard(game, { cursor: 0 });
-                          setBoardPanelMode("moves");
-                        }
-                      }}
-                    >
-                      Open
-                    </Button>
-                    {state.prepWorkspaces.find((p) => p.sourceIds.includes(database.id)) && (
-                      <Button
-                        size="xs"
-                        variant="subtle"
-                        onClick={() => {
-                          const prep = state.prepWorkspaces.find((p) =>
-                            p.sourceIds.includes(database.id),
-                          )!;
-                          setState((current) => ({
-                            ...current,
-                            activePrepId: prep.id,
-                            board: { ...current.board, cursor: 0 },
-                          }));
-                          setView("board");
-                          setBoardPanelMode("prep");
-                        }}
-                      >
-                        Prep
-                      </Button>
-                    )}
-                  </Group>
-                ))}
+                <PhoneSavedImports
+                  state={state}
+                  setState={setState}
+                  onOpen={(database) => {
+                    const game = state.gamesByDatabase[database.id]?.find(game => game.moves.length)
+                      ?? state.gamesByDatabase[database.id]?.[0];
+                    if (game) {
+                      loadGameOnBoard(game, { cursor: 0 });
+                      setBoardPanelMode("moves");
+                    }
+                  }}
+                  onPrep={(database) => {
+                    const prep = state.prepWorkspaces.find(prep => prep.sourceIds.includes(database.id));
+                    if (!prep) return;
+                    setState(current => ({ ...current, activePrepId: prep.id, board: { ...current.board, cursor: 0 } }));
+                    setView("board");
+                    setBoardPanelMode("prep");
+                  }}
+                />
               </Stack>
             ) : view === "board" ? (
               <BoardWorkspace
@@ -1489,6 +1470,8 @@ function WebAppContent() {
               <StatsWorkspace />
             ) : (
               <FilesWorkspace
+                state={state}
+                setState={setState}
                 importHostedPgn={importHostedPgn}
                 importHostedFolder={importHostedFolder}
               />
@@ -3732,16 +3715,29 @@ function DatabaseUnderBoardPanel({
     useWebExplorerOptions();
   const hostedDatabases = useHostedDatabaseFolders();
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
+  const sourceArchives = state.sourceArchives;
+  const rememberedLocalId = resolveWebDatabaseSourceId(
+    state.workspacePreferences?.[phoneWorkspaceKey(state)]?.database?.local, databases,
+  );
+  const visibleDatabases = useMemo(
+    () => phoneVisibleDatabases({ databases, sourceArchives }, rememberedLocalId ? [rememberedLocalId] : []),
+    [databases, sourceArchives, rememberedLocalId],
+  );
+  const retainedHostedPath = databases.find(database => database.id === rememberedLocalId)?.hostedPath;
+  const sourceFolders = useMemo(
+    () => phoneVisibleHostedFolders({ sourceArchives }, hostedDatabases.folders, retainedHostedPath ? [retainedHostedPath] : []),
+    [sourceArchives, hostedDatabases.folders, retainedHostedPath],
+  );
   const selectableDatabases = useMemo(
     () =>
       filterWebSourceDatabases(
         filterWebDatabasesByHostedAvailability({
-          databases,
+          databases: visibleDatabases,
           hostedFolders: hostedDatabases.folders,
           hostedLibraryReady: hostedDatabaseLibraryReady,
         }),
       ),
-    [databases, hostedDatabaseLibraryReady, hostedDatabases.folders],
+    [visibleDatabases, hostedDatabaseLibraryReady, hostedDatabases.folders],
   );
   const selectedLocalId = useMemo(
     () => resolveWebDatabaseSourceId(selectedLocalIdValue, selectableDatabases),
@@ -3751,11 +3747,12 @@ function DatabaseUnderBoardPanel({
     () =>
       getWebDatabaseSelectData({
         databases: selectableDatabases,
-        hostedFolders: hostedDatabases.folders,
+        hostedFolders: sourceFolders,
+        archiveState: { sourceArchives },
       }),
-    [hostedDatabases.folders, selectableDatabases],
+    [sourceFolders, selectableDatabases, sourceArchives],
   );
-  const hasLocalChoices = selectableDatabases.length > 0 || hostedDatabases.folders.length > 0;
+  const hasLocalChoices = selectableDatabases.length > 0 || sourceFolders.length > 0;
   const selectedLocalDatabase = useMemo(
     () => selectableDatabases.find((database) => database.id === selectedLocalId) ?? null,
     [selectableDatabases, selectedLocalId],
@@ -3949,7 +3946,7 @@ function DatabaseUnderBoardPanel({
         hostedPath &&
         (hostedDatabases.loading ||
           !hostedDatabases.library ||
-          hostedDatabases.folders.some((folder) => folder.path === hostedPath))
+          sourceFolders.some((folder) => folder.path === hostedPath))
       ) {
         return current;
       }
@@ -3962,6 +3959,7 @@ function DatabaseUnderBoardPanel({
     hostedDatabases.loading,
     selectableDatabases,
     setSelectedLocalIdValue,
+    sourceFolders,
   ]);
 
   const setSource = (nextSource: WebDatabasePanelSource) => {
@@ -5250,30 +5248,46 @@ function PrepUnderBoardPanel({
     useWebExplorerOptions();
   const hostedDatabases = useHostedDatabaseFolders();
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
+  const sourceArchives = state.sourceArchives;
+  const activeSourceIds = activePrep?.sourceIds;
+  const rememberedPrepSourceId = initialPrepSource
+    ? resolveWebDatabaseSourceId(initialPrepSourceRef, state.databases) : null;
+  const visibleDatabases = useMemo(
+    () => phoneVisibleDatabases({ databases: state.databases, sourceArchives },
+      activeSourceIds ?? (rememberedPrepSourceId ? [rememberedPrepSourceId] : [])),
+    [state.databases, sourceArchives, activeSourceIds, rememberedPrepSourceId],
+  );
+  const sourceFolders = useMemo(
+    () => phoneVisibleHostedFolders({ sourceArchives }, hostedDatabases.folders,
+      visibleDatabases.flatMap(database => database.hostedPath ? [database.hostedPath] : [])),
+    [sourceArchives, hostedDatabases.folders, visibleDatabases],
+  );
   const selectableDatabases = useMemo(
     () =>
       filterWebSourceDatabases(
         filterWebDatabasesByHostedAvailability({
-          databases: state.databases,
+          databases: visibleDatabases,
           hostedFolders: hostedDatabases.folders,
           hostedLibraryReady: hostedDatabaseLibraryReady,
         }),
         state.prepWorkspaces.flatMap((prep) => prep.sourceIds),
       ),
-    [hostedDatabaseLibraryReady, hostedDatabases.folders, state.databases, state.prepWorkspaces],
+    [hostedDatabaseLibraryReady, hostedDatabases.folders, visibleDatabases, state.prepWorkspaces],
   );
   const sourceOptions = useMemo(
     () =>
       getWebDatabaseSelectData({
         databases: selectableDatabases,
-        hostedFolders: hostedDatabases.folders,
+        hostedFolders: sourceFolders,
+        archiveState: { sourceArchives },
         includeOnline: true,
         temporarySource: activePrep?.temporarySource ?? draftTemporarySource,
       }),
     [
       activePrep?.temporarySource,
       draftTemporarySource,
-      hostedDatabases.folders,
+      sourceFolders,
+      sourceArchives,
       selectableDatabases,
     ],
   );
@@ -5644,7 +5658,7 @@ function PrepUnderBoardPanel({
         storedHostedPath &&
         (hostedDatabases.loading ||
           !hostedDatabases.library ||
-          hostedDatabases.folders.some((folder) => folder.path === storedHostedPath))
+          sourceFolders.some((folder) => folder.path === storedHostedPath))
       ) {
         return null;
       }
@@ -5656,6 +5670,7 @@ function PrepUnderBoardPanel({
     hostedDatabases.loading,
     selectableDatabases,
     initialPrepSourceRef,
+    sourceFolders,
   ]);
 
   useEffect(() => {
@@ -8692,25 +8707,33 @@ function formatWebPrepLastPlayedShort(value: string | null | undefined) {
 }
 
 function FilesWorkspace({
+  state,
+  setState,
   importHostedPgn,
   importHostedFolder,
 }: {
+  state: WebCompanionState;
+  setState: Dispatch<SetStateAction<WebCompanionState>>;
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
 }) {
   return (
     <Box className={classes.filesWorkspace}>
-      <HostedFilesPanel importHostedPgn={importHostedPgn} importHostedFolder={importHostedFolder} />
+      <HostedFilesPanel state={state} setState={setState} importHostedPgn={importHostedPgn} importHostedFolder={importHostedFolder} />
     </Box>
   );
 }
 
 function HostedFilesPanel({
+  state,
+  setState,
   importHostedPgn,
   importHostedFolder,
   preferFolderImport = false,
   embedded = false,
 }: {
+  state: WebCompanionState;
+  setState: Dispatch<SetStateAction<WebCompanionState>>;
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder?: WebHostedFolderImportHandler;
   preferFolderImport?: boolean;
@@ -8720,6 +8743,9 @@ function HostedFilesPanel({
   const [listing, setListing] = useState<WebHostedFileListResponse | null>(null);
   const [path, setPath] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const archivedFolder = phoneHostedArchiveAncestor(state, path);
+  const visibleEntries = listing ? phoneHostedEntries(state, listing.entries, showArchived) : [];
   const directPgnFilesInPath = useMemo(
     () =>
       listing?.entries.filter(
@@ -8819,7 +8845,9 @@ function HostedFilesPanel({
             </Text>
           </Box>
         </Group>
-        <ActionIcon
+        <Group gap="xs" wrap="wrap" justify="flex-end">
+          <PhoneArchiveFilter checked={showArchived} onChange={setShowArchived} />
+          <ActionIcon
           aria-label="Refresh files"
           className={embedded ? undefined : classes.filesRefreshButton}
           size={embedded ? "md" : "lg"}
@@ -8828,7 +8856,13 @@ function HostedFilesPanel({
         >
           <IconRefresh size={embedded ? 16 : 20} />
         </ActionIcon>
+        </Group>
       </Group>
+
+      {archivedFolder && <Group gap="xs" mb="xs">
+        <Text size="xs" c="dimmed" style={{ overflowWrap: "anywhere" }}>Archived folder: {archivedFolder}</Text>
+        <Button size="compact-xs" variant="light" onClick={() => setState(current => setPhoneHostedArchived(current, archivedFolder, false))}>Unarchive folder</Button>
+      </Group>}
 
       {embedded && listing && listing.parentPath !== null && (
         <Group gap="xs" mb="xs" wrap="wrap">
@@ -8879,8 +8913,13 @@ function HostedFilesPanel({
       {listing && (
         <ScrollArea.Autosize mah={embedded ? 420 : undefined}>
           <Box className={`${classes.itemList} ${embedded ? "" : classes.hostedFileList}`}>
-            {listing.entries.map((entry) => (
-              <button
+            {!visibleEntries.length && <Text size="sm" c="dimmed">{listing.entries.length ? "Turn on Show archived to restore hidden items." : "This folder is empty."}</Text>}
+            {visibleEntries.map((entry) => {
+              const archived = phoneHostedArchiveAncestor(state, entry.path);
+              const inherited = archived && archived !== entry.path;
+              const archiveAction = inherited ? `Archived by folder ${archived}` : `${archived ? "Unarchive" : "Archive"} ${entry.name}`;
+              return <div key={`${entry.type}-${entry.path}`} className={classes.hostedFileRow} data-hosted-path={entry.path}>
+                <button
                 key={`${entry.type}-${entry.path}`}
                 className={`${classes.listButton} ${embedded ? "" : classes.hostedFileButton}`}
                 type="button"
@@ -8944,12 +8983,19 @@ function HostedFilesPanel({
                         : `${entry.extension.toUpperCase()} · ${formatBytes(entry.sizeBytes)}`}
                     </Text>
                   </Box>
+                  {archived && <Badge size="xs" color="gray">Archived</Badge>}
                   {entry.type === "directory" && !embedded && (
                     <IconChevronRight className={classes.hostedFolderChevron} size={20} />
                   )}
                 </Group>
               </button>
-            ))}
+              <Tooltip label={archiveAction}>
+                <span><ActionIcon aria-label={archiveAction} disabled={Boolean(inherited)} variant="subtle" size="lg" style={{ minWidth: 40, minHeight: 40 }} onClick={() => setState(current => setPhoneHostedArchived(current, entry.path, !archived))}>
+                  {archived ? <IconArchiveOff size={18} /> : <IconArchive size={18} />}
+                </ActionIcon></span>
+              </Tooltip>
+              </div>;
+            })}
           </Box>
         </ScrollArea.Autosize>
       )}
@@ -9536,11 +9582,13 @@ type WebDatabaseSelectGroup = {
 function getWebDatabaseSelectData({
   databases,
   hostedFolders,
+  archiveState,
   includeOnline = false,
   temporarySource = null,
 }: {
   databases: WebDatabase[];
   hostedFolders: WebHostedDatabaseFolder[];
+  archiveState?: Pick<WebCompanionState, "sourceArchives">;
   includeOnline?: boolean;
   temporarySource?: WebPrepTemporarySource | null;
 }): WebDatabaseSelectGroup[] {
@@ -9585,7 +9633,7 @@ function getWebDatabaseSelectData({
       hostedFolder && (database.hostedUpdatedAt ?? 0) < hostedFolder.lastModified;
     addItem(folderPath ? getHostedDatabaseGroupLabel(folderPath) : "Unfiled", {
       value: database.hostedPath ? hostedDatabaseValue(database.hostedPath) : database.id,
-      label: formatDatabasePickerLabel(database.name),
+      label: `${formatDatabasePickerLabel(database.name)}${archiveState && phoneDatabaseArchive(archiveState, database) ? " (Archived)" : ""}`,
       detail: updateAvailable
         ? `Update - ${formatCount(hostedFolder.fileCount)} PGN${
             hostedFolder.fileCount === 1 ? "" : "s"
