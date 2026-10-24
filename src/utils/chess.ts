@@ -11,12 +11,7 @@ import { parseSanOrUci, positionFromFen } from "./chessops";
 import { isPrefix } from "./misc";
 import { gameAnalysisEvidence } from "./gameAnalysisEvidence";
 import { explicitPgnOrientation, pgnOrientation } from "./pgnOrientation";
-import {
-    formatScore,
-    getCPLoss,
-    getLichessGameAccuracy,
-    scoreValueToCentipawns,
-} from "./score";
+import { formatScore, getCPLoss, getLichessGameAccuracy, scoreValueToCentipawns } from "./score";
 import {
     createNode,
     defaultTree,
@@ -84,8 +79,14 @@ export function getMoveText(
         isFirst?: boolean;
     },
 ): string {
-    const isBlack = tree.halfMoves % 2 === 0;
-    const moveNumber = Math.ceil(tree.halfMoves / 2);
+    // Tree halfMoves index analysis/history relative to a possibly custom root.
+    // The resulting position carries the actual PGN turn and fullmove counter.
+    const parsedAfter = tree.san ? parseFen(tree.fen) : undefined;
+    const after = parsedAfter?.isOk ? parsedAfter.value : undefined;
+    const isBlack = after ? after.turn === "white" : tree.halfMoves % 2 === 0;
+    const moveNumber = after
+        ? Math.max(1, after.fullmoves - (isBlack ? 1 : 0))
+        : Math.ceil(tree.halfMoves / 2);
     let moveText = "";
 
     if (tree.san) {
@@ -100,9 +101,10 @@ export function getMoveText(
         if (opt.glyphs) {
             for (const annotation of tree.annotations) {
                 if (annotation === "") continue;
-                moveText += isBasicAnnotation(annotation)
-                    ? tree.annotations
-                    : ` $${ANNOTATION_INFO[annotation].nag}`;
+                moveText +=
+                    tree.annotations.length === 1 && isBasicAnnotation(annotation)
+                        ? annotation
+                        : ` $${ANNOTATION_INFO[annotation].nag}`;
             }
         }
         moveText += " ";
@@ -113,7 +115,8 @@ export function getMoveText(
 
         if (opt.extraMarkups) {
             if (tree.score !== null) {
-                const depth = Number.isInteger(tree.depth) && tree.depth! >= 0 ? `,${tree.depth}` : "";
+                const depth =
+                    Number.isInteger(tree.depth) && tree.depth! >= 0 ? `,${tree.depth}` : "";
                 if (tree.score.value.type === "cp") {
                     content += `[%eval ${formatScore(tree.score.value)}${depth}] `;
                 } else {
@@ -129,8 +132,12 @@ export function getMoveText(
         }
 
         if (opt.extraMarkups && tree.shapes.length > 0) {
-            const squares = tree.shapes.filter((shape) => shape.dest === undefined || shape.dest === shape.orig);
-            const arrows = tree.shapes.filter((shape) => shape.dest !== undefined && shape.dest !== shape.orig);
+            const squares = tree.shapes.filter(
+                (shape) => shape.dest === undefined || shape.dest === shape.orig,
+            );
+            const arrows = tree.shapes.filter(
+                (shape) => shape.dest !== undefined && shape.dest !== shape.orig,
+            );
 
             if (squares.length > 0) {
                 content += `[%csl ${squares
@@ -656,7 +663,8 @@ export function getGameStats(root: TreeNode) {
         if (score && prevScore) cplosses[color].push(getCPLoss(prevScore, score, color));
         prevScore = score;
     }
-    const averageLoss = (values: number[]) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+    const averageLoss = (values: number[]) =>
+        values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
     const whiteCPL = averageLoss(cplosses.white);
     const blackCPL = averageLoss(cplosses.black);
     const lichessAccuracy = getLichessGameAccuracy(

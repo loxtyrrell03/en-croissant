@@ -43,6 +43,11 @@ frontend foundation.
 The underlying native PGN writer still needs source fingerprint checks, fresh
 offsets and atomic replacement. Cross-tab/external file changes can therefore
 still conflict. The virtual game-list header cache and deletion/index-shift
-identity also need further work. Custom-root PGN move counters remain a separate
-export gap. Do not describe this foundation as completed no-clobber Files saves
+identity also need further work. Custom-root PGN counters now use each resulting
+FEN's turn/fullmove value, preserving relative tree indices; multi-annotation
+export emits separate unambiguous NAGs instead of duplicated comma lists. Four
+new regressions reproduce the old counter/annotation failures; related native
+save, drawing, report and phone checks total 55 checks across seven files, with
+types and scoped lint passing. This exporter repair is also source-only.
+Do not describe this foundation as completed no-clobber Files saves
 or automatic Clear tabs, and do not infer runtime delivery from these checks.
