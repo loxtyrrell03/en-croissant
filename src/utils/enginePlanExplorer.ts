@@ -10,6 +10,7 @@ import {
 } from "chessops";
 import { castlingSide } from "chessops/chess";
 import { makeFen } from "chessops/fen";
+import { makeSan } from "chessops/san";
 import type { BestMoves, Score, ScoreValue } from "@/bindings";
 import type { PlanExplorerData, PlanExplorerLine, PlanExplorerPiece } from "@/bindings";
 import { detectPlanCastling, type PlanExplorerSegment } from "./planExplorer";
@@ -477,10 +478,8 @@ export function buildEnginePlanReport(
     options: EnginePlanReportOptions,
 ): EnginePlanReport {
     const sideToMove = sideToMoveFromFen(fen);
-    const pvs = bestMoves
-        .slice()
-        .sort((a, b) => a.multipv - b.multipv)
-        .map((line, index) => toEnginePlanPv(line, index + 1, sideToMove));
+    const pvs = validatedPlanLines(fen, bestMoves)
+        .map((line) => toEnginePlanPv(line, line.multipv, sideToMove));
 
     const rootBestQuality = bestRootQuality(pvs);
     const viable = computeViablePvs(pvs, rootBestQuality);
@@ -564,7 +563,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
 
     for (const [moveIndex, uci] of pv.uciMoves.entries()) {
         const move = parseUci(uci);
-        if (!move || !isNormalMove(move)) break;
+        if (!move || !isNormalMove(move) || !pos.isLegal(move)) break;
 
         const from = makeSquare(move.from);
         const to = makeSquare(move.to);
@@ -821,7 +820,7 @@ export function engineReportToPlanExplorerData(report: EnginePlanReport): PlanEx
 export function getPvMovePreviews(
     fen: string,
     uciMoves: string[],
-    sanMoves: string[] = [],
+    _sanMoves: string[] = [],
 ): EnginePlanMovePreview[] {
     const [pos] = positionFromFen(fen);
     if (!pos) return [];
@@ -835,21 +834,24 @@ export function getPvMovePreviews(
     const previews: EnginePlanMovePreview[] = [];
     for (const [index, uci] of uciMoves.entries()) {
         const move = parseUci(uci);
-        if (!move || !isNormalMove(move)) break;
+        if (!move || !isNormalMove(move) || !pos.isLegal(move)) break;
 
         const from = makeSquare(move.from);
         const to = makeSquare(move.to);
         if (!from || !to) break;
 
         const color = pos.turn;
+        const castle = engineCastlingMove(pos, move, color);
+        const destination = castle?.kingTo ?? to;
+        const san = makeSan(pos, move);
         pos.play(move);
         previews.push({
             index,
-            san: sanMoves[index] ?? uci,
+            san,
             uci,
             fen: makeFen(pos.toSetup()),
             from,
-            to,
+            to: destination,
             color,
             moveNumber,
         });
@@ -860,6 +862,35 @@ export function getPvMovePreviews(
     }
 
     return previews;
+}
+
+/** Count one legal root choice per source rank. Bad updates cannot displace
+ * a usable line; duplicates and illegal tails never create extra support. */
+export function validatedPlanLines(fen: string, lines: BestMoves[]): BestMoves[] {
+    const [position] = positionFromFen(fen);
+    if (!position || position.isEnd()) return [];
+    const byRank = new Map<number, BestMoves>();
+    for (const line of lines) {
+        const sourceFen = (line as BestMoves & { fen?: string }).fen;
+        if ((sourceFen !== undefined && sourceFen !== fen) ||
+            !Number.isSafeInteger(line.multipv) || line.multipv < 1 ||
+            !Number.isFinite(line.depth) || line.depth < 0) continue;
+        const moves = getPvMovePreviews(fen, line.uciMoves);
+        if (!moves.length) continue;
+        const candidate = { ...line, uciMoves: moves.map(move => move.uci), sanMoves: moves.map(move => move.san) };
+        const old = byRank.get(line.multipv);
+        if (!old || candidate.depth >= old.depth) byRank.set(line.multipv, candidate);
+    }
+    const seen = new Set<string>();
+    return [...byRank.values()].sort((a, b) => a.multipv - b.multipv).filter(line => {
+        const first = getPvMovePreviews(fen, line.uciMoves)[0];
+        // The king-to-rook and king-to-destination castle encodings are the
+        // same choice. Retain original legal UCI for Chess960 replay.
+        const key = first.from + first.to + (first.san.includes("=") ? first.uci.slice(-1) : "");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
 }
 
 export function formatEvalCp(cp: number | null) {
@@ -2182,7 +2213,8 @@ function engineCastlingMove(
     const rank = color === "white" ? "1" : "8";
     const kingTo = toSquareName(`${side === "h" ? "g" : "c"}${rank}`);
     const rookTo = toSquareName(`${side === "h" ? "f" : "d"}${rank}`);
-    const defaultRookFrom = toSquareName(`${side}${rank}`);
+    const rookSquare = pos.castles.rook[color][side];
+    const defaultRookFrom = rookSquare === undefined ? undefined : makeSquare(rookSquare);
     const moveTo = makeSquare(move.to);
     const moveToPiece = pos.board.get(move.to);
     const rookFrom =

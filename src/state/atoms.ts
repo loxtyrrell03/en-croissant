@@ -327,7 +327,7 @@ export const enginePlanLimitModeAtom = atomWithStorage<"depth" | "time">(
     "engine-plan-limit-mode",
     "depth",
 );
-export const enginePlanDepthAtom = atomWithStorage<number>("engine-plan-depth", 12);
+export const enginePlanDepthAtom = atomWithStorage<number>("engine-plan-depth", 17);
 export const enginePlanTimeMsAtom = atomWithStorage<number>("engine-plan-time-ms", 2000);
 export const enginePlanSideFilterAtom = atomWithStorage<"all" | "white" | "black">(
     "engine-plan-side-filter",

@@ -801,7 +801,7 @@ function EnginePlanExplorerPanel() {
               <NumberInput
                 aria-label="Depth"
                 value={clampedDepth}
-                onChange={(value) => setDepth(clampNumber(Number(value) || 12, 1, 40))}
+                onChange={(value) => setDepth(clampNumber(Number(value) || 17, 1, 40))}
                 min={1}
                 max={40}
                 clampBehavior="strict"
