@@ -1,3 +1,16 @@
+## 2026-10-24 clean PGN transaction verification
+
+- Clean delivery source 094b2b0e independently passes 18 filesystem tests,
+  93 frontend checks across seventeen files, full types, 24-file lint with no
+  warnings/errors, and the full production Vite build in 27.96 seconds.
+  Its complete native Tauri check passes with the same 22 existing warnings.
+  All thirty owned source/test files match the primary milestone; pre-existing
+  generated study/tournament wrappers remain outside that scoped source commit.
+- This is source/build and temporary-file/component proof. Browser control is
+  still disabled; no standalone or hosted publication occurred. Database-row
+  identity, automatic Clear tabs and the rest of the parity ledger remain open.
+  See docs/NATIVE_PGN_FILES.md and the delivery receipt.
+
 ## 2026-10-24 native PGN file transactions
 
 - Native file opens capture a complete-game SHA-256 identity. Fresh spans,
