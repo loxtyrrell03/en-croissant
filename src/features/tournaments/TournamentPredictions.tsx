@@ -79,6 +79,7 @@ export function PlayerPredictions({ record, player, initialView = "next", onPlay
   const prediction = row?.versions.find(v => v.capturedAt === version) ?? row?.versions.at(-1);
   const publishedRound = Math.min(128, record.snapshot.publishedRound);
   const publishedRow = rounds.find(r => r.round === publishedRound);
+  const heading = forecastHeading(forecast, record.snapshot.publishedRound === 0);
   return <section className={styles.root} aria-label={`Predictions for ${player.name}`}>
     <div className={styles.switcher} role="group" aria-label="Player predictions">
       <button type="button" aria-pressed={view === "next"} onClick={() => setView("next")}>Next round</button>
@@ -87,7 +88,7 @@ export function PlayerPredictions({ record, player, initialView = "next", onPlay
     <SaveError error={saved.error} retry={saved.retry}/>
     {view === "next" ? <>
       {publishedRound > 0 && publishedOpponent(record.snapshot, player, publishedRound) && !saved.loading && <Comparison record={record} player={player} round={publishedRound} prediction={publishedRow?.versions.at(-1)} corrected={publishedRow?.corrected}/>}
-      <h4>{forecastHeading(forecast, record.snapshot.publishedRound === 0)}<HelpTip label="Predicted opponents">Estimates of who this player will face, not their chance of winning. Only official pairings confirm the opponent.</HelpTip></h4>
+      <h4>{heading}<HelpTip label="Predicted opponents">Estimates of who this player will face, not their chance of winning. Only official pairings confirm the opponent.</HelpTip></h4>
       {isCalculating ? <p role="status">Calculating… <button type="button" onClick={() => setCancelled(true)}>Cancel</button></p> : cancelled ? <p>Calculation stopped. <button type="button" onClick={() => setCancelled(false)}>Calculate</button></p> : forecast?.candidates.length ? <div className={styles.opponents}>
         {forecast.candidates.map(candidate => <div className={styles.opponent} key={candidate.player.startNumber}>
           <button type="button" className={styles.link} onClick={() => onPlayer(candidate.player)}>{candidate.player.name}</button>
@@ -95,7 +96,7 @@ export function PlayerPredictions({ record, player, initialView = "next", onPlay
           <span>{colour(candidate.color)}</span>
         </div>)}
         {forecast.kind === "estimated" && forecast.otherProbability !== null && forecast.otherProbability > 0 && <p className={styles.other}>Other opponents or no game: {formatForecastPercent(forecast.otherProbability)}</p>}
-      </div> : <p>{forecast?.summary ?? "No prediction available yet."}</p>}
+      </div> : forecast?.summary === heading ? null : <p>{forecast?.summary ?? "No prediction available yet."}</p>}
     </> : saved.loading ? <p role="status">Loading predictions…</p> : latest < 1 ? <p>No past rounds yet.</p> : <>
       <label className={styles.round}>Round<select aria-label="Prediction round" value={round} onChange={e => { setChosenRound(Number(e.target.value)); setVersion(null); }}>{Array.from({ length: latest }, (_,i) => latest-i).map(n => <option key={n} value={n}>Round {n}</option>)}</select></label>
       <Comparison record={record} player={player} round={round} prediction={prediction} corrected={row?.corrected}/>
