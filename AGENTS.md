@@ -4845,6 +4845,8 @@ a concrete risk that the check would resolve.
 
 ## Novelty parity audit (2026-10-24)
 
+- Phone publishing hashes files through the shared streaming .NET SHA-256 helper, including collector/helper verification. A Windows PowerShell utility-command resolution failure previously stopped a completed build before activation. The native .NET path retains every hash/manifest/ancestry check and passes the full publish-guard suite, including a known digest with module auto-loading disabled. Do not bypass manifest verification to recover a failed publish.
+
 - Delivery reconciliation merges the verified October primary source through 64f8a5c6 with the live phone branch through 7ea2eadb, preserving its service controls, opponent picker, orientation, direct links and installed-root handoff. Resolve older Stats conflicts to the October shared model/workers/custom periods. The complete frontend/worker build, TypeScript, 548 focused combined tests, 69 additional phone persistence/import/Prep tests and 62 service/build/controller tests pass (one optional engine check skipped). Regenerate the shared review runtime from the committed source; exclude primary's unrelated pending checking-ray patch. This is prepared source, with live/native delivery still recorded separately.
 
 - Audit Novelty behavior across all recent feature/release branches as well as primary; the main checkout alone omits completed improvements. Track source, desktop binary and hosted phone delivery separately in `docs/NOVELTY_SYNC_2026-10-24.md`. Preserve En Croissant-specific tactics/study features and live phone ancestry.

@@ -49,6 +49,13 @@ engine check skipped), full TypeScript and the complete frontend/worker build.
 The existing shared review runtime was regenerated from committed source;
 uncommitted checking-ray research in primary remains excluded.
 
+The first guarded publication built both native helpers but stopped before
+activation when Windows PowerShell could not resolve `Get-FileHash`. The shared
+streaming .NET SHA-256 helper now removes that command dependency for manifest
+and native-helper verification. The publish-guard suite passes, including the
+standard `abc` digest with module auto-loading disabled; no ancestry, clean-source
+or integrity check was removed. Delivery status remains pending the retry.
+
 | Area | Initial finding | Next verification |
 | --- | --- | --- |
 | Performance estimator, workers and custom periods | 23 of 24 matching shared files are byte-identical, including the model, workers and controls; the phone adds adapter tests. Source reconciliation is now committed | Reconcile prerequisites, test desktop/phone adapters, then deliver |

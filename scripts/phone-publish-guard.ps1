@@ -156,7 +156,16 @@ function Assert-EnCroissantPublishDescendsFrom {
 
 function Get-EnCroissantFileSha256 {
   param([Parameter(Mandatory = $true)][string]$Path)
-  return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
+  # Module auto-loading is unreliable in a nested Windows PowerShell build
+  # pipeline. Hash the exact file bytes without an external cmdlet dependency.
+  $stream = [System.IO.File]::OpenRead([System.IO.Path]::GetFullPath($Path))
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    return ([BitConverter]::ToString($sha.ComputeHash($stream))).Replace("-", "").ToLowerInvariant()
+  } finally {
+    $stream.Dispose()
+    $sha.Dispose()
+  }
 }
 
 function Copy-EnCroissantPhonePublicShell {

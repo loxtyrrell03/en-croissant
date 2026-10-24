@@ -166,19 +166,19 @@ try {
     throw "The matching phone OTB collector is missing at $collectorSource."
   }
   $tournamentSource = Join-Path $repoRoot 'src-tauri\target\release\encroissant-tournament-core.exe'
-  $tournamentHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $tournamentSource).Hash
+  $tournamentHash = Get-EnCroissantFileSha256 -Path $tournamentSource
   New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
   $collectorDestination = Join-Path $runtimeRoot $collectorName
   $temporaryCollector = "$collectorDestination.next-$PID"
   Copy-Item -LiteralPath $collectorSource -Destination $temporaryCollector -Force
   Move-Item -LiteralPath $temporaryCollector -Destination $collectorDestination -Force
-  $collectorHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $collectorDestination).Hash
+  $collectorHash = Get-EnCroissantFileSha256 -Path $collectorDestination
 
   $tournamentName = 'encroissant-tournament-core-' + $publishContext.SourceCommit.Substring(0, 12) + '.exe'
   $tournamentDestination = Join-Path $runtimeRoot $tournamentName
-  $tournamentHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $tournamentSource).Hash
+  $tournamentHash = Get-EnCroissantFileSha256 -Path $tournamentSource
   if (Test-Path -LiteralPath $tournamentDestination) {
-    if ((Get-FileHash -Algorithm SHA256 -LiteralPath $tournamentDestination).Hash -ne $tournamentHash) { throw 'The immutable tournament helper differs from this release.' }
+    if ((Get-EnCroissantFileSha256 -Path $tournamentDestination) -ne $tournamentHash) { throw 'The immutable tournament helper differs from this release.' }
   } else { Copy-Item -LiteralPath $tournamentSource -Destination $tournamentDestination }
 
   $activeApp = [ordered]@{
