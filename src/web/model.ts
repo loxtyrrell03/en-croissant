@@ -6,6 +6,9 @@ export type WebColor = Extract<Color, "white" | "black">;
 export type WebResult = "1-0" | "0-1" | "1/2-1/2" | "*";
 export type WebLocalResultFilter = "any" | "whitewon" | "draw" | "blackwon";
 
+export type WebDrawingBrush = "green" | "red" | "yellow" | "blue";
+export type WebDrawing = { orig: string; dest?: string; brush: WebDrawingBrush };
+
 export type WebLocalGameFilters = {
     startDate?: string;
     endDate?: string;
@@ -13,6 +16,7 @@ export type WebLocalGameFilters = {
 };
 
 export type WebMove = {
+    shapes?: WebDrawing[];
     ply: number;
     color: WebColor;
     san: string;
@@ -39,6 +43,7 @@ export type WebCoachReviewRecord = {
 };
 
 export type WebGame = {
+    rootShapes?: WebDrawing[];
     id: string;
     databaseId: string;
     databaseName: string;
@@ -80,6 +85,7 @@ export type WebDatabase = {
 };
 
 export type WebPrepLineMove = {
+    shapes?: WebDrawing[];
     fenBefore: string;
     fenAfter: string;
     san: string;
@@ -119,6 +125,8 @@ export type WebPrepTemporarySource = {
 };
 
 export type WebPrepWorkspace = {
+    rootShapes?: WebDrawing[];
+    drawings?: Record<string, WebDrawing[]>;
     id: string;
     name: string;
     mode?: WebPrepMode;
@@ -146,6 +154,9 @@ export type WebPrepWorkspace = {
 };
 
 export type WebBoardState = {
+    annotationOwnerId?: string;
+    rootShapes?: WebDrawing[];
+    drawings?: Record<string, WebDrawing[]>;
     orientation: WebColor;
     startFen: string;
     line: WebPrepLineMove[];

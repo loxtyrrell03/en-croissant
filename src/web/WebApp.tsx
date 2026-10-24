@@ -131,7 +131,14 @@ import PhoneEnginePlansPanel from "./PhoneEnginePlansPanel";
 import { loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
-import { annotatePhoneMove } from "./phoneAnnotations";
+import { annotatePhoneDrawings, annotatePhoneMove, savedPhoneDrawings } from "./phoneAnnotations";
+import {
+  newPhoneAnnotationOwner,
+  phoneDrawingSeat,
+  phoneDrawingsToChessground,
+  togglePhoneDrawing,
+  type PhoneDrawingUpdate,
+} from "./phoneDrawings";
 import {
   askWebChessCoach,
   createWebCoachReviewRecord,
@@ -202,6 +209,8 @@ import {
 import { useHostedDatabaseFolders } from "./useHostedDatabaseFolders";
 import type {
   WebBoardState,
+  WebDrawing,
+  WebDrawingBrush,
   WebCoachReviewRecord,
   WebColor,
   WebCompanionState,
@@ -707,6 +716,7 @@ function WebAppContent() {
         ...current,
         activePrepId: null,
         board: {
+          annotationOwnerId: newPhoneAnnotationOwner(),
           orientation: setup.orientation,
           startFen: setup.startFen,
           line: webGameToLine(game),
@@ -730,6 +740,7 @@ function WebAppContent() {
       activePrepId: null,
       board: {
         ...createEmptyWebBoardState(),
+        annotationOwnerId: newPhoneAnnotationOwner(),
         sourceTitle: "Analysis board",
       },
     }));
@@ -1541,6 +1552,19 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
+  const annotationSeat = phoneDrawingSeat(state).owner;
+  const savedDrawings = useMemo(() => savedPhoneDrawings(state), [state]);
+  const [drawing, setDrawing] = useState(false);
+  const [drawingBrush, setDrawingBrush] = useState<WebDrawingBrush>("green");
+  useEffect(() => {
+    if (panelMode !== "moves") setDrawing(false);
+  }, [panelMode]);
+  const updateDrawings = useCallback((update: PhoneDrawingUpdate) => {
+    setState((current) =>
+      annotatePhoneDrawings(current, annotationSeat,
+        typeof update === "function" ? update(savedPhoneDrawings(current)) : update),
+    );
+  }, [annotationSeat, setState]);
   const upcomingEngineFens = useMemo(
     () => activeLine.slice(cursor, cursor + 3).map((move) => move.fenAfter),
     [activeLine, cursor],
@@ -2077,6 +2101,10 @@ function BoardWorkspace({
         {boardPlayers ? <BoardPlayerRow player={boardPlayers.top} /> : null}
         <WebChessboard
           fen={currentFen}
+          savedDrawings={savedDrawings}
+          drawingSeat={annotationSeat}
+          drawingBrush={drawing ? drawingBrush : null}
+          onDrawingsChange={updateDrawings}
           orientation={orientation}
           lastMoveUci={activeLastMove}
           engineArrowShapes={engineArrowShapes}
@@ -2164,11 +2192,19 @@ function BoardWorkspace({
               {panelMode === "moves" ? (
                 <>
                   <PhoneAnnotationBar
-                    key={currentFen + cursor}
+                    key={annotationSeat}
                     move={activeLine[cursor - 1]}
                     onChange={(patch) =>
-                      setState((current) => annotatePhoneMove(current, cursor, patch))
+                      setState((current) => annotatePhoneMove(current, cursor, patch, annotationSeat))
                     }
+                    drawing={{
+                      enabled: drawing,
+                      brush: drawingBrush,
+                      onToggle: () => setDrawing((value) => !value),
+                      onBrush: setDrawingBrush,
+                      hasShapes: savedDrawings.length > 0,
+                      onClear: () => updateDrawings([]),
+                    }}
                     game={sourceGame}
                   />
                   <MovesUnderBoardPanel
@@ -8877,7 +8913,7 @@ function HostedFilesPanel({
   );
 }
 
-function WebChessboard({
+export function WebChessboard({
   fen,
   orientation,
   lastMoveUci,
@@ -8890,6 +8926,10 @@ function WebChessboard({
   canGoToNextMove,
   onPreviousMove,
   onNextMove,
+  savedDrawings = [],
+  drawingSeat,
+  drawingBrush = null,
+  onDrawingsChange,
 }: {
   interactive?: boolean;
   showEvaluation?: boolean;
@@ -8903,13 +8943,20 @@ function WebChessboard({
   canGoToNextMove: boolean;
   onPreviousMove: () => void;
   onNextMove: () => void;
+  savedDrawings?: WebDrawing[];
+  drawingSeat?: string;
+  drawingBrush?: WebDrawingBrush | null;
+  onDrawingsChange?: (update: PhoneDrawingUpdate) => void;
 }) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<Api | null>(null);
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
   const [pendingPromotion, setPendingPromotion] = useState<{ orig: Key; dest: Key } | null>(null);
+  const [drawingOrigin, setDrawingOrigin] = useState<{ key: Key; seat?: string; brush: WebDrawingBrush } | null>(null);
+  const drawingOriginRef = useRef(drawingOrigin);
   useBoardTouchGestures(boardRef, {
+    enabled: !drawingBrush,
     canGoToPreviousMove,
     canGoToNextMove,
     onPreviousMove,
@@ -8928,11 +8975,12 @@ function WebChessboard({
       turnColor: turn,
       check: position?.isCheck(),
       coordinates: true,
+      blockTouchScroll: !!drawingBrush,
       lastMove,
       movable: {
         free: false,
-        color: interactive ? turn : undefined,
-        dests: interactive ? dests : new Map(),
+        color: interactive && !drawingBrush ? turn : undefined,
+        dests: interactive && !drawingBrush ? dests : new Map(),
         showDests: true,
         events: {
           after(orig: Key, dest: Key) {
@@ -8946,18 +8994,44 @@ function WebChessboard({
         },
       },
       draggable: {
-        enabled: interactive,
+        enabled: interactive && !drawingBrush,
+      },
+      events: {
+        select(square: Key) {
+          if (!drawingBrush || !onDrawingsChange) return;
+          const origin = drawingOriginRef.current;
+          if (!origin || origin.seat !== drawingSeat || origin.brush !== drawingBrush) {
+            const next = { key: square, seat: drawingSeat, brush: drawingBrush };
+            drawingOriginRef.current = next;
+            setDrawingOrigin(next);
+          } else {
+            drawingOriginRef.current = null;
+            setDrawingOrigin(null);
+            onDrawingsChange((current) => togglePhoneDrawing(current, origin.key, square, drawingBrush));
+          }
+        },
       },
       drawable: {
-        enabled: interactive,
+        enabled: interactive && !drawingBrush,
         visible: true,
-        autoShapes: engineArrowShapes,
+        eraseOnMovablePieceClick: !onDrawingsChange,
+        shapes: onDrawingsChange ? phoneDrawingsToChessground(savedDrawings) : undefined,
+        onChange: onDrawingsChange ? (shapes: DrawShape[]) => {
+          const api = apiRef.current;
+          // Ordinary move/empty-square taps must not erase saved PGN marks.
+          // Native draw gestures notify before clearing drawable.current.
+          if (api?.state.drawable.current) onDrawingsChange(shapes);
+          else api?.setShapes(phoneDrawingsToChessground(savedDrawings));
+        } : undefined,
+        autoShapes: drawingOrigin && drawingBrush && drawingOrigin.seat === drawingSeat && drawingOrigin.brush === drawingBrush
+          ? [...engineArrowShapes, { orig: drawingOrigin.key, brush: drawingOrigin.brush }]
+          : engineArrowShapes,
       },
       animation: {
         enabled: interactive,
       },
     };
-  }, [engineArrowShapes, fen, lastMoveUci, orientation, interactive]);
+  }, [engineArrowShapes, fen, lastMoveUci, orientation, interactive, drawingBrush, drawingOrigin, drawingSeat, savedDrawings, onDrawingsChange]);
 
   const initialConfigRef = useRef(config);
 
@@ -8978,7 +9052,9 @@ function WebChessboard({
 
   useEffect(() => {
     setPendingPromotion(null);
-  }, [fen]);
+    drawingOriginRef.current = null;
+    setDrawingOrigin(null);
+  }, [fen, drawingSeat, drawingBrush, orientation]);
 
   const promotionColor = useMemo(() => getFenColor(fen), [fen]);
   const promotionGlyphs: Record<WebPromotionRole, string> =
@@ -9116,6 +9192,7 @@ const BOARD_SWIPE_DISTANCE_PX = 48;
 const BOARD_SWIPE_AXIS_BIAS = 1.35;
 
 type BoardTouchNavigation = {
+  enabled?: boolean;
   canGoToPreviousMove: boolean;
   canGoToNextMove: boolean;
   onPreviousMove: () => void;
@@ -9147,7 +9224,7 @@ function useBoardTouchGestures(
     };
 
     const onTouchStart = (event: TouchEvent) => {
-      if (event.touches.length !== 1) {
+      if (event.touches.length !== 1 || navigationRef.current.enabled === false) {
         resetGesture();
         return;
       }
