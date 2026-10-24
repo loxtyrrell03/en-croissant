@@ -16,7 +16,7 @@ import {
 import { useLoaderData } from "@tanstack/react-router";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { memo, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
@@ -24,13 +24,13 @@ import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
   autoSaveAtom,
   aiCoachEnabledAtom,
-  currentGameStateAtom,
   currentTabAtom,
   eraseDrawablesOnClickAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { useBlindfoldMaiaTrainer } from "@/hooks/useBlindfoldMaiaTrainer";
 import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
+import { useStartPracticeGame } from "@/hooks/useStartPracticeGame";
 
 interface BoardControlsProps {
   editingMode: boolean;
@@ -63,14 +63,12 @@ function BoardControls({
   const store = useContext(TreeStateContext)!;
   const headers = useStore(store, (s) => s.headers);
   const root = useStore(store, (s) => s.root);
-  const currentNode = useStore(store, (s) => s.currentNode());
   const setHeaders = useStore(store, (s) => s.setHeaders);
-  const setFen = useStore(store, (s) => s.setFen);
   const clearShapes = useStore(store, (s) => s.clearShapes);
 
   const keyMap = useAtomValue(keyMapAtom);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
-  const setGameState = useSetAtom(currentGameStateAtom);
+  const playFromHere = useStartPracticeGame("standard");
   const autoSave = useAtomValue(autoSaveAtom);
   const aiCoachEnabled = useAtomValue(aiCoachEnabledAtom);
   const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
@@ -78,6 +76,9 @@ function BoardControls({
   const startBlindfoldTrainer = useBlindfoldMaiaTrainer();
 
   const orientation = headers.orientation || "white";
+  const changeModeLabel = t(
+    currentTab?.type === "analysis" ? "Board.Action.PlayFromHere" : "Board.Action.AnalyzeGame",
+  );
   const toggleOrientation = () =>
     setHeaders({
       ...headers,
@@ -87,13 +88,8 @@ function BoardControls({
 
   function changeTabType() {
     if (currentTab?.type === "analysis") {
-      setFen(currentNode.fen);
-      setHeaders({
-        ...headers,
-        fen: currentNode.fen,
-        result: "*",
-      });
-      setGameState("settingUp");
+      void playFromHere();
+      return;
     }
 
     setCurrentTab((t) => {
@@ -145,13 +141,9 @@ function BoardControls({
         )}
         <Tooltip
           position="right"
-          label={t(
-            currentTab?.type === "analysis"
-              ? "Board.Action.PlayFromHere"
-              : "Board.Action.AnalyzeGame",
-          )}
+          label={changeModeLabel}
         >
-          <ActionIcon onClick={changeTabType}>
+          <ActionIcon onClick={changeTabType} aria-label={changeModeLabel}>
             {currentTab?.type === "analysis" ? (
               <IconTarget size="1.2rem" />
             ) : (
