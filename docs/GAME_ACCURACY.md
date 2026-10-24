@@ -45,3 +45,35 @@ account and actual Mantine component checks, full TypeScript, scoped lint and
 frontend build. The standalone desktop artifact was subsequently rebuilt from
 clean source `cc3e71d2`, with its analysis module identity checked in the binary.
 Native-window interaction is unverified. Phone EloGuard remains separate.
+## Canonical phone report core
+
+`web/gameReport.ts` reuses the browser-safe native tree, legal-history evidence,
+report calculations and portable `ECGameAnalysis` run verification. It does not
+introduce another accuracy formula or change the phone's calibrated Strength
+model. The normal-start metric keeps the same canonical +15 cp convention;
+custom starts require their actual root score. The fresh root search and actual
+depth are retained as evidence in both cases.
+
+The whole game is copied and replay-validated before any asynchronous work.
+Every saved before/after FEN, SAN and UCI move must agree. Original move numbers,
+Black starts and FEN halfmove-clock history survive. Repetition, fifty-move draws and mate
+use the complete legal history and avoid engine calls for terminal scores.
+Missing/foreign/over-cap evidence fails; there is no invented-score fallback.
+Limits and input lines are captured, changed/cancelled requests cannot complete,
+and the caller's source game is never mutated.
+
+Completed results include the exact shared report, isolated score tree and
+evidence-bound portable run record. `savedWebGameReport` clones a serializable
+snapshot; `readWebGameReport` verifies it against the current legal game and
+recorded limits before rebuilding labels/statistics. It rejects changed scores,
+depths, games and malformed records. Current display names/counters cannot
+relabel the saved evidence. This provides the data contract; durable save/retry
+and UI ownership still need wiring into the chosen phone surface.
+
+Thirty-two focused checks across four files cover the report core, exact engine
+transport and native portable metadata, including actual custom starts, mate,
+threefold/fifty-move history, input mutation, cancellation and saved evidence.
+Whole-project TypeScript and scoped lint pass. Engine calls in these whole-game
+tests are fixtures; the separately recorded real isolated Stockfish service test
+verifies the transport. No live owner game, phone engine service or runtime was
+changed for this source milestone.

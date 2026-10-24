@@ -38,5 +38,6 @@ The shared behavior is independent of placement:
 
 The current source contains the tested bounded report transport. Controls,
 canonical whole-game report ownership/persistence and Engine Plans presentation
-still require implementation and separate runtime delivery. The selected
-direction should be recorded here before implementing the new phone surface.
+still require implementation and separate runtime delivery. The owner selected **A — Analysis beneath the board** on 24 October 2026.
+Implement Live / Game report / Plans within Board Analysis and apply the same
+direction to all documented states; no further layout approval is required.
