@@ -29,7 +29,8 @@ test("duplicate root alternatives cannot manufacture recurrence, including castl
 });
 test("malformed ranks, explicit stale positions and illegal moves never supply evidence", () => {
   const lines = [pv(0, ["e2e4"]), pv(1.5, ["e2e4"]), pv(2, ["e7e5"]), pv(3, ["a1a8"]),
-    { ...pv(4, ["e2e4"]), fen: "stale" }, { ...pv(5, ["e2e4"]), depth: NaN }];
+    { ...pv(4, ["e2e4"]), fen: "stale" }, { ...pv(5, ["e2e4"]), depth: NaN },
+    { ...pv(6, ["e2e4"]), score: { value: { type: "cp" as const, value: Infinity }, wdl: null } }];
   expect(validatedPlanLines(INITIAL_FEN, lines)).toEqual([]);
   expect(getPvMovePreviews(INITIAL_FEN, ["e2e4", "e7e5", "e4e6"])).toHaveLength(2);
   expect(validatedPlanLines("not a FEN", [pv(1, ["e2e4"])])).toEqual([]);

@@ -58,6 +58,7 @@ import {
   currentEnginePlanReportAtom,
   currentPlanExplorerPreviewLineAtom,
   enginePlanDepthAtom,
+  enginePlanHorizonAtom,
   enginePlanLimitModeAtom,
   enginePlanMultipvAtom,
   enginePlanSideFilterAtom,
@@ -73,6 +74,8 @@ import { useLichessExplorerAuth } from "@/hooks/useSharedLichessSession";
 import {
   buildEnginePlanReport,
   categoryLabel,
+  enginePlanDisplayForHorizon,
+  enginePlanSourceEvaluation,
   engineReportToPlanExplorerData,
   formatEvalCp,
   formatScoreValue,
@@ -116,6 +119,7 @@ import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
 import { MoveStrengthSettingsButton } from "../database/MoveStrengthSettingsButton";
 import PlanCoachInline, { type PlanCoachInlineRequest } from "../plan/PlanCoachInline";
+import { EnginePlanEvaluation, EnginePlanHorizonControl } from "./EnginePlanPresentation";
 
 const MAX_ENGINE_PLAN_REPORT_CACHE_ENTRIES = 24;
 const ENGINE_SETUP_PRACTICAL_MAX_PLIES = 8;
@@ -184,6 +188,7 @@ function EnginePlanExplorerPanel() {
   const [timeMs, setTimeMs] = useAtom(enginePlanTimeMsAtom);
   const [sideFilter, setSideFilter] = useAtom(enginePlanSideFilterAtom);
   const [view, setView] = useAtom(enginePlanViewAtom);
+  const [horizon, setHorizon] = useAtom(enginePlanHorizonAtom);
   const [showPlanArrows, setShowPlanArrows] = useAtom(showPlanExplorerArrowsAtom);
   const [arrowLimit, setArrowLimit] = useAtom(planExplorerArrowLimitAtom);
   const [planState, setPlanState] = useAtom(currentEnginePlanReportAtom);
@@ -308,14 +313,14 @@ function EnginePlanExplorerPanel() {
 
     return {
       ...visibleReport,
-      plans: visibleReport.displayPlans.filter(
+      plans: enginePlanDisplayForHorizon(visibleReport, horizon).filter(
         (plan) => sideFilter === "all" || plan.color === sideFilter,
       ),
       setups: visibleReport.setups.filter(
         (setup) => sideFilter === "all" || setup.color === sideFilter,
       ),
     };
-  }, [sideFilter, visibleReport]);
+  }, [horizon, sideFilter, visibleReport]);
   const practicalLichessOptions = useMemo(
     () => ({
       ...lichessOptions,
@@ -714,7 +719,7 @@ function EnginePlanExplorerPanel() {
 
           {view === "plans" && (!filteredReport || filteredReport.plans.length === 0) ? (
             <Text ta="center" c="dimmed" py="xl">
-              {sideFilter === "all"
+              {horizon !== "all" ? "No ideas in this horizon. Choose All or analyse a longer line." : sideFilter === "all"
                 ? "No plan signals found in the PVs."
                 : `No ${sideFilter} plan signals found in the PVs.`}
             </Text>
@@ -853,6 +858,7 @@ function EnginePlanExplorerPanel() {
                 { label: "Setups", value: "setups" },
               ]}
             />
+            {view === "plans" && <EnginePlanHorizonControl value={horizon} onChange={setHorizon} />}
             <Switch
               label="Auto arrows"
               size="sm"
@@ -969,7 +975,7 @@ function PlansTable({
             Engine Strength
           </SortableEngineTh>
           <SortableEngineTh sortKey="eval" sort={sort} setSort={setSort} style={{ width: 96 }}>
-            Eval
+            Eval (White)
           </SortableEngineTh>
           <SortableEngineTh
             sortKey="confidence"
@@ -1359,7 +1365,7 @@ function EngineStrengthCell({
             {label}
           </Badge>
           <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-            {`${target.supportCount}/${totalPvs} PVs · eval not assigned`}
+            {`${target.supportCount}/${totalPvs} supporting PVs`}
           </Text>
         </Stack>
       </Tooltip>
@@ -1442,15 +1448,16 @@ function PlanRow({
       <Table.Td>
         <Stack gap={4}>
           <Group gap="xs" wrap="wrap">
-            <Badge variant="light">{categoryLabel(plan.category)}</Badge>
+            <Badge variant="light">{plan.context === "rootChoice" ? "Move" : categoryLabel(plan.category)}</Badge>
+            <Badge variant="light">{plan.color === "white" ? "White" : "Black"}</Badge>
             <Badge variant="outline">{plan.appearsInTopPv ? "PV1" : "Side PV"}</Badge>
           </Group>
           <Text fw={700} size="sm">
             {plan.label}
           </Text>
-          <Text size="sm" c="dimmed" lineClamp={2}>
-            {plan.explanation}
-          </Text>
+          {plan.contextLabel && <Text size="xs" c="dimmed">
+            {plan.contextLabel}{plan.supportCount > 1 ? ` · ${plan.supportCount} supporting lines` : ""}
+          </Text>}
           <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
           <details>
             <summary>Evidence</summary>
@@ -1483,7 +1490,7 @@ function PlanRow({
       <Table.Td>
         <EngineStrengthCell target={plan} totalPvs={totalPvs} />
       </Table.Td>
-      <Table.Td>{formatEvalCp(plan.weightedEvalCp)}</Table.Td>
+      <Table.Td><EnginePlanEvaluation plan={plan} /></Table.Td>
       <Table.Td>
         <Badge variant="outline">{plan.confidence}</Badge>
       </Table.Td>
@@ -1661,6 +1668,8 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
   const direction = sort.direction === "asc" ? 1 : -1;
 
   return [...plans].sort((a, b) => {
+    const rootOrder = Number(b.context === "rootChoice") - Number(a.context === "rootChoice");
+    if (rootOrder) return rootOrder;
     let diff = 0;
     switch (sort.key) {
       case "plan":
@@ -1671,7 +1680,7 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
         diff = engineStrengthSortScore(a) - engineStrengthSortScore(b);
         break;
       case "eval":
-        diff = nullableEvalSortScore(a.weightedEvalCp) - nullableEvalSortScore(b.weightedEvalCp);
+        diff = planEvaluationSortScore(a) - planEvaluationSortScore(b);
         break;
       case "confidence":
         diff =
@@ -1682,6 +1691,12 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
 
     return direction * (diff || a.label.localeCompare(b.label));
   });
+}
+
+function planEvaluationSortScore(plan: EnginePlan) {
+  const source = enginePlanSourceEvaluation(plan);
+  if (!source) return nullableEvalSortScore(null);
+  return source.score.type === "mate" ? Math.sign(source.score.value) * 100000 : source.score.value;
 }
 
 function sortEngineSetups(

@@ -309,7 +309,7 @@ describe("buildPlanStrengthByKey", () => {
             BREAK_FEN,
             [
                 pv(1, ["e2e4", "d5e4"], 300),
-                pv(2, ["e2e4", "e7e6"], 280),
+                pv(2, ["e2e3", "e7e6"], 280),
                 pv(3, ["g1f3", "g8f6"], 100),
             ],
             { requestedMultipv: 3, limitLabel: "Depth 12" },

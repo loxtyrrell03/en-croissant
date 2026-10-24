@@ -100,3 +100,23 @@ This proves build/linkage and file replacement, not native-window interaction.
 Canonical HTTPS library manifest and workspace reads and a native tournament
 settings RPC also pass; the full Serve configuration is byte-identical to its
 pre-publication snapshot. See the compact delivery JSON.
+
+## Engine Plans source port
+
+The native chessops implementation now validates legal/unique root evidence,
+retains actual source ranks, uses depth 17 for fresh preferences, and displays
+all first-five root choices with their own exact scores. Quiet rook/queen moves,
+competitive alternative pawn breaks, castling and short minor-piece routes keep
+their exact preparation/arrival snapshot. Different origins and preparation
+routes cannot manufacture recurrence. Immediate/medium/long horizons filter
+each occurrence before grouping and use cached lines without an engine restart.
+
+Later ideas display a labelled conditional score from the highest-ranked
+supporting root PV, with accessible help explaining its source and White
+perspective. That value never enters independent plan/setup strength arithmetic.
+En Croissant's existing setup mining remains intact. Sixty-six focused
+plan/presentation/strength checks, full types, scoped lint and frontend build pass.
+Actual changed Mantine components were checked in Chrome at 390px, including
+bounded help, dismissal and horizon selection, using an invented fixture.
+This is source/component evidence; the standalone desktop binary still contains
+the preceding batch. Phone Engine Plans capability remains a separate gap.

@@ -856,7 +856,8 @@ describe("Engine Plan Explorer", () => {
             supportCount: 2,
             appearsInTopPv: false,
         });
-        expect(report.displayPlans).toContain(f6);
+        expect(report.displayPlans.find(plan => plan.signature === `${f6!.signature}:from:g8`))
+            .toMatchObject({ routeSquares: ["g8", "f6"], supportCount: 2, appearsInTopPv: false });
     });
 
     test("keeps heavy-piece routes internally without presenting tactical paths as plans", () => {

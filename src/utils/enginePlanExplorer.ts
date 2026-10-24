@@ -15,6 +15,7 @@ import type { BestMoves, Score, ScoreValue } from "@/bindings";
 import type { PlanExplorerData, PlanExplorerLine, PlanExplorerPiece } from "@/bindings";
 import { detectPlanCastling, type PlanExplorerSegment } from "./planExplorer";
 import { positionFromFen } from "./chessops";
+import { matchesPlanHorizon, type PlanHorizon } from "./planHorizon";
 
 export type EnginePlanCategory =
     | "castling"
@@ -60,6 +61,9 @@ export type EnginePlanSignal = {
     // signal within its PV. Undefined for root-origin signals, which are not
     // evidence that a setup is formed by a future PV move.
     ply?: number;
+    /** Zero-based first move of this exact route, including preparatory moves. */
+    firstPly?: number;
+    contextLabel?: string;
 };
 
 export type EnginePlan = EnginePlanSignal & {
@@ -133,6 +137,7 @@ export type EnginePlanReport = {
 export type EnginePlanReportOptions = {
     requestedMultipv: number;
     limitLabel: string;
+    horizon?: PlanHorizon;
 };
 
 export type EnginePlanMovePreview = {
@@ -144,6 +149,26 @@ export type EnginePlanMovePreview = {
     to: SquareName;
     color: Color;
     moveNumber: number;
+};
+
+export type EnginePlanContinuation = {
+    key: string;
+    label: string;
+    color: Color;
+    /** Zero-based positions in this occurrence's own supporting PV. */
+    firstPly: number;
+    achievedPly: number;
+    signal: EnginePlanSignal;
+    requiresRecurrence: boolean;
+};
+export type EnginePlanChoice = {
+    pv: EnginePlanPv;
+    moves: EnginePlanMovePreview[];
+    ideas: EnginePlanContinuation[];
+};
+export type SupportedEnginePlanContinuation = {
+    idea: EnginePlanContinuation;
+    supports: { choice: EnginePlanChoice; idea: EnginePlanContinuation }[];
 };
 
 export type PlanExplorerEnginePlanMatch = {
@@ -512,7 +537,7 @@ export function buildEnginePlanReport(
     const plans = Array.from(grouped.values())
         .map((group) => scorePlan(group, pvs.length, rootBestQuality, viable))
         .sort(comparePlans);
-    const displayPlans = selectDisplayEnginePlans(plans);
+    const displayPlans = buildDisplayEnginePlans(fen, pvs, options.horizon ?? "all");
     const setups = buildEnginePlanSetups(
         fen,
         signalsByPv,
@@ -596,7 +621,8 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
         }
 
         if (piece.role === "pawn") {
-            recordPawnSignals(piece.color, from, destination, pos, signals, moveIndex);
+            recordPawnSignals(piece.color, destination, pos, signals, moveIndex,
+                state.squares.slice(), state.moveIndices[0]);
             pawnMovementFiles[piece.color].add(destination[0]);
             recordPawnExpansionSegment(
                 piece.color,
@@ -616,6 +642,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
                 role: "king",
                 routeSquares: [from, castle.kingTo],
                 ply: moveIndex,
+                firstPly: moveIndex,
             });
             const rookId = squareToPieceId.get(castle.rookFrom);
             moveTrackedCastlingRook(castle, uci, moveIndex, pieceStates, rookId);
@@ -663,6 +690,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
                 role: state.role,
                 routeSquares: state.squares,
                 ply: arrivalPly,
+                firstPly: state.moveIndices[0],
             });
         }
 
@@ -675,6 +703,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
                 role: state.role,
                 routeSquares: state.squares,
                 ply: arrivalPly,
+                firstPly: state.moveIndices[0],
             });
         }
     }
@@ -874,7 +903,8 @@ export function validatedPlanLines(fen: string, lines: BestMoves[]): BestMoves[]
         const sourceFen = (line as BestMoves & { fen?: string }).fen;
         if ((sourceFen !== undefined && sourceFen !== fen) ||
             !Number.isSafeInteger(line.multipv) || line.multipv < 1 ||
-            !Number.isFinite(line.depth) || line.depth < 0) continue;
+            !Number.isFinite(line.depth) || line.depth < 0 ||
+            !Number.isFinite(line.score.value.value)) continue;
         const moves = getPvMovePreviews(fen, line.uciMoves);
         if (!moves.length) continue;
         const candidate = { ...line, uciMoves: moves.map(move => move.uci), sanMoves: moves.map(move => move.san) };
@@ -891,6 +921,153 @@ export function validatedPlanLines(fen: string, lines: BestMoves[]): BestMoves[]
         seen.add(key);
         return true;
     });
+}
+
+/** Recompute presentation from cached evidence without restarting an engine. */
+export function enginePlanDisplayForHorizon(report: EnginePlanReport, horizon: PlanHorizon): EnginePlan[] {
+    return buildDisplayEnginePlans(report.fen, report.pvs, horizon);
+}
+
+export function buildEnginePlanChoices(fen: string, pvs: EnginePlanPv[]): EnginePlanChoice[] {
+    const horizon = 12;
+    const [root] = positionFromFen(fen);
+    if (!root) return [];
+    const early = root.fullmoves <= 10 && root.board.occupied.diff(root.board.pawn).diff(root.board.king).size() >= 10;
+    return pvs.map(pv => {
+        const moves = getPvMovePreviews(fen, pv.uciMoves).slice(0, horizon);
+        const ideas: EnginePlanContinuation[] = [];
+        for (const signal of extractPlansFromPv(fen, { uciMoves: moves.map(move => move.uci) })) {
+            const end = signal.ply, first = signal.firstPly ?? end;
+            if (end === undefined || first === undefined || end <= 0 || first < 0 || !moves[end]) continue;
+            const squares = signal.routeSquares ?? [];
+            const segments = signal.routeSegments ?? squares.slice(1).map((to, i) => [squares[i], to]);
+            const related = moves.slice(first, end + 1).filter(move => move.color === signal.color &&
+                segments.some(([from, to]) => move.from === from && move.to === to));
+            if (!related.length || related.length !== segments.length) continue;
+            const last = related.at(-1)!;
+            let label: string, requiresRecurrence = false;
+            if (signal.category === "castling") label = last.san.startsWith("O-O-O") ? "Castle queenside" : "Castle kingside";
+            else if (signal.category === "pawnBreak" && !related.some(move => /[x+#=]/.test(move.san))) label = `Pawn break ${last.san}`;
+            else if (signal.category === "pieceRoute" && ["knight", "bishop"].includes(signal.role ?? "") &&
+                related.length >= 2 && related.length <= 3 && !related.some(move => /[x+#]/.test(move.san)) &&
+                new Set(related.map(move => move.to)).size === related.length && !related.some(move => move.to === related[0].from)) {
+                label = `${capitalize(signal.role!)}: ${related.map(move => move.san).join(" → ")}`;
+                requiresRecurrence = related.length > 2;
+            } else if (early && signal.category === "pieceDestination" && ["knight", "bishop"].includes(signal.role ?? "") &&
+                first > 0 && first < 8 && related[0].from[1] === (signal.color === "white" ? "1" : "8") && !/[x+#]/.test(last.san)) label = `Develop ${last.san}`;
+            else if (early && signal.category === "pawnSetup" && first > 0 && first < 6 && /^[cdef][45]$/.test(last.san)) label = `Central advance ${last.san}`;
+            else if (signal.category === "pieceDestination" && first > 0 && !/[x+#]/.test(last.san)) {
+                label = `${capitalize(signal.role ?? "piece")} to ${last.to}`;
+                requiresRecurrence = true;
+            } else continue;
+            const key = signal.category === "pieceDestination" ? `${signal.signature}:from:${related[0].from}` :
+                signal.category === "pawnBreak" || signal.category === "pawnSetup" ? `${signal.signature}:route:${squares.join("-")}` : signal.signature;
+            ideas.push({ key, label, color: signal.color, firstPly: first, achievedPly: end,
+                signal: { ...signal, signature: key }, requiresRecurrence });
+        }
+        // Keep the exact first quiet heavy-piece move. A later transfer must
+        // neither erase this recurring idea nor extend its saved arrow.
+        const board = root.clone(), touched = new Set<string>();
+        for (const move of moves) {
+            const parsed = parseUci(move.uci);
+            if (!parsed || !isNormalMove(parsed)) break;
+            const piece = board.board.get(parsed.from);
+            if (move.index > 0 && piece && (piece.role === "rook" || piece.role === "queen") &&
+                !touched.has(move.from) && !/[x+#]/.test(move.san)) {
+                const key = `piece_destination:${move.color}:${piece.role}:${move.to}:from:${move.from}`;
+                const label = `${capitalize(piece.role)} to ${move.to}`;
+                ideas.push({ key, label, color: move.color, firstPly: move.index, achievedPly: move.index,
+                    signal: { signature: key, category: "pieceDestination", color: move.color, role: piece.role,
+                        label, origin: "pv", firstPly: move.index, ply: move.index, routeSquares: [move.from, move.to] },
+                    requiresRecurrence: true });
+            }
+            touched.add(move.from); touched.add(move.to);
+            const castle = engineCastlingMove(board, parsed, move.color);
+            if (castle) touched.add(castle.rookFrom);
+            board.play(parsed);
+        }
+        return { pv, moves, ideas };
+    });
+}
+
+export function selectContinuationIdeas(choices: EnginePlanChoice[], horizon: PlanHorizon = "all"): SupportedEnginePlanContinuation[] {
+    const best = choices[0];
+    if (!best) return [];
+    const grouped = new Map<string, SupportedEnginePlanContinuation>();
+    for (const choice of choices.slice(0, 5)) {
+        if (choice !== best && !competitivePlanChoice(best.pv, choice.pv)) continue;
+        for (const idea of choice.ideas) {
+            if (!matchesPlanHorizon(idea.achievedPly + 1, horizon)) continue;
+            const existing = grouped.get(idea.key);
+            if (existing) {
+                if (!existing.supports.some(support => support.choice.pv.rank === choice.pv.rank)) existing.supports.push({ choice, idea });
+            } else grouped.set(idea.key, { idea, supports: [{ choice, idea }] });
+        }
+    }
+    const candidates = [...grouped.values()].filter(group => group.supports.length >= 2 || !group.idea.requiresRecurrence);
+    const priority = (group: SupportedEnginePlanContinuation) => {
+        const category = group.idea.signal.category;
+        return category === "pieceRoute" ? 6 : category === "pawnBreak" ? 5 : category === "castling" ? 4 : category === "pawnSetup" ? 3 : 1;
+    };
+    const result: SupportedEnginePlanContinuation[] = [];
+    for (const color of ["white", "black"] as const) {
+        const occupied = new Set<string>(); let singletons = 0;
+        for (const group of candidates.filter(group => group.idea.color === color).sort((a, b) =>
+            b.supports.length - a.supports.length || priority(b) - priority(a) ||
+            a.supports[0].choice.pv.rank - b.supports[0].choice.pv.rank || a.idea.firstPly - b.idea.firstPly)) {
+            const origin = group.idea.signal.routeSquares?.[0];
+            if (!origin || occupied.has(origin) || (group.supports.length < 2 && singletons >= 2)) continue;
+            if (group.supports.length < 2) singletons++;
+            occupied.add(origin); result.push(group);
+            if (occupied.size === 4) break;
+        }
+    }
+    return result;
+}
+
+function competitivePlanChoice(best: EnginePlanPv, other: EnginePlanPv): boolean {
+    const a = best.score.value, b = other.score.value;
+    if (a.type !== b.type || !Number.isFinite(a.value) || !Number.isFinite(b.value)) return false;
+    if (a.type === "cp") return best.qualityCp !== null && other.qualityCp !== null && best.qualityCp - other.qualityCp <= 50;
+    return a.type === "mate" && Math.sign(a.value) === Math.sign(b.value);
+}
+
+function buildDisplayEnginePlans(fen: string, pvs: EnginePlanPv[], horizon: PlanHorizon): EnginePlan[] {
+    const choices = buildEnginePlanChoices(fen, pvs);
+    const rootBest = bestRootQuality(pvs), viable = computeViablePvs(pvs, rootBest);
+    const [root] = positionFromFen(fen);
+    if (!root) return [];
+    const result: EnginePlan[] = [];
+    if (matchesPlanHorizon(1, horizon)) for (const choice of choices.slice(0, 5)) {
+        const first = choice.moves[0];
+        if (!first) continue;
+        const parsed = parseUci(first.uci);
+        const piece = parsed && isNormalMove(parsed) ? root.board.get(parsed.from) : undefined;
+        const castle = parsed && isNormalMove(parsed) ? engineCastlingMove(root, parsed, first.color) : null;
+        const stationaryKingCastle = castle && first.from === first.to;
+        result.push(scorePlan({ signature: `root_choice:${first.uci}`, category: castle ? "castling" : "pieceDestination",
+            label: first.san, color: first.color, role: stationaryKingCastle ? "rook" : piece?.role,
+            routeSquares: stationaryKingCastle ? [castle.rookFrom, castle.rookTo] : [first.from, first.to],
+            origin: "pv", ply: 0, firstPly: 0,
+            evidence: [{ ...choice.pv, firstMove: first.san, completionPly: 0, context: "rootChoice" }] }, pvs.length, rootBest, viable));
+    }
+    for (const { idea, supports } of selectContinuationIdeas(choices, horizon)) {
+        const first = supports[0].choice.moves[0];
+        result.push(scorePlan({ ...idea.signal, label: idea.label,
+            contextLabel: `After ${first.moveNumber}${first.color === "white" ? "." : "…"}${first.san}`,
+            evidence: supports.map(({ choice, idea: occurrence }) => ({ ...choice.pv, firstMove: choice.moves[0].san,
+                completionPly: occurrence.achievedPly, context: choice.moves[0].color === occurrence.color ? "continuation" : "opponentResponse" })) },
+            pvs.length, rootBest, viable));
+    }
+    return result;
+}
+
+/** A supporting root PV score is available for a conditional idea, but is
+ * never its independent score or input to the strength/setup model. */
+export function enginePlanSourceEvaluation(target: Pick<EnginePlan, "context" | "evidence">) {
+    const evidence = target.evidence.filter(line => Number.isFinite(line.score.value.value) &&
+        (target.context !== "rootChoice" || line.context === "rootChoice")).sort((a, b) => a.rank - b.rank)[0];
+    return evidence ? { score: evidence.score.value, rank: evidence.rank, depth: evidence.depth, conditional: target.context !== "rootChoice" } : null;
 }
 
 export function formatEvalCp(cp: number | null) {
@@ -2251,13 +2428,14 @@ function moveTrackedCastlingRook(
 
 function recordPawnSignals(
     color: Color,
-    origin: string,
     destination: string,
     pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
     signals: Map<string, EnginePlanSignal>,
     ply: number,
+    routeSquares: string[],
+    firstPly: number,
 ) {
-    recordPawnSetupSignal(color, origin, destination, signals, ply);
+    recordPawnSetupSignal(color, destination, signals, ply, routeSquares, firstPly);
 
     if (!PAWN_BREAKS.has(destination)) return;
     if (!attacksEnemyPawn(color, destination, pos)) return;
@@ -2275,17 +2453,19 @@ function recordPawnSignals(
         label: `${capitalize(color)} plays ${moveLabel} ${kind}`,
         color,
         role: "pawn",
-        routeSquares: [origin, destination],
+        routeSquares,
         ply,
+        firstPly,
     });
 }
 
 function recordPawnSetupSignal(
     color: Color,
-    origin: string,
     destination: string,
     signals: Map<string, EnginePlanSignal>,
     ply: number,
+    routeSquares: string[],
+    firstPly: number,
 ) {
     if (!PAWN_SETUP_SQUARES[color].has(destination)) return;
 
@@ -2296,8 +2476,9 @@ function recordPawnSetupSignal(
         label: `${capitalize(color)} plays ${moveLabel} ${pawnSetupKind(color, destination)}`,
         color,
         role: "pawn",
-        routeSquares: [origin, destination],
+        routeSquares,
         ply,
+        firstPly,
     });
 }
 
