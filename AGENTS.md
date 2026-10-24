@@ -1,3 +1,15 @@
+## 2026-10-24 custom-root PGN export
+
+- Move labels use the resulting node FEN's real turn/fullmove counter, so White
+  and Black custom starts and variations retain their original numbering.
+  Relative tree halfMoves remain unchanged for engine/report/history consumers.
+  Multiple annotations emit independent numeric NAGs; a single basic glyph
+  keeps its usual notation. This prevents ambiguous/duplicated comma lists.
+- Four new regressions reproduce the earlier counter and multi-NAG failures.
+  Fifty-five related native save/drawing/report/phone checks across seven files,
+  full types and two-file lint pass. This is source proof; clean build/runtime
+  delivery and the broader file-conflict/Clear-tabs work remain separate.
+
 ## 2026-10-24 clean tab-save source verification
 
 - Clean delivery source 6549365d passes 41 checks across ten files, full types,
@@ -25,7 +37,7 @@
   Phone already owns its single durable workspace writer.
 - Native PGN source fingerprints/fresh offsets/atomic replacement, cross-tab
   conflicts, virtual header-cache/deletion identity and automatic Clear tabs
-  remain open. Custom-root move-counter export also needs repair. See
+  remain open. Custom-root counters/multiple NAG export are repaired in source. See
   docs/TAB_SAVE_OWNERSHIP.md; do not claim complete no-clobber writes from this
   frontend foundation. No hosting, service, native binary or owner data change.
 
