@@ -1,0 +1,408 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1250" height="1000" viewBox="0 0 1250 1000">
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <rect x="0" y="0" width="1250" height="1000" rx="0" fill="#0c0e10" stroke="none" />
+    <text x="20" y="29" fill="#f1f3f5" font-size="21" font-weight="700">Phone analysis options · invented example data</text>
+    <text x="20" y="66" fill="#f1f3f5" font-size="17" font-weight="700">A · Board Analysis</text>
+    <g transform="translate(20,85)">
+      <rect x="0" y="0" width="390" height="900" rx="11" fill="#111315" stroke="#373a40" />
+      <text x="12" y="29" fill="#f1f3f5" font-size="11" font-weight="400">Board   Tournaments   Import   Review   Files   Stats</text>
+      <rect x="9" y="46" width="372" height="39" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="20" y="71" fill="#f1f3f5" font-size="12" font-weight="600">PC services</text>
+      <text x="289" y="71" fill="#82c991" font-size="12" font-weight="400">Ready  ●</text>
+      <text x="14" y="113" fill="#f1f3f5" font-size="15" font-weight="700">Example game</text>
+      <text x="277" y="113" fill="#909296" font-size="11" font-weight="400">White to move</text>
+      <rect x="25.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="46.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♜</text>
+      <rect x="67.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="88.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♞</text>
+      <rect x="110.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="131.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♝</text>
+      <rect x="152.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="173.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♛</text>
+      <rect x="195.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="216.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♚</text>
+      <rect x="237.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="258.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♝</text>
+      <rect x="280.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="301.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♞</text>
+      <rect x="322.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="343.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♜</text>
+      <rect x="25.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="46.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="67.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="88.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="110.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="131.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="152.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="173.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="195.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="216.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="237.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="258.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="280.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="301.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="322.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="343.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="25.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="67.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="110.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="152.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="195.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="237.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="280.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="322.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="25.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="67.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="110.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="152.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="195.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="237.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="280.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="322.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="25.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="67.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="110.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="152.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="195.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="237.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="280.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="322.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="25.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="67.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="110.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="152.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="195.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="237.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="280.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="322.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="25.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="46.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="67.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="88.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="110.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="131.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="152.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="173.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="195.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="216.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="237.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="258.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="280.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="301.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="322.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="343.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="25.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="46.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♖</text>
+      <rect x="67.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="88.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♘</text>
+      <rect x="110.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="131.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♗</text>
+      <rect x="152.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="173.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♕</text>
+      <rect x="195.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="216.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♔</text>
+      <rect x="237.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="258.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♗</text>
+      <rect x="280.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="301.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♘</text>
+      <rect x="322.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="343.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♖</text>
+      <text x="113" y="496" fill="#909296" font-size="20" font-weight="400">‹‹     ‹      ▷      ›     ››</text>
+      <rect x="9" y="510" width="372" height="43" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="23" y="537" fill="#f1f3f5" font-size="12" font-weight="400">Moves</text>
+      <text x="97" y="537" fill="#f1f3f5" font-size="12" font-weight="400">DB</text>
+      <text x="171" y="537" fill="#f1f3f5" font-size="12" font-weight="400">Prep</text>
+      <text x="245" y="537" fill="#228be6" font-size="12" font-weight="600">Analysis</text>
+      <text x="319" y="537" fill="#f1f3f5" font-size="12" font-weight="400">Coach</text>
+      <rect x="15" y="565" width="97" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="25" y="587" fill="#f1f3f5" font-size="12" font-weight="600">Live</text>
+      <rect x="116" y="565" width="153" height="34" rx="5" fill="#228be6" stroke="#228be6" />
+      <text x="126" y="587" fill="#f1f3f5" font-size="12" font-weight="600">Game report</text>
+      <rect x="273" y="565" width="102" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="283" y="587" fill="#f1f3f5" font-size="12" font-weight="600">Plans</text>
+      <text x="15" y="627" fill="#f1f3f5" font-size="16" font-weight="700">Game accuracy</text>
+      <text x="355" y="627" fill="#909296" font-size="13" font-weight="400">?</text>
+      <text x="15" y="652" fill="#909296" font-size="12" font-weight="400">Example game · 40 moves</text>
+      <rect x="15" y="666" width="360" height="74" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="29" y="691" fill="#909296" font-size="11" font-weight="400">WHITE</text>
+      <text x="29" y="722" fill="#f1f3f5" font-size="25" font-weight="700">91.4%</text>
+      <text x="203.0" y="691" fill="#909296" font-size="11" font-weight="400">BLACK</text>
+      <text x="203.0" y="722" fill="#f1f3f5" font-size="25" font-weight="700">87.6%</text>
+      <text x="15" y="764" fill="#909296" font-size="11" font-weight="400">Low · depth 8 · up to 0.05 s / position</text>
+      <text x="15" y="794" fill="#f1f3f5" font-size="13" font-weight="700">Moves to review</text>
+      <rect x="15" y="806" width="360" height="37" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="26" y="830" fill="#f1f3f5" font-size="13" font-weight="400">18... Re8?</text>
+      <text x="303" y="829" fill="#e5766e" font-size="11" font-weight="400">Mistake</text>
+      <rect x="15" y="849" width="360" height="37" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="26" y="873" fill="#f1f3f5" font-size="13" font-weight="400">26. Qd3??</text>
+      <text x="303" y="872" fill="#e5766e" font-size="11" font-weight="400">Blunder</text>
+    </g>
+    <text x="430" y="66" fill="#f1f3f5" font-size="17" font-weight="700">B · Task sheets</text>
+    <g transform="translate(430,85)">
+      <rect x="0" y="0" width="390" height="900" rx="11" fill="#111315" stroke="#373a40" />
+      <text x="12" y="29" fill="#f1f3f5" font-size="11" font-weight="400">Board   Tournaments   Import   Review   Files   Stats</text>
+      <rect x="9" y="46" width="372" height="39" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="20" y="71" fill="#f1f3f5" font-size="12" font-weight="600">PC services</text>
+      <text x="289" y="71" fill="#82c991" font-size="12" font-weight="400">Ready  ●</text>
+      <text x="14" y="113" fill="#f1f3f5" font-size="15" font-weight="700">Example game</text>
+      <text x="277" y="113" fill="#909296" font-size="11" font-weight="400">White to move</text>
+      <rect x="25.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="46.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♜</text>
+      <rect x="67.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="88.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♞</text>
+      <rect x="110.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="131.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♝</text>
+      <rect x="152.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="173.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♛</text>
+      <rect x="195.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="216.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♚</text>
+      <rect x="237.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="258.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♝</text>
+      <rect x="280.0" y="130.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="301.25" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♞</text>
+      <rect x="322.5" y="130.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="343.75" y="163.15" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♜</text>
+      <rect x="25.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="46.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="67.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="88.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="110.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="131.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="152.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="173.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="195.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="216.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="237.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="258.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="280.0" y="172.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="301.25" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="322.5" y="172.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="343.75" y="205.65" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="25.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="67.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="110.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="152.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="195.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="237.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="280.0" y="215.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="322.5" y="215.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="25.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="67.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="110.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="152.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="195.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="237.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="280.0" y="257.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="322.5" y="257.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="25.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="67.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="110.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="152.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="195.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="237.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="280.0" y="300.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="322.5" y="300.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="25.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="67.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="110.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="152.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="195.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="237.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="280.0" y="342.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <rect x="322.5" y="342.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="25.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="46.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="67.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="88.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="110.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="131.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="152.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="173.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="195.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="216.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="237.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="258.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="280.0" y="385.0" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="301.25" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="322.5" y="385.0" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="343.75" y="418.15000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="25.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="46.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♖</text>
+      <rect x="67.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="88.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♘</text>
+      <rect x="110.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="131.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♗</text>
+      <rect x="152.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="173.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♕</text>
+      <rect x="195.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="216.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♔</text>
+      <rect x="237.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="258.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♗</text>
+      <rect x="280.0" y="427.5" width="42.5" height="42.5" rx="0" fill="#769656" stroke="none" />
+      <text x="301.25" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♘</text>
+      <rect x="322.5" y="427.5" width="42.5" height="42.5" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="343.75" y="460.65000000000003" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="36.125" fill="#fff" stroke="#151719" stroke-width=".5">♖</text>
+      <text x="113" y="496" fill="#909296" font-size="20" font-weight="400">‹‹     ‹      ▷      ›     ››</text>
+      <rect x="9" y="510" width="372" height="43" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="23" y="537" fill="#f1f3f5" font-size="12" font-weight="400">Moves</text>
+      <text x="97" y="537" fill="#f1f3f5" font-size="12" font-weight="400">DB</text>
+      <text x="171" y="537" fill="#f1f3f5" font-size="12" font-weight="400">Prep</text>
+      <text x="245" y="537" fill="#228be6" font-size="12" font-weight="600">Engine</text>
+      <text x="319" y="537" fill="#f1f3f5" font-size="12" font-weight="400">Coach</text>
+      <text x="15" y="578" fill="#f1f3f5" font-size="14" font-weight="700">Stockfish 18</text>
+      <rect x="15" y="594" width="175" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="25" y="616" fill="#f1f3f5" font-size="12" font-weight="600">Analyze game</text>
+      <rect x="202" y="594" width="173" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="212" y="616" fill="#f1f3f5" font-size="12" font-weight="600">Explore plans</text>
+      <rect x="5" y="650" width="380" height="250" rx="16" fill="#202429" stroke="#373a40" />
+      <rect x="165" y="659" width="60" height="4" rx="2" fill="#60656c" stroke="none" />
+      <text x="20" y="695" fill="#f1f3f5" font-size="17" font-weight="700">Game report</text>
+      <text x="345" y="695" fill="#f1f3f5" font-size="20" font-weight="400">×</text>
+      <text x="20" y="721" fill="#909296" font-size="12" font-weight="400">Example game · White vs Black</text>
+      <rect x="20" y="738" width="350" height="73" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="33" y="763" fill="#909296" font-size="12" font-weight="400">White accuracy</text>
+      <text x="33" y="797" fill="#f1f3f5" font-size="26" font-weight="700">91.4%</text>
+      <text x="200" y="763" fill="#909296" font-size="12" font-weight="400">Black accuracy</text>
+      <text x="200" y="797" fill="#f1f3f5" font-size="26" font-weight="700">87.6%</text>
+      <rect x="20" y="829" width="165" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="30" y="851" fill="#f1f3f5" font-size="12" font-weight="600">Review mistakes</text>
+      <rect x="200" y="829" width="170" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="210" y="851" fill="#f1f3f5" font-size="12" font-weight="600">Settings</text>
+    </g>
+    <text x="840" y="66" fill="#f1f3f5" font-size="17" font-weight="700">C · Analysis workspace</text>
+    <g transform="translate(840,85)">
+      <rect x="0" y="0" width="390" height="900" rx="11" fill="#111315" stroke="#373a40" />
+      <text x="12" y="29" fill="#f1f3f5" font-size="11" font-weight="400">Board   Analysis   Tournaments   Import    …</text>
+      <rect x="9" y="46" width="372" height="39" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="20" y="71" fill="#f1f3f5" font-size="12" font-weight="600">PC services</text>
+      <text x="289" y="71" fill="#82c991" font-size="12" font-weight="400">Ready  ●</text>
+      <text x="15" y="116" fill="#f1f3f5" font-size="21" font-weight="700">Analysis</text>
+      <text x="15" y="140" fill="#909296" font-size="12" font-weight="400">Example game · White vs Black</text>
+      <rect x="15" y="155" width="172" height="34" rx="5" fill="#228be6" stroke="#228be6" />
+      <text x="25" y="177" fill="#f1f3f5" font-size="12" font-weight="600">Game report</text>
+      <rect x="193" y="155" width="182" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="203" y="177" fill="#f1f3f5" font-size="12" font-weight="600">Engine Plans</text>
+      <rect x="15.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="22.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♜</text>
+      <rect x="29.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="36.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♞</text>
+      <rect x="43.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="50.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♝</text>
+      <rect x="57.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="64.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♛</text>
+      <rect x="71.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="78.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♚</text>
+      <rect x="85.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="92.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♝</text>
+      <rect x="99.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="106.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♞</text>
+      <rect x="113.0" y="206.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="120.0" y="216.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♜</text>
+      <rect x="15.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="22.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="29.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="36.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="43.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="50.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="57.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="64.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="71.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="78.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="85.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="92.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="99.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="106.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="113.0" y="220.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="120.0" y="230.92000000000002" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#151719" stroke="#151719" stroke-width=".5">♟</text>
+      <rect x="15.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="29.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="43.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="57.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="71.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="85.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="99.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="113.0" y="234.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="15.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="29.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="43.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="57.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="71.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="85.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="99.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="113.0" y="248.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="15.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="29.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="43.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="57.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="71.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="85.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="99.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="113.0" y="262.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="15.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="29.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="43.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="57.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="71.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="85.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="99.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <rect x="113.0" y="276.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <rect x="15.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="22.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="29.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="36.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="43.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="50.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="57.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="64.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="71.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="78.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="85.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="92.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="99.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="106.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="113.0" y="290.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="120.0" y="300.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♙</text>
+      <rect x="15.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="22.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♖</text>
+      <rect x="29.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="36.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♘</text>
+      <rect x="43.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="50.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♗</text>
+      <rect x="57.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="64.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♕</text>
+      <rect x="71.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="78.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♔</text>
+      <rect x="85.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="92.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♗</text>
+      <rect x="99.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#769656" stroke="none" />
+      <text x="106.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♘</text>
+      <rect x="113.0" y="304.0" width="14.0" height="14.0" rx="0" fill="#eeeed2" stroke="none" />
+      <text x="120.0" y="314.92" text-anchor="middle" font-family="Segoe UI Symbol,DejaVu Sans" font-size="11.9" fill="#fff" stroke="#151719" stroke-width=".5">♖</text>
+      <text x="143" y="230" fill="#f1f3f5" font-size="13" font-weight="600">Position 1 of 81</text>
+      <text x="143" y="254" fill="#f1f3f5" font-size="16" font-weight="400">Select a move</text>
+      <rect x="143" y="278" width="117" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="153" y="300" fill="#f1f3f5" font-size="12" font-weight="600">Open on board</text>
+      <text x="15" y="350" fill="#f1f3f5" font-size="16" font-weight="700">Game accuracy</text>
+      <text x="355" y="350" fill="#909296" font-size="13" font-weight="400">?</text>
+      <text x="15" y="375" fill="#909296" font-size="12" font-weight="400">Example game · 40 moves</text>
+      <rect x="15" y="389" width="360" height="74" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="29" y="414" fill="#909296" font-size="11" font-weight="400">WHITE</text>
+      <text x="29" y="445" fill="#f1f3f5" font-size="25" font-weight="700">91.4%</text>
+      <text x="203.0" y="414" fill="#909296" font-size="11" font-weight="400">BLACK</text>
+      <text x="203.0" y="445" fill="#f1f3f5" font-size="25" font-weight="700">87.6%</text>
+      <text x="15" y="487" fill="#909296" font-size="11" font-weight="400">Low · depth 8 · up to 0.05 s / position</text>
+      <text x="15" y="517" fill="#f1f3f5" font-size="13" font-weight="700">Moves to review</text>
+      <rect x="15" y="529" width="360" height="37" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="26" y="553" fill="#f1f3f5" font-size="13" font-weight="400">18... Re8?</text>
+      <text x="303" y="552" fill="#e5766e" font-size="11" font-weight="400">Mistake</text>
+      <rect x="15" y="572" width="360" height="37" rx="7" fill="#1a1d20" stroke="#373a40" />
+      <text x="26" y="596" fill="#f1f3f5" font-size="13" font-weight="400">26. Qd3??</text>
+      <text x="303" y="595" fill="#e5766e" font-size="11" font-weight="400">Blunder</text>
+      <rect x="15" y="654" width="175" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="25" y="676" fill="#f1f3f5" font-size="12" font-weight="600">Analyze again</text>
+      <rect x="202" y="654" width="173" height="34" rx="5" fill="#25292e" stroke="#373a40" />
+      <text x="212" y="676" fill="#f1f3f5" font-size="12" font-weight="600">Analysis settings</text>
+    </g>
+  </g>
+</svg>
