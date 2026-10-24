@@ -141,5 +141,55 @@
     "exeBytes": 51084800
   },
   "controllerPid": 24080,
-  "ownerServicesEnabled": true
+  "ownerServicesEnabled": true,
+  "sharedEngine": {
+    "sourceCommit": "ff5f271ca4abcda656d6a61ef64b0983dfaeab49",
+    "reportProtocolVersion": 1,
+    "serverSha256": "b88a5bf67b319a93eafb9e84c6ad2520956a634a303e89cc0695b5704c317e5d",
+    "helperSha256": "076da61e1dd247716bdc8eba2c7efd7118e61e948466f3caf7ee323821292c7e",
+    "checkedAt": "2026-10-24T18:33:48.267Z",
+    "verification": {
+      "canonicalHttps": true,
+      "bounded": {
+        "reportLimits": {
+          "depth": 8,
+          "timeMs": 50
+        },
+        "engine": "Stockfish 18",
+        "bestmove": "e2e4",
+        "selectedDepth": 8,
+        "legalPvMoves": 9,
+        "elapsedMs": 939,
+        "completed": true
+      },
+      "legacyFinite": {
+        "reportLimits": null,
+        "engine": "Stockfish 18",
+        "bestmove": "e2e4",
+        "selectedDepth": 2,
+        "legalPvMoves": 2,
+        "elapsedMs": 6,
+        "completed": true
+      },
+      "queuedAnalyses": 0
+    },
+    "preserved": [
+      "config",
+      "scheduled task XML",
+      "Tailscale Serve routes",
+      "owner enabled choice"
+    ],
+    "phoneUiPublished": false
+  },
+  "pendingPhoneAnalysis": {
+    "sourceCommit": "ff5f271ca4abcda656d6a61ef64b0983dfaeab49",
+    "selectedDesign": "A",
+    "checks": 98,
+    "testFiles": 10,
+    "cleanTypesPassed": true,
+    "cleanFrontendBuildSeconds": 21.06,
+    "responsiveVisualVerified": false,
+    "reason": "Browser control disabled in Work settings; owner instructed continue",
+    "published": false
+  }
 }
