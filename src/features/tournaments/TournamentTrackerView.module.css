@@ -157,3 +157,15 @@
 .manualResult > span { font-size: var(--op-fs-xs); color: var(--op-text-dim); font-weight: 400; }
 .manualResult select { width: 100%; min-width: 0; }
 @container (max-width: 31em) { .resultRow > .resultValue { grid-column: 1 / -1; } }
+
+/* Player workspace: roster beside predictions, full-width detail on phone. */
+.playerWorkspace { display: grid; grid-template-columns: minmax(180px, .65fr) minmax(0, 1.65fr); gap: 24px; }
+.playerContent { min-width: 0; container-type: inline-size; }
+.playerRoster { border-right: 1px solid var(--op-border); padding-right: 20px; min-width: 0; }
+.playerRoster .search input { width: 100%; }
+.playerRoster nav { display: flex; flex-direction: column; max-height: 65vh; overflow-y: auto; }
+.tracker .playerRoster nav button { text-align: left; border: 0; background: transparent; padding: 12px 8px; min-height: 44px; overflow-wrap: anywhere; font-size: var(--op-fs-md); }
+.tracker .playerRoster nav button[aria-current=true] { background: var(--op-accent-soft); color: var(--op-accent); }
+.playerDetails { border-top: 1px solid var(--op-border); margin-top: 16px; padding-top: 8px; }
+.playerDetails summary { padding: 10px 0; cursor: pointer; font-size: var(--op-fs-md); }
+@container (max-width: 46.5em) { .playerWorkspace { grid-template-columns: 1fr; } .playerRoster { display: none; } }

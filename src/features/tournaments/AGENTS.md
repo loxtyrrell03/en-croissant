@@ -1,3 +1,9 @@
+## Tournament prediction history (2026-10-24)
+
+- The owner selected the player-page design (B), with plain wording and little secondary text. Players now exposes Next round and Past predictions; desktop retains a searchable roster and phone uses full-width details. Official publication automatically compares the saved top opponent with the actual pairing, original rank/chance and colour. Uncaptured rounds stay explicit; no historical forecast is reconstructed from later results.
+- A separate versioned IndexedDB archive uses atomic read/write transactions in the current app/browser profile. It preserves the first and two latest distinct completed estimates per player/round, freezes observed published rounds, and retains official corrections without rewriting predictions. The owner is captured while the tracker is open; other entrants when viewed. Histories are local to each app/profile, not synchronized between desktop and phone. Existing tracker, import, Library and service state are not overwritten. Limits fail visibly rather than evicting saved history.
+- Shared behavior is implemented in Novelty and En Croissant desktop/phone using their existing themes and forecast model. Primary checks pass 363 Novelty and 328 En tournament tests, both project types, and actual modal/phone/worker/IndexedDB browser paths at 1200/560/390/360 px and 200% text. Persistence, publication, correction, concurrent writes, failed-save retry, selected-player ownership and help were checked. See the feature design README and qa-tournament-prediction-history.mjs. Source/browser proof is separate from installed delivery and physical-phone verification.
+
 # Tournament pairing probability truthfulness
 
 ## Committed source reconciliation (2026-10-24)
