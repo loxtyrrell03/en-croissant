@@ -48,6 +48,8 @@ FEN's turn/fullmove value, preserving relative tree indices; multi-annotation
 export emits separate unambiguous NAGs instead of duplicated comma lists. Four
 new regressions reproduce the old counter/annotation failures; related native
 save, drawing, report and phone checks total 55 checks across seven files, with
-types and scoped lint passing. This exporter repair is also source-only.
+types and scoped lint passing. Clean delivery source `549faef9` independently
+passes those same checks and the production Vite build (23.64 seconds); both
+owned exporter files match primary. This repair is also source-only.
 Do not describe this foundation as completed no-clobber Files saves
 or automatic Clear tabs, and do not infer runtime delivery from these checks.

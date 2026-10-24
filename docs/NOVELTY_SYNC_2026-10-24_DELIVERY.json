@@ -194,7 +194,7 @@
     "publishedSourceCommit": "dfc2183148a4ee80a523e420cdfe452d9b332b78"
   },
   "observedPhoneRelease": {
-    "checkedAt": "2026-10-24T19:23:14.527Z",
+    "checkedAt": "2026-10-24T20:14:14.463452+00:00",
     "url": "https://lox-pc.tail89d19b.ts.net/",
     "sourceCommit": "dfc2183148a4ee80a523e420cdfe452d9b332b78",
     "releaseId": "dfc2183148a4-5ead9cb908c9",
@@ -241,5 +241,20 @@
     "nativeBinaryRebuilt": false,
     "phonePublished": false,
     "remaining": "Native fingerprint/offset/atomic file protections, cross-tab conflicts, virtual header cache/deletion identity and automatic Clear tabs"
+  },
+  "pendingPgnExport": {
+    "primarySourceCommit": "577b1b87111bfbb72eb8ea2ce29dc7fea9aab898",
+    "cleanSourceCommit": "549faef9c668b79355e993d06490c273ec129a7f",
+    "checks": {
+      "tests": 55,
+      "files": 7,
+      "types": true,
+      "scopedLintWarnings": 0,
+      "scopedLintErrors": 0,
+      "productionBuildSeconds": 23.64
+    },
+    "nativeBinaryRebuilt": false,
+    "phonePublished": false,
+    "browserVerified": false
   }
 }

@@ -5,10 +5,12 @@
   Relative tree halfMoves remain unchanged for engine/report/history consumers.
   Multiple annotations emit independent numeric NAGs; a single basic glyph
   keeps its usual notation. This prevents ambiguous/duplicated comma lists.
-- Four new regressions reproduce the earlier counter and multi-NAG failures.
-  Fifty-five related native save/drawing/report/phone checks across seven files,
-  full types and two-file lint pass. This is source proof; clean build/runtime
-  delivery and the broader file-conflict/Clear-tabs work remain separate.
+- Four new regressions cover the earlier counter and multi-NAG failures.
+  Primary and clean delivery source 549faef9 pass 55 related save/drawing/report/
+  phone checks across seven files, full types and two-file lint. The clean
+  production Vite build passes in 23.64 seconds; both exporter files match.
+  This is source proof; runtime delivery and the broader file-conflict/Clear-tabs
+  work remain separate. No service, owner data or native binary changed.
 
 ## 2026-10-24 clean tab-save source verification
 
