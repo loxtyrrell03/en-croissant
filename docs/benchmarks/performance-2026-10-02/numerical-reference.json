@@ -1,0 +1,1461 @@
+{
+  "schemaVersion": 1,
+  "scope": "Numerical inference accuracy conditional on the fixed Davidson/Gaussian model; not predictive validation.",
+  "referenceMethod": "SciPy adaptive continuous outer integration of a log-space multiplicity posterior; 161-node normal opponent integration, converged from 81 and checked against adaptive integration.",
+  "priorConvention": "Every expanded game uses priorMean as rating; period inference seeds it once. Block order defines chronological order. All cases use one synthetic pool and rated games.",
+  "boundedReferenceDomain": [
+    -1000,
+    5000
+  ],
+  "unboundedReferenceDomain": [
+    -10000,
+    14000
+  ],
+  "unboundedReferenceMeaning": "A wide-domain approximation to the untruncated normal prior; the listed finite bounds are numerically immaterial for these cases.",
+  "precisionGoalRatingPoints": 1e-05,
+  "cases": [
+    {
+      "id": "ordinary-ten",
+      "priorMean": 1500,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 1,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 1480,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 0,
+              "opponentRating": 1520,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 0.5,
+              "opponentRating": 1495,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1470,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1510,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 0,
+              "opponentRating": 1530,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1490,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1505,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 0,
+              "opponentRating": 1520,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 10,
+      "reference": {
+        "mean": 1576.8341056370991,
+        "sd": 95.40198440150881,
+        "low": 1391.7262618516415,
+        "high": 1766.4747057677296,
+        "mode": 1574.4292934423645
+      },
+      "convergence81To161": {
+        "mean": 0.0,
+        "sd": 2.842170943040401e-14,
+        "low": 0.0,
+        "high": 6.821210263296962e-13
+      },
+      "legacyPruned": {
+        "mean": 1576.8341058119984,
+        "sd": 95.40198362408913,
+        "survivingCells": 170,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1576.8341058120018,
+        "sd": 95.40198362410294,
+        "survivingCells": 601,
+        "edgeMass": 1.2974340269136752e-99
+      },
+      "logGrid5Node10": {
+        "mean": 1576.8341058120013,
+        "sd": 95.40198362410291,
+        "edgeMass": 1.2974340269137103e-99
+      },
+      "logGrid10": {
+        "mean": 1576.8341056370991,
+        "sd": 95.40198440150881,
+        "edgeMass": 1.2974340350787482e-99
+      },
+      "logGrid2": {
+        "mean": 1576.8341056370991,
+        "sd": 95.40198440150881,
+        "edgeMass": 2.594868070157526e-100
+      }
+    },
+    {
+      "id": "wins-5000",
+      "priorMean": 1500,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 5000,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 2902.4734838933705,
+        "sd": 63.539893430160255,
+        "low": 2783.6536758264833,
+        "high": 3032.576210785556,
+        "mode": 2896.510240091664
+      },
+      "convergence81To161": {
+        "mean": 4.092726157978177e-12,
+        "sd": 9.407585821463726e-12,
+        "low": 4.547473508864641e-13,
+        "high": 5.19321474712342e-10
+      },
+      "legacyPruned": {
+        "mean": 2663.5148223938886,
+        "sd": 9.827095403118008,
+        "survivingCells": 22,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 2902.473483901901,
+        "sd": 63.539893425045534,
+        "survivingCells": 347,
+        "edgeMass": 1.0510294424563593e-92
+      },
+      "logGrid5Node10": {
+        "mean": 2902.4734839018956,
+        "sd": 63.53989342504552,
+        "edgeMass": 1.0510294424563842e-92
+      },
+      "logGrid10": {
+        "mean": 2902.473483893353,
+        "sd": 63.53989343015552,
+        "edgeMass": 1.051029442762722e-92
+      },
+      "logGrid2": {
+        "mean": 2902.4734838933546,
+        "sd": 63.53989343014913,
+        "edgeMass": 2.1020588855251695e-93
+      }
+    },
+    {
+      "id": "losses-then-wins-5000",
+      "priorMean": 1500,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 2500,
+          "pattern": [
+            {
+              "score": 0,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        },
+        {
+          "repeat": 2500,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 1499.9999999999995,
+        "sd": 5.283509424023651,
+        "low": 1489.6443873231294,
+        "high": 1510.3556126768638,
+        "mode": 1500.0000000932735
+      },
+      "convergence81To161": {
+        "mean": 6.821210263296962e-13,
+        "sd": 4.707345624410664e-14,
+        "low": 0.0,
+        "high": 2.7057467377744615e-11
+      },
+      "legacyPruned": {
+        "mean": 670.0,
+        "sd": 0.0,
+        "survivingCells": 1,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1260.0,
+        "sd": 9.825915738136259e-17,
+        "survivingCells": 14,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 1499.9999999999768,
+        "sd": 5.044311335208024,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 1499.9999999997215,
+        "sd": 5.044311872828606,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 1499.9999999998265,
+        "sd": 5.283509424023694,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "wins-then-losses-5000",
+      "priorMean": 1500,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 2500,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        },
+        {
+          "repeat": 2500,
+          "pattern": [
+            {
+              "score": 0,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 1499.9999999999995,
+        "sd": 5.2835094240236495,
+        "low": 1489.6443873231294,
+        "high": 1510.355612676872,
+        "mode": 1500.0000000932735
+      },
+      "convergence81To161": {
+        "mean": 6.821210263296962e-13,
+        "sd": 5.950795411990839e-14,
+        "low": 0.0,
+        "high": 1.864464138634503e-11
+      },
+      "legacyPruned": {
+        "mean": 2330.0,
+        "sd": 0.0,
+        "survivingCells": 1,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1740.0,
+        "sd": 9.825915738138831e-17,
+        "survivingCells": 14,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 1499.9999999999768,
+        "sd": 5.044311335208024,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 1499.9999999997212,
+        "sd": 5.044311872828606,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 1499.9999999998265,
+        "sd": 5.283509424023694,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "alternating-5000",
+      "priorMean": 1500,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 2500,
+          "pattern": [
+            {
+              "score": 0,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1500,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 1499.9999999999995,
+        "sd": 5.283509424023651,
+        "low": 1489.6443873231294,
+        "high": 1510.3556126768638,
+        "mode": 1500.0000000932735
+      },
+      "convergence81To161": {
+        "mean": 6.821210263296962e-13,
+        "sd": 4.707345624410664e-14,
+        "low": 0.0,
+        "high": 2.7057467377744615e-11
+      },
+      "legacyPruned": {
+        "mean": 1500.0,
+        "sd": 5.044311335207862,
+        "survivingCells": 9,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1499.9999999999998,
+        "sd": 5.044311335207868,
+        "survivingCells": 59,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 1499.9999999999768,
+        "sd": 5.044311335208024,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 1499.9999999997215,
+        "sd": 5.044311872828606,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 1499.9999999998265,
+        "sd": 5.283509424023694,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "subcell-1812-no-opponent-uncertainty-5000",
+      "priorMean": 1812,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 2500,
+          "pattern": [
+            {
+              "score": 0,
+              "opponentRating": 1812,
+              "opponentSd": 0,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1812,
+              "opponentSd": 0,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 1812.0000000000005,
+        "sd": 5.150752177980697,
+        "low": 1801.9045770626603,
+        "high": 1822.095422937346,
+        "mode": 1812.0000000042726
+      },
+      "convergence81To161": {
+        "mean": 6.821210263296962e-13,
+        "sd": 7.629452625224076e-13,
+        "low": 1.1368683772161603e-12,
+        "high": 8.86757334228605e-12
+      },
+      "legacyPruned": {
+        "mean": 1811.8317886210189,
+        "sd": 5.05878568648069,
+        "survivingCells": 9,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1811.831788621019,
+        "sd": 5.058785686480695,
+        "survivingCells": 56,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 1811.8317886206628,
+        "sd": 5.058785686480113,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 1811.8317886207124,
+        "sd": 5.0587856864805705,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 1811.99999999989,
+        "sd": 5.15075217798081,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "halfcell-1815-no-opponent-uncertainty-5000",
+      "priorMean": 1815,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 2500,
+          "pattern": [
+            {
+              "score": 0,
+              "opponentRating": 1815,
+              "opponentSd": 0,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 1815,
+              "opponentSd": 0,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 1815.0000000000005,
+        "sd": 5.15075217798012,
+        "low": 1804.9045770626617,
+        "high": 1825.0954229373472,
+        "mode": 1815.0000001791138
+      },
+      "convergence81To161": {
+        "mean": 9.094947017729282e-13,
+        "sd": 9.947598300641403e-14,
+        "low": 2.2737367544323206e-13,
+        "high": 2.3419488570652902e-11
+      },
+      "legacyPruned": {
+        "mean": 1815.0,
+        "sd": 5.433109499962964,
+        "survivingCells": 8,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1815.0,
+        "sd": 5.433109499962971,
+        "survivingCells": 56,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 1814.9999999997126,
+        "sd": 5.43310949996254,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 1814.9999999996942,
+        "sd": 5.4331094999623275,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 1815.0000000003458,
+        "sd": 5.150752177980638,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "mismatched-low-prior",
+      "priorMean": 400,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 200,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 2200,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 200,
+      "reference": {
+        "mean": 2667.889113473482,
+        "sd": 45.65716779187927,
+        "low": 2582.136153088865,
+        "high": 2761.1080704316246,
+        "mode": 2663.962401197627
+      },
+      "convergence81To161": {
+        "mean": 0.0,
+        "sd": 1.1368683772161603e-13,
+        "low": 4.547473508864641e-13,
+        "high": 1.1368683772161603e-11
+      },
+      "legacyPruned": {
+        "mean": 1569.9997186010112,
+        "sd": 0.05304776042698199,
+        "survivingCells": 4,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 2667.889114387821,
+        "sd": 45.65716664130048,
+        "survivingCells": 355,
+        "edgeMass": 3.0175868417179193e-146
+      },
+      "logGrid5Node10": {
+        "mean": 2667.8891143878227,
+        "sd": 45.657166641300456,
+        "edgeMass": 3.0175868417178726e-146
+      },
+      "logGrid10": {
+        "mean": 2667.8891134734463,
+        "sd": 45.657167791878926,
+        "edgeMass": 3.0175870781286963e-146
+      },
+      "logGrid2": {
+        "mean": 2667.8891134734854,
+        "sd": 45.657167791879175,
+        "edgeMass": 6.035174156257805e-147
+      }
+    },
+    {
+      "id": "mismatched-high-prior",
+      "priorMean": 3200,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 200,
+          "pattern": [
+            {
+              "score": 0,
+              "opponentRating": 1400,
+              "opponentSd": 60,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 200,
+      "reference": {
+        "mean": 932.1108865265176,
+        "sd": 45.65716779187931,
+        "low": 838.8919295683863,
+        "high": 1017.8638469111911,
+        "mode": 936.0375969816452
+      },
+      "convergence81To161": {
+        "mean": 0.0,
+        "sd": 1.5631940186722204e-13,
+        "low": 4.547473508864641e-13,
+        "high": 1.1368683772161603e-12
+      },
+      "legacyPruned": {
+        "mean": 2030.0002813989888,
+        "sd": 0.053047760426981914,
+        "survivingCells": 4,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 932.1108856121787,
+        "sd": 45.65716664130034,
+        "survivingCells": 315,
+        "edgeMass": 2.7479018029232706e-112
+      },
+      "logGrid5Node10": {
+        "mean": 932.110885612177,
+        "sd": 45.65716664130028,
+        "edgeMass": 2.747901802923262e-112
+      },
+      "logGrid10": {
+        "mean": 932.110886526521,
+        "sd": 45.657167791879225,
+        "edgeMass": 2.7479020182051665e-112
+      },
+      "logGrid2": {
+        "mean": 932.1108865265272,
+        "sd": 45.65716779187938,
+        "edgeMass": 5.495804036410709e-113
+      }
+    },
+    {
+      "id": "provisional-opponents-5000",
+      "priorMean": 1800,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 1000,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 2000,
+              "opponentSd": 150,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 2000,
+              "opponentSd": 150,
+              "white": true
+            },
+            {
+              "score": 0.5,
+              "opponentRating": 2000,
+              "opponentSd": 150,
+              "white": true
+            },
+            {
+              "score": 0,
+              "opponentRating": 2000,
+              "opponentSd": 150,
+              "white": true
+            },
+            {
+              "score": 0,
+              "opponentRating": 2000,
+              "opponentSd": 150,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 1999.691148353456,
+        "sd": 5.894558315729606,
+        "low": 1988.137896308182,
+        "high": 2011.244331392956,
+        "mode": 1999.6911847790363
+      },
+      "convergence81To161": {
+        "mean": 4.547473508864641e-13,
+        "sd": 3.339550858072471e-13,
+        "low": 9.094947017729282e-13,
+        "high": 1.2050804798491299e-11
+      },
+      "legacyPruned": {
+        "mean": 1999.7002254721406,
+        "sd": 5.808363667683856,
+        "survivingCells": 9,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1999.7002254721403,
+        "sd": 5.8083636676839285,
+        "survivingCells": 48,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 1999.7002254712522,
+        "sd": 5.808363667683741,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 1999.6999827075194,
+        "sd": 5.810712089058654,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 1999.6911483532083,
+        "sd": 5.894558315729783,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "high-uncertainty-opponents-5000",
+      "priorMean": 1800,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 1000,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 2200,
+              "opponentSd": 350,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 2200,
+              "opponentSd": 350,
+              "white": true
+            },
+            {
+              "score": 1,
+              "opponentRating": 2200,
+              "opponentSd": 350,
+              "white": true
+            },
+            {
+              "score": 0.5,
+              "opponentRating": 2200,
+              "opponentSd": 350,
+              "white": true
+            },
+            {
+              "score": 0,
+              "opponentRating": 2200,
+              "opponentSd": 350,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 2447.528407755437,
+        "sd": 8.64034919860098,
+        "low": 2430.6166424975336,
+        "high": 2464.486340625497,
+        "mode": 2447.504032028626
+      },
+      "convergence81To161": {
+        "mean": 6.338723324006423e-09,
+        "sd": 5.891713783512387e-10,
+        "low": 6.871687219245359e-09,
+        "high": 4.634785000234842e-09
+      },
+      "legacyPruned": {
+        "mean": 2440.062846242381,
+        "sd": 8.908625460870056,
+        "survivingCells": 15,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 2440.062846242381,
+        "sd": 8.908625460870054,
+        "survivingCells": 70,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 2440.062846241466,
+        "sd": 8.908625460868315,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 2447.5284450839167,
+        "sd": 8.640359661170507,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 2447.5284077546794,
+        "sd": 8.640349198600113,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "classical-colour-and-draw-slope",
+      "priorMean": 1900,
+      "model": {
+        "divisor": 515.0649349802578,
+        "whiteAdvantage": 41.66589900576382,
+        "logDraw": -0.5997864078272523,
+        "drawSlope": 0.22517300423037162,
+        "priorSd": 110.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 200,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 2200,
+              "opponentSd": 350,
+              "white": true
+            },
+            {
+              "score": 0.5,
+              "opponentRating": 2000,
+              "opponentSd": 150,
+              "white": false
+            },
+            {
+              "score": 0,
+              "opponentRating": 1800,
+              "opponentSd": 60,
+              "white": false
+            }
+          ]
+        }
+      ],
+      "gameCount": 600,
+      "reference": {
+        "mean": 1937.5539740764464,
+        "sd": 22.37844625927085,
+        "low": 1893.7396677233291,
+        "high": 1981.468099054484,
+        "mode": 1937.5012709415437
+      },
+      "convergence81To161": {
+        "mean": 2.2737367544323206e-13,
+        "sd": 2.5934809855243657e-13,
+        "low": 2.2737367544323206e-13,
+        "high": 1.1141310096718371e-11
+      },
+      "legacyPruned": {
+        "mean": 1936.7781151383965,
+        "sd": 22.52098584993441,
+        "survivingCells": 37,
+        "edgeMass": 0.0
+      },
+      "legacyUnpruned": {
+        "mean": 1936.7781151383965,
+        "sd": 22.520985849934576,
+        "survivingCells": 195,
+        "edgeMass": 0.0
+      },
+      "logGrid5Node10": {
+        "mean": 1936.7781151384152,
+        "sd": 22.52098584993468,
+        "edgeMass": 0.0
+      },
+      "logGrid10": {
+        "mean": 1937.5539740764907,
+        "sd": 22.378446259270916,
+        "edgeMass": 0.0
+      },
+      "logGrid2": {
+        "mean": 1937.5539740765046,
+        "sd": 22.378446259270824,
+        "edgeMass": 0.0
+      }
+    },
+    {
+      "id": "upper-grid-boundary-5000",
+      "priorMean": 4000,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 5000,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 4000,
+              "opponentSd": 150,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 4996.233855569678,
+        "sd": 3.7017977184303716,
+        "low": 4986.312670281915,
+        "high": 4999.902968643702,
+        "mode": 5000.0
+      },
+      "convergence81To161": {
+        "mean": 9.094947017729282e-13,
+        "sd": 1.3367085216486885e-13,
+        "low": 0.0,
+        "high": 1.8189894035458565e-12
+      },
+      "legacyPruned": {
+        "mean": 4999.233678270329,
+        "sd": 2.844503241926032,
+        "survivingCells": 11,
+        "edgeMass": 0.9281678177436106
+      },
+      "legacyUnpruned": {
+        "mean": 4999.233678270329,
+        "sd": 2.844503241926203,
+        "survivingCells": 97,
+        "edgeMass": 0.9281678177436102
+      },
+      "logGrid5Node10": {
+        "mean": 4999.233678270301,
+        "sd": 2.8445032419262035,
+        "edgeMass": 0.9281678177436046
+      },
+      "logGrid10": {
+        "mean": 4999.23365915473,
+        "sd": 2.8445406297132343,
+        "edgeMass": 0.9281661399571853
+      },
+      "logGrid2": {
+        "mean": 4997.131585379711,
+        "sd": 3.6743105986401843,
+        "edgeMass": 0.40663315630436403
+      },
+      "unboundedReference": {
+        "mean": 5430.91721364778,
+        "sd": 62.60969840990745,
+        "low": 5313.899555572054,
+        "high": 5559.178039836444,
+        "mode": 5424.975242691247
+      }
+    },
+    {
+      "id": "lower-grid-boundary-5000",
+      "priorMean": 0,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 150.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 5000,
+          "pattern": [
+            {
+              "score": 0,
+              "opponentRating": 0,
+              "opponentSd": 150,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": -996.2338555696775,
+        "sd": 3.7017977184305226,
+        "low": -999.9029686436978,
+        "high": -986.3126702819101,
+        "mode": -1000.0
+      },
+      "convergence81To161": {
+        "mean": 9.094947017729282e-13,
+        "sd": 5.480060849549773e-13,
+        "low": 1.1368683772161603e-13,
+        "high": 4.1154635255225e-11
+      },
+      "legacyPruned": {
+        "mean": -999.2336782703284,
+        "sd": 2.8445032419269087,
+        "survivingCells": 11,
+        "edgeMass": 0.9281678177435425
+      },
+      "legacyUnpruned": {
+        "mean": -999.2336782703283,
+        "sd": 2.844503241927073,
+        "survivingCells": 97,
+        "edgeMass": 0.9281678177435424
+      },
+      "logGrid5Node10": {
+        "mean": -999.2336782703247,
+        "sd": 2.84450324192708,
+        "edgeMass": 0.9281678177435386
+      },
+      "logGrid10": {
+        "mean": -999.2336591547515,
+        "sd": 2.8445406297131024,
+        "edgeMass": 0.9281661399571589
+      },
+      "logGrid2": {
+        "mean": -997.1315853796925,
+        "sd": 3.6743105986402465,
+        "edgeMass": 0.40663315630436403
+      },
+      "unboundedReference": {
+        "mean": -1430.9172136477682,
+        "sd": 62.60969840989728,
+        "low": -1559.1780398364585,
+        "high": -1313.8995555721638,
+        "mode": -1424.9752430147807
+      }
+    },
+    {
+      "id": "broad-prior-upper-boundary-5000",
+      "priorMean": 4000,
+      "model": {
+        "divisor": 400.0,
+        "whiteAdvantage": 0.0,
+        "logDraw": -1.6094379124341003,
+        "drawSlope": 0.0,
+        "priorSd": 350.0,
+        "opponentSd": 60.0,
+        "driftSdYear": 0.0,
+        "step": 10.0
+      },
+      "blocks": [
+        {
+          "repeat": 5000,
+          "pattern": [
+            {
+              "score": 1,
+              "opponentRating": 4000,
+              "opponentSd": 350,
+              "white": true
+            }
+          ]
+        }
+      ],
+      "gameCount": 5000,
+      "reference": {
+        "mean": 4998.397967411748,
+        "sd": 1.5927810875579747,
+        "low": 4994.119368106904,
+        "high": 4999.959205313978,
+        "mode": 5000.0
+      },
+      "convergence81To161": {
+        "mean": 1.2732925824820995e-11,
+        "sd": 1.287436823815824e-11,
+        "low": 4.729372449219227e-11,
+        "high": 0.0
+      },
+      "legacyPruned": {
+        "mean": 4999.978981840263,
+        "sd": 0.45873844086768595,
+        "survivingCells": 6,
+        "edgeMass": 0.9979016850436332
+      },
+      "legacyUnpruned": {
+        "mean": 4999.978981840263,
+        "sd": 0.45873844086769566,
+        "survivingCells": 96,
+        "edgeMass": 0.9979016850436332
+      },
+      "logGrid5Node10": {
+        "mean": 4999.978981840316,
+        "sd": 0.4587384408677004,
+        "edgeMass": 0.9979016850436436
+      },
+      "logGrid10": {
+        "mean": 4999.9813206195695,
+        "sd": 0.4324307043636201,
+        "edgeMass": 0.9981348159164283
+      },
+      "logGrid2": {
+        "mean": 4999.192052998449,
+        "sd": 1.4985431176787,
+        "edgeMass": 0.7112102184044874
+      },
+      "unboundedReference": {
+        "mean": 6038.165887460001,
+        "sd": 131.58604298179037,
+        "low": 5803.945180688564,
+        "high": 6318.755166684556,
+        "mode": 6013.696707651601
+      }
+    }
+  ],
+  "likelihoodIntegration": [
+    {
+      "model": "online",
+      "opponentSd": 60,
+      "nodes": {
+        "5": {
+          "absoluteError": 1.8397177670159692e-09,
+          "rating": 2200,
+          "opponent": 2000
+        },
+        "9": {
+          "absoluteError": 3.6637359812630166e-14,
+          "rating": -200,
+          "opponent": 0
+        },
+        "15": {
+          "absoluteError": 2.220446049250313e-16,
+          "rating": -600,
+          "opponent": 0
+        },
+        "25": {
+          "absoluteError": 3.3306690738754696e-16,
+          "rating": -1200,
+          "opponent": 0
+        },
+        "41": {
+          "absoluteError": 1.1102230246251565e-16,
+          "rating": -1200,
+          "opponent": 0
+        },
+        "81": {
+          "absoluteError": 2.220446049250313e-16,
+          "rating": -1200,
+          "opponent": 0
+        },
+        "161": {
+          "absoluteError": 4.440892098500626e-16,
+          "rating": -1200,
+          "opponent": 0
+        }
+      }
+    },
+    {
+      "model": "online",
+      "opponentSd": 150,
+      "nodes": {
+        "5": {
+          "absoluteError": 4.8044597154017765e-06,
+          "rating": -200,
+          "opponent": 0
+        },
+        "9": {
+          "absoluteError": 6.684151820923745e-08,
+          "rating": -200,
+          "opponent": 0
+        },
+        "15": {
+          "absoluteError": 3.6893960109196655e-11,
+          "rating": 4000,
+          "opponent": 4000
+        },
+        "25": {
+          "absoluteError": 8.604228440844963e-15,
+          "rating": 2000,
+          "opponent": 2000
+        },
+        "41": {
+          "absoluteError": 3.3306690738754696e-16,
+          "rating": -1200,
+          "opponent": 0
+        },
+        "81": {
+          "absoluteError": 2.220446049250313e-16,
+          "rating": -1200,
+          "opponent": 0
+        },
+        "161": {
+          "absoluteError": 3.3306690738754696e-16,
+          "rating": 1200,
+          "opponent": 0
+        }
+      }
+    },
+    {
+      "model": "online",
+      "opponentSd": 350,
+      "nodes": {
+        "5": {
+          "absoluteError": 0.0030442352507262793,
+          "rating": -200,
+          "opponent": 0
+        },
+        "9": {
+          "absoluteError": 0.00014482569342821883,
+          "rating": 2200,
+          "opponent": 2000
+        },
+        "15": {
+          "absoluteError": 9.541558066761269e-06,
+          "rating": 2200,
+          "opponent": 2000
+        },
+        "25": {
+          "absoluteError": 4.2252900711581276e-07,
+          "rating": -200,
+          "opponent": 0
+        },
+        "41": {
+          "absoluteError": 1.2103526514373186e-09,
+          "rating": 1800,
+          "opponent": 2000
+        },
+        "81": {
+          "absoluteError": 1.8686441283222166e-13,
+          "rating": 0,
+          "opponent": 0
+        },
+        "161": {
+          "absoluteError": 7.771561172376096e-16,
+          "rating": 1800,
+          "opponent": 2000
+        }
+      }
+    },
+    {
+      "model": "classical",
+      "opponentSd": 60,
+      "nodes": {
+        "5": {
+          "absoluteError": 4.693764266150424e-10,
+          "rating": -200,
+          "opponent": 0
+        },
+        "9": {
+          "absoluteError": 2.3314683517128287e-15,
+          "rating": 0,
+          "opponent": 0
+        },
+        "15": {
+          "absoluteError": 5.551115123125783e-16,
+          "rating": 1200,
+          "opponent": 0
+        },
+        "25": {
+          "absoluteError": 5.551115123125783e-16,
+          "rating": 600,
+          "opponent": 0
+        },
+        "41": {
+          "absoluteError": 3.3306690738754696e-16,
+          "rating": 1200,
+          "opponent": 0
+        },
+        "81": {
+          "absoluteError": 3.3306690738754696e-16,
+          "rating": 600,
+          "opponent": 0
+        },
+        "161": {
+          "absoluteError": 6.661338147750939e-16,
+          "rating": 1200,
+          "opponent": 0
+        }
+      }
+    },
+    {
+      "model": "classical",
+      "opponentSd": 150,
+      "nodes": {
+        "5": {
+          "absoluteError": 2.462147759341171e-06,
+          "rating": -200,
+          "opponent": 0
+        },
+        "9": {
+          "absoluteError": 3.133598158733264e-09,
+          "rating": 0,
+          "opponent": 0
+        },
+        "15": {
+          "absoluteError": 1.5843437672913296e-12,
+          "rating": 0,
+          "opponent": 0
+        },
+        "25": {
+          "absoluteError": 5.551115123125783e-16,
+          "rating": 3200,
+          "opponent": 2000
+        },
+        "41": {
+          "absoluteError": 4.440892098500626e-16,
+          "rating": 1200,
+          "opponent": 0
+        },
+        "81": {
+          "absoluteError": 4.440892098500626e-16,
+          "rating": 200,
+          "opponent": 0
+        },
+        "161": {
+          "absoluteError": 4.440892098500626e-16,
+          "rating": 3400,
+          "opponent": 4000
+        }
+      }
+    },
+    {
+      "model": "classical",
+      "opponentSd": 350,
+      "nodes": {
+        "5": {
+          "absoluteError": 0.0010458732507460655,
+          "rating": -200,
+          "opponent": 0
+        },
+        "9": {
+          "absoluteError": 4.522789089445034e-05,
+          "rating": -200,
+          "opponent": 0
+        },
+        "15": {
+          "absoluteError": 9.597528575766567e-07,
+          "rating": 200,
+          "opponent": 0
+        },
+        "25": {
+          "absoluteError": 1.0930294003230756e-08,
+          "rating": 0,
+          "opponent": 0
+        },
+        "41": {
+          "absoluteError": 3.930578085231673e-11,
+          "rating": -200,
+          "opponent": 0
+        },
+        "81": {
+          "absoluteError": 8.881784197001252e-16,
+          "rating": -200,
+          "opponent": 0
+        },
+        "161": {
+          "absoluteError": 4.718447854656915e-16,
+          "rating": -600,
+          "opponent": 0
+        }
+      }
+    }
+  ]
+}

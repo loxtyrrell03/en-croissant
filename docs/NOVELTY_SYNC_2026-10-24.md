@@ -31,11 +31,13 @@ The date fix preserves completion-header precedence, valid leap days and ISO
 offsets. It does not rewrite existing databases. Provider-native epoch timestamps
 remain authoritative where already available.
 
+| Shared performance inference, cancellable workers, rated/unrated filters and short/custom periods | Reconciled native Account Stats integration, preserving engine-based analysis | Reconciled Overview and provider bounds, including pre-game rating/provisional uncertainty adapter | 193 focused tests, whole-project TypeScript, production Vite build; source saved, runtime delivery pending |
+
 ## Integration inventory in progress
 
 | Area | Initial finding | Next verification |
 | --- | --- | --- |
-| Performance estimator, workers and custom periods | 23 current shared production/model files are already byte-identical; primary source is uncommitted and hosted delivery is older | Reconcile prerequisites, test desktop/phone adapters, then deliver |
+| Performance estimator, workers and custom periods | 23 of 24 matching shared files are byte-identical, including the model, workers and controls; the phone adds adapter tests. Source reconciliation is now committed | Reconcile prerequisites, test desktop/phone adapters, then deliver |
 | Tournament evidence, manual results and source integrity | Existing primary source includes substantial later guards absent from the September deployed native service | Reconcile source dependencies and test native/frontend contract before delivery |
 | October phone opponent Prep handoff | Live app identifies `44f46c86`; newer than primary's phone integration | Retain its ancestry and handoff behavior in the publishing snapshot |
 | Board drawings and file preferences | Novelty has new saved-mark isolation, multi-arrow and per-file preferences | Compare with native/phone Chessground and storage behavior |

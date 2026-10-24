@@ -1,0 +1,730 @@
+{
+  "recordedAt": "2026-10-02T19:30:58.301408+00:00",
+  "scope": "Source and synthetic actual-component/worker browser verification. No installed-app, hosted-phone, customer-release or physical-device verification.",
+  "modelVersion": "bayes-continuous-v4-dual-domain",
+  "targets": {
+    "novelty-feature": {
+      "sourceHashes": {
+        "truePerformance.ts": "659d51f7c86e05054120556b1d874484a336b00ce26e6142e30b616fd101f429",
+        "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+        "performanceDynamics.ts": "711a5e5178e4136c04c64d11756bc102ae8aeb5fbd13c3bd5b09509a2ea19390",
+        "TruePerformancePanel.tsx": "4ef070b8ff39bc687338b3f8af6d6e98df9592b01e71c2dc988613fac3fa1c56",
+        "truePerformanceProtocol.ts": "c84c4a699f0205628a717a82d67193c100750c6e4471f50979881361ca12ab61",
+        "truePerformance.worker.ts": "818b3f9ded1f0de31006f978e1350954c4dbd06b40cf7832d8bed0d1ea28a511",
+        "truePerformanceClient.ts": "0a2b1cfa53ec4eeb507affa11130f620902fd937bcaf078ea9934f00585235ed",
+        "usePerformanceCalculation.ts": "e5a32f1537482160485c75a5ecc8db97058b97259b7a9013829db9afc5bb479a",
+        "performanceDynamics.LICENSE.txt": "23a85d119665b117b4a8b8b0b5afcb0c19a484ab010b504cc03d2de3d9f9c2f6"
+      },
+      "inputReceiptSha256": {
+        "model": "7c15a7203a174eb363916c68038bdf3d8b129bd47e610a354474bcf8ca9e8d3e",
+        "errors": "6f786c2456969b67543092c8b2cbc0a9f84ecb8610cdd79b620ca74e7af4913a",
+        "async": "32824aaa69f8ae56bc16566a7e771bdcf227a25c41494b6b18bd08b0f612aa50"
+      },
+      "normal": [
+        {
+          "n": 200,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 235.60629999999992,
+          "historyReadyMs": 461.65610000000015
+        },
+        {
+          "n": 200,
+          "width": 390,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 180.51569999999992,
+          "historyReadyMs": 456.5160000000001
+        },
+        {
+          "n": 1000,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 528.3972000000003,
+          "historyReadyMs": 1957.0715000000005
+        },
+        {
+          "n": 1000,
+          "width": 390,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 614.0926999999992,
+          "historyReadyMs": 2048.8246
+        },
+        {
+          "n": 5000,
+          "width": 1100,
+          "varied": true,
+          "rating": "1,799",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 3363.8455999999996,
+          "historyReadyMs": 7359.3505
+        }
+      ],
+      "failures": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "both",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        }
+      ],
+      "retry": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "kind": "period",
+          "previousId": 2,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": false
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "kind": "history",
+          "previousId": 1,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": true
+        }
+      ],
+      "expectedCalculationDiagnostics": 8,
+      "async": {
+        "controlsMs": 10.395600000000059,
+        "workerCount": 11,
+        "allWorkersTerminated": true,
+        "passed": true
+      },
+      "fullEmittedLicenceMatchesSource": true,
+      "noUnexpectedBrowserErrorsOrExternalRequests": true,
+      "qaOutputBytes": 2320785
+    },
+    "novelty-primary": {
+      "sourceHashes": {
+        "truePerformance.ts": "659d51f7c86e05054120556b1d874484a336b00ce26e6142e30b616fd101f429",
+        "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+        "performanceDynamics.ts": "711a5e5178e4136c04c64d11756bc102ae8aeb5fbd13c3bd5b09509a2ea19390",
+        "TruePerformancePanel.tsx": "f3f81958e0648a5bafacdda144f2b02b09ab84a2f75446dba961a1d8ed42be78",
+        "truePerformanceProtocol.ts": "c84c4a699f0205628a717a82d67193c100750c6e4471f50979881361ca12ab61",
+        "truePerformance.worker.ts": "818b3f9ded1f0de31006f978e1350954c4dbd06b40cf7832d8bed0d1ea28a511",
+        "truePerformanceClient.ts": "0a2b1cfa53ec4eeb507affa11130f620902fd937bcaf078ea9934f00585235ed",
+        "usePerformanceCalculation.ts": "e5a32f1537482160485c75a5ecc8db97058b97259b7a9013829db9afc5bb479a",
+        "performanceDynamics.LICENSE.txt": "23a85d119665b117b4a8b8b0b5afcb0c19a484ab010b504cc03d2de3d9f9c2f6"
+      },
+      "inputReceiptSha256": {
+        "model": "a611279bbddcacc21d4015fad566150f09e230b9e27f40292ce1510526ab370a",
+        "errors": "b2e3befd5279e2671d425cb45cf84a2cfe7334a5aa3f1f34398a9be4b2c066f8",
+        "async": "f02f195283c63b4d2d38d80c7682ffb8e71378fdf4387da6870bb0142af681af"
+      },
+      "normal": [
+        {
+          "n": 200,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 247.93509999999992,
+          "historyReadyMs": 462.5037
+        },
+        {
+          "n": 200,
+          "width": 390,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 191.95069999999987,
+          "historyReadyMs": 393.22299999999973
+        },
+        {
+          "n": 1000,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 550.4117000000001,
+          "historyReadyMs": 2009.1093999999998
+        },
+        {
+          "n": 1000,
+          "width": 390,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 687.8876,
+          "historyReadyMs": 2140.0267999999996
+        },
+        {
+          "n": 5000,
+          "width": 1100,
+          "varied": true,
+          "rating": "1,799",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 3413.7114,
+          "historyReadyMs": 7412.617
+        }
+      ],
+      "failures": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "both",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        }
+      ],
+      "retry": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "kind": "period",
+          "previousId": 2,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": false
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "kind": "history",
+          "previousId": 1,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": true
+        }
+      ],
+      "expectedCalculationDiagnostics": 8,
+      "async": {
+        "controlsMs": 10.288900000000012,
+        "workerCount": 11,
+        "allWorkersTerminated": true,
+        "passed": true
+      },
+      "fullEmittedLicenceMatchesSource": true,
+      "noUnexpectedBrowserErrorsOrExternalRequests": true,
+      "qaOutputBytes": 2596247
+    },
+    "en-croissant-feature": {
+      "sourceHashes": {
+        "truePerformance.ts": "659d51f7c86e05054120556b1d874484a336b00ce26e6142e30b616fd101f429",
+        "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+        "performanceDynamics.ts": "711a5e5178e4136c04c64d11756bc102ae8aeb5fbd13c3bd5b09509a2ea19390",
+        "TruePerformancePanel.tsx": "4ef070b8ff39bc687338b3f8af6d6e98df9592b01e71c2dc988613fac3fa1c56",
+        "truePerformanceProtocol.ts": "c84c4a699f0205628a717a82d67193c100750c6e4471f50979881361ca12ab61",
+        "truePerformance.worker.ts": "818b3f9ded1f0de31006f978e1350954c4dbd06b40cf7832d8bed0d1ea28a511",
+        "truePerformanceClient.ts": "0a2b1cfa53ec4eeb507affa11130f620902fd937bcaf078ea9934f00585235ed",
+        "usePerformanceCalculation.ts": "e5a32f1537482160485c75a5ecc8db97058b97259b7a9013829db9afc5bb479a",
+        "performanceDynamics.LICENSE.txt": "23a85d119665b117b4a8b8b0b5afcb0c19a484ab010b504cc03d2de3d9f9c2f6"
+      },
+      "inputReceiptSha256": {
+        "model": "e99b38291f0f1be25b7974b6acfc85615ac312dd17b69d6af77736573098b49c",
+        "errors": "6f786c2456969b67543092c8b2cbc0a9f84ecb8610cdd79b620ca74e7af4913a",
+        "async": "58d8b65c7bc197d3a737056d6534b064840924a6d386b43d510e953554431f4e"
+      },
+      "normal": [
+        {
+          "n": 200,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 254.8889999999999,
+          "historyReadyMs": 456.97900000000004
+        },
+        {
+          "n": 200,
+          "width": 390,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 181.14200000000005,
+          "historyReadyMs": 394.81759999999986
+        },
+        {
+          "n": 1000,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 553.9106000000002,
+          "historyReadyMs": 1998.9649000000004
+        },
+        {
+          "n": 1000,
+          "width": 390,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 706.4281999999994,
+          "historyReadyMs": 2146.5009
+        },
+        {
+          "n": 5000,
+          "width": 1100,
+          "varied": true,
+          "rating": "1,799",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 3402.314700000001,
+          "historyReadyMs": 7418.408100000001
+        }
+      ],
+      "failures": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "both",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        }
+      ],
+      "retry": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "kind": "period",
+          "previousId": 2,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": false
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "kind": "history",
+          "previousId": 1,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": true
+        }
+      ],
+      "expectedCalculationDiagnostics": 8,
+      "async": {
+        "controlsMs": 11.840599999999995,
+        "workerCount": 11,
+        "allWorkersTerminated": true,
+        "passed": true
+      },
+      "fullEmittedLicenceMatchesSource": true,
+      "noUnexpectedBrowserErrorsOrExternalRequests": true,
+      "qaOutputBytes": 2542706
+    },
+    "en-croissant-primary": {
+      "sourceHashes": {
+        "truePerformance.ts": "659d51f7c86e05054120556b1d874484a336b00ce26e6142e30b616fd101f429",
+        "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+        "performanceDynamics.ts": "711a5e5178e4136c04c64d11756bc102ae8aeb5fbd13c3bd5b09509a2ea19390",
+        "TruePerformancePanel.tsx": "f3f81958e0648a5bafacdda144f2b02b09ab84a2f75446dba961a1d8ed42be78",
+        "truePerformanceProtocol.ts": "c84c4a699f0205628a717a82d67193c100750c6e4471f50979881361ca12ab61",
+        "truePerformance.worker.ts": "818b3f9ded1f0de31006f978e1350954c4dbd06b40cf7832d8bed0d1ea28a511",
+        "truePerformanceClient.ts": "0a2b1cfa53ec4eeb507affa11130f620902fd937bcaf078ea9934f00585235ed",
+        "usePerformanceCalculation.ts": "e5a32f1537482160485c75a5ecc8db97058b97259b7a9013829db9afc5bb479a",
+        "performanceDynamics.LICENSE.txt": "23a85d119665b117b4a8b8b0b5afcb0c19a484ab010b504cc03d2de3d9f9c2f6"
+      },
+      "inputReceiptSha256": {
+        "model": "5533053c8c03cc63a4156118de4bc6af766f75a8d3af4d649418b4e7aaaa2c9c",
+        "errors": "acb19b76055c132a9e5398760cdba1218ea6d621476239cd7a9d8838058765c7",
+        "async": "a10f58c8147b932d2468e72ecc4e060e328739795cf6b7e84556445ddf201c21"
+      },
+      "normal": [
+        {
+          "n": 200,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 245.1223,
+          "historyReadyMs": 458.3134
+        },
+        {
+          "n": 200,
+          "width": 390,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 195.2512999999999,
+          "historyReadyMs": 400.49440000000004
+        },
+        {
+          "n": 1000,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 562.1358999999998,
+          "historyReadyMs": 2019.7041
+        },
+        {
+          "n": 1000,
+          "width": 390,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 645.9582,
+          "historyReadyMs": 2104.5648
+        },
+        {
+          "n": 5000,
+          "width": 1100,
+          "varied": true,
+          "rating": "1,799",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 3202.262899999999,
+          "historyReadyMs": 7193.031099999999
+        }
+      ],
+      "failures": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "both",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        }
+      ],
+      "retry": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "kind": "period",
+          "previousId": 2,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": false
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "kind": "history",
+          "previousId": 1,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": true
+        }
+      ],
+      "expectedCalculationDiagnostics": 8,
+      "async": {
+        "controlsMs": 11.303800000000138,
+        "workerCount": 11,
+        "allWorkersTerminated": true,
+        "passed": true
+      },
+      "fullEmittedLicenceMatchesSource": true,
+      "noUnexpectedBrowserErrorsOrExternalRequests": true,
+      "qaOutputBytes": 1939860
+    },
+    "en-croissant-companion-source": {
+      "sourceHashes": {
+        "truePerformance.ts": "659d51f7c86e05054120556b1d874484a336b00ce26e6142e30b616fd101f429",
+        "performanceNumerics.ts": "072a89ec50bd918fec9b1898620d763675e62243f39b7f02b5fe93793cb27422",
+        "performanceDynamics.ts": "711a5e5178e4136c04c64d11756bc102ae8aeb5fbd13c3bd5b09509a2ea19390",
+        "TruePerformancePanel.tsx": "f3f81958e0648a5bafacdda144f2b02b09ab84a2f75446dba961a1d8ed42be78",
+        "truePerformanceProtocol.ts": "c84c4a699f0205628a717a82d67193c100750c6e4471f50979881361ca12ab61",
+        "truePerformance.worker.ts": "818b3f9ded1f0de31006f978e1350954c4dbd06b40cf7832d8bed0d1ea28a511",
+        "truePerformanceClient.ts": "0a2b1cfa53ec4eeb507affa11130f620902fd937bcaf078ea9934f00585235ed",
+        "usePerformanceCalculation.ts": "e5a32f1537482160485c75a5ecc8db97058b97259b7a9013829db9afc5bb479a",
+        "performanceDynamics.LICENSE.txt": "23a85d119665b117b4a8b8b0b5afcb0c19a484ab010b504cc03d2de3d9f9c2f6"
+      },
+      "inputReceiptSha256": {
+        "model": "d9a1e2f126709337c78011c81807c06d2f7d4dd9bfb48ec385c11b6f1c7c1e78",
+        "errors": "acb19b76055c132a9e5398760cdba1218ea6d621476239cd7a9d8838058765c7",
+        "async": "16558fb063969fab7faa245dd8a364cf307cb5e853e4517abf4b6001c5d195dd"
+      },
+      "normal": [
+        {
+          "n": 200,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 245.88089999999988,
+          "historyReadyMs": 465.9433999999999
+        },
+        {
+          "n": 200,
+          "width": 390,
+          "varied": false,
+          "rating": "1,791",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 194.0489,
+          "historyReadyMs": 391.4109000000001
+        },
+        {
+          "n": 1000,
+          "width": 1100,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 563.2401,
+          "historyReadyMs": 2015.9305000000004
+        },
+        {
+          "n": 1000,
+          "width": 390,
+          "varied": false,
+          "rating": "1,798",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 639.6095999999998,
+          "historyReadyMs": 2074.0747999999994
+        },
+        {
+          "n": 5000,
+          "width": 1100,
+          "varied": true,
+          "rating": "1,799",
+          "graphMatches": true,
+          "historyResolved": true,
+          "licenceAsset": "/assets/performanceDynamics.LICENSE-DKY3jM7J.txt",
+          "loadMs": 3295.4105,
+          "historyReadyMs": 7272.1502
+        }
+      ],
+      "failures": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "both",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": false,
+          "samePanelRecovered": true
+        },
+        {
+          "mode": "history",
+          "width": 390,
+          "resultsPreserved": true,
+          "independentEstimatePreserved": true,
+          "samePanelRecovered": true
+        }
+      ],
+      "retry": [
+        {
+          "mode": "both",
+          "width": 1100,
+          "kind": "period",
+          "previousId": 2,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": false
+        },
+        {
+          "mode": "history",
+          "width": 1100,
+          "kind": "history",
+          "previousId": 1,
+          "retryId": 3,
+          "newWorkerFailed": true,
+          "resultsPreserved": true,
+          "otherAttemptUnchanged": true,
+          "validPeriodPreserved": true
+        }
+      ],
+      "expectedCalculationDiagnostics": 8,
+      "async": {
+        "controlsMs": 13.02209999999991,
+        "workerCount": 11,
+        "allWorkersTerminated": true,
+        "passed": true
+      },
+      "fullEmittedLicenceMatchesSource": true,
+      "noUnexpectedBrowserErrorsOrExternalRequests": true,
+      "qaOutputBytes": 1939870
+    }
+  },
+  "testEvidence": {
+    "typeChecks": "All five checkouts passed their full TypeScript check during this milestone; subsequent numerical-source cleanup removed only trailing blank lines.",
+    "commands": {
+      "novelty": "node node_modules/typescript/bin/tsc --noEmit",
+      "enCroissant": "node node_modules/@typescript/native-preview/bin/tsgo.js --noEmit",
+      "workerClient": "node node_modules/vitest/vitest.mjs run src/shared/truePerformanceClient.test.ts src/shared/truePerformance.worker.test.ts",
+      "browser": "From the Novelty feature checkout: node scripts/qa-performance-{model,errors,async}.mjs TARGET_ROOT (one script per invocation)"
+    },
+    "workerClientTestsPassed": 12,
+    "numericEvidence": "See continuous-v4-result.json, drift-v4-result.json, dual-domain-dynamic-v1-result.json, dual-domain-third-support-v1-result.json and dual-domain-source-parity.json. The fast-likelihood receipt retains its unsupported custom dynamic-mesh failure.",
+    "sourceMapping": "Frozen reference/benchmark source differs from final source only by the retained licence comment, removal of an unused callback parameter, and trailing whitespace. Full mapping is in dual-domain-source-parity.json."
+  },
+  "manualVisualInspection": [
+    "novelty-primary: normal 1000 games at 390px, existing confidence-band panel",
+    "novelty-primary: both estimates fail at 390px, visible Retry controls",
+    "en-croissant-feature: recovered async panel at 390px, existing inline-period panel"
+  ],
+  "storage": {
+    "externalResearchBytes": 304397572,
+    "externalResearchCapBytes": 1073741824,
+    "fiveTargetBrowserOutputBytes": 11339468,
+    "scope": "These task-owned research and browser directories only; no corpus copy or owner-data cleanup."
+  },
+  "qaScriptSha256": {
+    "qa-performance-model.mjs": "3d2effcfc7c2d6065b137d7da6bac78eb8e6ac1633c4e27c2a838a50561b2dc4",
+    "qa-performance-errors.mjs": "10975f3ee53055646bce1b8d974410331e34f43b5bb1bd3cf3513da71f9ec54e",
+    "qa-performance-async.mjs": "5edefd509ad444d6ab486f86abcd8b99deebf574931baa0860d4975cc098a113"
+  }
+}
