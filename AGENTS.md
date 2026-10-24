@@ -9,10 +9,13 @@
   selections. Invalid preference maps preserve the saved workspace on load.
   Legacy global settings remain defaults for new scopes; temporary imports
   stay in their existing owner. Remaining date scopes are tracked separately.
-- All 434 phone tests/54 files, types and seven-file lint pass. WebApp retains
-  25 existing warnings and zero errors. Native clean source 75ea649f passes
-  76 checks/types and the production build (23.58 s). Clean phone verification
-  and hosted/rendered delivery remain; see docs/FILE_BOARD_PREFERENCES.md.
+- Primary and clean 46bf0caa pass all 407 product phone tests/53 files, types
+  and seven-file lint. The initial primary run also passed 27 duplicated tests
+  from an existing temporary fixture; final runs exclude tmp/**. WebApp retains
+  25 existing warnings and zero errors. All 31 owned files match. Clean phone
+  and desktop builds pass in 24.77/20.99 seconds. Native clean 75ea649f passes
+  76 checks/types/build. Hosted/rendered/native-window verification remains;
+  see docs/FILE_BOARD_PREFERENCES.md and the delivery receipt.
 
 ## 2026-10-25 file board and source preferences
 

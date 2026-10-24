@@ -26,7 +26,7 @@ Optional preference failures do not fail a successfully written PGN.
 
 Native verification: primary and clean delivery source `75ea649f` pass 76 checks
 across eight files and full TypeScript. Primary scoped
-23-file lint pass. Fixtures exercise actual Flip/Rename controls, source/tab
+23-file lint passes. Fixtures exercise actual Flip/Rename controls, source/tab
 ownership, first-save rebinding, corrupt storage and pending-save orientation.
 Native filesystem I/O is mocked in these frontend checks. Browser control is
 disabled in Work settings; rendered/native-window and runtime delivery remain
@@ -63,8 +63,14 @@ their durable data even if the original panel has closed. Malformed preference
 maps fail the existing preserved-workspace load path; save failures use the
 existing retained snapshot and retry UI.
 
-All 434 phone tests across 54 files, full types and seven-file lint pass. WebApp
-retains its 25 existing lint warnings, with zero errors. New checks include actual
+Primary and clean delivery source `46bf0caa` pass all 407 product phone tests
+across 53 files, full types and seven-file lint. The initial primary run also
+collected 27 checks from a pre-existing temporary performance fixture (434/54
+total); the final product run explicitly excludes `tmp/**`. WebApp retains its
+25 existing lint warnings, with zero errors. New checks include actual
 Flip/Database/Prep controls, file switching, mode restore, remount, stale owners,
 source identity refresh and saved-state validation. Browser/physical-device
-verification and hosted publication remain pending.
+verification and hosted publication remain pending. The clean source passes the
+canonical-origin phone build in 24.77 seconds and normal desktop build in 20.99
+seconds. All 31 owned source/test files match primary after line-ending
+normalization; the private compact receipt records their hashes and phone bundle.
