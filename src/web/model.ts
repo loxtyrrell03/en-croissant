@@ -187,6 +187,7 @@ export type WebEngineLine = {
 };
 
 export type WebCompanionState = {
+    gameReports?: Record<string, import("./gameReport").SavedWebGameReport>;
     lastAppliedPhonePrepRequestId?: string;
     completedOtbImports?: Record<string, { databaseId: string; prepId: string }>;
     mistakeReview?: import("./mistakeReview").PhoneReviewState;

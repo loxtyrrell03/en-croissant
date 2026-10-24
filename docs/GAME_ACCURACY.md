@@ -67,8 +67,9 @@ evidence-bound portable run record. `savedWebGameReport` clones a serializable
 snapshot; `readWebGameReport` verifies it against the current legal game and
 recorded limits before rebuilding labels/statistics. It rejects changed scores,
 depths, games and malformed records. Current display names/counters cannot
-relabel the saved evidence. This provides the data contract; durable save/retry
-and UI ownership still need wiring into the chosen phone surface.
+relabel the saved evidence. The chosen Board Analysis surface now wires durable save/retry and request
+ownership through the existing workspace session; see `PHONE_ANALYSIS.md`.
+Visual verification and runtime delivery remain separate.
 
 Thirty-two focused checks across four files cover the report core, exact engine
 transport and native portable metadata, including actual custom starts, mate,

@@ -108,7 +108,7 @@ uses isolated temporary ports/data and one thread/16 MiB hash. The real-service
 test passes invalid-limit rejection, cancelled queued ownership without skipping
 the active predecessor, subsequent bounded completion and the depth cap.
 
-This is a source/protocol milestone. Phone report controls, whole-game canonical
-report integration/persistence and clean deployment of the engine service remain
-open. The live engine service, hosted app and active desktop were not restarted
+Phone report controls and canonical whole-game integration/persistence are now
+implemented in the selected Board Analysis surface; see `PHONE_ANALYSIS.md`.
+Clean runtime delivery and visual verification remain open. The live engine service, hosted app and active desktop were not restarted
 for these tests; the earlier verified runtime delivery remains authoritative.

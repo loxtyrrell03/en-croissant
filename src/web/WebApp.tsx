@@ -126,6 +126,8 @@ import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
 import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
+import WebGameReportPanel from "./WebGameReportPanel";
+import PhoneEnginePlansPanel from "./PhoneEnginePlansPanel";
 import { loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
@@ -1506,6 +1508,9 @@ function BoardWorkspace({
 }) {
   const [onlineAnalysisRequestId, setOnlineAnalysisRequestId] = useState(0);
   const [coachReviewRunning, setCoachReviewRunning] = useState(false);
+  const [analysisView, setAnalysisView] = useState("live");
+  const [gameReportRunning, setGameReportRunning] = useState(false);
+  const [planAnalysisRunning, setPlanAnalysisRunning] = useState(false);
   const [engineArrowAnalysis, setEngineArrowAnalysis] = useState<{
     fen: string;
     lines: WebEngineLine[];
@@ -1552,6 +1557,13 @@ function BoardWorkspace({
     () => (sourceGame ? getWebGameReplayTiming(sourceGame) : {}),
     [sourceGame],
   );
+  const reportGame = useMemo(
+    () => ({ startFen, line: activeLine, white: sourceGame?.white, black: sourceGame?.black }),
+    [startFen, activeLine, sourceGame?.white, sourceGame?.black],
+  );
+  useEffect(() => {
+    if (onlineAnalysisRequestId) setAnalysisView("live");
+  }, [onlineAnalysisRequestId]);
   const liveReplayStep = useMemo(
     () =>
       getWebLiveReplayStep({
@@ -1930,6 +1942,24 @@ function BoardWorkspace({
     if (!played) return;
     appendMove(played.san, played.uci, played.fenAfter);
   };
+  const playPlanLine = (sourceFen: string, moves: string[]) => {
+    if (sourceFen !== currentFen) return;
+    const nextLine = activeLine.slice(0, cursor);
+    let fen = sourceFen;
+    for (const uci of moves) {
+      const played = playUciMove(fen, uci);
+      if (!played) return;
+      nextLine.push({
+        fenBefore: fen,
+        fenAfter: played.fenAfter,
+        san: played.san,
+        uci: played.uci,
+        actor: activePrep && getFenColor(fen) === activePrep.userColor ? "user" : "opponent",
+      });
+      fen = played.fenAfter;
+    }
+    chooseMovePanelLine(nextLine);
+  };
 
   const analyzeOnlineGame = async (onlineGame: WebOnlineImportedGame) => {
     const game = await importOnlineGameForAnalysis(onlineGame);
@@ -2085,17 +2115,49 @@ function BoardWorkspace({
 
       <Box className={classes.underBoardPanel}>
         <Box className={classes.underBoardContent}>
+          {panelMode === "engine" && (
+            <SegmentedControl
+              m="sm"
+              aria-label="Analysis view"
+              fullWidth
+              value={analysisView}
+              data={[
+                { value: "live", label: "Live" },
+                { value: "report", label: "Game report" },
+                { value: "plans", label: "Plans" },
+              ]}
+              onChange={setAnalysisView}
+            />
+          )}
           {/* Keep one engine instance mounted across every panel so changing
               tabs cannot abort an active PC search. */}
-          <EngineUnderBoardPanel
-            analysisRequestId={onlineAnalysisRequestId}
-            compact={panelMode !== "engine" && panelMode !== "moves"}
-            currentFen={currentFen}
-            upcomingFens={upcomingEngineFens}
-            onAnalysisLinesChange={handleEngineAnalysisLinesChange}
-            onPlayMove={playEngineMove}
-            suspended={coachReviewRunning}
-          />
+          <Box hidden={panelMode === "engine" && analysisView !== "live"}>
+            <EngineUnderBoardPanel
+              analysisRequestId={onlineAnalysisRequestId}
+              compact={panelMode !== "engine" && panelMode !== "moves"}
+              currentFen={currentFen}
+              upcomingFens={upcomingEngineFens}
+              onAnalysisLinesChange={handleEngineAnalysisLinesChange}
+              onPlayMove={playEngineMove}
+              suspended={coachReviewRunning || gameReportRunning || planAnalysisRunning}
+            />
+          </Box>
+          <Box hidden={panelMode !== "engine" || analysisView !== "report"}>
+            <WebGameReportPanel
+              game={reportGame}
+              onSelectPly={setCursor}
+              onBusy={setGameReportRunning}
+              blocked={planAnalysisRunning || coachReviewRunning}
+            />
+          </Box>
+          <Box hidden={panelMode !== "engine" || analysisView !== "plans"}>
+            <PhoneEnginePlansPanel
+              fen={currentFen}
+              onBusy={setPlanAnalysisRunning}
+              onPlayLine={playPlanLine}
+              blocked={gameReportRunning || coachReviewRunning}
+            />
+          </Box>
 
           {panelMode !== "engine" ? (
             <Box className={classes.underBoardTabContent}>
@@ -2418,7 +2480,7 @@ function BoardStartActions({
         <span>Prep</span>
       </Button>
       <Button
-        aria-label="Engine"
+        aria-label="Analysis"
         aria-selected={activeMode === "engine"}
         className={classes.boardModeTab}
         data-active={activeMode === "engine"}
@@ -2428,7 +2490,7 @@ function BoardStartActions({
         leftSection={<IconCpu size={14} />}
         onClick={() => onChooseMode("engine")}
       >
-        <span>Engine</span>
+        <span>Analysis</span>
       </Button>
       <Button
         aria-label="Coach"

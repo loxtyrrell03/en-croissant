@@ -36,8 +36,8 @@ The shared behavior is independent of placement:
 - Every layout must be checked at 320/390px, large text and keyboard-sized
   viewports, in loading/empty/error/completed states, with real action wiring.
 
-The current source contains the tested bounded report transport. Controls,
-canonical whole-game report ownership/persistence and Engine Plans presentation
-still require implementation and separate runtime delivery. The owner selected **A — Analysis beneath the board** on 24 October 2026.
-Implement Live / Game report / Plans within Board Analysis and apply the same
-direction to all documented states; no further layout approval is required.
+The owner selected **A - Analysis beneath the board** on 24 October 2026.
+The Live / Game report / Plans source implementation now follows this direction.
+See [Phone Board Analysis](../../PHONE_ANALYSIS.md) for behavior, verification
+and the remaining browser/runtime delivery boundary. No further layout approval
+is required.

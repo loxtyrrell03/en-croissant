@@ -48,6 +48,8 @@ export type WebStockfishAnalyzeRequest = {
     infinite?: boolean;
     /** Fresh exact chosen-move report evidence, with no stored-eval fallback or retry. */
     reportLimits?: ReportSearchLimits;
+    /** Engine Plans needs fresh, exact, fully legal PVs rather than cloud fallback. */
+    planSearch?: boolean;
     signal?: AbortSignal;
     prefetchFens?: string[];
     /**
@@ -69,6 +71,7 @@ export async function analyzeWithWebStockfish18({
     depth,
     infinite = false,
     reportLimits,
+    planSearch = false,
     signal,
     prefetchFens = [],
     preferStoredEvaluation = false,
@@ -110,6 +113,8 @@ export async function analyzeWithWebStockfish18({
             if (activeRemoteController === controller) activeRemoteController = null;
         }
     }
+    if (planSearch && (infinite || engineKind !== "stockfish" || !Number.isSafeInteger(depth) || depth < 2 || depth > 40 || !Number.isSafeInteger(multipv) || multipv < 1 || multipv > 8))
+        throw new Error("Engine Plans requires a finite Stockfish search at depth 2–40 with 1–8 lines.");
     if (!REMOTE_STOCKFISH_URL) {
         if (engineKind === "lc0") {
             throw new Error("Gaming PC LCZero is unavailable; LCZero never runs on the phone.");
@@ -121,8 +126,11 @@ export async function analyzeWithWebStockfish18({
             infinite,
             signal,
             onUpdate,
+            planSearch,
         });
     }
+
+    if (planSearch) return await analyzeWithRemoteStockfish18WithRetry({ fen, multipv, depth, signal, onUpdate, planSearch, engineKind, performancePreset });
 
     if (engineKind === "lc0") {
         return await analyzeWithRemoteStockfish18WithRetry({
@@ -437,6 +445,7 @@ async function analyzeWithRemoteStockfish18({
     lc0AutoNetwork = true,
     lc0Network = "none",
     onUpdate,
+    planSearch = false,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     const searchId = ++activeSearchId;
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
@@ -505,6 +514,7 @@ async function analyzeWithRemoteStockfish18({
         const decoder = new TextDecoder();
         let buffer = "";
         let remoteError: Error | null = null;
+        let completed = false;
         let remoteMeta: {
             engine?: string;
             engineKind?: PcEngineKind;
@@ -528,6 +538,7 @@ async function analyzeWithRemoteStockfish18({
                 remoteError = new Error(message.message || "Gaming PC Stockfish failed.");
                 return;
             }
+            if (message.type === "done") { completed = true; return; }
             if (message.type === "meta") {
                 remoteMeta = { ...remoteMeta, ...message };
                 return;
@@ -536,8 +547,9 @@ async function analyzeWithRemoteStockfish18({
             // Deep searches may send current-move/heartbeat info between PVs.
             // That is an active stream, not a stalled connection.
             if (linesByPv.size > 0) refreshStallGuard();
-            const parsed = parseStockfishInfoLine(message.line, fen, "gaming-pc", remoteMeta);
+            const parsed = parseStockfishInfoLine(message.line, fen, "gaming-pc", remoteMeta, planSearch);
             if (!parsed || parsed.multipv > requestedMultipv) return;
+            if (planSearch && parsed.depth > requestedDepth) return;
             markAnalysisStarted();
             refreshStallGuard();
             linesByPv.set(parsed.multipv, parsed);
@@ -557,6 +569,7 @@ async function analyzeWithRemoteStockfish18({
         }
 
         if (remoteError) throw remoteError;
+        if (planSearch && !completed) throw new Error("The plan search ended before completion. Try again.");
         if (linesByPv.size === 0) {
             throw new Error("Gaming PC engine returned no analysis lines.");
         }
@@ -600,6 +613,7 @@ async function analyzeWithLocalStockfish18({
     infinite,
     signal,
     onUpdate,
+    planSearch = false,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     const searchId = ++activeSearchId;
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
@@ -657,8 +671,9 @@ async function analyzeWithLocalStockfish18({
                 return;
             }
 
-            const parsed = parseStockfishInfoLine(line, fen, "phone");
+            const parsed = parseStockfishInfoLine(line, fen, "phone", {}, planSearch);
             if (!parsed || parsed.multipv > requestedMultipv) return;
+            if (planSearch && parsed.depth > requestedDepth) return;
             linesByPv.set(parsed.multipv, parsed);
             publish();
         };
@@ -819,6 +834,7 @@ function parseStockfishInfoLine(
         networkMode?: string;
         networkName?: string;
     } = {},
+    requireExactLegalPv = false,
 ): WebEngineLine | null {
     if (!line.startsWith("info ")) return null;
 
@@ -826,6 +842,9 @@ function parseStockfishInfoLine(
     if (!position) return null;
 
     const tokens = line.trim().split(/\s+/);
+    if (requireExactLegalPv && (tokens.includes("lowerbound") || tokens.includes("upperbound"))) return null;
+    if (requireExactLegalPv && (!/^\d+$/.test(tokens[tokens.indexOf("depth") + 1] ?? "") ||
+        (tokens.includes("multipv") && !/^\d+$/.test(tokens[tokens.indexOf("multipv") + 1] ?? "")))) return null;
     const pvIndex = tokens.indexOf("pv");
     const scoreIndex = tokens.indexOf("score");
     if (pvIndex < 0 || scoreIndex < 0 || scoreIndex + 2 >= tokens.length) return null;
@@ -834,9 +853,12 @@ function parseStockfishInfoLine(
         .slice(pvIndex + 1)
         .filter((token) => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(token));
     if (uciMoves.length === 0) return null;
+    if (requireExactLegalPv && uciMoves.length !== tokens.length - pvIndex - 1) return null;
 
     const score = parseStockfishScore(tokens, scoreIndex);
     if (!score) return null;
+    const sanMoves = makeSanLineFromUci(fen, uciMoves);
+    if (requireExactLegalPv && (!/^-?\d+$/.test(tokens[scoreIndex + 2] ?? "") || !Number.isSafeInteger(score.value) || sanMoves.length !== uciMoves.length)) return null;
 
     return {
         source: meta.engineKind === "lc0" ? "lc0" : "stockfish",
@@ -851,7 +873,7 @@ function parseStockfishInfoLine(
         nps: readNumericInfoToken(tokens, "nps"),
         score: normalizeWebEngineScoreForWhite(score, position.turn),
         uciMoves,
-        sanMoves: makeSanLineFromUci(fen, uciMoves),
+        sanMoves,
     };
 }
 

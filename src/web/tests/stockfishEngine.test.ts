@@ -63,6 +63,27 @@ function engineWakeResponse() {
 }
 
 describe("Stockfish phone line updates", () => {
+    it("Plans bypasses stored evaluations and retains only exact legal capped lines with their real ranks", async () => {
+        const fetchMock = vi.fn(async (input: URL | RequestInfo) => {
+            if (String(input).includes("/api/engine/start")) return engineWakeResponse();
+            expect(String(input)).toContain("/v1/analyze");
+            return streamingAnalyzeResponse(
+                ...[
+                    "info depth 17 multipv 1 score cp 25 pv e2e4 e7e5",
+                    "info depth 16 multipv 3 score cp 20 pv d2d4 d7d5",
+                    "info depth 18 multipv 2 score cp 29 pv c2c4 e7e5",
+                    "info depth 17 multipv 4 score cp 30 lowerbound pv g1f3 d7d5",
+                    "info depth 17 multipv 5 score cp 2 pv b1c3 junk e7e5",
+                    "info depth 17 multipv 6 score cp 2 pv a2a4 a2a3",
+                ].map(line => ({ type: "uci", line })),
+                { type: "done", bestmove: "e2e4" },
+            );
+        });
+        vi.stubGlobal("fetch", fetchMock);
+        const lines = await analyzeWithWebStockfish18({ fen: INITIAL_FEN, depth: 17, multipv: 8, planSearch: true });
+        expect(lines.map(line => [line.multipv, line.depth, line.uciMoves[0]])).toEqual([[1, 17, "e2e4"], [3, 16, "d2d4"]]);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
     it("shows the stored evaluation first and lets PC analysis supersede it", async () => {
         const storedEvaluation = {
             fen: INITIAL_FEN,
