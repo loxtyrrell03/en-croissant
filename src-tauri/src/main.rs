@@ -21,6 +21,7 @@ mod tournament_service;
 mod otb_import;
 mod pgn;
 mod progress;
+mod report_limits;
 mod puzzle;
 mod sound;
 mod study_resources;

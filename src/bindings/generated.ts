@@ -821,7 +821,7 @@ progressEvent: "progress-event"
 export type AiCoachRequest = { requestId?: string; fen: string; sideToMove: string; playerColor?: string; moveHistory: string[]; pgn: string | null; pgnScope?: string; currentLinePgn?: string | null; wholeGamePgn?: string | null; gameAnalysis?: CoachGameAnalysisPoint[]; selectedMove: string | null; question: string; chatHistory?: CoachChatMessage[]; referenceContext?: CoachReferenceContext[]; existingLines: CoachEngineLine[]; existingLinesSource?: string; priorTargetedResults?: CoachTargetedResult[]; openingContext: CoachOpeningContext | null; openingContextError: string | null; enginePath: string; engineOptions?: EngineOption[]; settings: AiCoachSettings }
 export type AiCoachResponse = { answer: string; overview: string; categories: CoachCategory[]; analysisCoverage: CoachAnalysisCoverage | null; pgnScope: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[]; bookPassages: CoachBookPassage[]; bookCorpusAvailable: boolean }
 export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; plannerModel?: string; multipv: number; timeoutSecs: number }
-export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
+export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean; searchLimits?: GameAnalysisLimits | null }
 export type BestMoveSource = "lichess" | "chessdb"
 export type BestMoves = { nodes: number; depth: number; score: Score; source?: BestMoveSource | null; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number; searchMoves?: string[] | null }
@@ -852,6 +852,7 @@ export type EngineOption = { name: string; value: string }
 export type EngineOptions = { fen: string; moves: string[]; extraOptions: EngineOption[]; searchMoves?: string[] | null }
 export type Event = { id: number; name: string | null }
 export type FileMetadata = { last_modified: number }
+export type GameAnalysisLimits = { depth?: number | null; timeMs?: number | null }
 export type GameConfig = { white: PlayerConfig; black: PlayerConfig; whiteTimeControl: TimeControl | null; blackTimeControl: TimeControl | null; initialFen: string | null; initialMoves?: string[]; openingBook: OpeningBookConfig | null }
 export type GameEndReason = "checkmate" | "timeout" | "resignation" | "abandonment"
 export type GameMove = { uci: string; san: string; fenAfter: string; clock: bigint | null; whiteTime: bigint | null; blackTime: bigint | null }

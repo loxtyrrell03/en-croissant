@@ -102,6 +102,15 @@ pub enum Error {
     #[error("Analysis cancelled")]
     AnalysisCancelled,
 
+    #[error("{0}")]
+    InvalidAnalysisLimits(String),
+
+    #[error("Game analysis did not finish this position within its limit.")]
+    AnalysisTimedOut,
+
+    #[error("The engine returned no exact score for its selected move. Try a longer analysis limit.")]
+    NoExactAnalysisScore,
+
     #[error("Search stopped")]
     SearchStopped,
 

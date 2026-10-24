@@ -43,6 +43,10 @@ use crate::{
     },
     error::Error,
     progress::update_progress,
+    report_limits::{
+        recovery_go_command, report_depth, report_go_command, report_time_ms,
+        validate_report_limits, GameAnalysisLimits,
+    },
     AppState,
 };
 
@@ -161,17 +165,20 @@ impl EngineProcess {
 
     async fn go(&mut self, mode: &GoMode) -> Result<(), Error> {
         self.go_mode = mode.clone();
-        if self.restricted_roots.is_empty() {
-            self.base.go(mode).await?;
+        let command = if self.restricted_roots.is_empty() {
+            mode.to_uci_string()
         } else {
-            self.base
-                .send(&format!(
-                    "{} searchmoves {}",
-                    mode.to_uci_string(),
-                    self.restricted_roots.join(" ")
-                ))
-                .await?;
-        }
+            format!(
+                "{} searchmoves {}",
+                mode.to_uci_string(),
+                self.restricted_roots.join(" ")
+            )
+        };
+        self.go_command(&command).await
+    }
+
+    async fn go_command(&mut self, command: &str) -> Result<(), Error> {
+        self.base.send(command).await?;
         self.running = true;
         self.idle_generation = self.idle_generation.wrapping_add(1);
         self.start = Instant::now();
@@ -719,6 +726,188 @@ pub struct AnalysisOptions {
     pub annotate_novelties: bool,
     pub reference_db: Option<PathBuf>,
     pub reversed: bool,
+    #[serde(default)]
+    #[specta(optional)]
+    pub search_limits: Option<GameAnalysisLimits>,
+}
+
+struct ReportCancellationRegistration<'a> {
+    flags: &'a dashmap::DashMap<String, Arc<AtomicBool>>,
+    id: String,
+    flag: Arc<AtomicBool>,
+}
+
+impl Drop for ReportCancellationRegistration<'_> {
+    fn drop(&mut self) {
+        self.flags
+            .remove_if(&self.id, |_, flag| Arc::ptr_eq(flag, &self.flag));
+    }
+}
+
+fn report_root_key(position: &Chess, uci: &str) -> Option<String> {
+    let uci = UciMove::from_ascii(uci.as_bytes()).ok()?;
+    let mv = uci.to_move(position).ok()?;
+    Some(UciMove::from_move(&mv, CastlingMode::Chess960).to_string())
+}
+
+async fn new_report_engine(
+    path: PathBuf,
+    cancel: &AtomicBool,
+) -> Result<(EngineProcess, EngineReader), Error> {
+    if cancel.load(Ordering::SeqCst) {
+        return Err(Error::AnalysisCancelled);
+    }
+    let startup = EngineProcess::new(path);
+    tokio::pin!(startup);
+    loop {
+        tokio::select! {
+            result = &mut startup => return result,
+            _ = tokio::time::sleep(Duration::from_millis(40)) => {
+                // Dropping startup also drops/kills any owned BaseEngine.
+                if cancel.load(Ordering::SeqCst) { return Err(Error::AnalysisCancelled); }
+            }
+        }
+    }
+}
+
+async fn report_next_line(
+    reader: &mut EngineReader,
+    cancel: &AtomicBool,
+    deadline: Instant,
+) -> Result<String, Error> {
+    loop {
+        if cancel.load(Ordering::SeqCst) {
+            return Err(Error::AnalysisCancelled);
+        }
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            return Err(Error::AnalysisTimedOut);
+        }
+        match tokio::time::timeout(remaining.min(Duration::from_millis(40)), reader.next_line())
+            .await
+        {
+            Ok(Ok(Some(line))) if line.len() <= 65_536 => return Ok(line),
+            Ok(Ok(Some(_))) => {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "The engine returned an oversized analysis line.",
+                )
+                .into())
+            }
+            Ok(Ok(None)) => return Err(Error::EngineDisconnected),
+            Ok(Err(error)) => return Err(error.into()),
+            Err(_) => continue,
+        }
+    }
+}
+
+async fn read_report_search(
+    proc: &mut EngineProcess,
+    reader: &mut EngineReader,
+    position: &Chess,
+    cancel: &AtomicBool,
+    deadline: Instant,
+) -> Result<(Option<(String, String)>, HashMap<String, BestMoves>), Error> {
+    let mut candidates = HashMap::new();
+    let fen = proc.options.fen.parse()?;
+    loop {
+        let line = report_next_line(reader, cancel, deadline).await?;
+        match parse_one(&line) {
+            UciMessage::Info(attrs) => {
+                // A bound or a PV without a score is never an exact evaluation.
+                if !attrs.iter().any(|attr| matches!(attr, UciInfoAttribute::Score(score) if !score.lower_bound.unwrap_or(false) && !score.upper_bound.unwrap_or(false))) { continue; }
+                if let Ok(best) = parse_uci_attrs(attrs, &fen, &proc.options.moves) {
+                    if best.multipv == 0 || best.multipv > proc.real_multipv {
+                        continue;
+                    }
+                    if let Some(key) = best
+                        .uci_moves
+                        .first()
+                        .and_then(|uci| report_root_key(position, uci))
+                    {
+                        // Latest exact evidence for this candidate wins, even
+                        // when the final search thread reports a lower depth.
+                        candidates.insert(key, best);
+                    }
+                }
+            }
+            UciMessage::BestMove { best_move, .. } => {
+                proc.note_bestmove();
+                proc.mark_finished();
+                let uci = best_move.to_string();
+                return Ok((
+                    report_root_key(position, &uci).map(|key| (key, uci)),
+                    candidates,
+                ));
+            }
+            _ => {}
+        }
+    }
+}
+
+async fn analyze_report_position(
+    proc: &mut EngineProcess,
+    reader: &mut EngineReader,
+    mode: &GoMode,
+    limits: Option<&GameAnalysisLimits>,
+    cancel: &AtomicBool,
+) -> Result<Vec<BestMoves>, Error> {
+    let position = parse_fen_and_apply_moves(&proc.options.fen, &proc.options.moves)?;
+    let started = Instant::now();
+    let time_ms = report_time_ms(mode, limits);
+    let watchdog = Duration::from_millis(u64::from(time_ms.unwrap_or(90_000)) + 5000);
+    proc.go_command(&report_go_command(mode, limits)).await?;
+    let (chosen, mut candidates) =
+        read_report_search(proc, reader, &position, cancel, started + watchdog).await?;
+    let (chosen, chosen_uci) = chosen.ok_or(Error::NoExactAnalysisScore)?;
+    let exact = if let Some(exact) = candidates.remove(&chosen) {
+        exact
+    } else {
+        let remaining = time_ms
+            .map(|budget| u128::from(budget).saturating_sub(started.elapsed().as_millis()) as u32)
+            .unwrap_or_else(|| {
+                if limits.is_none() && matches!(mode, GoMode::Nodes(_)) {
+                    0
+                } else {
+                    100
+                }
+            });
+        if remaining == 0 || cancel.load(Ordering::SeqCst) {
+            return Err(if cancel.load(Ordering::SeqCst) {
+                Error::AnalysisCancelled
+            } else {
+                Error::NoExactAnalysisScore
+            });
+        }
+        proc.go_command(&recovery_go_command(mode, limits, remaining, &chosen_uci))
+            .await?;
+        let (recovered_choice, mut recovered) = read_report_search(
+            proc,
+            reader,
+            &position,
+            cancel,
+            Instant::now() + Duration::from_millis(u64::from(remaining) + 1000),
+        )
+        .await?;
+        if recovered_choice.as_ref().map(|choice| choice.0.as_str()) != Some(chosen.as_str()) {
+            return Err(Error::NoExactAnalysisScore);
+        }
+        recovered
+            .remove(&chosen)
+            .ok_or(Error::NoExactAnalysisScore)?
+    };
+    if report_depth(mode, limits).is_some_and(|depth| exact.depth > depth) {
+        return Err(Error::NoExactAnalysisScore);
+    }
+    let mut alternatives: Vec<_> = candidates.into_values().collect();
+    alternatives.sort_by_key(|line| line.multipv);
+    let mut result = vec![exact];
+    result.extend(
+        alternatives
+            .into_iter()
+            .take(proc.real_multipv.saturating_sub(1) as usize),
+    );
+    Ok(result)
 }
 
 #[tauri::command]
@@ -754,15 +943,25 @@ pub async fn analyze_game(
     state: tauri::State<'_, AppState>,
     app: tauri::AppHandle,
 ) -> Result<Vec<MoveAnalysis>, Error> {
+    validate_report_limits(&go_mode, options.search_limits.as_ref())
+        .map_err(|message| Error::InvalidAnalysisLimits(message.into()))?;
     let cancel_flag = Arc::new(AtomicBool::new(false));
-    state
+    if let Some(previous) = state
         .analysis_cancel_flags
-        .insert(id.clone(), cancel_flag.clone());
+        .insert(id.clone(), cancel_flag.clone())
+    {
+        previous.store(true, Ordering::SeqCst);
+    }
+    let _registration = ReportCancellationRegistration {
+        flags: &state.analysis_cancel_flags,
+        id: id.clone(),
+        flag: cancel_flag.clone(),
+    };
 
     let path = PathBuf::from(&engine);
     let mut analysis: Vec<MoveAnalysis> = Vec::new();
 
-    let (mut proc, mut reader) = EngineProcess::new(path).await?;
+    let (mut proc, mut reader) = new_report_engine(path, &cancel_flag).await?;
 
     let fen = Fen::from_ascii(options.fen.as_bytes())?;
     let setup = fen.as_setup().clone();
@@ -802,7 +1001,6 @@ pub async fn analyze_game(
     for (i, (_, moves, _)) in fens.iter().enumerate() {
         if cancel_flag.load(Ordering::SeqCst) {
             proc.kill().await?;
-            state.analysis_cancel_flags.remove(&id);
             return Err(Error::AnalysisCancelled);
         }
 
@@ -836,31 +1034,18 @@ pub async fn analyze_game(
         })
         .await?;
 
-        proc.go(&go_mode).await?;
-
-        let mut current_analysis = MoveAnalysis::default();
-        while let Ok(Some(line)) = reader.next_line().await {
-            match parse_one(&line) {
-                UciMessage::Info(attrs) => {
-                    if let Ok(best_moves) =
-                        parse_uci_attrs(attrs, &proc.options.fen.parse()?, moves)
-                    {
-                        let cur_depth = best_moves.depth;
-                        if let Some(best_lines) = proc.record_best_moves(best_moves) {
-                            if cur_depth >= proc.last_depth {
-                                current_analysis.best = best_lines;
-                                proc.last_depth = cur_depth;
-                            }
-                        }
-                    }
-                }
-                UciMessage::BestMove { .. } => {
-                    break;
-                }
-                _ => {}
-            }
-        }
-        analysis.push(current_analysis);
+        let best = analyze_report_position(
+            &mut proc,
+            &mut reader,
+            &go_mode,
+            options.search_limits.as_ref(),
+            &cancel_flag,
+        )
+        .await?;
+        analysis.push(MoveAnalysis {
+            best,
+            ..MoveAnalysis::default()
+        });
     }
 
     if options.reversed {
@@ -894,7 +1079,6 @@ pub async fn analyze_game(
         }
     }
     update_progress(&state.progress_state, &app, id.clone(), 100.0, true)?;
-    state.analysis_cancel_flags.remove(&id);
     Ok(analysis)
 }
 
@@ -3612,4 +3796,237 @@ pub async fn get_engine_config(path: PathBuf) -> Result<EngineConfig, Error> {
     println!("{:?}", config);
     base.quit().await?;
     Ok(config)
+}
+
+#[cfg(test)]
+mod report_protocol_tests {
+    use super::*;
+
+    const START: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    async fn fixture(
+        mode: &str,
+        depth: u32,
+        time: u32,
+        fen: &str,
+    ) -> (EngineProcess, EngineReader) {
+        let path = std::env::var("EN_CROISSANT_REPORT_TEST_ENGINE")
+            .expect("Use scripts/check-game-report-protocol.ps1 to run the deterministic peer");
+        let (mut proc, reader) = EngineProcess::new(path.into()).await.unwrap();
+        proc.set_options(EngineOptions {
+            fen: fen.into(),
+            moves: vec![],
+            search_moves: None,
+            extra_options: vec![
+                EngineOption {
+                    name: "MultiPV".into(),
+                    value: "2".into(),
+                },
+                EngineOption {
+                    name: "ReportTestMode".into(),
+                    value: mode.into(),
+                },
+                EngineOption {
+                    name: "ReportTestDepth".into(),
+                    value: depth.to_string(),
+                },
+                EngineOption {
+                    name: "ReportTestTime".into(),
+                    value: time.to_string(),
+                },
+            ],
+        })
+        .await
+        .unwrap();
+        (proc, reader)
+    }
+
+    #[test]
+    fn report_wire_preserves_legacy_options_and_accepts_optional_limits() {
+        let legacy = serde_json::json!({ "fen": START, "moves": [], "annotateNovelties": false, "referenceDb": null, "reversed": true });
+        let parsed: AnalysisOptions = serde_json::from_value(legacy.clone()).unwrap();
+        assert!(parsed.search_limits.is_none());
+        let mut current = legacy;
+        current["searchLimits"] = serde_json::json!({ "depth": 8, "timeMs": 50 });
+        let parsed: AnalysisOptions = serde_json::from_value(current).unwrap();
+        assert!(parsed.search_limits.as_ref().unwrap().validate().is_ok());
+    }
+
+    #[test]
+    fn report_completion_cannot_remove_a_replacement_jobs_cancellation_flag() {
+        let flags = dashmap::DashMap::new();
+        let old = Arc::new(AtomicBool::new(false));
+        let replacement = Arc::new(AtomicBool::new(false));
+        flags.insert("same".into(), old.clone());
+        let registration = ReportCancellationRegistration {
+            flags: &flags,
+            id: "same".into(),
+            flag: old,
+        };
+        flags.insert("same".into(), replacement.clone());
+        drop(registration);
+        assert!(Arc::ptr_eq(
+            flags.get("same").unwrap().value(),
+            &replacement
+        ));
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the deterministic protocol peer"]
+    async fn report_selected_root_uses_its_latest_exact_score_even_at_a_lower_depth() {
+        let (mut proc, mut reader) = fixture("latest", 8, 50, START).await;
+        let limits = GameAnalysisLimits {
+            depth: Some(8),
+            time_ms: Some(50),
+        };
+        let result = analyze_report_position(
+            &mut proc,
+            &mut reader,
+            &GoMode::Time(500),
+            Some(&limits),
+            &AtomicBool::new(false),
+        )
+        .await
+        .unwrap();
+        assert_eq!(result[0].score.value, ScoreValue::Cp(17));
+        assert_eq!(result[0].depth, 5);
+        assert_eq!(result[0].uci_moves[0], "e2e4");
+        proc.kill().await.unwrap();
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the deterministic protocol peer"]
+    async fn report_candidate_recovery_respects_every_presets_depth_and_remaining_time() {
+        for (depth, time) in [(8, 50), (16, 250), (22, 1000)] {
+            let (mut proc, mut reader) = fixture("recover", depth, time, START).await;
+            let limits = GameAnalysisLimits {
+                depth: Some(depth),
+                time_ms: Some(time),
+            };
+            let result = analyze_report_position(
+                &mut proc,
+                &mut reader,
+                &GoMode::Depth(30),
+                Some(&limits),
+                &AtomicBool::new(false),
+            )
+            .await
+            .unwrap();
+            assert_eq!(result[0].score.value, ScoreValue::Cp(22));
+            assert_eq!(result[0].uci_moves[0], "e2e4");
+            proc.kill().await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the deterministic protocol peer"]
+    async fn report_rejects_bound_missing_foreign_and_over_budget_recovery() {
+        for mode in ["bounds", "foreign", "spent"] {
+            let (mut proc, mut reader) = fixture(mode, 8, 50, START).await;
+            let limits = GameAnalysisLimits {
+                depth: Some(8),
+                time_ms: Some(50),
+            };
+            assert!(matches!(
+                analyze_report_position(
+                    &mut proc,
+                    &mut reader,
+                    &GoMode::Time(500),
+                    Some(&limits),
+                    &AtomicBool::new(false)
+                )
+                .await,
+                Err(Error::NoExactAnalysisScore)
+            ));
+            proc.kill().await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the deterministic protocol peer"]
+    async fn report_cancellation_and_a_silent_engine_are_bounded() {
+        let (mut proc, mut reader) = fixture("hang", 8, 50, START).await;
+        let limits = GameAnalysisLimits {
+            depth: Some(8),
+            time_ms: Some(50),
+        };
+        let cancel = Arc::new(AtomicBool::new(false));
+        let set_cancel = cancel.clone();
+        let task = tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(30)).await;
+            set_cancel.store(true, Ordering::SeqCst);
+        });
+        let started = Instant::now();
+        assert!(matches!(
+            analyze_report_position(
+                &mut proc,
+                &mut reader,
+                &GoMode::Time(500),
+                Some(&limits),
+                &cancel
+            )
+            .await,
+            Err(Error::AnalysisCancelled)
+        ));
+        assert!(started.elapsed() < Duration::from_secs(1));
+        task.await.unwrap();
+        assert!(matches!(
+            report_next_line(
+                &mut reader,
+                &AtomicBool::new(false),
+                Instant::now() + Duration::from_millis(50)
+            )
+            .await,
+            Err(Error::AnalysisTimedOut)
+        ));
+        proc.kill().await.unwrap();
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the deterministic protocol peer"]
+    async fn report_castle_encodings_match_one_legal_root() {
+        let fen = "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1";
+        let (mut proc, mut reader) = fixture("castle", 8, 50, fen).await;
+        let limits = GameAnalysisLimits {
+            depth: Some(8),
+            time_ms: Some(50),
+        };
+        let result = analyze_report_position(
+            &mut proc,
+            &mut reader,
+            &GoMode::Time(500),
+            Some(&limits),
+            &AtomicBool::new(false),
+        )
+        .await
+        .unwrap();
+        assert_eq!(result[0].score.value, ScoreValue::Cp(12));
+        proc.kill().await.unwrap();
+    }
+
+    #[tokio::test]
+    #[ignore = "requires the deterministic protocol peer"]
+    async fn report_cancels_during_a_stalled_engine_handshake() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("hang-report-startup.exe");
+        std::fs::copy(
+            std::env::var("EN_CROISSANT_REPORT_TEST_ENGINE").unwrap(),
+            &path,
+        )
+        .unwrap();
+        let cancel = Arc::new(AtomicBool::new(false));
+        let trigger = cancel.clone();
+        let task = tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(30)).await;
+            trigger.store(true, Ordering::SeqCst);
+        });
+        let started = Instant::now();
+        assert!(matches!(
+            new_report_engine(path, &cancel).await,
+            Err(Error::AnalysisCancelled)
+        ));
+        assert!(started.elapsed() < Duration::from_secs(1));
+        task.await.unwrap();
+        tokio::time::sleep(Duration::from_millis(30)).await;
+    }
 }
