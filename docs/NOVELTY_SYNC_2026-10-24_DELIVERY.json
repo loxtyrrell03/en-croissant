@@ -393,5 +393,37 @@
     "nativeWindowVerified": false,
     "standalonePublished": false,
     "phonePublished": false
+  },
+  "pendingPhoneSourceArchives": {
+    "primarySourceCommit": "348ea549108f42df7bbd103f4fe2bf1373537d3c",
+    "cleanSourceCommit": "46b48b0211e27b9adb5702daff85ba4f8824bbb8",
+    "checkedAt": "2026-10-24T23:59:23.564109+00:00",
+    "productPhoneTests": 414,
+    "productPhoneFiles": 55,
+    "nativeArchiveTests": 5,
+    "combinedCleanTests": 419,
+    "combinedCleanFiles": 56,
+    "types": true,
+    "lintFiles": 9,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "webAppExistingWarnings": 25,
+    "canonicalPhoneBuildSeconds": 24.67,
+    "matchingOwnedSourceFiles": 11,
+    "phoneBundle": {
+      "entry": "WebApp-BVrIGPqy.js",
+      "bytes": 426448,
+      "sha256": "e267d47f9e5d6038d7e964ec0cfd08c4cb2e81ccc8c5d0eb7b55bbe15a916c07",
+      "indexSha256": "d54ee8f20760692b217e7c96f057d1e90a0caeb65e480c412f67c49176c0f908",
+      "canonicalOriginPresent": true,
+      "inventedFixturesExcluded": true
+    },
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "standalonePublished": false,
+    "phonePublished": false,
+    "desktopBuildSeconds": 22.92,
+    "ownerDataMigrated": false,
+    "servicesChanged": false
   }
 }

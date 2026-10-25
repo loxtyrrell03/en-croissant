@@ -34,6 +34,13 @@ TypeScript and nine-file lint. WebApp retains its 25 existing lint warnings and
 zero errors. Eighteen focused archive/preference/native-marker checks pass,
 including real Files/import/Database/Prep controls, source retention, folder
 boundaries, saved-state validation, refresh identity and help focus/Escape.
-All data is synthetic; file reads/writes and engines are mocked. Browser control
+Test fixtures are synthetic; file reads/writes and engines are mocked. Browser control
 was rechecked and remains disabled in Work settings, so rendered narrow-layout,
 physical-device and runtime-delivery proof remain outstanding.
+
+Clean delivery source `46b48b02` independently passes the 414 phone checks and
+five native archive helper checks (419/56 files), full types and nine-file lint
+without warnings/errors. Its canonical-origin phone build passes in 24.67 seconds
+and normal desktop build in 22.92 seconds. All eleven owned source/test/style
+files match primary after line-ending normalization. The private compact receipt
+records source and bundle hashes; no standalone or hosted publication occurred.
