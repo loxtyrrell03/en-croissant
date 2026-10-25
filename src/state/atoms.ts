@@ -540,6 +540,7 @@ export const comparePanelSettingsByFileAtom = atomWithStorage<
 export type OpponentPrepPanelStage = "setup" | "train";
 
 export type OpponentPrepState = {
+    dateRanges?: Record<string, import("@/utils/gameDateRange").GameDateRange>;
     mode: "player" | "general";
     source: "local" | "lch_all" | "lch_master";
     databasePath: string | null;

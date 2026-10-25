@@ -1,3 +1,5 @@
+import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
+import { applyLocalGameDates, storedGameDateRange } from "@/utils/gameDateRange";
 import {
   Box,
   Button,
@@ -8,10 +10,8 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
 import { type Piece, parseSquare } from "chessops";
 import { EMPTY_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
-import dayjs from "dayjs";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Chessground } from "@/chessground/Chessground";
@@ -44,7 +44,14 @@ function LocalOptionsPanel({
 
   return (
     <Stack>
-      <SimpleGrid cols={2}>
+      <GameDateRangeControl
+        value={storedGameDateRange(options.dateRange, options.start_date, options.end_date)}
+        precision="day"
+        onChange={(dateRange) =>
+          setOptions((current) => applyLocalGameDates({ ...current, dateRange }))
+        }
+      />
+      <SimpleGrid cols={{ base: 1, sm: 2 }}>
         <Stack gap={4}>
           <Text fw="bold" fz="sm">
             Player perspective
@@ -60,43 +67,6 @@ function LocalOptionsPanel({
             size="sm"
             playerWidth={220}
             colorWidth={150}
-          />
-        </Stack>
-
-        <Stack gap={4}>
-          <Text fw="bold" fz="sm">
-            {t("Common.From")}
-          </Text>
-          <DateInput
-            placeholder={t("Common.StartDate")}
-            valueFormat="YYYY-MM-DD"
-            clearable
-            value={
-              options.start_date ? dayjs(options.start_date, "YYYY.MM.DD").toDate() : undefined
-            }
-            onChange={(value) =>
-              setOptions({
-                ...options,
-                start_date: value ? dayjs(value).format("YYYY.MM.DD") : undefined,
-              })
-            }
-          />
-        </Stack>
-        <Stack gap={4}>
-          <Text fw="bold" fz="sm">
-            {t("Common.To")}
-          </Text>
-          <DateInput
-            placeholder={t("Common.EndDate")}
-            valueFormat="YYYY-MM-DD"
-            clearable
-            value={options.end_date ? dayjs(options.end_date, "YYYY.MM.DD").toDate() : null}
-            onChange={(value) =>
-              setOptions({
-                ...options,
-                end_date: value ? dayjs(value).format("YYYY.MM.DD") : undefined,
-              })
-            }
           />
         </Stack>
 

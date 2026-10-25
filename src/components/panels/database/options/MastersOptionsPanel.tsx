@@ -1,7 +1,6 @@
-import { Group, NumberInput } from "@mantine/core";
-import { YearPickerInput } from "@mantine/dates";
-import { useTranslation } from "react-i18next";
-import { MIN_DATE } from "@/utils/lichess/api";
+import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
+import { applyExplorerGameDates, storedGameDateRange } from "@/utils/gameDateRange";
+import { Stack, NumberInput } from "@mantine/core";
 import type { MasterGamesOptions } from "@/utils/lichess/explorer";
 
 const MasterOptionsPanel = ({
@@ -13,26 +12,14 @@ const MasterOptionsPanel = ({
     value: MasterGamesOptions | ((current: MasterGamesOptions) => MasterGamesOptions),
   ) => void;
 }) => {
-  const { t } = useTranslation();
   return (
-    <Group grow>
-      <YearPickerInput
-        label={t("Common.Since")}
-        placeholder={t("Common.PickDate")}
-        value={options.since}
-        minDate={MIN_DATE}
-        maxDate={new Date()}
-        onChange={(value) => setOptions({ ...options, since: value ? new Date(value) : undefined })}
-        clearable
-      />
-      <YearPickerInput
-        label={t("Common.Until")}
-        placeholder={t("Common.PickDate")}
-        value={options.until}
-        minDate={MIN_DATE}
-        maxDate={new Date()}
-        onChange={(value) => setOptions({ ...options, until: value ? new Date(value) : undefined })}
-        clearable
+    <Stack>
+      <GameDateRangeControl
+        value={storedGameDateRange(options.dateRange, options.since, options.until)}
+        precision="year"
+        onChange={(dateRange) =>
+          setOptions((current) => applyExplorerGameDates({ ...current, dateRange }, "year"))
+        }
       />
       <NumberInput
         label="Top games"
@@ -44,7 +31,7 @@ const MasterOptionsPanel = ({
           setOptions({ ...options, topGames: typeof value === "number" ? value : 15 })
         }
       />
-    </Group>
+    </Stack>
   );
 };
 

@@ -1,3 +1,4 @@
+import { useExplorerGameDates } from "@/hooks/useGameDateOptions";
 import {
   ActionIcon,
   Alert,
@@ -176,7 +177,7 @@ function EnginePlanExplorerPanel() {
   const makeMoves = useStore(store, (s) => s.makeMoves);
   const goToMove = useStore(store, (s) => s.goToMove);
   const engines = useAtomValue(enginesAtom);
-  const lichessOptions = useAtomValue(lichessOptionsAtom);
+  const lichessOptions = useExplorerGameDates(useAtomValue(lichessOptionsAtom), "month");
   const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
   const activeTab = useAtomValue(activeTabAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
@@ -719,9 +720,11 @@ function EnginePlanExplorerPanel() {
 
           {view === "plans" && (!filteredReport || filteredReport.plans.length === 0) ? (
             <Text ta="center" c="dimmed" py="xl">
-              {horizon !== "all" ? "No ideas in this horizon. Choose All or analyse a longer line." : sideFilter === "all"
-                ? "No plan signals found in the PVs."
-                : `No ${sideFilter} plan signals found in the PVs.`}
+              {horizon !== "all"
+                ? "No ideas in this horizon. Choose All or analyse a longer line."
+                : sideFilter === "all"
+                  ? "No plan signals found in the PVs."
+                  : `No ${sideFilter} plan signals found in the PVs.`}
             </Text>
           ) : view === "plans" && filteredReport ? (
             <PlansTable
@@ -1448,16 +1451,21 @@ function PlanRow({
       <Table.Td>
         <Stack gap={4}>
           <Group gap="xs" wrap="wrap">
-            <Badge variant="light">{plan.context === "rootChoice" ? "Move" : categoryLabel(plan.category)}</Badge>
+            <Badge variant="light">
+              {plan.context === "rootChoice" ? "Move" : categoryLabel(plan.category)}
+            </Badge>
             <Badge variant="light">{plan.color === "white" ? "White" : "Black"}</Badge>
             <Badge variant="outline">{plan.appearsInTopPv ? "PV1" : "Side PV"}</Badge>
           </Group>
           <Text fw={700} size="sm">
             {plan.label}
           </Text>
-          {plan.contextLabel && <Text size="xs" c="dimmed">
-            {plan.contextLabel}{plan.supportCount > 1 ? ` · ${plan.supportCount} supporting lines` : ""}
-          </Text>}
+          {plan.contextLabel && (
+            <Text size="xs" c="dimmed">
+              {plan.contextLabel}
+              {plan.supportCount > 1 ? ` · ${plan.supportCount} supporting lines` : ""}
+            </Text>
+          )}
           <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
           <details>
             <summary>Evidence</summary>
@@ -1490,7 +1498,9 @@ function PlanRow({
       <Table.Td>
         <EngineStrengthCell target={plan} totalPvs={totalPvs} />
       </Table.Td>
-      <Table.Td><EnginePlanEvaluation plan={plan} /></Table.Td>
+      <Table.Td>
+        <EnginePlanEvaluation plan={plan} />
+      </Table.Td>
       <Table.Td>
         <Badge variant="outline">{plan.confidence}</Badge>
       </Table.Td>

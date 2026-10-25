@@ -14,6 +14,7 @@ import {
     type QueryResponse,
 } from "@/bindings";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
+import { applyLocalGameDates } from "@/utils/gameDateRange";
 import { getDatabasesDir } from "@/utils/directories";
 import { getStoredDatabaseArchiveState, isDatabaseArchived } from "@/utils/databaseArchive";
 import {
@@ -514,6 +515,7 @@ export async function searchPosition(
     tab: string,
     mode: SearchPositionMode = {},
 ) {
+    options = applyLocalGameDates(options);
     const includeOpenings = mode.includeOpenings ?? true;
     const includeGames = mode.includeGames ?? true;
     const resolvedPlayer = await resolveLocalOptionsPlayer(options);
@@ -566,6 +568,7 @@ export async function getPlanExplorer(
     maxPlies: number,
     requestId = "plan-explorer",
 ): Promise<PlanExplorerData> {
+    options = applyLocalGameDates(options);
     const resolvedPlayer = await resolveLocalOptionsPlayer(options);
     const res = await commands.getPlanExplorer(
         options.path!,

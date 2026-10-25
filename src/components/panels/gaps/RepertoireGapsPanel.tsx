@@ -1,3 +1,4 @@
+import { useExplorerGameDates } from "@/hooks/useGameDateOptions";
 import { WdlResultBar } from "@/components/common/WdlResultBar";
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import {
@@ -280,8 +281,8 @@ function RepertoireGapsPanel({
     }),
   );
   const storedReferenceDb = useAtomValue(referenceDbAtom);
-  const lichessOptions = useAtomValue(lichessOptionsAtom);
-  const masterOptions = useAtomValue(masterOptionsAtom);
+  const lichessOptions = useExplorerGameDates(useAtomValue(lichessOptionsAtom), "month");
+  const masterOptions = useExplorerGameDates(useAtomValue(masterOptionsAtom), "year");
   const engines = useAtomValue(enginesAtom);
   const sessions = useAtomValue(sessionsAtom);
   const onlineDatabaseUpdates = useAtomValue(onlineDatabaseUpdatesAtom);
