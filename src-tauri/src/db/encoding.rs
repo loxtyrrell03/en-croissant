@@ -125,9 +125,8 @@ fn invalid_data(message: &str) -> Error {
 pub fn decode_game(moves_bytes: &[u8], initial_fen: Fen) -> Result<DecodedGame, Error> {
     let setup = initial_fen.into_setup();
     let castling_mode = CastlingMode::detect(&setup);
-    let root_position = Chess::from_setup(setup, castling_mode)
-        .or_else(PositionError::ignore_too_much_material)
-        .unwrap();
+    let root_position =
+        Chess::from_setup(setup, castling_mode).or_else(PositionError::ignore_too_much_material)?;
 
     let mut stack = vec![DecodeFrame {
         nodes: Vec::new(),
@@ -182,7 +181,11 @@ pub fn decode_game(moves_bytes: &[u8], initial_fen: Fen) -> Result<DecodedGame, 
                 let payload = &moves_bytes[cursor..cursor + len];
                 cursor += len;
 
-                let comment = String::from_utf8_lossy(payload).to_string();
+                let comment = std::str::from_utf8(payload)
+                    .map_err(|error| {
+                        invalid_data(&format!("Invalid UTF-8 in saved comment: {error}"))
+                    })?
+                    .to_string();
                 if let Some(frame) = stack.last_mut() {
                     frame.nodes.push(DecodedGameNode::Comment(comment));
                 }
@@ -200,7 +203,11 @@ pub fn decode_game(moves_bytes: &[u8], initial_fen: Fen) -> Result<DecodedGame, 
                 let payload = &moves_bytes[cursor..cursor + len];
                 cursor += len;
 
-                let nag = String::from_utf8_lossy(payload).to_string();
+                let nag = std::str::from_utf8(payload)
+                    .map_err(|error| {
+                        invalid_data(&format!("Invalid UTF-8 in saved annotation: {error}"))
+                    })?
+                    .to_string();
                 if let Some(frame) = stack.last_mut() {
                     frame.nodes.push(DecodedGameNode::Nag(nag));
                 }
@@ -350,6 +357,19 @@ mod tests {
     use super::*;
 
     use shakmaty::{Role, Square};
+
+    #[test]
+    fn decoder_rejects_invalid_starting_positions_without_panicking() {
+        let invalid = Fen::from_ascii(b"8/8/8/8/8/8/8/8 w - - 0 1").unwrap();
+        assert!(decode_game(&[], invalid).is_err());
+    }
+
+    #[test]
+    fn decoder_rejects_corrupt_utf8_in_comments_and_annotations() {
+        for marker in [COMMENT_MARKER, NAG_MARKER] {
+            assert!(decode_game(&[marker, 1, 0, 0xff], Fen::default()).is_err());
+        }
+    }
 
     #[test]
     fn test_encoding() {

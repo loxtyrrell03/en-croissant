@@ -4702,5 +4702,52 @@
     "throughputParityClaimed": false,
     "scope": "specific migration and position-hit optimization payloads only",
     "documentation": "docs/LEGACY_IMPORT_TARGET_REVIEW.md"
+  },
+  "pgnExportSafety": {
+    "noveltyRelated": [
+      "89af6af2"
+    ],
+    "status": "pgn-safety-source-verified-full-recovery-scope-open",
+    "actualOldNativeExportFailuresReproduced": 3,
+    "primaryFocusedNativeChecks": 44,
+    "cleanNativeLibraryChecks": 112,
+    "cleanExistingIgnoredHelpers": 2,
+    "nativeDatabaseChecksPerCheckout": 9,
+    "decoderChecksPerCheckout": 9,
+    "newNativeChecks": 19,
+    "frontendChecksPerCheckout": 21,
+    "frontendFiles": 3,
+    "newDesktopComponentChecks": 5,
+    "newPhoneComponentChecks": 3,
+    "types": true,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "normalNativeCommandCheck": true,
+    "existingNativeWarnings": 22,
+    "readOnlyIndependentConnection": true,
+    "readTransactionPinsLogicalSnapshot": true,
+    "sourceBusyTimeoutMillis": 250,
+    "unchangedTwoArgumentCommandContract": true,
+    "stagedFlushedSynchronizedPublication": true,
+    "existingDestinationContentMetadataPhysicalIdentityChecked": true,
+    "newDestinationNoClobber": true,
+    "sourceAndSidecarHardlinksProtected": true,
+    "badRowsMovesPositionsAndMetadataFailVisibly": true,
+    "decoderNoInvalidPositionPanicOrUtf8Replacement": true,
+    "desktopFailureRetryAndOriginalRequestOwnership": true,
+    "phoneCompletePgnBlobAndTemporaryUrlCleanup": true,
+    "phoneSyncTransportTagsPreserved": true,
+    "fullMutableAppStateRecoveryExportSatisfied": false,
+    "automaticArchiveOrOwnerProfileOperation": false,
+    "nativePackageVerified": false,
+    "phoneRuntimeChanged": false,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "remaining": [
+      "native package",
+      "phone serving-source reconciliation and delivery",
+      "rendered verification",
+      "whole-profile recovery/snapshot export evaluation"
+    ]
   }
 }

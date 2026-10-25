@@ -1,5 +1,5 @@
 import { Button, Group, Stack, Text, Textarea } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import type { WebDrawingBrush, WebGame, WebPrepLineMove } from "./model";
 import type { PhoneAnnotation } from "./phoneAnnotations";
@@ -24,14 +24,37 @@ export default function PhoneAnnotationBar({
 }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState((move?.comments ?? []).join("\n"));
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  useEffect(() => setDownloadError(null), [game?.id]);
   function download() {
     if (!game) return;
-    const url = URL.createObjectURL(new Blob([game.pgn], { type: "application/x-chess-pgn" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${game.white}-${game.black}.pgn`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    setDownloadError(null);
+    let url: string | undefined;
+    let anchor: HTMLAnchorElement | undefined;
+    try {
+      url = URL.createObjectURL(new Blob([game.pgn], { type: "application/x-chess-pgn" }));
+      anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${game.white}-${game.black}.pgn`;
+      anchor.hidden = true;
+      document.body.appendChild(anchor);
+      anchor.click();
+      const completed = url;
+      setTimeout(() => URL.revokeObjectURL(completed), 30000);
+    } catch (error) {
+      if (url) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          /* Keep the original download error. */
+        }
+      }
+      setDownloadError(
+        `Could not download PGN: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    } finally {
+      anchor?.remove();
+    }
   }
   return (
     <Stack gap={5}>
@@ -81,6 +104,11 @@ export default function PhoneAnnotationBar({
           </Button>
         )}
       </Group>
+      {downloadError && (
+        <Text size="xs" c="red" role="alert" style={{ overflowWrap: "anywhere" }}>
+          {downloadError}
+        </Text>
+      )}
       {drawing?.enabled && (
         <Group gap={5} wrap="wrap" aria-label="Drawing tools">
           {PHONE_DRAWING_BRUSHES.map((brush) => (
