@@ -30,7 +30,7 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | `b83200b5` | Use the defined lookup status colour token | settings-and-shell | Target evaluation required |
 | `3ab6cf2e` | Validate evaluation folders before changing the active path | local-data-and-recovery, settings-and-shell | Target evaluation required |
 | `d230b44f` | Ship reviewed compression notices in About and installer | settings-and-shell | Target evaluation required |
-| `f68a34de` | Replace blanket data clearing with recoverable appearance reset | settings-and-shell | Target evaluation required |
+| `f68a34de` | Replace blanket data clearing with recoverable appearance reset | settings-and-shell | Confirmed native source gap: Help Clear saved data calls localStorage.clear and sessionStorage.clear before reload. Safe appearance-only reset/undo and failure preservation need implementation; no owner data has been cleared |
 | `89af6af2` | Snapshot live databases and preserve recovery exports | local-data-and-recovery | Target evaluation required |
 | `a6014512` | Recover opening builds and preserve active database snapshots | local-data-and-recovery | Target evaluation required |
 | `065274f2` | Bound opening download stalls and validate archive resume | local-data-and-recovery | Target evaluation required |
@@ -54,3 +54,21 @@ do not copy the retained full evaluation corpus or recreate deleted datasets.
 Mac-only Finder/context/metadata checks, Novelty account identity and release-only
 payloads need explicit target-specific decisions, rather than whole-commit ports.
 Existing native/phone data helpers and active profile backing remain authoritative.
+
+## First confirmed follow-up
+
+Native src/routes/__root.tsx Help/clear_saved_data asks a broad confirmation,
+then clears all local/session storage and reloads. Novelty f68a34de replaces that
+same menu class with a precise appearance-key manifest, an undo record written
+before mutation, failure retention and ordinary workspace-preserving reload;
+92e6a372 adds reachable/error-safe modal actions. En should port those safeguards
+through its own atoms, menu and save lifecycle. Reproduce the current action with
+synthetic storage; do not invoke it against the owner's browser/app data. Map the
+exact En appearance/layout keys and native mirrors before choosing a manifest.
+This is a confirmed source gap, not an implemented fix or data-loss incident.
+
+The En native evaluation reader is different from Novelty's active-folder
+selector: commands use default_store_dir and database_status already separates
+manifest validation/missing/read errors. There is no matching Settings evaluation
+folder chooser in the inspected source. The builder/transfer/recovery candidates
+still require their own evaluation; absence of this chooser does not certify them.
