@@ -74,7 +74,14 @@ All48 related checks across seven files, full types and eight-file lint pass wit
 zero warnings/errors. The new focus fixture waits for the native dialog's delayed
 initial focus before testing action/error focus.
 
-Clean packaging is pending and tracked in the delivery JSON. The phone has no
+Clean source cfc2a7f3 passes499 selected checks/69 files and full types. Native
+packaging succeeds in2m53s with22 existing warnings. The exact App/reset,
+workspace-layout and BoardsPage compressed assets are embedded; all102 Stockfish
+engine/source resources match104581828 bytes, and eight owned product files match
+primary1635480b. Only two known generated outputs were restored, leaving clean
+source. The47868416-byte executable has SHA-256
+e66658c11e3e6f7c8eeab67527781f59925bc53fb74c14b30acae664ace606f2.
+See the delivery JSON for the compact receipt. The phone has no
 corresponding Help storage-wipe menu; its root-owned workspace writer is retained,
 and this native-only replacement requires no phone publication. Live phone source
 remains41668e2b. A fresh browser inventory still reports local browser use disabled
