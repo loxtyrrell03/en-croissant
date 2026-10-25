@@ -39,13 +39,15 @@ export async function startRunner(c){
   const writeStatus=()=>atomicJson(path.join(c.stateRoot,'status.json'),status);
   let pendingTick=null;
   const tick=()=>pendingTick??(pendingTick=serial(async()=>{
-    status={...status,phase:'syncing',errors:[]};await writeStatus();
+    status={...status,phase:'syncing',checking:'files',errors:[]};await writeStatus();
     try{
       validateConfig(c);
+      const started=Date.now();
       const files=await syncFiles({leftRoot:c.filesRoot,rightRoot:c.enFilesRoot,statePath:path.join(c.stateRoot,'files.json'),recovery:path.join(c.stateRoot,'recovery','files')});
-      const databases=await bridge.tick();await library.refresh();
+      const filesDone=Date.now();status={...status,checking:'databases'};await writeStatus();
+      const databases=await bridge.tick(),databasesDone=Date.now();status={...status,checking:'catalog'};await writeStatus();await library.refresh();
       const conflicts=[...files.conflicts.map(path=>({path,reason:'Changed in both apps'})),...databases.conflicts];
-      status={...status,revision:library.revision,phase:conflicts.length||databases.errors.length?'attention':'synced',lastSuccess:conflicts.length||databases.errors.length?status.lastSuccess:new Date().toISOString(),conflicts,errors:databases.errors,checkedAt:new Date().toISOString(),changedFiles:files.changed.length,changedGames:databases.changed};
+      status={...status,revision:library.revision,phase:conflicts.length||databases.errors.length?'attention':'synced',lastSuccess:conflicts.length||databases.errors.length?status.lastSuccess:new Date().toISOString(),conflicts,errors:databases.errors,checkedAt:new Date().toISOString(),changedFiles:files.changed.length,changedGames:databases.changed,timingsMs:{files:filesDone-started,databases:databasesDone-filesDone,catalog:Date.now()-databasesDone}};
     }catch(e){status={...status,phase:'attention',errors:[{error:e.message}],checkedAt:new Date().toISOString()};}
     await writeStatus();
   }).finally(()=>{pendingTick=null;}));

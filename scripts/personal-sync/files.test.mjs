@@ -52,3 +52,8 @@ test('an interrupted replacement restores recovery before interpreting absence a
  await assert.rejects(applyItem({root:f.rightRoot,relative:'g.pgn',expected:await readItem(f.rightRoot,'g.pgn'),next:await readItem(f.leftRoot,'g.pgn'),recovery:f.recovery,beforePublish:()=>{throw Error('simulated exit');}}),/simulated/);
  await syncFiles(f);assert.equal(await fs.readFile(path.join(f.rightRoot,'g.pgn'),'utf8'),'next');assert.equal(await fs.readFile(path.join(f.leftRoot,'g.pgn'),'utf8'),'next');
 });
+test('bounded parallel reads keep complete, stable file catalogues across scans',async t=>{
+ const f=await fixture(t);for(let i=0;i<40;i++)await fs.writeFile(path.join(f.leftRoot,`game-${i}.pgn`),`content ${i}`);
+ const first=await scan(f.leftRoot),second=await scan(f.leftRoot);assert.equal(first.size,40);assert.deepEqual([...first.keys()],[...second.keys()]);assert.deepEqual([...first.keys()],[...first.keys()].sort((a,b)=>a.localeCompare(b)));
+ await syncFiles({...f,initialize:true});assert.deepEqual([...await scan(f.rightRoot)].map(([p,v])=>[p,v.hash]),[...first].map(([p,v])=>[p,v.hash]));
+});

@@ -47,14 +47,18 @@ export async function scan(root) {
   await validateParents(root, 'probe');
   const result = new Map();
   const visit = async prefix => {
-    for (const entry of await fs.readdir(prefix ? contained(root, prefix) : root, { withFileTypes: true })) {
+    const entries=await fs.readdir(prefix ? contained(root, prefix) : root, { withFileTypes: true });
+    for(let offset=0;offset<entries.length;offset+=16){
+      const directories=await Promise.all(entries.slice(offset,offset+16).map(async entry=>{
       // Own staging files are not user content. Never ignore ordinary dotfiles.
-      if (/^\.personal-sync-[a-f0-9-]+\.pending$/.test(entry.name)) continue;
+      if (/^\.personal-sync-[a-f0-9-]+\.pending$/.test(entry.name)) return null;
       const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
       const item = await readItem(root, relative);
       if (!item) throw Error(`Directory changed during scan: ${relative}`);
       result.set(relative, item);
-      if (item.kind === 'directory') await visit(relative);
+      return item.kind==='directory'?relative:null;
+      }));
+      for(const directory of directories)if(directory)await visit(directory);
     }
   };
   await visit('');
@@ -64,7 +68,7 @@ export async function scan(root) {
     if (folded.has(normalized)) throw Error(`Case-colliding sync paths: ${key}`);
     folded.add(normalized);
   }
-  return result;
+  return new Map([...result].sort(([a],[b])=>a.localeCompare(b)));
 }
 
 export async function atomicJson(file, value) {
