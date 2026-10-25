@@ -173,11 +173,14 @@ fn help_text() -> String {
 Options:\n\
   --source <path>   Build from a local lichess_db_eval.jsonl.zst file\n\
   --url <url>       Build from a URL instead of the official Lichess eval dump\n\
-  --output <dir>    Output directory (default: app data lichess-cloud-evals)\n\
+  --output <dir>    New output directory; existing data is never replaced\n\
   --max-pvs <1-5>   Number of root moves/evals to store per position (default: 5)\n\
   --shards <n>      Number of binary shards (default: 2048)\n\
   --status          Print local store status and exit\n\
   --lookup-fen <fen> Look up one position in the local store and print JSON\n\
+\n\
+The default output is app data lichess-cloud-evals. If it exists, choose a new\n\
+directory with --output. Reuse the retained corpus instead of building a copy.\n\
 \n\
 Default URL: {}",
         default_source_url()
