@@ -119,7 +119,20 @@ Seventy-seven focused frontend checks across six files and whole types pass;
 the nine-file lint has one unchanged engine-options effect warning, no errors.
 The tests exercise actual Add engine controls with an unavailable remote catalog,
 dialog remount, cancellation, premature finished progress and save retry, plus
-the retained preference writer and ownership races. Clean regression/package
-verification and the individual remaining engine-management audit are ongoing.
-Browser control remains disabled. No native-window, browser-rendered or
-physical-device test is claimed.
+the retained preference writer and ownership races.
+
+Clean catalog source `10b440d8` independently passes all 655 related checks
+across 78 files and types. Its complete desktop build passes with 22 existing
+native warnings. The executable is 47,778,816 bytes, SHA-256
+`0e723b7150d18314d630a3a4da102338c2b5d008c2e8fcf309ea0b43dfb39c1b`.
+The exact catalog chunk, including Add/View installation/Cancel/save-retry
+controls, is embedded. All 102 copied engine resources still match the verified
+full source tree, and all twelve owned files apart from root notes match primary.
+Only task-generated build output was restored afterward; the clean checkout
+remains clean. The native Dev process and live phone/helper were not restarted
+for this catalog slice. Phone native-catalog parity is inapplicable; its WASM 19
+runtime remains the independently verified `89f64228` delivery.
+
+The remaining engine-management audit is ongoing. A fresh browser inventory
+still reports local browser use disabled in Work settings. No native-window,
+browser-rendered or physical-device test is claimed.

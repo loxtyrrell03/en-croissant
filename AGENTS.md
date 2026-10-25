@@ -1,126 +1,13 @@
-## Native Stockfish catalog controls (2026-10-25)
+## Native/phone engine parity contracts (2026-10-25)
 
-- Windows Add engine now exposes verified Stockfish 19 even when the remote catalog is offline. It reuses included/installed files or explicitly downloads, appends without changing the default, and preserves same-path custom profiles and colliding owner IDs. Module-owned operation state survives closing/reopening the dialog; Cancel holds ownership until native work settles and failed cancellation remains retryable. Added requires a successful retained profile flush/readback. Failed saves retry without downloading or re-adding a later removed profile.
-- Engine file progress is separate from saving, the stable launcher becomes View installation while busy, and read/save errors can retry inside the modal. Missing ratings are omitted; new LCZero offers have no hardware-independent Elo claim, while owner ratings remain. Download units are MiB. Stockfish native setup is Windows-specific; phone uses its existing managed WASM runtime. Existing LCZero/third-party install commands retain their separate flow and are not claimed cancellable by this slice.
-- Primary: 77 focused frontend checks/six files, full types and nine-file lint pass (one unchanged engine-options effect warning, no errors). Actual component checks cover offline Add engine, dialog remount, premature progress completion, cancellation and profile retry. Clean regression/package/rendered delivery remains; no service/profile manual migration is performed by this source milestone. See docs/NATIVE_STOCKFISH_19.md.
-
-## Verified native assets and live Stockfish 19 delivery (2026-10-25)
-
-- Clean 89f64228 passes 636 related frontend checks/77 files, types, the Tauri resource regression and the full desktop build (22 existing native warnings). All 102 bundled engine files match the authenticated full source tree; 26 owned files match primary. The canonical phone build passes in 23.21 s and is published with verified WebApp/WASM 19 hashes plus working workspace/library/tournament APIs. See docs/NATIVE_STOCKFISH_19.md and currentStockfish19Delivery in the delivery JSON.
-- Verified 19 software is installed in the durable shared Programs/Stockfish/19 location after unpackaged backing resolution. The existing PC helper selects it and returns actual Stockfish 19 legal bounded evidence over canonical HTTPS. Health does not warm workers. Old engines, owner profiles, active Dev sessions, helper data/LCZero modules, other configuration, task XML, Serve routes and enabled state are preserved. Startup profile migration is source behavior; an already-open session was not forced to reselect/restart.
-- For one-time unpackaged publication helpers, avoid a Tee-Object output pipeline: it can stay open after service startup. This wrapper was stopped alone after independent live checks, with the same serving process preserved; all temporary helper tasks are removed. The wrapper has no normal success-exit receipt. Manual catalog controls, remaining candidate evaluation, rendered desktop/phone and physical-device checks remain unfinished; browser control is disabled.
-
-## Stockfish resource-path repair (2026-10-25)
-
-- The clean desktop build exposed a Windows Tauri directory-mapping bug with absolute resource sources (copy-to-self sharing error). The stager now computes a manifest-relative source across the reused target junction. A real Tauri resource-iterator regression verifies the nested engine destination; it passes. The first clean build failed before native packaging; a corrected build remains required. The 636 related frontend checks/77 files and clean types passed before this build-only correction.
-
-## Native Stockfish 19 source milestone (2026-10-25)
-
-- Windows desktop builds now stage the SHA-256-pinned official universal x64/ARM64 release with full upstream source/licence/notices and merge its resource map with existing sounds. Use `scripts/build-desktop.mjs`; portable delivery needs the adjacent engine resource tree. Discovery is read-only and never warms an engine. The explicit installer authenticates bounded archives, rejects traversal/links, supports cancellation and preserves changed installs. See `docs/NATIVE_STOCKFISH_19.md`.
-- Idle startup upgrades only a compatible recognized older Stockfish fallback (or a missing store), retaining old profiles and explicit custom/empty/current/newer/network choices. UCI compatibility uses the pinned 19 option contract. Async edits, edit/revert, active/paused sessions and loaded-folder changes invalidate stale work. Completion follows an exact saved-profile hash; acknowledgement retry preserves later owner choices. These guards are not a cross-process lock.
-- Primary verification: 58 frontend checks/five files, ten native core checks, two build-target checks, whole types and twelve-file lint pass. Main/stager native check passes with 22 existing warnings. The authenticated x64 full tree is 104,581,828 bytes; real Stockfish 19 Low reports score 81 positions at depth eight in 571/580 ms, and eight live-output checks pass. ARM64 execution, clean packaged resources, manual catalog controls and live/rendered PC/phone delivery remain separate. No owner profile migration or service restart is claimed.
-
-## 2026-10-25 clean engine version routing verification
-
-- Primary cc5680bd and clean 54421267 match 27 owned profile/helper/phone files.
-  All 599 related frontend checks/76 files, full types, twelve-file routing lint
-  without warnings/errors and actual lite WASM checks pass. WebApp retains 25
-  existing warnings. Clean helper checks also pass with real native 18 and 19,
-  standby/review/performance and desktop/phone clients. Production desktop and
-  canonical-phone builds pass in 22.01/22.12s; both compiled
-  lite worker assets match pinned dependency bytes and exclude test fixtures.
-- The refreshed audit still has 580 Novelty candidates, now 453 En commits.
-  All 169 live Novelty remote branch heads match fetched refs. Candidate history
-  and hash parity are not requirement/delivery proof. See the active gap ledger
-  and docs/ENGINE_VERSION_ROUTING.md; native 19 install/catalog/defaults and
-  rendered/live delivery remain. No live helper, owner profile or hosting change.
-
-## 2026-10-25 phone Stockfish 19 source
-
-- Local phone live/Plans/report workers pin stockfish 19.0.1 and its matched
-  lite single-threaded JS/WASM pair. Identity comes from UCI for new lines,
-  reports and review exports. Legacy versioned evidence keeps its provenance;
-  missing identity uses generic Stockfish. Selection labels no longer assume
-  the PC helper's version. Existing *Stockfish18 exports are compatibility APIs.
-- Critical UCI/worker failures reject promptly and reset only their local
-  worker, allowing a fresh retry; cancelled/failed reports terminate their own
-  worker. All 76 focused phone checks, types, nine-file lint without warnings
-  or errors and the actual upstream lite WASM Node entry point pass (legal
-  White/Black depth-eight searches). See docs/ENGINE_VERSION_ROUTING.md.
-- This is source/component/WASM evidence, not rendered phone proof. Native 19
-  installation/catalog/defaults, clean combined builds and runtime publication
-  remain pending. Preserve the live helper root/task/ports and explicit On/Off.
-
-## 2026-10-25 shared engine identity
-
-- The PC helper learns each worker's UCI name at requested startup and sends it
-  before scores. Health reads leave workers stopped and show unknown identity
-  until that session; architecture/version are no longer hard-coded as 18/BMI2.
-  Exit clears identity and new processes learn their own options. Keep the
-  existing service ID/runtime root/task/ports as compatibility identities.
-- Isolated real Stockfish 19 passes bounded reports, cancellation and recovery
-  after strict invalid-position exit; existing Stockfish 18 also passes. Three
-  19/standby checks, seven 18/report/review/performance checks, 38 client checks
-  and three-file lint pass. See docs/ENGINE_VERSION_ROUTING.md. Test services use
-  owned temporary roots and loopback ports; the live helper was not warmed or
-  restarted. Native installation/defaults, WASM and runtime delivery remain.
-
-## 2026-10-25 clean engine preference verification
-
-- Clean delivery 9a37cc0b and primary 66ffb51d match all twelve owned engine
-  preference files. All 591 related frontend checks/75 files pass, including 21
-  focused checks; full types and twelve-file lint pass (one existing options
-  effect warning, no errors). Desktop/canonical-phone builds pass in 22.56/22.08s.
-- Preserve native profile identity, explicit empty/hidden/custom/newer choices
-  and pending saves. Version/default upgrades must wait for idle state and an
-  awaited write/flush before recording completion. See NATIVE_ENGINE_PREFERENCES.
-- Source/build verification only: no binary install, manual profile migration,
-  service change or phone/standalone publication. Stockfish 19/catalog/default
-  integration and rendered/runtime delivery remain in the active parity ledger.
-
-## 2026-10-25 native engine profile access errors
-
-- A failed engines.json read is a fresh store only when its parent directory
-  confirms no matching entry. Access errors cannot be hidden by a boolean
-  existence check or trigger discovery/replacement of saved profiles.
-- All 21 focused checks, full types and twelve-file lint pass (one existing
-  engine-options effect warning, no errors). The permission regression uses
-  synthetic IO; no owner profile, engine binary or service was changed.
-  Final clean combined verification and Stockfish 19 migration remain separate.
-
-## 2026-10-25 engine identity follow-up
-
-- Discovery matches an existing profile by normalized executable path. A reused
-  managed ID cannot repoint a different owner-selected install, and a newer saved
-  version cannot be downgraded. Saved labels/settings/visibility still win.
-- Three executable-identity/version cases join the passing 20-check focused
-  engine suite. The prior 587-check source/clean baseline remains separate until
-  the final combined recheck. No binary, service or manual profile migration was
-  changed. Stockfish 19 installation/default migration is still pending.
-
-## 2026-10-25 native engine preference safeguards
-
-- Native engines.json now has a dedicated strict reader and retained ordered
-  writer. Reads never normalize by rewriting; unreadable profiles remain intact
-  and a valid empty array is an explicit choice. Native saves stage/replace,
-  verify readback, retain failed snapshots across remount, detect observed
-  external changes and observe uncertain success before replaying a write.
-- Startup discovery waits for known preferences and no enabled/focus-paused
-  analysis or open Play tab; late owner edits/unmounts reject replies. Existing
-  labels, IDs, visibility, limits and tuning values win over discovered defaults.
-  The Engines page exposes load/save retry and a persistent error notification;
-  remote-name edits capture the value and original profile ID before awaiting.
-  See docs/NATIVE_ENGINE_PREFERENCES.md. This is not a cross-process file lock;
-  observed external conflicts stay pending for reconciliation.
-- UI engine-atom writes retain in-memory edits and publish errors. A caller that
-  needs durable confirmation must await the controller write/flush before any
-  upgrade completion marker. Do not reuse the tolerant generic JSON adapter for
-  engine profiles or infer a fresh install from an unreadable/empty saved list.
-- Seventeen focused checks and 587 related frontend checks/75 files pass, as do
-  full types. Twelve-file lint has one existing engine-options effect warning,
-  zero errors. No Rust or engine binary changed; no manual profile migration or
-  service restart was performed. Clean delivery verification, Stockfish 19/
-  catalog/default migration, rendered interaction and publication remain.
+- Windows desktop builds use scripts/build-desktop.mjs to authenticate pinned Stockfish 19 universal x64/ARM64 releases and retain complete source/licence/notices. Resource sources must be manifest-relative: Tauri's Windows mapper strips absolute drive prefixes and can copy onto the source. The real resource-parser regression passes. Portable delivery requires the adjacent full engine tree; discovery never downloads or warms workers. Keep changed installs and old engines.
+- Engine preferences distinguish confirmed absence, valid empty/custom profiles and unreadable data. Ordered writes retain immutable failed snapshots, compare saved bytes and verify readback. Loaded directory identity prevents redirection into another folder. Preserve extra/newer fields, custom IDs/paths/visibility/tuning, and manual choices; this is not a cross-process lock. See docs/NATIVE_ENGINE_PREFERENCES.md.
+- The one-time native default upgrade only promotes a compatible recognized older Stockfish fallback (or a missing store), defers enabled/paused analysis and Play, and rejects replies after real/async/edit-revert ownership changes. Unsupported/custom networks/options remain explicit choices. The separate immutable completion marker follows a valid exact saved-profile hash; marker retry cannot repeat selection or overwrite later manual choices.
+- Windows Add engine exposes the pinned 19 card even when the remote catalog fails. It appends a disabled profile without changing the default, preserves existing executable identities, and retains operation ownership through dialog/route close and cancellation. Added requires durable profile flush/readback; failed saves retry without downloading/re-adding. The stable launcher becomes View installation. File percentages are scoped separately from saving; missing ratings are omitted and new LCZero offers make no hardware-independent Elo claim. Existing LCZero/third-party commands retain their separate setup flow, with no cancellation claim from this Stockfish slice.
+- Clean catalog source 10b440d8 matches twelve owned primary files and passes 655 related frontend checks/78 files, full types, nine-file lint (one existing engine-options effect warning), and the complete native build (22 existing warnings). Its exact catalog chunk is embedded; all 102 bundled files match the verified 104,581,828-byte full engine tree. Source/package proof and hashes are in docs/NATIVE_STOCKFISH_19.md and the delivery JSON. A fresh browser inventory is still disabled, so native-window/rendered 320/390px/touch and physical-phone proof remain outstanding.
+- The verified 19 full tree is installed under the durable shared Programs/Stockfish/19 location after unpackaged backing resolution. The existing PC helper selects it while retaining Stockfish18Server/service/task identity, ports, other configuration, data-reader/LCZero modules, Serve routes and owner enabled state. Actual canonical HTTPS reports identify Stockfish 19 and legal exact bounded evidence; health reads keep workers stopped and identity unavailable until requested UCI. Worker exit clears identity. Phone source 89f64228 is live with pinned stockfish@19.0.1 lite JS/WASM, matching shell/assets and successful workspace/library/tournament reads. Native catalog changes are inapplicable to that managed WASM surface. Historical 18 evidence is not relabelled 19; legacy *Stockfish18 API names remain compatibility names. No owner profile file or active Dev session was manually migrated/restarted.
+- One-time unpackaged publication helpers must avoid Tee-Object output pipelines, which can remain open after service startup. The prior wrapper was stopped alone after independent live checks with the same server preserved; all temporary helper tasks were removed. It has no normal success-exit receipt. No live service restart was needed for the catalog slice. Use current version/hash/data APIs as delivery evidence and preserve the canonical route contract.
+- The full recent-change audit remains active. Newly isolated follow-ups are bundled logo/custom-image fallback, local-engine validation lifetime/error handling, and automatic plan-arrow priority/persistent hover ownership; see docs/NOVELTY_SYNC_GAPS_2026-10-24.md. Do not treat the 55 engine-management candidates or whole goal as completed from green catalog checks.
 
 ## 2026-10-25 clean phone dates and refreshed history audit
 
