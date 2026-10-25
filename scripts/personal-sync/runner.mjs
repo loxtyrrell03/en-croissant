@@ -33,7 +33,7 @@ export async function startRunner(c){
   const codec=new JsonLineProcess(c.codec),native=new JsonLineProcess(c.native);
   const bridge=new DatabaseSyncBridge({library:c.library,enRoot:c.enRoot,ledger:path.join(c.stateRoot,'database-ledger.sqlite'),codec,native,recoveryRoot:path.join(c.stateRoot,'recovery','databases'),canMove:isEnClosed,referencePaths:c.referencePaths??[]});
   if(bridge.source.prepare("SELECT value FROM meta WHERE key='files.root'").get()?.value.replaceAll('\\','/').toLowerCase()!==c.filesRoot.replaceAll('\\','/').toLowerCase())throw Error('Novelty Dev selected a different Files folder');
-  const library=new PersonalLibrary({bridge,filesRoot:c.filesRoot,recoveryRoot:path.join(c.stateRoot,'recovery','phone-files'),id:c.id});
+  const library=new PersonalLibrary({bridge,filesRoot:c.filesRoot,recoveryRoot:path.join(c.stateRoot,'recovery','phone-files'),id:c.id,referenceDatabases:c.referenceDatabases??[]});
   let status={enabled:true,id:c.id,phase:'starting',lastSuccess:null,conflicts:[],errors:[]},queue=Promise.resolve(),closed=false;
   const serial=work=>{const next=queue.then(work);queue=next.catch(()=>{});return next;};
   const writeStatus=()=>atomicJson(path.join(c.stateRoot,'status.json'),status);

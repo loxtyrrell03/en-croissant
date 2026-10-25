@@ -72,7 +72,12 @@ export async function atomicJson(file, value) {
   const staged = `${file}.${randomUUID()}.pending`;
   const handle = await fs.open(staged, 'wx');
   try { await handle.writeFile(JSON.stringify(value)); await handle.sync(); } finally { await handle.close(); }
-  await fs.rename(staged, file);
+  // Windows readers/antivirus can briefly deny replacement of the ledger.
+  // Retry the same durable staging file without discarding the old baseline.
+  for(let attempt=0;;attempt++){
+    try{await fs.rename(staged,file);break;}
+    catch(error){if(!['EPERM','EACCES','EBUSY'].includes(error.code)||attempt>=20)throw error;await new Promise(resolve=>setTimeout(resolve,Math.min(500,25*2**attempt)));}
+  }
 }
 
 async function restoreIndependentCopy(before,file){

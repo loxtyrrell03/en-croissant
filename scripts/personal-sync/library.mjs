@@ -25,7 +25,7 @@ export function readReference(ref){
 }
 
 export class PersonalLibrary {
-  constructor({bridge,filesRoot,recoveryRoot,id='local'}){this.bridge=bridge;this.filesRoot=filesRoot;this.recoveryRoot=recoveryRoot;this.id=id;this.version='';this.catalog=null;this.stamps=new Map();this.revision='';}
+  constructor({bridge,filesRoot,recoveryRoot,id='local',referenceDatabases=[]}){this.bridge=bridge;this.filesRoot=filesRoot;this.recoveryRoot=recoveryRoot;this.id=id;this.referenceDatabases=referenceDatabases;this.version='';this.catalog=null;this.stamps=new Map();this.revision='';}
   async refresh(){
     const files=await scan(this.filesRoot),db=this.bridge.source;
     const version=String(db.prepare("SELECT value FROM meta WHERE key='data_version'").get()?.value??'0');
@@ -71,7 +71,7 @@ export class PersonalLibrary {
     const scope=url.searchParams.get('scope'),relative=url.searchParams.get('path')??'';
     if(scope==='directory')return listHostedLibraryDirectory(this.catalog.index,relative);
     if(scope==='recursive')return getHostedLibraryScope(this.catalog.index,relative);
-    return{...this.catalog.manifest,databases:[...this.catalog.byCollection.values()].map(c=>({type:'database',path:c.hostedPath,name:c.name,label:[c.folder,c.name].filter(Boolean).join(' / '),gameCount:c.gameCount,sizeBytes:0,lastModified:c.lastModified,latestDate:null}))};
+    return{...this.catalog.manifest,databases:[...[...this.catalog.byCollection.values()].map(c=>({type:'database',path:c.hostedPath,name:c.name,label:[c.folder,c.name].filter(Boolean).join(' / '),gameCount:c.gameCount,sizeBytes:0,lastModified:c.lastModified,latestDate:null})),...this.referenceDatabases.map(c=>({...c,readOnly:true}))]};
   }
   async raw(relative){
     if(relative.startsWith(`__personal/${this.id}/`))relative=relative.slice(`__personal/${this.id}/`.length);
