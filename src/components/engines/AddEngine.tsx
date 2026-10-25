@@ -4,7 +4,6 @@ import {
   Button,
   Center,
   Group,
-  Image,
   Loader,
   Modal,
   Paper,
@@ -34,6 +33,7 @@ import { usePlatform } from "@/utils/files";
 import { unwrap } from "@/utils/unwrap";
 import ProgressButton from "../common/ProgressButton";
 import EngineForm from "./EngineForm";
+import { EngineLogo } from "./EngineLogo";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
 import { StockfishCatalogCard } from "./StockfishCatalogCard";
 
@@ -325,11 +325,9 @@ function EngineCard({
   return (
     <Paper withBorder radius="md" p={0} key={engine.name}>
       <Group wrap="nowrap" gap={0} grow>
-        {engine.image && (
-          <Box w="1.75rem" px="xs">
-            <Image src={engine.image} alt={engine.name} fit="contain" />
-          </Box>
-        )}
+        <Box p="xs" style={{ flexShrink: 0 }}>
+          <EngineLogo engine={engine} />
+        </Box>
         <Box p="sm" flex={1}>
           <Text tt="uppercase" c="dimmed" fw={700} size="xs">
             ENGINE
