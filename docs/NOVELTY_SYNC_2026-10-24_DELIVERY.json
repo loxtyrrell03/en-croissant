@@ -34,79 +34,16 @@
     "libraryComparisonNote": "Live manifest generatedAt is volatile. Original preflight retained only the complete hash, so normalized before/after contents are not claimed; repeated post-deploy content is stable."
   },
   "desktop": {
-    "exeBytes": 47864320,
-    "exeSha256": "f59f4aeef9e9330d9da95e0935729e26f23c319a9467bc8fbdeaac79d3134ccc",
+    "exeBytes": 47868416,
+    "exeSha256": "a675f637362c1706c70ace1de92f7b4ba569430d0b356c8e3594bbdc6e2cfd78",
     "assets": [
       {
-        "name": "api-SBngmEyW.js",
-        "bytes": 9491,
-        "sha256": "b0663f80dd5d50b59e6d62641cfd62196f45d6d5cdf5a10a5384e64771f89bd2",
+        "name": "EnginesPage-CwQw21mI.js",
+        "bytes": 87472,
+        "sha256": "3665b013f62bd3e712f43d3937e43756be4712e65c3d4620f3751d8a3be12cb8",
         "encoding": "brotli",
-        "compressedBytes": 3653,
-        "compressedSha256": "8cc4809fe356d9134e912cf56859888e77932460da67f22d447d4ea032082358",
-        "embedded": true
-      },
-      {
-        "name": "EvalListener-3UPOaN7K.js",
-        "bytes": 85397,
-        "sha256": "94188ab46f4de0bcd0ec20198e16ee0c8b5280564cd0df2368c48b2dcaa25208",
-        "encoding": "brotli",
-        "compressedBytes": 29426,
-        "compressedSha256": "a8d83407ec3b2e085ea0b89b5e92158052357a9150cc9610cab3fcf9cde9f784",
-        "embedded": true
-      },
-      {
-        "name": "BestMoves-Bsxqaj28.js",
-        "bytes": 17557,
-        "sha256": "7c6a3e57507a813f8af159808dd4101b073ff8b00ad230913f10b9b834be0917",
-        "encoding": "brotli",
-        "compressedBytes": 6678,
-        "compressedSha256": "052ea98495ade8009e7797d70f9d1dffa363510fa714612b94fbe8256770eea1",
-        "embedded": true
-      },
-      {
-        "name": "EnginePanelContent-CrsQvrmm.js",
-        "bytes": 15315,
-        "sha256": "fac4ec6602a88db3067e4a736a37bec3819d5527a4b80bdd829cc0f01558bac1",
-        "encoding": "brotli",
-        "compressedBytes": 6186,
-        "compressedSha256": "c498ef7407313d319547af795e700c0ab1166a4d9710c6299bc11918c4b8ad8b",
-        "embedded": true
-      },
-      {
-        "name": "WebApp-DmbGQ-hQ.js",
-        "bytes": 411156,
-        "sha256": "30c417e312659e9b5886ca7b015691c18f7b9583cab78d4fdab029d46666911d",
-        "encoding": "brotli",
-        "compressedBytes": 117485,
-        "compressedSha256": "16353f1069aec431709368f6deae7edee3b9fd8e7087898cfcc9f5624ad12e39",
-        "embedded": true
-      },
-      {
-        "name": "BoardAnalysis-B1tyC2Gg.js",
-        "bytes": 25439,
-        "sha256": "a3337156bde6b4139f5cfbae83657aed3a3521bf1ffb6e7190f0238106e23c36",
-        "encoding": "brotli",
-        "compressedBytes": 8333,
-        "compressedSha256": "72eb381c9fa3aa8f6c0bc1eb342bcad172a5bd0eae131ef792642fb65dfadd65",
-        "embedded": true
-      },
-      {
-        "name": "PlanExplorerPanel-nFDtcB2Q.js",
-        "bytes": 37117,
-        "sha256": "31fd77d79d7295729ae2e4bb95c37a966630cfb0af608dfff5638ac7d73ad0ba",
-        "encoding": "brotli",
-        "compressedBytes": 12441,
-        "compressedSha256": "a705865e06764a8b045cc405e0c76296178b64f24aa4d9b2b5cda34b4988d951",
-        "embedded": true
-      },
-      {
-        "name": "EnginePlanExplorerPanel-CWveD1jZ.js",
-        "bytes": 47709,
-        "sha256": "9b720f33a672a4e90f50b25b538988e20f160a520179ac115455674319325baf",
-        "encoding": "brotli",
-        "compressedBytes": 15070,
-        "compressedSha256": "16d11be1dbe415e3ccb528b1a8be3c08e5fe8c2b480a6ec97dada7eacd588b0c",
+        "compressedBytes": 44325,
+        "compressedSha256": "9aa9fa97d73268957aa3d583eef8037f1e9812b871b1b73703c75261ac71be30",
         "embedded": true
       }
     ],
@@ -114,7 +51,7 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "18e8c74e712170a6916c177b29658d7b645bdfcc",
+    "sourceCommit": "e386a802179d3487e8fe16a7160fe1d059dd5e99",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
   },
@@ -1206,9 +1143,25 @@
       "lintFiles": 7,
       "lintWarnings": 0,
       "lintErrors": 0,
-      "cleanBuildVerified": false,
+      "cleanBuildVerified": true,
       "phoneApplicable": false,
-      "phoneProductionChanges": false
+      "phoneProductionChanges": false,
+      "cleanSourceCommit": "e386a802179d3487e8fe16a7160fe1d059dd5e99",
+      "cleanTests": 633,
+      "cleanTestFiles": 85,
+      "nativeArtifactUpdated": true
+    },
+    "scorePillColours": {
+      "novelty": "53dfe445",
+      "status": "native-behavior-already-present-phone-native-presentation-retained",
+      "native": "chess.rs parse_uci_attrs/invert_score makes White-relative values; ScoreBubble already uses light/black surfaces for positive/negative values, including mate. WDL uses separate labelled White/draw/Black segments.",
+      "phone": "Approved Analysis A uses text evaluations rather than advantage-coloured pills. engineScore/stockfishEngine normalizes side-to-move scores to White; webCompanion tests cover Black cp and mate signs. Do not invent a new palette or pill interface just to copy Novelty CSS."
+    },
+    "phoneStoredEvaluationValidation": {
+      "novelty": "c2760248",
+      "status": "confirmed-phone-source-gap-baseline-not-yet-run",
+      "native": "Local lookup hashes the requested four-field FEN and returns bounded numeric Rust fields; native sign/perspective flow remains separate.",
+      "phone": "webLichessCloudDataToLines maps raw FEN/score/PV input without position matching or finite-score checks; stockfishEngine caches that result. Prep stored responses also enter raw conversion. Reproduce mismatched FEN, malformed score and same-FEN recovery before fixing the shared boundary."
     }
   },
   "storedEvaluationParity": {
@@ -1246,7 +1199,7 @@
     "nativeArtifactUpdated": true,
     "hostingRoutesChanged": false,
     "ownerEnabledChoicePreserved": true,
-    "latestNativeArtifactSource": "18e8c74e712170a6916c177b29658d7b645bdfcc"
+    "latestNativeArtifactSource": "e386a802179d3487e8fe16a7160fe1d059dd5e99"
   },
   "currentStoredEvaluationPackages": {
     "native": {
@@ -1566,6 +1519,43 @@
     "bundledFiles": 102,
     "bundledBytes": 104581828,
     "matchingOwnedFiles": 7,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9"
+  },
+  "currentCatalogInstallationPackage": {
+    "exeBytes": 47868416,
+    "exeSha256": "a675f637362c1706c70ace1de92f7b4ba569430d0b356c8e3594bbdc6e2cfd78",
+    "assets": [
+      {
+        "name": "EnginesPage-CwQw21mI.js",
+        "bytes": 87472,
+        "sha256": "3665b013f62bd3e712f43d3937e43756be4712e65c3d4620f3751d8a3be12cb8",
+        "encoding": "brotli",
+        "compressedBytes": 44325,
+        "compressedSha256": "9aa9fa97d73268957aa3d583eef8037f1e9812b871b1b73703c75261ac71be30",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "e386a802179d3487e8fe16a7160fe1d059dd5e99",
+    "primaryCommit": "a43114f757f7288b8155f5f8fb8986119770e09e",
+    "cleanTests": 633,
+    "cleanTestFiles": 85,
+    "types": true,
+    "lintFiles": 7,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedFiles": 10,
     "restoredGeneratedOutputs": [
       "scripts/generated/otb-prep-database.js",
       "scripts/generated/shared-review-service.js"

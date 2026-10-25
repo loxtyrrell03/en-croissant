@@ -49,3 +49,16 @@ without warnings/errors. No real large download or full corpus test is needed.
 Clean delivery/build and rendered checks are recorded separately in the sync
 delivery JSON. Source fixtures do not establish narrow rendered or native-window
 verification; browser control remains disabled in Work settings.
+
+
+Clean source `e386a802` independently passes 633 related checks across 85 files,
+full types and the native release build (22 existing warnings, 2m55s Cargo).
+The complete engine-page chunk contains the retained card/controller code,
+matches its exact Brotli asset and is embedded in the executable. All 102
+engine/source files (104,581,828 bytes) and ten owned committed files match.
+The executable is 47,868,416 bytes, SHA-256
+`a675f637362c1706c70ace1de92f7b4ba569430d0b356c8e3594bbdc6e2cfd78`.
+Only two known generated outputs were restored; the delivery checkout is clean.
+Fresh browser inventory still reports disabled local browser use, so no narrow
+rendered/native-window proof is claimed. The live phone remains `41f60e91`;
+this desktop installer surface does not change its production behavior.
