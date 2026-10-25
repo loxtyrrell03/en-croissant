@@ -1836,5 +1836,39 @@
     "sourceCommit": "e386a802179d3487e8fe16a7160fe1d059dd5e99",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
+  },
+  "appearanceResetParity": {
+    "novelty": [
+      "f68a34de",
+      "92e6a372"
+    ],
+    "status": "native-source-fixed-clean-package-pending",
+    "keys": [
+      "board-style",
+      "piece-set",
+      "board-image",
+      "font-size",
+      "board-manual-size",
+      "boardWorkspaceLayout"
+    ],
+    "beforeMutationBackupReadback": true,
+    "rawAndAbsentValuesRetained": true,
+    "pendingDragValuesRetained": true,
+    "otherSettingsAndWorkspacePreserved": true,
+    "noDocumentReload": true,
+    "syntheticBaselineConsequences": 3,
+    "newTests": 11,
+    "relatedTests": 48,
+    "relatedFiles": 7,
+    "types": true,
+    "lintFiles": 8,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "phoneApplicable": false,
+    "phoneProductionChanges": false,
+    "cleanPackagingVerified": false,
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "ownerDataReset": false
   }
 }

@@ -40,7 +40,7 @@ import { ClearTabsButton } from "./ClearTabsButton";
 import ConfirmChangesModal from "./ConfirmChangesModal";
 import { platform } from "@tauri-apps/plugin-os";
 import { useNavigate } from "@tanstack/react-router";
-import { atomWithDebouncedStorage } from "@/state/store/debouncedLocalStorage";
+import { workspaceLayoutAtom, type WorkspaceLayoutState } from "@/state/store/workspaceLayout";
 import classes from "./BoardsPage.module.css";
 
 const BoardAnalysis = lazy(() => import("../boards/BoardAnalysis"));
@@ -358,21 +358,6 @@ export default function BoardsPage() {
     </>
   );
 }
-
-interface WorkspaceLayoutState {
-  rightWidthPercent: number;
-  topRightHeight: number | null;
-  bottomRightHeight: number | null;
-}
-
-// Debounced storage: this atom is written on every pointermove while dragging
-// the pane dividers, and a synchronous localStorage write per event stutters
-// the drag.
-const workspaceLayoutAtom = atomWithDebouncedStorage<WorkspaceLayoutState>("boardWorkspaceLayout", {
-  rightWidthPercent: 54,
-  topRightHeight: null,
-  bottomRightHeight: null,
-});
 
 const MIN_LEFT_WIDTH = 360;
 const MIN_RIGHT_WIDTH = 420;

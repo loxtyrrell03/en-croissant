@@ -167,3 +167,10 @@ release build with22 existing warnings, five exact embedded chunks and all102
 Stockfish/source resources. Native controls and phone parser are included; source
 is clean after restoring only two generated outputs. Live phone remains41668e2b.
 The additional38 source candidates and rendered verification remain open.
+
+Novelty f68a34de/92e6a372 native appearance reset is now source-fixed: exact six-key
+backup/readback/reset/restore instead of Help's blanket local/session clear and
+reload. Existing atoms update without unloading the workspace; pending drags and
+failed backups/restores remain safe and retryable.48 related checks/seven files,
+full types and warning-free eight-file lint pass. Clean package/rendered proof
+remains; phone has no matching Help wipe menu. See APPEARANCE_RESET.md.

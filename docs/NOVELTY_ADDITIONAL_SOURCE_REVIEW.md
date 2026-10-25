@@ -30,11 +30,11 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | `b83200b5` | Use the defined lookup status colour token | settings-and-shell | Target evaluation required |
 | `3ab6cf2e` | Validate evaluation folders before changing the active path | local-data-and-recovery, settings-and-shell | Target evaluation required |
 | `d230b44f` | Ship reviewed compression notices in About and installer | settings-and-shell | Target evaluation required |
-| `f68a34de` | Replace blanket data clearing with recoverable appearance reset | settings-and-shell | Confirmed native source gap: Help Clear saved data calls localStorage.clear and sessionStorage.clear before reload. Safe appearance-only reset/undo and failure preservation need implementation; no owner data has been cleared |
+| `f68a34de` | Replace blanket data clearing with recoverable appearance reset | settings-and-shell | Native source implemented: exact six-key reset/undo, verified backup before mutation, retained failures, current atom updates and accessible retry.48 related checks/seven files/types/lint pass; clean packaging/rendered proof pending. See APPEARANCE_RESET.md |
 | `89af6af2` | Snapshot live databases and preserve recovery exports | local-data-and-recovery | Target evaluation required |
 | `a6014512` | Recover opening builds and preserve active database snapshots | local-data-and-recovery | Target evaluation required |
 | `065274f2` | Bound opening download stalls and validate archive resume | local-data-and-recovery | Target evaluation required |
-| `92e6a372` | Handle reset failures and keep dialog actions reachable | settings-and-shell | Target evaluation required |
+| `92e6a372` | Handle reset failures and keep dialog actions reachable | settings-and-shell | Native source implemented: exact six-key reset/undo, verified backup before mutation, retained failures, current atom updates and accessible retry.48 related checks/seven files/types/lint pass; clean packaging/rendered proof pending. See APPEARANCE_RESET.md |
 | `7128c5ed` | Recover evaluation downloads after app termination | local-data-and-recovery, settings-and-shell | Target evaluation required |
 | `08f4dfe3` | Show account sign-out for Outpost owners | settings-and-shell | Target evaluation required |
 | `2a083a83` | Add bounded optional evaluation database builder | local-data-and-recovery | Target evaluation required |
@@ -55,17 +55,13 @@ Mac-only Finder/context/metadata checks, Novelty account identity and release-on
 payloads need explicit target-specific decisions, rather than whole-commit ports.
 Existing native/phone data helpers and active profile backing remain authoritative.
 
-## First confirmed follow-up
+## Appearance reset source milestone
 
-Native src/routes/__root.tsx Help/clear_saved_data asks a broad confirmation,
-then clears all local/session storage and reloads. Novelty f68a34de replaces that
-same menu class with a precise appearance-key manifest, an undo record written
-before mutation, failure retention and ordinary workspace-preserving reload;
-92e6a372 adds reachable/error-safe modal actions. En should port those safeguards
-through its own atoms, menu and save lifecycle. Reproduce the current action with
-synthetic storage; do not invoke it against the owner's browser/app data. Map the
-exact En appearance/layout keys and native mirrors before choosing a manifest.
-This is a confirmed source gap, not an implemented fix or data-loss incident.
+The confirmed native Help storage-wipe gap is now fixed in source, using En's own
+atoms and compact dialog. Exact raw undo, failed-write retention, pending drag
+ownership and immediate runtime updates replace broad clears/reload. See
+APPEARANCE_RESET.md for keys, states and verification; package/rendered delivery
+remains separate. No owner storage was reset. Other rows remain active candidates.
 
 The En native evaluation reader is different from Novelty's active-folder
 selector: commands use default_store_dir and database_status already separates

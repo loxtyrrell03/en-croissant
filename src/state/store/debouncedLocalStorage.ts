@@ -10,6 +10,18 @@ import { atomWithStorage, createJSONStorage } from "jotai/utils";
 const DEBOUNCE_MS = 500;
 const pendingWrites = new Map<string, string>();
 
+/** Include a pending drag value when taking a scoped preference snapshot. */
+export function readBufferedStorageItem(key: string): string | null {
+    return pendingWrites.get(key) ?? localStorage.getItem(key);
+}
+
+/** Finish only this key synchronously; a later drag flush cannot undo it. */
+export function writeBufferedStorageItem(key: string, value: string | null): void {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+    pendingWrites.delete(key);
+}
+
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 let flushHandlersBound = false;
 
