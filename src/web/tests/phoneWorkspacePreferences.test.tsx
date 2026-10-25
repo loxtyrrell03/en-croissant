@@ -23,7 +23,17 @@ vi.mock("../stockfishEngine", () => ({
   releaseWebPcEngine: vi.fn(async () => {}),
 }));
 
-it("persists actual phone Flip, Database and independent Prep sources through file switches and remount", async () => {
+type PhoneWorkspaceFixture = {
+  host: HTMLDivElement;
+  parsed: ReturnType<typeof parsePgnDatabase>;
+  other: ReturnType<typeof parsePgnDatabase>;
+  settle: () => Promise<void>;
+  remount: () => Promise<void>;
+};
+
+// Keep the default per-test deadline; these are independent real-component
+// workflows, rather than one nearly-five-second combined round trip.
+async function withPhoneWorkspace(check: (fixture: PhoneWorkspaceFixture) => Promise<void>) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal(
     "ResizeObserver",
@@ -48,12 +58,12 @@ it("persists actual phone Flip, Database and independent Prep sources through fi
   const other = parsePgnDatabase("Other invented file", "1. c4 e5 *", 2);
   other.database.hostedFilePath = "C:/Lessons/Other.pgn";
   await webStateSession.load();
-  webStateSession.setState((state) => ({
-    ...state,
+  webStateSession.setState(() => ({
+    ...createEmptyWebState(),
     databases: [parsed.database, other.database],
     gamesByDatabase: { [parsed.database.id]: parsed.games, [other.database.id]: other.games },
     board: {
-      ...state.board,
+      ...createEmptyWebState().board,
       annotationOwnerId: "first",
       sourceDatabaseId: parsed.database.id,
       sourceGameId: parsed.games[0].id,
@@ -75,6 +85,30 @@ it("persists actual phone Flip, Database and independent Prep sources through fi
       await settle();
       expect(host.querySelector('[aria-label="Flip board"]')).not.toBeNull();
     });
+    await check({
+      host,
+      parsed,
+      other,
+      settle,
+      remount: async () => {
+        await act(async () => root.unmount());
+        root = createRoot(host);
+        await act(async () => root.render(<WebApp />));
+      },
+    });
+  } finally {
+    await act(async () => root.unmount());
+    await act(async () => {
+      await webStateSession.flush();
+    });
+    host.remove();
+    localStorage.clear();
+    vi.unstubAllGlobals();
+  }
+}
+
+it("persists actual phone Flip through games in one file and root remount", async () => {
+  await withPhoneWorkspace(async ({ host, parsed, settle, remount }) => {
     await act(async () =>
       host.querySelector<HTMLButtonElement>('[aria-label="Flip board"]')!.click(),
     );
@@ -100,14 +134,17 @@ it("persists actual phone Flip, Database and independent Prep sources through fi
     );
     await settle();
     expect(host.querySelector(".orientation-black")).not.toBeNull();
-    await act(async () => root.unmount());
-    root = createRoot(host);
-    await act(async () => root.render(<WebApp />));
+    await remount();
     await vi.waitFor(async () => {
       await settle();
       expect(host.querySelector(".orientation-black")).not.toBeNull();
     });
     expect(webStateSession.getSnapshot().state.board.line).toEqual(webGameToLine(parsed.games[1]));
+  });
+});
+
+it("retains independent actual Database and Prep source choices across files, modes and panels", async () => {
+  await withPhoneWorkspace(async ({ host, other, settle }) => {
     const fileKey = phoneWorkspaceKey(webStateSession.getSnapshot().state);
     const click = async (selector: string) =>
       act(async () => {
@@ -199,13 +236,5 @@ it("persists actual phone Flip, Database and independent Prep sources through fi
       await webStateSession.flush();
     });
     expect(host.textContent).not.toContain("This view could not open");
-  } finally {
-    await act(async () => root.unmount());
-    await act(async () => {
-      await webStateSession.flush();
-    });
-    host.remove();
-    localStorage.clear();
-    vi.unstubAllGlobals();
-  }
+  });
 });

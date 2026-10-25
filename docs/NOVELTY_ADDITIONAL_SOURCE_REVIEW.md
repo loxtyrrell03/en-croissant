@@ -11,7 +11,7 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | --- | --- | --- | --- |
 | `158ccf01` | Make panel wheel motion continuous with small frame steps | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean cbbff3b8 native package and canonical HTTPS phone are verified with exact assets/resources/data/routes and actual bounded Stockfish19; rendered proof remains. See PANEL_SCROLLING.md |
 | `77e5c052` | Fix mouse-wheel smoothing across all scroll surfaces | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean cbbff3b8 native package and canonical HTTPS phone are verified with exact assets/resources/data/routes and actual bounded Stockfish19; rendered proof remains. See PANEL_SCROLLING.md |
-| `e8914f49` | Retain Finder PGN requests until the workspace is ready | settings-and-shell | Confirmed native source gap: single-instance callback ignores args/cwd and only reveals main window; frontend reads CLI only at initial startup. Retained PGN-open readiness/queue baseline and port pending; preserve native file ownership. Mac delivery separate |
+| `e8914f49` | Retain Finder PGN requests until the workspace is ready | settings-and-shell | Native source fixed: retained argv/second-instance queue with sender cwd, subscribe-before-take readiness, serialized/cancellable protected opening and visible batch failures. Old actual callback loses synthetic batch; current callback passes. Five native/14 new frontend checks and531 related checks/76 files/types/lint pass independently. Package/rendered and Mac delivery remain separate; see NATIVE_SHELL_PGN_OPEN.md |
 | `974725a1` | Share Tauri context to fix duplicate Mac test metadata | other-native-and-app-review | Specific duplicate-context Mac test defect absent: En has one generate_context invocation in main.rs. No additional macro/factory or Mac build claim needed |
 | `882830ac` | Replace sun-like settings icon with a gear | settings-and-shell | Already present: native Sidebar and phone controls use Tabler IconSettings gear; no foreign SVG/artwork replacement needed. Source evidence, no new rendered claim |
 | `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean cbbff3b8 native package and canonical HTTPS phone are verified with exact assets/resources/data/routes and actual bounded Stockfish19; rendered proof remains. See PANEL_SCROLLING.md |
@@ -81,10 +81,10 @@ Phone touch scrolling is independent; evaluate wheel input without adding touch
 interception. Native/phone production hooks and behavioral fixtures remain.
 
 Novelty e8914f49 also retains second-instance paths until a workspace subscribes.
-En main.rs currently ignores args/cwd in its single-instance callback; App reads
-getMatches only in startup. Its Mac-only Finder part is not the whole shared
-payload. Next: synthetic argument/readiness/batch/lifetime baseline, then a native
-retained queue and frontend subscription through En's own openFile/source guards.
+En's confirmed args/cwd gap is now fixed through its own retained native queue
+and cancellable protected openFile path, after actual old-callback and queue/
+readiness/batch/lifetime fixtures. The target-cfg Mac Opened source also feeds the
+queue, with Mac build/runtime proof still separate from Windows verification.
 No user file was opened or existing app restarted for this source inspection.
 
 En already uses Tabler settings gears, has one Tauri context macro invocation,

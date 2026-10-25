@@ -2287,5 +2287,67 @@
       "manualRetry": false,
       "causalAttribution": "Not established; no completed-review claim."
     }
+  },
+  "nativeShellPgnOpenParity": {
+    "novelty": [
+      "e8914f49"
+    ],
+    "status": "native-source-and-independent-clean-checks-verified-package-pending",
+    "initialAndSecondInstanceRetained": true,
+    "senderWorkingDirectoryPreserved": true,
+    "subscribeBeforeTake": true,
+    "notificationOnly": true,
+    "startupReadinessGuard": true,
+    "serialFrontendOwnership": true,
+    "cancelledReadsCannotCommit": true,
+    "existingProtectedSourceIdentity": true,
+    "failureVisibleAndBatchContinues": true,
+    "newFrontendChecks": 14,
+    "nativeQueueChecks": 5,
+    "actualCallbackControl": {
+      "oldLostBatchFailure": true,
+      "newSenderBatchPass": true,
+      "syntheticOnly": true
+    },
+    "primaryRelatedTests": 531,
+    "cleanRelatedTests": 531,
+    "relatedFiles": 76,
+    "types": true,
+    "lintFiles": 8,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeCommandCheck": true,
+    "existingNativeWarnings": 22,
+    "packageVerified": false,
+    "phone": {
+      "behavior": "Separate browser/server transport unchanged; existing opening/persistence regressions pass.",
+      "publishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+      "publicationRequiredForNativeShellQueue": false
+    },
+    "macOS": {
+      "sourceOpenedEventRouted": true,
+      "runtimeVerified": false,
+      "packaged": false
+    },
+    "phoneFixture": {
+      "initialRuns": {
+        "passed": 529,
+        "failed": 1,
+        "cause": "Existing combined preference fixture exceeded default5s deadline."
+      },
+      "unchangedSourceControlMs": 4554,
+      "splitAssertionsBefore": 17,
+      "splitAssertionsAfter": 17,
+      "defaultDeadlineRetained": true,
+      "isolatedSplitMs": [
+        1181,
+        3300
+      ]
+    },
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "shellAssociationInteractionVerified": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false
   }
 }

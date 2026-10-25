@@ -40,7 +40,7 @@ use log::LevelFilter;
 #[cfg(debug_assertions)]
 use specta_typescript::{BigIntExportBehavior, Typescript};
 use sysinfo::SystemExt;
-use tauri::{AppHandle, Manager, Runtime, WebviewWindow, Window};
+use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Window};
 use tauri_plugin_log::{Target, TargetKind};
 
 use crate::chess::{
@@ -94,8 +94,29 @@ use en_croissant_fork::local_eval::{
     self, LocalEvalBuildProgress, LocalEvalBuildReport, LocalEvalBuildRequest, LocalEvalDbStatus,
     LocalLichessCloudEval,
 };
+use en_croissant_fork::shell_open::{open_paths_from_args, PendingShellOpenPaths};
 use std::sync::atomic::AtomicBool;
 use tokio::sync::Semaphore;
+
+#[tauri::command]
+#[specta::specta]
+fn take_shell_open_paths(
+    state: tauri::State<'_, PendingShellOpenPaths>,
+) -> Result<Vec<String>, String> {
+    state.take()
+}
+
+fn queue_shell_open_paths(app: &AppHandle, paths: Vec<String>) {
+    if paths.is_empty() {
+        return;
+    }
+    if let Err(error) = app.state::<PendingShellOpenPaths>().enqueue(paths) {
+        log::warn!("Could not retain requested PGN files: {error}");
+        return;
+    }
+    // Subscribe before draining; a notification never owns the paths.
+    let _ = app.emit("shell://open-paths", ());
+}
 
 #[derive(Derivative)]
 #[derivative(Default)]
@@ -162,6 +183,7 @@ fn main() {
     let specta_builder = tauri_specta::Builder::new()
         .commands(tauri_specta::collect_commands!(
             close_splashscreen,
+            take_shell_open_paths,
             study_resources::open_study_resource,
             get_best_moves,
             lookup_local_lichess_cloud_eval,
@@ -310,8 +332,12 @@ fn main() {
     ];
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
             reveal_main_window(app);
+            queue_shell_open_paths(
+                app,
+                open_paths_from_args(&args, Some(std::path::Path::new(&cwd))),
+            );
         }))
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -354,10 +380,27 @@ fn main() {
 
             Ok(())
         })
+        .manage(PendingShellOpenPaths::from_args(
+            &std::env::args().collect::<Vec<_>>(),
+            std::env::current_dir().ok().as_deref(),
+        ))
         .manage(AppState::default())
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app, event| {
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Opened { ref urls } = event {
+                let paths = urls
+                    .iter()
+                    .filter_map(|url| url.to_file_path().ok())
+                    .filter_map(|path| {
+                        en_croissant_fork::shell_open::normalize_open_path(
+                            &path.to_string_lossy(), None,
+                        )
+                    })
+                    .collect();
+                queue_shell_open_paths(app, paths);
+            }
             if let tauri::RunEvent::ExitRequested { .. } = event {
                 let state = app.state::<AppState>();
                 for entry in state.engine_processes.iter() {

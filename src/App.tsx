@@ -15,7 +15,6 @@ import {
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { getMatches } from "@tauri-apps/plugin-cli";
 import { listen } from "@tauri-apps/api/event";
 import { attachConsole, error as logError, info, warn } from "@tauri-apps/plugin-log";
 import { getDefaultStore, useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -26,7 +25,6 @@ import { useEnsureDesktopEngines } from "@/hooks/useEnsureDesktopEngines";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
-  activeTabAtom,
   boardStyleAtom,
   databaseConversionStateAtom,
   fontSizeAtom,
@@ -39,7 +37,6 @@ import {
   storedDocumentDirAtom,
   storedEnginesDirAtom,
   storedPuzzlesDirAtom,
-  tabsAtom,
   telemetryEnabledAtom,
 } from "./state/atoms";
 
@@ -58,7 +55,7 @@ import "mantine-datatable/styles.css";
 import "@/styles/global.css";
 
 import { commands, events } from "./bindings";
-import { openFile } from "./utils/files";
+import { useNativePgnOpening } from "@/hooks/useNativePgnOpening";
 
 const STALE_DOWNLOAD_CONVERSION_MS = 2 * 60 * 1000;
 const STALE_DATABASE_CONVERSION_MS = 20 * 60 * 1000;
@@ -415,8 +412,7 @@ function preloadAppFeatureChunks() {
 
 function useAppStartup() {
   const initialized = useRef(false);
-  const [, setTabs] = useAtom(tabsAtom);
-  const [, setActiveTab] = useAtom(activeTabAtom);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -447,19 +443,7 @@ function useAppStartup() {
       if (telemetryEnabled) {
         posthog.capture("app_started", { version: await getVersion() });
       }
-      try {
-        const matches = await getMatches();
-        if (matches.args.file.occurrences > 0) {
-          info(`Opening file from command line: ${matches.args.file.value}`);
-          if (typeof matches.args.file.value === "string") {
-            const file = matches.args.file.value;
-            openFile(file, setTabs, setActiveTab);
-          }
-        }
-      } catch (e) {
-        warn(`Failed to parse CLI args: ${e}`);
-      }
-
+      setReady(true);
       window.setTimeout(() => void preloadReferenceDb(store), 3000);
 
       return detach;
@@ -473,7 +457,8 @@ function useAppStartup() {
     return () => {
       if (detachFn) detachFn();
     };
-  }, [setTabs, setActiveTab]);
+  }, []);
+  return ready;
 }
 
 function useStopInteractiveEnginesWhenInactive() {
@@ -518,7 +503,8 @@ export default function App() {
   );
   const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
 
-  useAppStartup();
+  const startupReady = useAppStartup();
+  useNativePgnOpening(startupReady);
   useSharedLichessSession();
   useStopInteractiveEnginesWhenInactive();
   useEnsureDesktopEngines();

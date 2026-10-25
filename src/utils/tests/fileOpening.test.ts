@@ -81,3 +81,20 @@ it("keeps hydrated clock edits in memory with the original source identity", asy
     expect(request.initialState).toMatchObject({ dirty: true, root: { comment: "Added clocks" } });
     expect(request.gameOrigin).toMatchObject({ sourceIdentity: "native-id" });
 });
+
+it("does not start a protected read for an already cancelled shell owner", async () => {
+    const owner = new AbortController(); owner.abort();
+    await expect(openFile("C:\\games.pgn", () => {}, () => {}, { signal: owner.signal })).rejects.toMatchObject({ name: "AbortError" });
+    expect(pgnFiles.read).not.toHaveBeenCalled(); expect(createTab).not.toHaveBeenCalled();
+});
+
+it("cancellation during the actual protected read prevents tab and recent-file commits", async () => {
+    let finish!: (snapshot: Awaited<ReturnType<typeof pgnFiles.read>>) => void;
+    vi.mocked(pgnFiles.read).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const owner = new AbortController();
+    const pending = openFile("C:\\games.pgn", () => {}, () => {}, { signal: owner.signal });
+    owner.abort();
+    finish({ pgn: "Captured source", identity: "native-id", index: 0, gameCount: 1 });
+    await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+    expect(createTab).not.toHaveBeenCalled();
+});
