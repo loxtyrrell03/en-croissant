@@ -9,12 +9,12 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 
 | Novelty | Candidate | Refreshed area | Evaluation |
 | --- | --- | --- | --- |
-| `158ccf01` | Make panel wheel motion continuous with small frame steps | settings-and-shell | Confirmed source feature gap with 77e5c052/7bbe5984: En has no global bounded wheel interpolation. Synthetic baseline and native/phone hook adaptation pending; preserve board wheel navigation, editable targets and touch/reduced motion |
-| `77e5c052` | Fix mouse-wheel smoothing across all scroll surfaces | settings-and-shell | Same wheel-controller family as158ccf01; retain SVG/document/nested-boundary and small-delta behavior when adapting. No implementation or rendered wheel claim yet |
+| `158ccf01` | Make panel wheel motion continuous with small frame steps | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and527 related checks/70 files/types/lint/style guards pass. Clean builds/publication/rendered proof pending; see PANEL_SCROLLING.md |
+| `77e5c052` | Fix mouse-wheel smoothing across all scroll surfaces | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and527 related checks/70 files/types/lint/style guards pass. Clean builds/publication/rendered proof pending; see PANEL_SCROLLING.md |
 | `e8914f49` | Retain Finder PGN requests until the workspace is ready | settings-and-shell | Confirmed native source gap: single-instance callback ignores args/cwd and only reveals main window; frontend reads CLI only at initial startup. Retained PGN-open readiness/queue baseline and port pending; preserve native file ownership. Mac delivery separate |
 | `974725a1` | Share Tauri context to fix duplicate Mac test metadata | other-native-and-app-review | Specific duplicate-context Mac test defect absent: En has one generate_context invocation in main.rs. No additional macro/factory or Mac build claim needed |
 | `882830ac` | Replace sun-like settings icon with a gear | settings-and-shell | Already present: native Sidebar and phone controls use Tabler IconSettings gear; no foreign SVG/artwork replacement needed. Source evidence, no new rendered claim |
-| `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | Initial wheel-controller payload, superseded by77e5c052/158ccf01. Evaluate/port latest behavior as one native/phone feature, not three independent fixes |
+| `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and527 related checks/70 files/types/lint/style guards pass. Clean builds/publication/rendered proof pending; see PANEL_SCROLLING.md |
 | `d9acb4d0` | Remove requested migration header comment | local-data-and-recovery | Comment-only/provenance edit; actual diff changes no decoder behavior. Preserve En source/provenance rather than copy a Novelty header deletion |
 | `76c93459` | Default downloads to Full and add compact cloud evaluations | settings-and-shell | Target evaluation required |
 | `df7bd865` | Recognize existing downloaded Lichess stores | settings-and-shell | Target evaluation required |
@@ -91,3 +91,11 @@ En already uses Tabler settings gears, has one Tauri context macro invocation,
 and needs no behavior port for a requested Novelty-only source-comment deletion.
 The Windows IPC override remains a separate active evaluation, including its
 Tauri serialization/message-key contract; it was not silently copied or dismissed.
+
+## Scrolling source milestone
+
+The latest wheel family is now implemented, rather than left as a source gap.
+Actual native/phone boot ownership, En's wheel-navigation wrapper and independent
+touch/editor paths are covered by the new motion/DOM/entry fixtures. See
+PANEL_SCROLLING.md; clean package/runtime and rendered verification remain separate.
+Other additional-source rows retain their own target-evaluation status.

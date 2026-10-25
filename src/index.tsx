@@ -2,6 +2,8 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import i18n from "i18next";
 import { createRoot } from "react-dom/client";
+import { useEffect, type ComponentType } from "react";
+import { installPanelScrolling } from "@/utils/panelScrolling";
 import { initReactI18next } from "react-i18next";
 
 import en_US from "./translation/en-US.json";
@@ -108,6 +110,11 @@ async function loadWebRoot() {
   return await import("./web/WebApp");
 }
 
+function ApplicationRoot({ component: Component }: { component: ComponentType }) {
+  useEffect(installPanelScrolling, []);
+  return <Component />;
+}
+
 async function renderRoot() {
   const isTauriRuntime =
     typeof window !== "undefined" && Boolean((window as TauriWindow).__TAURI_INTERNALS__);
@@ -118,7 +125,7 @@ async function renderRoot() {
   ]);
   const Root = module.default;
 
-  root.render(<Root />);
+  root.render(<ApplicationRoot component={Root} />);
 }
 
 void renderRoot().catch((error: unknown) => {

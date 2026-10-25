@@ -181,3 +181,10 @@ assets are embedded; all102 engine/source resources and eight owned files match.
 Only two known generated outputs restored; checkout clean. No owner reset or
 native-window/phone restart was performed. Live phone remains41668e2b; browser
 rendered checks and the other additional-source candidates remain open.
+
+Panel wheel family7bbe5984/77e5c052/158ccf01 now shares the latest bounded/subpixel
+motion through the actual native/phone root lifetime. En main-board marker and
+CG/editor/control exclusions preserve domain wheel gestures; touch stays native.
+Two old-entry failures reproduced;25 new checks join527 related checks/70 files,
+full types, six-file lint0 and three root-style guards. Clean builds/runtime and
+rendered verification remain; see PANEL_SCROLLING.md.
