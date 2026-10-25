@@ -3615,9 +3615,8 @@
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
     "remaining": [
-      "persistent folder activation",
-      "approved Settings A UI",
-      "native packaging for subsequent backends"
+      "native packaging for subsequent backends and UI",
+      "rendered verification"
     ],
     "packageSource": "f33263de887f2a2a496eda4753288a1722586220",
     "primarySource": "4a3eb4a629ea65ce280ba8275a08ebf7dfeb4337",
@@ -4220,7 +4219,7 @@
     }
   },
   "nativeEvaluationDataDesign": {
-    "status": "direction-A-selected-recovery-and-reviewed-download-backends-source-verified-folder-ui-pending",
+    "status": "direction-A-implemented-and-source-verified-package-rendered-pending",
     "selected": "A - Settings row + dialogs",
     "ownerSelected": true,
     "alternativesPresented": 3,
@@ -4231,7 +4230,7 @@
     "svgXmlParsed": true,
     "textWidthsMeasuredAgainstNativeFont": true,
     "rasterPreviewsVisuallyReviewed": true,
-    "runtimeUiImplemented": false,
+    "runtimeUiImplemented": true,
     "browserRenderedApp": false,
     "phoneNewBuilderProposed": false,
     "runtimeChanged": false,
@@ -4275,10 +4274,9 @@
     "nativePackageVerified": false,
     "renderedAppVerified": false,
     "remaining": [
-      "validated persistent source folder",
-      "approved Settings A UI",
       "native packaging and rendered verification"
-    ]
+    ],
+    "laterUiSourceVerified": "docs/EVALUATION_DATA_SELECTION.md"
   },
   "nativeReviewedEvaluationDownload": {
     "sourceSnapshot": "7128c5ed",
@@ -4324,9 +4322,65 @@
     "nativePackageVerified": false,
     "renderedAppVerified": false,
     "remaining": [
-      "validated persistent source activation",
-      "approved Settings A controls",
       "native packaging and rendered verification"
+    ],
+    "laterUiSourceVerified": "docs/EVALUATION_DATA_SELECTION.md"
+  },
+  "nativeEvaluationSourceSelection": {
+    "novelty": [
+      "3ab6cf2e",
+      "209593ff"
+    ],
+    "status": "explicit-folder-selection-and-approved-A-ui-source-verified-package-pending",
+    "primaryAndSeparateDeliveryCheckout": true,
+    "nativeLibraryTestsPerCheckout": 101,
+    "newSourceTests": 12,
+    "focusedFrontendTestsPerCheckout": 48,
+    "frontendTestFiles": 8,
+    "types": true,
+    "nativeCommandRegistryCheck": true,
+    "existingNativeWarnings": 22,
+    "scopedLintErrors": 0,
+    "existingScopedLintWarnings": 1,
+    "cliCompatibilityCases": 15,
+    "cliSha256": "e4f20088752498e476b01e4d76ed26eae6fc7b96c8870ab064d8b2ee854fef6b",
+    "preference": "profile/evaluation-source.sqlite3",
+    "expectedRevisionTransaction": true,
+    "candidateTtlSeconds": 900,
+    "candidateRecheckedBeforeCommit": true,
+    "manifestReadLimitBytes": 1048576,
+    "decodedShardReadLimitBytes": 67108864,
+    "sparseBucketLayoutsSupported": true,
+    "sampleNotFullCorpusValidation": true,
+    "sameSizeSameMtimeSampleChangeDetected": true,
+    "oldStoredReadsAndDisplaysRejected": true,
+    "uciOwnershipPreserved": true,
+    "explicitUseAfterCompletedBuild": true,
+    "lostStartAcknowledgementNotReplayed": true,
+    "lastStatusRetainedOnReadError": true,
+    "realRetainedStoreReadonlyCompatibility": {
+      "positionsAdvertised": 401283893,
+      "populatedShards": 1024,
+      "bucketCount": 2048,
+      "decodedSampleBytes": 32187260,
+      "startingPositionStoredDepth": 65,
+      "startingPositionStoredCp": 19,
+      "fullCorpusScan": false,
+      "copied": false,
+      "preferenceWritten": false,
+      "helperTaskRemoved": true
+    },
+    "phoneServiceRepointed": false,
+    "automaticDefaultDiscoveryAdded": false,
+    "nativePackageVerified": false,
+    "browserRenderedApp": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "remaining": [
+      "native package verification",
+      "rendered narrow/help interaction",
+      "default-discovery and explicit reset audit",
+      "other directory actions audit"
     ]
   }
 }

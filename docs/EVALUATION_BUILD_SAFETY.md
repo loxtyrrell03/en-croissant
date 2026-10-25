@@ -49,4 +49,4 @@ is historical proof of that earlier slice. EVALUATION_BUILD_RECOVERY.md records
 the subsequent native journal, process lease and guarded recovery commands.
 The reviewed acquisition backend is source-verified in
 EVALUATION_DOWNLOAD_REVIEW.md. Persistent source activation and the approved
-data-management UI remain separate work.
+A data-management UI are now source-verified in EVALUATION_DATA_SELECTION.md.

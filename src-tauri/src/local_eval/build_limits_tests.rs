@@ -93,6 +93,9 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
         specta_typescript::export::<LocalEvalBuildReport>(&config).unwrap(),
         specta_typescript::export::<LocalEvalBuildJob>(&config).unwrap(),
         specta_typescript::export::<LocalEvalDownloadReview>(&config).unwrap(),
+        specta_typescript::export::<LocalEvalSourceSelection>(&config).unwrap(),
+        specta_typescript::export::<LocalEvalSourceCandidate>(&config).unwrap(),
+        specta_typescript::export::<LocalEvalSourceChanged>(&config).unwrap(),
     ];
     let actual = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -108,6 +111,9 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
         "LocalEvalBuildReport",
         "LocalEvalBuildJob",
         "LocalEvalDownloadReview",
+        "LocalEvalSourceSelection",
+        "LocalEvalSourceCandidate",
+        "LocalEvalSourceChanged",
     ]
     .into_iter()
     .zip(generated)
@@ -165,6 +171,29 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
     let limited: LocalEvalBuildRequest =
         serde_json::from_value(serde_json::json!({"diskLimitGib":32})).unwrap();
     assert_eq!(limited.disk_limit_gib, Some(32));
+    let source = (specta::function::collect_functions![
+        crate::local_eval::get_local_eval_source_selection,
+        crate::local_eval::validate_local_eval_source,
+        crate::local_eval::activate_local_eval_source
+    ])(&mut types);
+    assert_eq!(source[0].name(), "get_local_eval_source_selection");
+    assert_eq!(source[0].args().count(), 0);
+    assert_eq!(source[1].name(), "validate_local_eval_source");
+    assert_eq!(
+        source[1]
+            .args()
+            .map(|arg| arg.0.clone())
+            .collect::<Vec<_>>(),
+        ["path", "expected_revision"]
+    );
+    assert_eq!(source[2].name(), "activate_local_eval_source");
+    assert_eq!(
+        source[2]
+            .args()
+            .map(|arg| arg.0.clone())
+            .collect::<Vec<_>>(),
+        ["token"]
+    );
     let recovery = (specta::function::collect_functions![
         crate::local_eval::get_local_eval_build_job,
         crate::local_eval::discard_local_eval_build_job

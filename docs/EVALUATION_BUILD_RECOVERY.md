@@ -51,9 +51,9 @@ corruption, stale cleanup IDs, unknown entries, Windows junctions and locked
 files/directories. No full archive, retained corpus or owner profile is copied,
 built or cleaned by these tests.
 
-This is a native recovery backend and command milestone. The approved
+This records the native recovery backend and command milestone. The approved
 [Settings row and dialogs](design/evaluation-data/README.md) and validated
-persistent folder selection remain subsequent work. The reviewed acquisition
+persistent folder selection are now source-verified in EVALUATION_DATA_SELECTION.md. The reviewed acquisition
 backend is now source-verified in EVALUATION_DOWNLOAD_REVIEW.md. The phone
 companion has no on-device corpus builder; its installed readers and hosted
 service remain unchanged. Source/CLI proof is separate from native packaging,

@@ -18,15 +18,20 @@ mod build_control;
 mod build_directory;
 mod build_recovery;
 mod download;
+mod source;
+mod source_selection;
 pub use build::build_compact_eval_database_controlled;
 pub use build_control::{LocalEvalBuildControl, DEFAULT_BUILD_DISK_LIMIT_BYTES};
 pub use build_recovery::{
     build_compact_eval_database_recoverable, discard_build_job, get_build_job, LocalEvalBuildJob,
 };
 pub use download::LocalEvalDownloadReview;
+pub use source::LocalEvalSourceCandidate;
+pub use source_selection::LocalEvalSourceSelection;
 use tauri_specta::Event;
 
 const FORMAT_VERSION: u16 = 2;
+const FORMAT_NAME: &str = "en-croissant-lichess-eval-compact";
 const ROOT_ONLY_FORMAT_VERSION: u16 = 1;
 const DEFAULT_SHARD_COUNT: u16 = 2048;
 const DEFAULT_MAX_PVS: u8 = 5;
@@ -182,8 +187,11 @@ struct LocalEvalManifest {
     shard_count: u16,
     max_pvs: u8,
     positions: u64,
+    #[serde(default)]
     skipped: u64,
+    #[serde(default)]
     source: String,
+    #[serde(default)]
     built_at: u64,
     complete: bool,
 }
@@ -230,6 +238,7 @@ struct CompactRecord {
 
 #[derive(Default)]
 struct ShardCache {
+    generation: u64,
     entries: HashMap<PathBuf, Arc<Vec<u8>>>,
     order: VecDeque<PathBuf>,
     bytes: usize,
@@ -239,22 +248,101 @@ static SHARD_CACHE: Lazy<Mutex<ShardCache>> = Lazy::new(|| Mutex::new(ShardCache
 
 #[tauri::command]
 #[specta::specta]
-pub fn lookup_local_lichess_cloud_eval(
+pub async fn lookup_local_lichess_cloud_eval(
     fen: String,
     multipv: Option<u8>,
     app: tauri::AppHandle,
 ) -> Result<Option<LocalLichessCloudEval>, String> {
-    let dir = default_store_dir(&app).map_err(String::from)?;
-    lookup_eval(&dir, &fen, multipv.unwrap_or(1)).map_err(String::from)
+    let profile = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
+    tokio::task::spawn_blocking(move || {
+        let selected = source_selection::read(&profile)?;
+        let result = lookup_eval(Path::new(&selected.path), &fen, multipv.unwrap_or(1))
+            .map_err(String::from)?;
+        if source_selection::read(&profile)? != selected {
+            return Err("The evaluation source changed during this lookup. Try again.".into());
+        }
+        Ok(result)
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_local_lichess_eval_db_status(
+pub async fn get_local_lichess_eval_db_status(
     app: tauri::AppHandle,
 ) -> Result<LocalEvalDbStatus, String> {
-    let dir = default_store_dir(&app).map_err(String::from)?;
-    Ok(database_status(&dir))
+    let profile = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
+    tokio::task::spawn_blocking(move || source::status(&profile))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[derive(Debug, Clone, Serialize, Type, tauri_specta::Event)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalEvalSourceChanged {
+    pub selection: LocalEvalSourceSelection,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_local_eval_source_selection(
+    app: tauri::AppHandle,
+) -> Result<LocalEvalSourceSelection, String> {
+    let profile = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
+    tokio::task::spawn_blocking(move || source_selection::read(&profile))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn validate_local_eval_source(
+    path: String,
+    expected_revision: String,
+    app: tauri::AppHandle,
+) -> Result<LocalEvalSourceCandidate, String> {
+    let profile = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
+    tokio::task::spawn_blocking(move || {
+        source::validate(&profile, Path::new(&path), &expected_revision)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn activate_local_eval_source(
+    token: String,
+    app: tauri::AppHandle,
+) -> Result<LocalEvalSourceSelection, String> {
+    let profile = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
+    let selection = tokio::task::spawn_blocking(move || source::activate(&profile, &token))
+        .await
+        .map_err(|error| error.to_string())??;
+    if let Err(error) = (LocalEvalSourceChanged {
+        selection: selection.clone(),
+    })
+    .emit(&app)
+    {
+        log::warn!("Could not broadcast evaluation source change: {error}");
+    }
+    Ok(selection)
 }
 
 #[tauri::command]
@@ -339,7 +427,10 @@ pub async fn review_local_eval_download(
 
 #[tauri::command]
 #[specta::specta]
-pub async fn start_local_eval_download(token: String, app: tauri::AppHandle) -> Result<String, String> {
+pub async fn start_local_eval_download(
+    token: String,
+    app: tauri::AppHandle,
+) -> Result<String, String> {
     let root = app
         .path()
         .app_data_dir()
@@ -585,6 +676,11 @@ fn validate_shard_count(shard_count: u16) -> Result<u16, LocalEvalError> {
 }
 
 fn validate_manifest(manifest: &LocalEvalManifest) -> Result<(), LocalEvalError> {
+    if manifest.format != FORMAT_NAME {
+        return Err(LocalEvalError::InvalidDatabase(
+            "unsupported evaluation format".into(),
+        ));
+    }
     if !manifest.complete {
         return Err(LocalEvalError::InvalidDatabase(
             "manifest says build is incomplete".to_string(),
@@ -1032,7 +1128,15 @@ fn read_manifest(dir: &Path) -> Result<Option<LocalEvalManifest>, LocalEvalError
     if !path.try_exists()? {
         return Ok(None);
     }
-    let data = fs::read_to_string(path)?;
+    let mut data = String::new();
+    File::open(path)?
+        .take(1024 * 1024 + 1)
+        .read_to_string(&mut data)?;
+    if data.len() > 1024 * 1024 {
+        return Err(LocalEvalError::InvalidDatabase(
+            "evaluation manifest exceeds 1 MiB".into(),
+        ));
+    }
     Ok(Some(serde_json::from_str(&data)?))
 }
 
@@ -1075,23 +1179,23 @@ fn directory_size(dir: &Path) -> Result<u64, LocalEvalError> {
 }
 
 fn load_shard(path: &Path) -> Result<Arc<Vec<u8>>, LocalEvalError> {
-    if let Some(bytes) = SHARD_CACHE
-        .lock()
-        .expect("local eval shard cache poisoned")
-        .entries
-        .get(path)
-        .cloned()
-    {
-        return Ok(bytes);
-    }
+    let generation = {
+        let cache = SHARD_CACHE.lock().expect("local eval shard cache poisoned");
+        if let Some(bytes) = cache.entries.get(path) {
+            return Ok(bytes.clone());
+        }
+        cache.generation
+    };
 
-    let file = File::open(path)?;
-    let mut decoder = zstd::Decoder::new(BufReader::new(file))?;
-    let mut bytes = Vec::new();
-    decoder.read_to_end(&mut bytes)?;
-    let bytes = Arc::new(bytes);
+    let bytes = Arc::new(read_shard_bytes(path, build_control::MAX_SHARD_BYTES)?);
 
     let mut cache = SHARD_CACHE.lock().expect("local eval shard cache poisoned");
+    if cache.generation != generation {
+        return Ok(bytes);
+    }
+    if let Some(current) = cache.entries.get(path) {
+        return Ok(current.clone());
+    }
     if bytes.len() <= SHARD_CACHE_MAX_BYTES {
         cache.bytes += bytes.len();
         cache.order.push_back(path.to_path_buf());
@@ -1109,11 +1213,26 @@ fn load_shard(path: &Path) -> Result<Arc<Vec<u8>>, LocalEvalError> {
     Ok(bytes)
 }
 
+fn read_shard_bytes(path: &Path, limit: u64) -> Result<Vec<u8>, LocalEvalError> {
+    let decoder = zstd::Decoder::new(BufReader::new(File::open(path)?))?;
+    let mut bytes = Vec::new();
+    decoder
+        .take(limit.saturating_add(1))
+        .read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > limit {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "evaluation shard exceeds its {limit} byte read bound"
+        )));
+    }
+    Ok(bytes)
+}
+
 fn clear_shard_cache() {
     let mut cache = SHARD_CACHE.lock().expect("local eval shard cache poisoned");
     cache.entries.clear();
     cache.order.clear();
     cache.bytes = 0;
+    cache.generation = cache.generation.wrapping_add(1);
 }
 
 fn ingest_progress(bytes_read: u64, total_bytes: Option<u64>) -> f32 {

@@ -9,6 +9,8 @@ import {
 } from "@/state/atoms";
 import { enginePreferences } from "@/utils/enginePreferences";
 import type { Engine } from "@/utils/engines";
+import { evaluationSourceEpochAtom } from "@/state/evaluationSource";
+import { getEvaluationSourceEpoch, noteEvaluationSourceRevision } from "@/utils/evaluationSource";
 
 const io = vi.hoisted(() => ({ disk: "[]" }));
 vi.mock("@/utils/enginePreferences", async () => {
@@ -113,6 +115,36 @@ it("hides the stored local score fallback without hiding engine or explicit clou
         });
         expect(store.get(currentLiveEvalAtom)?.score).toEqual(line().score);
     } finally {
+        unsubscribe();
+    }
+});
+
+it("drops previous-store lines and rejects their late writes while retaining UCI evidence", async () => {
+    const { store, unsubscribe } = await setup();
+    const stop = store.sub(evaluationSourceEpochAtom, () => {});
+    try {
+        const epoch = getEvaluationSourceEpoch();
+        const cache = engineMovesFamily({ tab: "source-change", engine: local.id });
+        const native = line(),
+            old = { ...line("lichess"), evaluationSourceEpoch: epoch };
+        store.set(cache, new Map([["fen", [old, native]]]));
+        store.set(currentLiveEvalAtom, {
+            fen: "fen",
+            movesKey: "",
+            score: old.score,
+            storedForLocal: true,
+            evaluationSourceEpoch: epoch,
+        });
+        noteEvaluationSourceRevision("fixture-change");
+        expect(store.get(cache).get("fen")).toEqual([native]);
+        expect(store.get(currentLiveEvalAtom)).toBeNull();
+        store.set(cache, new Map([["fen", [old, native]]]));
+        expect(store.get(cache).get("fen")).toEqual([native]);
+        const fresh = { ...line("lichess"), evaluationSourceEpoch: getEvaluationSourceEpoch() };
+        store.set(cache, new Map([["fen", [fresh]]]));
+        expect(store.get(cache).get("fen")).toEqual([fresh]);
+    } finally {
+        stop();
         unsubscribe();
     }
 });

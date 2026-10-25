@@ -20,6 +20,7 @@ import { getVariationLine } from "@/utils/chess";
 import { positionFromFen, swapMove } from "@/utils/chessops";
 import type { Engine, EngineSettings } from "@/utils/engines";
 import { visibleEngineLines } from "@/utils/storedEvaluationPolicy";
+import { evaluationSourceEpochAtom } from "@/state/evaluationSource";
 import ScoreBubble from "../panels/analysis/ScoreBubble";
 import { TreeStateContext } from "./TreeStateContext";
 
@@ -82,6 +83,7 @@ const DetachedEvalInner = memo(function DetachedEvalInner({
 
   const ev = useAtomValue(engineMovesFamily({ engine: engineId, tab: activeTab! }));
   const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
+  const sourceEpoch = useAtomValue(evaluationSourceEpochAtom);
 
   // Memoized: replaying the game per render is wasteful while engine payloads
   // stream in several times a second.
@@ -116,7 +118,12 @@ const DetachedEvalInner = memo(function DetachedEvalInner({
       [ev, searchingFen, searchingMoves],
     ),
   );
-  const engineVariations = visibleEngineLines(deferredVariations, engineType, storedEnabled);
+  const engineVariations = visibleEngineLines(
+    deferredVariations,
+    engineType,
+    storedEnabled,
+    sourceEpoch,
+  );
 
   const hasData = engineVariations && engineVariations.length > 0 && !isGameOver;
   const topLine = hasData ? engineVariations[0] : null;

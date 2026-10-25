@@ -32,6 +32,7 @@ import {
   stopMatchingEngine,
 } from "@/utils/engines";
 import { getBestMoves as lichessGetBestMoves, getLichessCloudFailure } from "@/utils/lichess/api";
+import { evaluationSourceEpochAtom } from "@/state/evaluationSource";
 import { getPcEngineBestMoves, type PcEngineAnalysisUpdate } from "@/utils/pcEngine";
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
 import {
@@ -217,7 +218,9 @@ export function EngineListener({
 }) {
   const activeTab = useAtomValue(activeTabAtom);
   const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
+  const sourceEpoch = useAtomValue(evaluationSourceEpochAtom);
   const storedPolicy = engine.type === "local" ? storedEnabled : true;
+  const storedSourceEpoch = engine.type === "pc" || !storedPolicy ? 0 : sourceEpoch;
   const [, setLiveEval] = useAtom(currentLiveEvalAtom);
 
   const [, setProgress] = useAtom(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
@@ -553,6 +556,7 @@ export function EngineListener({
                 movesKey: displayedMovesKey,
                 score: bestMoves[0].score,
                 storedForLocal: engine.type === "local" && cloudCovered,
+                evaluationSourceEpoch: bestMoves[0].evaluationSourceEpoch,
               });
             }
           });
@@ -677,6 +681,7 @@ export function EngineListener({
     settings.go,
     settingsOptionsKey,
     storedPolicy,
+    storedSourceEpoch,
   ]);
   return null;
 }

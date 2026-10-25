@@ -1,3 +1,23 @@
+## 2026-10-25 evaluation folder and Settings controls
+
+- Approved A is implemented in native Directories: checked folder choice and
+  explicit Use, reviewed download/Start, native job restore/cancel, guarded
+  cleanup and ready-build Use. View closure keeps native work; lost Start
+  acknowledgements are checked rather than replayed. Narrow Settings uses a
+  category selector; paths/actions/facts wrap within the existing theme/help.
+- Separate evaluation-source.sqlite3 uses expected-revision transactions.
+  Candidate metadata/sample are rechecked; invalid/stale/save failures keep
+  the old source. Read-only defaults preserve the legacy path; automatic
+  discovery and the original reset action remain audit items. Root aliases
+  and sparse buckets work; metadata/sample reads are bounded to1/64 MiB.
+  Source epochs reject stale stored scores while actual UCI ownership stays.
+- Primary/clean pass101 library/48 frontend checks, full types and15 rebuilt
+  CLI cases; normal registry22 existing warnings, lint0 errors/one old warning.
+  Actual retained-store metadata/sample and one real lookup pass read-only;
+  no corpus copy or preference activation. Phone service stays separate.
+  Package/rendered/native-window/physical proof remain distinct; browser
+  control unavailable. See docs/EVALUATION_DATA_SELECTION.md. Full goal active.
+
 ## 2026-10-25 reviewed evaluation download backend
 
 - Native review is HEAD-only against the fixed official source; it exposes
@@ -14,8 +34,8 @@
   checks and full types; scoped lint0, native command registry22 old warnings,
   actual rebuilt legacy CLI15 compatibility cases. All use tiny synthetic data;
   no real archive/profile/corpus or phone-service operation. Settings A remains
-  approved; next implement validated source activation and actual dialogs,
-  then native packaging/rendered proof. See EVALUATION_DOWNLOAD_REVIEW.md.
+  approved and now source-verified with validated activation in
+  EVALUATION_DATA_SELECTION.md; native packaging/rendered proof remain. See EVALUATION_DOWNLOAD_REVIEW.md.
 
 ## 2026-10-25 durable evaluation build recovery
 
@@ -35,8 +55,8 @@
   scoped lint0, actual CLI15 synthetic cases, native command check22 existing
   warnings. No archive/corpus/profile/phone-service work or manual Dev restart.
   Reviewed acquisition backend is source-verified in
-  docs/EVALUATION_DOWNLOAD_REVIEW.md. Validated source activation, approved A
-  Settings UI and packaging remain.
+  docs/EVALUATION_DOWNLOAD_REVIEW.md. Validated source activation and approved A
+  Settings UI are source-verified in EVALUATION_DATA_SELECTION.md; packaging remains.
 
 ## 2026-10-25 evaluation data UI direction selected
 
@@ -52,7 +72,7 @@
   Stored evals preference/local-only scoring/shared corpus/phone service scope
   stay authoritative. Native recovery is now source-verified; see
   EVALUATION_BUILD_RECOVERY.md and EVALUATION_DOWNLOAD_REVIEW.md. Validated
-  folder activation and UI remain to implement. No download/profile/runtime/data change by prototypes.
+  folder activation and UI are source-verified in EVALUATION_DATA_SELECTION.md. No download/profile/runtime/data change by prototypes.
 
 ## 2026-10-25 hosted notice delivery
 

@@ -13,6 +13,20 @@ const request: LocalEvalBuildRequest = {
     shardCount: 16,
 };
 describe("native evaluation build transport", () => {
+    it("separates source checking from activation and carries its exact revision/token", async () => {
+        invoke
+            .mockResolvedValueOnce({ path: "current", revision: "before" })
+            .mockResolvedValueOnce({ token: "checked", store: { path: "new" } })
+            .mockResolvedValueOnce({ path: "new", revision: "after" });
+        await commands.getLocalEvalSourceSelection();
+        await commands.validateLocalEvalSource("new", "before");
+        await commands.activateLocalEvalSource("checked");
+        expect(invoke.mock.calls).toEqual([
+            ["get_local_eval_source_selection"],
+            ["validate_local_eval_source", { path: "new", expectedRevision: "before" }],
+            ["activate_local_eval_source", { token: "checked" }],
+        ]);
+    });
     beforeEach(() => {
         invoke.mockReset();
     });

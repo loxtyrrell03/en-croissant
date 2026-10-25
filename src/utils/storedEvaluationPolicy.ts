@@ -10,11 +10,21 @@ export function visibleEngineLines(
     lines: BestMoves[] | undefined,
     type: Engine["type"] | undefined,
     enabled: boolean,
+    sourceEpoch?: number,
 ): BestMoves[] | undefined {
-    if (!lines || storedEvaluationsAllowed(type, enabled)) return lines;
+    if (!lines) return lines;
     const selected = lines.filter((line) => {
         const source = (line as { source?: unknown }).source;
-        return source !== "lichess" && source !== "lichess-cloud" && source !== "chessdb";
+        if (
+            sourceEpoch !== undefined &&
+            source === "lichess" &&
+            (line.evaluationSourceEpoch ?? 0) !== sourceEpoch
+        )
+            return false;
+        return (
+            storedEvaluationsAllowed(type, enabled) ||
+            (source !== "lichess" && source !== "lichess-cloud" && source !== "chessdb")
+        );
     });
     return selected.length === lines.length ? lines : selected.length ? selected : undefined;
 }
@@ -22,11 +32,11 @@ export function visibleEngineMoveCache(
     cache: Map<string, BestMoves[]>,
     type: Engine["type"] | undefined,
     enabled: boolean,
+    sourceEpoch?: number,
 ): Map<string, BestMoves[]> {
-    if (storedEvaluationsAllowed(type, enabled)) return cache;
     let next: Map<string, BestMoves[]> | undefined;
     for (const [key, lines] of cache) {
-        const selected = visibleEngineLines(lines, type, enabled);
+        const selected = visibleEngineLines(lines, type, enabled, sourceEpoch);
         if (selected !== lines) {
             next ??= new Map(cache);
             if (selected) next.set(key, selected);

@@ -3,8 +3,9 @@
 At Novelty snapshot `7128c5ed`, optional archive acquisition reviewed the source
 and destination before starting work. En now exposes the same native backend
 contract through its existing bounded builder and durable recovery journal.
-The approved Settings A controls and validated current-folder activation remain
-separate implementation work; this document does not claim delivered UI.
+The approved Settings A controls and validated current-folder activation are now
+source-verified in EVALUATION_DATA_SELECTION.md. Runtime evidence is recorded
+separately in the delivery JSON.
 
 `review_local_eval_download` accepts a proposed new absolute output folder and a
 build-space limit of 1–512 GiB. It checks the existing destination ancestor and

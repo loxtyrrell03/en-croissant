@@ -15,6 +15,7 @@ import {
 import { enginePreferences } from "@/utils/enginePreferences";
 import type { LocalEngine } from "@/utils/engines";
 import { EngineListener } from "./EvalListener";
+import { getEvaluationSourceEpoch, noteEvaluationSourceRevision } from "@/utils/evaluationSource";
 
 const fixture = vi.hoisted(() => ({
   disk: "[]",
@@ -229,4 +230,35 @@ it("reports an unreadable stored position while using real local evidence and re
   ).toBe("available");
   expect(moves().get(`${fen}:`)?.[0].score.value.value).toBe(20);
   expect(fixture.native).toHaveBeenCalledTimes(1);
+});
+
+it("refreshes a covered position after a source change and rejects an older pending reply", async () => {
+  let finish!: (value: any) => void;
+  const before = getEvaluationSourceEpoch();
+  fixture.cloud.mockReturnValueOnce(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
+  fixture.cloud.mockImplementation(async () => [
+    100,
+    [{ ...line("lichess", 42), evaluationSourceEpoch: getEvaluationSourceEpoch() }],
+  ]);
+  await render();
+  await vi.waitFor(() => expect(fixture.cloud).toHaveBeenCalledTimes(1));
+  await act(async () => noteEvaluationSourceRevision("listener-source-changed"));
+  await vi.waitFor(() => expect(fixture.cloud).toHaveBeenCalledTimes(2));
+  await act(async () => finish([100, [{ ...line("lichess", 24), evaluationSourceEpoch: before }]]));
+  expect(moves().get(`${fen}:`)?.[0].score.value.value).toBe(42);
+});
+
+it("keeps local-only analysis running through a stored-source change", async () => {
+  store.set(useStoredEvaluationsAtom, false);
+  await render();
+  await vi.waitFor(() => expect(fixture.native).toHaveBeenCalledTimes(1));
+  const stopped = fixture.matching.mock.calls.length;
+  await act(async () => noteEvaluationSourceRevision("listener-local-only-source-changed"));
+  expect(fixture.native).toHaveBeenCalledTimes(1);
+  expect(fixture.matching).toHaveBeenCalledTimes(stopped);
+  expect(moves().get(`${fen}:`)?.[0].score.value.value).toBe(50);
 });

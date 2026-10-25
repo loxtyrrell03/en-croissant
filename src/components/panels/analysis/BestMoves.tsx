@@ -32,6 +32,7 @@ import { memo, startTransition, useCallback, useDeferredValue, useEffect, useMem
 import { useTranslation } from "react-i18next";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import { visibleEngineLines } from "@/utils/storedEvaluationPolicy";
+import { evaluationSourceEpochAtom } from "@/state/evaluationSource";
 import { match } from "ts-pattern";
 import type { BestMoves } from "@/bindings";
 import {
@@ -89,6 +90,7 @@ function BestMovesComponent({
   const activeTab = useAtomValue(activeTabAtom);
   const ev = useAtomValue(engineMovesFamily({ engine: engine.id, tab: activeTab! }));
   const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
+  const sourceEpoch = useAtomValue(evaluationSourceEpochAtom);
   const progress = useAtomValue(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
   const [, setEngines] = useAtom(enginesAtom);
   const [settings, setSettings2] = useAtom(
@@ -179,7 +181,7 @@ function BestMovesComponent({
 
   const engineVariations = useDeferredValue(useMemo(() => ev.get(searchKey), [ev, searchKey]));
   const displayedEngineVariations = settings.enabled
-    ? visibleEngineLines(engineVariations, engine.type, storedEnabled)
+    ? visibleEngineLines(engineVariations, engine.type, storedEnabled, sourceEpoch)
     : undefined;
 
   return (
