@@ -1,0 +1,41 @@
+# Evaluation build output ownership
+
+Novelty's optional evaluation builder (`2a083a83`) refuses existing directories
+and removes only its own failed output. En Croissant's older builder instead
+used second-resolution staging/backup names, replaced the destination on
+success, and could leave new staging files after failure. This was an applicable
+gap in the native command and the `build_lichess_eval_db` CLI.
+
+The builder now atomically acquires a new output directory and writes a random
+ownership marker. Existing files, empty directories, complete stores and another
+in-progress build are refused before source processing. No timestamp-derived
+staging/backup directory is reused or deleted. Completed manifests are published
+only after a nonempty export has been processed and all shards have been written.
+
+On ordinary failure, cleanup requires the same canonical directory, a matching
+marker and no directory symlink/reparse point. Ownership is rechecked after
+progress callbacks, before sorting/cleanup and before manifest publication.
+Changed ownership is retained.
+Once the completed manifest has been written, marker-cleanup failure cannot
+delete that valid store or suggest repeating the build. Existing shard formats,
+lookup choices and build-request fields are unchanged. CLI help now states that
+the output must be new; running against an existing default returns an error.
+
+Four regression fixtures fail on the old builder: existing output replacement,
+replacement of a completed store, empty export publication and retained new
+staging output after malformed input. All six new cases and the six existing
+evaluation cases pass independently in primary and delivery checkouts. Added
+cases cover a concurrent build and a changed ownership marker during failure.
+Tests use tiny synthetic zstd sources and temporary directories only.
+
+The phone's installed readers consume the shared immutable corpus and expose no
+on-device evaluation builder. This slice neither copies nor rebuilds that corpus,
+changes a selected path, nor restarts a service. Native packaging is tracked in
+the current delivery JSON. Frontend source is unchanged; the previous frontend
+gate is not counted as rerun here. Native-window and physical-device checks are
+separate.
+
+This is the output-ownership portion of builder parity. Bounded input/sort/disk
+use, strict PV/score validation, duplicate-position selection, cancellation,
+network stall limits and durable interrupted-job recovery
+remain explicit audit work; this milestone does not claim those are delivered.

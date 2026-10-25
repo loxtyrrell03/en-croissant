@@ -3063,5 +3063,37 @@
       "reviewSourceUnchangedFromPreviousPhoneRelease": true,
       "notACompletedReviewClaim": true
     }
+  },
+  "evaluationBuildOwnershipParity": {
+    "novelty": [
+      "2a083a83"
+    ],
+    "status": "native-source-verified-packaging-pending",
+    "baselineTests": 4,
+    "baselineFailures": 4,
+    "nativeEvaluationTests": 12,
+    "newTests": 6,
+    "independentPrimaryAndClean": true,
+    "cliHelpVerified": true,
+    "existingOutputPreserved": true,
+    "concurrentBuildRefused": true,
+    "changedOwnershipPreserved": true,
+    "emptyExportNotPublished": true,
+    "canonicalCleanupIdentityChecked": true,
+    "nativePackageVerified": false,
+    "phoneBuildCommandExists": false,
+    "phoneRuntimeChanged": false,
+    "frontendSourceChanged": false,
+    "previousFrontendGateRerun": false,
+    "corpusCopied": false,
+    "ownerDataWritten": false,
+    "remaining": [
+      "input/sort/disk bounds",
+      "strict PV/score validation",
+      "duplicate-position selection",
+      "cancellation",
+      "network stall limits",
+      "durable interruption recovery"
+    ]
   }
 }

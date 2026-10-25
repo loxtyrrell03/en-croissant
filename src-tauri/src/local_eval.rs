@@ -15,6 +15,8 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::Manager;
+
+mod build_directory;
 use tauri_specta::Event;
 
 const FORMAT_VERSION: u16 = 2;
@@ -294,7 +296,8 @@ where
     let shard_count = validate_shard_count(options.shard_count)?;
     let source_label = options.source.label();
     let built_at = unix_now();
-    let build_dir = build_dir_for(&options.output_dir, built_at)?;
+    let mut owned = build_directory::BuildDirectory::create(&options.output_dir)?;
+    let build_dir = owned.path.clone();
     let spool_dir = build_dir.join(SPOOL_DIR);
     let shards_dir = build_dir.join(SHARDS_DIR);
 
@@ -324,6 +327,7 @@ where
         total_bytes,
         false,
     );
+    owned.ensure_owned()?;
 
     loop {
         line.clear();
@@ -364,10 +368,18 @@ where
                 total_bytes,
                 false,
             );
+            owned.ensure_owned()?;
         }
     }
 
+    owned.ensure_owned()?;
     spool.flush_all()?;
+
+    if positions == 0 {
+        return Err(LocalEvalError::InvalidDatabase(
+            "The export contains no usable evaluations.".into(),
+        ));
+    }
 
     emit_progress(
         &options.id,
@@ -383,6 +395,7 @@ where
 
     let mut sorted_positions = 0_u64;
     for shard in 0..shard_count {
+        owned.ensure_owned()?;
         sorted_positions +=
             sort_and_compress_shard(&spool.path(shard), &shard_path(&shards_dir, shard))?;
         if shard % 32 == 0 || shard + 1 == shard_count {
@@ -407,11 +420,11 @@ where
         )));
     }
 
+    owned.ensure_owned()?;
     if spool_dir.exists() {
         fs::remove_dir_all(&spool_dir)?;
     }
 
-    let storage_bytes = directory_size(&build_dir)?;
     let manifest = LocalEvalManifest {
         format: "en-croissant-lichess-eval-compact".to_string(),
         version: FORMAT_VERSION,
@@ -425,9 +438,9 @@ where
         complete: true,
     };
     write_manifest(&build_dir, &manifest)?;
+    owned.finish();
     let final_storage_bytes = directory_size(&build_dir)?;
 
-    install_build_dir(&build_dir, &options.output_dir)?;
     clear_shard_cache();
 
     emit_progress(
@@ -449,7 +462,7 @@ where
         skipped,
         shard_count,
         max_pvs,
-        storage_bytes: final_storage_bytes.max(storage_bytes),
+        storage_bytes: final_storage_bytes,
         built_at,
     })
 }
@@ -1285,62 +1298,6 @@ fn write_manifest(dir: &Path, manifest: &LocalEvalManifest) -> Result<(), LocalE
     Ok(())
 }
 
-fn build_dir_for(output_dir: &Path, built_at: u64) -> Result<PathBuf, LocalEvalError> {
-    let parent = output_dir.parent().ok_or_else(|| {
-        LocalEvalError::InvalidOption(format!(
-            "output directory {} has no parent",
-            output_dir.display()
-        ))
-    })?;
-    fs::create_dir_all(parent)?;
-    let name = output_dir
-        .file_name()
-        .and_then(|name| name.to_str())
-        .unwrap_or("lichess-cloud-evals");
-    Ok(parent.join(format!("{name}-building-{built_at}")))
-}
-
-fn install_build_dir(build_dir: &Path, output_dir: &Path) -> Result<(), LocalEvalError> {
-    let parent = output_dir.parent().ok_or_else(|| {
-        LocalEvalError::InvalidOption(format!(
-            "output directory {} has no parent",
-            output_dir.display()
-        ))
-    })?;
-    fs::create_dir_all(parent)?;
-
-    let backup_dir = parent.join(format!(
-        "{}-backup-{}",
-        output_dir
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("lichess-cloud-evals"),
-        unix_now()
-    ));
-
-    if backup_dir.exists() {
-        fs::remove_dir_all(&backup_dir)?;
-    }
-    if output_dir.exists() {
-        fs::rename(output_dir, &backup_dir)?;
-    }
-
-    match fs::rename(build_dir, output_dir) {
-        Ok(()) => {
-            if backup_dir.exists() {
-                fs::remove_dir_all(backup_dir)?;
-            }
-            Ok(())
-        }
-        Err(error) => {
-            if backup_dir.exists() && !output_dir.exists() {
-                let _ = fs::rename(&backup_dir, output_dir);
-            }
-            Err(error.into())
-        }
-    }
-}
-
 fn directory_size(dir: &Path) -> Result<u64, LocalEvalError> {
     if !dir.exists() {
         return Ok(0);
@@ -1439,6 +1396,10 @@ fn unix_now() -> u64 {
         .map(|duration| duration.as_secs())
         .unwrap_or(0)
 }
+
+#[cfg(test)]
+#[path = "local_eval/build_safety_tests.rs"]
+mod build_safety_tests;
 
 #[cfg(test)]
 mod tests {
