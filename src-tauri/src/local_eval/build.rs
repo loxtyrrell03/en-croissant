@@ -13,10 +13,28 @@ const SPOOL_BUFFER_BYTES: usize = 32 * 1024;
 pub fn build_compact_eval_database_controlled<F>(
     options: LocalEvalBuildOptions,
     control: LocalEvalBuildControl,
-    mut progress: F,
+    progress: F,
 ) -> Result<LocalEvalBuildReport, LocalEvalError>
 where
     F: FnMut(LocalEvalBuildProgress),
+{
+    build_with_source(options, control, progress, |options, control| {
+        open_source(&options.source, control)
+    })
+}
+
+pub(super) fn build_with_source<F, O>(
+    options: LocalEvalBuildOptions,
+    control: LocalEvalBuildControl,
+    mut progress: F,
+    open: O,
+) -> Result<LocalEvalBuildReport, LocalEvalError>
+where
+    F: FnMut(LocalEvalBuildProgress),
+    O: FnOnce(
+        &LocalEvalBuildOptions,
+        &LocalEvalBuildControl,
+    ) -> Result<(Box<dyn Read + Send>, Option<u64>), LocalEvalError>,
 {
     control.check()?;
     if control.disk_limit_bytes < 1024
@@ -74,7 +92,7 @@ where
     );
     owned.ensure_owned()?;
     control.check()?;
-    let (source, total_bytes) = open_source(&options.source, &control)?;
+    let (source, total_bytes) = open(&options, &control)?;
     let bytes_read = Arc::new(AtomicU64::new(0));
     let counting = CheckedReader {
         inner: source,

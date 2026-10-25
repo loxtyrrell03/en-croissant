@@ -17,11 +17,13 @@ mod build;
 mod build_control;
 mod build_directory;
 mod build_recovery;
+mod download;
 pub use build::build_compact_eval_database_controlled;
 pub use build_control::{LocalEvalBuildControl, DEFAULT_BUILD_DISK_LIMIT_BYTES};
 pub use build_recovery::{
     build_compact_eval_database_recoverable, discard_build_job, get_build_job, LocalEvalBuildJob,
 };
+pub use download::LocalEvalDownloadReview;
 use tauri_specta::Event;
 
 const FORMAT_VERSION: u16 = 2;
@@ -318,6 +320,37 @@ pub async fn discard_local_eval_build_job(id: String, app: tauri::AppHandle) -> 
     tokio::task::spawn_blocking(move || discard_build_job(&root, &id))
         .await
         .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn review_local_eval_download(
+    output_dir: String,
+    disk_limit_gib: u16,
+    app: tauri::AppHandle,
+) -> Result<LocalEvalDownloadReview, String> {
+    let root = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?
+        .join("evaluation-download");
+    download::review(root, PathBuf::from(output_dir), disk_limit_gib).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn start_local_eval_download(token: String, app: tauri::AppHandle) -> Result<String, String> {
+    let root = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?
+        .join("evaluation-download");
+    download::start(root, token, move |progress| {
+        if let Err(error) = progress.emit(&app) {
+            log::warn!("Could not emit reviewed evaluation progress: {error}");
+        }
+    })
+    .await
 }
 
 pub fn build_compact_eval_database<F>(

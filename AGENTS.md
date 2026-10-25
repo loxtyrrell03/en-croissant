@@ -1,3 +1,22 @@
+## 2026-10-25 reviewed evaluation download backend
+
+- Native review is HEAD-only against the fixed official source; it exposes
+  canonical new output, compressed bytes, quota/free space and256 MiB reserve.
+  No startup/status body request. Single-use15minute tokens reject late/reused
+  reviews; Start rechecks path/capacity and establishes durable job/OS ownership
+  before GET. Never fall back to the old raw build API after review failure.
+- Conditional version/final-URL/length checks,64 KiB/two-message backpressure
+  and verified positive EOF feed the existing bounded builder/journal. Native
+  cancel interrupts network waits, then waits for owned cleanup; late publication
+  can refuse cancellation. Returning/closing a view does not cancel the worker.
+  Progress is compressed archive bytes read, separate from positions/build work.
+- Primary/clean each pass89 library tests (13 new download), nine transport
+  checks and full types; scoped lint0, native command registry22 old warnings,
+  actual rebuilt legacy CLI15 compatibility cases. All use tiny synthetic data;
+  no real archive/profile/corpus or phone-service operation. Settings A remains
+  approved; next implement validated source activation and actual dialogs,
+  then native packaging/rendered proof. See EVALUATION_DOWNLOAD_REVIEW.md.
+
 ## 2026-10-25 durable evaluation build recovery
 
 - Native evaluation builds and CLI now persist the canonical output, random
@@ -15,8 +34,9 @@
   private kill-test helper), six generated transport checks and full types;
   scoped lint0, actual CLI15 synthetic cases, native command check22 existing
   warnings. No archive/corpus/profile/phone-service work or manual Dev restart.
-  Packaging, reviewed acquisition, validated source activation and approved A
-  Settings UI remain. See docs/EVALUATION_BUILD_RECOVERY.md. Goal stays active.
+  Reviewed acquisition backend is source-verified in
+  docs/EVALUATION_DOWNLOAD_REVIEW.md. Validated source activation, approved A
+  Settings UI and packaging remain.
 
 ## 2026-10-25 evaluation data UI direction selected
 
@@ -31,8 +51,8 @@
   artifacts, not implemented UI or browser/native-window proof. Existing
   Stored evals preference/local-only scoring/shared corpus/phone service scope
   stay authoritative. Native recovery is now source-verified; see
-  EVALUATION_BUILD_RECOVERY.md. Reviewed acquisition, folder activation and UI
-  remain to implement. No download/profile/runtime/data change by prototypes.
+  EVALUATION_BUILD_RECOVERY.md and EVALUATION_DOWNLOAD_REVIEW.md. Validated
+  folder activation and UI remain to implement. No download/profile/runtime/data change by prototypes.
 
 ## 2026-10-25 hosted notice delivery
 

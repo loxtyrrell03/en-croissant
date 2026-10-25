@@ -91,4 +91,33 @@ describe("native evaluation build transport", () => {
         });
         expect(invoke).toHaveBeenCalledTimes(1);
     });
+    it("reviews the exact proposed folder and quota without starting a download", async () => {
+        const review = { token: "review-token", outputDir: "new-folder", downloadBytes: 123 };
+        invoke.mockResolvedValueOnce(review);
+        expect(await commands.reviewLocalEvalDownload("new-folder", 64)).toEqual({
+            status: "ok",
+            data: review,
+        });
+        expect(invoke.mock.calls).toEqual([
+            ["review_local_eval_download", { outputDir: "new-folder", diskLimitGib: 64 }],
+        ]);
+    });
+    it("starts only the reviewed token and keeps the returned durable job ID", async () => {
+        invoke.mockResolvedValueOnce("owned-job-id");
+        expect(await commands.startLocalEvalDownload("review-token")).toEqual({
+            status: "ok",
+            data: "owned-job-id",
+        });
+        expect(invoke.mock.calls).toEqual([
+            ["start_local_eval_download", { token: "review-token" }],
+        ]);
+    });
+    it("preserves review expiry without replaying or falling back to an unreviewed build", async () => {
+        invoke.mockRejectedValueOnce("This download review expired. Review it again.");
+        expect(await commands.startLocalEvalDownload("expired-token")).toEqual({
+            status: "error",
+            error: "This download review expired. Review it again.",
+        });
+        expect(invoke).toHaveBeenCalledTimes(1);
+    });
 });

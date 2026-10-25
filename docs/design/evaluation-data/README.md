@@ -31,7 +31,8 @@ SVG text widths are checked against the installed native serif font and the
 sheets are rasterized for visual review without controlling a browser or app.
 These remain prototypes of the UI. The native journal, process lease and guarded
 recovery commands are implemented separately in
-[EVALUATION_BUILD_RECOVERY.md](../../EVALUATION_BUILD_RECOVERY.md); reviewed
-acquisition, persistent folder activation and the chosen UI remain to implement.
+[EVALUATION_BUILD_RECOVERY.md](../../EVALUATION_BUILD_RECOVERY.md), and the reviewed
+acquisition backend in [EVALUATION_DOWNLOAD_REVIEW.md](../../EVALUATION_DOWNLOAD_REVIEW.md).
+Persistent folder activation and the chosen UI remain to implement.
 No real archive or owner data is changed by the prototypes or synthetic fixtures.
 Rendered application interaction and delivery remain future gates.

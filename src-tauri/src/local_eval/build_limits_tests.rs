@@ -92,6 +92,7 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
         specta_typescript::export::<LocalEvalBuildRequest>(&config).unwrap(),
         specta_typescript::export::<LocalEvalBuildReport>(&config).unwrap(),
         specta_typescript::export::<LocalEvalBuildJob>(&config).unwrap(),
+        specta_typescript::export::<LocalEvalDownloadReview>(&config).unwrap(),
     ];
     let actual = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -106,6 +107,7 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
         "LocalEvalBuildRequest",
         "LocalEvalBuildReport",
         "LocalEvalBuildJob",
+        "LocalEvalDownloadReview",
     ]
     .into_iter()
     .zip(generated)
@@ -127,6 +129,26 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
     let args = method.args().collect::<Vec<_>>();
     assert_eq!(args.len(), 1);
     assert_eq!(args[0].0, "id");
+    assert!(matches!(
+        args[0].1,
+        DataType::Primitive(PrimitiveType::String)
+    ));
+    let download = (specta::function::collect_functions![
+        crate::local_eval::review_local_eval_download,
+        crate::local_eval::start_local_eval_download
+    ])(&mut types);
+    assert_eq!(download[0].name(), "review_local_eval_download");
+    assert_eq!(
+        download[0]
+            .args()
+            .map(|arg| arg.0.clone())
+            .collect::<Vec<_>>(),
+        ["output_dir", "disk_limit_gib"]
+    );
+    assert_eq!(download[1].name(), "start_local_eval_download");
+    let args = download[1].args().collect::<Vec<_>>();
+    assert_eq!(args.len(), 1);
+    assert_eq!(args[0].0, "token");
     assert!(matches!(
         args[0].1,
         DataType::Primitive(PrimitiveType::String)

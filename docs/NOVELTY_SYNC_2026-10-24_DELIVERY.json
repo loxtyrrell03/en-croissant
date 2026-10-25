@@ -3615,9 +3615,9 @@
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
     "remaining": [
-      "reviewed acquisition and persistent folder activation",
-      "approved data-management UI",
-      "native package for recovery slice"
+      "persistent folder activation",
+      "approved Settings A UI",
+      "native packaging for subsequent backends"
     ],
     "packageSource": "f33263de887f2a2a496eda4753288a1722586220",
     "primarySource": "4a3eb4a629ea65ce280ba8275a08ebf7dfeb4337",
@@ -4220,7 +4220,7 @@
     }
   },
   "nativeEvaluationDataDesign": {
-    "status": "direction-A-selected-recovery-backend-source-verified-acquisition-folder-ui-pending",
+    "status": "direction-A-selected-recovery-and-reviewed-download-backends-source-verified-folder-ui-pending",
     "selected": "A - Settings row + dialogs",
     "ownerSelected": true,
     "alternativesPresented": 3,
@@ -4275,9 +4275,57 @@
     "nativePackageVerified": false,
     "renderedAppVerified": false,
     "remaining": [
-      "reviewed network acquisition",
       "validated persistent source folder",
       "approved Settings A UI",
+      "native packaging and rendered verification"
+    ]
+  },
+  "nativeReviewedEvaluationDownload": {
+    "sourceSnapshot": "7128c5ed",
+    "status": "native-backend-and-command-contracts-source-verified-ui-package-pending",
+    "nativeLibraryTestsPerCheckout": 89,
+    "newDownloadTests": 13,
+    "transportTestsPerCheckout": 9,
+    "primaryAndSeparateDeliveryCheckout": true,
+    "types": true,
+    "scopedFrontendLintErrors": 0,
+    "scopedFrontendLintWarnings": 0,
+    "nativeCommandRegistryCheck": true,
+    "existingNativeWarnings": 22,
+    "legacyCliCompatibilityAcceptanceCases": 15,
+    "rebuiltCliSha256": "cffa364e9ca0b4715c4b43335fd4c7c8ae745bba44b6eda8393a3a3f4dab5220",
+    "reviewMetadataOnly": true,
+    "reviewTtlSeconds": 900,
+    "singleUseTokens": true,
+    "newerReviewWins": true,
+    "startRechecksCanonicalDestinationAndFreeSpace": true,
+    "filesystemReserveBytes": 268435456,
+    "buildLimitGib": [
+      1,
+      512
+    ],
+    "conditionalVersionHeaders": true,
+    "finalUrlAndLengthMatched": true,
+    "positiveEofOnlyAfterHttpSizeValidation": true,
+    "queuedChunks": 2,
+    "chunkBytes": 65536,
+    "connectTimeoutSeconds": 10,
+    "headTimeoutSeconds": 20,
+    "readStallSeconds": 30,
+    "totalTransferDeadline": false,
+    "networkCancellationPollMillis": 50,
+    "workerSurvivesStartCaller": true,
+    "waitForOwnedCleanupBeforeSettled": true,
+    "usesExistingBuilderAndRecoveryJournal": true,
+    "automaticActivation": false,
+    "realArchiveHeadOrBodyRequestedByTests": false,
+    "ownerProfileWrittenByTests": false,
+    "phoneRuntimeChanged": false,
+    "nativePackageVerified": false,
+    "renderedAppVerified": false,
+    "remaining": [
+      "validated persistent source activation",
+      "approved Settings A controls",
       "native packaging and rendered verification"
     ]
   }
