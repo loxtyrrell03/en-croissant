@@ -153,3 +153,11 @@ exceptions. This closes the unnamed engine candidate list, not the wider580
 requirement audit or rendered checks. The native Engine Plans label/help slice
 passes49 existing related checks, types and warning-free lint; packaging remains.
 Phone production is unchanged by those native labels.
+
+The refreshed inventory retains580 Novelty commits and472 En commits through
+67ccb7a9. The previous area rules left137 commits unclassified, including38 with
+native/app source. New local-data/Settings/shell areas and explicit fallback
+review categories keep every commit visible. The38 are enumerated in
+NOVELTY_ADDITIONAL_SOURCE_REVIEW.md for target evaluation; classification is not
+parity or omission proof. Script-only research/verification stays reviewable and
+is not automatically promoted. The same55 engine candidates remain mapped.

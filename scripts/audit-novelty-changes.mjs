@@ -23,6 +23,8 @@ const areas = [
   ['tournaments', /src\/features\/tournaments\//],
   ['otb-and-downloads', /src-tauri\/.*(?:otb|tournament|data_pack)|src\/.*(?:Otb|otb|PlayerGameImport)/],
   ['game-analysis', /src\/features\/gameAnalysis\/|src\/.*(?:gameAnalysis|GameAnalysis|score\.ts)/],
+  ['local-data-and-recovery', /src-tauri\/src\/(?:local_eval|local_lichess|recovery_export|migrate|pgn_stream|storage)(?:[./])|src\/features\/settings\/(?:Eval|localOpening)/],
+  ['settings-and-shell', /src\/features\/(?:settings|shell)\/|src\/platform\/|(?:scroll|wheel)/i],
   ['engine-management', /src\/features\/engines?\/|src\/components\/engines\/|src\/utils\/(?:engines|pcEngine|enginePerformance|engineSettingsOptions)\.ts|src-tauri\/src\/(?:engine|engines|uci)|(?:stockfish|lc0)/i],
   ['engine-plans', /src\/features\/enginePlans\/|src\/.*(?:enginePlan|EnginePlan)/],
   ['plans', /src\/features\/plans\/|src\/.*(?:planExplorer|PlanExplorer)/],
@@ -47,7 +49,15 @@ function history(root) {
       commits.push(current);
     } else if (line && current) current.files.push(line);
   }
-  for (const commit of commits) commit.areas = areas.filter(([, pattern]) => commit.files.some(path => pattern.test(path))).map(([area]) => area);
+  for (const commit of commits) {
+    commit.areas = areas.filter(([, pattern]) => commit.files.some(path => pattern.test(path))).map(([area]) => area);
+    // Keep an explicit review queue for product changes missed by named rules.
+    // A category records coverage, never a decision to omit or promote a change.
+    if (!commit.areas.length) {
+      commit.areas.push(commit.files.some(path => /^(?:src|src-tauri)\//.test(path))
+        ? 'other-native-and-app-review' : 'scripts-research-and-verification-review');
+    }
+  }
   return commits;
 }
 function sourceFiles(root, directory = join(root, 'src')) {
