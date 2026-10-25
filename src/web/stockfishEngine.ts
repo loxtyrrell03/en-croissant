@@ -6,7 +6,7 @@ import { makeSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
 import type { WebEngineLine, WebEngineScore } from "./model";
 import { normalizeWebEngineScoreForWhite } from "./engineScore";
-import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessCloud";
+import { requireWebLichessCloudLines } from "./lichessCloud";
 import { WEB_SERVER_BASE_URL, resolvePrivateServiceUrl } from "./serverUrl";
 import type { Lc0NetworkProfile, PcEngineKind } from "@/utils/lc0Networks";
 import type { EnginePerformancePreset } from "@/utils/enginePerformance";
@@ -363,8 +363,7 @@ async function fetchStoredCloudLinesFromOrigin(origin: string, fen: string, mult
         if (!response.ok) {
             throw new Error(`Stored cloud eval lookup returned HTTP ${response.status}.`);
         }
-        const data = (await response.json()) as WebLichessCloudData;
-        return webLichessCloudDataToLines(fen, data);
+        return requireWebLichessCloudLines(fen, await response.json());
     } catch (error) {
         if (timedOut) throw new Error("Gaming PC stored cloud evals are unreachable.");
         throw error;

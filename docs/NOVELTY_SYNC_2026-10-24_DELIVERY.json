@@ -1159,9 +1159,21 @@
     },
     "phoneStoredEvaluationValidation": {
       "novelty": "c2760248",
-      "status": "confirmed-phone-source-gap-baseline-not-yet-run",
+      "status": "phone-source-fixed-clean-build-and-publication-pending",
       "native": "Local lookup hashes the requested four-field FEN and returns bounded numeric Rust fields; native sign/perspective flow remains separate.",
-      "phone": "webLichessCloudDataToLines maps raw FEN/score/PV input without position matching or finite-score checks; stockfishEngine caches that result. Prep stored responses also enter raw conversion. Reproduce mismatched FEN, malformed score and same-FEN recovery before fixing the shared boundary."
+      "phone": "Unknown raw responses are validated before live/raw cache writes and optional Prep conversion: supplied FEN matches four fields; finite scores, legal PV prefixes, true source ranks and White-relative values. Invalid HTTP200 remains retryable; genuine 404 misses and fresh/off paths remain.",
+      "priorFailuresReproduced": 6,
+      "newTests": 7,
+      "relatedTests": 95,
+      "relatedFiles": 7,
+      "types": true,
+      "lintFiles": 4,
+      "lintWarnings": 1,
+      "lintErrors": 0,
+      "existingFixtureWarning": true,
+      "cleanBuildVerified": false,
+      "phonePublished": false,
+      "nativeProductionChanges": false
     }
   },
   "storedEvaluationParity": {

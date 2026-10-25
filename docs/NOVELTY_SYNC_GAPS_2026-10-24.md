@@ -136,3 +136,13 @@ include the current source checkout and remain candidate evidence only.
 This is an active work list. No row is silently marked complete from a file
 copy, a historical test receipt, a static shell HTTP response or a successful
 build. Physical-device interaction remains a separate evidence boundary.
+
+- Phone stored-response validation (Novelty `c2760248`): six old-parser failures
+  reproduced and fixed at the shared live/Prep/cache boundary. Supplied FENs
+  match the requested four-field position; finite scores, legal PV prefixes,
+  real ranks, White-relative values and legacy missing-FEN replies are retained.
+  Invalid HTTP200 stays retryable; genuine misses remain. Seven new checks join
+  95 passing related checks/seven files, full types and lint with only the
+  adjusted existing fixture's unrelated warning. Native typed/hash-keyed lookup
+  already supplies this contract. Clean phone build/publication remain; see
+  `STORED_EVALUATIONS.md`.
