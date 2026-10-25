@@ -4,34 +4,29 @@
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9",
+    "sourceCommit": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "41f60e91c895-a0917a23e5df",
-    "appShellSha256": "a0917a23e5df33c1c63646d8b6a001b2ae43f7905d99a650c30f5de3a463642c",
-    "checkedAt": "2026-10-25T07:52:33.516Z",
+    "releaseId": "41668e2b8877-1ac542e56304",
+    "appShellSha256": "1ac542e5630407df582db7a2c7b8935f0a8c06205d33b13474c3ff19e5a1610c",
+    "checkedAt": "2026-10-25T09:35:15.890Z",
     "verified": [
       "canonical HTTPS deployment metadata and exact shell/entry/plan/WASM hashes",
       "unchanged saved workspace and tournament settings hashes",
       "hosted live-library reads (25 files and 70 databases)",
       "canonical route, owner enabled choice and PC engine service process preserved",
-      "actual Stockfish 19 legal exact bounded report and owned-worker release"
+      "actual Stockfish 19 legal exact bounded report and owned-worker release",
+      "unchanged normalized library content and normal uncaptured publisher return"
     ],
     "browserRendered": false,
     "physicalPhoneVerified": false,
-    "publisherNormalExitObserved": false,
+    "publisherNormalExitObserved": true,
     "publisherCleanup": {
-      "checkedAt": "2026-10-25T07:53:47.9935367+00:00",
-      "sourceCommit": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9",
-      "normalPublisherExitObserved": false,
-      "livePhoneIndependentlyVerified": true,
-      "wrapperOnlyStopped": 49316,
-      "phonePidBefore": 40636,
-      "phonePidAfter": 40636,
       "temporaryTaskRemoved": true,
+      "normalPublisherExitObserved": true,
       "publicationReplayed": false
     },
-    "libraryBeforeAfterContentCompared": false,
-    "libraryComparisonNote": "Live manifest generatedAt is volatile. Original preflight retained only the complete hash, so normalized before/after contents are not claimed; repeated post-deploy content is stable."
+    "libraryBeforeAfterContentCompared": true,
+    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots."
   },
   "desktop": {
     "exeBytes": 47868416,
@@ -1653,5 +1648,60 @@
     "browserRendered": false,
     "physicalPhoneVerified": false,
     "nativeProductionChanges": false
+  },
+  "previousStoredEvaluationPhone": {
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9",
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "41f60e91c895-a0917a23e5df",
+    "appShellSha256": "a0917a23e5df33c1c63646d8b6a001b2ae43f7905d99a650c30f5de3a463642c",
+    "checkedAt": "2026-10-25T07:52:33.516Z",
+    "verified": [
+      "canonical HTTPS deployment metadata and exact shell/entry/plan/WASM hashes",
+      "unchanged saved workspace and tournament settings hashes",
+      "hosted live-library reads (25 files and 70 databases)",
+      "canonical route, owner enabled choice and PC engine service process preserved",
+      "actual Stockfish 19 legal exact bounded report and owned-worker release"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "publisherNormalExitObserved": false,
+    "publisherCleanup": {
+      "checkedAt": "2026-10-25T07:53:47.9935367+00:00",
+      "sourceCommit": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9",
+      "normalPublisherExitObserved": false,
+      "livePhoneIndependentlyVerified": true,
+      "wrapperOnlyStopped": 49316,
+      "phonePidBefore": 40636,
+      "phonePidAfter": 40636,
+      "temporaryTaskRemoved": true,
+      "publicationReplayed": false
+    },
+    "libraryBeforeAfterContentCompared": false,
+    "libraryComparisonNote": "Live manifest generatedAt is volatile. Original preflight retained only the complete hash, so normalized before/after contents are not claimed; repeated post-deploy content is stable."
+  },
+  "engineHistoryTargetMap": {
+    "candidates": 55,
+    "document": "ENGINE_HISTORY_TARGET_MAP.md",
+    "scope": "Engine payloads only; broader integration payloads remain in the wider580 inventory",
+    "macDeliveryClaimed": false,
+    "remoteNativeScoringExcluded": true,
+    "renderedChecksPending": true,
+    "widerAuditComplete": false
+  },
+  "enginePlanControlClarity": {
+    "novelty": [
+      "bf325179",
+      "b6d1f50e",
+      "7aabfc10"
+    ],
+    "nativeSourceChanged": true,
+    "phoneProductionChanges": false,
+    "checks": 49,
+    "files": 5,
+    "types": true,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "cleanPackagingVerified": false
   }
 }
