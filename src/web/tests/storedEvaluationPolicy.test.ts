@@ -82,6 +82,32 @@ it("local-only does not borrow a stored score when the PC engine fails", async (
         calls.mock.calls.filter(([input]) => String(input).includes("/v1/cloud-eval")),
     ).toHaveLength(1);
 });
+it("retries a failed stored read at the same position instead of caching a false miss", async () => {
+    let reads = 0;
+    let readable = false;
+    vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes("/v1/cloud-eval")) {
+                reads++;
+                return readable ? stored() : new Response("unavailable", { status: 503 });
+            }
+            if (url.includes("/api/engine/start")) return new Response("{}", { status: 200 });
+            if (url.includes("/v1/analyze")) {
+                readable = true;
+                return stream();
+            }
+            throw new Error(`Unexpected fixture endpoint: ${url}`);
+        }),
+    );
+    const { analyzeWithWebStockfish18 } = await import("../stockfishEngine");
+    const request = { fen, multipv: 1, depth: 8, preferStoredEvaluation: true };
+    expect((await analyzeWithWebStockfish18(request))[0].source).toBe("stockfish");
+    const failedReads = reads;
+    expect((await analyzeWithWebStockfish18(request))[0].source).toBe("lichess-cloud");
+    expect(reads).toBe(failedReads + 1);
+});
 it("retained scores and arrows reject stored data immediately while real prior scores remain stable", () => {
     const cloud = { fen, lines: [line("lichess-cloud")] };
     const policy = { engineKind: "stockfish" as const, useStoredEvaluations: false };

@@ -95,3 +95,26 @@ must avoid PowerShell output capture around this publisher, including implicit
 file-redirection pipelines, until the inherited-output problem is repaired.
 Fresh browser inventory remains disabled. Rendered and physical-device checks
 and the wider history audit remain open.
+
+## Recovery after downloaded-data read failures
+
+The separate Novelty `848f4527` fix is now implemented in the native stored
+reader. A rejected command or unreadable shard raises a structured lookup
+failure; only a completed readable lookup can establish a cached miss. Pending
+reads for the same FEN/PV count are shared, bounded and removed on settlement.
+Failed cleanup cannot remove a newer pending request. Native status-aware
+analysis can show the failure and use the engine, while optional-score consumers
+retain their existing local catches. The reader avoids the generic unwrap
+helper's extra global notification. No network fallback or data rewrite is added.
+
+Three failures were reproduced on the prior source: swallowed read errors,
+same-position recovery blocked by a false miss, and duplicated pending reads.
+Four native fixtures now pass, including genuine-miss caching. A phone transport
+fixture verifies its existing 503/rejected-request eviction: real PC evidence
+can answer the failure, and the same position gets stored evidence once readable.
+The phone's production routing already had that behavior and is unchanged.
+An actual EngineListener check also verifies inline failure status, real local
+fallback and same-FEN wake/retry recovery.
+Twenty-four related checks across five files, full types and four-file lint
+without warnings/errors pass. Native package verification is tracked separately
+in the delivery JSON; the live phone remains verified source `41f60e91`.
