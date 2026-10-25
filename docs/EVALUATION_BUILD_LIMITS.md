@@ -67,5 +67,19 @@ cases). Three generated command-transport checks, full TypeScript checks and
 scoped lint pass. The actual CLI passes eight tiny-fixture acceptance cases;
 the normal native application command registry compiles with 22 existing
 warnings. No broad GUI test-exporter or platform-manifest change is required.
-Native release packaging is the next delivery step; the phone has no matching
-builder entry point and its currently delivered readers are unchanged.
+Clean delivery source `f33263de` packages successfully in 2m04s, with 22
+existing native warnings and a 24.94-second frontend build. Its 47,953,920-byte
+EXE has SHA256
+`876f001e3c571e67bf5ca964397c253dd85639e681da824c27de3997c921593c`.
+Four exact boot/App/files/bindings assets and the Windows IPC script are
+embedded. All 102 engine/source resources (104,581,828 bytes) and eight owned
+product/test files match. Generated command changes propagate new import hashes;
+the consumer source is unchanged. Only two known generated outputs were
+restored; delivery source is clean.
+
+The actual packaged release CLI separately passes the same eight acceptance
+cases (SHA256 `3195f4e8a11a2d3836c1c07772f4546ffe95672ca54cc9ee297582a8562b737f`).
+The phone has no matching builder entry point and its currently delivered readers
+are unchanged. No phone publication, explicit Dev restart, owner corpus build
+or data/profile operation was needed. Rendered/native-window/physical-device
+verification and the remaining history audit stay open.

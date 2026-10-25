@@ -61,54 +61,72 @@
     ]
   },
   "desktop": {
-    "exeBytes": 47892992,
-    "exeSha256": "ee4d6ac791253ae6279f3bdeca6101013b88d1e03621dd07fb9bf8bf4b49b1db",
+    "exeBytes": 47953920,
+    "exeSha256": "876f001e3c571e67bf5ca964397c253dd85639e681da824c27de3997c921593c",
     "assets": [
       {
-        "name": "index-DyOp8GiP.js",
+        "name": "index-Ba00Ngok.js",
         "bytes": 292437,
-        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
+        "sha256": "3bb2605068004e7e09488d56c3c94be412065acf6a7a907f214eff209e2b2135",
         "encoding": "brotli",
         "compressedBytes": 89591,
-        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
+        "compressedSha256": "4a22ffaea7edf97908bef66b613922290eeda176c193ab52067f4c5c24e3f176",
         "embedded": true
       },
       {
-        "name": "App-B27Iq3yU.js",
+        "name": "App-BJsbsQ8U.js",
         "bytes": 193045,
-        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
+        "sha256": "2403559b9fe831d72aa8cdf26c878dc26fadb6a4c491bcef0d73232c54895f2c",
         "encoding": "brotli",
-        "compressedBytes": 55005,
-        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
+        "compressedBytes": 54991,
+        "compressedSha256": "9c4e5541a3c72e49f34dd8f156c1de0aa50949ed5dc52ff5a05f11f71550eeec",
         "embedded": true
       },
       {
-        "name": "files-CIwBSFWZ.js",
+        "name": "files-CkPGvMfG.js",
         "bytes": 2228,
-        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
+        "sha256": "0f98727eb4c4c5251f906d6fdb893cb73341d499f9de7771dd533022e402c4b2",
         "encoding": "brotli",
-        "compressedBytes": 1143,
-        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
+        "compressedBytes": 1144,
+        "compressedSha256": "dab7ab7fcbd7bf13d8775db16f7bcd3eece9e615343516d6dec982b0df8dc6dc",
+        "embedded": true
+      },
+      {
+        "name": "bindings-BdZ-uijJ.js",
+        "bytes": 20422,
+        "sha256": "7b07b38badd45610f8405935099314f9312daf37feaeb044c2eb9b2813edc9da",
+        "encoding": "brotli",
+        "compressedBytes": 2949,
+        "compressedSha256": "0ca7588086c227259d51f8729ec74788d110583168b62c005b1d983c1713dcd5",
         "embedded": true
       }
     ],
-    "sourceCommit": "33670fec0a86599cb9b04bb6a6ed4b57ca076e8d",
-    "primaryCommit": "bdf22f0071ed083a245f22bab4e13aa51cb63600",
+    "sourceCommit": "f33263de887f2a2a496eda4753288a1722586220",
+    "primaryCommit": "4a3eb4a629ea65ce280ba8275a08ebf7dfeb4337",
     "nativeBuild": true,
     "existingNativeWarnings": 22,
-    "nativeCargoSeconds": 105.0,
+    "nativeCargoSeconds": 124.0,
+    "viteSeconds": 24.94,
     "exactWindowsIpcShimEmbedded": true,
+    "buildLimitCommandAndStringsEmbedded": true,
     "bundledFiles": 102,
     "bundledBytes": 104581828,
-    "matchingProductAndTestFiles": 6,
-    "coreChecks": 83,
-    "existingIgnoredCoreChecks": 3,
-    "newLocalHttpChecks": 3,
+    "matchingProductAndTestFiles": 8,
+    "nativeLibraryChecks": 63,
+    "nativeEvaluationChecks": 30,
+    "newNativeChecks": 18,
+    "generatedTransportChecks": 3,
     "independentPrimaryAndClean": true,
-    "frontendSourceChanged": false,
+    "types": true,
+    "releaseCliCases": 8,
+    "releaseCliSha256": "3195f4e8a11a2d3836c1c07772f4546ffe95672ca54cc9ee297582a8562b737f",
+    "frontendCommandBindingsChanged": true,
+    "unchangedConsumerSourceVerified": [
+      "src/index.tsx",
+      "src/App.tsx",
+      "src/utils/files.ts"
+    ],
     "previousFrontendGateRerun": false,
-    "previousNativeEvaluationChecks": 12,
-    "nativeEvaluationGateRerun": false,
     "restoredGeneratedOutputs": [
       "scripts/generated/otb-prep-database.js",
       "scripts/generated/shared-review-service.js"
@@ -119,6 +137,7 @@
     "explicitDevRestart": false,
     "phoneProductionChanged": false,
     "ownerDataWritten": false,
+    "corpusCopied": false,
     "artifact": "src-tauri/target/release/en-croissant-fork.exe",
     "activeDevSessionPreserved": true,
     "devShortcutChanged": false,
@@ -3548,7 +3567,7 @@
     "novelty": [
       "2a083a83"
     ],
-    "status": "native-source-verified-package-pending",
+    "status": "native-packaged",
     "baselineTests": 4,
     "baselineFailures": 4,
     "newNativeTests": 18,
@@ -3578,7 +3597,7 @@
     "requestIdCancellation": true,
     "publicationCancelRaceGuard": true,
     "existingOutputPreserved": true,
-    "nativeReleasePackageVerified": false,
+    "nativeReleasePackageVerified": true,
     "phoneBuilderExists": false,
     "phoneRuntimeChanged": false,
     "corpusCopied": false,
@@ -3589,6 +3608,154 @@
     "remaining": [
       "durable interrupted-job recovery (7128c5ed)",
       "data-management UI evaluation"
-    ]
+    ],
+    "packageSource": "f33263de887f2a2a496eda4753288a1722586220",
+    "primarySource": "4a3eb4a629ea65ce280ba8275a08ebf7dfeb4337",
+    "exeSha256": "876f001e3c571e67bf5ca964397c253dd85639e681da824c27de3997c921593c",
+    "releaseCliAcceptanceCases": 8,
+    "releaseCliSha256": "3195f4e8a11a2d3836c1c07772f4546ffe95672ca54cc9ee297582a8562b737f"
+  },
+  "previousPackManifestDesktop": {
+    "exeBytes": 47892992,
+    "exeSha256": "ee4d6ac791253ae6279f3bdeca6101013b88d1e03621dd07fb9bf8bf4b49b1db",
+    "assets": [
+      {
+        "name": "index-DyOp8GiP.js",
+        "bytes": 292437,
+        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
+        "embedded": true
+      },
+      {
+        "name": "App-B27Iq3yU.js",
+        "bytes": 193045,
+        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
+        "encoding": "brotli",
+        "compressedBytes": 55005,
+        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
+        "embedded": true
+      },
+      {
+        "name": "files-CIwBSFWZ.js",
+        "bytes": 2228,
+        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
+        "encoding": "brotli",
+        "compressedBytes": 1143,
+        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "33670fec0a86599cb9b04bb6a6ed4b57ca076e8d",
+    "primaryCommit": "bdf22f0071ed083a245f22bab4e13aa51cb63600",
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 105.0,
+    "exactWindowsIpcShimEmbedded": true,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingProductAndTestFiles": 6,
+    "coreChecks": 83,
+    "existingIgnoredCoreChecks": 3,
+    "newLocalHttpChecks": 3,
+    "independentPrimaryAndClean": true,
+    "frontendSourceChanged": false,
+    "previousFrontendGateRerun": false,
+    "previousNativeEvaluationChecks": 12,
+    "nativeEvaluationGateRerun": false,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "cleanCheckout": true,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "explicitDevRestart": false,
+    "phoneProductionChanged": false,
+    "ownerDataWritten": false,
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "activeDevSessionPreserved": true,
+    "devShortcutChanged": false,
+    "rollback": "task-owned original rollback retained"
+  },
+  "evaluationBuildLimitsNativePackage": {
+    "exeBytes": 47953920,
+    "exeSha256": "876f001e3c571e67bf5ca964397c253dd85639e681da824c27de3997c921593c",
+    "assets": [
+      {
+        "name": "index-Ba00Ngok.js",
+        "bytes": 292437,
+        "sha256": "3bb2605068004e7e09488d56c3c94be412065acf6a7a907f214eff209e2b2135",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "4a22ffaea7edf97908bef66b613922290eeda176c193ab52067f4c5c24e3f176",
+        "embedded": true
+      },
+      {
+        "name": "App-BJsbsQ8U.js",
+        "bytes": 193045,
+        "sha256": "2403559b9fe831d72aa8cdf26c878dc26fadb6a4c491bcef0d73232c54895f2c",
+        "encoding": "brotli",
+        "compressedBytes": 54991,
+        "compressedSha256": "9c4e5541a3c72e49f34dd8f156c1de0aa50949ed5dc52ff5a05f11f71550eeec",
+        "embedded": true
+      },
+      {
+        "name": "files-CkPGvMfG.js",
+        "bytes": 2228,
+        "sha256": "0f98727eb4c4c5251f906d6fdb893cb73341d499f9de7771dd533022e402c4b2",
+        "encoding": "brotli",
+        "compressedBytes": 1144,
+        "compressedSha256": "dab7ab7fcbd7bf13d8775db16f7bcd3eece9e615343516d6dec982b0df8dc6dc",
+        "embedded": true
+      },
+      {
+        "name": "bindings-BdZ-uijJ.js",
+        "bytes": 20422,
+        "sha256": "7b07b38badd45610f8405935099314f9312daf37feaeb044c2eb9b2813edc9da",
+        "encoding": "brotli",
+        "compressedBytes": 2949,
+        "compressedSha256": "0ca7588086c227259d51f8729ec74788d110583168b62c005b1d983c1713dcd5",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "f33263de887f2a2a496eda4753288a1722586220",
+    "primaryCommit": "4a3eb4a629ea65ce280ba8275a08ebf7dfeb4337",
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 124.0,
+    "viteSeconds": 24.94,
+    "exactWindowsIpcShimEmbedded": true,
+    "buildLimitCommandAndStringsEmbedded": true,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingProductAndTestFiles": 8,
+    "nativeLibraryChecks": 63,
+    "nativeEvaluationChecks": 30,
+    "newNativeChecks": 18,
+    "generatedTransportChecks": 3,
+    "independentPrimaryAndClean": true,
+    "types": true,
+    "releaseCliCases": 8,
+    "releaseCliSha256": "3195f4e8a11a2d3836c1c07772f4546ffe95672ca54cc9ee297582a8562b737f",
+    "frontendCommandBindingsChanged": true,
+    "unchangedConsumerSourceVerified": [
+      "src/index.tsx",
+      "src/App.tsx",
+      "src/utils/files.ts"
+    ],
+    "previousFrontendGateRerun": false,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "cleanCheckout": true,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "explicitDevRestart": false,
+    "phoneProductionChanged": false,
+    "ownerDataWritten": false,
+    "corpusCopied": false
   }
 }
