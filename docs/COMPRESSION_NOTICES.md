@@ -40,12 +40,34 @@ This record covers the root native lockfile's compression dependencies. The
 phone frontend has no native About entry point and receives no Rust compression
 code. Its separately compiled hosted helper uses a different Cargo.lock
 (zstd 0.13.3, zstd-safe 7.3.0, zstd-sys 2.1.0+zstd.1.5.7); its distribution
-notices remain a separate audit item. A read-only source audit matches all four
-helper grants to cached crate archives authenticated against its lockfile
-checksums, without extracting archives to disk. The newer safe/sys wrappers use
-BSD-3-Clause with a 2026 copyright; reusing the native MIT wrapper labels would
-be incorrect. This source audit does not attribute dependencies to a running
-binary or deliver helper notices. The existing Stockfish source/licence
+now has a separate `helper-manifest.json` and complete
+`PHONE_HELPER_NOTICES.txt`. All four helper grants match cached crate archives
+authenticated against its lockfile checksums, without extracting archives to
+disk. The newer safe/sys wrappers use BSD-3-Clause with a 2026 copyright;
+reusing the native MIT wrapper labels would be incorrect.
+
+The compiled helper exposes `--third-party-notices` and `--help` before opening
+state/cache roots. Extra arguments to those flags are refused. The normal
+JSON-lines protocol is unchanged. The PC phone publisher validates both
+lockfiles and exact helper CLI text before staging releases, including SkipBuild.
+Separate immutable notice files for the root-lockfile collector and standalone
+helper are staged beside their runtime files, named with the source commit.
+Existing different notice bytes refuse publication and remain intact; failed
+copies remove only the private pending file. No source licence labels are
+rewritten to fit another delivery target.
+
+Ten Node scope/text/version/resource checks pass independently on primary/clean.
+Six PowerShell cases verify exact compiled text, mismatch refusal, fresh/identical
+copies, conflict preservation and missing sources, including disabled module
+autoloading. Existing publisher source/build/rollback guards also pass; fixture
+cleanup now validates its exact temporary root. Six real CLI cases verify full
+text, help, invalid arguments without data-root creation and an isolated normal
+settings RPC. The release helper SHA256 is
+`be1eb13d15f517c9aff997f87ba6768b105941a6c488db00981051a317dbfa71`;
+its 6,230-byte notices have SHA256
+`75546853135bc1ddbef9982386b7745e56d0edba281d8ad4ea7cbb4dd1ff1610`.
+These are source/build/fixture checks. Hosted runtime delivery is pending;
+no live service or owner data was changed by those checks. The existing Stockfish source/licence
 resources are retained. This is not a complete third-party dependency inventory.
 
 The existing Dev watcher relaunched after the native resource configuration

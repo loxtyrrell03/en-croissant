@@ -1,3 +1,22 @@
+## 2026-10-25 hosted helper compression notices
+
+- Standalone helper now uses its own authenticated notice manifest/full text;
+  safe7.3/sys2.1 wrappers retain BSD-3-Clause rather than native MIT labels.
+  --third-party-notices/help exit before opening roots; extra flag arguments
+  refuse. Normal JSON-lines protocol is unchanged. Publisher validates both
+  lockfiles and exact compiled notice text (also SkipBuild), then stages
+  source-versioned immutable collector/helper sidecars before replacing binaries.
+  Existing conflicts remain; owned failed pending files are removed.
+- Primary/clean10 scope checks/six PowerShell notice cases pass. Existing publish
+  guards pass with exact validated temp cleanup. Six actual release CLI cases
+  prove full bytes/no informational data roots/normal isolated RPC; helper SHA
+  be1eb13d15f517c9aff997f87ba6768b105941a6c488db00981051a317dbfa71.
+  Notices6230B SHA75546853135bc1ddbef9982386b7745e56d0edba281d8ad4ea7cbb4dd1ff1610.
+  Two-file lint0/PowerShell parser pass. Native app/library/frontend unchanged;
+  do not rerun unrelated broad gates or relabel their old receipts. Hosted
+  publication remains pending with existing idle/source/origin/owner-state
+  guards. No owner data/corpus/service mutation in tests. See COMPRESSION_NOTICES.md.
+
 ## 2026-10-25 compression notices native package
 
 - Cleanabf029e6 / primary844beb1c packages47,958,016 bytes SHA256

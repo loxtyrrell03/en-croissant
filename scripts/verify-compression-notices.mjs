@@ -3,17 +3,26 @@ import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-export function verifyCompressionNotices(root) {
+export function verifyCompressionNotices(root, scope = "native") {
+  if (!["native", "hosted-helper"].includes(scope))
+    throw Error("Unknown compression-notice scope.");
+  const helper = scope === "hosted-helper";
   const read = (file) => readFileSync(path.join(root, file), "utf8");
-  const manifest = JSON.parse(read("licenses/zstd/manifest.json"));
+  const manifest = JSON.parse(
+    read(helper ? "licenses/zstd/helper-manifest.json" : "licenses/zstd/manifest.json"),
+  );
   const packages = [
-    ...read("src-tauri/Cargo.lock").matchAll(/\[\[package\]\]([\s\S]*?)(?=\[\[package\]\]|$)/g),
+    ...read(helper ? "src-tauri/tournament-core/Cargo.lock" : "src-tauri/Cargo.lock").matchAll(
+      /\[\[package\]\]([\s\S]*?)(?=\[\[package\]\]|$)/g,
+    ),
   ].map((match) => ({
     name: match[1].match(/^name = "([^"]+)"/m)?.[1],
     version: match[1].match(/^version = "([^"]+)"/m)?.[1],
   }));
   const names = ["zstd", "zstd-safe", "zstd-sys"];
-  const notices = read("licenses/THIRD_PARTY_NOTICES.txt").replaceAll("\r\n", "\n");
+  const notices = read(
+    helper ? "licenses/PHONE_HELPER_NOTICES.txt" : "licenses/THIRD_PARTY_NOTICES.txt",
+  ).replaceAll("\r\n", "\n");
   for (const name of names) {
     const installed = packages.filter((pkg) => pkg.name === name);
     if (
@@ -42,6 +51,13 @@ export function verifyCompressionNotices(root) {
       throw Error(`Distribution omits full notice: ${entry.noticePath}`);
     if (!notices.includes(`${entry.name} ${entry.version}`))
       throw Error(`Distribution omits version: ${entry.name}`);
+    if (
+      helper &&
+      !notices.includes(
+        `${entry.name} ${entry.version} - ${entry.component}\nSelected licence: ${entry.selectedLicense}\n`,
+      )
+    )
+      throw Error(`Distribution mislabels the ${entry.name} grant.`);
   }
   if (
     manifest.entries.length !== 4 ||
@@ -50,8 +66,9 @@ export function verifyCompressionNotices(root) {
     )
   )
     throw Error("Both wrapper and bundled C notices are required.");
-  const config = JSON.parse(read("src-tauri/tauri.conf.json"));
+  const config = helper ? null : JSON.parse(read("src-tauri/tauri.conf.json"));
   if (
+    !helper &&
     config.bundle.resources?.["../licenses/THIRD_PARTY_NOTICES.txt"] !== "THIRD_PARTY_NOTICES.txt"
   )
     throw Error("Native distribution must include third-party notices.");
@@ -59,8 +76,12 @@ export function verifyCompressionNotices(root) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const result = verifyCompressionNotices(fileURLToPath(new URL("../", import.meta.url)));
+  const args = process.argv.slice(2);
+  if (args.length && (args.length !== 2 || args[0] !== "--scope"))
+    throw Error("Usage: verify-compression-notices.mjs [--scope native|hosted-helper]");
+  const scope = args[1] ?? "native";
+  const result = verifyCompressionNotices(fileURLToPath(new URL("../", import.meta.url)), scope);
   console.log(
-    `Compression notices: ${result.packages} locked packages, ${result.grants} exact grants, complete text and native resource mapping verified.`,
+    `Compression notices: ${result.packages} locked packages, ${result.grants} exact grants, complete text and ${scope === "native" ? "native resource mapping" : "hosted-helper labels"} verified.`,
   );
 }
