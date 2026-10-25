@@ -1,3 +1,21 @@
+## 2026-10-25 retained shared-default acceptance
+
+- Primary mirrors b9e7e061 with exact owner104/2 guidance and25/1 binding
+  remainders. It independently passes29 native source checks plus the transport
+  case,43 Node/one optional skip,51 frontend, full types and four installer cases.
+- An unpackaged kernel-backed read-only check recognizes the retained corpus
+  through both default resolvers from an absent disposable profile and returns
+  stored depth65. Manifest401,283,893 positions;1,024 populated/2,048 buckets.
+  This checks metadata, one bounded sample and lookup, not every position.
+  Native debug recognition4705ms/100 cached reads50ms; Node483ms/100 cached69ms
+  and lookup142ms after native OS-cache warming. No release/UI timing claim.
+  No preferences/corpus write/copy, live runtime or service change; owned probe
+  tasks removed. Existing pinned sync helpers/config/task remain untouched.
+- Home health exposes its own localEvals status/error for delivery verification;
+  four isolated HTTP cases and scoped lint0 pass with existing fallback retained.
+  Native packaging and actual reader/service publication remain pending. See
+  docs/SHARED_EVALUATION_DISCOVERY.md/current delivery JSON. Full audit active.
+
 ## 2026-10-25 shared evaluation discovery source
 
 - Unconfigured native and phone/PC service defaults recognize shared immutable

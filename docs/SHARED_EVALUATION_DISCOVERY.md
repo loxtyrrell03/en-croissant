@@ -54,7 +54,29 @@ actual isolated home-server and PC-engine HTTP reads with workers cold, source
 priority, versioned data, errors, repair and in-flight ownership. Four production
 installer-field expression cases pass without installing or changing a service.
 Fifty-one frontend checks in nine files, full TypeScript and eight-file lint0 pass.
-All routine data is tiny/disposable. Retained-corpus timing, clean/primary source
-reconciliation, native package and actual service delivery are separate follow-ups.
+All routine data is tiny/disposable. Primary independently passes29 focused native source checks plus the pure transport
+case, the same43 Node/four installer cases and51 frontend/full types. Its owner
+104/2 guidance and25/1 binding remainders survive the mirrored source.
+Native package and actual service delivery remain separate follow-ups.
 No owner profile, pinned sync helper, hosted route, running app or service was changed.
 The broader managed rated/broadcast catalogue and other history items remain open.
+
+
+The normal-user unpackaged acceptance resolved the shared alias through a kernel
+handle to the retained Dev corpus. Both default resolvers recognized it from an
+absent disposable profile and returned its starting-position stored depth65 PV.
+The manifest advertises401,283,893 positions; inventory has1,024 populated shards
+in2,048 buckets. This validates one bounded sample and an actual lookup, not all
+positions or independent engine accuracy. The native unoptimized helper took
+4.705 seconds for recognition;100 cached reads took50 ms. Node recognition took
+483.1 ms,100 cached checks68.5 ms, and its stored lookup142.0 ms on this PC, with
+OS caches already exercised by the native read. Native debug timing does not
+certify release or interactive responsiveness. No preference/corpus copy/write
+or service change occurred. Both temporary probe tasks are removed; an initial
+probe-path assertion was corrected and the successful native result retained.
+
+Home health now exposes its own localEvals availability/error alongside the
+existing service/catalogue fields. Four real isolated home HTTP cases verify
+ready shared data and explicit incomplete-data failure; this adds delivery
+observability without changing lookup fallback policy or service configuration.
+Source/runtime and rendered/physical evidence remain distinct.

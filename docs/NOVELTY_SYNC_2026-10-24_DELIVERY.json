@@ -5453,9 +5453,46 @@
     "pinnedSyncHelpersChanged": false,
     "runtimePublished": false,
     "nativePackageVerified": false,
-    "retainedCorpusAcceptance": "pending",
+    "retainedCorpusAcceptance": {
+      "readOnly": true,
+      "backingResolvedThroughKernel": true,
+      "nativePassed": true,
+      "nodePassed": true,
+      "manifestPositions": 401283893,
+      "populatedShards": 1024,
+      "buckets": 2048,
+      "nativeDebugRecognitionMs": 4705,
+      "nativeCachedReads": 100,
+      "nativeCachedReadsMs": 50,
+      "nodeRecognitionMs": 483.07329999999996,
+      "nodeCachedReads": 100,
+      "nodeCachedReadsMs": 68.45639999999992,
+      "nodeLookupMs": 142.02469999999994,
+      "startingPositionDepth": 65,
+      "osCacheLimit": "Node measured after native reads; native unoptimized helper, not native-window/release responsiveness",
+      "temporaryTasksRemoved": true
+    },
     "broaderCatalogueRecognition": "open",
     "browserRendered": false,
-    "physicalPhoneVerified": false
+    "physicalPhoneVerified": false,
+    "primaryMirroredSource": "b9e7e061bb7fa28c6a904bc76db446f3769b16e5",
+    "primaryFocusedNativeSourcePassed": 29,
+    "primaryTransportCasePassed": 1,
+    "primaryFrontendPassed": 51,
+    "primaryNodePassed": 43,
+    "primaryNodeOptionalSkipped": 1,
+    "primaryTypes": true,
+    "primaryInstallerCases": 4,
+    "primaryOwnerGuidanceRemainder": [
+      104,
+      2
+    ],
+    "primaryOwnerBindingsRemainder": [
+      25,
+      1
+    ],
+    "homeHealthLocalEvalsExposed": true,
+    "homeHealthFocusedHttpCases": 4,
+    "homeHealthScopedLint": true
   }
 }

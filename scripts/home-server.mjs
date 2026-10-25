@@ -380,6 +380,7 @@ async function handleRequest(request, response) {
       outpostDatabase,
       enDatabases: enCatalog?.length ?? null,
       outpostCollections: outpostCatalog?.length ?? null,
+      localEvals: localEvalStore?.status ?? null,
       databasePositionCacheEntries: databasePositionCache.size,
       libraryRefreshRunning,
       lastLibraryRefresh,

@@ -72,6 +72,9 @@ test("an unconfigured home service recognizes the shared store without a duplica
       const hit = await fetch(`${baseUrl}/v1/cloud-eval?fen=${encodeURIComponent(STORED_FEN)}`);
       assert.equal(hit.status, 200); assert.equal((await hit.json()).pvs[0].cp, 19);
       assert.deepEqual(upstreamPaths, []);
+      const health = await (await fetch(`${baseUrl}/api/health`)).json();
+      assert.equal(health.localEvals.available, true);
+      assert.equal(health.localEvals.positions, 1);
     });
   } finally { await rm(temporaryRoot, { recursive: true, force: true }); }
 });
@@ -86,6 +89,9 @@ test("an incomplete home legacy store does not silently select another shared st
       const result = await fetch(`${baseUrl}/v1/cloud-eval?fen=${encodeURIComponent(STORED_FEN)}`);
       assert.equal(result.status, 200); assert.deepEqual(await result.json(), { ok: true });
       assert.equal(upstreamPaths.length, 1, "keep the established backend fallback, rather than choose another local source");
+      const health = await (await fetch(`${baseUrl}/api/health`)).json();
+      assert.equal(health.localEvals.available, false);
+      assert.ok(health.localEvals.error);
     });
   } finally { await rm(temporaryRoot, { recursive: true, force: true }); }
 });
