@@ -1159,7 +1159,7 @@
     },
     "phoneStoredEvaluationValidation": {
       "novelty": "c2760248",
-      "status": "phone-source-fixed-clean-build-and-publication-pending",
+      "status": "phone-built-and-live-https-verified-rendered-pending",
       "native": "Local lookup hashes the requested four-field FEN and returns bounded numeric Rust fields; native sign/perspective flow remains separate.",
       "phone": "Unknown raw responses are validated before live/raw cache writes and optional Prep conversion: supplied FEN matches four fields; finite scores, legal PV prefixes, true source ranks and White-relative values. Invalid HTTP200 remains retryable; genuine 404 misses and fresh/off paths remain.",
       "priorFailuresReproduced": 6,
@@ -1171,9 +1171,12 @@
       "lintWarnings": 1,
       "lintErrors": 0,
       "existingFixtureWarning": true,
-      "cleanBuildVerified": false,
-      "phonePublished": false,
-      "nativeProductionChanges": false
+      "cleanBuildVerified": true,
+      "phonePublished": true,
+      "nativeProductionChanges": false,
+      "cleanSourceCommit": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43",
+      "cleanTests": 454,
+      "cleanTestFiles": 63
     }
   },
   "storedEvaluationParity": {
@@ -1577,5 +1580,78 @@
     "physicalPhoneVerified": false,
     "phoneProductionChanges": false,
     "phonePublishedSource": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9"
+  },
+  "phoneStoredResponseDelivery": {
+    "sourceCommit": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43",
+    "primarySourceCommit": "c8297eba",
+    "cleanTests": 454,
+    "cleanTestFiles": 63,
+    "types": true,
+    "phoneBuildSeconds": 22.53,
+    "appShellSha256": "1ac542e5630407df582db7a2c7b8935f0a8c06205d33b13474c3ff19e5a1610c",
+    "assets": [
+      {
+        "path": "assets/WebApp-BUgnldZn.js",
+        "bytes": 433709,
+        "sha256": "bb043b1a4e9183254658fd4f96845ac99a3b6e3d6a2db85789929d216b5d2bf3"
+      },
+      {
+        "path": "assets/usePlanArrows-DHtWrXP4.js",
+        "bytes": 8391,
+        "sha256": "8526c2a74f43fc1028f08ae1002e5dceb4a06b658b677e6259e6551fed342470"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ],
+    "phonePid": 53460,
+    "enginePid": 5816,
+    "publisherReturned": true,
+    "publisherConsoleOutputRedirected": false,
+    "temporaryPublisherTaskRemoved": true,
+    "preservedOwnerFiles": 3,
+    "workspacePreserved": true,
+    "normalizedLibraryContentPreserved": true,
+    "tournamentSettingsPreserved": true,
+    "enabledChoicePreserved": true,
+    "servePreserved": true,
+    "actualEngine": {
+      "checkedAt": "2026-10-25T09:35:17.348Z",
+      "url": "https://lox-pc.tail89d19b.ts.net",
+      "processId": 5816,
+      "actualUciName": "Stockfish 19",
+      "bestmove": "e2e4",
+      "legal": true,
+      "exactChosenRootScore": true,
+      "allPvsLegal": true,
+      "reportLimits": {
+        "depth": 8,
+        "timeMs": 50
+      },
+      "reportedVersion": 19,
+      "reportedBuild": null,
+      "release": {
+        "ok": true,
+        "engineKind": "stockfish",
+        "pending": false,
+        "busy": 0,
+        "stopped": 1
+      },
+      "workerReadyAfter": false,
+      "versionAfterRelease": null,
+      "servicesRoutesChanged": false,
+      "ownerDataModified": false,
+      "physicalPhoneVerified": false
+    },
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "nativeProductionChanges": false
   }
 }
