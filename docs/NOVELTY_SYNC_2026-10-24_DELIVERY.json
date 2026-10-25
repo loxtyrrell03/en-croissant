@@ -4217,5 +4217,23 @@
       "causeEstablished": false,
       "notAClaimThatThisMilestoneFixedIt": true
     }
+  },
+  "nativeEvaluationDataDesign": {
+    "status": "direction-A-selected-backend-and-ui-implementation-pending",
+    "selected": "A - Settings row + dialogs",
+    "ownerSelected": true,
+    "alternativesPresented": 3,
+    "editableSvgSheets": 3,
+    "workflowStates": "docs/design/evaluation-data/STATE_MAP.md",
+    "nativeThemeFontAndPrimaryColorMatched": true,
+    "exampleDataLabelled": true,
+    "svgXmlParsed": true,
+    "textWidthsMeasuredAgainstNativeFont": true,
+    "rasterPreviewsVisuallyReviewed": true,
+    "runtimeUiImplemented": false,
+    "browserRenderedApp": false,
+    "phoneNewBuilderProposed": false,
+    "runtimeChanged": false,
+    "ownerDataWritten": false
   }
 }
