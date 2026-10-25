@@ -10992,8 +10992,186 @@
     ]
   },
   "en": {
-    "head": "5e12da564e1ddb6d224c60c59c9506f85e488532",
+    "head": "cc5680bd2ecd09a5d658549b61edb8cade120529",
     "commits": [
+      {
+        "commit": "5442126706fa49c94ba5e683dd4dba3b32a66834",
+        "date": "2026-10-25",
+        "subject": "Upgrade local phone Stockfish to 19 and retain search identity",
+        "files": [
+          "scripts/tests/phone-stockfish-wasm.test.mjs",
+          "src/web/WebApp.tsx",
+          "src/web/gameReport.ts",
+          "src/web/mistakeReview.ts",
+          "src/web/reportStockfishEngine.ts",
+          "src/web/sharedReview.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/localStockfishLifecycle.test.ts",
+          "src/web/tests/reportStockfishEngine.test.ts",
+          "src/web/tests/sharedReviewScorePerspective.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "reviews-and-training",
+          "phone"
+        ]
+      },
+      {
+        "commit": "cc5680bd2ecd09a5d658549b61edb8cade120529",
+        "date": "2026-10-25",
+        "subject": "Upgrade local phone Stockfish to 19 and retain search identity",
+        "files": [
+          "scripts/tests/phone-stockfish-wasm.test.mjs",
+          "src/web/WebApp.tsx",
+          "src/web/gameReport.ts",
+          "src/web/mistakeReview.ts",
+          "src/web/reportStockfishEngine.ts",
+          "src/web/sharedReview.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/localStockfishLifecycle.test.ts",
+          "src/web/tests/reportStockfishEngine.test.ts",
+          "src/web/tests/sharedReviewScorePerspective.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "reviews-and-training",
+          "phone"
+        ]
+      },
+      {
+        "commit": "a9f7f4f7d143ae0c6941d7663ecb27dbf5743900",
+        "date": "2026-10-25",
+        "subject": "Report actual shared engine identity after requested startup",
+        "files": [
+          "scripts/stockfish-remote-server.mjs",
+          "scripts/tests/engine-report-service.test.mjs",
+          "scripts/tests/engine-service-standby.test.mjs"
+        ],
+        "areas": [
+          "engine-management"
+        ]
+      },
+      {
+        "commit": "a3203af5bbbbed4cbc1513e3c380e3a35ee92cba",
+        "date": "2026-10-25",
+        "subject": "Report actual shared engine identity after requested startup",
+        "files": [
+          "scripts/stockfish-remote-server.mjs",
+          "scripts/tests/engine-report-service.test.mjs",
+          "scripts/tests/engine-service-standby.test.mjs"
+        ],
+        "areas": [
+          "engine-management"
+        ]
+      },
+      {
+        "commit": "9a37cc0be83a0ffc1be046ec318d3736ffeb4322",
+        "date": "2026-10-25",
+        "subject": "Preserve inaccessible native engine profiles",
+        "files": [
+          "src/utils/enginePreferences.ts",
+          "src/utils/tests/enginePreferences.nativeIO.test.ts"
+        ],
+        "areas": []
+      },
+      {
+        "commit": "66ffb51d385975a386fe0658f29212780320dd83",
+        "date": "2026-10-25",
+        "subject": "Preserve inaccessible native engine profiles",
+        "files": [
+          "src/utils/enginePreferences.ts",
+          "src/utils/tests/enginePreferences.nativeIO.test.ts"
+        ],
+        "areas": []
+      },
+      {
+        "commit": "9ab3d91657887ba6771aa4b0d14615eee201daa5",
+        "date": "2026-10-25",
+        "subject": "Keep owner engine paths and newer versions during discovery",
+        "files": [
+          "src/utils/engines.ts",
+          "src/utils/tests/engines.test.ts"
+        ],
+        "areas": [
+          "engine-management"
+        ]
+      },
+      {
+        "commit": "110ac75ed8c58c8b06f8736c4f8dfbe2133114ac",
+        "date": "2026-10-25",
+        "subject": "Keep owner engine paths and newer versions during discovery",
+        "files": [
+          "src/utils/engines.ts",
+          "src/utils/tests/engines.test.ts"
+        ],
+        "areas": [
+          "engine-management"
+        ]
+      },
+      {
+        "commit": "280d1f2fc37a5c8832a192dc66a52c5d2caacac4",
+        "date": "2026-10-25",
+        "subject": "Preserve native engine preferences and retry failed profile saves",
+        "files": [
+          "src/App.tsx",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/EnginePreferencesNotice.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/hooks/useEnsureDesktopEngines.ts",
+          "src/state/atoms.ts",
+          "src/utils/enginePreferenceStore.ts",
+          "src/utils/enginePreferences.ts",
+          "src/utils/engines.ts",
+          "src/utils/tests/enginePreferenceStore.test.ts",
+          "src/utils/tests/enginePreferences.nativeIO.test.ts",
+          "src/utils/tests/engines.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "2d59f51a7366603e7d53acc162b8cbeb6df841fa",
+        "date": "2026-10-25",
+        "subject": "Preserve native engine preferences and retry failed profile saves",
+        "files": [
+          "src/App.tsx",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/EnginePreferencesNotice.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/hooks/useEnsureDesktopEngines.ts",
+          "src/state/atoms.ts",
+          "src/utils/enginePreferenceStore.ts",
+          "src/utils/enginePreferences.ts",
+          "src/utils/engines.ts",
+          "src/utils/tests/enginePreferenceStore.test.ts",
+          "src/utils/tests/enginePreferences.nativeIO.test.ts",
+          "src/utils/tests/engines.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "bef603040c5bc3947c20b9bab3ebf8107394d918",
+        "date": "2026-10-25",
+        "subject": "Record phone date parity checks and refresh the change audit",
+        "files": [
+          "scripts/audit-novelty-changes.mjs"
+        ],
+        "areas": []
+      },
+      {
+        "commit": "793195dba74ef8e7ed1258ccd1a88ab7b0f378c5",
+        "date": "2026-10-25",
+        "subject": "Record phone date parity checks and refresh the change audit",
+        "files": [
+          "scripts/audit-novelty-changes.mjs"
+        ],
+        "areas": []
+      },
       {
         "commit": "be9e7eb1c89fa6dd687c318ca939d883d62b06ce",
         "date": "2026-10-25",
@@ -19873,56 +20051,6 @@
         "areas": [
           "phone"
         ]
-      },
-      {
-        "commit": "ea9b31cc5ae91f87d6d24b5a4cab340609d6453f",
-        "date": "2026-07-24",
-        "subject": "Tighten exact opening line relevance",
-        "files": [
-          "scripts/chess-coach-service.mjs",
-          "scripts/tests/chess-coach-service.test.mjs",
-          "src-tauri/src/coach.rs",
-          "src/bindings/generated.ts",
-          "src/components/boards/AiCoachPanel.tsx",
-          "src/utils/aiCoachPersistence.ts",
-          "src/web/WebApp.tsx",
-          "src/web/chessCoach.ts",
-          "src/web/tests/chessCoach.test.ts"
-        ],
-        "areas": [
-          "board-and-annotations",
-          "app-and-controls",
-          "phone"
-        ]
-      },
-      {
-        "commit": "5edfbb5d39d15da40f5eddf761b36e62f0b84400",
-        "date": "2026-07-24",
-        "subject": "Map exact opening book lines and add coach diagrams",
-        "files": [
-          "scripts/build-chess-book-corpus.py",
-          "scripts/chess-book-corpus-requirements.txt",
-          "scripts/chess-coach-service.mjs",
-          "scripts/chess_book_lines.py",
-          "scripts/home-server.mjs",
-          "scripts/test-chess-book-corpus.py",
-          "scripts/tests/chess-coach-service.test.mjs",
-          "scripts/tests/test_chess_book_lines.py",
-          "src-tauri/src/coach.rs",
-          "src/bindings/generated.ts",
-          "src/components/boards/AiCoachPanel.tsx",
-          "src/utils/aiCoachPersistence.ts",
-          "src/utils/tests/aiCoachPersistence.test.ts",
-          "src/web/WebApp.module.css",
-          "src/web/WebApp.tsx",
-          "src/web/chessCoach.ts",
-          "src/web/tests/chessCoach.test.ts"
-        ],
-        "areas": [
-          "board-and-annotations",
-          "app-and-controls",
-          "phone"
-        ]
       }
     ]
   },
@@ -19933,7 +20061,7 @@
       "en": [
         {
           "path": "src/App.tsx",
-          "sha256": "7c5f80a15aa37e2b61d2078afadee7b8d48b6ae1537a252bac00c1cf460d6714",
+          "sha256": "53385f61e4aa0678baa8c6c02e89d745515391b310d17b9c7fc19046e8cb94fd",
           "identical": false
         }
       ]
@@ -20355,7 +20483,7 @@
         },
         {
           "path": "src/web/mistakeReview.ts",
-          "sha256": "9a333a94c4856ad472b238d6b80f9fbbd57ea45ac57645ee26d80b2d12e71ade",
+          "sha256": "c0e08e8c8377019a3c2a2457d8dbcb4a76c477803ed104646052aa3988163b57",
           "identical": false
         }
       ]

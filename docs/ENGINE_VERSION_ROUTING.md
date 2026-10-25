@@ -45,3 +45,13 @@ phone verification. Clean combined builds/runtime delivery are recorded separate
 Native Stockfish 19 installation/catalog/default migration, current live service
 deployment and rendered/physical-device checks remain separate delivery work.
 Historical Stockfish 18 score fixtures keep their real provenance.
+
+Primary `cc5680bd` and clean delivery `54421267` match all 27 owned preference,
+helper and phone source/test/manifest files. Clean verification passes 599 related
+frontend checks/76 files, full types, twelve-file routing lint with zero warnings
+or errors and the real lite WASM test. WebApp retains 25 existing lint warnings.
+The helper independently passes the three 19/standby, seven 18/review/performance
+and 38 client checks on clean source. Desktop and canonical-phone builds pass in
+22.01/22.12 seconds. Both compiled worker assets match the
+pinned dependency bytes; no old worker or invented test fixture is bundled.
+No live helper upgrade, manual profile migration or publication was performed.
