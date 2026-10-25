@@ -894,7 +894,7 @@
     "servicesChanged": false
   },
   "pendingPlanArrowParity": {
-    "status": "native-phone-source-verified-clean-runtime-pending",
+    "status": "source-clean-packages-verified-rendered-phone-publication-pending",
     "focusedTests": 65,
     "focusedFiles": 7,
     "types": true,
@@ -909,6 +909,193 @@
     "physicalPhoneVerified": false,
     "phoneSourceChanged": true,
     "phonePublished": false,
-    "servicesChanged": false
+    "servicesChanged": false,
+    "cleanVerification": true,
+    "nativeArtifactUpdated": true,
+    "cleanSourceCommit": "1f59719590119bdb9c03d63458b6cc7894db9ad6",
+    "cleanTests": 619,
+    "cleanTestFiles": 77,
+    "phoneBuild": true
+  },
+  "currentPlanArrowPackages": {
+    "native": {
+      "exeBytes": 47864320,
+      "exeSha256": "676a8be5514092221ed7c63aab8ffeec63b0cb4a7aeead711dd3dfd2cb1a439b",
+      "assets": [
+        {
+          "name": "BoardAnalysis-CbHykZ3b.js",
+          "bytes": 25427,
+          "sha256": "97dc583a0ea79dcf1b9ab75ff904f0ea84007aeb27f710fa19745a26f16ea88d",
+          "encoding": "brotli",
+          "compressedBytes": 8317,
+          "compressedSha256": "6c4e7ab559976b6688d35c6efe485383557e4e225c4a15212cffccf47aadeea6",
+          "embedded": true
+        },
+        {
+          "name": "usePlanArrows-CrAgoOrS.js",
+          "bytes": 7851,
+          "sha256": "97a2ea62bb4032693c34e70040b58a1cf97c7ac785fd7a7426bfcfeba46c212e",
+          "encoding": "brotli",
+          "compressedBytes": 3118,
+          "compressedSha256": "c74dc771d36a22d6b57470e941e9b519d2ead0a1f4faa060b3fdd026833515bd",
+          "embedded": true
+        },
+        {
+          "name": "WebApp-IV7WPHo9.js",
+          "bytes": 409076,
+          "sha256": "d47cb3f69c5ad2b8fc62de1f8e372c806cf3d3570ccc7f1ef8d3706f3ddabc23",
+          "encoding": "brotli",
+          "compressedBytes": 116901,
+          "compressedSha256": "2189d56e7a6d4f7f9495386d4a02c56a61b7d6886263c9e2bde82fb965167972",
+          "embedded": true
+        },
+        {
+          "name": "EnginesPage-DAkfD5t3.js",
+          "bytes": 81702,
+          "sha256": "1420af7ebf15a571df00926fd848ab99da2cf9e56e5fa42f45e41473782af113",
+          "encoding": "brotli",
+          "compressedBytes": 43025,
+          "compressedSha256": "fb72cf33a08e813461efc5f2e630cfe099a8e356596455a0d9c4503a17abc247",
+          "embedded": true
+        },
+        {
+          "name": "EvalListener-Cl0EyFhw.js",
+          "bytes": 83745,
+          "sha256": "6702ca5f2f5322b675eb831faa029bdcf2ff4c70f5dcc6cc57a9de9057641765",
+          "encoding": "brotli",
+          "compressedBytes": 28935,
+          "compressedSha256": "211fcbd730d9116d20271476f60952faf3a2b8690dad9cd997d069c9e0a848e5",
+          "embedded": true
+        },
+        {
+          "name": "BestMoves-DbggS0FG.js",
+          "bytes": 22940,
+          "sha256": "b7095362331f0c82ddc43fd4b2edf694e9de576c5dd14e08e061a3629cff6628",
+          "encoding": "brotli",
+          "compressedBytes": 8811,
+          "compressedSha256": "1e1b936f88bfcf7e673cbe0f5b7c5ee8e34724c0ee041ef4137ef26d68805ae1",
+          "embedded": true
+        },
+        {
+          "name": "EnginePanelContent-CodkLQUF.js",
+          "bytes": 15853,
+          "sha256": "07faf9bcab0de5856fe1413523e6ea5812c585d3af17b7543434a8147019ac61",
+          "encoding": "brotli",
+          "compressedBytes": 6319,
+          "compressedSha256": "5a9ac39cc0442f0bae8847fc18fa0450e0c6e5e7b90c57b639c8335ac9bd2c14",
+          "embedded": true
+        },
+        {
+          "name": "PlanExplorerPanel-B5Xzqa5E.js",
+          "bytes": 37117,
+          "sha256": "c5b030617a721529e4b479c08fc4e03877170fc7e47db79cee2bae17bfad23e1",
+          "encoding": "brotli",
+          "compressedBytes": 12453,
+          "compressedSha256": "90dcca8df322fea750cdd92ba7a42a65375d59efaafdd6fe8ba3c7922205a54e",
+          "embedded": true
+        },
+        {
+          "name": "EnginePlanExplorerPanel-xXnflobi.js",
+          "bytes": 47709,
+          "sha256": "f3ccc57ad3d3237da5e94469fdc6e967ebd3323662ba5c227f5f5b74c67a62f5",
+          "encoding": "brotli",
+          "compressedBytes": 15072,
+          "compressedSha256": "997ca20677e50b5bed02f023ef187a6a7ee1b1c71d70dc09090d50633cfef160",
+          "embedded": true
+        }
+      ],
+      "sourceCommit": "1f59719590119bdb9c03d63458b6cc7894db9ad6",
+      "primaryCommit": "69da8d731f9baec4cacea0361d415f6427d220fc",
+      "cleanTests": 619,
+      "cleanTestFiles": 77,
+      "types": true,
+      "nativeBuild": true,
+      "existingNativeWarnings": 22,
+      "bundledFiles": 102,
+      "bundledBytes": 104581828,
+      "bundledHashesMatch": true,
+      "matchingOwnedFiles": 18,
+      "browserRendered": false,
+      "physicalPhoneVerified": false,
+      "phonePublished": false,
+      "servicesChanged": false
+    },
+    "phone": {
+      "sourceCommit": "1f59719590119bdb9c03d63458b6cc7894db9ad6",
+      "phoneBuild": true,
+      "buildSeconds": 22.67,
+      "canonicalOriginCompiled": true,
+      "assets": [
+        {
+          "path": "assets/WebApp-Bi_25Gyt.js",
+          "bytes": 431189,
+          "sha256": "beeef1940e809eba7e4d9436d69d33ba37a41df8445398654740bff1bf3938eb"
+        },
+        {
+          "path": "assets/usePlanArrows-Dq1GH5wU.js",
+          "bytes": 8391,
+          "sha256": "9734e72f9bca9f9bef39a1f2998d086ffffccf009f1bdd01dff2fb71e320d25d"
+        },
+        {
+          "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+          "bytes": 28230,
+          "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+        },
+        {
+          "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+          "bytes": 1845971,
+          "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+        },
+        {
+          "path": "index.html",
+          "bytes": 957,
+          "sha256": "f50fa07b7e74f77bd793bbf9eb9f22ad2039e1bec3117070b709cfac5315508e"
+        }
+      ],
+      "published": false,
+      "browserRendered": false,
+      "physicalPhoneVerified": false,
+      "servicesChanged": false
+    }
+  },
+  "engineCandidateAuditDelta": {
+    "savedPlayOptions": {
+      "novelty": "51e4751c",
+      "status": "already-present-in-native-game-config-path",
+      "frontendTests": 13,
+      "nativeApplication": "GameManager applies options to both engine players before search"
+    },
+    "storedCloudEvaluationSwitch": {
+      "novelty": [
+        "18f81ed0",
+        "ece3e18e"
+      ],
+      "status": "confirmed-missing-local-analysis-opt-out",
+      "native": "Local UCI analysis always enters stored Lichess lookup helper",
+      "phone": "PC interactive Stockfish starts stored lookup without a request opt-out; local WASM and finite reports/Plans remain separate"
+    },
+    "duplicateCodePayloads": [
+      {
+        "commits": [
+          "e3e2be1e",
+          "06df535e"
+        ],
+        "patchId": "092ee2ff9d4977846e778ef0ac93ea757d0aabca",
+        "paths": [
+          "src-tauri/src/engine.rs"
+        ]
+      },
+      {
+        "commits": [
+          "badb59cb",
+          "e87c2c4c"
+        ],
+        "patchId": "f66181bd9585a7fd8cf67f05404bfc6bcf8af4fe",
+        "paths": [
+          "src/features/engine/EnginePanel.tsx"
+        ]
+      }
+    ],
+    "full55CandidateReviewComplete": false
   }
 }

@@ -41,8 +41,25 @@ tests and real Chessground SVG rendering with both user and plan marks. Full
 types and twelve-file lint pass without warnings/errors. WebApp's separate 25
 warnings match its HEAD baseline exactly, with no errors.
 
-This is source/component/SVG evidence. Clean builds, package delivery and
-rendered narrow/touch verification are separate. Browser control remains
+Clean source `1f597195` independently passes 619 related checks across 77
+files and full types. The complete native build passes with 22 existing
+warnings. Its 47,864,320-byte EXE has SHA-256
+`676a8be5514092221ed7c63aab8ffeec63b0cb4a7aeead711dd3dfd2cb1a439b`.
+Nine affected native/phone engine/board chunks match their exact decompressed
+Tauri assets, and their compressed bytes are embedded in that executable.
+All 102 bundled engine/source files still match the verified 104,581,828-byte
+tree; all eighteen owned committed files apart from root notes match primary.
+
+The canonical phone build passes in 22.67 seconds. Its WebApp chunk is
+`WebApp-Bi_25Gyt.js`, SHA-256
+`beeef1940e809eba7e4d9436d69d33ba37a41df8445398654740bff1bf3938eb`.
+Shared plan code and pinned Stockfish 19 lite JS/WASM have separate hashes in
+the delivery JSON. Only two known generated build outputs were restored, and
+the delivery checkout is clean. This phone build has not been published; the
+live phone still identifies source `89f64228`.
+
+This is source/component/SVG and package evidence. Browser control remains
 disabled in Work settings; synthetic SVG checks do not prove layout at 320 or
-390 pixels or physical-phone behaviour. No service, route, native engine
-protocol, owner profile or database was changed by this source slice.
+390 pixels or physical-phone behaviour. Rendered verification and phone
+publication remain. No service, route, native engine protocol, owner profile
+or database was manually changed for this slice.

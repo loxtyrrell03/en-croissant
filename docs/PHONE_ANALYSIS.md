@@ -84,8 +84,9 @@ settings. Automatic routes remain during hover/focus/tapped details; hidden
 panels and changed workspaces release their owned layers. All layers follow the
 displayed FEN and stay outside saved annotations. Sixty-five shared checks
 include actual phone controls and Chessground SVG rendering; this does not
-prove narrow layout or physical-phone interaction. The new arrow slice still
-requires clean builds, rendered verification and its own phone publication.
-See `PLAN_ARROWS.md`.
+prove narrow layout or physical-phone interaction. Clean `1f597195` passes
+619 related checks/77 files, types, the native package build and the canonical
+phone build. The arrow slice still requires rendered verification and its own
+phone publication. See `PLAN_ARROWS.md`.
 Install the UCI report helper before the engine entry point; never interrupt an
 active shared engine. No full corpus test or database migration is required.
