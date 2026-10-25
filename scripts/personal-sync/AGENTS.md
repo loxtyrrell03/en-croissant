@@ -39,6 +39,9 @@ accounts, services or download preferences.
   revisions; background audits cannot hold the phone API queue. Unchanged native
   comparisons may reuse Library data_version plus complete database/WAL stamps
   for up to ten minutes. Startup and periodic full audits still validate content.
+  The same complete file stamps bound container-identity caching, so unchanged
+  SQLite files need not be opened just to rediscover their names. Failed checks
+  remain visible throughout retries instead of being cleared at the next start.
 - Phone exports carry transport-only stable references and revision hashes.
   Checked saves strip those tags before writing personal content. New phone
   imports validate every game and recover by request identity. Offline phone

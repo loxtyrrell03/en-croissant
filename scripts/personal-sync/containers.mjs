@@ -4,21 +4,26 @@ import {randomUUID} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import {openEn,enRows,rowHash,transaction} from './en-database.mjs';
 
-function scan(root,referencePaths){
+function scan(root,referencePaths,cache){
   const info=fs.lstatSync(root);if(!info.isDirectory()||info.isSymbolicLink())throw Error('Database root is missing or redirected');
   const result=[];
   const visit=dir=>{for(const e of fs.readdirSync(dir,{withFileTypes:true})){
     const file=path.join(dir,e.name);if(e.isSymbolicLink())throw Error('Database sync does not follow links');
     if(e.isDirectory())visit(file);
     else if(e.isFile()&&/\.db3$/i.test(e.name)&&!e.name.includes('.tmp.')&&!referencePaths.has(path.relative(root,file).replaceAll('\\','/').toLowerCase())){
+      const stamp=()=>JSON.stringify([file,file+'-wal',file+'-journal'].map(p=>{try{const s=fs.statSync(p,{bigint:true});return [String(s.size),String(s.mtimeNs),String(s.ctimeNs),String(s.ino)];}catch(error){if(error.code==='ENOENT')return null;throw error;}}));
+      const before=stamp(),old=cache?.get(file);
+      if(old?.stamp===before&&Date.now()-old.at<600000){result.push({...old.entry});continue;}
       const db=new DatabaseSync(file,{readOnly:true});try{
         const values=new Map(db.prepare('SELECT Name,Value FROM Info').all().map(r=>[r.Name,r.Value]));
         const id=values.get('PersonalSyncId');
         if(!id&&fs.statSync(file).size>512*1024*1024)throw Error('A large unlinked database needs reference classification before sync');
-        result.push({file,relative:path.relative(root,file).replaceAll('\\','/'),id:id?Number(id):null,title:values.get('Title')||path.basename(file,'.db3')});
+        const entry={file,relative:path.relative(root,file).replaceAll('\\','/'),id:id?Number(id):null,title:values.get('Title')||path.basename(file,'.db3')};
+        if(stamp()!==before)throw Error('Database changed while its identity was being read');
+        result.push(entry);cache?.set(file,{stamp:before,at:Date.now(),entry});
       }finally{db.close();}
     }
-  }};visit(root);return result;
+  }};visit(root);if(cache){const present=new Set(result.map(r=>r.file));for(const file of cache.keys())if(!present.has(file))cache.delete(file);}return result;
 }
 const baseGames=(b,id)=>b.ledger.prepare('SELECT * FROM sync_games WHERE collection_id=? ORDER BY left_id').all(id);
 function leftUnchanged(b,m){
@@ -41,7 +46,7 @@ function saveRecovery(b,kind,payload){b.ledger.prepare('INSERT INTO recovery VAL
 // must never be interpreted as a thousand independent game deletions.
 export async function reconcileContainers(b,{collectionPath,canMove=()=>true}={}){
   const report={changed:0,conflicts:[],errors:[]};
-  const entries=scan(b.enRoot,new Set((b.referencePaths??[]).map(p=>p.toLowerCase()))),byId=new Map();
+  const entries=scan(b.enRoot,new Set((b.referencePaths??[]).map(p=>p.toLowerCase())),b.cacheUnchanged?b.containerCache:null),byId=new Map();
   for(const e of entries){if(e.id!==null){if(!Number.isSafeInteger(e.id)||e.id<=0)throw Error('Invalid database sync identity');if(byId.has(e.id))throw Error('Two database files claim the same sync identity');byId.set(e.id,e);}}
   const source=new Map(b.collections().map(c=>[c.id,c]));
   const known=new Map(b.ledger.prepare('SELECT * FROM sync_collections WHERE deleted=0').all().map(m=>[m.id,m]));
