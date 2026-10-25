@@ -1,5 +1,5 @@
-import workerUrl from "stockfish/bin/stockfish-18-lite-single.js?url";
-import wasmUrl from "stockfish/bin/stockfish-18-lite-single.wasm?url";
+import workerUrl from "stockfish/bin/stockfish-19-lite-single.js?url";
+import wasmUrl from "stockfish/bin/stockfish-19-lite-single.wasm?url";
 import { runBoundedUciReport, type ReportSearchLimits } from "../../scripts/uci-report-search.mjs";
 import { createReportEngineEvidence } from "./reportEngineEvidence";
 import type { WebEngineLine } from "./model";
@@ -83,8 +83,8 @@ export async function analyzeBoundedWebReport(remoteUrl: string, request: Bounde
             throw new Error("The report search ended without a completed selected move.");
         bestmove = completed;
     } else {
-        bestmove = await localReportSearch(request, (line) =>
-            evidence.add(line, "phone", "Stockfish 18"),
+        bestmove = await localReportSearch(request, (line, engineName) =>
+            evidence.add(line, "phone", engineName),
         );
     }
     signal.throwIfAborted();
@@ -93,13 +93,13 @@ export async function analyzeBoundedWebReport(remoteUrl: string, request: Bounde
     return result;
 }
 
-async function localReportSearch(request: BoundedWebReportRequest, onInfo: (line: string) => void) {
+async function localReportSearch(request: BoundedWebReportRequest, onInfo: (line: string, engineName?: string) => void) {
     const { fen, multipv, reportLimits, signal } = request;
     signal.throwIfAborted();
     // Report ownership includes the worker; late bestmove from an interactive
     // stop or another report cannot settle this request.
     const worker = new Worker(`${workerUrl}#${encodeURIComponent(wasmUrl)}`, {
-        name: "stockfish-18-report",
+        name: "stockfish-19-report",
     });
     let rejectPending: ((error: unknown) => void) | undefined;
     const abort = () =>
@@ -127,6 +127,10 @@ async function localReportSearch(request: BoundedWebReportRequest, onInfo: (line
             const message = (event: MessageEvent) => {
                 if (typeof event.data !== "string") return;
                 const line = event.data.trim();
+                if (line.startsWith("info string CRITICAL ERROR")) {
+                    fail(new Error("The phone report engine rejected this position or command."));
+                    return;
+                }
                 collect(line);
                 if (finished(line)) {
                     cleanup();
@@ -144,7 +148,10 @@ async function localReportSearch(request: BoundedWebReportRequest, onInfo: (line
             else worker.postMessage(command);
         });
     try {
-        await exchange("uci", (line) => line === "uciok");
+        let engineName: string | undefined;
+        await exchange("uci", (line) => line === "uciok", (line) => {
+            if (line.startsWith("id name ")) engineName = line.slice(8).trim() || undefined;
+        });
         worker.postMessage(`setoption name MultiPV value ${multipv}`);
         await exchange("isready", (line) => line === "readyok");
         worker.postMessage(`position fen ${fen}`);
@@ -152,7 +159,7 @@ async function localReportSearch(request: BoundedWebReportRequest, onInfo: (line
             limits: reportLimits,
             multipv,
             signal,
-            onInfo,
+            onInfo: (line) => onInfo(line, engineName),
             runSearch: async (command, collect, _signal, timeoutMs) =>
                 (
                     await exchange(

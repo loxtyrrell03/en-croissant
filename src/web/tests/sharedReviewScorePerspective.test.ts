@@ -46,6 +46,7 @@ function phoneCard(reflected: boolean, playerCp: number, proved = false) {
     const after = playerCp > 0 ? 0 : -900;
     const engine = (uci: string[], san: string[], cp: number) => ({
         source: "stockfish" as const, depth: 18, multipv: 1,
+        engineName: "Stockfish 19 fixture",
         uciMoves: uci, sanMoves: san,
         score: { type: "cp" as const, value: sign * cp },
     });
@@ -142,6 +143,15 @@ test.each([300, -300])("matching legacy Black export refreshes dependent primary
     expect(restored.mistakeReview?.missedMotifs?.some(m => m.id === "attractionIdea")).toBe(playerCp > 0);
     expect(restored.mistakeReview?.nature).toBe("unknown");
     expect(classifyMistakeReviewNature(restored).nature).toBe("unknown");
+});
+
+test.each(["Stockfish 18", "Stockfish 19 Lite", "Stockfish 20 custom", undefined])("shared exports retain real engine provenance %s without upgrading old evidence", (engineName) => {
+    expect(phoneCard(false, 300).card.engineName).toBe("Stockfish 19 fixture");
+    const card = { ...phoneCard(false, 300).card, engineName };
+    const deck = sharedReviewDeck([card]);
+    expect(deck.settings.engineName).toBe(engineName ?? "Stockfish");
+    expect(deck.positions[0].mistakeReview?.engineName).toBe(engineName ?? "Stockfish");
+    expect(card.engineName).toBe(engineName);
 });
 
 test("an already White-relative desktop reanalysis is not replaced by the original phone scores", () => {

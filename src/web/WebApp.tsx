@@ -4843,7 +4843,7 @@ function EngineUnderBoardPanel({
   });
   const liveLineSpeed = topLine ? formatWebEngineNodeSpeed(topLine.nps) : null;
   const nodeCount = topLine ? formatWebEngineNodeCount(topLine.nodes) : null;
-  const engineLabel = settings.engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18";
+  const engineLabel = settings.engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish";
   const selectedNetworkName = settings.lc0AutoNetwork
     ? "Auto network"
     : getLc0NetworkDisplayName(settings.lc0Network);
@@ -5041,7 +5041,7 @@ function EngineUnderBoardPanel({
               description="Both choices run on your gaming PC."
               allowDeselect={false}
               data={[
-                { value: "stockfish", label: "Stockfish 18" },
+                { value: "stockfish", label: "Stockfish" },
                 { value: "lc0", label: "LCZero 0.32.1" },
               ]}
               value={settings.engineKind}
@@ -5157,7 +5157,7 @@ function EngineLineTable({
   settings: WebEnginePanelSettings;
   onPlayMove: (uci: string) => void;
 }) {
-  const engineLabel = settings.engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18";
+  const engineLabel = settings.engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish";
   if (!enabled) {
     return (
       <Box className={classes.enginePanelMessage}>

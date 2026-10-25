@@ -184,7 +184,7 @@ export async function analyzeWebGameReport(
                 throw new Error(`Position ${index + 1} has no usable bounded report score.`);
             node.score = { value: { ...line.score }, wdl: null };
             node.depth = line.depth;
-            engines.add(line.engineName?.trim() || "Stockfish 18");
+            engines.add(line.engineName?.trim() || "Stockfish");
         }
         current();
         options.onProgress?.(index + 1, nodes.length);

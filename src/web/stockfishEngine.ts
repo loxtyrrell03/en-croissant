@@ -1,5 +1,5 @@
-import stockfishWorkerUrl from "stockfish/bin/stockfish-18-lite-single.js?url";
-import stockfishWasmUrl from "stockfish/bin/stockfish-18-lite-single.wasm?url";
+import stockfishWorkerUrl from "stockfish/bin/stockfish-19-lite-single.js?url";
+import stockfishWasmUrl from "stockfish/bin/stockfish-19-lite-single.wasm?url";
 import { parseUci } from "chessops";
 import { normalizeMove } from "chessops/chess";
 import { makeSan } from "chessops/san";
@@ -32,6 +32,7 @@ const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 type StockfishLineListener = (line: string) => void;
 
 let worker: Worker | null = null;
+let localEngineName: string | undefined;
 let readyPromise: Promise<void> | null = null;
 let activeSearchId = 0;
 let activeRemoteController: AbortController | null = null;
@@ -683,13 +684,17 @@ async function analyzeWithLocalStockfish18({
 
         const onLine = (line: string) => {
             if (activeSearchId !== searchId) return;
+            if (line.startsWith("info string CRITICAL ERROR")) {
+                fail(new Error("The phone engine stopped. Run analysis again."));
+                return;
+            }
             if (line.startsWith("bestmove")) {
                 publish(true);
                 finish();
                 return;
             }
 
-            const parsed = parseStockfishInfoLine(line, fen, "phone", {}, planSearch);
+            const parsed = parseStockfishInfoLine(line, fen, "phone", { engine: localEngineName }, planSearch);
             if (!parsed || parsed.multipv > requestedMultipv) return;
             if (planSearch && parsed.depth > requestedDepth) return;
             linesByPv.set(parsed.multipv, parsed);
@@ -700,7 +705,7 @@ async function analyzeWithLocalStockfish18({
             ? null
             : window.setTimeout(() => {
                   postStockfish("stop");
-                  fail(new Error("Stockfish 18 took too long to finish this search."));
+                  fail(new Error("Stockfish took too long to finish this search."));
               }, STOCKFISH_SEARCH_TIMEOUT_MS);
 
         if (signal?.aborted) {
@@ -784,17 +789,45 @@ async function ensureRemoteEngineService(signal?: AbortSignal) {
 }
 
 function ensureStockfishReady() {
-    readyPromise ??= initializeStockfish();
+    if (!readyPromise) {
+        const starting = initializeStockfish();
+        const ownedWorker = worker;
+        readyPromise = starting.catch((error) => {
+            if (worker === ownedWorker && ownedWorker) resetLocalWorker(ownedWorker);
+            throw error;
+        });
+    }
     return readyPromise;
+}
+
+function resetLocalWorker(ownedWorker: Worker) {
+    if (worker !== ownedWorker) return;
+    ownedWorker.terminate();
+    worker = null;
+    localEngineName = undefined;
+    readyPromise = null;
 }
 
 async function initializeStockfish() {
     if (!worker) {
         const workerSource = `${stockfishWorkerUrl}#${encodeURIComponent(stockfishWasmUrl)}`;
-        worker = new Worker(workerSource, { name: "stockfish-18" });
-        worker.addEventListener("message", (event) => {
+        worker = new Worker(workerSource, { name: "stockfish-19" });
+        const ownedWorker = worker;
+        const failWorker = () => {
+            if (worker !== ownedWorker) return;
+            for (const listener of Array.from(listeners)) listener("info string CRITICAL ERROR");
+            resetLocalWorker(ownedWorker);
+        };
+        ownedWorker.addEventListener("error", failWorker);
+        ownedWorker.addEventListener("message", (event) => {
+            if (worker !== ownedWorker) return;
             const line = typeof event.data === "string" ? event.data.trim() : "";
             if (!line) return;
+            if (line.startsWith("info string CRITICAL ERROR")) {
+                failWorker();
+                return;
+            }
+            if (line.startsWith("id name ")) localEngineName = line.slice(8).trim() || undefined;
             for (const listener of Array.from(listeners)) listener(line);
         });
     }
@@ -816,10 +849,16 @@ function waitForStockfishLine(predicate: (line: string) => boolean, timeoutMs: n
     return new Promise<void>((resolve, reject) => {
         const timeoutId = window.setTimeout(() => {
             removeStockfishListener(listener);
-            reject(new Error("Stockfish 18 did not become ready in time."));
+            reject(new Error("Stockfish did not become ready in time."));
         }, timeoutMs);
 
         const listener = (line: string) => {
+            if (line.startsWith("info string CRITICAL ERROR")) {
+                window.clearTimeout(timeoutId);
+                removeStockfishListener(listener);
+                reject(new Error("The phone engine stopped. Run analysis again."));
+                return;
+            }
             if (!predicate(line)) return;
             window.clearTimeout(timeoutId);
             removeStockfishListener(listener);
