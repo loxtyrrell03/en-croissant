@@ -34,6 +34,8 @@
 
 - Evaluation build ownership package: clean2c342d72 / primaryc2d054d1, EXE47,892,480 bytes SHA25633173d188a770296a180a80e3a39c5b8168e1abb83d2fd13690ffcb845f00439. Native1m44s/22 existing warnings, unchanged exact boot/App/files chunks, exact IPC shim, compiled refusal strings and102 engine/source files match;12 native checks independently pass. Only two known generated outputs restored; clean checkout clean. No phone production change or explicit Dev restart. Audit also confirms existing native/phone OAuth and download-review blocking boundaries; three shared-token and15 transfer checks pass. Active data-pack fetch_manifest still lacks advertised-size rejection (2815afb4 class), despite the unused shared metadata helper already having it: next reproduce/fix that actual2 MiB caller. See EVALUATION_BUILD_SAFETY.md and additional history queue; broader bounded-build/recovery/UI audit remains.
 
+- Pack manifest limits (Novelty2815afb4): active core data_pack::install::fetch_manifest now rejects advertised responses above its existing2 MiB limit before body reads, retaining streamed size/pinned hash/identity/host/cancellation/timeout checks. The separate shared metadata helper already had a bound and was not this active caller. One actual header-only failure reproduced; three new HTTP cases join83 passing core checks/three existing ignored independently on primary/clean, including15 transfer cases. Native/phone packaging and guarded runtime delivery remain; no frontend/profile/corpus change. See docs/PACK_MANIFEST_LIMITS.md/current delivery JSON.
+
 
 ## 2026-10-25 clean phone dates and refreshed history audit
 

@@ -3249,11 +3249,33 @@
     "advertisedMetadataBound": {
       "novelty": "2815afb4",
       "sharedMetadataHelperAlreadyPresent": true,
-      "activePackManifestHeaderPrecheckMissing": true,
+      "activePackManifestHeaderPrecheckMissing": false,
       "activeManifestLimitBytes": 2097152,
-      "status": "confirmed-follow-up-fixture-and-fix-required"
+      "status": "active-caller-source-fixed-delivery-pending"
     },
     "productCodeChangedByThisAudit": false,
     "physicalDeviceVerified": false
+  },
+  "packManifestLimitsParity": {
+    "novelty": [
+      "2815afb4"
+    ],
+    "status": "native-and-phone-core-source-verified-delivery-pending",
+    "activeCaller": "src-tauri/tournament-core/src/data_pack/install.rs fetch_manifest",
+    "baselineTests": 3,
+    "baselineFailures": 1,
+    "newLocalHttpTests": 3,
+    "coreTests": 83,
+    "existingIgnoredCoreTests": 3,
+    "transferTestsIncludedInCoreTotal": 15,
+    "independentPrimaryAndClean": true,
+    "manifestLimitBytes": 2097152,
+    "rejectsAdvertisedOversizeBeforeBody": true,
+    "streamLimitAndPinnedIdentityPreserved": true,
+    "nativePackageVerified": false,
+    "phoneHelperDelivered": false,
+    "frontendSourceChanged": false,
+    "corpusCopied": false,
+    "ownerDataWritten": false
   }
 }
