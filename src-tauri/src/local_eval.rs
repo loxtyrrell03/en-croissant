@@ -469,8 +469,12 @@ pub fn lookup_eval(
     };
     let (hash_hi, hash_lo) = hash_fen(&fen_key);
     let shard = shard_for_hash(hash_hi, hash_lo, manifest.shard_count);
-    let path = shard_path(&store_dir.join(SHARDS_DIR), shard);
-    if !path.exists() {
+    let shards_dir = store_dir.join(SHARDS_DIR);
+    if !directory_present(&shards_dir)? {
+        return Ok(None);
+    }
+    let path = shard_path(&shards_dir, shard);
+    if !path.try_exists()? {
         return Ok(None);
     }
 
@@ -1250,12 +1254,29 @@ fn shard_path(dir: &Path, shard: u16) -> PathBuf {
 }
 
 fn read_manifest(dir: &Path) -> Result<Option<LocalEvalManifest>, LocalEvalError> {
+    if !directory_present(dir)? {
+        return Ok(None);
+    }
     let path = dir.join(MANIFEST_FILE);
-    if !path.exists() {
+    if !path.try_exists()? {
         return Ok(None);
     }
     let data = fs::read_to_string(path)?;
     Ok(Some(serde_json::from_str(&data)?))
+}
+
+// Only confirmed absence is a missing installation. Never conceal a failed
+// metadata check or a file occupying a corpus directory as an ordinary miss.
+fn directory_present(path: &Path) -> Result<bool, LocalEvalError> {
+    match fs::metadata(path) {
+        Ok(metadata) if metadata.is_dir() => Ok(true),
+        Ok(_) => Err(LocalEvalError::InvalidDatabase(format!(
+            "{} is not a directory",
+            path.display()
+        ))),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error.into()),
+    }
 }
 
 fn write_manifest(dir: &Path, manifest: &LocalEvalManifest) -> Result<(), LocalEvalError> {
@@ -1422,6 +1443,91 @@ fn unix_now() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    #[test]
+    fn status_and_lookup_distinguish_missing_store_from_failed_access_check() {
+        let dir = tempfile::tempdir().unwrap();
+        let missing = dir.path().join("missing");
+        let absent = database_status(&missing);
+        assert!(!absent.available);
+        assert!(absent.error.is_none());
+        assert!(lookup_eval(&missing, START_FEN, 1).unwrap().is_none());
+
+        let invalid = dir.path().join("invalid\0store");
+        let failed = database_status(&invalid);
+        assert!(!failed.available);
+        assert!(
+            failed.error.is_some(),
+            "a filesystem error is not an absent installation"
+        );
+        assert!(lookup_eval(&invalid, START_FEN, 1).is_err());
+    }
+
+    #[test]
+    fn a_regular_file_is_not_a_missing_evaluation_folder() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("owner-fixture.txt");
+        fs::write(&file, "synthetic source must survive").unwrap();
+        let status = database_status(&file);
+        assert!(!status.available);
+        assert!(
+            status.error.is_some(),
+            "a file at the store path is not a missing folder"
+        );
+        assert!(lookup_eval(&file, START_FEN, 1).is_err());
+        assert_eq!(
+            fs::read_to_string(&file).unwrap(),
+            "synthetic source must survive"
+        );
+    }
+
+    #[test]
+    fn valid_misses_stay_distinct_from_manifest_and_shard_read_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = dir.path().join("store");
+        fs::create_dir(&store).unwrap();
+        let manifest = LocalEvalManifest {
+            format: "en-croissant-lichess-eval-compact".into(),
+            version: FORMAT_VERSION,
+            record_size: VARIABLE_RECORD_SIZE,
+            shard_count: 16,
+            max_pvs: 5,
+            positions: 0,
+            skipped: 0,
+            source: "tiny synthetic fixture".into(),
+            built_at: 1,
+            complete: true,
+        };
+        write_manifest(&store, &manifest).unwrap();
+        assert!(database_status(&store).available);
+        assert!(lookup_eval(&store, START_FEN, 1).unwrap().is_none());
+
+        let shards = store.join(SHARDS_DIR);
+        fs::write(&shards, "synthetic blocker").unwrap();
+        assert!(lookup_eval(&store, START_FEN, 1).is_err());
+        assert_eq!(fs::read_to_string(&shards).unwrap(), "synthetic blocker");
+        fs::remove_file(&shards).unwrap();
+        fs::create_dir(&shards).unwrap();
+        let fen_key = normalize_fen_key(START_FEN).unwrap();
+        let (hash_hi, hash_lo) = hash_fen(&fen_key);
+        let shard = shard_path(
+            &shards,
+            shard_for_hash(hash_hi, hash_lo, manifest.shard_count),
+        );
+        let mut empty_index = vec![0; 4];
+        empty_index.extend_from_slice(V2_SHARD_MAGIC);
+        fs::write(&shard, zstd::encode_all(empty_index.as_slice(), 1).unwrap()).unwrap();
+        assert!(lookup_eval(&store, START_FEN, 1).unwrap().is_none());
+        clear_shard_cache();
+        fs::write(&shard, "not a compressed shard").unwrap();
+        assert!(lookup_eval(&store, START_FEN, 1).is_err());
+
+        fs::write(store.join(MANIFEST_FILE), "{").unwrap();
+        assert!(database_status(&store).error.is_some());
+        assert!(lookup_eval(&store, START_FEN, 1).is_err());
+    }
 
     #[test]
     fn move_codec_round_trips_promotions() {

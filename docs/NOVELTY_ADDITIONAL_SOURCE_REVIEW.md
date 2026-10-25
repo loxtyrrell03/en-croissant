@@ -40,7 +40,7 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | `2a083a83` | Add bounded optional evaluation database builder | local-data-and-recovery | Target evaluation required |
 | `109c529b` | Fix local data update controls and preserve installed scope | local-data-and-recovery, settings-and-shell | Target evaluation required |
 | `209593ff` | Polish responsive Settings and serialize folder actions | settings-and-shell | Target evaluation required |
-| `1290880c` | Distinguish local data read failures from missing installations | local-data-and-recovery, settings-and-shell | Target evaluation required |
+| `1290880c` | Distinguish local data read failures from missing installations | local-data-and-recovery, settings-and-shell | Applicable native/shared-phone evaluation-reader gap reproduced: two native/four Node failures against actual status/lookup APIs. Fallible directory/presence checks and retained manifest errors now pass six native and15 combined Node checks, independently on clean for Node; two-file lint0. Native package and both installed helper copies pending. Other local opening/download surfaces remain in their own rows; see LOCAL_EVAL_READINESS.md |
 | `aa25aa07` | Checkpoint fresh legacy database imports | local-data-and-recovery | Target evaluation required |
 | `84308b8b` | Harden checkpointed legacy import resume | local-data-and-recovery | Target evaluation required |
 | `0b97d3bb` | Resume interrupted legacy database imports | local-data-and-recovery | Target evaluation required |
@@ -67,9 +67,10 @@ En's evaluation reader uses default_store_dir and has no matching Settings
 folder chooser. Further inspection found an important limit to its status error
 field: read_manifest and shard lookup use exists(), which can hide filesystem
 access-check errors as absence/misses. The earlier status-only assessment was
-too broad. Reproduce this against the actual reader and evaluate the phone helper
-before resolving1290880c/related rows. Builder/transfer/recovery and any future
-folder selection still require separate target evaluation.
+too broad. Actual native and shared-phone reader failures are now reproduced
+and source-fixed; see LOCAL_EVAL_READINESS.md for target delivery boundaries.
+Builder/transfer/recovery, metadata completeness and any future folder selection
+still require separate target evaluation.
 
 ## Next shell behavior checks
 

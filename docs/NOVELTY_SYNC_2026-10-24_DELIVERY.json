@@ -2687,5 +2687,45 @@
     "phoneProductionChanges": false,
     "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "ownerDataWritten": false
+  },
+  "localEvaluationReadinessParity": {
+    "novelty": [
+      "1290880c"
+    ],
+    "status": "native-and-shared-phone-reader-source-verified-delivery-pending",
+    "baseline": {
+      "nativeTests": 5,
+      "nativePassed": 3,
+      "nativeFailures": 2,
+      "nodeTests": 5,
+      "nodePassed": 1,
+      "nodeFailures": 4,
+      "actualStatusAndLookupApis": true,
+      "ownerDataModified": false
+    },
+    "nativeTests": 6,
+    "newNativeTests": 3,
+    "nodeReaderTests": 6,
+    "homeServerHttpTests": 2,
+    "combinedNodeChecksIncludingIpc": 15,
+    "independentCleanNodeChecks": true,
+    "lintFiles": 2,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "confirmedAbsenceRemainsMiss": true,
+    "accessCheckErrorsVisible": true,
+    "nonDirectoryDataPreserved": true,
+    "directManifestFailureRejects": true,
+    "missingShardContractPreserved": true,
+    "existingRefreshIntervalPreserved": true,
+    "corpusCopied": false,
+    "ownerDataWritten": false,
+    "frontendSourceChanged": false,
+    "frontendGateRerun": false,
+    "nativePackageVerified": false,
+    "homeHelperDelivered": false,
+    "pcEngineHelperDelivered": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false
   }
 }
