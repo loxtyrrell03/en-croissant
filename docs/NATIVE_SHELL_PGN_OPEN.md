@@ -61,7 +61,19 @@ fixtures and the actual Windows command registration compile; the latter retains
 22 existing warnings. The separate13 known broad native failures are unchanged
 and were not rerun for this slice.
 
-The source milestone, independent clean checks and native package evidence are
+Clean source13e6c69b independently passes531 checks/76 files, full types and the
+native command check. The Windows package builds in3m18s with22 existing warnings.
+Exact boot, native App/queue and protected file-read Brotli bytes are embedded in
+the47,854,080-byte EXE, SHA256
+2fa6c902ba31331bfc82b47fe3ab9851a800bed3b7043ed2fde6eb37e1b2c8dc.
+All102 bundled engine/source resources match the retained stage; all16 milestone
+files (including12 product/binding/test files) match committed primary2c0f2efc.
+Only the two known generated outputs were restored to their exact committed
+bytes; the delivery checkout is clean. No explicit Dev restart or new phone
+publication was performed for this native slice; phone scrolling stays live from
+cbbff3b8. This package supersedes the earlier scrolling desktop artifact.
+
+The source milestone, independent clean checks and exact package evidence are
 tracked in NOVELTY_SYNC_2026-10-24_DELIVERY.json. Rendered native-window behavior,
 Windows shell association interaction, Mac packaging and physical-phone proof
 are separate. No owner profile, database, active review or hosting route needs

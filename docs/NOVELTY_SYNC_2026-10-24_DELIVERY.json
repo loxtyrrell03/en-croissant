@@ -58,34 +58,34 @@
     ]
   },
   "desktop": {
-    "exeBytes": 47872512,
-    "exeSha256": "2a558379a6a44a68247fc3d4b684d86a9245567408667a6c8af026c13a843e4e",
+    "exeBytes": 47854080,
+    "exeSha256": "2fa6c902ba31331bfc82b47fe3ab9851a800bed3b7043ed2fde6eb37e1b2c8dc",
     "assets": [
       {
-        "name": "index-HinezAA2.js",
+        "name": "index-DyOp8GiP.js",
         "bytes": 292437,
-        "sha256": "8da8f0b53f28efe4468cdb0da2b53c44e2d6167eb90cbba40a1f46ddbc860bbe",
+        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
         "encoding": "brotli",
         "compressedBytes": 89591,
-        "compressedSha256": "9d1db19f5f9dc4c96b285d42c42923ed54bc2554653a1fadebc15be08829439e",
+        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
         "embedded": true
       },
       {
-        "name": "EvalListener-D6S9xDpr.js",
-        "bytes": 85491,
-        "sha256": "305d80004961e92ef0a3ecc8ccc2049f8730b35e237480ad57155444a035fc26",
+        "name": "App-B27Iq3yU.js",
+        "bytes": 193045,
+        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
         "encoding": "brotli",
-        "compressedBytes": 29427,
-        "compressedSha256": "edba84aa43496ebb99130fddc898e05010b528f8b1a542d99483dcdfd75e4821",
+        "compressedBytes": 55005,
+        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
         "embedded": true
       },
       {
-        "name": "App-DqB1bPKK.js",
-        "bytes": 192199,
-        "sha256": "756d930225be051fb95f1c154d83a35a32b6652fb4d20432d62bcdfb3401c16d",
+        "name": "files-CIwBSFWZ.js",
+        "bytes": 2228,
+        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
         "encoding": "brotli",
-        "compressedBytes": 54691,
-        "compressedSha256": "729259db14f67e2ddf9181f07fb72b6ef72b4667eea1f9fbb8832e2410254dbe",
+        "compressedBytes": 1143,
+        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
         "embedded": true
       }
     ],
@@ -93,19 +93,19 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "sourceCommit": "13e6c69befc304a2760cea0782b5a305c2503a45",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
     "primarySourceCommit": "8a1c5928",
-    "cleanTests": 500,
-    "cleanTestFiles": 69,
+    "cleanTests": 531,
+    "cleanTestFiles": 76,
     "types": true,
-    "lintFiles": 7,
+    "lintFiles": 8,
     "lintWarnings": 0,
     "lintErrors": 0,
     "nativeBuild": true,
     "existingNativeWarnings": 22,
-    "nativeCargoSeconds": 178,
+    "nativeCargoSeconds": 198,
     "bundledFiles": 102,
     "bundledBytes": 104581828,
     "matchingOwnedProductFiles": 7,
@@ -116,7 +116,15 @@
     "browserRendered": false,
     "physicalPhoneVerified": false,
     "phonePublicationPending": false,
-    "ownerDataWritten": false
+    "ownerDataWritten": false,
+    "primaryCommit": "2c0f2efcffc4426655812b1a336e1766894c79d7",
+    "nativeQueueChecks": 5,
+    "actualCallbackControl": true,
+    "matchingMilestoneFiles": 16,
+    "matchingProductAndTestFiles": 12,
+    "shellAssociationInteractionVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e"
   },
   "checks": {
     "combinedFrontend": {
@@ -2292,7 +2300,7 @@
     "novelty": [
       "e8914f49"
     ],
-    "status": "native-source-and-independent-clean-checks-verified-package-pending",
+    "status": "native-package-verified-rendered-shell-interaction-and-Mac-runtime-pending",
     "initialAndSecondInstanceRetained": true,
     "senderWorkingDirectoryPreserved": true,
     "subscribeBeforeTake": true,
@@ -2318,7 +2326,7 @@
     "lintErrors": 0,
     "nativeCommandCheck": true,
     "existingNativeWarnings": 22,
-    "packageVerified": false,
+    "packageVerified": true,
     "phone": {
       "behavior": "Separate browser/server transport unchanged; existing opening/persistence regressions pass.",
       "publishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
@@ -2348,6 +2356,130 @@
     "nativeWindowVerified": false,
     "shellAssociationInteractionVerified": false,
     "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "packageSource": "13e6c69befc304a2760cea0782b5a305c2503a45",
+    "exeSha256": "2fa6c902ba31331bfc82b47fe3ab9851a800bed3b7043ed2fde6eb37e1b2c8dc"
+  },
+  "previousPanelScrollingDesktop": {
+    "exeBytes": 47872512,
+    "exeSha256": "2a558379a6a44a68247fc3d4b684d86a9245567408667a6c8af026c13a843e4e",
+    "assets": [
+      {
+        "name": "index-HinezAA2.js",
+        "bytes": 292437,
+        "sha256": "8da8f0b53f28efe4468cdb0da2b53c44e2d6167eb90cbba40a1f46ddbc860bbe",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "9d1db19f5f9dc4c96b285d42c42923ed54bc2554653a1fadebc15be08829439e",
+        "embedded": true
+      },
+      {
+        "name": "EvalListener-D6S9xDpr.js",
+        "bytes": 85491,
+        "sha256": "305d80004961e92ef0a3ecc8ccc2049f8730b35e237480ad57155444a035fc26",
+        "encoding": "brotli",
+        "compressedBytes": 29427,
+        "compressedSha256": "edba84aa43496ebb99130fddc898e05010b528f8b1a542d99483dcdfd75e4821",
+        "embedded": true
+      },
+      {
+        "name": "App-DqB1bPKK.js",
+        "bytes": 192199,
+        "sha256": "756d930225be051fb95f1c154d83a35a32b6652fb4d20432d62bcdfb3401c16d",
+        "encoding": "brotli",
+        "compressedBytes": 54691,
+        "compressedSha256": "729259db14f67e2ddf9181f07fb72b6ef72b4667eea1f9fbb8832e2410254dbe",
+        "embedded": true
+      }
+    ],
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "nativeWindowVerified": false,
+    "devShortcutChanged": false,
+    "rollback": "task-owned ignored rollback directory",
+    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "activeDevSessionPreserved": true,
+    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
+    "primarySourceCommit": "8a1c5928",
+    "cleanTests": 500,
+    "cleanTestFiles": 69,
+    "types": true,
+    "lintFiles": 7,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 178,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedProductFiles": 7,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "phonePublicationPending": false,
+    "ownerDataWritten": false
+  },
+  "currentNativeShellPgnPackage": {
+    "exeBytes": 47854080,
+    "exeSha256": "2fa6c902ba31331bfc82b47fe3ab9851a800bed3b7043ed2fde6eb37e1b2c8dc",
+    "assets": [
+      {
+        "name": "index-DyOp8GiP.js",
+        "bytes": 292437,
+        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
+        "embedded": true
+      },
+      {
+        "name": "App-B27Iq3yU.js",
+        "bytes": 193045,
+        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
+        "encoding": "brotli",
+        "compressedBytes": 55005,
+        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
+        "embedded": true
+      },
+      {
+        "name": "files-CIwBSFWZ.js",
+        "bytes": 2228,
+        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
+        "encoding": "brotli",
+        "compressedBytes": 1143,
+        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "13e6c69befc304a2760cea0782b5a305c2503a45",
+    "primaryCommit": "2c0f2efcffc4426655812b1a336e1766894c79d7",
+    "cleanTests": 531,
+    "cleanTestFiles": 76,
+    "types": true,
+    "lintFiles": 8,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeQueueChecks": 5,
+    "actualCallbackControl": true,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 198,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingMilestoneFiles": 16,
+    "matchingProductAndTestFiles": 12,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "shellAssociationInteractionVerified": false,
+    "physicalPhoneVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "ownerDataWritten": false
   }
 }
