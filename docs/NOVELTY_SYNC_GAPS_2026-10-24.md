@@ -9,7 +9,7 @@ behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
 Current delivery (2026-10-25): clean `41668e2b` is live on the canonical phone
-site. The latest native desktop artifact is clean `2657c53b`, including guarded
+site. The latest native desktop artifact is clean `cfc2a7f3`, including guarded
 local-engine setup, logo recovery, persistent plan arrows and all verified
 Stockfish 19 resources and stored-evaluation controls.
 These include the committed ports described below. The existing PC
@@ -174,3 +174,10 @@ reload. Existing atoms update without unloading the workspace; pending drags and
 failed backups/restores remain safe and retryable.48 related checks/seven files,
 full types and warning-free eight-file lint pass. Clean package/rendered proof
 remains; phone has no matching Help wipe menu. See APPEARANCE_RESET.md.
+
+Appearance reset package: clean cfc2a7f3 independently passes499 checks/69 files,
+full types and native build (22 existing warnings). Exact App/reset/layout/Boards
+assets are embedded; all102 engine/source resources and eight owned files match.
+Only two known generated outputs restored; checkout clean. No owner reset or
+native-window/phone restart was performed. Live phone remains41668e2b; browser
+rendered checks and the other additional-source candidates remain open.
