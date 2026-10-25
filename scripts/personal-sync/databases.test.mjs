@@ -34,6 +34,14 @@ test('personal bridge mirrors annotated game edits in both directions while keep
   await f.editEn(await f.codec.request({pgn:pgn('Original','from En')}));assert.equal((await f.tick()).changed,1);assert.match(f.sourcePgn(),/from En/);assert.match(f.sourcePgn(),/Custom "preserved"/);
   assert.equal((await f.tick()).changed,0);
 });
+test('unchanged-check caching observes native revisions, same-size En edits and periodic external-SQL audits',async t=>{
+ const f=await fixture(t);f.bridge.cacheUnchanged=true;await f.tick();assert.equal((await f.tick()).changed,0);
+ await f.native.request({library:f.library,id:f.id,expected:f.sourcePgn(),pgn:pgn('Original','native edit')});assert.equal((await f.tick()).changed,1);await f.tick();
+ await f.editEn(await f.codec.request({pgn:pgn('Original','same length')}));assert.equal((await f.tick()).changed,1);assert.match(f.sourcePgn(),/same length/);await f.tick();
+ f.bridge.source.prepare('UPDATE game_record SET pgn=? WHERE id=?').run(f.sourcePgn().replace('same length','raw changed'),f.id);
+ assert.equal((await f.tick()).changed,0);
+ const future=Date.now()+600001;t.mock.method(Date,'now',()=>future);assert.equal((await f.tick()).changed,1);
+});
 
 test('simultaneous edits and delete-versus-edit are retained as conflicts',async t=>{
   const f=await fixture(t);
