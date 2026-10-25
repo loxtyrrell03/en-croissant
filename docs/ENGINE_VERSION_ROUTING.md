@@ -42,8 +42,10 @@ WASM through its upstream Node entry point pass. The WASM reports version 19 and
 completes legal White/Black depth-eight searches. This is not browser or physical
 phone verification. Clean combined builds/runtime delivery are recorded separately.
 
-Native Stockfish 19 installation/catalog/default migration, current live service
-deployment and rendered/physical-device checks remain separate delivery work.
+Native Stockfish 19 authenticated installation/build staging and the safe default
+upgrade are now implemented; the PC helper and phone are delivered on 19. See
+`NATIVE_STOCKFISH_19.md` for current package/HTTPS proof and remaining catalog,
+rendered and physical-device checks.
 Historical Stockfish 18 score fixtures keep their real provenance.
 
 Primary `cc5680bd` and clean delivery `54421267` match all 27 owned preference,
@@ -54,4 +56,6 @@ The helper independently passes the three 19/standby, seven 18/review/performanc
 and 38 client checks on clean source. Desktop and canonical-phone builds pass in
 22.01/22.12 seconds. Both compiled worker assets match the
 pinned dependency bytes; no old worker or invented test fixture is bundled.
-No live helper upgrade, manual profile migration or publication was performed.
+Those counts describe the earlier source milestone. Current native/helper/phone
+delivery is recorded in `NATIVE_STOCKFISH_19.md`; owner profiles were not manually
+migrated.

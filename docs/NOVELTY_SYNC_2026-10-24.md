@@ -231,3 +231,24 @@ Its embedded GamePreview, GameNotation, Chessground wrapper, orientation and
 root-style asset keys match the clean bundle. The previous executable is kept
 for rollback, and the active Dev session/shortcut remain. Native-window
 interaction is unverified. The broader parity goal remains active.
+
+## Current engine and accumulated parity delivery
+
+Clean `89f64228` is now published on the canonical phone site. The current source
+includes the intervening report/Plans, drawing ownership, source preferences,
+archives, date ranges and persistence ports documented in the gap ledger.
+All 636 related frontend checks/77 files and whole-project types pass. The
+phone build takes 23.21 seconds; HTTPS version, shell and WASM worker hashes
+match, and workspace/library/tournament-settings reads succeed. This is live
+API/static-asset evidence; browser rendering remains unavailable.
+
+The native desktop artifact is rebuilt with all 102 verified Stockfish 19 files,
+including full source/licence/notices. The same authenticated engine is installed
+in the durable shared software folder, and the existing PC helper uses it without
+changing service identity/routes or unrelated configuration/modules. An actual
+HTTPS report confirms Stockfish 19 and legal exact chosen-root evidence within
+the requested limits, then releases its worker. Active Dev sessions and owner
+profile files were preserved. See `NATIVE_STOCKFISH_19.md` and the current JSON
+receipt for hashes, the Windows resource-path correction, publication-wrapper
+cleanup and remaining manual catalog/rendered/full-audit work. The overall goal
+is still active.
