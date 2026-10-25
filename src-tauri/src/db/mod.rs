@@ -40,13 +40,13 @@ use shakmaty::{
 use specta::Type;
 use std::{
     collections::HashMap,
-    fs::{create_dir_all, remove_file, rename, File, OpenOptions},
+    fs::{create_dir_all, remove_file, rename, File},
     path::{Path, PathBuf},
     sync::atomic::{AtomicUsize, Ordering},
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use std::{
-    io::{self, BufWriter, Write},
+    io::{self, Write},
     str::FromStr,
 };
 use tauri::{Emitter, State};
@@ -2921,60 +2921,51 @@ struct PgnGame {
 }
 
 impl PgnGame {
-    fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
-        writeln!(
-            writer,
-            "[Event \"{}\"]",
-            self.event.as_deref().unwrap_or("")
-        )?;
-        writeln!(writer, "[Site \"{}\"]", self.site.as_deref().unwrap_or(""))?;
-        writeln!(writer, "[Date \"{}\"]", self.date.as_deref().unwrap_or(""))?;
-        writeln!(
-            writer,
-            "[Round \"{}\"]",
-            self.round.as_deref().unwrap_or("")
-        )?;
-        writeln!(
-            writer,
-            "[White \"{}\"]",
-            self.white.as_deref().unwrap_or("")
-        )?;
-        writeln!(
-            writer,
-            "[Black \"{}\"]",
-            self.black.as_deref().unwrap_or("")
-        )?;
-        writeln!(
-            writer,
-            "[Result \"{}\"]",
-            self.result.as_deref().unwrap_or("*")
-        )?;
+    fn write(&self, writer: &mut (impl Write + ?Sized)) -> Result<(), Error> {
+        let result = match self.result.as_deref() {
+            Some(value @ ("1-0" | "0-1" | "1/2-1/2")) => value,
+            _ => "*",
+        };
+        let mut tag = |name: &str, value: &str| -> Result<(), Error> {
+            if value.contains(['\r', '\n']) {
+                return Err(io::Error::other(format!(
+                    "The {name} tag contains a line break; it cannot be exported safely."
+                ))
+                .into());
+            }
+            let escaped = value.replace('\\', "\\\\").replace('"', "\\\"");
+            writeln!(writer, "[{name} \"{escaped}\"]")?;
+            Ok(())
+        };
+        for (name, value) in [
+            ("Event", self.event.as_deref()),
+            ("Site", self.site.as_deref()),
+            ("Date", self.date.as_deref()),
+            ("Round", self.round.as_deref()),
+            ("White", self.white.as_deref()),
+            ("Black", self.black.as_deref()),
+        ] {
+            tag(name, value.unwrap_or(""))?;
+        }
+        tag("Result", result)?;
         if let Some(time_control) = self.time_control.as_deref() {
-            writeln!(writer, "[TimeControl \"{}\"]", time_control)?;
+            tag("TimeControl", time_control)?;
         }
         if let Some(eco) = self.eco.as_deref() {
-            writeln!(writer, "[ECO \"{}\"]", eco)?;
+            tag("ECO", eco)?;
         }
         if let Some(white_elo) = self.white_elo.as_deref() {
-            if white_elo == "0" {
-                writeln!(writer, "[WhiteElo \"-\"]")?;
-            } else {
-                writeln!(writer, "[WhiteElo \"{}\"]", white_elo)?;
-            }
+            tag("WhiteElo", if white_elo == "0" { "-" } else { white_elo })?;
         }
         if let Some(black_elo) = self.black_elo.as_deref() {
-            if black_elo == "0" {
-                writeln!(writer, "[BlackElo \"-\"]")?;
-            } else {
-                writeln!(writer, "[BlackElo \"{}\"]", black_elo)?;
-            }
+            tag("BlackElo", if black_elo == "0" { "-" } else { black_elo })?;
         }
         if let Some(ply_count) = self.ply_count.as_deref() {
-            writeln!(writer, "[PlyCount \"{}\"]", ply_count)?;
+            tag("PlyCount", ply_count)?;
         }
         if let Some(fen) = self.fen.as_deref() {
-            writeln!(writer, "[SetUp \"1\"]")?;
-            writeln!(writer, "[FEN \"{}\"]", fen)?;
+            tag("SetUp", "1")?;
+            tag("FEN", fen)?;
         }
         writeln!(writer)?;
         if let Some(moves) = self.moves.as_deref() {
@@ -2982,12 +2973,7 @@ impl PgnGame {
                 write!(writer, "{} ", moves)?;
             }
         }
-        match self.result.as_deref() {
-            Some("1-0") => writeln!(writer, "1-0"),
-            Some("0-1") => writeln!(writer, "0-1"),
-            Some("1/2-1/2") => writeln!(writer, "1/2-1/2"),
-            _ => writeln!(writer, "*"),
-        }?;
+        writeln!(writer, "{result}")?;
         writeln!(writer)?;
         Ok(())
     }
@@ -2995,31 +2981,69 @@ impl PgnGame {
 
 #[tauri::command]
 #[specta::specta]
-pub async fn export_to_pgn(
-    file: PathBuf,
-    dest_file: PathBuf,
-    state: tauri::State<'_, AppState>,
+pub async fn export_to_pgn(file: PathBuf, dest_file: PathBuf) -> Result<(), Error> {
+    tokio::task::spawn_blocking(move || {
+        let mut db = open_export_source(&file)?;
+        export_database_pgn(&mut db, &file, &dest_file)
+    })
+    .await
+    .map_err(|error| {
+        io::Error::other(format!(
+            "The export stopped before it could be confirmed: {error}"
+        ))
+    })?
+}
+
+fn open_export_source(source: &Path) -> Result<SqliteConnection, Error> {
+    let source = std::fs::canonicalize(source)?;
+    let mut uri = reqwest::Url::from_file_path(source)
+        .map_err(|_| io::Error::other("The source database path cannot be opened for export."))?;
+    uri.query_pairs_mut().append_pair("mode", "ro");
+    // SQLite URI authority support is optional; an empty authority retains a
+    // Windows UNC filename without depending on that build option.
+    let address = if cfg!(windows) {
+        uri.host_str()
+            .map(|host| format!("file:////{host}{}?mode=ro", uri.path()))
+            .unwrap_or_else(|| uri.to_string())
+    } else {
+        uri.to_string()
+    };
+    let mut db = SqliteConnection::establish(&address)
+        .map_err(|error| io::Error::other(format!("Could not read the export source: {error}")))?;
+    db.batch_execute("PRAGMA busy_timeout = 250; PRAGMA query_only = ON;")?;
+    Ok(db)
+}
+
+fn export_database_pgn(
+    db: &mut SqliteConnection,
+    source: &Path,
+    dest_file: &Path,
 ) -> Result<(), Error> {
-    let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    en_croissant_fork::pgn_files::export_file(dest_file, source, |writer| {
+        write_database_pgn_snapshot(db, writer)
+    })
+}
 
-    let file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(dest_file)?;
-
-    let mut writer = BufWriter::new(file);
-
-    let (white_players, black_players) = diesel::alias!(players as white, players as black);
-    games::table
+fn write_database_pgn_snapshot(
+    db: &mut SqliteConnection,
+    writer: &mut dyn Write,
+) -> Result<(), Error> {
+    db.transaction::<_, Error, _>(|db| {
+        let expected: i64 = games::table.count().get_result(db)?;
+        let mut written = 0i64;
+        let (white_players, black_players) = diesel::alias!(players as white, players as black);
+        for entry in games::table
         .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
         .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
         .inner_join(events::table.on(games::event_id.eq(events::id)))
         .inner_join(sites::table.on(games::site_id.eq(sites::id)))
         .order(games::id.asc())
-        .load_iter::<(Game, Player, Player, Event, Site), DefaultLoadingMode>(db)?
-        .flatten()
-        .map(|(game, white, black, event, site)| {
+        .load_iter::<(Game, Player, Player, Event, Site), DefaultLoadingMode>(db)? {
+            let (game, white, black, event, site) = entry.map_err(|error| io::Error::other(format!("Could not read export row {}: {error}", written + 1)))?;
+            let failure = |error: &dyn std::fmt::Display| io::Error::other(format!("Could not export game {}: {error}", game.id));
+            let fen = game.fen.as_deref().map(|value| Fen::from_ascii(value.as_bytes()))
+                .transpose().map_err(|error| failure(&error))?.unwrap_or_default();
+            let moves = decode_game_to_movetext(&game.moves, fen).map_err(|error| failure(&error))?;
             let pgn = PgnGame {
                 event: event.name,
                 site: site.name,
@@ -3034,23 +3058,16 @@ pub async fn export_to_pgn(
                 black_elo: game.black_elo.map(|e| e.to_string()),
                 ply_count: game.ply_count.map(|e| e.to_string()),
                 fen: game.fen.clone(),
-                moves: decode_game_to_movetext(
-                    &game.moves,
-                    if let Some(fen) = game.fen {
-                        Fen::from_ascii(fen.as_bytes()).unwrap_or_default()
-                    } else {
-                        Fen::default()
-                    },
-                )
-                .ok(),
+                moves: Some(moves),
             };
-
-            pgn.write(&mut writer)?;
-
-            Ok(())
-        })
-        .collect::<Result<Vec<_>, Error>>()?;
-    Ok(())
+            pgn.write(writer).map_err(|error| failure(&error))?;
+            written += 1;
+        }
+        if written != expected {
+            return Err(io::Error::other("Some games have missing linked players, events or sites. The export was not published.").into());
+        }
+        Ok(())
+    })
 }
 
 #[tauri::command]
@@ -3244,6 +3261,7 @@ pub async fn preload_reference_db(
 mod tests {
     use super::*;
     include!("game_save_tests.rs");
+    include!("export_pgn_tests.rs");
 
     #[test]
     fn otb_database_native_save_command_matches_generated_binding() {

@@ -5,7 +5,7 @@
 use std::{
     collections::HashMap,
     fs::{self, File},
-    io::{self, Read, Seek, SeekFrom, Write},
+    io::{self, BufWriter, Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::SystemTime,
@@ -652,6 +652,167 @@ fn publish_replacement(pending: tempfile::NamedTempFile, path: &Path) -> io::Res
         pending.persist(path).map_err(|error| error.error)?;
         File::open(path.parent().unwrap())?.sync_all()
     }
+}
+
+fn same_file(left: &File, right: &File) -> io::Result<bool> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::io::AsRawHandle;
+        use windows_sys::Win32::Storage::FileSystem::{
+            GetFileInformationByHandle, BY_HANDLE_FILE_INFORMATION,
+        };
+        let identity = |file: &File| -> io::Result<(u32, u32, u32)> {
+            let mut info: BY_HANDLE_FILE_INFORMATION = unsafe { std::mem::zeroed() };
+            if unsafe { GetFileInformationByHandle(file.as_raw_handle(), &mut info) } == 0 {
+                return Err(io::Error::last_os_error());
+            }
+            Ok((
+                info.dwVolumeSerialNumber,
+                info.nFileIndexHigh,
+                info.nFileIndexLow,
+            ))
+        };
+        Ok(identity(left)? == identity(right)?)
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        let left = left.metadata()?;
+        let right = right.metadata()?;
+        Ok((left.dev(), left.ino()) == (right.dev(), right.ino()))
+    }
+    #[cfg(not(any(windows, unix)))]
+    {
+        let _ = (left, right);
+        Err(problem(
+            "This platform cannot safely check export file identity.",
+        ))
+    }
+}
+
+fn export_destination(path: &Path) -> io::Result<Option<(Signature, Vec<u8>, File)>> {
+    let metadata = match fs::symlink_metadata(path) {
+        Ok(value) => value,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error),
+    };
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        if metadata.file_attributes() & 0x400 != 0 {
+            return Err(problem(
+                "Choose a plain export file, rather than a linked destination.",
+            ));
+        }
+    }
+    if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.permissions().readonly()
+    {
+        return Err(problem(
+            "The export destination is not a writable plain file.",
+        ));
+    }
+    let mut file = File::open(path)?;
+    let before = signature(&file)?;
+    let hash = digest(&mut file)?;
+    if signature(&file)? != before {
+        return Err(changed());
+    }
+    Ok(Some((before, hash, file)))
+}
+
+fn write_export<E: From<io::Error>>(
+    writer: &mut impl Write,
+    write: impl FnOnce(&mut dyn Write) -> Result<(), E>,
+) -> Result<(), E> {
+    write(writer)?;
+    writer.flush()?;
+    Ok(())
+}
+
+/// Publish a complete export through the same lock and replacement boundary as
+/// normal PGN writes. Existing output and protected source aliases are preserved
+/// on ordinary failure. The final recheck is not a filesystem-wide external CAS.
+pub fn export_file<E: From<io::Error>>(
+    destination: &Path,
+    source: &Path,
+    write: impl FnOnce(&mut dyn Write) -> Result<(), E>,
+) -> Result<(), E> {
+    let _guard = WRITES
+        .lock()
+        .map_err(|_| problem("PGN writes are unavailable."))?;
+    let parent = fs::canonicalize(
+        destination
+            .parent()
+            .ok_or_else(|| problem("Choose a full export path."))?,
+    )?;
+    let filename = destination
+        .file_name()
+        .ok_or_else(|| problem("Choose an export filename."))?;
+    let path = parent.join(filename);
+    let source = fs::canonicalize(source)?;
+    // SQLite's live sidecars are also source data, even before they exist.
+    let source_text = source.as_os_str().to_string_lossy();
+    let path_text = path.as_os_str().to_string_lossy();
+    for suffix in ["", "-wal", "-shm", "-journal"] {
+        let protected = format!("{source_text}{suffix}");
+        let matches = if cfg!(windows) {
+            protected.to_lowercase() == path_text.to_lowercase()
+        } else {
+            protected == path_text
+        };
+        if matches {
+            return Err(problem(
+                "The export cannot replace its source database or SQLite sidecars.",
+            )
+            .into());
+        }
+    }
+    let mut source_files = vec![File::open(&source)?];
+    for suffix in ["-wal", "-shm", "-journal"] {
+        match File::open(PathBuf::from(format!("{source_text}{suffix}"))) {
+            Ok(file) => source_files.push(file),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+    }
+    let original = export_destination(&path)?;
+    if let Some((_, _, target)) = &original {
+        for source_file in &source_files {
+            if same_file(source_file, target)? {
+                return Err(problem(
+                    "The export destination refers to the source database or its SQLite sidecars. Choose a separate PGN file.",
+                ).into());
+            }
+        }
+    }
+    let mut pending = tempfile::Builder::new()
+        .prefix(".encroissant-export-")
+        .tempfile_in(&parent)?;
+    {
+        let mut writer = BufWriter::new(pending.as_file_mut());
+        write_export(&mut writer, write)?;
+    }
+    pending.as_file().sync_all()?;
+    let current = export_destination(&path)?;
+    match (&original, &current) {
+        (None, None) => {},
+        (Some((before, hash, file)), Some((now, current_hash, current_file)))
+            if before == now && hash == current_hash && same_file(file, current_file)? => {},
+        _ => return Err(problem("The export destination changed while the export was prepared. It was kept; choose another file or retry.").into()),
+    }
+    drop(current);
+    if let Some((_, _, file)) = original {
+        let permissions = file.metadata()?.permissions();
+        drop(file);
+        pending.as_file().set_permissions(permissions)?;
+        publish_replacement(pending, &path)?;
+    } else {
+        pending
+            .persist_noclobber(&path)
+            .map_err(|error| error.error)?;
+    }
+    invalidate(&path);
+    Ok(())
 }
 
 fn replace_inner(

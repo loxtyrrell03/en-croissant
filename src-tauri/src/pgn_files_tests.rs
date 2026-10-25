@@ -1,5 +1,191 @@
 use super::*;
 
+#[test]
+fn complete_exports_replace_or_create_without_mutating_sources_or_metadata() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.db3");
+    let output = directory.path().join("export.pgn");
+    fs::write(&source, b"source database bytes").unwrap();
+    for previous in [None, Some("previous export")] {
+        if let Some(previous) = previous {
+            fs::write(&output, previous).unwrap();
+        }
+        let pgn = game("complete");
+        export_file::<io::Error>(&output, &source, |writer| writer.write_all(pgn.as_bytes()))
+            .unwrap();
+        assert_eq!(fs::read_to_string(&output).unwrap(), pgn);
+        assert_eq!(fs::read(&source).unwrap(), b"source database bytes");
+        assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 2);
+    }
+}
+
+#[test]
+fn failed_export_body_keeps_old_output_and_discards_only_owned_staging() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.db3");
+    let output = directory.path().join("export.pgn");
+    fs::write(&source, b"source").unwrap();
+    for exists in [false, true] {
+        if exists {
+            fs::write(&output, b"previous export").unwrap();
+        }
+        let error = export_file::<io::Error>(&output, &source, |writer| {
+            writer.write_all(b"incomplete").unwrap();
+            Err(problem("fixture cursor stopped"))
+        })
+        .unwrap_err();
+        assert!(error.to_string().contains("fixture cursor stopped"));
+        assert_eq!(output.exists(), exists);
+        if exists {
+            assert_eq!(fs::read(&output).unwrap(), b"previous export");
+        }
+        assert_eq!(
+            fs::read_dir(directory.path()).unwrap().count(),
+            if exists { 2 } else { 1 }
+        );
+    }
+}
+
+#[test]
+fn final_export_flush_errors_are_observed_instead_of_lost_on_drop() {
+    struct FullDisk;
+    impl Write for FullDisk {
+        fn write(&mut self, _: &[u8]) -> io::Result<usize> {
+            Err(problem("fixture disk full"))
+        }
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut buffered = BufWriter::new(FullDisk);
+    let error =
+        write_export::<io::Error>(&mut buffered, |writer| writer.write_all(b"buffered PGN"))
+            .unwrap_err();
+    assert!(error.to_string().contains("fixture disk full"));
+}
+
+#[test]
+fn export_refuses_database_aliases_and_sidecars_before_writing() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.db3");
+    let alias = directory.path().join("alias.pgn");
+    fs::write(&source, b"database bytes").unwrap();
+    fs::hard_link(&source, &alias).unwrap();
+    for output in [
+        source.clone(),
+        alias.clone(),
+        source.with_file_name("source.db3-wal"),
+        source.with_file_name("source.db3-shm"),
+        source.with_file_name("source.db3-journal"),
+    ] {
+        let mut called = false;
+        assert!(export_file::<io::Error>(&output, &source, |_| {
+            called = true;
+            Ok(())
+        })
+        .is_err());
+        assert!(!called);
+        assert_eq!(fs::read(&source).unwrap(), b"database bytes");
+    }
+    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 2);
+}
+
+#[test]
+fn export_refuses_hardlinked_sqlite_sidecar_aliases() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.db3");
+    let wal = directory.path().join("source.db3-wal");
+    let alias = directory.path().join("alias.pgn");
+    fs::write(&source, b"source database").unwrap();
+    fs::write(&wal, b"source WAL").unwrap();
+    fs::hard_link(&wal, &alias).unwrap();
+    let mut called = false;
+    assert!(export_file::<io::Error>(&alias, &source, |_| {
+        called = true;
+        Ok(())
+    })
+    .is_err());
+    assert!(!called);
+    assert_eq!(fs::read(&wal).unwrap(), b"source WAL");
+    assert_eq!(fs::read(&alias).unwrap(), b"source WAL");
+    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 3);
+}
+
+#[test]
+fn export_keeps_a_destination_created_or_changed_during_preparation() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.db3");
+    let output = directory.path().join("export.pgn");
+    fs::write(&source, b"source").unwrap();
+    assert!(export_file::<io::Error>(&output, &source, |writer| {
+        writer.write_all(b"new export")?;
+        fs::write(&output, b"new owner file")?;
+        Ok(())
+    })
+    .is_err());
+    assert_eq!(fs::read(&output).unwrap(), b"new owner file");
+    let before = fs::metadata(&output).unwrap();
+    assert!(export_file::<io::Error>(&output, &source, |writer| {
+        writer.write_all(b"new export")?;
+        fs::write(&output, b"changed bytes!")?;
+        File::options()
+            .write(true)
+            .open(&output)?
+            .set_times(fs::FileTimes::new().set_modified(before.modified()?))?;
+        Ok(())
+    })
+    .is_err());
+    assert_eq!(fs::read(&output).unwrap(), b"changed bytes!");
+    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 2);
+}
+
+#[test]
+fn export_refuses_nonfile_or_readonly_destinations_and_does_not_create_parents() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.db3");
+    fs::write(&source, b"source").unwrap();
+    let parent = directory.path().join("missing");
+    assert!(export_file::<io::Error>(&parent.join("out.pgn"), &source, |_| Ok(())).is_err());
+    assert!(!parent.exists());
+    let output = directory.path().join("output.pgn");
+    fs::create_dir(&output).unwrap();
+    assert!(export_file::<io::Error>(&output, &source, |_| Ok(())).is_err());
+    fs::remove_dir(&output).unwrap();
+    fs::write(&output, b"keep").unwrap();
+    let original = fs::metadata(&output).unwrap().permissions();
+    let mut readonly = original.clone();
+    readonly.set_readonly(true);
+    fs::set_permissions(&output, readonly).unwrap();
+    let rejected = export_file::<io::Error>(&output, &source, |_| Ok(()));
+    fs::set_permissions(&output, original).unwrap();
+    assert!(rejected.is_err());
+    assert_eq!(fs::read(&output).unwrap(), b"keep");
+}
+
+#[cfg(windows)]
+#[test]
+fn locked_export_destination_survives_failed_publication_and_can_retry() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.db3");
+    let output = directory.path().join("export.pgn");
+    fs::write(&source, b"source").unwrap();
+    fs::write(&output, b"previous").unwrap();
+    let locked = File::options()
+        .read(true)
+        .share_mode(1)
+        .open(&output)
+        .unwrap();
+    let rejected =
+        export_file::<io::Error>(&output, &source, |writer| writer.write_all(b"complete"));
+    assert!(rejected.is_err());
+    assert_eq!(fs::read(&output).unwrap(), b"previous");
+    drop(locked);
+    export_file::<io::Error>(&output, &source, |writer| writer.write_all(b"complete")).unwrap();
+    assert_eq!(fs::read(&output).unwrap(), b"complete");
+    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 2);
+}
+
 const INFO: &str = "{\"type\":\"game\",\"tags\":[]}";
 fn game(name: &str) -> String {
     format!("[Event \"{name}\"]\n[Result \"*\"]\n\n1. e4 *\n\n")

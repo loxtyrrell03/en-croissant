@@ -1,3 +1,23 @@
+## 2026-10-25 PGN export safety
+
+- Actual old native PGN export loses bad rows/positions and can truncate its
+  source: three tiny SQLite regressions reproduced. Independent read-only
+  connection + pinned read transaction now stream every row or fail visibly.
+  Shared decoder rejects invalid positions/UTF-8; tags escape correctly.
+  Existing PGN lock/publication stages, flushes/syncs and rechecks output;
+  database/sidecar aliases, changed/linked/readonly outputs refuse. Prior
+  exports survive ordinary failure; no filesystem CAS/power-loss claim.
+- Actual desktop control checks native/transport errors, settles and retries
+  with original request ownership. Phone complete-Blob download reports
+  failure, cleans owned anchor/URL and keeps game/drawings/sync transport tags.
+  Primary44 focused native checks, clean112 library plus9 DB/9 decoder,
+  both21 frontend/types/lint0; normal main check22 existing warnings.
+- Source verified only: package/phone delivery/rendered checks remain. Keep
+  current committed owner personal-sync work when reconciling phone delivery;
+  clean currently lacks it. PGN safety does not complete Novelty's whole-profile
+  recovery/snapshot ZIP counterpart. No owner data/corpus/service operation.
+  See docs/PGN_EXPORT_SAFETY.md and current delivery JSON. Full goal active.
+
 ## 2026-10-25 legacy import target review
 
 - Novelty aa25aa07/84308b8b/0b97d3bb checkpoint its En-db3-to-Novelty

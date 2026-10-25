@@ -30,6 +30,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue, useElementSize, useToggle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import DatabasePgnExportButton from "./DatabasePgnExportButton";
 import {
   IconArrowRight,
   IconArchive,
@@ -52,7 +53,7 @@ import {
 import { Link, useNavigate } from "@tanstack/react-router";
 import { basename, resolve } from "@tauri-apps/api/path";
 import { listen } from "@tauri-apps/api/event";
-import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { exists, mkdir } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
@@ -399,7 +400,6 @@ export default function DatabasesPage() {
   const isReference = referenceDatabase === selectedDatabase?.file;
 
   const [deleteModal, toggleDeleteModal] = useToggle();
-  const [exportLoading, setExportLoading] = useState(false);
   const [exportFilesOpened, setExportFilesOpened] = useState(false);
   const [exportFilesLinkDefault, setExportFilesLinkDefault] = useState(false);
   const [folderModal, setFolderModal] = useState<DatabaseFolderModalState | null>(null);
@@ -1428,22 +1428,12 @@ export default function DatabasesPage() {
                         >
                           {t("Databases.Settings.AddGames")}
                         </Button>
-                        <Button
-                          rightSection={<IconArrowRight size="1rem" />}
-                          variant="default"
-                          loading={exportLoading}
-                          onClick={async () => {
-                            const destFile = await save({
-                              filters: [{ name: "PGN", extensions: ["pgn"] }],
-                            });
-                            if (!destFile) return;
-                            setExportLoading(true);
-                            await commands.exportToPgn(selectedDatabase.file, destFile);
-                            setExportLoading(false);
-                          }}
-                        >
-                          {t("Databases.Settings.ExportPGN")}
-                        </Button>
+                        <DatabasePgnExportButton
+                          key={selectedDatabase.file}
+                          file={selectedDatabase.file}
+                          title={selectedDatabase.title}
+                          label={t("Databases.Settings.ExportPGN")}
+                        />
                         <Button
                           rightSection={<IconFolderDown size="1rem" />}
                           variant="default"
