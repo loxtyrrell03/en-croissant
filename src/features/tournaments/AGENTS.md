@@ -14,6 +14,10 @@
   The existing desktop tab behavior and player-prediction design remain. Actual
   production-build browser QA confirms Cancel/Confirm through the real modal and
   settings bridge using synthetic records; no collectionDelete is requested.
+- Phone source dd1dfa4a is live on the canonical route. The real connected
+  tracker retains the owner's event, selected entry and saved opponent games;
+  Stop following and all five tabs render at 390px. Actual unfollow is tested
+  only against isolated synthetic records. See the phone-usability delivery doc.
 
 ## 2026-10-24 combined delivery-source verification
 

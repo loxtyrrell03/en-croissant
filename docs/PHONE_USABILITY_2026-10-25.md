@@ -46,3 +46,21 @@ and active-work guards. It preserves the canonical lox-pc root/controller route,
 other routes, owner On/Off state, workspace, tournament settings and libraries.
 Live source and preservation evidence are recorded after publication; source
 checks alone do not establish delivery.
+
+Published source `dd1dfa4ad941def98dc1b92c4ad7d77a752f69cc` is verified live at
+`https://lox-pc.tail89d19b.ts.net/`, shell SHA256
+`35373ba0b419a96cc9b0f80c08d012e4d859480d2ffd14ca1c38205efc029a01`.
+Seven served entry/WebApp/PWA assets match the prepared build and manifest.
+HTTPS health, native tournament settings, workspace, live library (25 files /
+70 databases) and a path-scoped live database manifest succeed. The unscoped
+database-manifest route requires hostedPath; its expected 404 is not a data-loss
+signal. The live connected tracker retains the owner's event and exposes Stop
+following plus all five tabs at phone width.
+
+The unpackaged hidden publisher completed with exit 0. Immediate before/after
+comparisons preserve workspace and service-choice file hashes, tournament
+settings, normalized library contents, complete Serve configuration and the
+engine service PID; workers remain cold. The guarded home-server restart is the
+only intended service restart. The owner event was not unfollowed for QA.
+Task output totals approximately 54 MiB, with existing dependency/compiler
+junctions reused and no corpus copy. Physical-device verification remains open.

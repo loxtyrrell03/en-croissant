@@ -34,8 +34,13 @@
   Cancel/Confirm unfollow without collectionDelete, board tools, PGN draft and
   successful import, and six-page navigation at 320/390/430/760px. Enlarged-text
   fixes address intrinsic grid widths and Mantine's grow-button limits.
-- See docs/PHONE_USABILITY_2026-10-25.md. Publication/current live verification
-  follow separately; browser evidence does not establish physical-iPhone proof.
+- Phone dd1dfa4a is live (shell35373ba0b419), with seven exact served assets,
+  healthy workspace/library (25 files/70 databases), a path-scoped live database
+  manifest and connected real tracker verification. Unpackaged hidden publisher
+  returned0; workspace/settings/library/service choice/Serve/engine PID match
+  immediately before/after. Temporary task actions were removed. Existing
+  owner event remains followed; no physical-iPhone proof is claimed. See
+  docs/PHONE_USABILITY_2026-10-25.md and its compact delivery receipt.
 
 ## 2026-10-25 phone usability audit and stop following
 
