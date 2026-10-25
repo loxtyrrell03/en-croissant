@@ -46,8 +46,50 @@ export const dailyStudyPlanSchema = z
                 }),
             )
             .default([]),
+        dayAllocations: z
+            .array(
+                z.object({
+                    weekday: z.number().int().min(0).max(6),
+                    steps: z.array(
+                        z.object({
+                            id: z.string(),
+                            minutes60: z.number().int().min(0).max(60),
+                            minutes90: z.number().int().min(0).max(90),
+                        }),
+                    ),
+                }),
+            )
+            .optional(),
+        priorities: z
+            .object({
+                daily: z.array(z.string()),
+                perSession: z.array(z.string()).default([]),
+                adaptive: z.array(z.string()),
+                weeklyCaps: z.record(z.number().int().min(0).max(7)),
+            })
+            .optional(),
     })
     .superRefine((plan, context) => {
+        if (plan.dayAllocations) {
+            if (
+                plan.dayAllocations.length !== 7 ||
+                new Set(plan.dayAllocations.map((d) => d.weekday)).size !== 7
+            )
+                context.addIssue({ code: "custom", message: "Provide each weekday once" });
+            for (const day of plan.dayAllocations) {
+                if (
+                    day.steps.length !== plan.steps.length ||
+                    new Set(day.steps.map((s) => s.id)).size !== plan.steps.length ||
+                    day.steps.some((s) => !plan.steps.some((p) => p.id === s.id)) ||
+                    day.steps.reduce((n, s) => n + s.minutes60, 0) !== 60 ||
+                    day.steps.reduce((n, s) => n + s.minutes90, 0) !== 90
+                )
+                    context.addIssue({
+                        code: "custom",
+                        message: "Each weekday must preserve step IDs and 60/90 totals",
+                    });
+            }
+        }
         if (new Set(plan.steps.map((step) => step.id)).size !== plan.steps.length)
             context.addIssue({ code: "custom", message: "Study step IDs must be unique" });
         for (const minutes of [60, 90] as const) {

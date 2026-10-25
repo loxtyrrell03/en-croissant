@@ -1,3 +1,35 @@
+## 2026-10-25 completed primary Study source retained
+
+- Delivery also merges completed primary0f1ac6e7, retaining Study6e87571f's
+  seek/restart/journal/editor foundation rather than rolling it back during
+  phone-source convergence. Its34 focused checks/four files and full types
+  pass on the combined source. The ten verified PGN export files remain exact.
+  Independent uncommitted automation/source in primary was never included.
+- Source now retains both serving phone history and finished primary features;
+  rebuild native/phone artifacts and preserve active runtime/data on delivery.
+  Existing package receipts remain tied to their recorded source snapshots.
+  Full recovery/snapshot parity and remaining history/rendered audit stay open.
+
+## 2026-10-25 study timer seeking and block restart
+
+- Desktop Daily Study supports fractional clicks on its weighted block strip and
+  click/drag, touch and keyboard seeking on the timer. Optional signed
+  `timerOffsetMs` separates countdown position from actual recorded `elapsedMs`;
+  old journals default to zero offset. Seeking never adds skipped time to history
+  or completes blocks; rewinding can record actual work beyond the planned target.
+- Opening saved partial work resumes its existing attempt. Restart block creates
+  a fresh paused attempt in the same session, clears only that block's current
+  completion and preserves previous attempts, notes and time. Drafts flush through
+  the revision-checked writer before seeks/resets; failed saves leave state intact.
+- The prior study frontend foundation is included with this repair; independent
+  Chessable collection/automation work remains outside the milestone. This feature
+  is desktop-specific; Novelty and the phone app do not expose Daily Study.
+- Verification: 34 focused session, journal, schema and mounted-panel checks,
+  full TypeScript, scoped lint and production frontend build; actual-component
+  Chrome checks cover seeking, touch at 390px, saved-partial restart after reload
+  and retained history notes. The existing Dev server serves these controls.
+  Installed-native interaction and physical-phone checks were not performed.
+
 ## 2026-10-25 serving phone source reconciliation
 
 - Delivery now merges the deployed phone7e7804f2 and its completed b9a25bdc
@@ -5468,7 +5500,7 @@ a concrete risk that the check would resolve.
 
 - Second parity delivery uses clean source cc3e71d2: 151 selected checks/23 files, types, lint and frontend/worker builds pass. Phone release cc3e71d20bca-95ba505d5b32 passes matching canonical HTTPS metadata/data/native RPC and connected Chrome 390px refresh/search checks; original source/view/board state is restored. Serve/controller/owner On choice are preserved; only the intended home server restarts and native helper hashes stay unchanged. The standalone desktop rebuild embeds the new Engine Plans/analysis/live-selector/root-style assets (51,086,336 bytes; SHA-256 e52d696950b1976dbab760d6dc76cabb621556f2c0c3450732099ec133053952). Native-window/physical-phone interaction is unverified. Preserve unrelated primary work and continue the active gap ledger; this is not complete parity.
 
-- Native whole-game analysis accepts optional searchLimits (depth 2â€“30, timeMs 50â€“5000), preserving legacy finite modes and unrelated live/practice engines. Root candidates retain latest exact evidence and must match final bestmove; bound/missing/foreign output is rejected. One recovery shares the remaining position budget and caps depth at the chosen limit or 12; node-only modes never overspend their node budget. Startup/search cancellation and silent-engine waits are bounded, and old jobs cannot remove replacement cancellation flags. Eleven focused protocol/limit checks pass via scripts/check-game-report-protocol.ps1 (13 filtered native checks total); generated tiny peer files are cleaned. Phone integration and runtime delivery remain pending; see docs/GAME_ANALYSIS_LIMITS.md.
+- Native whole-game analysis accepts optional searchLimits (depth 2–30, timeMs 50–5000), preserving legacy finite modes and unrelated live/practice engines. Root candidates retain latest exact evidence and must match final bestmove; bound/missing/foreign output is rejected. One recovery shares the remaining position budget and caps depth at the chosen limit or 12; node-only modes never overspend their node budget. Startup/search cancellation and silent-engine waits are bounded, and old jobs cannot remove replacement cancellation flags. Eleven focused protocol/limit checks pass via scripts/check-game-report-protocol.ps1 (13 filtered native checks total); generated tiny peer files are cleaned. Phone integration and runtime delivery remain pending; see docs/GAME_ANALYSIS_LIMITS.md.
 
 - Desktop report presets now share normalized report-settings across the dialog and quick notation action: fresh Medium, exact legacy finite modes, custom bounds and preferred engine/variation/reversed choices. Quick analysis exposes Cancel; failed jobs preserve old evidence and offer Retry beside the action. Results are scoped to the original store/game/request, with cancellation on changed content and no late overwrite/progress clear; comments/navigation/live evals preserve identity. Engine discovery does not reset unsaved form limits, and analysis retains actual score depth. All 48 selected frontend checks, full types, scoped lint and frontend build pass; real Mantine controls/help/request wiring pass 320/390px and doubled-text Chrome fixtures. Phone integration and delivery remain pending. A new Novelty Database-percentage change (de844abd) is added to the active gap ledger.
 

@@ -4922,6 +4922,11 @@
     "productionProxyPort": 8788,
     "runtimeChanged": false,
     "phonePublished": false,
-    "browserRendered": false
+    "browserRendered": false,
+    "completedPrimarySourceIncluded": "0f1ac6e7357c4b250a0b68b49f11ffebfc29605a",
+    "preservedDesktopStudySource": "6e87571f",
+    "studyChecks": 34,
+    "studyFiles": 4,
+    "combinedStudyTypes": true
   }
 }

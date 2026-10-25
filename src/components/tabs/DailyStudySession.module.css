@@ -1,0 +1,29 @@
+.rail {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+.segment {
+  min-width: 12px;
+  height: 20px;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-color-default);
+  cursor: pointer;
+}
+.segment[data-complete="true"] {
+  background: var(--mantine-primary-color-filled);
+}
+.segment[data-current="true"] {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 1px;
+}
+.segment:focus-visible {
+  outline: 2px solid var(--mantine-color-text);
+  outline-offset: 2px;
+}
+.clock {
+  font-size: 1.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
