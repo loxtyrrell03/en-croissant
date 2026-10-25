@@ -3073,15 +3073,12 @@
     "corpusCopied": false,
     "ownerDataWritten": false,
     "remaining": [
-      "input/sort/disk bounds",
-      "strict PV/score validation",
-      "duplicate-position selection",
-      "cancellation",
-      "network stall limits",
-      "durable interruption recovery"
+      "durable interruption recovery",
+      "data-management UI evaluation"
     ],
     "packageSource": "2c342d7271a2b5763d1d1704d5f47d491c401f4e",
-    "exeSha256": "33173d188a770296a180a80e3a39c5b8168e1abb83d2fd13690ffcb845f00439"
+    "exeSha256": "33173d188a770296a180a80e3a39c5b8168e1abb83d2fd13690ffcb845f00439",
+    "subsequentBoundsVerification": "evaluationBuildLimitsParity"
   },
   "previousLocalEvaluationReadinessDesktop": {
     "exeBytes": 47852544,
@@ -3546,5 +3543,52 @@
       "queued": 0,
       "ownerDataWritten": false
     }
+  },
+  "evaluationBuildLimitsParity": {
+    "novelty": [
+      "2a083a83"
+    ],
+    "status": "native-source-verified-package-pending",
+    "baselineTests": 4,
+    "baselineFailures": 4,
+    "newNativeTests": 18,
+    "nativeEvaluationTests": 30,
+    "nativeLibraryTests": 63,
+    "generatedTransportTests": 3,
+    "independentPrimaryAndClean": true,
+    "types": true,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "nativeApplicationCheck": true,
+    "existingNativeWarnings": 22,
+    "cliAcceptanceCases": 8,
+    "cliDebugSha256": "1629c4a9b9dfd602e23f3a0232c315b643384c40a9385de7489dda29ee91899c",
+    "bounds": {
+      "defaultDiskGib": 64,
+      "maxDiskGib": 512,
+      "lineMib": 1,
+      "sortShardMib": 64,
+      "connectSeconds": 10,
+      "readStallSeconds": 30,
+      "totalTransferDeadline": false
+    },
+    "quotaIncludesBufferedSpoolCompressedOutputAndManifest": true,
+    "duplicateSelectionDeterministic": true,
+    "strictMoveAndScoreSyntax": true,
+    "requestIdCancellation": true,
+    "publicationCancelRaceGuard": true,
+    "existingOutputPreserved": true,
+    "nativeReleasePackageVerified": false,
+    "phoneBuilderExists": false,
+    "phoneRuntimeChanged": false,
+    "corpusCopied": false,
+    "ownerDataWritten": false,
+    "explicitDevRestart": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "remaining": [
+      "durable interrupted-job recovery (7128c5ed)",
+      "data-management UI evaluation"
+    ]
   }
 }

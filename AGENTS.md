@@ -1,3 +1,24 @@
+## 2026-10-25 bounded optional evaluation builder
+
+- Novelty2a083a83 native command/CLI now stream with1 MiB source lines,64 MiB
+  sort shards and an explicit64 GiB default quota (1-512 GiB native/CLI).
+  Buffered spool, compressed outputs and manifest share the quota. Preserve
+  fresh-directory ownership; never rebuild/copy the retained full corpus.
+- Strict move/score syntax, validated candidates and deterministic duplicate
+  selection retain unique positions. Native cancel by request ID retains its
+  lease through cleanup and shares an atomic publication boundary. CLI supports
+  an external retained cancel-file. Connect/read-stall bounds are10/30 seconds;
+  progressing transfers have no total deadline. Sort/read cancellation remains
+  cooperative. Do not call a process termination a completed cancellation.
+- Primary/clean independently pass63 native library checks (30 evaluation,
+  including18 new), three generated transport checks and full types; scoped
+  lint0, normal native command check22 existing warnings, eight actual tiny-CLI
+  cases. No platform-manifest/system-DLL/test-exporter change remains. Release
+  packaging follows separately; phone has no matching builder entry point.
+  Installed readers, owner profiles/apps/data/services remain. Durable recovery
+  7128c5ed and wider data-management UI are still open; full audit is active.
+  See docs/EVALUATION_BUILD_LIMITS.md.
+
 ## Native/phone engine parity contracts (2026-10-25)
 
 - Windows desktop builds use scripts/build-desktop.mjs to authenticate pinned Stockfish 19 universal x64/ARM64 releases and retain complete source/licence/notices. Resource sources must be manifest-relative: Tauri's Windows mapper strips absolute drive prefixes and can copy onto the source. The real resource-parser regression passes. Portable delivery requires the adjacent full engine tree; discovery never downloads or warms workers. Keep changed installs and old engines.

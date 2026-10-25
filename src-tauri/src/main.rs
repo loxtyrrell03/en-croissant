@@ -189,6 +189,7 @@ fn main() {
             lookup_local_lichess_cloud_eval,
             get_local_lichess_eval_db_status,
             build_local_lichess_eval_db,
+            cancel_local_lichess_eval_db,
             analyze_game,
             scan_mistake_review,
             get_mistake_review_game_metadata,
@@ -455,4 +456,10 @@ async fn build_local_lichess_eval_db(
     app: tauri::AppHandle,
 ) -> Result<LocalEvalBuildReport, String> {
     local_eval::build_local_lichess_eval_db(request, app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+fn cancel_local_lichess_eval_db(id: String) -> bool {
+    local_eval::cancel_local_lichess_eval_db(id)
 }

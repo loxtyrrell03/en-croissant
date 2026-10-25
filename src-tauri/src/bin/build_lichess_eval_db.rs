@@ -1,8 +1,8 @@
 use std::{env, path::PathBuf, time::Instant};
 
 use en_croissant_fork::local_eval::{
-    build_compact_eval_database, database_status, default_cli_store_dir, default_source_url,
-    lookup_eval, LocalEvalBuildOptions, LocalEvalSource,
+    build_compact_eval_database_controlled, database_status, default_cli_store_dir,
+    default_source_url, lookup_eval, LocalEvalBuildControl, LocalEvalBuildOptions, LocalEvalSource,
 };
 
 fn main() {
@@ -61,7 +61,14 @@ fn run() -> Result<(), String> {
     println!("Shards: {}", options.shard_count);
 
     let started = Instant::now();
-    let report = build_compact_eval_database(options, |progress| {
+    let mut control = LocalEvalBuildControl::for_gib(args.disk_limit_gib.unwrap_or(64))
+        .map_err(|error| error.to_string())?;
+    control.cancel_file = args.cancel_file;
+    println!(
+        "Maximum build space: {}",
+        human_bytes(control.disk_limit_bytes)
+    );
+    let report = build_compact_eval_database_controlled(options, control, |progress| {
         println!(
             "{:>6.2}% {:<10} positions={} skipped={} compressed={}/{}",
             progress.progress,
@@ -84,6 +91,7 @@ fn run() -> Result<(), String> {
         report.output_dir,
         human_bytes(report.storage_bytes)
     );
+    println!("Duplicate source positions omitted: {}", report.duplicates);
     Ok(())
 }
 
@@ -96,6 +104,8 @@ struct Args {
     shards: Option<u16>,
     lookup_fen: Option<String>,
     status: bool,
+    disk_limit_gib: Option<u16>,
+    cancel_file: Option<PathBuf>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -106,6 +116,18 @@ fn parse_args() -> Result<Args, String> {
             "--source" => parsed.source = Some(next_path(&mut args, "--source")?),
             "--url" => parsed.url = Some(next_value(&mut args, "--url")?),
             "--output" => parsed.output = Some(next_path(&mut args, "--output")?),
+            "--cancel-file" => parsed.cancel_file = Some(next_path(&mut args, "--cancel-file")?),
+            "--disk-limit-gib" => {
+                let value = next_value(&mut args, "--disk-limit-gib")?
+                    .parse::<u16>()
+                    .map_err(|_| {
+                        "--disk-limit-gib must be a whole number from 1 to 512".to_string()
+                    })?;
+                if !(1..=512).contains(&value) {
+                    return Err("--disk-limit-gib must be a whole number from 1 to 512".into());
+                }
+                parsed.disk_limit_gib = Some(value);
+            }
             "--max-pvs" => {
                 parsed.max_pvs = Some(
                     next_value(&mut args, "--max-pvs")?
@@ -148,7 +170,7 @@ fn next_path(args: &mut impl Iterator<Item = String>, flag: &str) -> Result<Path
 }
 
 fn human_bytes(bytes: u64) -> String {
-    const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+    const UNITS: [&str; 5] = ["B", "KiB", "MiB", "GiB", "TiB"];
     let mut value = bytes as f64;
     let mut unit = 0;
     while value >= 1024.0 && unit + 1 < UNITS.len() {
@@ -174,6 +196,8 @@ Options:\n\
   --source <path>   Build from a local lichess_db_eval.jsonl.zst file\n\
   --url <url>       Build from a URL instead of the official Lichess eval dump\n\
   --output <dir>    New output directory; existing data is never replaced\n\
+  --disk-limit-gib <1-512> Maximum build space in GiB (default: 64)\n\
+  --cancel-file <path>    Stop when this signal file exists; file is kept\n\
   --max-pvs <1-5>   Number of root moves/evals to store per position (default: 5)\n\
   --shards <n>      Number of binary shards (default: 2048)\n\
   --status          Print local store status and exit\n\
@@ -181,6 +205,9 @@ Options:\n\
 \n\
 The default output is app data lichess-cloud-evals. If it exists, choose a new\n\
 directory with --output. Reuse the retained corpus instead of building a copy.\n\
+Source lines are limited to 1 MiB and sort shards to 64 MiB. Network connects\n\
+have a 10-second bound and individual reads a 30-second stall bound. Cancellation\n\
+can wait for a blocked network read; progressing downloads have no total deadline.\n\
 \n\
 Default URL: {}",
         default_source_url()

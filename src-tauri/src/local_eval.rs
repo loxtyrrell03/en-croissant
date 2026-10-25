@@ -1,13 +1,10 @@
 use std::{
     cmp::Ordering,
     collections::{HashMap, VecDeque},
-    fs::{self, File, OpenOptions},
-    io::{self, BufRead, BufReader, BufWriter, Read, Write},
+    fs::{self, File},
+    io::{self, BufReader, Read},
     path::{Path, PathBuf},
-    sync::{
-        atomic::{AtomicU64, Ordering as AtomicOrdering},
-        Arc, Mutex,
-    },
+    sync::{Arc, Mutex},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -16,7 +13,11 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::Manager;
 
+mod build;
+mod build_control;
 mod build_directory;
+pub use build::build_compact_eval_database_controlled;
+pub use build_control::{LocalEvalBuildControl, DEFAULT_BUILD_DISK_LIMIT_BYTES};
 use tauri_specta::Event;
 
 const FORMAT_VERSION: u16 = 2;
@@ -27,7 +28,6 @@ const MAX_STORED_PVS: usize = 5;
 const ROOT_ONLY_RECORD_SIZE: usize = 54;
 const VARIABLE_RECORD_SIZE: usize = 0;
 const V2_SHARD_MAGIC: &[u8; 4] = b"LEI2";
-const SHARD_BUFFER_FLUSH_BYTES: usize = 256 * 1024;
 const SHARD_CACHE_MAX_BYTES: usize = 256 * 1024 * 1024;
 const MANIFEST_FILE: &str = "manifest.json";
 const SHARDS_DIR: &str = "shards";
@@ -56,6 +56,9 @@ pub enum LocalEvalError {
 
     #[error("background build task failed: {0}")]
     Join(String),
+
+    #[error("Evaluation build cancelled. Existing databases were kept.")]
+    Cancelled,
 }
 
 impl From<LocalEvalError> for String {
@@ -97,6 +100,8 @@ pub struct LocalEvalBuildRequest {
     pub output_dir: Option<String>,
     pub max_pvs: Option<u8>,
     pub shard_count: Option<u16>,
+    #[specta(optional)]
+    pub disk_limit_gib: Option<u16>,
 }
 
 #[derive(Debug, Clone, Serialize, Type, tauri_specta::Event)]
@@ -119,6 +124,7 @@ pub struct LocalEvalBuildReport {
     pub source: String,
     pub positions: u64,
     pub skipped: u64,
+    pub duplicates: u64,
     pub shard_count: u16,
     pub max_pvs: u8,
     pub storage_bytes: u64,
@@ -216,26 +222,6 @@ struct CompactRecord {
     pvs: Vec<CompactPv>,
 }
 
-struct CountingReader<R> {
-    inner: R,
-    bytes_read: Arc<AtomicU64>,
-}
-
-impl<R> CountingReader<R> {
-    fn new(inner: R, bytes_read: Arc<AtomicU64>) -> Self {
-        Self { inner, bytes_read }
-    }
-}
-
-impl<R: Read> Read for CountingReader<R> {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        let read = self.inner.read(buf)?;
-        self.bytes_read
-            .fetch_add(read as u64, AtomicOrdering::Relaxed);
-        Ok(read)
-    }
-}
-
 #[derive(Default)]
 struct ShardCache {
     entries: HashMap<PathBuf, Arc<Vec<u8>>>,
@@ -271,10 +257,16 @@ pub async fn build_local_lichess_eval_db(
     request: LocalEvalBuildRequest,
     app: tauri::AppHandle,
 ) -> Result<LocalEvalBuildReport, String> {
+    let mut control = LocalEvalBuildControl::for_gib(request.disk_limit_gib.unwrap_or(64))
+        .map_err(String::from)?;
     let options = request_to_options(request, &app).map_err(String::from)?;
+    let lease = build_control::BuildLease::start(&options.id).map_err(String::from)?;
+    control.cancel = lease.cancel.clone();
+    control.state = lease.state.clone();
     let emit_app = app.clone();
     tokio::task::spawn_blocking(move || {
-        build_compact_eval_database(options, |progress| {
+        let _lease = lease;
+        build_compact_eval_database_controlled(options, control, |progress| {
             if let Err(error) = progress.emit(&emit_app) {
                 log::warn!("Failed to emit local eval build progress: {error}");
             }
@@ -285,186 +277,20 @@ pub async fn build_local_lichess_eval_db(
     .map_err(String::from)
 }
 
+#[tauri::command]
+#[specta::specta]
+pub fn cancel_local_lichess_eval_db(id: String) -> bool {
+    build_control::cancel_build(&id)
+}
+
 pub fn build_compact_eval_database<F>(
     options: LocalEvalBuildOptions,
-    mut on_progress: F,
+    on_progress: F,
 ) -> Result<LocalEvalBuildReport, LocalEvalError>
 where
     F: FnMut(LocalEvalBuildProgress),
 {
-    let max_pvs = validate_max_pvs(options.max_pvs)?;
-    let shard_count = validate_shard_count(options.shard_count)?;
-    let source_label = options.source.label();
-    let built_at = unix_now();
-    let mut owned = build_directory::BuildDirectory::create(&options.output_dir)?;
-    let build_dir = owned.path.clone();
-    let spool_dir = build_dir.join(SPOOL_DIR);
-    let shards_dir = build_dir.join(SHARDS_DIR);
-
-    fs::create_dir_all(&spool_dir)?;
-    fs::create_dir_all(&shards_dir)?;
-
-    let (source_reader, total_bytes) = open_source(&options.source)?;
-    let compressed_bytes_read = Arc::new(AtomicU64::new(0));
-    let counting_reader = CountingReader::new(source_reader, compressed_bytes_read.clone());
-    let decoder = zstd::Decoder::new(counting_reader)?;
-    let mut reader = BufReader::with_capacity(1024 * 1024, decoder);
-    let mut spool = ShardSpool::new(&spool_dir, shard_count);
-
-    let mut line = String::new();
-    let mut lines = 0_u64;
-    let mut positions = 0_u64;
-    let mut skipped = 0_u64;
-
-    emit_progress(
-        &options.id,
-        &mut on_progress,
-        "ingesting",
-        0.0,
-        positions,
-        skipped,
-        compressed_bytes_read.load(AtomicOrdering::Relaxed),
-        total_bytes,
-        false,
-    );
-    owned.ensure_owned()?;
-
-    loop {
-        line.clear();
-        let read = reader.read_line(&mut line)?;
-        if read == 0 {
-            break;
-        }
-        if line.trim().is_empty() {
-            continue;
-        }
-
-        lines += 1;
-        match parse_compact_record(&line, max_pvs) {
-            Ok(Some(record)) => {
-                let shard = shard_for_hash(record.hash_hi, record.hash_lo, shard_count);
-                spool.push(shard, &pack_record(&record)?)?;
-                positions += 1;
-            }
-            Ok(None) => skipped += 1,
-            Err(error) => {
-                return Err(LocalEvalError::InvalidDatabase(format!(
-                    "could not parse source line {lines}: {error}"
-                )));
-            }
-        }
-
-        if lines % 100_000 == 0 {
-            let read = compressed_bytes_read.load(AtomicOrdering::Relaxed);
-            let progress = ingest_progress(read, total_bytes);
-            emit_progress(
-                &options.id,
-                &mut on_progress,
-                "ingesting",
-                progress,
-                positions,
-                skipped,
-                read,
-                total_bytes,
-                false,
-            );
-            owned.ensure_owned()?;
-        }
-    }
-
-    owned.ensure_owned()?;
-    spool.flush_all()?;
-
-    if positions == 0 {
-        return Err(LocalEvalError::InvalidDatabase(
-            "The export contains no usable evaluations.".into(),
-        ));
-    }
-
-    emit_progress(
-        &options.id,
-        &mut on_progress,
-        "sorting",
-        92.0,
-        positions,
-        skipped,
-        compressed_bytes_read.load(AtomicOrdering::Relaxed),
-        total_bytes,
-        false,
-    );
-
-    let mut sorted_positions = 0_u64;
-    for shard in 0..shard_count {
-        owned.ensure_owned()?;
-        sorted_positions +=
-            sort_and_compress_shard(&spool.path(shard), &shard_path(&shards_dir, shard))?;
-        if shard % 32 == 0 || shard + 1 == shard_count {
-            let progress = 92.0 + ((shard as f32 + 1.0) / shard_count as f32) * 7.0;
-            emit_progress(
-                &options.id,
-                &mut on_progress,
-                "sorting",
-                progress,
-                positions,
-                skipped,
-                compressed_bytes_read.load(AtomicOrdering::Relaxed),
-                total_bytes,
-                false,
-            );
-        }
-    }
-
-    if sorted_positions != positions {
-        return Err(LocalEvalError::InvalidDatabase(format!(
-            "sorted {sorted_positions} records but ingested {positions}"
-        )));
-    }
-
-    owned.ensure_owned()?;
-    if spool_dir.exists() {
-        fs::remove_dir_all(&spool_dir)?;
-    }
-
-    let manifest = LocalEvalManifest {
-        format: "en-croissant-lichess-eval-compact".to_string(),
-        version: FORMAT_VERSION,
-        record_size: VARIABLE_RECORD_SIZE,
-        shard_count,
-        max_pvs,
-        positions,
-        skipped,
-        source: source_label.clone(),
-        built_at,
-        complete: true,
-    };
-    write_manifest(&build_dir, &manifest)?;
-    owned.finish();
-    let final_storage_bytes = directory_size(&build_dir)?;
-
-    clear_shard_cache();
-
-    emit_progress(
-        &options.id,
-        &mut on_progress,
-        "ready",
-        100.0,
-        positions,
-        skipped,
-        compressed_bytes_read.load(AtomicOrdering::Relaxed),
-        total_bytes,
-        true,
-    );
-
-    Ok(LocalEvalBuildReport {
-        output_dir: options.output_dir.display().to_string(),
-        source: source_label,
-        positions,
-        skipped,
-        shard_count,
-        max_pvs,
-        storage_bytes: final_storage_bytes,
-        built_at,
-    })
+    build_compact_eval_database_controlled(options, LocalEvalBuildControl::default(), on_progress)
 }
 
 pub fn lookup_eval(
@@ -658,7 +484,7 @@ fn request_to_options(
         id: request
             .id
             .filter(|id| !id.trim().is_empty())
-            .unwrap_or_else(|| "lichess-local-eval-build".to_string()),
+            .unwrap_or_else(|| format!("eval-build-{:032x}", rand::random::<u128>())),
         source,
         output_dir,
         max_pvs: request.max_pvs.unwrap_or(DEFAULT_MAX_PVS),
@@ -723,56 +549,43 @@ fn parse_compact_record(line: &str, max_pvs: u8) -> Result<Option<CompactRecord>
     let Some(fen_key) = normalize_fen_key(&position.fen) else {
         return Ok(None);
     };
-    let Some(eval) = select_source_eval(&position.evals, max_pvs) else {
-        return Ok(None);
-    };
-
-    let mut pvs = Vec::with_capacity(max_pvs as usize);
-    for pv in eval.pvs.iter().take(max_pvs as usize) {
-        let moves = pv
-            .line
-            .split_whitespace()
-            .filter_map(encode_uci_move)
-            .collect::<Vec<_>>();
-        if moves.is_empty() {
-            continue;
-        }
-        let Some((score, score_kind)) = encode_score(pv) else {
-            continue;
-        };
-        pvs.push(CompactPv {
-            score,
-            score_kind,
-            moves,
-        });
-    }
-
-    if pvs.is_empty() {
-        return Ok(None);
-    }
-
     let (hash_hi, hash_lo) = hash_fen(&fen_key);
-    Ok(Some(CompactRecord {
-        hash_hi,
-        hash_lo,
-        depth: eval.depth,
-        knodes: eval.knodes.min(u32::MAX as u64) as u32,
-        pvs,
-    }))
-}
-
-fn select_source_eval<'a>(evals: &'a [SourceEval], max_pvs: u8) -> Option<&'a SourceEval> {
-    evals
-        .iter()
-        .filter(|eval| !eval.pvs.is_empty())
-        .max_by(|a, b| {
-            let a_pvs = a.pvs.len().min(max_pvs as usize);
-            let b_pvs = b.pvs.len().min(max_pvs as usize);
-            a_pvs
-                .cmp(&b_pvs)
-                .then_with(|| a.depth.cmp(&b.depth))
-                .then_with(|| a.knodes.cmp(&b.knodes))
+    let records = position.evals.iter().filter_map(|eval| {
+        let pvs = eval
+            .pvs
+            .iter()
+            .take(max_pvs as usize)
+            .filter_map(|pv| {
+                let moves = pv
+                    .line
+                    .split_whitespace()
+                    .take(u8::MAX as usize)
+                    .map(encode_uci_move)
+                    .collect::<Option<Vec<_>>>()?;
+                if moves.is_empty() {
+                    return None;
+                }
+                let (score, score_kind) = encode_score(pv)?;
+                Some(CompactPv {
+                    score,
+                    score_kind,
+                    moves,
+                })
+            })
+            .collect::<Vec<_>>();
+        if pvs.is_empty() {
+            return None;
+        }
+        Some(CompactRecord {
+            hash_hi,
+            hash_lo,
+            depth: eval.depth,
+            knodes: eval.knodes.min(u32::MAX as u64) as u32,
+            pvs,
         })
+    });
+    // Invalid candidates cannot out-rank a usable evaluation by raw PV count.
+    Ok(records.max_by_key(|record| (record.pvs.len(), record.depth, record.knodes)))
 }
 
 fn normalize_fen_key(fen: &str) -> Option<String> {
@@ -785,10 +598,11 @@ fn normalize_fen_key(fen: &str) -> Option<String> {
 }
 
 fn encode_score(pv: &SourcePv) -> Option<(i16, u8)> {
-    if let Some(cp) = pv.cp {
-        return Some((cp.clamp(i16::MIN as i32, i16::MAX as i32) as i16, 0));
+    match (pv.cp, pv.mate) {
+        (Some(cp), None) => Some((cp.clamp(i16::MIN as i32, i16::MAX as i32) as i16, 0)),
+        (None, Some(mate)) => Some((mate, 1)),
+        _ => None,
     }
-    pv.mate.map(|mate| (mate, 1))
 }
 
 fn decode_pv(pv: &CompactPv) -> Option<LocalLichessCloudPv> {
@@ -1136,132 +950,6 @@ fn record_at(bytes: &[u8], records_end: usize, offset: usize) -> Result<&[u8], L
     Ok(&bytes[offset..offset + record_len])
 }
 
-struct ShardSpool {
-    dir: PathBuf,
-    buffers: Vec<Vec<u8>>,
-}
-
-impl ShardSpool {
-    fn new(dir: &Path, shard_count: u16) -> Self {
-        Self {
-            dir: dir.to_path_buf(),
-            buffers: (0..shard_count).map(|_| Vec::new()).collect(),
-        }
-    }
-
-    fn path(&self, shard: u16) -> PathBuf {
-        shard_path(&self.dir, shard)
-    }
-
-    fn push(&mut self, shard: u16, record: &[u8]) -> Result<(), LocalEvalError> {
-        let buffer = &mut self.buffers[shard as usize];
-        buffer.extend_from_slice(record);
-        if buffer.len() >= SHARD_BUFFER_FLUSH_BYTES {
-            self.flush(shard)?;
-        }
-        Ok(())
-    }
-
-    fn flush(&mut self, shard: u16) -> Result<(), LocalEvalError> {
-        let path = self.path(shard);
-        let buffer = &mut self.buffers[shard as usize];
-        if buffer.is_empty() {
-            return Ok(());
-        }
-        let mut file = OpenOptions::new().create(true).append(true).open(path)?;
-        file.write_all(buffer)?;
-        buffer.clear();
-        Ok(())
-    }
-
-    fn flush_all(&mut self) -> Result<(), LocalEvalError> {
-        for shard in 0..self.buffers.len() as u16 {
-            self.flush(shard)?;
-        }
-        Ok(())
-    }
-}
-
-fn sort_and_compress_shard(input_path: &Path, output_path: &Path) -> Result<u64, LocalEvalError> {
-    if !input_path.exists() {
-        return Ok(0);
-    }
-    let bytes = fs::read(input_path)?;
-    let mut records = unpack_spooled_records(&bytes, input_path)?;
-    records.sort_unstable_by(|a, b| {
-        let a_hash = record_hash(a).unwrap_or((0, 0));
-        let b_hash = record_hash(b).unwrap_or((0, 0));
-        a_hash.cmp(&b_hash)
-    });
-
-    let output = File::create(output_path)?;
-    let writer = BufWriter::new(output);
-    let mut encoder = zstd::Encoder::new(writer, 6)?;
-    let mut offsets = Vec::with_capacity(records.len());
-    let mut offset = 0_u32;
-    for record in &records {
-        offsets.push(offset);
-        encoder.write_all(record)?;
-        offset = offset.checked_add(record.len() as u32).ok_or_else(|| {
-            LocalEvalError::InvalidDatabase("v2 shard offset overflow".to_string())
-        })?;
-    }
-    for offset in offsets {
-        encoder.write_all(&offset.to_le_bytes())?;
-    }
-    let count = u32::try_from(records.len()).map_err(|_| {
-        LocalEvalError::InvalidDatabase(format!("too many records in shard: {}", records.len()))
-    })?;
-    encoder.write_all(&count.to_le_bytes())?;
-    encoder.write_all(V2_SHARD_MAGIC)?;
-    let mut writer = encoder.finish()?;
-    writer.flush()?;
-
-    Ok(records.len() as u64)
-}
-
-fn unpack_spooled_records(bytes: &[u8], input_path: &Path) -> Result<Vec<Vec<u8>>, LocalEvalError> {
-    let mut records = Vec::new();
-    let mut offset = 0_usize;
-    while offset < bytes.len() {
-        if offset + 2 > bytes.len() {
-            return Err(LocalEvalError::InvalidDatabase(format!(
-                "spool shard {} ended inside record length",
-                input_path.display()
-            )));
-        }
-        let record_len = u16::from_le_bytes([bytes[offset], bytes[offset + 1]]) as usize;
-        if record_len < 26 || offset + record_len > bytes.len() {
-            return Err(LocalEvalError::InvalidDatabase(format!(
-                "spool shard {} has invalid record length {record_len} at byte {offset}",
-                input_path.display()
-            )));
-        }
-        let record = bytes[offset..offset + record_len].to_vec();
-        record_hash(&record)?;
-        records.push(record);
-        offset += record_len;
-    }
-    Ok(records)
-}
-
-fn open_source(
-    source: &LocalEvalSource,
-) -> Result<(Box<dyn Read + Send>, Option<u64>), LocalEvalError> {
-    match source {
-        LocalEvalSource::File(path) => {
-            let file = File::open(path)?;
-            let size = file.metadata().ok().map(|metadata| metadata.len());
-            Ok((Box::new(file), size))
-        }
-        LocalEvalSource::Url(url) => {
-            let response = reqwest::blocking::get(url)?.error_for_status()?;
-            let size = response.content_length();
-            Ok((Box::new(response), size))
-        }
-    }
-}
-
 fn shard_path(dir: &Path, shard: u16) -> PathBuf {
     dir.join(format!("{shard:04}.bin.zst"))
 }
@@ -1292,6 +980,7 @@ fn directory_present(path: &Path) -> Result<bool, LocalEvalError> {
     }
 }
 
+#[cfg(test)]
 fn write_manifest(dir: &Path, manifest: &LocalEvalManifest) -> Result<(), LocalEvalError> {
     let data = serde_json::to_string_pretty(manifest)?;
     fs::write(dir.join(MANIFEST_FILE), data)?;
@@ -1400,6 +1089,10 @@ fn unix_now() -> u64 {
 #[cfg(test)]
 #[path = "local_eval/build_safety_tests.rs"]
 mod build_safety_tests;
+
+#[cfg(test)]
+#[path = "local_eval/build_limits_tests.rs"]
+mod build_limits_tests;
 
 #[cfg(test)]
 mod tests {

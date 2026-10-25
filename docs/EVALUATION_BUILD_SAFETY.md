@@ -42,7 +42,8 @@ is also tracked in the current delivery JSON. Frontend source is unchanged; the
 previous frontend gate is not counted as rerun here. Native-window and
 physical-device checks are separate.
 
-This is the output-ownership portion of builder parity. Bounded input/sort/disk
-use, strict PV/score validation, duplicate-position selection, cancellation,
-network stall limits and durable interrupted-job recovery remain explicit audit
-work; this milestone does not claim those are delivered.
+The subsequent bounded-builder milestone in EVALUATION_BUILD_LIMITS.md adds
+input/sort/disk bounds, strict PV/score validation, unique-position selection,
+cooperative cancellation and network stall limits. The ownership package above
+is historical proof of that earlier slice. Durable interrupted-job recovery and
+the wider data-management UI remain separate audit work.
