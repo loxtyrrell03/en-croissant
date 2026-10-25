@@ -2481,5 +2481,65 @@
     "phoneProductionChanges": false,
     "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "ownerDataWritten": false
+  },
+  "nativeWindowsIpcParity": {
+    "novelty": [
+      "d52f614e"
+    ],
+    "status": "windows-native-bridge-source-verified-package-pending",
+    "pinnedTauri": "2.10.2",
+    "baseline": {
+      "checkedAt": "2026-10-25T12:09:41.684Z",
+      "actualPinnedProtocol": true,
+      "actualBuilderDefault": true,
+      "tauriVersion": "2.10.2",
+      "protocolSha256": "68ae690606006f733bde75dd8bb6748464954a22c7e83914a93b1abc221d7072",
+      "syntheticOnly": true,
+      "realNetworkRequests": 0,
+      "ownerDataWritten": false,
+      "rejectedFetchUsesFallback": true,
+      "resolvedUnrelated403LosesNativeRequest": true,
+      "requiredNativeDeliveryFailureReproduced": true,
+      "liveWindowsInterceptionReproduced": false
+    },
+    "wireCompatibility": {
+      "checkedAt": "2026-10-25T12:12:15.629Z",
+      "pinnedTauriFallbackEnvelopeMatches": true,
+      "originalHttpAttempts": 1,
+      "candidateHttpAttempts": 0,
+      "nativeDeliveries": 1,
+      "callbacksHeadersFrameKeyBinaryMapChannelPreserved": true,
+      "syntheticOnly": true,
+      "realNetworkRequests": 0
+    },
+    "windowsBuilderOnly": true,
+    "frameAuthenticationPreserved": true,
+    "keyRemainsInClosure": true,
+    "noHttpAttempt": true,
+    "noAutomaticReplay": true,
+    "binaryMapsChannelsAndOptionsPreserved": true,
+    "nodeChecks": 7,
+    "independentCleanChecks": true,
+    "lintFiles": 2,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "explicitLintOverridesNormalNativeIgnore": true,
+    "nativeCommandCheck": true,
+    "existingNativeWarnings": 22,
+    "existingCiJobStepAdded": true,
+    "remoteCiRunVerified": false,
+    "frontendSourceChanged": false,
+    "previousFrontendGate": {
+      "tests": 531,
+      "files": 76,
+      "source": "13e6c69b",
+      "rerunForIpc": false
+    },
+    "packageVerified": false,
+    "nativeWindowVerified": false,
+    "actualLiveWindowsInterceptionReproduced": false,
+    "otherPlatforms": "Default Tauri transport retained.",
+    "phone": "Separate browser/server HTTPS transport unchanged; no publication required.",
+    "ownerDataWritten": false
   }
 }

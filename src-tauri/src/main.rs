@@ -331,7 +331,10 @@ fn main() {
         },
     ];
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(target_os = "windows")]
+    let builder = builder.invoke_system(include_str!("../windows-ipc.js"));
+    builder
         .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
             reveal_main_window(app);
             queue_shell_open_paths(
