@@ -57,6 +57,8 @@ export default defineConfig({
             // These suites use Node's built-in runner and are run separately
             // with `node --test scripts/tests/<file>.test.mjs`.
             "scripts/tests/**",
+            // Scratch source snapshots are evidence, not another product test root.
+            "tmp/**",
             // Local snapshots and incomplete dependency archives are not
             // production source trees and must not be collected as tests.
             "approved-owner-delta/**",

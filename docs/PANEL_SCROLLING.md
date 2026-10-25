@@ -28,8 +28,7 @@ intercepted, and scrollable textareas retain their text and selection.
 En's main Board has its own move-navigation wheel handler, which does not
 preventDefault. Its actual wrapper now carries data-board-area. The controller
 also recognizes cg-board/cg-wrap, number inputs/selects and editable regions,
-including empty/plaintext contenteditable. Thus it cannot both navigate a move
-and scroll an ancestor. Copying only Novelty's marker selector would miss En's
+including empty/plaintext contenteditable. The controller never adds panel motion to a board-wheel gesture. Copying only Novelty's marker selector would miss En's
 original board. No board-wheel preference or move handler is replaced.
 
 ## Verification and delivery
@@ -45,7 +44,7 @@ textarea value/selection, touch/reduced-motion changes, malformed synthetic inpu
 and capability fallback. The malformed-event fixture overrides the event field
 because normal WheelEvent construction correctly rejects nonfinite numbers.
 All25 new checks pass. The combined phone/board/arrows/drawing regression run
-passes527 checks across70 files; full types, six-file lint without warnings/errors
+passes500 maintained checks across69 files; full types, seven-file lint without warnings/errors
 and three root-stylesheet guard checks pass. Browser inventory remains disabled;
 rendered wheel/narrow/touch/native-window/physical-device evidence is separate.
 
@@ -54,3 +53,10 @@ tracked in the delivery JSON. No explicit app/service restart, owner profile
 migration, corpus download or owner data operation was performed by these
 fixtures. Normal development watching may serve changed source; no live native
 window observation is claimed. The broader history audit remains active.
+
+The original primary report included27 extra cases from an ignored historical
+snapshot at tmp/true-performance-integration, using its older performance module.
+Normal Vitest discovery now excludes tmp snapshots. Those files remain intact;
+maintained source/tests are unchanged. The corrected primary run passes500 cases
+in69 files, matching the clean target collection. The earlier527 total is retained
+only as historical scratch-inclusive evidence, not a wider product-parity gate.
