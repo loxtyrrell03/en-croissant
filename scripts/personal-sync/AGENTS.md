@@ -35,6 +35,10 @@ accounts, services or download preferences.
   and stable catalogue order. Large database comparisons yield between batches
   so private HTTP status requests remain responsive. Status includes phase timings
   for diagnosing real-library latency; never substitute file size for validation.
+- Foreground phone writes use their own ordered lane and checked native/file
+  revisions; background audits cannot hold the phone API queue. Unchanged native
+  comparisons may reuse Library data_version plus complete database/WAL stamps
+  for up to ten minutes. Startup and periodic full audits still validate content.
 - Phone exports carry transport-only stable references and revision hashes.
   Checked saves strip those tags before writing personal content. New phone
   imports validate every game and recover by request identity. Offline phone

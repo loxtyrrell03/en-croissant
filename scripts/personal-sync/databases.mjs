@@ -31,10 +31,11 @@ const backup=(ledger,kind,payload)=>ledger.prepare('INSERT INTO recovery VALUES(
 const sourceRows=(db,id)=>db.prepare('SELECT id,pgn FROM game_record WHERE collection_id=? ORDER BY id').all(id);
 
 export class DatabaseSyncBridge {
-  constructor({library,enRoot,ledger,codec,native,recoveryRoot=ledger+'.recovery',canMove=()=>false,referencePaths=[]}){
+  constructor({library,enRoot,ledger,codec,native,recoveryRoot=ledger+'.recovery',canMove=()=>false,referencePaths=[],cacheUnchanged=false}){
     const canonical=fs.realpathSync.native(library);
     if(path.basename(canonical)!=='library.sqlite' || path.basename(path.dirname(canonical))!=='app.outpost.chess.dev')throw Error('Personal sync only accepts the physical Novelty Dev library');
     this.library=library;this.enRoot=enRoot;this.codec=codec;this.native=native;this.recoveryRoot=recoveryRoot;this.canMove=canMove;this.referencePaths=referencePaths;
+    this.cacheUnchanged=cacheUnchanged;this.checked=new Map();
     this.source=new DatabaseSync(library);this.source.exec('PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON');
     this.ledger=openLedger(ledger);
     const identity=JSON.stringify({library:fs.realpathSync.native(library),enRoot:path.resolve(enRoot)});
@@ -107,8 +108,17 @@ export class DatabaseSyncBridge {
       // Collection removals and path moves are reconciled separately; never
       // interpret a missing container as deletion of every contained game.
       if(!c || !fs.existsSync(file)){report.conflicts.push({collection:mapped.id,reason:'Collection was removed or moved; container reconciliation required'});continue;}
+      const sourceVersion=()=>String(this.source.prepare("SELECT value FROM meta WHERE key='data_version'").get()?.value??'');
+      const fileVersion=()=>[file,file+'-wal',file+'-journal'].map(p=>{try{const s=fs.statSync(p,{bigint:true});return [String(s.size),String(s.mtimeNs),String(s.ctimeNs),String(s.ino)];}catch(e){if(e.code==='ENOENT')return null;throw e;}});
+      const signature=()=>JSON.stringify([sourceVersion(),fileVersion()]);
+      const beforeSignature=signature(),previousCheck=this.checked.get(c.id);
+      // Native Library writes always bump data_version. File stamps include WAL
+      // and identity, never size alone. Periodic full audits also catch external
+      // SQL writers that bypass the Library revision contract.
+      if(this.cacheUnchanged&&previousCheck?.signature===beforeSignature&&Date.now()-previousCheck.at<600000)continue;
       const en=openEn(file);
       const changedBefore=report.changed;
+      const issuesBefore=report.errors.length+report.conflicts.length;
       try{
         const left=new Map(sourceRows(this.source,c.id).map(g=>[g.id,g])),right=new Map(enRows(en).map(g=>[g.ID,g]));
         const bases=this.ledger.prepare('SELECT * FROM sync_games WHERE collection_id=?').all(c.id);
@@ -150,6 +160,7 @@ export class DatabaseSyncBridge {
         }
         if(report.changed!==changedBefore)transaction(en,()=>refreshCounts(en));
       }finally{en.close();}
+      if(report.errors.length+report.conflicts.length===issuesBefore&&signature()===beforeSignature)this.checked.set(c.id,{signature:beforeSignature,at:Date.now()});else this.checked.delete(c.id);
       await yieldEventLoop();
     }
     return report;
