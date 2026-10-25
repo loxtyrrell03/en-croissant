@@ -4681,5 +4681,26 @@
     "rollbackVerified": true,
     "explicitDevRestart": false,
     "newDatasetOrCorpusCopy": false
+  },
+  "legacyImportHistoryTargetReview": {
+    "noveltyMigrationOnly": [
+      "aa25aa07",
+      "84308b8b",
+      "0b97d3bb"
+    ],
+    "noveltyPositionHitSchemaOnly": [
+      "701b7e10",
+      "6734869d"
+    ],
+    "sourceCallChainReviewed": true,
+    "nativeDb3ReadDirectly": true,
+    "phoneNativeDb3CatalogReviewed": true,
+    "nativeMovesEncodingReviewed": true,
+    "newForeignSchemaOrMigrationAdded": false,
+    "newOwnerDataOperation": false,
+    "newFullDataBenchmark": false,
+    "throughputParityClaimed": false,
+    "scope": "specific migration and position-hit optimization payloads only",
+    "documentation": "docs/LEGACY_IMPORT_TARGET_REVIEW.md"
   }
 }
