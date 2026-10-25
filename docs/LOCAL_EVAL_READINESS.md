@@ -68,7 +68,18 @@ definition write was executed. Both owned temporary tasks were removed.
 
 A direct lookup through the replacement helper returns the same depth65 stored
 PV and response hash as the canonical pre-update lookup, with workers cold.
-The home-server copy still requires its separately guarded publication; the
-phone shell remains from cbbff3b8. Runtime receipts are tracked separately in
+The home-server reader is also delivered from clean4270ba4e on the canonical
+phone site. Its unpackaged backing/hash and replacement process created after
+publication match the verified source. The first attempt refused an active
+review before activation; the later idle-guarded publication returned normally.
+Workspace, normalized library, tournament settings, enabled choice, enginePID8536
+and complete Serve configuration match their preflight snapshots. All five
+selected served assets match; the canonical stored lookup retains the same
+depth65 response while workers remain cold. Both owned publication/readback
+tasks were removed after terminal proof.
+
+A subsequent automatic review reported insufficient engine depth. Its review
+source is unchanged by this release, and no reader failure was observed. This
+readiness delivery does not claim that a full background review completed. Runtime receipts are tracked separately in
 NOVELTY_SYNC_2026-10-24_DELIVERY.json. No owner corpus is altered for testing.
 Rendered/native-window and physical-device evidence remain separate.
