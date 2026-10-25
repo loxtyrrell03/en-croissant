@@ -63,6 +63,33 @@ test("a partly built store is skipped instead of failing the home server", async
   await rm(temporaryRoot, { recursive: true, force: true });
 });
 
+test("an unconfigured home service recognizes the shared store without a duplicate download", async () => {
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "en-croissant-home-cloud-default-"));
+  const storeRoot = join(temporaryRoot, "local", "ChessData", "lichess", "evaluations");
+  try {
+    await writeLocalEvalStore(storeRoot, 16);
+    await withHomeServer(temporaryRoot, null, async ({ baseUrl, upstreamPaths }) => {
+      const hit = await fetch(`${baseUrl}/v1/cloud-eval?fen=${encodeURIComponent(STORED_FEN)}`);
+      assert.equal(hit.status, 200); assert.equal((await hit.json()).pvs[0].cp, 19);
+      assert.deepEqual(upstreamPaths, []);
+    });
+  } finally { await rm(temporaryRoot, { recursive: true, force: true }); }
+});
+
+test("an incomplete home legacy store does not silently select another shared store", async () => {
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "en-croissant-home-cloud-retained-"));
+  try {
+    await writeLocalEvalStore(join(temporaryRoot, "local", "ChessData", "lichess", "evaluations"), 16);
+    const legacy = join(temporaryRoot, "roaming", "org.encroissant.app", "lichess-cloud-evals");
+    await mkdir(legacy, { recursive: true }); await writeFile(join(legacy, "owner.txt"), "retained fixture");
+    await withHomeServer(temporaryRoot, null, async ({ baseUrl, upstreamPaths }) => {
+      const result = await fetch(`${baseUrl}/v1/cloud-eval?fen=${encodeURIComponent(STORED_FEN)}`);
+      assert.equal(result.status, 200); assert.deepEqual(await result.json(), { ok: true });
+      assert.equal(upstreamPaths.length, 1, "keep the established backend fallback, rather than choose another local source");
+    });
+  } finally { await rm(temporaryRoot, { recursive: true, force: true }); }
+});
+
 async function withHomeServer(temporaryRoot, storeRoot, run) {
   const serverRoot = join(temporaryRoot, "server");
   const siteRoot = join(serverRoot, "site");
@@ -87,7 +114,7 @@ async function withHomeServer(temporaryRoot, storeRoot, run) {
         EN_CROISSANT_HOME_SERVER_ROOT: serverRoot,
         EN_CROISSANT_HOME_SERVER_SITE: siteRoot,
         EN_CROISSANT_STOCKFISH_BACKEND_URL: `http://127.0.0.1:${upstreamPort}`,
-        EN_CROISSANT_LOCAL_EVAL_PATH: storeRoot,
+        EN_CROISSANT_LOCAL_EVAL_PATH: storeRoot ?? "",
         EN_CROISSANT_REPO_ROOT: repoRoot,
         LOCALAPPDATA: join(temporaryRoot, "local"),
         APPDATA: join(temporaryRoot, "roaming"),
@@ -111,7 +138,7 @@ async function withHomeServer(temporaryRoot, storeRoot, run) {
   }
 }
 
-async function writeLocalEvalStore(storeRoot) {
+async function writeLocalEvalStore(storeRoot, shardCount = 1) {
   await mkdir(join(storeRoot, "shards"), { recursive: true });
   await writeFile(
     join(storeRoot, "manifest.json"),
@@ -120,13 +147,16 @@ async function writeLocalEvalStore(storeRoot) {
       version: 2,
       complete: true,
       positions: 1,
-      shardCount: 1,
+      shardCount,
+      recordSize: 0,
       maxPvs: 5,
-      builtAt: new Date().toISOString(),
+      builtAt: 1,
       source: "home-server cloud-eval test",
     }),
   );
-  await writeFile(join(storeRoot, "shards", "0000.bin.zst"), zstdCompressSync(buildShard()));
+  const [hi, lo] = hashFen(STORED_FEN.split(/\s+/).slice(0, 4).join(" "));
+  const bucket = String(Number((hi ^ lo) % BigInt(shardCount))).padStart(4, "0");
+  await writeFile(join(storeRoot, "shards", `${bucket}.bin.zst`), zstdCompressSync(buildShard()));
 }
 
 function buildShard() {

@@ -1,8 +1,17 @@
-import { readFileSync, statSync } from "node:fs";
+import {
+  closeSync,
+  lstatSync,
+  openSync,
+  opendirSync,
+  readSync,
+  realpathSync,
+  statSync,
+} from "node:fs";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { zstdDecompress } from "node:zlib";
+import { zstdDecompress, zstdDecompressSync } from "node:zlib";
 
 const EXPECTED_FORMAT = "en-croissant-lichess-eval-compact";
 const ROOT_ONLY_FORMAT_VERSION = 1;
@@ -12,6 +21,7 @@ const V2_SHARD_MAGIC = Buffer.from("LEI2");
 const MAX_STORED_PVS = 5;
 const DEFAULT_CACHE_BYTES = 512 * 1024 * 1024;
 const MANIFEST_REFRESH_MS = 30_000;
+const MAX_MANIFEST_BYTES = 1024 * 1024;
 const FNV_PRIME = 0x00000100000001b3n;
 const FNV_OFFSET_HI = 0xcbf29ce484222325n;
 const FNV_OFFSET_LO = 0x84222325cbf29ce4n;
@@ -106,7 +116,11 @@ export function createLocalLichessEvalStore(storeDir, options = {}) {
 
       const mtimeMs = metadata.mtimeMs;
       if (!force && manifest && manifestMtimeMs === mtimeMs) return;
-      const nextManifest = JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
+      const nextManifest = JSON.parse(
+        readBoundedFile(path, MAX_MANIFEST_BYTES)
+          .toString("utf8")
+          .replace(/^\uFEFF/, ""),
+      );
       validateManifest(nextManifest);
       if (manifestMtimeMs !== mtimeMs) clearCache();
       manifest = nextManifest;
@@ -355,4 +369,279 @@ function decodeSquare(square) {
 function positiveInteger(value, fallback) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function readBoundedFile(path, limit) {
+  const descriptor = openSync(path, "r");
+  try {
+    const chunks = [];
+    let size = 0;
+    while (size <= limit) {
+      const buffer = Buffer.allocUnsafe(Math.min(64 * 1024, limit + 1 - size));
+      const count = readSync(descriptor, buffer);
+      if (!count) return Buffer.concat(chunks, size);
+      chunks.push(buffer.subarray(0, count));
+      size += count;
+    }
+    throw new Error(`The evaluation data file exceeds its ${limit} byte read bound.`);
+  } finally {
+    closeSync(descriptor);
+  }
+}
+
+export function sharedLocalEvaluationPath(base, platform = process.platform) {
+  if (!["win32", "darwin", "linux"].includes(platform)) return null;
+  return join(base, platform === "linux" ? "chess-data" : "ChessData", "lichess", "evaluations");
+}
+
+function emptyDefaultDirectory(path) {
+  try {
+    lstatSync(path);
+  } catch (error) {
+    if (error.code === "ENOENT") return true;
+    throw error;
+  }
+  if (!statSync(path).isDirectory())
+    throw new Error("The evaluation folder path is occupied by another kind of file.");
+  const directory = opendirSync(path);
+  try {
+    return directory.readSync() === null;
+  } finally {
+    directory.closeSync();
+  }
+}
+
+function plainDiscoveryEntry(path, directory) {
+  const metadata = lstatSync(path, { bigint: true });
+  if (metadata.isSymbolicLink() || (directory ? !metadata.isDirectory() : !metadata.isFile())) {
+    throw new Error("The evaluation store contains a linked or unexpected data entry.");
+  }
+  return metadata;
+}
+
+function discoveryIdentity(path) {
+  const root = realpathSync.native(path);
+  const digest = createHash("sha256").update(root);
+  for (const [relative, directory] of [
+    ["", true],
+    ["manifest.json", false],
+    ["shards", true],
+  ]) {
+    const metadata = plainDiscoveryEntry(join(root, relative), directory);
+    digest.update(
+      `${relative}:${metadata.size}:${metadata.mtimeNs}:${metadata.ctimeNs}:${metadata.birthtimeNs}`,
+    );
+  }
+  const manifestBytes = readBoundedFile(join(root, "manifest.json"), MAX_MANIFEST_BYTES);
+  digest.update(manifestBytes);
+  return { root, stamp: digest.digest("hex"), manifestBytes };
+}
+
+function inspectDiscoveredStore(identity) {
+  const manifest = JSON.parse(
+    new TextDecoder("utf-8", { fatal: true }).decode(identity.manifestBytes),
+  );
+  validateManifest(manifest);
+  if (
+    !Number.isInteger(manifest.shardCount) ||
+    manifest.shardCount < 16 ||
+    manifest.shardCount > 8192 ||
+    !Number.isSafeInteger(manifest.positions) ||
+    manifest.positions <= 0 ||
+    manifest.recordSize !== (manifest.version === 1 ? ROOT_ONLY_RECORD_SIZE : 0)
+  ) {
+    throw new Error("The discovered evaluation store has incompatible or empty metadata.");
+  }
+  if (
+    ["builtAt", "skipped"].some(
+      (key) =>
+        manifest[key] !== undefined && (!Number.isSafeInteger(manifest[key]) || manifest[key] < 0),
+    ) ||
+    (manifest.source !== undefined && typeof manifest.source !== "string")
+  ) {
+    throw new Error("The discovered evaluation store has incompatible source metadata.");
+  }
+  const directory = opendirSync(join(identity.root, "shards"));
+  const files = [];
+  try {
+    for (let item; (item = directory.readSync()) !== null; ) {
+      const match = /^(\d{4})\.bin\.zst$/.exec(item.name);
+      if (!match || Number(match[1]) >= manifest.shardCount)
+        throw new Error("The shard folder contains unrecognized or incomplete files.");
+      const path = join(identity.root, "shards", item.name);
+      const metadata = plainDiscoveryEntry(path, false);
+      if (!metadata.size) throw new Error("The shard folder contains an empty data file.");
+      files.push({
+        path,
+        number: Number(match[1]),
+        facts: `${metadata.size}:${metadata.mtimeNs}:${metadata.ctimeNs}`,
+      });
+      if (files.length > manifest.shardCount)
+        throw new Error("The evaluation store contains too many data shards.");
+    }
+  } finally {
+    directory.closeSync();
+  }
+  files.sort((a, b) => a.number - b.number);
+  if (!files.length) throw new Error("The evaluation store has no data shards.");
+  const sample = zstdDecompressSync(readBoundedFile(files[0].path, 80 * 1024 * 1024), {
+    maxOutputLength: 64 * 1024 * 1024,
+  });
+  inspectDiscoverySample(sample, manifest, files[0].number);
+  if (discoveryIdentity(identity.root).stamp !== identity.stamp)
+    throw new Error("The evaluation store changed while it was recognized. Retry the check.");
+  const fingerprint = createHash("sha256").update(identity.stamp).update(sample);
+  for (const file of files) {
+    const metadata = plainDiscoveryEntry(file.path, false);
+    const facts = `${metadata.size}:${metadata.mtimeNs}:${metadata.ctimeNs}`;
+    if (facts !== file.facts)
+      throw new Error("The evaluation shards changed while they were checked. Retry the check.");
+    fingerprint.update(`${file.number}:${file.facts}`);
+  }
+  return fingerprint.digest("hex");
+}
+
+function inspectDiscoverySample(bytes, manifest, bucket) {
+  let previous = null;
+  const check = (raw, current) => {
+    const hi = raw.readBigUInt64LE(current ? 2 : 0),
+      lo = raw.readBigUInt64LE(current ? 10 : 8);
+    if (
+      Number((hi ^ lo) % BigInt(manifest.shardCount)) !== bucket ||
+      (previous && compareHash(previous[0], previous[1], hi, lo) > 0)
+    ) {
+      throw new Error("The sample shard is unsorted or belongs to another bucket.");
+    }
+    previous = [hi, lo];
+    const count = raw[current ? 20 : 18];
+    if (!count || count > manifest.maxPvs)
+      throw new Error("The sample shard has an invalid variation count.");
+    // Validate the same encoded fields as the lookup decoders without creating
+    // every PV/move string during a potentially multi-megabyte compatibility scan.
+    let offset = current ? 26 : 24;
+    for (let index = 0; index < count; index++) {
+      if (offset + (current ? 4 : 6) > raw.length)
+        throw new Error("The sample shard contains a truncated variation.");
+      const kind = raw[offset + (current ? 2 : 4)];
+      const moves = current ? raw[offset + 3] : 1;
+      if (kind > 1) throw new Error("The sample shard contains an invalid score.");
+      const start = current ? offset + 4 : offset;
+      if (start + moves * 2 > raw.length)
+        throw new Error("The sample shard contains truncated moves.");
+      for (let move = 0; move < moves; move++) {
+        if (((raw.readUInt16LE(start + move * 2) >> 12) & 7) > 4)
+          throw new Error("The sample shard contains an invalid move.");
+      }
+      offset = current ? start + moves * 2 : offset + 6;
+    }
+    if (current && offset !== raw.length)
+      throw new Error("The sample shard contains trailing variation data.");
+  };
+  if (manifest.version === ROOT_ONLY_FORMAT_VERSION) {
+    if (!bytes.length || bytes.length % ROOT_ONLY_RECORD_SIZE)
+      throw new Error("The root-only sample shard has an invalid length.");
+    for (let at = 0; at < bytes.length; at += ROOT_ONLY_RECORD_SIZE)
+      check(bytes.subarray(at, at + ROOT_ONLY_RECORD_SIZE), false);
+  } else {
+    if (bytes.length < 8 || !bytes.subarray(-4).equals(V2_SHARD_MAGIC))
+      throw new Error("The sample shard is missing its index.");
+    const count = bytes.readUInt32LE(bytes.length - 8),
+      end = bytes.length - 8 - count * 4;
+    if (!count || end < 0 || count > Math.floor(end / 26))
+      throw new Error("The sample shard has an invalid index.");
+    let offset = 0;
+    for (let index = 0; index < count; index++) {
+      if (bytes.readUInt32LE(end + index * 4) !== offset)
+        throw new Error("The sample shard has an inconsistent record index.");
+      const raw = recordAt(bytes, end, offset);
+      check(raw, true);
+      offset += raw.length;
+    }
+    if (offset !== end) throw new Error("The sample shard has unindexed data.");
+  }
+}
+
+// Configured paths are authoritative, including a deliberately empty/missing
+// store. Only an unconfigured default may discover shared immutable data.
+export function createDefaultLocalLichessEvalStore({
+  explicitPath,
+  legacyPath,
+  sharedPath,
+  now = () => performance.now(),
+}) {
+  const explicit = explicitPath ? resolve(explicitPath) : null;
+  const legacy = resolve(legacyPath),
+    shared = sharedPath ? resolve(sharedPath) : null;
+  let validation = null,
+    active = null;
+  function current() {
+    let path = explicit ?? legacy,
+      signature = `explicit:${path}`,
+      error = null;
+    if (!explicit && shared) {
+      try {
+        if (emptyDefaultDirectory(legacy)) path = shared;
+        if (emptyDefaultDirectory(path)) {
+          path = legacy;
+          signature = `empty:${legacy}`;
+        } else {
+          const identity = discoveryIdentity(path);
+          path = identity.root;
+          if (
+            !validation ||
+            validation.error ||
+            validation.stamp !== identity.stamp ||
+            now() - validation.at >= MANIFEST_REFRESH_MS
+          ) {
+            try {
+              validation = {
+                stamp: identity.stamp,
+                fingerprint: inspectDiscoveredStore(identity),
+                at: now(),
+                error: null,
+              };
+            } catch (failure) {
+              validation = { stamp: identity.stamp, at: now(), error: failure.message };
+            }
+          }
+          error = validation.error;
+          signature = `${identity.stamp}:${validation.fingerprint ?? error}`;
+        }
+      } catch (failure) {
+        error = failure.message;
+        signature = `failed:${path}:${error}`;
+      }
+    }
+    if (!active || active.signature !== signature) {
+      active = { signature, path, error, store: error ? null : createLocalLichessEvalStore(path) };
+    }
+    return active;
+  }
+  return {
+    get status() {
+      const state = current();
+      return (
+        state.store?.status ?? {
+          available: false,
+          path: state.path,
+          error: state.error,
+          positions: 0,
+          shardCount: 0,
+          maxPvs: 0,
+          builtAt: null,
+          source: null,
+          cachedShards: 0,
+          cacheBytes: 0,
+        }
+      );
+    },
+    async lookup(fen, multipv) {
+      const before = current();
+      if (before.error) throw new Error(before.error);
+      const result = await before.store.lookup(fen, multipv);
+      if (current() !== before)
+        throw new Error("The evaluation source changed during this lookup. Try again.");
+      return result;
+    },
+  };
 }

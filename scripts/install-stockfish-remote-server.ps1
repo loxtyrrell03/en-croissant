@@ -127,7 +127,9 @@ $config = [ordered]@{
   lc0Threads = 1
   lc0MinibatchSize = 8
   lc0NnCacheSize = 50000
-  localEvalPath = (Join-Path $env:APPDATA "org.encroissant.app\lichess-cloud-evals")
+  # Retain an existing explicit source. New installations leave the source unset
+  # so the service can recognize legacy/shared data without copying it.
+  localEvalPath = if ($existingConfig) { $existingConfig.localEvalPath } else { $null }
   allowedOrigins = @(
     $existingAllowedOrigins
     "https://gaming-pc.tail89d19b.ts.net",

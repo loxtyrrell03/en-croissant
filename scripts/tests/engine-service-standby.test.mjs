@@ -6,6 +6,7 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { FEN, writeEvaluationStore } from "./fixtures/local-eval-store.mjs";
 const delay = (ms) => new Promise((done) => setTimeout(done, ms));
 async function reservePort() {
   const server = createServer();
@@ -49,6 +50,36 @@ for (const idle of [0, 1000]) test(`engine service idle timeout ${idle} preserve
     } else assert.equal(child.exitCode, 0, output);
   } finally {
     if (child.exitCode === null) { const exited = new Promise((done) => child.once("exit", done)); child.kill(); await exited; }
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+for (const configured of [false, true]) test(`engine default discovery preserves configured source=${configured} and cold workers`, async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-engine-eval-default-"));
+  const shared = join(root, "local", "ChessData", "lichess", "evaluations");
+  writeEvaluationStore(shared, 24);
+  const custom = join(root, "custom");
+  if (configured) writeEvaluationStore(custom, 43);
+  await writeFile(join(root, "config.json"), JSON.stringify({ enginePath: process.execPath, backendIdleMs: 0, ...(configured ? { localEvalPath: custom } : {}) }));
+  const port = await reservePort(), uciPort = await reservePort();
+  const child = spawn(process.execPath, [fileURLToPath(new URL("../stockfish-remote-server.mjs", import.meta.url))], {
+    windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
+    env: { ...process.env, LOCALAPPDATA: join(root, "local"), APPDATA: join(root, "roaming"), STOCKFISH_REMOTE_ROOT: root, STOCKFISH_REMOTE_CONFIG: join(root, "config.json"), STOCKFISH_REMOTE_LOCAL_EVAL_PATH: "", STOCKFISH_REMOTE_HTTP_PORT: String(port), STOCKFISH_REMOTE_UCI_PORT: String(uciPort), STOCKFISH_REMOTE_BACKEND_IDLE_MS: "0" },
+  });
+  let output = "";
+  child.stdout.on("data", chunk => output += chunk); child.stderr.on("data", chunk => output += chunk);
+  try {
+    let health;
+    for (let n = 0; n < 50; n++) {
+      try { health = await (await fetch(`http://127.0.0.1:${port}/v1/health`)).json(); break; } catch { await delay(30); }
+    }
+    assert.ok(health?.ok, output); assert.equal(health.localEvals.available, true);
+    assert.equal(health.localEvals.path, configured ? custom : shared); assert.equal(health.engineReady, false);
+    const response = await fetch(`http://127.0.0.1:${port}/v1/cloud-eval?fen=${encodeURIComponent(FEN)}`);
+    assert.equal(response.status, 200); assert.equal((await response.json()).pvs[0].cp, configured ? 43 : 24);
+    assert.equal((await (await fetch(`http://127.0.0.1:${port}/v1/health`)).json()).engineReady, false);
+  } finally {
+    if (child.exitCode === null) { const exited = new Promise(done => child.once("exit", done)); child.kill(); await exited; }
     await rm(root, { recursive: true, force: true });
   }
 });

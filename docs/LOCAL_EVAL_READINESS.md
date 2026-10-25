@@ -25,7 +25,10 @@ only ENOENT means absence, and a directory/file mismatch is visible. Its status
 retains the error, and direct lookup rejects when manifest reading failed rather
 than returning an ordinary miss. Home-server and PC-engine consumers share this
 module. The existing manifest-refresh interval and cache limits remain intact.
-No reader performs a download, rebuild, deletion, path switch or data migration.
+No low-level reader performs a download, rebuild, deletion or data migration.
+Unconfigured native/phone defaults now use the separate read-only discovery
+wrapper in SHARED_EVALUATION_DISCOVERY.md; saved selections/config paths remain
+authoritative.
 
 Existing record formats and the local-only scoring policy remain intact. This
 change certifies the filesystem

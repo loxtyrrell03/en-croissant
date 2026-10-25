@@ -31,10 +31,59 @@ fn store(root: &Path, name: &str, score: i32) -> PathBuf {
 fn defaults_are_read_only_and_do_not_create_profile_or_settings() {
     let temp = fixture();
     let profile = temp.path().join("missing-profile");
-    let selected = source_selection::read(&profile).unwrap();
+    let selected = source_selection::read(&profile, None).unwrap();
     assert_eq!(selected.revision, "default");
     assert!(selected.path.ends_with("lichess-cloud-evals"));
     assert!(!profile.exists());
+}
+
+#[test]
+fn discovered_defaults_use_the_existing_checked_choice_and_explicit_reset_contract() {
+    let _serial = SERIAL.lock().unwrap();
+    let temp = fixture();
+    let root = temp.path().canonicalize().unwrap();
+    let profile = root.join("profile");
+    let shared = store(&root, "shared", 24);
+    let auto = source_selection::read(&profile, Some(&shared)).unwrap();
+    assert_eq!(auto.path, shared.display().to_string());
+    let checked = validate(&profile, Some(&shared), Path::new(""), &auto.revision).unwrap();
+    assert!(!checked.store.available);
+    assert!(activate(&profile, Some(&root.join("other-root")), &checked.token).is_err());
+    let reset = activate(&profile, Some(&shared), &checked.token).unwrap();
+    assert_eq!(
+        reset.path,
+        profile.join("lichess-cloud-evals").display().to_string()
+    );
+    assert_eq!(
+        source_selection::read(&profile, Some(&shared)).unwrap(),
+        reset
+    );
+    assert!(!profile.join("lichess-cloud-evals").exists());
+
+    let second_profile = root.join("second-profile");
+    let incomplete = root.join("incomplete");
+    fs::create_dir(&incomplete).unwrap();
+    fs::write(incomplete.join("owner.txt"), "retained").unwrap();
+    let failed = source_selection::read(&second_profile, Some(&incomplete)).unwrap();
+    assert!(failed.discovery_error.is_some());
+    let custom = store(&root, "custom", 31);
+    let checked = validate(
+        &second_profile,
+        Some(&incomplete),
+        &custom,
+        &failed.revision,
+    )
+    .unwrap();
+    let selected = activate(&second_profile, Some(&incomplete), &checked.token).unwrap();
+    assert_eq!(
+        source_selection::read(&second_profile, Some(&incomplete)).unwrap(),
+        selected
+    );
+    assert!(selected.discovery_error.is_none());
+    assert_eq!(
+        fs::read_to_string(incomplete.join("owner.txt")).unwrap(),
+        "retained"
+    );
 }
 
 #[test]
@@ -45,13 +94,13 @@ fn validates_then_commits_a_separate_preference_without_changing_corpus() {
     let profile = root.join("profile");
     let path = store(&root, "store", 24);
     let manifest = fs::read(path.join(MANIFEST_FILE)).unwrap();
-    let candidate = validate(&profile, &path, "default").unwrap();
+    let candidate = validate(&profile, None, &path, "default").unwrap();
     assert!(!profile.exists());
     assert_eq!(candidate.store.positions, 1);
-    let selected = activate(&profile, &candidate.token).unwrap();
+    let selected = activate(&profile, None, &candidate.token).unwrap();
     assert_eq!(selected.path, path.display().to_string());
     assert_ne!(selected.revision, "default");
-    assert_eq!(source_selection::read(&profile).unwrap(), selected);
+    assert_eq!(source_selection::read(&profile, None).unwrap(), selected);
     assert_eq!(fs::read(path.join(MANIFEST_FILE)).unwrap(), manifest);
     assert_eq!(
         lookup_eval(Path::new(&selected.path), START, 1)
@@ -61,7 +110,7 @@ fn validates_then_commits_a_separate_preference_without_changing_corpus() {
             .cp,
         Some(24)
     );
-    assert!(activate(&profile, &candidate.token).is_err());
+    assert!(activate(&profile, None, &candidate.token).is_err());
 }
 
 #[test]
@@ -71,15 +120,15 @@ fn explicit_reset_checks_then_selects_only_a_confirmed_absent_or_empty_default()
     let root = temp.path().canonicalize().unwrap();
     let profile = root.join("profile");
     let custom = store(&root, "custom", 24);
-    let checked = validate(&profile, &custom, "default").unwrap();
-    let mut selected = activate(&profile, &checked.token).unwrap();
+    let checked = validate(&profile, None, &custom, "default").unwrap();
+    let mut selected = activate(&profile, None, &checked.token).unwrap();
     let default = profile.join("lichess-cloud-evals");
     for empty_directory in [false, true] {
         if empty_directory {
             fs::create_dir(&default).unwrap();
         }
         let before = fs::read(profile.join("evaluation-source.sqlite3")).unwrap();
-        let reset = validate(&profile, Path::new(""), &selected.revision).unwrap();
+        let reset = validate(&profile, None, Path::new(""), &selected.revision).unwrap();
         assert!(!reset.store.available);
         assert!(reset.store.error.is_none());
         assert_eq!(reset.store.path, default.display().to_string());
@@ -88,9 +137,9 @@ fn explicit_reset_checks_then_selects_only_a_confirmed_absent_or_empty_default()
             before
         );
         assert_eq!(default.exists(), empty_directory);
-        selected = activate(&profile, &reset.token).unwrap();
-        assert_eq!(source_selection::read(&profile).unwrap(), selected);
-        assert!(!status(&profile).unwrap().available);
+        selected = activate(&profile, None, &reset.token).unwrap();
+        assert_eq!(source_selection::read(&profile, None).unwrap(), selected);
+        assert!(!status(&profile, None).unwrap().available);
         assert_eq!(default.exists(), empty_directory);
         assert_eq!(
             lookup_eval(&custom, START, 1).unwrap().unwrap().pvs[0].cp,
@@ -105,21 +154,21 @@ fn explicit_reset_validates_an_existing_default_and_preserves_invalid_data() {
     let temp = fixture();
     let profile = temp.path().canonicalize().unwrap();
     let default = store(&profile, "lichess-cloud-evals", 31);
-    let candidate = validate(&profile, Path::new(""), "default").unwrap();
+    let candidate = validate(&profile, None, Path::new(""), "default").unwrap();
     assert!(candidate.store.available);
     assert_eq!(candidate.store.path, default.display().to_string());
     assert!(!profile.join("evaluation-source.sqlite3").exists());
-    let selected = activate(&profile, &candidate.token).unwrap();
+    let selected = activate(&profile, None, &candidate.token).unwrap();
     for contents in [b"{corrupt".as_slice(), br#"{"complete":false}"#.as_slice()] {
         fs::write(default.join(MANIFEST_FILE), contents).unwrap();
-        assert!(validate(&profile, Path::new(""), &selected.revision).is_err());
+        assert!(validate(&profile, None, Path::new(""), &selected.revision).is_err());
         assert_eq!(fs::read(default.join(MANIFEST_FILE)).unwrap(), contents);
-        assert_eq!(source_selection::read(&profile).unwrap(), selected);
+        assert_eq!(source_selection::read(&profile, None).unwrap(), selected);
     }
     fs::remove_file(default.join(MANIFEST_FILE)).unwrap();
-    assert!(validate(&profile, Path::new(""), &selected.revision).is_err());
+    assert!(validate(&profile, None, Path::new(""), &selected.revision).is_err());
     assert!(default.join(SHARDS_DIR).exists());
-    assert_eq!(source_selection::read(&profile).unwrap(), selected);
+    assert_eq!(source_selection::read(&profile, None).unwrap(), selected);
 }
 
 #[test]
@@ -129,18 +178,18 @@ fn reset_rechecks_a_default_that_changes_after_review_and_rejects_stale_windows(
     let root = temp.path().canonicalize().unwrap();
     let profile = root.join("profile");
     let custom = store(&root, "custom", 24);
-    let checked = validate(&profile, &custom, "default").unwrap();
-    let selected = activate(&profile, &checked.token).unwrap();
-    let reset = validate(&profile, Path::new(""), &selected.revision).unwrap();
+    let checked = validate(&profile, None, &custom, "default").unwrap();
+    let selected = activate(&profile, None, &checked.token).unwrap();
+    let reset = validate(&profile, None, Path::new(""), &selected.revision).unwrap();
     let default = profile.join("lichess-cloud-evals");
     fs::create_dir(&default).unwrap();
-    assert!(activate(&profile, &reset.token).is_err());
-    assert_eq!(source_selection::read(&profile).unwrap(), selected);
-    let reset = validate(&profile, Path::new(""), &selected.revision).unwrap();
-    let other = source_selection::save(&profile, &selected.revision, &custom).unwrap();
-    assert!(activate(&profile, &reset.token).is_err());
-    assert_eq!(source_selection::read(&profile).unwrap(), other);
-    assert!(validate(&profile, Path::new(""), &selected.revision).is_err());
+    assert!(activate(&profile, None, &reset.token).is_err());
+    assert_eq!(source_selection::read(&profile, None).unwrap(), selected);
+    let reset = validate(&profile, None, Path::new(""), &selected.revision).unwrap();
+    let other = source_selection::save(&profile, None, &selected.revision, &custom).unwrap();
+    assert!(activate(&profile, None, &reset.token).is_err());
+    assert_eq!(source_selection::read(&profile, None).unwrap(), other);
+    assert!(validate(&profile, None, Path::new(""), &selected.revision).is_err());
 }
 
 #[test]
@@ -160,7 +209,7 @@ fn missing_invalid_empty_foreign_and_incomplete_choices_never_write_preferences(
         let profile = root.join("profile");
         let path = store(&root, "store", 24);
         if mode == "missing" {
-            assert!(validate(&profile, &root.join("absent"), "default").is_err());
+            assert!(validate(&profile, None, &root.join("absent"), "default").is_err());
             continue;
         }
         if mode == "corrupt" {
@@ -193,10 +242,13 @@ fn missing_invalid_empty_foreign_and_incomplete_choices_never_write_preferences(
             )
             .unwrap();
         }
-        assert!(validate(&profile, &path, "default").is_err(), "{mode}");
+        assert!(
+            validate(&profile, None, &path, "default").is_err(),
+            "{mode}"
+        );
         assert!(!profile.exists());
         assert_eq!(
-            source_selection::read(&profile).unwrap().revision,
+            source_selection::read(&profile, None).unwrap().revision,
             "default"
         );
     }
@@ -268,15 +320,15 @@ fn changed_candidate_and_newer_choice_cannot_change_current_preference() {
     let profile = root.join("profile");
     let a = store(&root, "a", 24);
     let b = store(&root, "b", 18);
-    let first = validate(&profile, &a, "default").unwrap();
-    let second = validate(&profile, &b, "default").unwrap();
-    assert!(activate(&profile, &first.token).is_err());
+    let first = validate(&profile, None, &a, "default").unwrap();
+    let second = validate(&profile, None, &b, "default").unwrap();
+    assert!(activate(&profile, None, &first.token).is_err());
     assert!(!profile.exists());
     let manifest = fs::read(b.join(MANIFEST_FILE)).unwrap();
     let mut changed = manifest.clone();
     changed.push(b' ');
     fs::write(b.join(MANIFEST_FILE), changed).unwrap();
-    assert!(activate(&profile, &second.token).is_err());
+    assert!(activate(&profile, None, &second.token).is_err());
     assert!(!profile.exists());
 }
 
@@ -288,21 +340,21 @@ fn stale_other_window_selection_and_save_failures_preserve_the_saved_source() {
     let profile = root.join("profile");
     let a = store(&root, "a", 24);
     let b = store(&root, "b", 18);
-    let first = validate(&profile, &a, "default").unwrap();
-    let selected = activate(&profile, &first.token).unwrap();
-    let candidate = validate(&profile, &b, &selected.revision).unwrap();
-    let other = source_selection::save(&profile, &selected.revision, &a).unwrap();
-    assert!(activate(&profile, &candidate.token).is_err());
-    assert_eq!(source_selection::read(&profile).unwrap(), other);
-    let candidate = validate(&profile, &b, &other.revision).unwrap();
+    let first = validate(&profile, None, &a, "default").unwrap();
+    let selected = activate(&profile, None, &first.token).unwrap();
+    let candidate = validate(&profile, None, &b, &selected.revision).unwrap();
+    let other = source_selection::save(&profile, None, &selected.revision, &a).unwrap();
+    assert!(activate(&profile, None, &candidate.token).is_err());
+    assert_eq!(source_selection::read(&profile, None).unwrap(), other);
+    let candidate = validate(&profile, None, &b, &other.revision).unwrap();
     let db = Connection::open(profile.join("evaluation-source.sqlite3")).unwrap();
     db.execute_batch("BEGIN IMMEDIATE").unwrap();
-    assert!(activate(&profile, &candidate.token).is_err());
-    assert_eq!(source_selection::read(&profile).unwrap(), other);
+    assert!(activate(&profile, None, &candidate.token).is_err());
+    assert_eq!(source_selection::read(&profile, None).unwrap(), other);
     db.execute_batch("ROLLBACK").unwrap();
     drop(db);
     assert_eq!(
-        activate(&profile, &candidate.token).unwrap().path,
+        activate(&profile, None, &candidate.token).unwrap().path,
         b.display().to_string()
     );
 }
@@ -326,8 +378,8 @@ fn unknown_or_corrupt_selection_settings_are_preserved_and_never_fall_back() {
             }
         }
         let before = fs::read(&path).unwrap();
-        assert!(source_selection::read(root).is_err());
-        assert!(source_selection::save(root, "default", root).is_err());
+        assert!(source_selection::read(root, None).is_err());
+        assert!(source_selection::save(root, None, "default", root).is_err());
         assert_eq!(fs::read(&path).unwrap(), before);
     }
 }
@@ -369,7 +421,7 @@ fn changed_sample_is_rejected_even_when_size_and_timestamp_are_restored() {
     let profile = root.join("profile");
     let a = store(&root, "a", 24);
     let b = store(&root, "b", 18);
-    let candidate = validate(&profile, &a, "default").unwrap();
+    let candidate = validate(&profile, None, &a, "default").unwrap();
     let first = fs::read_dir(a.join(SHARDS_DIR))
         .unwrap()
         .next()
@@ -393,12 +445,12 @@ fn changed_sample_is_rejected_even_when_size_and_timestamp_are_restored() {
         .set_times(fs::FileTimes::new().set_modified(metadata.modified().unwrap()))
         .unwrap();
     assert_eq!(inventory(&a).unwrap().1, old_metadata);
-    assert!(activate(&profile, &candidate.token)
+    assert!(activate(&profile, None, &candidate.token)
         .unwrap_err()
         .contains("changed"));
     assert!(!profile.exists());
-    let refreshed = validate(&profile, &a, "default").unwrap();
-    activate(&profile, &refreshed.token).unwrap();
+    let refreshed = validate(&profile, None, &a, "default").unwrap();
+    activate(&profile, None, &refreshed.token).unwrap();
     assert_eq!(
         lookup_eval(&a, START, 1).unwrap().unwrap().pvs[0].cp,
         Some(18)
@@ -466,12 +518,12 @@ fn root_aliases_are_read_only_choices_and_nested_data_links_are_refused() {
     };
     make_link(&alias, &target);
     let manifest = fs::read(target.join(MANIFEST_FILE)).unwrap();
-    let checked = validate(&profile, &alias, "default").unwrap();
+    let checked = validate(&profile, None, &alias, "default").unwrap();
     assert_eq!(checked.store.path, target.display().to_string());
-    let selected = activate(&profile, &checked.token).unwrap();
+    let selected = activate(&profile, None, &checked.token).unwrap();
     assert_eq!(fs::read(target.join(MANIFEST_FILE)).unwrap(), manifest);
     fs::rename(target.join(SHARDS_DIR), root.join("retained-shards")).unwrap();
     make_link(&target.join(SHARDS_DIR), &root.join("retained-shards"));
-    assert!(validate(&profile, &target, &selected.revision).is_err());
-    assert_eq!(source_selection::read(&profile).unwrap(), selected);
+    assert!(validate(&profile, None, &target, &selected.revision).is_err());
+    assert_eq!(source_selection::read(&profile, None).unwrap(), selected);
 }

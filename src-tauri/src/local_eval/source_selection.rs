@@ -8,6 +8,9 @@ use std::time::Duration;
 pub struct LocalEvalSourceSelection {
     pub path: String,
     pub revision: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[specta(optional)]
+    pub discovery_error: Option<String>,
 }
 
 fn plain(path: &Path) -> Result<bool, String> {
@@ -97,6 +100,7 @@ fn row(db: &Connection, profile: &Path) -> Result<LocalEvalSourceSelection, Stri
                 Ok(LocalEvalSourceSelection {
                     path: row.get(0)?,
                     revision: row.get(1)?,
+                    discovery_error: None,
                 })
             },
         )
@@ -121,30 +125,48 @@ fn row(db: &Connection, profile: &Path) -> Result<LocalEvalSourceSelection, Stri
     }
 }
 
-fn default_selection(profile: &Path) -> LocalEvalSourceSelection {
+pub(super) fn default_selection(profile: &Path) -> LocalEvalSourceSelection {
     LocalEvalSourceSelection {
         path: profile.join("lichess-cloud-evals").display().to_string(),
         revision: "default".into(),
+        discovery_error: None,
     }
 }
 
-pub(super) fn read(profile: &Path) -> Result<LocalEvalSourceSelection, String> {
+fn effective(
+    profile: &Path,
+    shared: Option<&Path>,
+    selected: LocalEvalSourceSelection,
+) -> Result<LocalEvalSourceSelection, String> {
+    if selected.revision == "default" {
+        if let Some(shared) = shared {
+            return Ok(super::source_discovery::select(profile, shared));
+        }
+    }
+    Ok(selected)
+}
+
+pub(super) fn read(
+    profile: &Path,
+    shared: Option<&Path>,
+) -> Result<LocalEvalSourceSelection, String> {
     let path = settings_path(profile)?;
     if !plain(&path)? {
-        return Ok(default_selection(profile));
+        return effective(profile, shared, default_selection(profile));
     }
     let db = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)
         .map_err(|error| format!("Could not open evaluation settings: {error}"))?;
     db.busy_timeout(Duration::from_secs(2))
         .map_err(|error| error.to_string())?;
     if !schema(&db)? {
-        return Ok(default_selection(profile));
+        return effective(profile, shared, default_selection(profile));
     }
-    row(&db, profile)
+    effective(profile, shared, row(&db, profile)?)
 }
 
 pub(super) fn save(
     profile: &Path,
+    shared: Option<&Path>,
     expected: &str,
     path: &Path,
 ) -> Result<LocalEvalSourceSelection, String> {
@@ -163,7 +185,7 @@ pub(super) fn save(
     if !schema(&tx)? {
         tx.execute_batch("CREATE TABLE selection(singleton INTEGER PRIMARY KEY CHECK(singleton=1),path TEXT NOT NULL,revision TEXT NOT NULL); PRAGMA user_version=1;").map_err(|error|error.to_string())?;
     }
-    if row(&tx, profile)?.revision != expected {
+    if effective(profile, shared, row(&tx, profile)?)?.revision != expected {
         return Err(
             "The current evaluation folder changed. Refresh it before choosing again.".into(),
         );
@@ -171,6 +193,7 @@ pub(super) fn save(
     let value = LocalEvalSourceSelection {
         path: path.display().to_string(),
         revision: format!("{:032x}", rand::random::<u128>()),
+        discovery_error: None,
     };
     tx.execute("INSERT INTO selection VALUES(1,?1,?2) ON CONFLICT(singleton) DO UPDATE SET path=excluded.path,revision=excluded.revision",[&value.path,&value.revision])
         .map_err(|error|format!("Could not save evaluation settings: {error}"))?;

@@ -59,7 +59,7 @@ import {
   structuredCoachReviewToMarkdown,
   writeProcessStdinSafely,
 } from "./chess-coach-service.mjs";
-import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
+import { createDefaultLocalLichessEvalStore, sharedLocalEvaluationPath } from "./lichess-local-eval-reader.mjs";
 import { createLichessExplorerLane } from "./lichess-explorer-lane.mjs";
 import { SharedReviewService } from "./generated/shared-review-service.js";
 import { createPersonalSyncProxy } from "./personal-sync/home-proxy.mjs";
@@ -92,11 +92,11 @@ const stockfishBackendUrl = new URL(
 const stockfishTaskName =
   process.env.EN_CROISSANT_STOCKFISH_TASK_NAME || "\\EnCroissant\\Stockfish18Remote";
 let stockfishStartPromise = null;
-const localEvalPath = resolve(
-  process.env.EN_CROISSANT_LOCAL_EVAL_PATH ||
-    join(roamingAppData, "org.encroissant.app", "lichess-cloud-evals"),
-);
-const localEvalStore = openLocalEvalStore(localEvalPath);
+const localEvalStore = openLocalEvalStore({
+  explicitPath: process.env.EN_CROISSANT_LOCAL_EVAL_PATH,
+  legacyPath: join(roamingAppData, "org.encroissant.app", "lichess-cloud-evals"),
+  sharedPath: sharedLocalEvaluationPath(localAppData),
+});
 const documentsRoot = resolve(
   process.env.EN_CROISSANT_HOME_FILES_DIR || join(userProfile, "Documents", "EnCroissant"),
 );
@@ -576,9 +576,9 @@ async function handleRequest(request, response) {
   return serveStatic(pathname, request, response, method === "HEAD", staticRoot);
 }
 
-function openLocalEvalStore(storeDir) {
+function openLocalEvalStore(options) {
   try {
-    return createLocalLichessEvalStore(storeDir);
+    return createDefaultLocalLichessEvalStore(options);
   } catch {
     return null;
   }
@@ -594,7 +594,7 @@ async function writeLocalCloudEvaluation(requestUrl, response) {
     if (!localEvalStore) return false;
     const status = localEvalStore.status;
     if (!status.available) {
-      noteLocalEvalStoreIssue(status.error || `no built store at ${localEvalPath}`);
+      noteLocalEvalStoreIssue(status.error || `no built store at ${status.path}`);
       return false;
     }
     evaluation = await localEvalStore.lookup(fen, multipv);

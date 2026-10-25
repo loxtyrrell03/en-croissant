@@ -6,7 +6,7 @@ import { constants as osConstants, setPriority } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
-import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
+import { createDefaultLocalLichessEvalStore, sharedLocalEvaluationPath } from "./lichess-local-eval-reader.mjs";
 import { LC0_PROFILE_OPTIONS, selectLc0Network } from "./lc0-network-routing.mjs";
 import { runBoundedUciReport, validReportSearchLimits } from "./uci-report-search.mjs";
 import {
@@ -66,12 +66,11 @@ const backendIdleMs = positiveInteger(
   0,
   10 * 60_000,
 );
-const localEvalPath = resolve(
-  process.env.STOCKFISH_REMOTE_LOCAL_EVAL_PATH ||
-    config.localEvalPath ||
-    join(roamingAppData, "org.encroissant.app", "lichess-cloud-evals"),
-);
-const localEvalStore = createLocalLichessEvalStore(localEvalPath);
+const localEvalStore = createDefaultLocalLichessEvalStore({
+  explicitPath: process.env.STOCKFISH_REMOTE_LOCAL_EVAL_PATH || config.localEvalPath,
+  legacyPath: join(roamingAppData, "org.encroissant.app", "lichess-cloud-evals"),
+  sharedPath: sharedLocalEvaluationPath(localAppData),
+});
 const lc0Root = join(localAppData, "ChessTrainer", "engines", "lc0-v0.32.1-fresh");
 const lc0Path = resolve(
   process.env.EN_CROISSANT_LC0_ENGINE || config.lc0Path || join(lc0Root, "lc0.exe"),

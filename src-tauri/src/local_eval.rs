@@ -19,6 +19,7 @@ mod build_directory;
 mod build_recovery;
 mod download;
 mod source;
+mod source_discovery;
 mod source_selection;
 pub use build::build_compact_eval_database_controlled;
 pub use build_control::{LocalEvalBuildControl, DEFAULT_BUILD_DISK_LIMIT_BYTES};
@@ -257,11 +258,19 @@ pub async fn lookup_local_lichess_cloud_eval(
         .path()
         .app_data_dir()
         .map_err(|error| error.to_string())?;
+    let shared = app
+        .path()
+        .local_data_dir()
+        .ok()
+        .and_then(|base| source_discovery::shared_at(&base, std::env::consts::OS));
     tokio::task::spawn_blocking(move || {
-        let selected = source_selection::read(&profile)?;
+        let selected = source_selection::read(&profile, shared.as_deref())?;
+        if let Some(error) = selected.discovery_error.as_ref() {
+            return Err(error.clone());
+        }
         let result = lookup_eval(Path::new(&selected.path), &fen, multipv.unwrap_or(1))
             .map_err(String::from)?;
-        if source_selection::read(&profile)? != selected {
+        if source_selection::read(&profile, shared.as_deref())? != selected {
             return Err("The evaluation source changed during this lookup. Try again.".into());
         }
         Ok(result)
@@ -279,7 +288,12 @@ pub async fn get_local_lichess_eval_db_status(
         .path()
         .app_data_dir()
         .map_err(|error| error.to_string())?;
-    tokio::task::spawn_blocking(move || source::status(&profile))
+    let shared = app
+        .path()
+        .local_data_dir()
+        .ok()
+        .and_then(|base| source_discovery::shared_at(&base, std::env::consts::OS));
+    tokio::task::spawn_blocking(move || source::status(&profile, shared.as_deref()))
         .await
         .map_err(|error| error.to_string())?
 }
@@ -299,7 +313,12 @@ pub async fn get_local_eval_source_selection(
         .path()
         .app_data_dir()
         .map_err(|error| error.to_string())?;
-    tokio::task::spawn_blocking(move || source_selection::read(&profile))
+    let shared = app
+        .path()
+        .local_data_dir()
+        .ok()
+        .and_then(|base| source_discovery::shared_at(&base, std::env::consts::OS));
+    tokio::task::spawn_blocking(move || source_selection::read(&profile, shared.as_deref()))
         .await
         .map_err(|error| error.to_string())?
 }
@@ -315,8 +334,18 @@ pub async fn validate_local_eval_source(
         .path()
         .app_data_dir()
         .map_err(|error| error.to_string())?;
+    let shared = app
+        .path()
+        .local_data_dir()
+        .ok()
+        .and_then(|base| source_discovery::shared_at(&base, std::env::consts::OS));
     tokio::task::spawn_blocking(move || {
-        source::validate(&profile, Path::new(&path), &expected_revision)
+        source::validate(
+            &profile,
+            shared.as_deref(),
+            Path::new(&path),
+            &expected_revision,
+        )
     })
     .await
     .map_err(|error| error.to_string())?
@@ -332,9 +361,15 @@ pub async fn activate_local_eval_source(
         .path()
         .app_data_dir()
         .map_err(|error| error.to_string())?;
-    let selection = tokio::task::spawn_blocking(move || source::activate(&profile, &token))
-        .await
-        .map_err(|error| error.to_string())??;
+    let shared = app
+        .path()
+        .local_data_dir()
+        .ok()
+        .and_then(|base| source_discovery::shared_at(&base, std::env::consts::OS));
+    let selection =
+        tokio::task::spawn_blocking(move || source::activate(&profile, shared.as_deref(), &token))
+            .await
+            .map_err(|error| error.to_string())??;
     if let Err(error) = (LocalEvalSourceChanged {
         selection: selection.clone(),
     })

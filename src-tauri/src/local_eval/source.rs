@@ -13,6 +13,7 @@ pub struct LocalEvalSourceCandidate {
 struct Candidate {
     view: LocalEvalSourceCandidate,
     profile: PathBuf,
+    shared: Option<PathBuf>,
     revision: String,
     fingerprint: String,
     reset_default: bool,
@@ -25,7 +26,7 @@ struct Choice {
 }
 static CHOICE: Lazy<Mutex<Choice>> = Lazy::new(|| Mutex::new(Choice::default()));
 
-fn plain(path: &Path, dir: bool) -> Result<fs::Metadata, String> {
+pub(super) fn plain(path: &Path, dir: bool) -> Result<fs::Metadata, String> {
     let meta = fs::symlink_metadata(path)
         .map_err(|error| format!("Could not read {}: {error}", path.display()))?;
     #[cfg(windows)]
@@ -226,7 +227,7 @@ fn sample(path: &Path, number: u16, manifest: &LocalEvalManifest) -> Result<Stri
     Ok(format!("{:x}", Sha256::digest(&bytes)))
 }
 
-fn inspect(path: &Path) -> Result<(LocalEvalDbStatus, String), String> {
+pub(super) fn inspect(path: &Path) -> Result<(LocalEvalDbStatus, String), String> {
     let path = recognize(path)?;
     let (status, metadata, manifest, files) = inventory(&path)?;
     let sample = sample(&files[0].1, files[0].0, &manifest)?;
@@ -274,10 +275,13 @@ fn inspect_default(profile: &Path) -> Result<(LocalEvalDbStatus, String), String
     Ok((status, format!("default:{identity}:{}", path.display())))
 }
 
-pub(super) fn status(profile: &Path) -> Result<LocalEvalDbStatus, String> {
-    let selection = source_selection::read(profile)?;
+pub(super) fn status(profile: &Path, shared: Option<&Path>) -> Result<LocalEvalDbStatus, String> {
+    let selection = source_selection::read(profile, shared)?;
     let path = Path::new(&selection.path);
     let checked = (|| -> Result<Option<LocalEvalDbStatus>, String> {
+        if let Some(error) = selection.discovery_error.as_ref() {
+            return Err(error.clone());
+        }
         if read_manifest(path).map_err(String::from)?.is_none() {
             return Ok(None);
         }
@@ -304,6 +308,7 @@ pub(super) fn status(profile: &Path) -> Result<LocalEvalDbStatus, String> {
 
 pub(super) fn validate(
     profile: &Path,
+    shared: Option<&Path>,
     path: &Path,
     expected: &str,
 ) -> Result<LocalEvalSourceCandidate, String> {
@@ -315,7 +320,7 @@ pub(super) fn validate(
         choice.generation = generation;
         choice.candidate = None;
     }
-    if source_selection::read(profile)?.revision != expected {
+    if source_selection::read(profile, shared)?.revision != expected {
         return Err(
             "The current evaluation folder changed. Refresh it before choosing again.".into(),
         );
@@ -340,6 +345,7 @@ pub(super) fn validate(
     choice.candidate = Some(Candidate {
         view: view.clone(),
         profile: profile.into(),
+        shared: shared.map(PathBuf::from),
         revision: expected.into(),
         fingerprint,
         reset_default,
@@ -348,7 +354,11 @@ pub(super) fn validate(
     Ok(view)
 }
 
-pub(super) fn activate(profile: &Path, token: &str) -> Result<LocalEvalSourceSelection, String> {
+pub(super) fn activate(
+    profile: &Path,
+    shared: Option<&Path>,
+    token: &str,
+) -> Result<LocalEvalSourceSelection, String> {
     let (path, fingerprint, revision, reset_default) = {
         let choice = CHOICE
             .lock()
@@ -359,6 +369,7 @@ pub(super) fn activate(profile: &Path, token: &str) -> Result<LocalEvalSourceSel
             .filter(|value| {
                 value.view.token == token
                     && value.profile == profile
+                    && value.shared.as_deref() == shared
                     && value.at.elapsed() < Duration::from_secs(900)
             })
             .ok_or("This folder check expired or changed. Choose the folder again.")?;
@@ -385,7 +396,7 @@ pub(super) fn activate(profile: &Path, token: &str) -> Result<LocalEvalSourceSel
     }) {
         return Err("A newer folder choice replaced this check. Choose the folder again.".into());
     }
-    let selected = source_selection::save(profile, &revision, &path)?;
+    let selected = source_selection::save(profile, shared, &revision, &path)?;
     choice.candidate = None;
     clear_shard_cache();
     Ok(selected)

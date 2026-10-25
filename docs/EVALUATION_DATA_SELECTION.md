@@ -25,10 +25,13 @@ between check and use, including a same-size sample with restored modification
 time. There is no filesystem-wide atomic snapshot of an externally editable
 store; evaluation data is expected to be immutable.
 
-Reading an untouched profile retains its legacy `lichess-cloud-evals` location
-without creating a settings database or downloading data. This slice adds
-explicit selection, not automatic source discovery or fallback. Remaining
-Novelty automatic-discovery/readiness history is still listed in the audit queue.
+An untouched profile now recognizes the existing shared immutable store when
+its legacy `lichess-cloud-evals` folder is confirmed absent or empty. Existing
+legacy data and every saved explicit choice, including Reset, stay authoritative.
+Recognition does not create preferences, copy data or turn on Stored evals.
+Unavailable data remains distinct from missing data. See
+SHARED_EVALUATION_DISCOVERY.md for bounded validation, revisions and the separate
+phone/PC service contract. Broader managed-catalogue history remains open.
 
 Successful activation clears native shard caches and emits a source event.
 Frontend cache epochs reject old hits, misses, pending responses and displayed

@@ -176,6 +176,22 @@ it("validates a picked folder and waits for the explicit Use action", async () =
   expect(io.activateLocalEvalSource).toHaveBeenCalledWith("checked");
   expect(host.textContent).toContain("C:/Fixture/chosen");
 });
+it("keeps a failed discovered default visible and allows an explicit checked replacement", async () => {
+  io.selection = { path: initial.path, revision: "auto:fixture" };
+  io.getLocalEvalSourceSelection.mockImplementation(async () =>
+    ok({ ...io.selection, discoveryError: "Invented incompatible shared store" }),
+  );
+  io.status = { ...initial, available: false, error: "Invented incompatible shared store" };
+  await render();
+  expect(host.textContent).toContain("Evaluation folder unavailable");
+  expect(host.textContent).toContain("Invented incompatible shared store");
+  expect(host.textContent).not.toContain("123 positions");
+  expect(button("Choose folder").disabled).toBe(false);
+  await click("Choose folder");
+  expect(io.validateLocalEvalSource).toHaveBeenCalledWith("C:/Fixture/chosen", "auto:fixture");
+  expect(io.activateLocalEvalSource).not.toHaveBeenCalled();
+  expect(document.body.textContent).toContain("456 positions");
+});
 it("reviews an empty default folder before an explicit reset without using the picker", async () => {
   io.validateLocalEvalSource.mockImplementationOnce(async () => {
     io.checked = {

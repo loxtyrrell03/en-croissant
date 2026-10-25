@@ -36,4 +36,4 @@ jobs:
         run: pnpm test
 
       - name: Check native helper contracts
-        run: node --test scripts/tests/windows-ipc.test.mjs scripts/tests/local-eval-readiness.test.mjs
+        run: node --test scripts/tests/windows-ipc.test.mjs scripts/tests/local-eval-readiness.test.mjs scripts/tests/local-eval-discovery.test.mjs

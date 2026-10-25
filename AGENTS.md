@@ -1,3 +1,25 @@
+## 2026-10-25 shared evaluation discovery source
+
+- Unconfigured native and phone/PC service defaults recognize shared immutable
+  evaluations after confirmed absent/empty legacy data. Existing nonempty legacy
+  data and saved/configured choices (including explicit Reset) remain authoritative.
+  No preference/corpus write, copy, download or On/Off change occurs on discovery.
+- Root aliases, sparse metadata and bounded samples reuse native validation;
+  Node checks both record versions without allocating every PV string.1 MiB
+  manifests/64 MiB decoded samples (Node80 MiB compressed). Successful checks
+  coalesce/revalidate30s; failed checks retry after repair. Automatic source
+  identity participates in stale-read/revision guards; invalid data remains
+  visible and permits a checked manual replacement. New service installs leave
+  defaults unpinned and preserve existing explicit evaluation config paths.
+- Source126 native library checks/three opt-in ignored, normal registry22 old
+  warnings,43 Node/one existing optional skipped,51 frontend/nine files, fulltypes,
+  eight-file lint0 and four non-installing production config-expression cases pass.
+  Pure Specta validates optional discoveryError; command arguments are unchanged.
+- Clean source only so far; primary mirror, retained-store timing, native package
+  and runtime delivery remain. Broader managed rated/broadcast catalogues stay
+  open. No owner state/service/pinned sync helper changed. See
+  docs/SHARED_EVALUATION_DISCOVERY.md/current delivery JSON. Goal remains active.
+
 ## 2026-10-25 history inventory refresh
 
 - Matching all-branch non-merge product-source scope now594 Novelty commits,
