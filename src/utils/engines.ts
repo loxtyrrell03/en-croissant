@@ -69,10 +69,10 @@ function mergeEngineSettings(
     required: EngineSettings | null | undefined,
 ): EngineSettings | undefined {
     const merged = new Map<string, EngineSettings[number]>();
-    for (const setting of current ?? []) {
+    for (const setting of required ?? []) {
         merged.set(setting.name.toLowerCase(), setting);
     }
-    for (const setting of required ?? []) {
+    for (const setting of current ?? []) {
         merged.set(setting.name.toLowerCase(), setting);
     }
     return merged.size > 0 ? [...merged.values()] : undefined;
@@ -103,9 +103,11 @@ export function mergeInstalledDesktopEngines(
         const existing = next[index];
         if (existing.type !== "local") continue;
         next[index] = {
-            ...existing,
             ...managed,
+            ...existing,
             id: existing.id,
+            version: managed.version,
+            path: managed.path,
             settings: mergeEngineSettings(existing.settings, managed.settings),
         };
     }

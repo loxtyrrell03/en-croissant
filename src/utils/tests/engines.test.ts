@@ -29,7 +29,7 @@ describe("managed engine catalog", () => {
         expect(mergeManagedEngineCatalog([staleLc0], "linux")).toEqual([staleLc0]);
     });
 
-    it("reconciles required installs without losing remote profiles or existing ids", () => {
+    it("fills installed-engine defaults without losing owner labels, settings, visibility or remote profiles", () => {
         const current: Engine[] = [
             {
                 type: "pc",
@@ -44,6 +44,8 @@ describe("managed engine catalog", () => {
                 name: "Old label",
                 version: "18",
                 path: "C:\\Engines\\Stockfish.exe",
+                loaded: false,
+                go: { t: "Time", c: 200 },
                 settings: [{ name: "Hash", value: 128 }],
             },
         ];
@@ -76,10 +78,11 @@ describe("managed engine catalog", () => {
         expect(merged[0]).toEqual(current[0]);
         expect(merged[1]).toMatchObject({
             id: "user-stockfish-id",
-            name: "Stockfish",
-            loaded: true,
+            name: "Old label",
+            loaded: false,
+            go: { t: "Time", c: 200 },
             settings: [
-                { name: "Hash", value: 512 },
+                { name: "Hash", value: 128 },
                 { name: "Threads", value: 8 },
             ],
         });

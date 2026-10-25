@@ -1,3 +1,27 @@
+## 2026-10-25 native engine preference safeguards
+
+- Native engines.json now has a dedicated strict reader and retained ordered
+  writer. Reads never normalize by rewriting; unreadable profiles remain intact
+  and a valid empty array is an explicit choice. Native saves stage/replace,
+  verify readback, retain failed snapshots across remount, detect observed
+  external changes and observe uncertain success before replaying a write.
+- Startup discovery waits for known preferences and no enabled/focus-paused
+  analysis or open Play tab; late owner edits/unmounts reject replies. Existing
+  labels, IDs, visibility, limits and tuning values win over discovered defaults.
+  The Engines page exposes load/save retry and a persistent error notification;
+  remote-name edits capture the value and original profile ID before awaiting.
+  See docs/NATIVE_ENGINE_PREFERENCES.md. This is not a cross-process file lock;
+  observed external conflicts stay pending for reconciliation.
+- UI engine-atom writes retain in-memory edits and publish errors. A caller that
+  needs durable confirmation must await the controller write/flush before any
+  upgrade completion marker. Do not reuse the tolerant generic JSON adapter for
+  engine profiles or infer a fresh install from an unreadable/empty saved list.
+- Seventeen focused checks and 587 related frontend checks/75 files pass, as do
+  full types. Twelve-file lint has one existing engine-options effect warning,
+  zero errors. No Rust or engine binary changed; no manual profile migration or
+  service restart was performed. Clean delivery verification, Stockfish 19/
+  catalog/default migration, rendered interaction and publication remain.
+
 ## 2026-10-25 clean phone dates and refreshed history audit
 
 - Clean delivery be9e7eb1 passes all 570 related frontend checks/71 files, full
