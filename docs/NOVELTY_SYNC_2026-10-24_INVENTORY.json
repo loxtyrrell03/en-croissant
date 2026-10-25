@@ -4,8 +4,280 @@
   "scope": "All local and fetched branches; source/native-source/script changes. Includes repeated integrations, research and release support.",
   "limitation": "Candidate inventory only. File names and byte parity do not establish feature coverage, correct wiring, installed desktop delivery, hosted phone delivery or physical-device behavior.",
   "novelty": {
-    "head": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
+    "head": "0967f4f97053a8aabe71bb6f425282f3959f56d5",
     "commits": [
+      {
+        "commit": "0967f4f97053a8aabe71bb6f425282f3959f56d5",
+        "date": "2026-10-25",
+        "subject": "Record verified personal sync activation",
+        "files": [
+          "scripts/personal-sync/AGENTS.md"
+        ],
+        "areas": [
+          "accounts-and-home"
+        ],
+        "reviewStatus": "maintenance-preserved",
+        "targetReview": "Verified activation evidence for the existing private sync, not a second initialization. Converged phone retains its source and runtime ownership."
+      },
+      {
+        "commit": "6f3038275f6d09dfcfdf16aa8e5360c9ce9b4297",
+        "date": "2026-10-25",
+        "subject": "Add a private checked writer for personal Dev synchronization",
+        "files": [
+          "scripts/personal-sync/AGENTS.md",
+          "scripts/personal-sync/native.test.mjs",
+          "scripts/personal-sync/native/Cargo.lock",
+          "scripts/personal-sync/native/Cargo.toml",
+          "scripts/personal-sync/native/src/main.rs",
+          "scripts/personal-sync/native/src/writer.rs"
+        ],
+        "areas": [
+          "accounts-and-home",
+          "local-data-and-recovery"
+        ],
+        "reviewStatus": "maintenance-preserved",
+        "targetReview": "Novelty-owned checked helper remains a separate process. Existing pinned sync helpers and service are preserved; En codec/phone integration is retained in the converged source."
+      },
+      {
+        "commit": "b186d2d7cd8b1500cb9eac2ddddb2ee19a9c8b26",
+        "date": "2026-10-25",
+        "subject": "Add device-balanced engine presets and sliders",
+        "files": [
+          "AGENTS.md",
+          "docs/design/engine-presets/QA.md",
+          "docs/design/engine-presets/README.md",
+          "docs/design/engine-presets/build-boards.py",
+          "docs/design/engine-presets/index.html",
+          "docs/design/engine-presets/option-a.svg",
+          "docs/design/engine-presets/option-b.svg",
+          "docs/design/engine-presets/option-c.svg",
+          "docs/design/engine-presets/states.svg",
+          "docs/design/engine-presets/validate.mjs",
+          "scripts/qa-engine-presets.mjs",
+          "src-tauri/Cargo.toml",
+          "src-tauri/src/engine_device.rs",
+          "src-tauri/src/lib.rs",
+          "src/features/engine/AnalysisSettingsControls.module.css",
+          "src/features/engine/AnalysisSettingsControls.tsx",
+          "src/features/engine/EnginePanel.tsx",
+          "src/features/engine/engineDevice.ts",
+          "src/features/engine/engineStore.ts",
+          "src/features/engine/resourcePresets.ts",
+          "src/features/engine/tests/analysisSettingsLifecycle.test.ts",
+          "src/features/engine/tests/bundledEngine.test.ts",
+          "src/features/engine/tests/resourcePresets.test.ts",
+          "src/features/engines/EnginesSurface.tsx",
+          "src/features/settings/SettingsSurface.tsx",
+          "src/features/settings/settingsSections.ts",
+          "src/features/settings/tests/settingsSections.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "settings-and-shell"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Device-balanced presets/sliders: compare native engine options and phone remote/device resource selection; preserve custom/default ownership."
+      },
+      {
+        "commit": "39015b803ee61ce998349a4cf2e96012431038f4",
+        "date": "2026-10-25",
+        "subject": "Let menu triggers handle their own arrow keys",
+        "files": [
+          "AGENTS.md",
+          "src/features/board/moveNavigationShortcut.ts"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls"
+        ],
+        "reviewStatus": "ported-native",
+        "targetReview": "Native BoardAnalysis event ownership fixed,37 cases/types both checkouts, exact package0987379c. No matching phone global move-arrow listener. See BOARD_SHORTCUT_OWNERSHIP.md."
+      },
+      {
+        "commit": "33069e28f26eb4dd52c9dc78b66a89be5e584875",
+        "date": "2026-10-25",
+        "subject": "Keep game analysis minimized by default per session and tab",
+        "files": [
+          "AGENTS.md",
+          "src/features/gameAnalysis/store.ts",
+          "src/features/gameAnalysis/tests/startup.test.ts",
+          "src/features/gameAnalysis/tests/store.test.ts"
+        ],
+        "areas": [
+          "game-analysis"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Per-session/per-tab minimized report layout: compare En native Analysis tab and approved phone beneath-board view without changing report ownership."
+      },
+      {
+        "commit": "a717698b80afb8a8665f471a7d8402457a6697c9",
+        "date": "2026-10-25",
+        "subject": "Condense under-board game actions into one menu",
+        "files": [
+          "AGENTS.md",
+          "scripts/qa-compact-board-actions.mjs",
+          "src/features/board/BoardSurface.module.css",
+          "src/features/board/BoardSurface.tsx",
+          "src/features/board/PanelMoreMenu.module.css",
+          "src/features/board/PanelMoreMenu.tsx",
+          "src/features/board/PanelPaste.tsx"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Condensed under-board actions: evaluate equivalent En controls/menus and retained actions in its native layout."
+      },
+      {
+        "commit": "963644ba9564a920e01c3719ea262c062e3fa57c",
+        "date": "2026-10-25",
+        "subject": "Preserve visible Dev settings when repairing metadata indexes",
+        "files": [
+          "scripts/personal-sync/AGENTS.md",
+          "scripts/personal-sync/profile-context.mjs",
+          "scripts/personal-sync/repair-meta.mjs",
+          "scripts/personal-sync/repair-meta.test.mjs"
+        ],
+        "areas": [
+          "accounts-and-home",
+          "local-data-and-recovery"
+        ],
+        "reviewStatus": "target-specific-maintenance",
+        "targetReview": "Dev-only meta-table repair. En uses its own db3 schema and settings, not this damaged Novelty meta index. Do not replay the repair or import it as an En data migration."
+      },
+      {
+        "commit": "7d1c3fe4f294af8994b86605f74205b1cb844ba1",
+        "date": "2026-10-25",
+        "subject": "Add engine selection to the under-board Database panel",
+        "files": [
+          "AGENTS.md",
+          "scripts/qa-database-engine-selector.mjs",
+          "src/features/database/DatabasePanel.tsx",
+          "src/features/database/databasePreferences.ts",
+          "src/features/database/databaseStrength.ts",
+          "src/features/database/tests/databaseEngineSelection.test.ts",
+          "src/features/engine/PlanAnalysisControls.module.css",
+          "src/features/engine/PlanAnalysisControls.tsx"
+        ],
+        "areas": [
+          "prep-and-database",
+          "engine-management"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Under-board Database engine choice and selected-evidence ownership require comparison with En native/phone consumers."
+      },
+      {
+        "commit": "daed08c086dfd82d9e479698b68d59077e3cdb5e",
+        "date": "2026-10-25",
+        "subject": "Let focused resize separators own navigation keys",
+        "files": [
+          "AGENTS.md",
+          "src/features/board/moveNavigationShortcut.ts"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls"
+        ],
+        "reviewStatus": "ported-native",
+        "targetReview": "Same native keyboard family as39015b80; packaged0987379c with focused control/resize ownership. See BOARD_SHORTCUT_OWNERSHIP.md."
+      },
+      {
+        "commit": "eae547004370dba3742d4d2c1dd6c85548d8e75e",
+        "date": "2026-10-25",
+        "subject": "Add draggable height control above the bottom panel",
+        "files": [
+          "AGENTS.md",
+          "scripts/qa-bottom-panel-resize.mjs",
+          "src/features/board/BoardSurface.module.css",
+          "src/features/board/BoardSurface.tsx",
+          "src/features/board/useBoardResize.ts"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Bottom-panel draggable height: compare existing En resizers and stored layout; keyboard ownership is separately fixed."
+      },
+      {
+        "commit": "10c1de9f1f1f8a1f8bc076134f31a0cc238273a9",
+        "date": "2026-10-25",
+        "subject": "Align Plan Explorer controls with Prep and Database",
+        "files": [
+          "scripts/qa-plan-controls.mjs",
+          "src/features/plans/AGENTS.md",
+          "src/features/plans/PlanExplorerPanel.module.css",
+          "src/features/plans/PlanExplorerPanel.tsx"
+        ],
+        "areas": [
+          "plans",
+          "prep-and-database"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Plan Explorer control alignment: compare current native/phone controls and action wiring, not a wholesale foreign layout copy."
+      },
+      {
+        "commit": "645273bf93143ebbd37a70d3f1f020eed24b0a16",
+        "date": "2026-10-25",
+        "subject": "Combine downloaded Lichess sources without counting overlapping months twice",
+        "files": [
+          "AGENTS.md",
+          "scripts/qa-direct-downloads.mjs",
+          "scripts/qa-download-removal.mjs",
+          "src-tauri/src/local_lichess.rs",
+          "src-tauri/src/local_lichess_compact.rs",
+          "src-tauri/src/opening_packs.rs",
+          "src/features/settings/DownloadedDatabaseList.tsx",
+          "src/features/settings/ReadyDataPacks.module.css",
+          "src/features/settings/ReadyDataPacks.tsx",
+          "src/features/settings/downloadSelection.ts",
+          "src/features/settings/downloadedSources.ts",
+          "src/features/settings/tests/downloadSelection.test.ts",
+          "src/features/settings/tests/downloadedSources.test.ts"
+        ],
+        "areas": [
+          "local-data-and-recovery",
+          "prep-and-database"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Combined local Lichess source selection, month overlap and aggregation remain an explicit downloaded-opening-data feature audit. Existing OTB import coverage is not proof of this feature."
+      },
+      {
+        "commit": "d86b2afffd74ae8825f659b5c7e2756c1b244a0f",
+        "date": "2026-10-25",
+        "subject": "Start game analysis minimized by default",
+        "files": [
+          "AGENTS.md",
+          "scripts/qa-game-analysis.mjs",
+          "src/features/gameAnalysis/options.ts"
+        ],
+        "areas": [
+          "game-analysis"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Earlier default-layout member of33069e28 family; evaluate current final behavior rather than two independent ports."
+      },
+      {
+        "commit": "efb13607c62ec82c4ee2bfa987a325f0f9b8694b",
+        "date": "2026-10-25",
+        "subject": "Name Prep strength labels after the selected preset",
+        "files": [
+          "docs/design/prep-strength-toolbar/AGENTS.md",
+          "scripts/qa-prep-eval-column.mjs",
+          "scripts/qa-prep-layout-grid.mjs",
+          "scripts/qa-prep-strength-toolbar.mjs",
+          "src/features/prep/AGENTS.md",
+          "src/features/prep/prepStrengthPresentation.ts",
+          "src/features/prep/tests/PrepStrengthPopover.test.ts",
+          "src/features/prep/tests/prepStrengthPresentation.test.ts"
+        ],
+        "areas": [
+          "prep-and-database"
+        ],
+        "reviewStatus": "target-review-required",
+        "targetReview": "Preset-specific Prep strength labels require tracing En actual strength/preset semantics; do not blindly rename its independent blended metric."
+      },
       {
         "commit": "641036423d1b0ab73389a37271163bef9d38d445",
         "date": "2026-10-24",
@@ -23074,5 +23346,25 @@
         }
       ]
     }
-  ]
+  ],
+  "refresh20261025": {
+    "sameScopeSourceCommits": 594,
+    "previousSourceCommits": 580,
+    "additionalProductSourceCommits": 14,
+    "scope": "All local/fetched branches, non-merge changes to src, src-tauri/src or scripts since2026-07-24. Candidate counts are not missing features.",
+    "widerMetadataNodes": 640,
+    "additionalVersionOnlyReleases": 32,
+    "additionalIntegrationNodes": 14,
+    "historicComparisonNoveltyHead": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
+    "historicComparisonEnHead": "67ccb7a9c76b27b08c44d3253f02b46e7a3bfa29",
+    "comparisonLimit": "Existing per-file hashes and En commit list retain their earlier snapshot; current parity/delivery proof is in milestone documents and delivery JSON.",
+    "currentEnSourceObserved": "882844f90713f3bcf2cc1166e5860c447f0543d4",
+    "dirtyHashDelta": {
+      "unchangedPaths": 1548,
+      "changedPaths": 65,
+      "newPaths": 31,
+      "limitation": "Many pending paths are research/tests or already mirrored features. These are hash changes requiring review, not confirmed missing improvements."
+    },
+    "goalComplete": false
+  }
 }

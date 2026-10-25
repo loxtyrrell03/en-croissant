@@ -1,3 +1,19 @@
+## 2026-10-25 history inventory refresh
+
+- Matching all-branch non-merge product-source scope now594 Novelty commits,
+  adding14 to the original580 at observed head0967f4f9. A wider640 query includes
+ 32 version-only releases and14 integration nodes; do not call these60 missing
+  features. Earlier comparison hashes/En history remain explicitly historical.
+- New native keyboard family is packaged; private Dev sync/repair maintenance
+  stays in its owning product/runtime. Nine new source rows across eight families
+  remain target-review candidates, including presets, layout, selected engine,
+  combined monthly openings and strength labels. Pending-source hash deltas65
+  changed/31 new include research and already mirrored work; no automatic port.
+- Four older download UI/CSS rows now have scoped target decisions through En's
+  approved reviewed-build controls and native themes. Full managed catalogues,
+  discovery/defaults, opening recovery and whole-profile snapshots remain open.
+  See docs/NOVELTY_LATEST_SOURCE_REVIEW_2026-10-25.md/current inventory. Goal active.
+
 ## 2026-10-25 board shortcut native package
 
 - Clean0987379c packages48,925,696 bytes SHA256
