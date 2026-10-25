@@ -1,3 +1,18 @@
+## 2026-10-25 PGN export native package
+
+- Cleanb4d2f671/primary6924750f packages48,909,312 bytes SHA256
+  3f0bfa2e6ab2e0167bef906912926e3ec40fbe0e4d3655e2717fd9167f26a24e.
+  Native162s/22 old warnings, frontend33.53s; eleven exact JS/CSS assets,
+  actual export contracts/control, IPC, full notices and102 engine/source
+  resources match. Two generated outputs match prior reviewed derived
+  versions before clean-only restoration. Latest verified rollback kept.
+- No native launch/manual restart, profile/corpus operation or owner CLI-bin
+  change. Read-only health shows live phone7e7804f2/shell1c0b7edbf324 on
+  the personal-sync branch, including newer usability/sync absent from clean.
+  Reconcile that serving source before phone publication; do not roll it back.
+  PGN package proof leaves rendered/physical and full recovery ZIP scope open.
+  See docs/PGN_EXPORT_SAFETY.md/current delivery JSON.
+
 ## 2026-10-25 PGN export safety
 
 - Actual old native PGN export loses bad rows/positions and can truncate its
@@ -12,7 +27,7 @@
   failure, cleans owned anchor/URL and keeps game/drawings/sync transport tags.
   Primary44 focused native checks, clean112 library plus9 DB/9 decoder,
   both21 frontend/types/lint0; normal main check22 existing warnings.
-- Source verified only: package/phone delivery/rendered checks remain. Keep
+- Native package verified separately; phone delivery/rendered checks remain. Keep
   current committed owner personal-sync work when reconciling phone delivery;
   clean currently lacks it. PGN safety does not complete Novelty's whole-profile
   recovery/snapshot ZIP counterpart. No owner data/corpus/service operation.
