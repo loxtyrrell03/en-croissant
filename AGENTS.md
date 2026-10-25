@@ -1,3 +1,17 @@
+## 2026-10-25 explicit default reset native package
+
+- Clean d4aab304/primary08c105ee packages48,862,208 bytes SHA256
+  542c1f02f0fd6c14ed1d0142e20c703374fdb810fa1a5ee16ff0c5a46e48adb5.
+  Native108s/22 existing warnings, frontend24.47s; ten exact JS/CSS assets,
+  default-reset/source/download/recovery contracts, IPC shim, full notices
+  and102 engine resources match.104 library/50 frontend checks and types
+  underpin this source; unchanged CLI's prior15-case receipt is not rerun.
+- Two generated outputs match prior reviewed derived versions, then restore
+  only in clean checkout. Rollback/current source preserved, no native launch,
+  manual Dev restart, phone publication, profile activation or corpus copy.
+  Rendered/help/touch/native-window/physical proof and wider audit remain.
+  See docs/EVALUATION_DATA_SELECTION.md/current delivery JSON.
+
 ## 2026-10-25 explicit evaluation default reset
 
 - Reset to default uses the existing native candidate/explicit-Use/revision
@@ -9,7 +23,8 @@
 - Primary/clean104 library/50 focused frontend checks, full types and reset
   lint0 pass. Three native/two component regressions cover default review/use,
   preservation and races; normal registry22 existing warnings. Previous native
-  package predates Reset; current source needs its own package/rendered proof.
+  package predates Reset; the subsequent combined package is verified in the
+  current delivery JSON. Rendered proof remains separate.
   Automatic discovery/readiness and other source audit remain. See
   docs/EVALUATION_DATA_SELECTION.md and the current delivery JSON.
 

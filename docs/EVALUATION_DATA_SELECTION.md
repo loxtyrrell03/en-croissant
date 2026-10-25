@@ -98,5 +98,17 @@ Reset does not create/download evaluation data or change Stored evals On/Off.
 Both checkouts pass 104 native library checks and all 50 focused frontend
 checks/eight files after the reset addition. Three new native tests and two
 real-component cases cover this action; types and scoped reset lint pass, and
-the normal registry compiles with its existing 22 warnings. The previous package
-above predates Reset; its subsequent packaging and rendered proof are separate.
+the normal registry compiles with its existing 22 warnings.
+
+The latest native package includes Reset from clean `d4aab304` / primary
+`08c105ee`: 48,862,208 bytes, SHA-256
+`542c1f02f0fd6c14ed1d0142e20c703374fdb810fa1a5ee16ff0c5a46e48adb5`.
+Native compilation takes 108 seconds with the same 22 warnings; frontend takes
+24.47 seconds. Ten exact JS/CSS assets, native reset/selection/review/recovery
+contracts, IPC shim, all 102 engine resources and full About/resource notices
+match. The two generated outputs exactly matched their earlier reviewed derived
+versions before restoration. The checkout is clean and rollback retained.
+The CLI entry/builder were unchanged by Reset; the preceding 15-case release
+CLI receipt is historical compatibility evidence, not counted as rerun. No
+manual app launch/restart or phone publication occurred. Rendered and physical
+checks remain separate, as does the wider source audit.
