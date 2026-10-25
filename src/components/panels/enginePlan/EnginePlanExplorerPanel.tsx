@@ -1,4 +1,5 @@
 import { useExplorerGameDates } from "@/hooks/useGameDateOptions";
+import { useAutoPlanArrowClaim, usePlanArrowPreview } from "@/hooks/usePlanArrows";
 import {
   ActionIcon,
   Alert,
@@ -57,7 +58,6 @@ import {
   currentBoardPreviewShapesAtom,
   currentEnginePlanExplorerDataAtom,
   currentEnginePlanReportAtom,
-  currentPlanExplorerPreviewLineAtom,
   enginePlanDepthAtom,
   enginePlanHorizonAtom,
   enginePlanLimitModeAtom,
@@ -182,7 +182,7 @@ function EnginePlanExplorerPanel() {
   const activeTab = useAtomValue(activeTabAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const setEnginePlanData = useSetAtom(currentEnginePlanExplorerDataAtom);
-  const setPreviewLine = useSetAtom(currentPlanExplorerPreviewLineAtom);
+  const setPreviewLine = usePlanArrowPreview(store, fen);
   const [multipv, setMultipv] = useAtom(enginePlanMultipvAtom);
   const [limitMode, setLimitMode] = useAtom(enginePlanLimitModeAtom);
   const [depth, setDepth] = useAtom(enginePlanDepthAtom);
@@ -191,6 +191,7 @@ function EnginePlanExplorerPanel() {
   const [view, setView] = useAtom(enginePlanViewAtom);
   const [horizon, setHorizon] = useAtom(enginePlanHorizonAtom);
   const [showPlanArrows, setShowPlanArrows] = useAtom(showPlanExplorerArrowsAtom);
+  useAutoPlanArrowClaim(store, "engine-plans", showPlanArrows);
   const [arrowLimit, setArrowLimit] = useAtom(planExplorerArrowLimitAtom);
   const [planState, setPlanState] = useAtom(currentEnginePlanReportAtom);
   const [engineId, setEngineId] = useState<string | null>(null);

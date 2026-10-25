@@ -1,4 +1,5 @@
 import { useExplorerGameDates, useLocalGameDates } from "@/hooks/useGameDateOptions";
+import { useAutoPlanArrowClaim, usePlanArrowPreview } from "@/hooks/usePlanArrows";
 import {
   ActionIcon,
   Alert,
@@ -62,7 +63,6 @@ import {
   currentLocalOptionsAtom,
   currentPlanExplorerDataAtom,
   currentPlanExplorerEngineStrengthAtom,
-  currentPlanExplorerPreviewLineAtom,
   currentTabAtom,
   enginesAtom,
   lichessOptionsAtom,
@@ -169,6 +169,7 @@ function PlanExplorerPanel() {
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
   const [showPlanExplorerArrows, setShowPlanExplorerArrows] = useAtom(showPlanExplorerArrowsAtom);
+  useAutoPlanArrowClaim(store, "plans", showPlanExplorerArrows);
   const [arrowLimit, setArrowLimit] = useAtom(planExplorerArrowLimitAtom);
   const [hoverEverywhere, setHoverEverywhere] = useAtom(planExplorerHoverEverywhereAtom);
   const [source, setSource] = useAtom(planExplorerSourceAtom);
@@ -181,7 +182,7 @@ function PlanExplorerPanel() {
   const lichessOptions = useExplorerGameDates(useAtomValue(lichessOptionsAtom), "month");
   const masterOptions = useExplorerGameDates(useAtomValue(masterOptionsAtom), "year");
   const setPlanExplorerData = useSetAtom(currentPlanExplorerDataAtom);
-  const setPreviewLine = useSetAtom(currentPlanExplorerPreviewLineAtom);
+  const setPreviewLine = usePlanArrowPreview(store, fen);
   const [engineStrengthEnabled, setEngineStrengthEnabled] = useAtom(
     planExplorerEngineStrengthEnabledAtom,
   );

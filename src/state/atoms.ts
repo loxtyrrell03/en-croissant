@@ -35,7 +35,6 @@ import type { OnlineGameSource } from "@/utils/onlineGameSource";
 import type { PrepBuilderSettings } from "@/utils/opponentPrep";
 import { DEFAULT_BOARD_STYLE, type BoardStyle } from "@/utils/boardStyle";
 import { recoverParityTestArchivedFileEntries } from "@/utils/directoryOverrides";
-import type { ColoredPlanExplorerLine } from "@/utils/planExplorer";
 import { atomWithDebouncedStorage } from "@/state/store/debouncedLocalStorage";
 import {
     type LichessGamesOptions,
@@ -1139,13 +1138,6 @@ const enginePlanReportFamily = atomFamily((_tab: string) =>
 );
 export const currentEnginePlanReportAtom = tabValue(enginePlanReportFamily);
 
-export type PlanExplorerPreviewLines = ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null;
-
-const planExplorerPreviewLineFamily = atomFamily((_tab: string) =>
-    atom<PlanExplorerPreviewLines>(null),
-);
-export const currentPlanExplorerPreviewLineAtom = tabValue(planExplorerPreviewLineFamily);
-
 export type OpeningHealthProgress = {
     id: string;
     progress: number;
@@ -1769,7 +1761,6 @@ export function cleanupClosedTabAtomState(
     planExplorerEngineStrengthFamily.remove(tab);
     enginePlanExplorerDataFamily.remove(tab);
     enginePlanReportFamily.remove(tab);
-    planExplorerPreviewLineFamily.remove(tab);
     analysisTabFamily.remove(tab);
     practiceTabFamily.remove(tab);
     expandedEnginesFamily.remove(tab);

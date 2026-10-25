@@ -19,6 +19,7 @@ import "@mantine/notifications/styles.css";
 import "@/styles/global.css";
 
 import { Chessground } from "@lichess-org/chessground";
+import { defaults as chessgroundDefaults } from "@lichess-org/chessground/state";
 import type { Api } from "@lichess-org/chessground/api";
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { Key } from "@lichess-org/chessground/types";
@@ -141,6 +142,8 @@ import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
 import WebGameReportPanel from "./WebGameReportPanel";
 import PhoneEnginePlansPanel from "./PhoneEnginePlansPanel";
+import { usePlanArrowSnapshot } from "@/hooks/usePlanArrows";
+import { engineArrowsAllowed, planOverlayShapes, PLAN_ARROW_BRUSHES } from "@/utils/planArrowLayers";
 import { loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
@@ -1566,6 +1569,8 @@ function BoardWorkspace({
   const liveReplayTickRef = useRef<number | null>(null);
   const board = state.board ?? createEmptyWebBoardState();
   const workspaceOwner = phoneWorkspaceOwner(state);
+  const planArrowBoard = useMemo(() => ({ owner: workspaceOwner }), [workspaceOwner]);
+  const planArrowState = usePlanArrowSnapshot(planArrowBoard);
   const alignBoardToPrepSide = useCallback(
     (color: WebColor, explicit = false) => {
       setState((current) => alignPhoneBoard(current, workspaceOwner, color, explicit));
@@ -1805,11 +1810,24 @@ function BoardWorkspace({
     if (lines.length > 0) setEngineArrowAnalysis({ fen, lines });
   }, []);
   const engineArrowShapes = useMemo(
-    () =>
-      engineArrowAnalysis?.fen === currentFen
-        ? getWebEngineArrowShapes(engineArrowAnalysis.lines, currentFen)
-        : [],
-    [currentFen, engineArrowAnalysis],
+    () => {
+      const live =
+        engineArrowsAllowed(true, false, planArrowState) && engineArrowAnalysis?.fen === currentFen
+          ? getWebEngineArrowShapes(engineArrowAnalysis.lines, currentFen)
+          : [];
+      return [
+        ...live,
+        ...planOverlayShapes({
+          state: planArrowState,
+          fen: currentFen,
+          planData: null,
+          engineData: null,
+          autoEnabled: true,
+          limit: 10,
+        }),
+      ];
+    },
+    [currentFen, engineArrowAnalysis, planArrowState],
   );
 
   useEffect(() => {
@@ -2211,6 +2229,9 @@ function BoardWorkspace({
           </Box>
           <Box hidden={panelMode !== "engine" || analysisView !== "plans"}>
             <PhoneEnginePlansPanel
+              key={workspaceOwner}
+              arrowBoard={planArrowBoard}
+              active={panelMode === "engine" && analysisView === "plans"}
               fen={currentFen}
               onBusy={setPlanAnalysisRunning}
               onPlayLine={playPlanLine}
@@ -9282,6 +9303,7 @@ export function WebChessboard({
       drawable: {
         enabled: interactive && !drawingBrush,
         visible: true,
+        brushes: { ...chessgroundDefaults().drawable.brushes, ...PLAN_ARROW_BRUSHES },
         eraseOnMovablePieceClick: !onDrawingsChange,
         shapes: onDrawingsChange ? phoneDrawingsToChessground(savedDrawings) : undefined,
         onChange: onDrawingsChange

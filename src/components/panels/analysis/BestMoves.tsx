@@ -30,6 +30,7 @@ import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
 import { memo, startTransition, useCallback, useDeferredValue, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import { match } from "ts-pattern";
 import type { BestMoves } from "@/bindings";
 import {
@@ -67,6 +68,7 @@ interface BestMovesProps {
   dragHandleProps: any;
   orientation: "white" | "black";
   compact?: boolean;
+  planArrowsActive?: boolean;
 }
 
 function BestMovesComponent({
@@ -78,6 +80,7 @@ function BestMovesComponent({
   dragHandleProps,
   orientation,
   compact = false,
+  planArrowsActive = false,
 }: BestMovesProps) {
   const { t } = useTranslation();
 
@@ -123,6 +126,11 @@ function BestMovesComponent({
   const [threat, setThreat] = useAtom(currentThreatAtom);
   const [detachedEngineId, setDetachedEngineId] = useAtom(currentDetachedEngineAtom);
   const [showEngineArrows, setShowEngineArrows] = useAtom(showArrowsAtom);
+  const arrowHelp = planArrowsActive
+    ? "Plan arrows are on"
+    : showEngineArrows
+      ? "Hide engine arrows"
+      : "Show engine arrows";
   const isDetached = detachedEngineId === engine.id;
   const theme = useMantineTheme();
 
@@ -240,19 +248,29 @@ function BestMovesComponent({
               )}
             </ActionIcon>
           </Tooltip>
-          <Tooltip label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}>
-            <ActionIcon
-              size={compact ? "sm" : "lg"}
-              onClick={() => setShowEngineArrows((value) => !value)}
-              variant={showEngineArrows ? "light" : "transparent"}
-              color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
-              mt="auto"
-              mb="auto"
-              aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
+          <Tooltip label={arrowHelp}>
+            <span
+              style={{ display: "inline-flex" }}
             >
-              <IconArrowUpRight size={compact ? "0.8rem" : "1rem"} />
-            </ActionIcon>
+              <ActionIcon
+                size={compact ? "sm" : "lg"}
+                onClick={() => setShowEngineArrows((value) => !value)}
+                variant={showEngineArrows && !planArrowsActive ? "light" : "transparent"}
+                disabled={planArrowsActive}
+                color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
+                mt="auto"
+                mb="auto"
+                aria-label={arrowHelp}
+              >
+                <IconArrowUpRight size={compact ? "0.8rem" : "1rem"} />
+              </ActionIcon>
+            </span>
           </Tooltip>
+          {planArrowsActive && (
+            <PerformanceHelp label="About engine arrow priority">
+              Turn off Auto arrows in the plan panel to show engine arrows. Your engine-arrow setting is kept.
+            </PerformanceHelp>
+          )}
           <ActionIcon
             size={compact ? "sm" : "lg"}
             onClick={() => toggleSettingsOn()}

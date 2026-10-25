@@ -61,6 +61,8 @@ import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { commands, type Score } from "@/bindings";
+import { usePlanArrowPreview, usePlanArrowSnapshot } from "@/hooks/usePlanArrows";
+import { engineArrowsAllowed, planOverlayShapes, PLAN_ARROW_BRUSHES } from "@/utils/planArrowLayers";
 import { Chessground, type ChessgroundRef } from "@/chessground/Chessground";
 import { engineSettingsToOptions } from "@/utils/engines";
 import {
@@ -72,7 +74,6 @@ import {
   currentEnginePlanExplorerDataAtom,
   currentEvalOpenAtom,
   currentPlanExplorerDataAtom,
-  currentPlanExplorerPreviewLineAtom,
   currentShowMoveAnnotationsAtom,
   currentTabAtom,
   currentTabSelectedAtom,
@@ -136,14 +137,9 @@ import {
   findReviewPositionIndexForFen,
 } from "@/utils/openingReviewPersistence";
 import {
-  getAutoPlanLines,
   getPlanLineForSquare,
   isPlanBrush,
-  PLAN_BRUSH,
-  PLAN_BLACK_BRUSH,
-  PLAN_WHITE_BRUSH,
   planLineToShapes,
-  planLinesToShapes,
 } from "@/utils/planExplorer";
 import { getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
 import type { LiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
@@ -525,7 +521,8 @@ function Board({
   const moveHighlight = moveHighlightOverride ?? globalMoveHighlight;
   const showArrows = useAtomValue(showArrowsAtom);
   const hiddenReviewPractice = practicing && practiceState.phase === "waiting";
-  const engineArrowsEnabled = showArrows && !hiddenReviewPractice;
+  const planArrowState = usePlanArrowSnapshot(store);
+  const engineArrowsEnabled = engineArrowsAllowed(showArrows, Boolean(hiddenReviewPractice), planArrowState);
   const arrows = useAtomValue(
     bestMovesFamily({
       fen: rootFen,
@@ -551,9 +548,7 @@ function Board({
   }, [boardPreviewShapes?.displayFen]);
   const planExplorerData = useAtomValue(currentPlanExplorerDataAtom);
   const enginePlanExplorerData = useAtomValue(currentEnginePlanExplorerDataAtom);
-  const [planExplorerPreviewLine, setPlanExplorerPreviewLine] = useAtom(
-    currentPlanExplorerPreviewLineAtom,
-  );
+  const setPlanExplorerPreviewLine = usePlanArrowPreview(store, currentNode.fen);
   const showPlanExplorerArrows = useAtomValue(showPlanExplorerArrowsAtom);
   const planExplorerArrowLimit = useAtomValue(planExplorerArrowLimitAtom);
   const planExplorerHoverEverywhere = useAtomValue(planExplorerHoverEverywhereAtom);
@@ -1333,36 +1328,15 @@ function Board({
       }
     }
 
-    if (!planExplorerPreviewLine) {
-      if (
-        showPlanExplorerArrows &&
-        currentTabSelected === "engine-plans" &&
-        activeEnginePlanExplorerData
-      ) {
-        nextShapes = nextShapes.concat(
-          planLinesToShapes(
-            getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit, {
-              minGames: 1,
-            }),
-            planExplorerArrowLimit,
-          ),
-        );
-      } else if (showPlanExplorerArrows && activePlanExplorerData) {
-        nextShapes = nextShapes.concat(
-          planLinesToShapes(
-            getAutoPlanLines(activePlanExplorerData, planExplorerArrowLimit),
-            planExplorerArrowLimit,
-          ),
-        );
-      }
-    }
-
-    if (planExplorerPreviewLine) {
-      const previewLines = Array.isArray(planExplorerPreviewLine)
-        ? planExplorerPreviewLine
-        : [planExplorerPreviewLine];
-      nextShapes = nextShapes.concat(planLinesToShapes(previewLines, 16));
-    }
+    nextShapes.push(...planOverlayShapes({
+      state: planArrowState,
+      fen: boardFen,
+      planData: activePlanExplorerData,
+      engineData: activeEnginePlanExplorerData,
+      autoEnabled: showPlanExplorerArrows,
+      limit: planExplorerArrowLimit,
+      saved: currentNode.shapes,
+    }));
 
     if (
       currentTabSelected === "tactics" &&
@@ -1452,12 +1426,13 @@ function Board({
     boardFen,
     boardPreviewShapes,
     currentNode.children,
+    currentNode.shapes,
     currentTab?.gameOrigin.kind,
     currentTabSelected,
     hideMistakeReviewPreAttemptGreenArrows,
     mistakeReviewAutoRevealBest,
     planExplorerArrowLimit,
-    planExplorerPreviewLine,
+    planArrowState,
     pos,
     practiceState,
     practicing,
@@ -2070,7 +2045,6 @@ function Board({
                       saved: currentNode.shapes,
                       overlays: shapes,
                       visible: (shape) =>
-                        (!planExplorerPreviewLine || !isPlanBrush(shape.brush)) &&
                         (!hideMistakeReviewPreAttemptGreenArrows || !isGreenBoardArrowShape(shape)),
                       eraseOnClick: eraseDrawablesOnClick,
                       save: setShapes,
@@ -2082,24 +2056,7 @@ function Board({
                         opacity: 0.8,
                         lineWidth: 10,
                       },
-                      [PLAN_BRUSH]: {
-                        key: "p",
-                        color: "#12b886",
-                        opacity: 0.9,
-                        lineWidth: 10,
-                      },
-                      [PLAN_WHITE_BRUSH]: {
-                        key: "w",
-                        color: "#228be6",
-                        opacity: 0.9,
-                        lineWidth: 10,
-                      },
-                      [PLAN_BLACK_BRUSH]: {
-                        key: "b",
-                        color: "#f08c00",
-                        opacity: 0.9,
-                        lineWidth: 10,
-                      },
+                      ...PLAN_ARROW_BRUSHES,
                       [TACTICAL_PRIMARY_BRUSH]: {
                         key: "t",
                         color: "#f08c00",
