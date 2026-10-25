@@ -80,3 +80,14 @@ repair/clearing before a lazy query. Serializer/evidence tests cover inclusive
 bounds, rolling updates and unchanged unrelated options. These source/component
 checks do not establish browser layout, installed delivery or physical-phone
 verification.
+
+Phone source `5e12da56` and clean delivery `be9e7eb1` pass 570 related frontend
+checks across 71 files, full types and nine-file lint with zero warnings/errors;
+WebApp retains 25 existing warnings. All eleven new date checks pass. One
+existing workspace-preference fixture exceeded its unchanged five-second timeout
+while a build ran concurrently; its isolated recheck and complete 570-check
+recheck pass without changing timeouts or assertions. Keep production builds
+separate from the heavy actual-app UI suite on this machine. Clean desktop and
+canonical-phone builds pass in 28.51/26.23 seconds; all ten owned files match.
+The private receipt records hashes and this transient failure as well as the
+passing rechecks. No live publication occurred.

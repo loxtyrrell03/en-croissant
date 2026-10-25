@@ -7,6 +7,75 @@
     "head": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
     "commits": [
       {
+        "commit": "641036423d1b0ab73389a37271163bef9d38d445",
+        "date": "2026-10-24",
+        "subject": "Improve rough tournament searches and remember selected region",
+        "files": [
+          "scripts/qa-tournament-search-quality.mjs",
+          "scripts/qa-tournament-search.mjs",
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentDiscovery.tsx",
+          "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts",
+          "src/features/tournaments/tests/tournamentDiscoveryPersistence.test.ts",
+          "src/features/tournaments/tests/tournamentSearch.test.ts",
+          "src/features/tournaments/tests/tournamentSearchCache.test.ts",
+          "src/features/tournaments/tests/tournamentSearchCandidates.test.ts",
+          "src/features/tournaments/tournamentDiscoveryModel.ts",
+          "src/features/tournaments/tournamentSearch.ts",
+          "src/features/tournaments/tournamentSearchCache.ts",
+          "src/features/tournaments/tournamentSearchCandidates.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "c1f5b6591bf58710f561b581d3d77e6ec0cfe90b",
+        "date": "2026-10-24",
+        "subject": "Make bundled Stockfish 19 the default on upgrade",
+        "files": [
+          "scripts/qa-stockfish-default.mjs",
+          "src/features/engine/engineStore.ts",
+          "src/features/engine/tests/bundledEngine.test.ts",
+          "src/features/engine/tests/stockfishDefault.test.ts"
+        ],
+        "areas": [
+          "engine-management"
+        ]
+      },
+      {
+        "commit": "647c4efb92f3b2ed42249559fe802d3dc2532c06",
+        "date": "2026-10-24",
+        "subject": "Verify prediction history in Dev and phone delivery layouts",
+        "files": [
+          "scripts/qa-tournament-prediction-history.mjs",
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentPredictions.tsx"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "a7fdf330240a83847daca163a7cbe29226c213d2",
+        "date": "2026-10-24",
+        "subject": "Add saved tournament predictions and player comparison views",
+        "files": [
+          "scripts/qa-tournament-prediction-history.mjs",
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentPredictions.module.css",
+          "src/features/tournaments/TournamentPredictions.tsx",
+          "src/features/tournaments/TournamentTrackerView.module.css",
+          "src/features/tournaments/TournamentTrackerView.tsx",
+          "src/features/tournaments/predictionHistory.ts",
+          "src/features/tournaments/predictionHistoryStore.ts",
+          "src/features/tournaments/tests/predictionHistory.test.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
         "commit": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
         "date": "2026-10-24",
         "subject": "Fix PGN orientation in Files preview and board opening",
@@ -424,6 +493,7 @@
           "tournaments",
           "otb-and-downloads",
           "game-analysis",
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -1209,7 +1279,8 @@
           "src/features/gameAnalysis/tests/store.test.ts"
         ],
         "areas": [
-          "game-analysis"
+          "game-analysis",
+          "engine-management"
         ]
       },
       {
@@ -1441,7 +1512,9 @@
           "src-tauri/src/engine.rs",
           "src-tauri/src/engine_output.rs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "95afded0607d770b575e11ae56b0615c66b038c0",
@@ -1495,6 +1568,7 @@
         "areas": [
           "otb-and-downloads",
           "game-analysis",
+          "engine-management",
           "prep-and-database"
         ]
       },
@@ -1740,6 +1814,7 @@
           "tournaments",
           "otb-and-downloads",
           "game-analysis",
+          "engine-management",
           "engine-plans",
           "plans",
           "files-and-library",
@@ -3581,6 +3656,7 @@
           "src/features/engines/tests/engineCatalog.test.ts"
         ],
         "areas": [
+          "engine-management",
           "commercial-and-release"
         ]
       },
@@ -3792,6 +3868,7 @@
           "tournaments",
           "otb-and-downloads",
           "game-analysis",
+          "engine-management",
           "board-and-annotations",
           "reviews-and-training",
           "accounts-and-home"
@@ -3819,6 +3896,7 @@
         ],
         "areas": [
           "game-analysis",
+          "engine-management",
           "board-and-annotations",
           "app-and-controls"
         ]
@@ -3854,6 +3932,7 @@
           "src/web/tests/releaseVersionScript.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone",
           "commercial-and-release"
         ]
@@ -3873,7 +3952,9 @@
           "src-tauri/src/game_analysis.rs",
           "src-tauri/src/lib.rs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "1ef59cf3e1777913e1dfe2da96df9fd5ac9d0bac",
@@ -3946,6 +4027,7 @@
           "src/features/plans/PlanExplorerPanel.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "board-and-annotations",
@@ -3961,7 +4043,9 @@
           "scripts/build-lc0-macos.mjs",
           "scripts/stage-stockfish-macos.mjs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "8936ccf93483aa63ecad7e6e604a744c843e634a",
@@ -3972,7 +4056,8 @@
           "src-tauri/src/data_pack/install.rs"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "engine-management"
         ]
       },
       {
@@ -4002,7 +4087,9 @@
         "files": [
           "src-tauri/src/engine_install.rs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "55f64e89ed852f37def33ae1661ebd54c739d47c",
@@ -4066,6 +4153,7 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "engine-management",
           "commercial-and-release"
         ]
       },
@@ -4287,6 +4375,7 @@
           "src/features/plans/PlanExplorerPanel.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "board-and-annotations"
@@ -4302,7 +4391,9 @@
           "src/features/engine/EnginePanel.tsx",
           "src/features/engine/evalFormat.ts"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "0a32846534f8533d2d1bc1660af54ac1686523b1",
@@ -4375,6 +4466,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -4419,6 +4511,7 @@
           "src/features/plans/PlanExplorerPanel.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "board-and-annotations"
@@ -4433,7 +4526,9 @@
           "src/features/engine/EnginePanel.module.css",
           "src/features/engine/EnginePanel.tsx"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "93412c73d021e7f029b6960f4573c73e88ee68cb",
@@ -4640,6 +4735,7 @@
           "src/features/settings/ReadyDataPacks.tsx"
         ],
         "areas": [
+          "engine-management",
           "prep-and-database"
         ]
       },
@@ -4698,6 +4794,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "engine-management",
           "files-and-library",
           "accounts-and-home",
           "app-and-controls"
@@ -4787,6 +4884,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "engine-management",
           "app-and-controls"
         ]
       },
@@ -4843,6 +4941,7 @@
           "src/features/plans/tests/coldPlanLoad.test.ts"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database"
@@ -4862,6 +4961,7 @@
           "src/features/plans/tests/coldPlanLoad.test.ts"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans"
         ]
@@ -5050,6 +5150,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -5482,6 +5583,7 @@
           "performance",
           "tournaments",
           "otb-and-downloads",
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -5763,7 +5865,9 @@
           "src/features/engines/engineLogo.tsx",
           "src/features/engines/tests/engineLogo.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "c7e3d5ac9ad50572b00b8a946370f1ba4ecc00f3",
@@ -6148,6 +6252,7 @@
           "src/features/plans/tests/planRouteContext.test.ts"
         ],
         "areas": [
+          "engine-management",
           "plans"
         ]
       },
@@ -6241,6 +6346,7 @@
           "src/features/settings/DataDownloadControl.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -6331,6 +6437,7 @@
           "src/features/enginePlans/EnginePlansPanel.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans"
         ]
       },
@@ -6501,6 +6608,7 @@
           "src/features/enginePlans/EnginePlansPanel.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans"
         ]
       },
@@ -6769,6 +6877,7 @@
           "performance",
           "tournaments",
           "otb-and-downloads",
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -6888,7 +6997,9 @@
           "src-tauri/src/engine_install.rs",
           "src-tauri/src/local_eval/download.rs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "2815afb43ea0cb2000cf0036af5db6333abcc004",
@@ -7461,7 +7572,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "engine-management"
         ]
       },
       {
@@ -7588,7 +7700,9 @@
           "scripts/qa-installer-contents.mjs",
           "scripts/qa-stockfish-bundle.mjs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "a7ef0237162ab1025bd83fdb001ba38ed05beade",
@@ -7658,6 +7772,7 @@
           "src/main.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -7679,7 +7794,9 @@
           "src/features/engines/engineCatalog.ts",
           "src/features/engines/tests/engineCatalog.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "d230b44fc0f1e45133109603af6711e142ed8683",
@@ -7779,6 +7896,7 @@
           "src/platform/workspaceLifecycle.ts"
         ],
         "areas": [
+          "engine-management",
           "prep-and-database",
           "files-and-library",
           "reviews-and-training",
@@ -7957,6 +8075,7 @@
           "src/features/settings/tests/lookupRouting.test.ts"
         ],
         "areas": [
+          "engine-management",
           "prep-and-database"
         ]
       },
@@ -8337,6 +8456,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -8729,7 +8849,9 @@
           "src/features/settings/tests/lookupRouting.test.ts",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "08f4dfe39006a28946cc69bb54a400e64af9dead",
@@ -8773,6 +8895,7 @@
           "src/features/settings/tests/lookupRouting.test.ts"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database"
@@ -8978,6 +9101,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -9013,6 +9137,7 @@
           "src/features/prep/lichessPlayerExplorer.ts"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -9268,7 +9393,9 @@
         "files": [
           "src-tauri/src/engine.rs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "badb59cb5eddf79813152d3a7dc3e5f255abf1e9",
@@ -9279,7 +9406,9 @@
           "src/features/engine/EnginePanel.tsx",
           "src/features/engine/tests/EnginePanel.test.tsx"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "06df535ec3298e7027eb5ffabac3dd19508301a4",
@@ -9288,7 +9417,9 @@
         "files": [
           "src-tauri/src/engine.rs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "e87c2c4c6cd0531e5e08f58a2af4bbdb7120c7bc",
@@ -9299,7 +9430,9 @@
           "src/features/engine/EnginePanel.tsx",
           "src/features/engine/tests/EnginePanel.test.tsx"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "e617b6ade18ef43fb508ac2f71c985f76485d7b7",
@@ -9376,6 +9509,7 @@
           "src/features/prep/tests/lichessPlayerExplorer.test.ts"
         ],
         "areas": [
+          "engine-management",
           "plans",
           "prep-and-database",
           "board-and-annotations"
@@ -9734,7 +9868,9 @@
           "src/features/engine/EnginePanel.tsx",
           "src/features/engine/tests/EnginePanel.test.tsx"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "ece3e18e94e5731dddbe704895a2b57cdb0c5327",
@@ -9747,7 +9883,9 @@
           "src/features/engines/tests/uciOptions.test.ts",
           "src/features/engines/uciOptions.ts"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "51e4751cac591b19ba5960d2944f2af547ebec52",
@@ -9757,7 +9895,9 @@
           "src-tauri/src/engine.rs",
           "src-tauri/src/lib.rs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "1274bc9f2cb60ebf474dbdf9b5cab6ab375714b5",
@@ -9771,7 +9911,9 @@
           "src/features/engines/tests/engineCatalog.test.ts",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "00988779f027dabd0215bf7ef71c9e4a66ca21fe",
@@ -10850,8 +10992,838 @@
     ]
   },
   "en": {
-    "head": "35ee5833d6ba532595e03924597d98a548c0a0e3",
+    "head": "5e12da564e1ddb6d224c60c59c9506f85e488532",
     "commits": [
+      {
+        "commit": "be9e7eb1c89fa6dd687c318ca939d883d62b06ce",
+        "date": "2026-10-25",
+        "subject": "Add persistent phone game-date ranges across Database and Prep",
+        "files": [
+          "src/web/WebApp.tsx",
+          "src/web/explorer.ts",
+          "src/web/gameDates.ts",
+          "src/web/model.ts",
+          "src/web/prepIndex.ts",
+          "src/web/storage.ts",
+          "src/web/tests/gameDates.test.ts",
+          "src/web/tests/phoneGameDates.test.tsx",
+          "src/web/usePhoneGameDates.ts",
+          "src/web/workspacePreferences.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "5e12da564e1ddb6d224c60c59c9506f85e488532",
+        "date": "2026-10-25",
+        "subject": "Add persistent phone game-date ranges across Database and Prep",
+        "files": [
+          "src/web/WebApp.tsx",
+          "src/web/explorer.ts",
+          "src/web/gameDates.ts",
+          "src/web/model.ts",
+          "src/web/prepIndex.ts",
+          "src/web/storage.ts",
+          "src/web/tests/gameDates.test.ts",
+          "src/web/tests/phoneGameDates.test.tsx",
+          "src/web/usePhoneGameDates.ts",
+          "src/web/workspacePreferences.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "74c3a1d6fbae55159852cc3237a869bf584c5f59",
+        "date": "2026-10-25",
+        "subject": "Add independent rolling game-date ranges to native analysis",
+        "files": [
+          "src/components/boards/AiCoachPanel.tsx",
+          "src/components/common/GameDateRangeControl.module.css",
+          "src/components/common/GameDateRangeControl.test.tsx",
+          "src/components/common/GameDateRangeControl.tsx",
+          "src/components/panels/database/DatabaseComparePanel.tsx",
+          "src/components/panels/database/DatabasePanel.tsx",
+          "src/components/panels/database/GameDates.native.test.tsx",
+          "src/components/panels/database/options/LichessOptionsPanel.tsx",
+          "src/components/panels/database/options/LocalOptionsPanel.tsx",
+          "src/components/panels/database/options/MastersOptionsPanel.tsx",
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx",
+          "src/components/panels/gaps/RepertoireGapsPanel.tsx",
+          "src/components/panels/plan/PlanExplorerPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/hooks/useCalendarDay.test.tsx",
+          "src/hooks/useCalendarDay.ts",
+          "src/hooks/useGameDateOptions.ts",
+          "src/state/atoms.ts",
+          "src/utils/db.ts",
+          "src/utils/gameDateRange.ts",
+          "src/utils/lichess/explorer.ts",
+          "src/utils/prepGameDates.ts",
+          "src/utils/tests/gameDateQuery.test.ts",
+          "src/utils/tests/gameDateRange.test.ts"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "prep-and-database",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "ac39c301326034597c38534b56f41d8a6f3bcb0a",
+        "date": "2026-10-25",
+        "subject": "Add independent rolling game-date ranges to native analysis",
+        "files": [
+          "src/components/boards/AiCoachPanel.tsx",
+          "src/components/common/GameDateRangeControl.module.css",
+          "src/components/common/GameDateRangeControl.test.tsx",
+          "src/components/common/GameDateRangeControl.tsx",
+          "src/components/panels/database/DatabaseComparePanel.tsx",
+          "src/components/panels/database/DatabasePanel.tsx",
+          "src/components/panels/database/GameDates.native.test.tsx",
+          "src/components/panels/database/options/LichessOptionsPanel.tsx",
+          "src/components/panels/database/options/LocalOptionsPanel.tsx",
+          "src/components/panels/database/options/MastersOptionsPanel.tsx",
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx",
+          "src/components/panels/gaps/RepertoireGapsPanel.tsx",
+          "src/components/panels/plan/PlanExplorerPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/hooks/useCalendarDay.test.tsx",
+          "src/hooks/useCalendarDay.ts",
+          "src/hooks/useGameDateOptions.ts",
+          "src/state/atoms.ts",
+          "src/utils/db.ts",
+          "src/utils/gameDateRange.ts",
+          "src/utils/lichess/explorer.ts",
+          "src/utils/prepGameDates.ts",
+          "src/utils/tests/gameDateQuery.test.ts",
+          "src/utils/tests/gameDateRange.test.ts"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "prep-and-database",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "46b48b0211e27b9adb5702daff85ba4f8824bbb8",
+        "date": "2026-10-25",
+        "subject": "Add reversible phone source archive labels",
+        "files": [
+          "src/web/PhoneSourceArchives.tsx",
+          "src/web/WebApp.module.css",
+          "src/web/WebApp.tsx",
+          "src/web/model.ts",
+          "src/web/sourceArchives.ts",
+          "src/web/storage.ts",
+          "src/web/tests/phonePgnOpening.test.tsx",
+          "src/web/tests/phoneSourceArchives.test.tsx",
+          "src/web/tests/sourceArchives.test.ts",
+          "src/web/tests/storage.test.ts",
+          "src/web/workspacePreferences.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "348ea549108f42df7bbd103f4fe2bf1373537d3c",
+        "date": "2026-10-25",
+        "subject": "Add reversible phone source archive labels",
+        "files": [
+          "src/web/PhoneSourceArchives.tsx",
+          "src/web/WebApp.module.css",
+          "src/web/WebApp.tsx",
+          "src/web/model.ts",
+          "src/web/sourceArchives.ts",
+          "src/web/storage.ts",
+          "src/web/tests/phonePgnOpening.test.tsx",
+          "src/web/tests/phoneSourceArchives.test.tsx",
+          "src/web/tests/sourceArchives.test.ts",
+          "src/web/tests/storage.test.ts",
+          "src/web/workspacePreferences.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "46bf0caab843b49cb00f63b574bbeefc2ba2d2b5",
+        "date": "2026-10-25",
+        "subject": "Persist phone board views and workspace source choices",
+        "files": [
+          "src/web/WebApp.tsx",
+          "src/web/model.ts",
+          "src/web/storage.ts",
+          "src/web/tests/phoneWorkspacePreferences.test.tsx",
+          "src/web/tests/storage.test.ts",
+          "src/web/tests/workspacePreferences.test.ts",
+          "src/web/useWorkspacePreferences.ts",
+          "src/web/workspacePreferences.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "2c1813c7805316f7182eb8842f9e82f7f419a504",
+        "date": "2026-10-25",
+        "subject": "Persist phone board views and workspace source choices",
+        "files": [
+          "src/web/WebApp.tsx",
+          "src/web/model.ts",
+          "src/web/storage.ts",
+          "src/web/tests/phoneWorkspacePreferences.test.tsx",
+          "src/web/tests/storage.test.ts",
+          "src/web/tests/workspacePreferences.test.ts",
+          "src/web/useWorkspacePreferences.ts",
+          "src/web/workspacePreferences.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "75ea649fdaf36de65bf436859483adf4119be4a2",
+        "date": "2026-10-25",
+        "subject": "Remember native board and source choices by file",
+        "files": [
+          "src/components/boards/Board.tsx",
+          "src/components/boards/BoardControls.tsx",
+          "src/components/files/DirectoryTree.tsx",
+          "src/components/files/FilePreferences.controls.test.tsx",
+          "src/components/files/FilesPage.tsx",
+          "src/components/files/Modals.tsx",
+          "src/components/panels/database/DatabaseComparePanel.tsx",
+          "src/components/panels/database/DatabasePanel.tsx",
+          "src/components/panels/info/InfoPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/hooks/useFilePrepSources.test.tsx",
+          "src/hooks/useFilePrepSources.ts",
+          "src/state/atoms.ts",
+          "src/state/store/tree.ts",
+          "src/state/tests/workspacePreferenceHydration.test.ts",
+          "src/utils/clearTabs.ts",
+          "src/utils/fileBoardPreferences.ts",
+          "src/utils/fileSourceMoves.ts",
+          "src/utils/tabContent.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/fileBoardPreferences.test.ts",
+          "src/utils/tests/tabSaving.test.ts",
+          "src/utils/workspacePreferences.ts"
+        ],
+        "areas": [
+          "prep-and-database",
+          "files-and-library",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "85bb921235f1ed4c21cc4317605fb929f33b13fd",
+        "date": "2026-10-25",
+        "subject": "Remember native board and source choices by file",
+        "files": [
+          "src/components/boards/Board.tsx",
+          "src/components/boards/BoardControls.tsx",
+          "src/components/files/DirectoryTree.tsx",
+          "src/components/files/FilePreferences.controls.test.tsx",
+          "src/components/files/FilesPage.tsx",
+          "src/components/files/Modals.tsx",
+          "src/components/panels/database/DatabaseComparePanel.tsx",
+          "src/components/panels/database/DatabasePanel.tsx",
+          "src/components/panels/info/InfoPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/hooks/useFilePrepSources.test.tsx",
+          "src/hooks/useFilePrepSources.ts",
+          "src/state/atoms.ts",
+          "src/state/store/tree.ts",
+          "src/state/tests/workspacePreferenceHydration.test.ts",
+          "src/utils/clearTabs.ts",
+          "src/utils/fileBoardPreferences.ts",
+          "src/utils/fileSourceMoves.ts",
+          "src/utils/tabContent.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/fileBoardPreferences.test.ts",
+          "src/utils/tests/tabSaving.test.ts",
+          "src/utils/workspacePreferences.ts"
+        ],
+        "areas": [
+          "prep-and-database",
+          "files-and-library",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "eb8981491ea2440636e50ff52c736f8f0f24ce6c",
+        "date": "2026-10-24",
+        "subject": "Coalesce engine startup output across desktop and phone",
+        "files": [
+          "src-tauri/src/chess.rs",
+          "src-tauri/src/engine/live_output.rs",
+          "src-tauri/src/engine/live_output_process_tests.rs",
+          "src-tauri/src/engine/mod.rs",
+          "src/utils/coalescedUpdates.ts",
+          "src/utils/pcEngine.ts",
+          "src/utils/tests/coalescedUpdates.test.ts",
+          "src/utils/tests/pcEngineStartup.test.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/stockfishStartup.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "phone",
+          "commercial-and-release"
+        ]
+      },
+      {
+        "commit": "52fc816df0169c2cbc3ea46ae9cd173cb718bdc4",
+        "date": "2026-10-24",
+        "subject": "Coalesce engine startup output across desktop and phone",
+        "files": [
+          "src-tauri/src/chess.rs",
+          "src-tauri/src/engine/live_output.rs",
+          "src-tauri/src/engine/live_output_process_tests.rs",
+          "src-tauri/src/engine/mod.rs",
+          "src/utils/coalescedUpdates.ts",
+          "src/utils/pcEngine.ts",
+          "src/utils/tests/coalescedUpdates.test.ts",
+          "src/utils/tests/pcEngineStartup.test.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/stockfishStartup.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "phone",
+          "commercial-and-release"
+        ]
+      },
+      {
+        "commit": "9b2d0b5a9979739d655266f931121a5d413ba21a",
+        "date": "2026-10-24",
+        "subject": "Automatically save meaningful games before clearing tabs",
+        "files": [
+          "src/components/tabs/BoardsPage.tsx",
+          "src/components/tabs/ClearTabsButton.tsx",
+          "src/state/atoms.ts",
+          "src/utils/clearTabs.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/clearTabs.test.tsx"
+        ],
+        "areas": [
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "f8bfbff1f0713cbaeca6433cf43778fc8900f188",
+        "date": "2026-10-24",
+        "subject": "Automatically save meaningful games before clearing tabs",
+        "files": [
+          "src/components/tabs/BoardsPage.tsx",
+          "src/components/tabs/ClearTabsButton.tsx",
+          "src/state/atoms.ts",
+          "src/utils/clearTabs.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/clearTabs.test.tsx"
+        ],
+        "areas": [
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "5f14e29e82ff9dfe62013d875469d8155542f950",
+        "date": "2026-10-24",
+        "subject": "Preserve source analysis when starting practice games",
+        "files": [
+          "src/components/boards/BoardControls.tsx",
+          "src/hooks/useBlindfoldMaiaTrainer.ts",
+          "src/hooks/usePracticeAgainstBot.ts",
+          "src/hooks/useStartPracticeGame.ts",
+          "src/utils/practiceTabs.ts",
+          "src/utils/tests/practiceTabs.test.tsx"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "fcd72b3b4c8a7abc2c7492349a1b9f348812e9a1",
+        "date": "2026-10-24",
+        "subject": "Preserve source analysis when starting practice games",
+        "files": [
+          "src/components/boards/BoardControls.tsx",
+          "src/hooks/useBlindfoldMaiaTrainer.ts",
+          "src/hooks/usePracticeAgainstBot.ts",
+          "src/hooks/useStartPracticeGame.ts",
+          "src/utils/practiceTabs.ts",
+          "src/utils/tests/practiceTabs.test.tsx"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "b8b1bb3acd7889903c95b9668194041af8362014",
+        "date": "2026-10-24",
+        "subject": "Protect native database saves with transactional source identities",
+        "files": [
+          "src-tauri/src/db/game_save.rs",
+          "src-tauri/src/db/game_save_tests.rs",
+          "src-tauri/src/db/mod.rs",
+          "src-tauri/src/db/models.rs",
+          "src-tauri/src/error.rs",
+          "src/bindings/generated.ts",
+          "src/components/databases/GameCard.tsx",
+          "src/components/databases/GameTable.tsx",
+          "src/components/databases/TournamentCard.tsx",
+          "src/components/panels/database/GamesTable.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/utils/tabs.ts",
+          "src/utils/tests/tabSaving.test.ts"
+        ],
+        "areas": [
+          "prep-and-database",
+          "accounts-and-home",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "6d2e586391505d686842ca587dde0a6858b51282",
+        "date": "2026-10-24",
+        "subject": "Protect native database saves with transactional source identities",
+        "files": [
+          "src-tauri/src/db/game_save.rs",
+          "src-tauri/src/db/game_save_tests.rs",
+          "src-tauri/src/db/mod.rs",
+          "src-tauri/src/db/models.rs",
+          "src-tauri/src/error.rs",
+          "src/bindings/generated.ts",
+          "src/components/databases/GameCard.tsx",
+          "src/components/databases/GameTable.tsx",
+          "src/components/databases/TournamentCard.tsx",
+          "src/components/panels/database/GamesTable.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/utils/tabs.ts",
+          "src/utils/tests/tabSaving.test.ts"
+        ],
+        "areas": [
+          "prep-and-database",
+          "accounts-and-home",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "be2a09001e0c9d94804f28291230e4d979218631",
+        "date": "2026-10-24",
+        "subject": "Retain current tournament search in the verified delivery source",
+        "files": [
+          "src/features/tournaments/AGENTS.md"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "fd7ad53e65be9221c0030c2a109a2970b454d9c1",
+        "date": "2026-10-24",
+        "subject": "Retain current tournament search in the verified delivery source",
+        "files": [
+          "src/features/tournaments/AGENTS.md"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "58e1c55ce00b9cefee6850b3a012d54d9c6380ee",
+        "date": "2026-10-24",
+        "subject": "Improve shared tournament search and persist region selection",
+        "files": [
+          "scripts/qa-tournament-search-quality.mjs",
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentDiscovery.tsx",
+          "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts",
+          "src/features/tournaments/tests/tournamentDiscoveryPersistence.test.ts",
+          "src/features/tournaments/tests/tournamentSearch.test.ts",
+          "src/features/tournaments/tests/tournamentSearchCache.test.ts",
+          "src/features/tournaments/tests/tournamentSearchCandidates.test.ts",
+          "src/features/tournaments/tournamentDiscoveryModel.ts",
+          "src/features/tournaments/tournamentSearch.ts",
+          "src/features/tournaments/tournamentSearchCache.ts",
+          "src/features/tournaments/tournamentSearchCandidates.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "3e50490271dfa6e054c55f35818b6cd2074e1b83",
+        "date": "2026-10-24",
+        "subject": "Improve shared tournament search and persist region selection",
+        "files": [
+          "scripts/qa-tournament-search-quality.mjs",
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentDiscovery.tsx",
+          "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts",
+          "src/features/tournaments/tests/tournamentDiscoveryPersistence.test.ts",
+          "src/features/tournaments/tests/tournamentSearch.test.ts",
+          "src/features/tournaments/tests/tournamentSearchCache.test.ts",
+          "src/features/tournaments/tests/tournamentSearchCandidates.test.ts",
+          "src/features/tournaments/tournamentDiscoveryModel.ts",
+          "src/features/tournaments/tournamentSearch.ts",
+          "src/features/tournaments/tournamentSearchCache.ts",
+          "src/features/tournaments/tournamentSearchCandidates.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "094b2b0ec1e0e1ff003970c41c5d70809bf48321",
+        "date": "2026-10-24",
+        "subject": "Protect native PGN sources and reject stale file requests",
+        "files": [
+          "src-tauri/src/lib.rs",
+          "src-tauri/src/main.rs",
+          "src-tauri/src/pgn.rs",
+          "src-tauri/src/pgn_files.rs",
+          "src-tauri/src/pgn_files_tests.rs",
+          "src/bindings/generated.ts",
+          "src/bindings/pgnFiles.test.ts",
+          "src/bindings/pgnFiles.ts",
+          "src/components/boards/BoardAnalysis.tsx",
+          "src/components/boards/BoardControls.tsx",
+          "src/components/common/ConfirmModal.tsx",
+          "src/components/files/FileCard.requests.test.tsx",
+          "src/components/files/FileCard.tsx",
+          "src/components/files/FilesPage.tsx",
+          "src/components/panels/info/FileInfo.tsx",
+          "src/components/panels/info/GameSelector.requests.test.tsx",
+          "src/components/panels/info/GameSelector.tsx",
+          "src/components/panels/info/InfoPanel.requests.test.tsx",
+          "src/components/panels/info/InfoPanel.tsx",
+          "src/utils/appendTabGame.ts",
+          "src/utils/files.ts",
+          "src/utils/pgnFileQueue.ts",
+          "src/utils/pgnGameList.ts",
+          "src/utils/pgnSourceTabs.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/fileOpening.test.ts",
+          "src/utils/tests/fileTabCapture.test.ts",
+          "src/utils/tests/pgnFileOwnership.test.ts",
+          "src/utils/tests/pgnFileQueue.test.ts",
+          "src/utils/tests/tabSaving.test.ts"
+        ],
+        "areas": [
+          "files-and-library",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "5e328087787d42774af9536bd6e88679e9411c17",
+        "date": "2026-10-24",
+        "subject": "Protect native PGN sources and reject stale file requests",
+        "files": [
+          "src-tauri/src/lib.rs",
+          "src-tauri/src/main.rs",
+          "src-tauri/src/pgn.rs",
+          "src-tauri/src/pgn_files.rs",
+          "src-tauri/src/pgn_files_tests.rs",
+          "src/bindings/generated.ts",
+          "src/bindings/pgnFiles.test.ts",
+          "src/bindings/pgnFiles.ts",
+          "src/components/boards/BoardAnalysis.tsx",
+          "src/components/boards/BoardControls.tsx",
+          "src/components/common/ConfirmModal.tsx",
+          "src/components/files/FileCard.requests.test.tsx",
+          "src/components/files/FileCard.tsx",
+          "src/components/files/FilesPage.tsx",
+          "src/components/panels/info/FileInfo.tsx",
+          "src/components/panels/info/GameSelector.requests.test.tsx",
+          "src/components/panels/info/GameSelector.tsx",
+          "src/components/panels/info/InfoPanel.requests.test.tsx",
+          "src/components/panels/info/InfoPanel.tsx",
+          "src/utils/appendTabGame.ts",
+          "src/utils/files.ts",
+          "src/utils/pgnFileQueue.ts",
+          "src/utils/pgnGameList.ts",
+          "src/utils/pgnSourceTabs.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/fileOpening.test.ts",
+          "src/utils/tests/fileTabCapture.test.ts",
+          "src/utils/tests/pgnFileOwnership.test.ts",
+          "src/utils/tests/pgnFileQueue.test.ts",
+          "src/utils/tests/tabSaving.test.ts"
+        ],
+        "areas": [
+          "files-and-library",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "549faef9c668b79355e993d06490c273ec129a7f",
+        "date": "2026-10-24",
+        "subject": "Preserve custom-root move numbers and multiple PGN annotations",
+        "files": [
+          "src/utils/chess.ts",
+          "src/utils/tests/pgnExport.test.ts"
+        ],
+        "areas": []
+      },
+      {
+        "commit": "577b1b87111bfbb72eb8ea2ce29dc7fea9aab898",
+        "date": "2026-10-24",
+        "subject": "Preserve custom-root move numbers and multiple PGN annotations",
+        "files": [
+          "src/utils/chess.ts",
+          "src/utils/tests/pgnExport.test.ts"
+        ],
+        "areas": []
+      },
+      {
+        "commit": "6549365d53d832bb5976ba6a2a36b147d888746c",
+        "date": "2026-10-24",
+        "subject": "Keep native saves and close requests bound to their game tab",
+        "files": [
+          "src/components/boards/BoardAnalysis.tsx",
+          "src/components/boards/BoardGame.tsx",
+          "src/components/common/GameNotation.tsx",
+          "src/components/common/TreeStateContext.tsx",
+          "src/components/panels/info/InfoPanel.requests.test.tsx",
+          "src/components/panels/info/InfoPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/components/tabs/BoardTab.tsx",
+          "src/components/tabs/BoardsPage.saving.test.tsx",
+          "src/components/tabs/BoardsPage.tsx",
+          "src/components/tabs/ConfirmChangesModal.test.tsx",
+          "src/components/tabs/ConfirmChangesModal.tsx",
+          "src/state/store/debouncedStorage.ts",
+          "src/state/store/treeOwner.ts",
+          "src/state/store/treeRegistry.ts",
+          "src/state/tests/treeRegistry.test.ts",
+          "src/utils/tabContent.ts",
+          "src/utils/tabSaveTarget.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/tabSaving.test.ts"
+        ],
+        "areas": [
+          "prep-and-database",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "e56fa47ae8cdc4cd5bd4c5e5c50382735a05edbf",
+        "date": "2026-10-24",
+        "subject": "Keep native saves and close requests bound to their game tab",
+        "files": [
+          "src/components/boards/BoardAnalysis.tsx",
+          "src/components/boards/BoardGame.tsx",
+          "src/components/common/GameNotation.tsx",
+          "src/components/common/TreeStateContext.tsx",
+          "src/components/panels/info/InfoPanel.requests.test.tsx",
+          "src/components/panels/info/InfoPanel.tsx",
+          "src/components/panels/prep/OpponentPrepPanel.tsx",
+          "src/components/tabs/BoardTab.tsx",
+          "src/components/tabs/BoardsPage.saving.test.tsx",
+          "src/components/tabs/BoardsPage.tsx",
+          "src/components/tabs/ConfirmChangesModal.test.tsx",
+          "src/components/tabs/ConfirmChangesModal.tsx",
+          "src/state/store/debouncedStorage.ts",
+          "src/state/store/treeOwner.ts",
+          "src/state/store/treeRegistry.ts",
+          "src/state/tests/treeRegistry.test.ts",
+          "src/utils/tabContent.ts",
+          "src/utils/tabSaveTarget.ts",
+          "src/utils/tabs.ts",
+          "src/utils/tests/tabSaving.test.ts"
+        ],
+        "areas": [
+          "prep-and-database",
+          "board-and-annotations",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "405eceada931c8e0cc3988a13b6f62c36f1daf75",
+        "date": "2026-10-24",
+        "subject": "Carry custom board roots and drawings into phone Prep",
+        "files": [
+          "src/web/WebApp.tsx",
+          "src/web/phoneAnnotations.ts",
+          "src/web/tests/phoneDrawings.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "353cd8da1f5c8b90d20c4383a844fedffb497910",
+        "date": "2026-10-24",
+        "subject": "Carry custom board roots and drawings into phone Prep",
+        "files": [
+          "src/web/WebApp.tsx",
+          "src/web/phoneAnnotations.ts",
+          "src/web/tests/phoneDrawings.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "f099bc217976b57328234a89c302eafc387357c4",
+        "date": "2026-10-24",
+        "subject": "Record verified tournament prediction phone delivery",
+        "files": [
+          "src/features/tournaments/AGENTS.md"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "7c2f7e37833274115a1d505123aac0212b5cb653",
+        "date": "2026-10-24",
+        "subject": "Record verified tournament prediction phone delivery",
+        "files": [
+          "src/features/tournaments/AGENTS.md"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "609a66c64cf8a65aa0439d6eb4255b66aaefc20a",
+        "date": "2026-10-24",
+        "subject": "Keep player prediction empty states concise",
+        "files": [
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentPredictions.tsx"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "b232866675bb4311cc4d6aa1c599b5fe96abded2",
+        "date": "2026-10-24",
+        "subject": "Keep player prediction empty states concise",
+        "files": [
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentPredictions.tsx"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "792a9ebd51e2b125841c1e34e1d4ef0f229ea984",
+        "date": "2026-10-24",
+        "subject": "Save phone drawings on their exact game nodes",
+        "files": [
+          "src/web/PhoneAnnotationBar.tsx",
+          "src/web/WebApp.tsx",
+          "src/web/model.ts",
+          "src/web/pgn.ts",
+          "src/web/phoneAnnotations.ts",
+          "src/web/phoneDrawings.ts",
+          "src/web/tests/phoneDrawingFlow.test.tsx",
+          "src/web/tests/phoneDrawings.test.ts",
+          "src/web/tests/webCompanion.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "ba5128c83298e0a496c31fbf6a980f611cb3bc41",
+        "date": "2026-10-24",
+        "subject": "Save phone drawings on their exact game nodes",
+        "files": [
+          "src/web/PhoneAnnotationBar.tsx",
+          "src/web/WebApp.tsx",
+          "src/web/model.ts",
+          "src/web/pgn.ts",
+          "src/web/phoneAnnotations.ts",
+          "src/web/phoneDrawings.ts",
+          "src/web/tests/phoneDrawingFlow.test.tsx",
+          "src/web/tests/phoneDrawings.test.ts",
+          "src/web/tests/webCompanion.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "dfc2183148a4ee80a523e420cdfe452d9b332b78",
+        "date": "2026-10-24",
+        "subject": "Add tournament prediction history to desktop and phone",
+        "files": [
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentPredictions.module.css",
+          "src/features/tournaments/TournamentPredictions.tsx",
+          "src/features/tournaments/TournamentTrackerView.module.css",
+          "src/features/tournaments/TournamentTrackerView.tsx",
+          "src/features/tournaments/predictionHistory.ts",
+          "src/features/tournaments/predictionHistoryStore.ts",
+          "src/features/tournaments/tests/predictionHistory.test.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "8c6b4cac98c0d0e9db1e628ddbf3955b9b4bc647",
+        "date": "2026-10-24",
+        "subject": "Add tournament prediction history to desktop and phone",
+        "files": [
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/TournamentPredictions.module.css",
+          "src/features/tournaments/TournamentPredictions.tsx",
+          "src/features/tournaments/TournamentTrackerView.module.css",
+          "src/features/tournaments/TournamentTrackerView.tsx",
+          "src/features/tournaments/predictionHistory.ts",
+          "src/features/tournaments/predictionHistoryStore.ts",
+          "src/features/tournaments/tests/predictionHistory.test.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "ac47b9655ea80ae2af16d898f4a6d05a15c3b743",
+        "date": "2026-10-24",
+        "subject": "Refresh Novelty audit and verify existing review and maintenance parity",
+        "files": [
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/tests/jobsResilience.test.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
+      {
+        "commit": "1674484ae710fa9c6bcd492151d479964a061969",
+        "date": "2026-10-24",
+        "subject": "Refresh Novelty audit and verify existing review and maintenance parity",
+        "files": [
+          "src/features/tournaments/AGENTS.md",
+          "src/features/tournaments/tests/jobsResilience.test.ts"
+        ],
+        "areas": [
+          "tournaments"
+        ]
+      },
       {
         "commit": "26cc4e5e29c81a3bef18b085e1e14948176ae634",
         "date": "2026-10-24",
@@ -10906,6 +11878,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "engine-plans",
           "phone"
         ]
@@ -10941,6 +11914,7 @@
           "src/web/tests/reportStockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -11042,6 +12016,7 @@
         ],
         "areas": [
           "game-analysis",
+          "engine-management",
           "app-and-controls"
         ]
       },
@@ -13111,6 +14086,7 @@
           "src/utils/tests/tacticalSupplementalCandidates.test.ts"
         ],
         "areas": [
+          "engine-management",
           "app-and-controls"
         ]
       },
@@ -14638,6 +15614,7 @@
           "src/web/PhonePcServices.tsx"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -14670,6 +15647,7 @@
           "src/web/tests/privateServiceUrl.test.ts"
         ],
         "areas": [
+          "engine-management",
           "reviews-and-training",
           "phone",
           "commercial-and-release"
@@ -15754,7 +16732,9 @@
           "src/utils/tacticalMotifs/liveTacticsWorker.ts",
           "src/utils/tests/liveTacticsWorker.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "544112e03ed03c55aab22d0827ade222a079a0b2",
@@ -16417,6 +17397,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -16468,6 +17449,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -16781,6 +17763,7 @@
         ],
         "areas": [
           "game-analysis",
+          "engine-management",
           "engine-plans",
           "plans",
           "files-and-library",
@@ -16801,6 +17784,7 @@
           "src/utils/tests/engines.test.ts"
         ],
         "areas": [
+          "engine-management",
           "app-and-controls"
         ]
       },
@@ -16843,6 +17827,7 @@
           "src/web/stockfishEngine.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17167,6 +18152,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17182,6 +18168,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17246,7 +18233,9 @@
           "scripts/install-stockfish-remote-server.ps1",
           "scripts/stockfish-remote-server.mjs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "3d5e6abb401927b624da96a2249ff102436ccb00",
@@ -17255,7 +18244,9 @@
         "files": [
           "scripts/stockfish-remote-server.mjs"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "f044a8ba0d479de4b01972febe6f29ceb31100fd",
@@ -17270,6 +18261,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17439,6 +18431,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17457,6 +18450,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17473,6 +18467,7 @@
           "src/web/stockfishEngine.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17488,6 +18483,7 @@
           "src/web/stockfishEngine.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17517,6 +18513,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "board-and-annotations",
           "app-and-controls",
           "phone"
@@ -17546,6 +18543,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -17698,6 +18696,7 @@
           "src/web/tests/statsPcSync.test.ts"
         ],
         "areas": [
+          "engine-management",
           "app-and-controls",
           "phone"
         ]
@@ -17795,6 +18794,7 @@
           "src/web/tests/pcDataOffload.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone",
           "commercial-and-release"
         ]
@@ -18447,6 +19447,7 @@
         "areas": [
           "otb-and-downloads",
           "game-analysis",
+          "engine-management",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -18490,6 +19491,7 @@
           "src/web/tests/stockfishEngine.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -18642,6 +19644,7 @@
           "src/web/tests/pcDataOffload.test.ts"
         ],
         "areas": [
+          "engine-management",
           "phone",
           "commercial-and-release"
         ]
@@ -18708,7 +19711,9 @@
         "files": [
           "scripts/install-stockfish-remote-server.ps1"
         ],
-        "areas": []
+        "areas": [
+          "engine-management"
+        ]
       },
       {
         "commit": "d7cd23591a3ddc1d37f97610de2dc32b581cd0ad",
@@ -18720,6 +19725,7 @@
           "scripts/install-stockfish-remote-server.ps1"
         ],
         "areas": [
+          "engine-management",
           "phone"
         ]
       },
@@ -18797,6 +19803,126 @@
           "src/bindings/generated.ts"
         ],
         "areas": []
+      },
+      {
+        "commit": "dd4fe88721800fa4f2c52a654a361eb11afc093d",
+        "date": "2026-07-24",
+        "subject": "Make chess coach lessons concrete and personal",
+        "files": [
+          "scripts/chess-coach-derived.mjs",
+          "scripts/chess-coach-service.mjs",
+          "scripts/coach-style-eval.mjs",
+          "scripts/home-server.mjs",
+          "scripts/start-home-server.ps1",
+          "scripts/tests/chess-coach-derived.test.mjs",
+          "src-tauri/src/coach.rs",
+          "src-tauri/src/opening.rs"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "beb4dfe818fca9f885e32d50d195e52873db7fe7",
+        "date": "2026-07-24",
+        "subject": "Classify coach openings by transposed position",
+        "files": [
+          "scripts/chess-coach-service.mjs",
+          "scripts/tests/chess-coach-service.test.mjs",
+          "src-tauri/src/coach.rs"
+        ],
+        "areas": []
+      },
+      {
+        "commit": "b5defdbf02876bd5dcb19eed99d0df2f34c965f3",
+        "date": "2026-07-24",
+        "subject": "Add phone board flip and reset controls",
+        "files": [
+          "src/web/WebApp.tsx"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "6e82035fd2e9fdb6164c2561b9f9bc91b738f072",
+        "date": "2026-07-24",
+        "subject": "Place phone board players by side",
+        "files": [
+          "src/web/WebApp.module.css",
+          "src/web/WebApp.tsx",
+          "src/web/boardTitle.ts",
+          "src/web/tests/webCompanion.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "1b13ba4e59843aa55e5a0134896ee92fce062152",
+        "date": "2026-07-24",
+        "subject": "Add accessible live replay to phone app",
+        "files": [
+          "src/web/WebApp.module.css",
+          "src/web/WebApp.tsx",
+          "src/web/liveReplay.ts",
+          "src/web/model.ts",
+          "src/web/pgn.ts",
+          "src/web/tests/liveReplay.test.ts"
+        ],
+        "areas": [
+          "phone"
+        ]
+      },
+      {
+        "commit": "ea9b31cc5ae91f87d6d24b5a4cab340609d6453f",
+        "date": "2026-07-24",
+        "subject": "Tighten exact opening line relevance",
+        "files": [
+          "scripts/chess-coach-service.mjs",
+          "scripts/tests/chess-coach-service.test.mjs",
+          "src-tauri/src/coach.rs",
+          "src/bindings/generated.ts",
+          "src/components/boards/AiCoachPanel.tsx",
+          "src/utils/aiCoachPersistence.ts",
+          "src/web/WebApp.tsx",
+          "src/web/chessCoach.ts",
+          "src/web/tests/chessCoach.test.ts"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "5edfbb5d39d15da40f5eddf761b36e62f0b84400",
+        "date": "2026-07-24",
+        "subject": "Map exact opening book lines and add coach diagrams",
+        "files": [
+          "scripts/build-chess-book-corpus.py",
+          "scripts/chess-book-corpus-requirements.txt",
+          "scripts/chess-coach-service.mjs",
+          "scripts/chess_book_lines.py",
+          "scripts/home-server.mjs",
+          "scripts/test-chess-book-corpus.py",
+          "scripts/tests/chess-coach-service.test.mjs",
+          "scripts/tests/test_chess_book_lines.py",
+          "src-tauri/src/coach.rs",
+          "src/bindings/generated.ts",
+          "src/components/boards/AiCoachPanel.tsx",
+          "src/utils/aiCoachPersistence.ts",
+          "src/utils/tests/aiCoachPersistence.test.ts",
+          "src/web/WebApp.module.css",
+          "src/web/WebApp.tsx",
+          "src/web/chessCoach.ts",
+          "src/web/tests/chessCoach.test.ts"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
       }
     ]
   },
@@ -18808,6 +19934,28 @@
         {
           "path": "src/App.tsx",
           "sha256": "7c5f80a15aa37e2b61d2078afadee7b8d48b6ae1537a252bac00c1cf460d6714",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/app/clearTabs.ts",
+      "noveltySha256": "44a17eedf80cb4db8a1113b1a7605e7a314c6c7fd2c8e1ef95c574628a94e438",
+      "en": [
+        {
+          "path": "src/utils/clearTabs.ts",
+          "sha256": "35e83f97e456d930272e72d9ec09bf19046aa29a7156955ee5edbca811638b49",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/app/ClearTabsButton.tsx",
+      "noveltySha256": "5b2a2b6be20db42640283987f2bc86f77727cb6a94cc28d65f6744b06c8b3fa1",
+      "en": [
+        {
+          "path": "src/components/tabs/ClearTabsButton.tsx",
+          "sha256": "b10e226dda22f0480430a25ffd037b9e197584b7fa8fa4a3454de03e381caec9",
           "identical": false
         }
       ]
@@ -18829,7 +19977,7 @@
       "en": [
         {
           "path": "src/state/store/tree.ts",
-          "sha256": "071095898f09b9604f9e5324653008836c9a1c8227ed0dd3c2580130ba756419",
+          "sha256": "a6a2223dae1b88f2921fb239de4bd028a3cba032c96d3406056a1174ff117900",
           "identical": false
         }
       ]
@@ -18841,6 +19989,50 @@
         {
           "path": "src/features/tournaments/ExternalWebsiteLink.tsx",
           "sha256": "810f901e9b89e666f6af83e54b2f0ffb230f7e7fa64d53f381557d6b29fde4b5",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/components/gameDateRange.test.ts",
+      "noveltySha256": "760e82b4c1fd8c3a0d1a1b721a71ab4bc5fceede878316ea0481b1fa6a6b4cc9",
+      "en": [
+        {
+          "path": "src/utils/tests/gameDateRange.test.ts",
+          "sha256": "3d745be6750cea8f030c9d8e9fd8849ff70a92d9b5f7f7d75c5c71b58bddcc5b",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/components/gameDateRange.ts",
+      "noveltySha256": "18661a8e098a86b1c840c6c2fa041db9d32d3f0558c2db1a74155ca68481f7c9",
+      "en": [
+        {
+          "path": "src/utils/gameDateRange.ts",
+          "sha256": "1708eaf02a715591632b062225e3deecf338455a03c248cee181ba2fec85d6e0",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/components/GameDateRangeControl.module.css",
+      "noveltySha256": "5e3537054b87c806f0a9bbd55ed8d340b502694abe32ac678a70896c549d9991",
+      "en": [
+        {
+          "path": "src/components/common/GameDateRangeControl.module.css",
+          "sha256": "b5c42814e8bccdcc89b0655f83c48af8a0bd7309cd682683c6e54b17de3d40bc",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/components/GameDateRangeControl.tsx",
+      "noveltySha256": "83c7b016ca69c7ff57999866b2aec080bdd1d2d305332c25a799b3eb59263334",
+      "en": [
+        {
+          "path": "src/components/common/GameDateRangeControl.tsx",
+          "sha256": "a4275d09e0875d026b544fa4214107ca87550774d12ddee56610742983ff0ef4",
           "identical": false
         }
       ]
@@ -18873,7 +20065,7 @@
       "en": [
         {
           "path": "src/components/boards/Board.tsx",
-          "sha256": "c13118131331de6827ada6132c84a4cfc1d0a559cf2eaf3ff11daf4d88dc4ca1",
+          "sha256": "2ad455c59a6f27b6ec0e240b6971899bf13ee1525b5731821a71eb6f666b226f",
           "identical": false
         }
       ]
@@ -18901,12 +20093,34 @@
       ]
     },
     {
+      "novelty": "src/features/board/fileBoardPreferences.ts",
+      "noveltySha256": "994fa78b4e25d021b4e278ea0cb7766b340b0c90f6713943eb03682d60d2a22c",
+      "en": [
+        {
+          "path": "src/utils/fileBoardPreferences.ts",
+          "sha256": "d90350e277261e0432951f7d465313995b8427046b47ece4a762bec2df2adf90",
+          "identical": false
+        }
+      ]
+    },
+    {
       "novelty": "src/features/board/tests/boardDrawings.test.ts",
       "noveltySha256": "053fe5b7986d9120e3551f0447dd2283c239ea928a80598a79e7c24438aaa2eb",
       "en": [
         {
           "path": "src/utils/tests/boardDrawings.test.ts",
           "sha256": "dea176f6892b4481ff9b4ff2ac3c2d061b9c0028506fb4e051a44ec94a735ce1",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/board/tests/fileBoardPreferences.test.ts",
+      "noveltySha256": "525f421891a9c0c3c4f693dbd8ab92b6452194a37cc1d88ed0d8f4c40b0eae6d",
+      "en": [
+        {
+          "path": "src/utils/tests/fileBoardPreferences.test.ts",
+          "sha256": "767c79127e90905573c378ce6f02e4ac02cd1c2fec6f0578b6f671b405fb53db",
           "identical": false
         }
       ]
@@ -18928,7 +20142,7 @@
       "en": [
         {
           "path": "src/components/panels/database/DatabasePanel.tsx",
-          "sha256": "3e7acd3808355073b6d4ef6bfe080ce4da58bc57f090729e053bf401169596f0",
+          "sha256": "58cc6feff3db3ce89ffbc587f5c3f70decb764b3a3435f25d4246b296ed8a100",
           "identical": false
         }
       ]
@@ -18994,7 +20208,7 @@
       "en": [
         {
           "path": "src/web/model.ts",
-          "sha256": "10db7ed6c0b6f786a4068c27a3c395f4ac88af33b20193e0b40d8331168c10a6",
+          "sha256": "8196944721db519b4bb9c8b3f4dc9be7c32d3bf9f67ae6a095b017575c5bdafc",
           "identical": false
         }
       ]
@@ -19087,7 +20301,7 @@
       "en": [
         {
           "path": "src/components/panels/plan/PlanExplorerPanel.tsx",
-          "sha256": "eb579064bbc3ecaa9a80b631ece4394ced0791208f827dbe17e31dfaf0adbda6",
+          "sha256": "c787063b6df98d1198d7af17d967712359f9d60d39bdf72600b00ea1a5f1b085",
           "identical": false
         }
       ]
@@ -19576,6 +20790,28 @@
       ]
     },
     {
+      "novelty": "src/features/tournaments/predictionHistory.ts",
+      "noveltySha256": "769b991f727d8efa449c4700b9903f7400f5578b7a41f03579306cca3dbd7467",
+      "en": [
+        {
+          "path": "src/features/tournaments/predictionHistory.ts",
+          "sha256": "a8c19123d867035ac0ecbaec70c8caf4599acdc736bb58440229632d9f776ede",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/tournaments/predictionHistoryStore.ts",
+      "noveltySha256": "b78f4501bc5a169849ace1c74b88d529bcd48a90161fea5a2a0990cea7c0b341",
+      "en": [
+        {
+          "path": "src/features/tournaments/predictionHistoryStore.ts",
+          "sha256": "9bf511431a819adb9efec8a90b63a9fe49feda2c1ad69ef98d6006b099f345b7",
+          "identical": false
+        }
+      ]
+    },
+    {
       "novelty": "src/features/tournaments/publishedNoOpponentScore.ts",
       "noveltySha256": "ebc4ef9cf5bb7320cb3d824c4158a2fbf2ad397c138eea8302455c1d63325fb4",
       "en": [
@@ -19818,6 +21054,17 @@
       ]
     },
     {
+      "novelty": "src/features/tournaments/tests/predictionHistory.test.ts",
+      "noveltySha256": "24de9a79061d3234a977ee09cf57b51f6569b6152181559b0f1cb8a0ebfe98cd",
+      "en": [
+        {
+          "path": "src/features/tournaments/tests/predictionHistory.test.ts",
+          "sha256": "24de9a79061d3234a977ee09cf57b51f6569b6152181559b0f1cb8a0ebfe98cd",
+          "identical": true
+        }
+      ]
+    },
+    {
       "novelty": "src/features/tournaments/tests/priorResultCompleteness.test.ts",
       "noveltySha256": "bc8b6b55876831a815c8e2d16160fe3643b159011bca2de196026c00512738da",
       "en": [
@@ -19907,12 +21154,23 @@
     },
     {
       "novelty": "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts",
-      "noveltySha256": "26b5b7c621476f212e70408e4e66ee8c863643a616585db32a8044ae8702e46a",
+      "noveltySha256": "0f7fb777a959a84116cc8f408c3ae7be56a16808c66712638c930fc39d7c41a8",
       "en": [
         {
           "path": "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts",
-          "sha256": "26b5b7c621476f212e70408e4e66ee8c863643a616585db32a8044ae8702e46a",
-          "identical": true
+          "sha256": "ac1d859fd664616b8d21968ab4d7dad57d63cec5c9b13b41789af0ff4226f1ea",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/tournaments/tests/tournamentDiscoveryPersistence.test.ts",
+      "noveltySha256": "d49517e636c1d9aa75004d121856ec189563b8e06eea0cc55204e9fbe5777ed4",
+      "en": [
+        {
+          "path": "src/features/tournaments/tests/tournamentDiscoveryPersistence.test.ts",
+          "sha256": "2c3779d72b4a1ec5f878bb008fa44a56f6bb29e214f63e699d456b32a5759306",
+          "identical": false
         }
       ]
     },
@@ -20039,22 +21297,33 @@
     },
     {
       "novelty": "src/features/tournaments/tests/tournamentSearch.test.ts",
-      "noveltySha256": "7619c0c0bb6496b0fbc0dab973d1bc439d12c469c0580b46d7dfab3d50262539",
+      "noveltySha256": "23e4df4b02bc4ff4924659cf23ed9775333af0380ff72bb1af4553b7a972c286",
       "en": [
         {
           "path": "src/features/tournaments/tests/tournamentSearch.test.ts",
-          "sha256": "27753c192df10c55c70b910aa22ac8e1ace54c9ccf68a442d8a635e502b91278",
+          "sha256": "2dac2177475fb1e371bb2a16af2b25bb5e35b197026105da75db26489779f7b0",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/tournaments/tests/tournamentSearchCache.test.ts",
+      "noveltySha256": "326fef07a70ead12275ded96784fbae6752e2eeb824bf69e0ec9b04b092d509b",
+      "en": [
+        {
+          "path": "src/features/tournaments/tests/tournamentSearchCache.test.ts",
+          "sha256": "5de74d95bfc8a3b5fd522ed5d510f496312f3cef64cf72cef2bfd7797f9e4931",
           "identical": false
         }
       ]
     },
     {
       "novelty": "src/features/tournaments/tests/tournamentSearchCandidates.test.ts",
-      "noveltySha256": "543eb3fb8acb038f3d654c300ec0a45c23666a221bb1aeb2e7660b9b9106c66a",
+      "noveltySha256": "0fbfae205eede6b89893cb3b1fa8ae2adf80bdb7ae6e4dbadee137df6c4b32df",
       "en": [
         {
           "path": "src/features/tournaments/tests/tournamentSearchCandidates.test.ts",
-          "sha256": "eb9347f068f57df9ea3c534f003db7d7f645dcb6ffaf63a15f0b959ca2f64da4",
+          "sha256": "092f83987ceccc85ab982e7253495bfe7ecedd1bbe0ee35d0d97ccd19dd7c546",
           "identical": false
         }
       ]
@@ -20127,22 +21396,22 @@
     },
     {
       "novelty": "src/features/tournaments/TournamentDiscovery.tsx",
-      "noveltySha256": "4e527beae51d96c93ac302f6c1027f69f5775b1111d36fcf078d39294a005b25",
+      "noveltySha256": "5850fb3744a17b86fe2e506e45c6a2455b17b3b146ceb86d7f0945030fa69de2",
       "en": [
         {
           "path": "src/features/tournaments/TournamentDiscovery.tsx",
-          "sha256": "195ca961e9f1f587b5edd51fc0aee0258c3075f1597e3db20710de49c8fa9b3b",
+          "sha256": "8b358e35854763b67c8026f8d3639071098a239a60c7180abd11f28eb81bd5db",
           "identical": false
         }
       ]
     },
     {
       "novelty": "src/features/tournaments/tournamentDiscoveryModel.ts",
-      "noveltySha256": "4213c1af262726c204be31c8fd07f0f7a7a6fc322d5a61abdbfb8ca87a4031e3",
+      "noveltySha256": "0ec51ad8599cf2171e0903e797519dc5074ef90b9602dc0c454f9d3e20429e53",
       "en": [
         {
           "path": "src/features/tournaments/tournamentDiscoveryModel.ts",
-          "sha256": "53a52409400bae63fc204ba1faeb693a47435f02661254a5e610b36e3b5c9982",
+          "sha256": "10d7a33316eb2710794d15e028331b22cc35db0dd892d2ad3c3ddba545fb30b8",
           "identical": false
         }
       ]
@@ -20187,6 +21456,28 @@
         {
           "path": "src/features/tournaments/tournamentInsights.ts",
           "sha256": "37f267e75b7177c9e7e1b97f212f23ff55b9f5775a1e811eb48c94b5c090a7ec",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/tournaments/TournamentPredictions.module.css",
+      "noveltySha256": "0546d0ac689316b717b7cc2a58f2c47ac0259d66e0a4bb76bc1f4abaa526cf30",
+      "en": [
+        {
+          "path": "src/features/tournaments/TournamentPredictions.module.css",
+          "sha256": "0546d0ac689316b717b7cc2a58f2c47ac0259d66e0a4bb76bc1f4abaa526cf30",
+          "identical": true
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/tournaments/TournamentPredictions.tsx",
+      "noveltySha256": "e45c7f22b7e76c6041a681bb652385c3b217fe52cef0adecc734050b04eb7f16",
+      "en": [
+        {
+          "path": "src/features/tournaments/TournamentPredictions.tsx",
+          "sha256": "370d2e7719720209a45565611faa1ef9f78cdfd06f1d542c6cd17aa704deae5d",
           "identical": false
         }
       ]
@@ -20303,22 +21594,33 @@
     },
     {
       "novelty": "src/features/tournaments/tournamentSearch.ts",
-      "noveltySha256": "5b9473eaf6732f9d1bee75bcc0adea8daed8e05257b3063411f42df07a97626a",
+      "noveltySha256": "56cd45e7b1923b4e8258dc7a2b653dd1d69895c9ba0f9c04b75640ed162dd2c5",
       "en": [
         {
           "path": "src/features/tournaments/tournamentSearch.ts",
-          "sha256": "e3413cc59fe7c12736a608a74a08f9c3c386367ccaede9b6ca1308ce6c60d8c6",
+          "sha256": "f4fa8e5126072f1a56737f260ec096158505c16f5596c5112f52db3b3833d6af",
+          "identical": false
+        }
+      ]
+    },
+    {
+      "novelty": "src/features/tournaments/tournamentSearchCache.ts",
+      "noveltySha256": "732f293b8cd9e540342deb71e23c79f56fb858195d96cbecae62dd611339b1c0",
+      "en": [
+        {
+          "path": "src/features/tournaments/tournamentSearchCache.ts",
+          "sha256": "b6f3a2c198fc8304ab92a1f44c79167f59b4e41f943f9a3201181a88c73dc4c2",
           "identical": false
         }
       ]
     },
     {
       "novelty": "src/features/tournaments/tournamentSearchCandidates.ts",
-      "noveltySha256": "ab69382e8472b7ef06996aaa25afabd23721550c4a754fb80056fb41829a938d",
+      "noveltySha256": "94fea45e83aee051aafe7fc916bd2c5e2657245717b0816f170b4f6c5e5994db",
       "en": [
         {
           "path": "src/features/tournaments/tournamentSearchCandidates.ts",
-          "sha256": "45efa584a2fac838588729011fceb55a7262f408eb0c3e567ca624ef291147ad",
+          "sha256": "a4666e5bbbbe7b20c3e0f614124776ceee8183e8820c9083f9481359849f5cbf",
           "identical": false
         }
       ]
@@ -20380,22 +21682,22 @@
     },
     {
       "novelty": "src/features/tournaments/TournamentTrackerView.module.css",
-      "noveltySha256": "ee37bf7d829bca07278c1ee5b78e8d4efc161827084d978eb1677f189eec0f8b",
+      "noveltySha256": "df48df19073baca50317e1bf1e132fd4c37c00a4af3b313ec6e1f44d13edeeb9",
       "en": [
         {
           "path": "src/features/tournaments/TournamentTrackerView.module.css",
-          "sha256": "ee37bf7d829bca07278c1ee5b78e8d4efc161827084d978eb1677f189eec0f8b",
+          "sha256": "df48df19073baca50317e1bf1e132fd4c37c00a4af3b313ec6e1f44d13edeeb9",
           "identical": true
         }
       ]
     },
     {
       "novelty": "src/features/tournaments/TournamentTrackerView.tsx",
-      "noveltySha256": "d293e685ea8c138ccf1dd4625f22504704fc68ad2eef505232b38d6bf6ead4c9",
+      "noveltySha256": "b6ce091746381093e4bc10ea212eb09dc51e921d346b08ac90bdf8c9d4423909",
       "en": [
         {
           "path": "src/features/tournaments/TournamentTrackerView.tsx",
-          "sha256": "8a87092d3c304f377f54e5e07867b590614b2251da2ec5f764e9a20aa1ef8f71",
+          "sha256": "cddcd2fd8aa31ed1a36d160d8d36ea9adecd1bc62b09f7462f7e9829bc962551",
           "identical": false
         }
       ]

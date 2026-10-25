@@ -23,6 +23,7 @@ const areas = [
   ['tournaments', /src\/features\/tournaments\//],
   ['otb-and-downloads', /src-tauri\/.*(?:otb|tournament|data_pack)|src\/.*(?:Otb|otb|PlayerGameImport)/],
   ['game-analysis', /src\/features\/gameAnalysis\/|src\/.*(?:gameAnalysis|GameAnalysis|score\.ts)/],
+  ['engine-management', /src\/features\/engines?\/|src\/components\/engines\/|src\/utils\/(?:engines|pcEngine|enginePerformance|engineSettingsOptions)\.ts|src-tauri\/src\/(?:engine|engines|uci)|(?:stockfish|lc0)/i],
   ['engine-plans', /src\/features\/enginePlans\/|src\/.*(?:enginePlan|EnginePlan)/],
   ['plans', /src\/features\/plans\/|src\/.*(?:planExplorer|PlanExplorer)/],
   ['prep-and-database', /src\/features\/(?:prep|database)\/|src\/components\/panels\/(?:prep|database)\//],
