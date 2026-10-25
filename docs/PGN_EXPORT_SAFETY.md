@@ -51,3 +51,21 @@ The final existing-file recheck is not a filesystem CAS against an uncooperative
 external editor. Process/power-loss recovery, real full-size exports, rendered
 interaction and physical-device evidence remain separate. Hosting and owner
 personal-sync state are preserved when preparing phone delivery.
+
+Native packaging from clean `b4d2f671` / primary `6924750f` passes: 48,909,312
+bytes, SHA-256
+`3f0bfa2e6ab2e0167bef906912926e3ec40fbe0e4d3655e2717fd9167f26a24e`.
+Native compilation takes 162 seconds with 22 existing warnings; frontend takes
+33.53 seconds. Eleven exact JS/CSS assets include the real Databases control;
+native export/refusal contracts, Windows IPC, all 102 engine/source resources
+and full About/standalone notices match. The two generated service outputs
+exactly match their previously reviewed derived versions before clean-checkout
+restoration. The latest prior verified executable is retained for rollback.
+No app launch/manual restart, profile/corpus write or new CLI entry was used.
+
+Read-only live health identifies phone source `7e7804f2` on the separate personal
+sync branch, with shell hash `1c0b7edbf324…`. That version includes finished phone
+usability and personal-sync work absent from the current delivery checkout.
+Phone release therefore requires source reconciliation before publishing this
+toolbar change; the existing serving version and data remain intact. This is
+verified source-version evidence, not a phone update or rendered download proof.
