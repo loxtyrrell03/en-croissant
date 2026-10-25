@@ -4379,7 +4379,7 @@
     "physicalPhoneVerified": false,
     "remaining": [
       "rendered narrow/help interaction",
-      "default-discovery and explicit reset audit",
+      "default-discovery audit",
       "other directory actions audit"
     ]
   },
@@ -4519,5 +4519,34 @@
     "rollbackVerified": true,
     "explicitDevRestart": false,
     "newDatasetOrCorpusCopy": false
+  },
+  "nativeEvaluationDefaultReset": {
+    "novelty": [
+      "3ab6cf2e"
+    ],
+    "status": "source-verified-package-and-rendered-pending",
+    "nativeLibraryChecksPerCheckout": 104,
+    "focusedFrontendChecksPerCheckout": 50,
+    "frontendFiles": 8,
+    "newNativeChecks": 3,
+    "newComponentChecks": 2,
+    "types": true,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "nativeCommandRegistryCheck": true,
+    "existingNativeWarnings": 22,
+    "explicitCheckAndUse": true,
+    "emptyRequestReservedForExplicitDefault": true,
+    "missingOrEmptyDefaultAccepted": true,
+    "invalidDefaultPreserved": true,
+    "changedCandidateAndStaleWindowRejected": true,
+    "storedEvalsOnOffPreserved": true,
+    "automaticDownloadOrActivation": false,
+    "phoneRuntimeChanged": false,
+    "ownerProfileWrittenByTests": false,
+    "remaining": [
+      "native packaging",
+      "rendered verification"
+    ]
   }
 }

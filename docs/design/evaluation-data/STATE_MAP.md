@@ -25,6 +25,7 @@ files do not start a download or alter a profile.
 | Current folder unavailable | Cannot read folder, visible cause; Retry check | Keep current path/preferences; preserve missing-vs-unavailable distinction | 6 |
 | Existing folder chooser | Native directory picker, then validation beside selected candidate | Picker cancellation does nothing; invalid candidate cannot change the active source | 1, 6 |
 | Validation / delayed result | Checking selected folder | Request ownership rejects replies after newer selection/navigation | 6 |
+| Reset to default | Check default path, then Use default folder; missing data is explicit | Only a valid or confirmed absent/empty default; recheck and expected-revision save; no download or mode change | 6 |
 | Candidate rejected | Visible validation failure; Choose another folder | Old source remains; no cache generation change | 6 |
 | Candidate accepted | Validated source details; explicit Use evaluations | Persist and verify path before switching; reject stale activation | 6 |
 | Activation write/readback failed | Previous folder retained; Retry | No success state or silent cache/source change | 6 |

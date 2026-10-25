@@ -1,3 +1,18 @@
+## 2026-10-25 explicit evaluation default reset
+
+- Reset to default uses the existing native candidate/explicit-Use/revision
+  transaction path. Empty validation requests are reserved for this action.
+  Valid existing defaults pass normal checks; only confirmed absent/empty
+  defaults may be selected without data. Corrupt/incomplete/unreadable or
+  changed targets and stale saves keep the current selection and all files.
+  Reset never downloads or changes Stored evals On/Off; phone stays separate.
+- Primary/clean104 library/50 focused frontend checks, full types and reset
+  lint0 pass. Three native/two component regressions cover default review/use,
+  preservation and races; normal registry22 existing warnings. Previous native
+  package predates Reset; current source needs its own package/rendered proof.
+  Automatic discovery/readiness and other source audit remain. See
+  docs/EVALUATION_DATA_SELECTION.md and the current delivery JSON.
+
 ## 2026-10-25 evaluation controls native package
 
 - Clean97b66650/primary46476beb packages48,861,696 bytes, SHA256
@@ -9,7 +24,7 @@
   reviewed generated service outputs restored only in clean checkout;
   primary owner remainder preserved. No native launch/manual Dev restart,
   corpus copy/profile activation or phone publication. Rendered/help/touch,
-  native-window and physical proof remain; default/reset/other-source audit
+  native-window and physical proof remain; default/other-source audit
   remains active. See docs/EVALUATION_DATA_SELECTION.md/current delivery JSON.
 
 ## 2026-10-25 evaluation folder and Settings controls
@@ -22,7 +37,7 @@
 - Separate evaluation-source.sqlite3 uses expected-revision transactions.
   Candidate metadata/sample are rechecked; invalid/stale/save failures keep
   the old source. Read-only defaults preserve the legacy path; automatic
-  discovery and the original reset action remain audit items. Root aliases
+  discovery remains an audit item; explicit reset is now source-verified. Root aliases
   and sparse buckets work; metadata/sample reads are bounded to1/64 MiB.
   Source epochs reject stale stored scores while actual UCI ownership stays.
 - Primary/clean pass101 library/48 frontend checks, full types and15 rebuilt
