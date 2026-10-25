@@ -2696,7 +2696,7 @@
     "novelty": [
       "1290880c"
     ],
-    "status": "native-packaged-home-and-pc-helper-runtime-delivery-pending",
+    "status": "native-packaged-and-pc-engine-reader-delivered-home-runtime-pending",
     "baseline": {
       "nativeTests": 5,
       "nativePassed": 3,
@@ -2728,7 +2728,7 @@
     "frontendGateRerun": false,
     "nativePackageVerified": true,
     "homeHelperDelivered": false,
-    "pcEngineHelperDelivered": false,
+    "pcEngineHelperDelivered": true,
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
     "packageSource": "d20de2cd95719a1431f7f9ba30f0b83f90802a42",
@@ -2742,7 +2742,8 @@
       "allPvsLegal": true,
       "workersRemainedCold": true,
       "ownerDataModified": false
-    }
+    },
+    "pcEngineHelperPid": 8536
   },
   "previousNativeWindowsIpcDesktop": {
     "exeBytes": 47852032,
@@ -2890,5 +2891,48 @@
     "phoneProductionChanges": false,
     "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "ownerDataWritten": false
+  },
+  "localEvaluationReadinessEngineDelivery": {
+    "completedAt": "2026-10-25T13:21:00.0171672+00:00",
+    "sourceCommit": "157f7444782e0fd175f6e3f62632d91c5d8ec741",
+    "oldPid": 5816,
+    "newPid": 8536,
+    "readerSha256": "6dfb9b0e2222c830522de677749df281b6cba5fb5584065b3756e8497f394b2e",
+    "readerBacking": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\Stockfish18Server\\server\\lichess-local-eval-reader.mjs",
+    "configSha256": "c5fee0d40adc5d4e9a8a0cd3d790cfbb2e22f4df34e607081d6eefb28e3739c1",
+    "configurationPreserved": true,
+    "peerHashesPreserved": true,
+    "taskActionsAndEnabledPreserved": true,
+    "taskDefinitionMutationExecuted": false,
+    "fullTaskXmlBeforeAfterCompared": false,
+    "ownerEnabledPreserved": true,
+    "localEvaluationsAvailable": true,
+    "enginePathPreserved": true,
+    "workerReadyAfter": false,
+    "queuedAfter": 0,
+    "sourcePublishedBeforeRestart": true,
+    "newProcessStartedAfterCodeWrite": true,
+    "originalUpdaterExit": 1,
+    "originalUpdaterError": "Old process existence check ended restart observation early",
+    "authoritativeReplacementReconciled": true,
+    "mutationReplayed": false,
+    "healthRequestedAnalysis": false,
+    "ownerDataModified": false,
+    "homeHelperUpdated": false,
+    "live": {
+      "checkedAt": "2026-10-25T13:21:53.221Z",
+      "directUpdatedEngineReaderChecked": true,
+      "enginePid": 8536,
+      "workerReady": false,
+      "queued": 0,
+      "storedEvaluationSha256": "605d968e425b0800d9377380a97b91a15f3adec35987d6b4f3858b12cdbd23be",
+      "matchesPreUpdateStoredResponse": true,
+      "storedDepth": 65,
+      "pvs": 1,
+      "serveMatchesPriorVerifiedConfiguration": true,
+      "serveSha256": "f25ac5a18efda388d5c9459aed3eec76066a507c84ba940c051e3c06de79a771",
+      "ownerDataWritten": false
+    },
+    "ownedTemporaryTasksRemoved": true
   }
 }
