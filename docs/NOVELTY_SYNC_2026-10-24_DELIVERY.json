@@ -35,78 +35,78 @@
   },
   "desktop": {
     "exeBytes": 47864320,
-    "exeSha256": "13c5b5d33781d1fa4fd08e8375e10fb5a6372ad350300bc8a6c630c8b3cfe4bb",
+    "exeSha256": "f59f4aeef9e9330d9da95e0935729e26f23c319a9467bc8fbdeaac79d3134ccc",
     "assets": [
       {
-        "name": "StoredEvaluationSwitch-BFH2s164.js",
-        "bytes": 2218,
-        "sha256": "4eb80aad3c5509591f4e107566564f5325f012d41b3de4c6e32ea11f581863c1",
+        "name": "api-SBngmEyW.js",
+        "bytes": 9491,
+        "sha256": "b0663f80dd5d50b59e6d62641cfd62196f45d6d5cdf5a10a5384e64771f89bd2",
         "encoding": "brotli",
-        "compressedBytes": 1166,
-        "compressedSha256": "cfb0f3d73f0d00f4ac076561557b8602bac379375e9b9b5e28d7c732dbb4fe72",
+        "compressedBytes": 3653,
+        "compressedSha256": "8cc4809fe356d9134e912cf56859888e77932460da67f22d447d4ea032082358",
         "embedded": true
       },
       {
-        "name": "EvalListener-DTGhhpGm.js",
+        "name": "EvalListener-3UPOaN7K.js",
         "bytes": 85397,
-        "sha256": "74a2ba46b911263565aa72f4fb241646f7c0e6716c9d48a8ee72f73cbc93675f",
+        "sha256": "94188ab46f4de0bcd0ec20198e16ee0c8b5280564cd0df2368c48b2dcaa25208",
         "encoding": "brotli",
-        "compressedBytes": 29442,
-        "compressedSha256": "7322230c89e6b35010dbd7cd36aa73f6f63779171660730095476a362d99a9cf",
+        "compressedBytes": 29426,
+        "compressedSha256": "a8d83407ec3b2e085ea0b89b5e92158052357a9150cc9610cab3fcf9cde9f784",
         "embedded": true
       },
       {
-        "name": "BestMoves-Dp929fIW.js",
+        "name": "BestMoves-Bsxqaj28.js",
         "bytes": 17557,
-        "sha256": "dc9bc05e546ebdec3b4cd34ac00a5e0496f2d0c191d954ca781e49c987219d59",
+        "sha256": "7c6a3e57507a813f8af159808dd4101b073ff8b00ad230913f10b9b834be0917",
         "encoding": "brotli",
-        "compressedBytes": 6680,
-        "compressedSha256": "d385d7652febab41a5192a2dc2aed6e1a22acc2034b5434f78db424591bacc61",
+        "compressedBytes": 6678,
+        "compressedSha256": "052ea98495ade8009e7797d70f9d1dffa363510fa714612b94fbe8256770eea1",
         "embedded": true
       },
       {
-        "name": "EnginePanelContent-Bv5o1jtB.js",
+        "name": "EnginePanelContent-CrsQvrmm.js",
         "bytes": 15315,
-        "sha256": "784b95a2b4e1625272122cee85c6db8cd4b1ea915bc46f0aee1eda70ebe59729",
+        "sha256": "fac4ec6602a88db3067e4a736a37bec3819d5527a4b80bdd829cc0f01558bac1",
         "encoding": "brotli",
-        "compressedBytes": 6183,
-        "compressedSha256": "8942dd74186cc1357f13af70e7fa2d5b5ecdc4855cb0fe2cf85bbececb873f5f",
+        "compressedBytes": 6186,
+        "compressedSha256": "c498ef7407313d319547af795e700c0ab1166a4d9710c6299bc11918c4b8ad8b",
         "embedded": true
       },
       {
-        "name": "EnginesPage-DLCKrPA6.js",
-        "bytes": 81764,
-        "sha256": "3f8dc3eac155b91b9f306d383044810b60dcd2ce0f64783855d9a39f02f4a094",
-        "encoding": "brotli",
-        "compressedBytes": 43041,
-        "compressedSha256": "ef142da49ed765297c52879e2a787d153b43dd43df3a5385e12268c232b2799d",
-        "embedded": true
-      },
-      {
-        "name": "WebApp-DOwMu-Pm.js",
+        "name": "WebApp-DmbGQ-hQ.js",
         "bytes": 411156,
-        "sha256": "745f1baa6c428406ef6c6b5d06e593b35d8eadf8b6ca952f6e2a5889751da89d",
+        "sha256": "30c417e312659e9b5886ca7b015691c18f7b9583cab78d4fdab029d46666911d",
         "encoding": "brotli",
-        "compressedBytes": 117475,
-        "compressedSha256": "83d42cd4518d4c131404a907507fb0f025a521cf371bd0b5a681d002a30ac1d6",
+        "compressedBytes": 117485,
+        "compressedSha256": "16353f1069aec431709368f6deae7edee3b9fd8e7087898cfcc9f5624ad12e39",
         "embedded": true
       },
       {
-        "name": "usePlanArrows-h6gqTkQr.js",
-        "bytes": 7851,
-        "sha256": "66dec1e21f57f81407b37b28af856507d37c508c1d6c30575d3bfe3aae7316e0",
-        "encoding": "brotli",
-        "compressedBytes": 3116,
-        "compressedSha256": "983a7ae1667417bfd6a682040310cd906d746df74c37bcc78da498d65f7243b4",
-        "embedded": true
-      },
-      {
-        "name": "BoardAnalysis-DURIAToo.js",
+        "name": "BoardAnalysis-B1tyC2Gg.js",
         "bytes": 25439,
-        "sha256": "a52cc8d4ed0df26f2f5245ca400865dfbf61cff03d34c80f763b26d1dc3c92da",
+        "sha256": "a3337156bde6b4139f5cfbae83657aed3a3521bf1ffb6e7190f0238106e23c36",
         "encoding": "brotli",
-        "compressedBytes": 8338,
-        "compressedSha256": "4066ebc7dea49868c3741e71821d07fdd07c233a3165ac8b46ffb09c972778b7",
+        "compressedBytes": 8333,
+        "compressedSha256": "72eb381c9fa3aa8f6c0bc1eb342bcad172a5bd0eae131ef792642fb65dfadd65",
+        "embedded": true
+      },
+      {
+        "name": "PlanExplorerPanel-nFDtcB2Q.js",
+        "bytes": 37117,
+        "sha256": "31fd77d79d7295729ae2e4bb95c37a966630cfb0af608dfff5638ac7d73ad0ba",
+        "encoding": "brotli",
+        "compressedBytes": 12441,
+        "compressedSha256": "a705865e06764a8b045cc405e0c76296178b64f24aa4d9b2b5cda34b4988d951",
+        "embedded": true
+      },
+      {
+        "name": "EnginePlanExplorerPanel-CWveD1jZ.js",
+        "bytes": 47709,
+        "sha256": "9b720f33a672a4e90f50b25b538988e20f160a520179ac115455674319325baf",
+        "encoding": "brotli",
+        "compressedBytes": 15070,
+        "compressedSha256": "16d11be1dbe415e3ccb528b1a8be3c08e5fe8c2b480a6ec97dada7eacd588b0c",
         "embedded": true
       }
     ],
@@ -114,7 +114,7 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9",
+    "sourceCommit": "18e8c74e712170a6916c177b29658d7b645bdfcc",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
   },
@@ -1175,8 +1175,29 @@
       "lintFiles": 4,
       "lintWarnings": 0,
       "lintErrors": 0,
-      "cleanBuildVerified": false,
-      "actualNativeInlineFailureFallbackAndRetry": true
+      "cleanBuildVerified": true,
+      "actualNativeInlineFailureFallbackAndRetry": true,
+      "cleanSourceCommit": "18e8c74e712170a6916c177b29658d7b645bdfcc",
+      "cleanTests": 607,
+      "cleanTestFiles": 82,
+      "nativeArtifactUpdated": true,
+      "phoneProductionChanges": false
+    },
+    "localOnlyLookupPolicy": {
+      "novelty": [
+        "135060ca",
+        "e8ddefb9",
+        "c379a8a6"
+      ],
+      "status": "intentional-target-difference-preserve-owner-local-only-evaluation-rule",
+      "authority": "En AGENTS.md correction after 2026-06-22: shared queryLichessCloudMoves/getBestMoves must remain local-only; no remote Lichess cloud or ChessDB scoring fallback.",
+      "implementation": "Stored-evaluation choice, corpus reuse and read-error recovery retain that rule. Do not copy Novelty remote lookup toggles or duplicate its downloaded corpus to simulate parity."
+    },
+    "managedCatalogLifecycleScope": {
+      "novelty": "66def21d",
+      "reviewed": "Cancellation in that payload belongs to manual local-profile validation. Managed installs explicitly continue when the modal closes; the MiB/status/alert/retry changes remain separate.",
+      "native": "Manual setup and retained Stockfish card are verified. Legacy LC0/third-party EngineCard uses component-local install errors and ProgressButton download completion; evaluate reopening/failure/profile-save state with an actual component fixture before declaring full managed catalog parity.",
+      "status": "remaining-source-candidate-not-yet-behaviorally-reproduced"
     }
   },
   "storedEvaluationParity": {
@@ -1213,7 +1234,8 @@
     "cleanTestFiles": 79,
     "nativeArtifactUpdated": true,
     "hostingRoutesChanged": false,
-    "ownerEnabledChoicePreserved": true
+    "ownerEnabledChoicePreserved": true,
+    "latestNativeArtifactSource": "18e8c74e712170a6916c177b29658d7b645bdfcc"
   },
   "currentStoredEvaluationPackages": {
     "native": {
@@ -1442,5 +1464,105 @@
         "publicationReplayed": false
       }
     }
+  },
+  "currentDownloadedEvaluationReadPackage": {
+    "exeBytes": 47864320,
+    "exeSha256": "f59f4aeef9e9330d9da95e0935729e26f23c319a9467bc8fbdeaac79d3134ccc",
+    "assets": [
+      {
+        "name": "api-SBngmEyW.js",
+        "bytes": 9491,
+        "sha256": "b0663f80dd5d50b59e6d62641cfd62196f45d6d5cdf5a10a5384e64771f89bd2",
+        "encoding": "brotli",
+        "compressedBytes": 3653,
+        "compressedSha256": "8cc4809fe356d9134e912cf56859888e77932460da67f22d447d4ea032082358",
+        "embedded": true
+      },
+      {
+        "name": "EvalListener-3UPOaN7K.js",
+        "bytes": 85397,
+        "sha256": "94188ab46f4de0bcd0ec20198e16ee0c8b5280564cd0df2368c48b2dcaa25208",
+        "encoding": "brotli",
+        "compressedBytes": 29426,
+        "compressedSha256": "a8d83407ec3b2e085ea0b89b5e92158052357a9150cc9610cab3fcf9cde9f784",
+        "embedded": true
+      },
+      {
+        "name": "BestMoves-Bsxqaj28.js",
+        "bytes": 17557,
+        "sha256": "7c6a3e57507a813f8af159808dd4101b073ff8b00ad230913f10b9b834be0917",
+        "encoding": "brotli",
+        "compressedBytes": 6678,
+        "compressedSha256": "052ea98495ade8009e7797d70f9d1dffa363510fa714612b94fbe8256770eea1",
+        "embedded": true
+      },
+      {
+        "name": "EnginePanelContent-CrsQvrmm.js",
+        "bytes": 15315,
+        "sha256": "fac4ec6602a88db3067e4a736a37bec3819d5527a4b80bdd829cc0f01558bac1",
+        "encoding": "brotli",
+        "compressedBytes": 6186,
+        "compressedSha256": "c498ef7407313d319547af795e700c0ab1166a4d9710c6299bc11918c4b8ad8b",
+        "embedded": true
+      },
+      {
+        "name": "WebApp-DmbGQ-hQ.js",
+        "bytes": 411156,
+        "sha256": "30c417e312659e9b5886ca7b015691c18f7b9583cab78d4fdab029d46666911d",
+        "encoding": "brotli",
+        "compressedBytes": 117485,
+        "compressedSha256": "16353f1069aec431709368f6deae7edee3b9fd8e7087898cfcc9f5624ad12e39",
+        "embedded": true
+      },
+      {
+        "name": "BoardAnalysis-B1tyC2Gg.js",
+        "bytes": 25439,
+        "sha256": "a3337156bde6b4139f5cfbae83657aed3a3521bf1ffb6e7190f0238106e23c36",
+        "encoding": "brotli",
+        "compressedBytes": 8333,
+        "compressedSha256": "72eb381c9fa3aa8f6c0bc1eb342bcad172a5bd0eae131ef792642fb65dfadd65",
+        "embedded": true
+      },
+      {
+        "name": "PlanExplorerPanel-nFDtcB2Q.js",
+        "bytes": 37117,
+        "sha256": "31fd77d79d7295729ae2e4bb95c37a966630cfb0af608dfff5638ac7d73ad0ba",
+        "encoding": "brotli",
+        "compressedBytes": 12441,
+        "compressedSha256": "a705865e06764a8b045cc405e0c76296178b64f24aa4d9b2b5cda34b4988d951",
+        "embedded": true
+      },
+      {
+        "name": "EnginePlanExplorerPanel-CWveD1jZ.js",
+        "bytes": 47709,
+        "sha256": "9b720f33a672a4e90f50b25b538988e20f160a520179ac115455674319325baf",
+        "encoding": "brotli",
+        "compressedBytes": 15070,
+        "compressedSha256": "16d11be1dbe415e3ccb528b1a8be3c08e5fe8c2b480a6ec97dada7eacd588b0c",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "18e8c74e712170a6916c177b29658d7b645bdfcc",
+    "primaryCommit": "d976261aefe45afcf4e973352097084a4d8a8fcf",
+    "cleanTests": 607,
+    "cleanTestFiles": 82,
+    "types": true,
+    "lintFiles": 4,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedFiles": 7,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9"
   }
 }
