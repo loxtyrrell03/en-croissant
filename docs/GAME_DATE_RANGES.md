@@ -36,3 +36,11 @@ repair, calendar validation, delayed replies, help focus/Escape and the 25-hour
 October calendar day. Source tests and builds are separate from installed-app,
 rendered narrow/touch and physical-phone verification. Phone controls and their
 independent persisted date scopes remain a separate delivery slice.
+
+Primary `ac39c301` and clean delivery `74c3a1d6` pass 559 related frontend
+checks across 69 files and full types. The new date suites pass 17 checks/five
+files; the final ownership guard passes ten checks/two files. Scoped lint reports
+zero warnings/errors across 23 code files. Clean desktop and canonical-phone
+builds pass in 26.91/22.64 seconds; all 24 owned source/test/style files match.
+The compact private receipt records hashes and the phone bundle identity.
+These builds do not deploy the controls or add phone date UI.

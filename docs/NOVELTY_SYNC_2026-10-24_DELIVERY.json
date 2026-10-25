@@ -425,5 +425,38 @@
     "desktopBuildSeconds": 22.92,
     "ownerDataMigrated": false,
     "servicesChanged": false
+  },
+  "pendingNativeGameDates": {
+    "primarySourceCommit": "ac39c301326034597c38534b56f41d8a6f3bcb0a",
+    "cleanSourceCommit": "74c3a1d6fbae55159852cc3237a869bf584c5f59",
+    "checkedAt": "2026-10-25T00:46:09.445208+00:00",
+    "relatedFrontendTests": 559,
+    "relatedFrontendFiles": 69,
+    "newDateTests": 17,
+    "newDateFiles": 5,
+    "finalContextGuardTests": 10,
+    "finalContextGuardFiles": 2,
+    "types": true,
+    "lintFiles": 23,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "desktopBuildSeconds": 26.91,
+    "canonicalPhoneBuildSeconds": 22.64,
+    "matchingOwnedSourceFiles": 24,
+    "nativeCodeChanged": false,
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "phonePublished": false,
+    "standalonePublished": false,
+    "phoneDateControlsImplemented": false,
+    "ownerDataMigrated": false,
+    "servicesChanged": false,
+    "phoneBundle": {
+      "entry": "WebApp-wF_ZNm0W.js",
+      "bytes": 426448,
+      "sha256": "6bd58cfbbb248f388ced4a787afa506b2069b559ccb88434f44ccbfe464ebba7",
+      "canonicalOriginPresent": true,
+      "inventedFixturesExcluded": true
+    }
   }
 }
