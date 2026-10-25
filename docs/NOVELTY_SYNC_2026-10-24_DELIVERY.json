@@ -1162,10 +1162,21 @@
     "full55CandidateReviewComplete": false,
     "downloadedEvaluationReadFailure": {
       "novelty": "848f4527",
-      "status": "confirmed-native-source-gap-not-yet-implemented",
-      "native": "getLocalCloudEvaluation catches command read errors and returns null; getCloudEvaluation puts that null in missingCache, preventing same-position recovery. Status-aware analysis/Plans cannot distinguish unreadable data from a confirmed miss.",
-      "phone": "Remote helper returns 503 for unavailable data; client evicts rejected pending reads and only caches JSON 404 misses. Recheck equivalent shard-error and retry paths rather than copying native code.",
-      "next": "Reproduce failed-read then same-FEN successful-read recovery with tiny fixtures; retain optional-score and bounded/fresh report contracts."
+      "status": "native-source-fixed-phone-behavior-already-present-and-tested",
+      "native": "Structured read errors remain retryable; only completed misses are negative-cached. Bounded pending reads share work and remove settled/failed requests with identity guards.",
+      "phone": "Existing 503/rejected-request eviction verified: first lookup uses actual PC evidence; same-position retry recovers stored evidence. Production phone routing unchanged.",
+      "next": "Reproduce failed-read then same-FEN successful-read recovery with tiny fixtures; retain optional-score and bounded/fresh report contracts.",
+      "priorFailuresReproduced": 3,
+      "nativeFixtures": 4,
+      "phoneRecoveryFixtures": 1,
+      "relatedTests": 24,
+      "relatedTestFiles": 5,
+      "types": true,
+      "lintFiles": 4,
+      "lintWarnings": 0,
+      "lintErrors": 0,
+      "cleanBuildVerified": false,
+      "actualNativeInlineFailureFallbackAndRetry": true
     }
   },
   "storedEvaluationParity": {

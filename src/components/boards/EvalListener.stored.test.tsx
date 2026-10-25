@@ -6,6 +6,7 @@ import type { BestMoves } from "@/bindings";
 import {
   activeTabAtom,
   currentLiveEvalAtom,
+  engineCloudEvalStatusFamily,
   engineMovesFamily,
   enginesAtom,
   tabEngineSettingsFamily,
@@ -42,12 +43,10 @@ vi.mock("@/utils/engines", async (original) => ({
   stopMatchingEngine: fixture.matching,
   killEngine: fixture.kill,
 }));
-vi.mock("@/utils/lichess/api", () => ({
+vi.mock("@/utils/lichess/api", async (original) => ({
   getBestMoves: fixture.cloud,
-  getLichessCloudFailure: () => ({
-    reason: "missing",
-    message: "Invented missing stored position",
-  }),
+  getLichessCloudFailure: (await original<typeof import("@/utils/lichess/api")>())
+    .getLichessCloudFailure,
 }));
 vi.mock("@/bindings", async (original) => ({
   ...(await original<typeof import("@/bindings")>()),
@@ -120,13 +119,13 @@ afterEach(async () => {
   host.remove();
   vi.unstubAllGlobals();
 });
-async function render(position = fen, selected = engine) {
+async function render(position = fen, selected = engine, wake = 0) {
   await act(async () =>
     root.render(
       <Provider store={store}>
         <EngineListener
           engine={selected}
-          engineWakeRevision={0}
+          engineWakeRevision={wake}
           firstEngineWithLines={null}
           isGameOver={false}
           finalFen={position}
@@ -208,4 +207,26 @@ it("waits for the predecessor's native stop before starting the same-position su
   expect(fixture.native).toHaveBeenCalledTimes(1);
   await act(async () => stopped());
   await vi.waitFor(() => expect(fixture.native).toHaveBeenCalledTimes(2));
+});
+it("reports an unreadable stored position while using real local evidence and recovers on same-FEN retry", async () => {
+  fixture.cloud.mockRejectedValueOnce(new Error("Invented temporarily unreadable shard"));
+  await render();
+  await vi.waitFor(() => expect(fixture.native).toHaveBeenCalledTimes(1));
+  expect(
+    store
+      .get(engineCloudEvalStatusFamily({ engine: engine.id, tab: "fixture-tab" }))
+      .get(`${fen}:`),
+  ).toMatchObject({
+    phase: "error",
+    message: expect.stringContaining("unreadable shard"),
+  });
+  expect(moves().get(`${fen}:`)?.[0].score.value.value).toBe(50);
+  await render(fen, engine, 1);
+  await vi.waitFor(() => expect(fixture.cloud).toHaveBeenCalledTimes(2));
+  expect(
+    store.get(engineCloudEvalStatusFamily({ engine: engine.id, tab: "fixture-tab" })).get(`${fen}:`)
+      ?.phase,
+  ).toBe("available");
+  expect(moves().get(`${fen}:`)?.[0].score.value.value).toBe(20);
+  expect(fixture.native).toHaveBeenCalledTimes(1);
 });

@@ -474,6 +474,7 @@ export async function getBestMoves(
 
 const cache = new BoundedMap<string, LichessCloudData>(500);
 const missingCache = new BoundedSet<string>(2000);
+const pendingCloudReads = new BoundedMap<string, Promise<LichessCloudData>>(500);
 
 export type LichessCloudSource = "local-lichess" | "lichess";
 
@@ -517,18 +518,30 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
     );
   }
 
-  const localData = await getLocalCloudEvaluation(fen, safeMultipv);
-  if (localData?.pvs?.length) {
-    cache.set(cacheKey, localData);
-    missingCache.delete(cacheKey);
-    return localData;
+  let pending = pendingCloudReads.get(cacheKey);
+  if (!pending) {
+    pending = (async () => {
+      const localData = await getLocalCloudEvaluation(fen, safeMultipv);
+      if (localData?.pvs?.length) {
+        cache.set(cacheKey, localData);
+        missingCache.delete(cacheKey);
+        return localData;
+      }
+      // Only a completed, readable lookup can establish a missing position.
+      missingCache.add(cacheKey);
+      throw new LichessCloudEvaluationError(
+        "missing",
+        "No local Lichess eval is cached for this exact position.",
+      );
+    })();
+    pendingCloudReads.set(cacheKey, pending);
   }
-
-  missingCache.add(cacheKey);
-  throw new LichessCloudEvaluationError(
-    "missing",
-    "No local Lichess eval is cached for this exact position.",
-  );
+  try {
+    return await pending;
+  } finally {
+    // A late failure must not remove a successor after eviction/retry.
+    if (pendingCloudReads.get(cacheKey) === pending) pendingCloudReads.delete(cacheKey);
+  }
 }
 
 async function getLocalCloudEvaluation(
@@ -536,7 +549,11 @@ async function getLocalCloudEvaluation(
   multipv: number,
 ): Promise<LichessCloudData | null> {
   try {
-    const local = unwrap(await commands.lookupLocalLichessCloudEval(fen, multipv));
+    const result = await commands.lookupLocalLichessCloudEval(fen, multipv);
+    // Background consumers report their own inline failure/fallback. The generic
+    // unwrap helper would also emit an unrelated global error notification.
+    if (result.status === "error") throw new Error(result.error);
+    const local = result.data;
     if (!local?.pvs?.length) return null;
 
     const pvs = local.pvs
@@ -561,8 +578,11 @@ async function getLocalCloudEvaluation(
       source: "local-lichess",
     };
   } catch (error) {
-    console.warn("Local Lichess eval lookup failed.", error);
-    return null;
+    throw new LichessCloudEvaluationError(
+      "network",
+      `Could not read local Lichess evals: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
   }
 }
 
