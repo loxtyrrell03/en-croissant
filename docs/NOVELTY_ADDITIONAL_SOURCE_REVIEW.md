@@ -9,12 +9,12 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 
 | Novelty | Candidate | Refreshed area | Evaluation |
 | --- | --- | --- | --- |
-| `158ccf01` | Make panel wheel motion continuous with small frame steps | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean builds/publication/rendered proof pending; see PANEL_SCROLLING.md |
-| `77e5c052` | Fix mouse-wheel smoothing across all scroll surfaces | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean builds/publication/rendered proof pending; see PANEL_SCROLLING.md |
+| `158ccf01` | Make panel wheel motion continuous with small frame steps | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean cbbff3b8 native package and canonical HTTPS phone are verified with exact assets/resources/data/routes and actual bounded Stockfish19; rendered proof remains. See PANEL_SCROLLING.md |
+| `77e5c052` | Fix mouse-wheel smoothing across all scroll surfaces | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean cbbff3b8 native package and canonical HTTPS phone are verified with exact assets/resources/data/routes and actual bounded Stockfish19; rendered proof remains. See PANEL_SCROLLING.md |
 | `e8914f49` | Retain Finder PGN requests until the workspace is ready | settings-and-shell | Confirmed native source gap: single-instance callback ignores args/cwd and only reveals main window; frontend reads CLI only at initial startup. Retained PGN-open readiness/queue baseline and port pending; preserve native file ownership. Mac delivery separate |
 | `974725a1` | Share Tauri context to fix duplicate Mac test metadata | other-native-and-app-review | Specific duplicate-context Mac test defect absent: En has one generate_context invocation in main.rs. No additional macro/factory or Mac build claim needed |
 | `882830ac` | Replace sun-like settings icon with a gear | settings-and-shell | Already present: native Sidebar and phone controls use Tabler IconSettings gear; no foreign SVG/artwork replacement needed. Source evidence, no new rendered claim |
-| `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean builds/publication/rendered proof pending; see PANEL_SCROLLING.md |
+| `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean cbbff3b8 native package and canonical HTTPS phone are verified with exact assets/resources/data/routes and actual bounded Stockfish19; rendered proof remains. See PANEL_SCROLLING.md |
 | `d9acb4d0` | Remove requested migration header comment | local-data-and-recovery | Comment-only/provenance edit; actual diff changes no decoder behavior. Preserve En source/provenance rather than copy a Novelty header deletion |
 | `76c93459` | Default downloads to Full and add compact cloud evaluations | settings-and-shell | Target evaluation required |
 | `df7bd865` | Recognize existing downloaded Lichess stores | settings-and-shell | Target evaluation required |
@@ -74,9 +74,9 @@ still require their own evaluation; absence of this chooser does not certify the
 Actual Novelty panelScrolling source now uses a bounded critically damped motion,
 subpixel accumulation, small/stalled frame caps, SVG-to-scroll-parent traversal,
 line/page normalization, boundary containment, reversal, external-position guards
-and cleanup. Current En has native ScrollArea surfaces and a chessboard onWheel
-move handler but no corresponding global controller. The port must adapt En's
-real chessboard selectors; copying Novelty data-board-area alone would miss it.
+and cleanup. En now installs the controller through its real native/phone roots
+and explicitly marks its board-wheel wrapper. Copying only Novelty's selector
+would have missed that wrapper.
 Phone touch scrolling is independent; evaluate wheel input without adding touch
 interception. Native/phone production hooks and behavioral fixtures remain.
 
@@ -97,5 +97,6 @@ Tauri serialization/message-key contract; it was not silently copied or dismisse
 The latest wheel family is now implemented, rather than left as a source gap.
 Actual native/phone boot ownership, En's wheel-navigation wrapper and independent
 touch/editor paths are covered by the new motion/DOM/entry fixtures. See
-PANEL_SCROLLING.md; clean package/runtime and rendered verification remain separate.
+PANEL_SCROLLING.md; clean native package and canonical phone runtime are verified.
+Rendered wheel/narrow/touch/native-window/physical-device evidence remains.
 Other additional-source rows retain their own target-evaluation status.

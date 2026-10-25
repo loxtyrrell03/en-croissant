@@ -48,11 +48,30 @@ passes500 maintained checks across69 files; full types, seven-file lint without 
 and three root-stylesheet guard checks pass. Browser inventory remains disabled;
 rendered wheel/narrow/touch/native-window/physical-device evidence is separate.
 
-Clean desktop/canonical-phone builds and runtime publication are pending and
-tracked in the delivery JSON. No explicit app/service restart, owner profile
-migration, corpus download or owner data operation was performed by these
-fixtures. Normal development watching may serve changed source; no live native
-window observation is claimed. The broader history audit remains active.
+Clean source cbbff3b8 independently passes the same500 checks/69 files and full
+types. Its native package builds in2m58s with22 existing warnings; the exact
+compressed boot, Board and App assets are embedded in the47,872,512-byte EXE
+(SHA2562a558379a6a44a68247fc3d4b684d86a9245567408667a6c8af026c13a843e4e).
+All102 bundled engine/source resources match the retained stage. No native
+window observation or explicit Dev restart is claimed.
+
+The canonical phone build takes22.30s and is live at the existing HTTPS address
+from cbbff3b8, shell1bead00de081d3389751be6d25836c58a3653b63d839955996506e75c65b01de.
+Exact boot/WebApp/Plans/Stockfish JS/WASM assets match; workspace, normalized
+library content, tournament settings, enabled choice, engine-service PID and
+Serve routes match the pre-publication snapshot. The existing publisher first
+refused active background review; a later invocation passed its immediate idle
+guard and returned normally. Only the home server restarted. The owned temporary
+task was removed after terminal success. Review subsequently reported its own
+required-depth error with one game pending; that review was not cancelled or
+manually retried, and completed-review behavior is not certified by this check.
+
+Once review and the remote worker were idle, an actual bounded Stockfish19 run
+returned legal PVs and an exact chosen root score at depth8/50ms. Its worker alone
+was released after a zero-busy check, preserving the service in cold standby.
+No owner profile migration, corpus download or owner data reset was performed.
+Rendered wheel/narrow/touch/native-window/physical-device evidence and the wider
+history audit remain outstanding. Receipts are summarized in the delivery JSON.
 
 The original primary report included27 extra cases from an ignored historical
 snapshot at tmp/true-performance-integration, using its older performance module.
