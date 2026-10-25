@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -50,14 +50,20 @@ export function createLocalLichessEvalStore(storeDir, options = {}) {
 
     async lookup(fen, requestedMultipv = MAX_STORED_PVS) {
       refreshManifest();
+      if (manifestError) throw new Error(manifestError);
       if (!manifest) return null;
 
       const fenKey = normalizeFenKey(fen);
       if (!fenKey) return null;
       const [hashHi, hashLo] = hashFen(fenKey);
       const shard = Number((hashHi ^ hashLo) % BigInt(manifest.shardCount));
-      const shardPath = join(root, "shards", `${String(shard).padStart(4, "0")}.bin.zst`);
-      if (!existsSync(shardPath)) return null;
+      const shardsDir = join(root, "shards");
+      if (!directoryPresent(shardsDir)) return null;
+      const shardPath = join(shardsDir, `${String(shard).padStart(4, "0")}.bin.zst`);
+      const shardMetadata = metadataIfPresent(shardPath);
+      if (!shardMetadata) return null;
+      if (!shardMetadata.isFile())
+        throw new Error(`A local Lichess eval shard is not a file: ${shardPath}`);
 
       const bytes = await loadShard(shardPath);
       const record =
@@ -89,7 +95,8 @@ export function createLocalLichessEvalStore(storeDir, options = {}) {
     const path = join(root, "manifest.json");
 
     try {
-      if (!existsSync(path)) {
+      const metadata = directoryPresent(root) ? metadataIfPresent(path) : null;
+      if (!metadata) {
         manifest = null;
         manifestMtimeMs = null;
         manifestError = null;
@@ -97,7 +104,7 @@ export function createLocalLichessEvalStore(storeDir, options = {}) {
         return;
       }
 
-      const mtimeMs = statSync(path).mtimeMs;
+      const mtimeMs = metadata.mtimeMs;
       if (!force && manifest && manifestMtimeMs === mtimeMs) return;
       const nextManifest = JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
       validateManifest(nextManifest);
@@ -147,6 +154,23 @@ export function createLocalLichessEvalStore(storeDir, options = {}) {
     cache.clear();
     cacheBytes = 0;
   }
+}
+
+function metadataIfPresent(path) {
+  try {
+    return statSync(path);
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function directoryPresent(path) {
+  const metadata = metadataIfPresent(path);
+  if (!metadata) return false;
+  if (!metadata.isDirectory())
+    throw new Error(`The local Lichess eval path is not a directory: ${path}`);
+  return true;
 }
 
 function validateManifest(manifest) {
