@@ -12,12 +12,14 @@ import {
   currentDetachedEngineAtom,
   currentThreatAtom,
   engineMovesFamily,
+  useStoredEvaluationsAtom,
   enginesAtom,
   tabEngineSettingsFamily,
 } from "@/state/atoms";
 import { getVariationLine } from "@/utils/chess";
 import { positionFromFen, swapMove } from "@/utils/chessops";
-import type { EngineSettings } from "@/utils/engines";
+import type { Engine, EngineSettings } from "@/utils/engines";
+import { visibleEngineLines } from "@/utils/storedEvaluationPolicy";
 import ScoreBubble from "../panels/analysis/ScoreBubble";
 import { TreeStateContext } from "./TreeStateContext";
 
@@ -35,6 +37,7 @@ function DetachedEval() {
   return (
     <DetachedEvalInner
       engineId={detachedEngineId}
+      engineType={engine.type}
       engineName={engine.name}
       defaultSettings={engine.settings ?? undefined}
       defaultGo={engine.go ?? undefined}
@@ -45,12 +48,14 @@ function DetachedEval() {
 
 const DetachedEvalInner = memo(function DetachedEvalInner({
   engineId,
+  engineType,
   engineName,
   defaultSettings,
   defaultGo,
   onClose,
 }: {
   engineId: string;
+  engineType: Engine["type"];
   engineName: string;
   defaultSettings?: EngineSettings;
   defaultGo?: GoMode;
@@ -76,6 +81,7 @@ const DetachedEvalInner = memo(function DetachedEvalInner({
   );
 
   const ev = useAtomValue(engineMovesFamily({ engine: engineId, tab: activeTab! }));
+  const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
 
   // Memoized: replaying the game per render is wasteful while engine payloads
   // stream in several times a second.
@@ -104,12 +110,13 @@ const DetachedEvalInner = memo(function DetachedEvalInner({
     return { searchingFen: rootFen, searchingMoves: moves };
   }, [rootFen, moves, threat, finalFen]);
 
-  const engineVariations = useDeferredValue(
+  const deferredVariations = useDeferredValue(
     useMemo(
       () => ev.get(`${searchingFen}:${searchingMoves.join(",")}`),
       [ev, searchingFen, searchingMoves],
     ),
   );
+  const engineVariations = visibleEngineLines(deferredVariations, engineType, storedEnabled);
 
   const hasData = engineVariations && engineVariations.length > 0 && !isGameOver;
   const topLine = hasData ? engineVariations[0] : null;

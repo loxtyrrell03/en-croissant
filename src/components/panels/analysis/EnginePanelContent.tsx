@@ -31,12 +31,15 @@ import { useShallow } from "zustand/react/shallow";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { usePlanArrowSnapshot } from "@/hooks/usePlanArrows";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
+import { visibleEngineLines } from "@/utils/storedEvaluationPolicy";
+import { StoredEvaluationSwitch } from "@/components/engines/StoredEvaluationSwitch";
 import {
   activeTabAtom,
   allEnabledAtom,
   currentExpandedEnginesAtom,
   enableAllAtom,
   engineMovesFamily,
+  useStoredEvaluationsAtom,
   enginesAtom,
   showArrowsAtom,
   tabEngineSettingsFamily,
@@ -95,6 +98,7 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
 
   const engineContent = (
     <Stack gap={compact ? 3 : "sm"} p={compact ? 3 : 0}>
+      <StoredEvaluationSwitch />
       {!compact && (
         <Group justify="space-between" gap="xs" wrap="nowrap" px={2}>
           <Text size="xs" c="dimmed" truncate style={{ lineHeight: 1.6, minWidth: 0 }}>
@@ -103,27 +107,26 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
           </Text>
           <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
             <Tooltip label={arrowHelp}>
-            <span
-              style={{ display: "inline-flex", flexShrink: 0 }}
-            >
-              <Switch
-                size="sm"
-                label="Arrows"
-                labelPosition="left"
-                checked={showEngineArrows && !planArrowsActive}
-                disabled={planArrowsActive}
-                onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
-                aria-label={arrowHelp}
-                styles={{
-                  root: { flexShrink: 0 },
-                  label: { fontSize: "var(--mantine-font-size-xs)", fontWeight: 600 },
-                }}
-              />
-            </span>
+              <span style={{ display: "inline-flex", flexShrink: 0 }}>
+                <Switch
+                  size="sm"
+                  label="Arrows"
+                  labelPosition="left"
+                  checked={showEngineArrows && !planArrowsActive}
+                  disabled={planArrowsActive}
+                  onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
+                  aria-label={arrowHelp}
+                  styles={{
+                    root: { flexShrink: 0 },
+                    label: { fontSize: "var(--mantine-font-size-xs)", fontWeight: 600 },
+                  }}
+                />
+              </span>
             </Tooltip>
             {planArrowsActive && (
               <PerformanceHelp label="About engine arrow priority">
-                Turn off Auto arrows in the plan panel to show engine arrows. Your engine-arrow setting is kept.
+                Turn off Auto arrows in the plan panel to show engine arrows. Your engine-arrow
+                setting is kept.
               </PerformanceHelp>
             )}
           </Group>
@@ -306,6 +309,7 @@ function EngineSummary({
 }) {
   const activeTab = useAtomValue(activeTabAtom);
   const [ev] = useAtom(engineMovesFamily({ engine: engine.id, tab: activeTab! }));
+  const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
   const settings = useAtomValue(
     tabEngineSettingsFamily({
       tab: activeTab!,
@@ -315,9 +319,10 @@ function EngineSummary({
     }),
   );
 
-  const curEval = useDeferredValue(
+  const deferredEval = useDeferredValue(
     useMemo(() => ev.get(`${fen}:${moves.join(",")}`), [ev, fen, moves]),
   );
+  const curEval = visibleEngineLines(deferredEval, engine.type, storedEnabled);
   const score = settings.enabled && curEval && curEval.length > 0 ? curEval[0].score : null;
 
   return (

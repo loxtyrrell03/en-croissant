@@ -31,6 +31,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { memo, startTransition, useCallback, useDeferredValue, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
+import { visibleEngineLines } from "@/utils/storedEvaluationPolicy";
 import { match } from "ts-pattern";
 import type { BestMoves } from "@/bindings";
 import {
@@ -38,6 +39,7 @@ import {
   currentDetachedEngineAtom,
   currentThreatAtom,
   engineMovesFamily,
+  useStoredEvaluationsAtom,
   engineProgressFamily,
   enginesAtom,
   showArrowsAtom,
@@ -86,6 +88,7 @@ function BestMovesComponent({
 
   const activeTab = useAtomValue(activeTabAtom);
   const ev = useAtomValue(engineMovesFamily({ engine: engine.id, tab: activeTab! }));
+  const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
   const progress = useAtomValue(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
   const [, setEngines] = useAtom(enginesAtom);
   const [settings, setSettings2] = useAtom(
@@ -175,7 +178,9 @@ function BestMovesComponent({
   );
 
   const engineVariations = useDeferredValue(useMemo(() => ev.get(searchKey), [ev, searchKey]));
-  const displayedEngineVariations = settings.enabled ? engineVariations : undefined;
+  const displayedEngineVariations = settings.enabled
+    ? visibleEngineLines(engineVariations, engine.type, storedEnabled)
+    : undefined;
 
   return (
     <>
@@ -249,9 +254,7 @@ function BestMovesComponent({
             </ActionIcon>
           </Tooltip>
           <Tooltip label={arrowHelp}>
-            <span
-              style={{ display: "inline-flex" }}
-            >
+            <span style={{ display: "inline-flex" }}>
               <ActionIcon
                 size={compact ? "sm" : "lg"}
                 onClick={() => setShowEngineArrows((value) => !value)}
@@ -268,7 +271,8 @@ function BestMovesComponent({
           </Tooltip>
           {planArrowsActive && (
             <PerformanceHelp label="About engine arrow priority">
-              Turn off Auto arrows in the plan panel to show engine arrows. Your engine-arrow setting is kept.
+              Turn off Auto arrows in the plan panel to show engine arrows. Your engine-arrow
+              setting is kept.
             </PerformanceHelp>
           )}
           <ActionIcon

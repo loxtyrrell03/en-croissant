@@ -90,3 +90,12 @@ phone build. The arrow slice still requires rendered verification and its own
 phone publication. See `PLAN_ARROWS.md`.
 Install the UCI report helper before the engine entry point; never interrupt an
 active shared engine. No full corpus test or database migration is required.
+
+
+Live settings now honor the existing saved Stored evals choice for PC Stockfish.
+Off bypasses stored cache/query/prefetch/failure fallback and removes retained
+stored scores/arrows immediately; delayed replies cannot restore them. Fresh
+phone defaults and existing saved values remain. Failed settings writes survive
+panel remount and offer Retry saving without reanalysis. Local WASM, LCZero,
+game reports and Plans keep fresh evidence. See `STORED_EVALUATIONS.md`; source
+checks are separate from hosted publication and rendered narrow/touch proof.
