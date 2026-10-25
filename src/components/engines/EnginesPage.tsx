@@ -64,6 +64,7 @@ import OpenFolderButton from "../common/OpenFolderButton";
 import LinesSlider from "../panels/analysis/LinesSlider";
 import AddEngine from "./AddEngine";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
+import { StockfishUpgradeNotice } from "./StockfishUpgradeNotice";
 
 export default function EnginesPage() {
   const { t } = useTranslation();
@@ -114,6 +115,7 @@ export default function EnginesPage() {
     <Stack h="100%">
       <AddEngine opened={opened} setOpened={setOpened} />
       <EnginePreferencesNotice />
+      <StockfishUpgradeNotice />
       <Group align="baseline" py="sm" pl="lg">
         <Title>{t("Engines.Title")}</Title>
         <OpenFolderButton base="Engines" folder="engines" />

@@ -181,6 +181,7 @@ const loadedEnginesAtom = unwrap(storedEnginesAtom);
 export const enginesAtom = atom(
     (get) => get(loadedEnginesAtom),
     (_get, set, update: Parameters<typeof storedEnginesAtom.write>[2]) => {
+        enginePreferences.noteModelUpdate(update);
         const operation = set(storedEnginesAtom, update);
         void Promise.resolve(operation).catch(() => enginePreferences.noteUpdateError());
     },

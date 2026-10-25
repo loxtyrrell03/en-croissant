@@ -7,6 +7,9 @@ import { enginesAtom, tabsAtom, tabEngineSettingsFamily } from "@/state/atoms";
 import { useEnsureDesktopEngines } from "@/hooks/useEnsureDesktopEngines";
 import { enginePreferences } from "@/utils/enginePreferences";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
+import { StockfishUpgradeNotice } from "./StockfishUpgradeNotice";
+import { stockfishUpgradeState } from "@/utils/stockfishUpgrade";
+import { createHash } from "node:crypto";
 
 const fixture = vi.hoisted(() => ({
   disk: "[]" as string | null,
@@ -14,11 +17,27 @@ const fixture = vi.hoisted(() => ({
   writes: vi.fn(),
   discover: vi.fn(),
   show: vi.fn(),
+  directory: "",
+  completed: vi.fn(),
+  available: vi.fn(),
+  acknowledge: vi.fn(),
+  loadedDirectory: undefined as string | undefined,
+}));
+vi.mock("@/utils/stockfishUpgrade", async (original) => ({
+  ...(await original()),
+  stockfishUpgradeNative: {
+    directory: async () => fixture.directory,
+    completed: fixture.completed,
+    available: fixture.available,
+    complete: fixture.acknowledge,
+  },
 }));
 vi.mock("@/utils/enginePreferences", async () => {
   const { createEnginePreferenceStore } = await import("@/utils/enginePreferenceStore");
   return {
     enginePreferences: createEnginePreferenceStore({
+      beginLoad: async () => { fixture.loadedDirectory = fixture.directory; },
+      identity: () => fixture.loadedDirectory,
       read: async () => fixture.disk,
       write: async (text) => {
         fixture.writes(text);
@@ -43,6 +62,14 @@ const profile = {
   settings: [{ name: "Hash", value: 128 }],
 };
 beforeEach(async () => {
+  fixture.directory = `C:/Fixture/${crypto.randomUUID()}`;
+  fixture.completed.mockReset().mockResolvedValue(true);
+  fixture.available.mockReset().mockResolvedValue(null);
+  fixture.acknowledge.mockReset().mockImplementation(async () => {
+    fixture.completed.mockResolvedValue(true);
+    return null;
+  });
+  stockfishUpgradeState.retry();
   sessionStorage.clear();
   fixture.disk = "[]";
   fixture.fail = false;
@@ -114,6 +141,7 @@ async function mount(startup: boolean, busy = false) {
             {startup && <Startup />}
             <Probe />
             <EnginePreferencesNotice />
+            <StockfishUpgradeNotice />
           </Provider>
         </MantineProvider>,
       ),
@@ -146,7 +174,20 @@ async function mount(startup: boolean, busy = false) {
         (current) => ({ ...current, enabled: false }),
       ),
     );
-  return { host, settle, click, close, remount, release };
+  const replace = (profiles: typeof profile[]) => act(async () => { atoms.set(enginesAtom, profiles); });
+  const enable = () => act(async () => {
+    atoms.set(tabsAtom, [{ value: "active-fixture", name: "Invented active analysis", type: "analysis", gameOrigin: { kind: "none" } }]);
+    atoms.set(tabEngineSettingsFamily({ tab: "active-fixture", engineId: profile.id }), {
+      enabled: true, go: { t: "Infinite" }, settings: [], synced: true,
+    });
+  });
+  const deferEdit = async () => {
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => { finish = resolve; });
+    await act(async () => { atoms.set(enginesAtom, async (previous) => { await gate; return await previous; }); });
+    return () => act(async () => finish());
+  };
+  return { host, settle, click, close, remount, release, replace, enable, deferEdit };
 }
 it("preserves an intentionally empty list through real startup without adding installed or PC engines", async () => {
   const h = await mount(true);
@@ -259,4 +300,175 @@ it.each(["edit", "unmount"] as const)("rejects a late discovery reply after %s",
   } finally {
     if (!closed) await h.close();
   }
+});
+
+const previousStockfish = { ...profile, name: "Stockfish 18", path: "C:/Fixture/stockfish-18.exe" };
+const currentStockfish = { path: "C:/Included/stockfish-19.exe", version: "19" };
+it("acknowledges an explicit empty list without looking for or adding an engine", async () => {
+  fixture.completed.mockResolvedValue(false);
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(fixture.acknowledge).toHaveBeenCalledTimes(1));
+    expect(fixture.acknowledge.mock.calls[0]).toEqual([fixture.directory, createHash("sha256").update("[]").digest("hex")]);
+    expect(fixture.available).not.toHaveBeenCalled();
+    expect(fixture.discover).not.toHaveBeenCalled();
+    expect(fixture.writes).not.toHaveBeenCalled();
+    expect(h.host.querySelector("pre")?.textContent).toBe("[]");
+  } finally { await h.close(); }
+});
+it("updates the older fallback while idle, preserves hidden settings, and acknowledges only its saved bytes", async () => {
+  fixture.disk = JSON.stringify([previousStockfish]);
+  fixture.completed.mockResolvedValue(false);
+  fixture.available.mockResolvedValue(currentStockfish);
+  fixture.acknowledge.mockImplementation(async (_directory, digest) => {
+    expect(JSON.parse(fixture.disk!)[0]).toMatchObject({ version: "19", loaded: false, enabled: false });
+    expect(digest).toBe(createHash("sha256").update(fixture.disk!).digest("hex"));
+    fixture.completed.mockResolvedValue(true);
+    return null;
+  });
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(fixture.acknowledge).toHaveBeenCalledTimes(1));
+    const saved = JSON.parse(fixture.disk!);
+    expect(saved[0].settings).toContainEqual({ name: "Hash", value: 128 });
+    expect(saved.find((engine: typeof profile) => engine.id === profile.id)).toMatchObject(previousStockfish);
+    expect(new Set(saved.map((engine: typeof profile) => engine.id)).size).toBe(saved.length);
+    expect(h.host.querySelector('[role="alert"]')).toBeNull();
+  } finally { await h.close(); }
+});
+it("seeds a genuinely missing store with Stockfish 19 first and acknowledges the created file", async () => {
+  fixture.disk = null;
+  fixture.completed.mockResolvedValue(false);
+  fixture.available.mockResolvedValue(currentStockfish);
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(fixture.acknowledge).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(fixture.disk!)[0]).toMatchObject({ version: "19", loaded: true, enabled: false });
+    expect(fixture.acknowledge.mock.calls[0][1]).toBe(createHash("sha256").update(fixture.disk!).digest("hex"));
+  } finally { await h.close(); }
+});
+it("keeps an unavailable release pending rather than recording an upgrade", async () => {
+  fixture.disk = JSON.stringify([previousStockfish]);
+  fixture.completed.mockResolvedValue(false);
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(fixture.available).toHaveBeenCalledTimes(1));
+    await h.settle();
+    await enginePreferences.flush();
+    expect(JSON.parse(fixture.disk!)[0].version).toBe("18");
+    expect(fixture.acknowledge).not.toHaveBeenCalled();
+  } finally { await h.close(); }
+});
+it("waits for a failed profile save to be retried before acknowledging the default upgrade", async () => {
+  fixture.disk = JSON.stringify([previousStockfish]);
+  fixture.completed.mockResolvedValue(false);
+  fixture.available.mockResolvedValue(currentStockfish);
+  fixture.fail = true;
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(enginePreferences.getSnapshot().pending).toBe(true));
+    await h.settle();
+    expect(JSON.parse(fixture.disk!)[0].version).toBe("18");
+    expect(fixture.acknowledge).not.toHaveBeenCalled();
+    fixture.fail = false;
+    await h.click("Retry save");
+    await vi.waitFor(() => expect(fixture.acknowledge).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(fixture.disk!)[0].version).toBe("19");
+    expect(h.host.querySelector('[role="alert"]')).toBeNull();
+  } finally {
+    fixture.fail = false;
+    await enginePreferences.retry();
+    await h.close();
+  }
+});
+it("retries an acknowledgement failure across remount without replacing a later manual engine choice", async () => {
+  fixture.disk = JSON.stringify([previousStockfish]);
+  fixture.completed.mockResolvedValue(false);
+  fixture.available.mockResolvedValue(currentStockfish);
+  fixture.acknowledge.mockRejectedValueOnce(new Error("Fixture acknowledgement is read-only"));
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(stockfishUpgradeState.getSnapshot().error).toContain("read-only"));
+    expect(JSON.parse(fixture.disk!)[0].version).toBe("19");
+    await h.click("Change label");
+    await h.settle();
+    await enginePreferences.flush();
+    await h.remount();
+    await h.settle();
+    expect(h.host.querySelector('[role="alert"]')?.textContent).toContain("Retry upgrade");
+    await h.click("Retry upgrade");
+    await vi.waitFor(() => expect(stockfishUpgradeState.getSnapshot().phase).toBe("complete"));
+    expect(JSON.parse(fixture.disk!)).toEqual([{ ...profile, name: "Pending label" }]);
+    expect(fixture.available).toHaveBeenCalledTimes(1);
+    expect(fixture.acknowledge).toHaveBeenCalledTimes(2);
+  } finally { await h.close(); }
+});
+it("does not apply a late reply while an owner update is unresolved, even if it returns equal values", async () => {
+  fixture.disk = JSON.stringify([previousStockfish]);
+  fixture.completed.mockResolvedValue(false);
+  let finishAsset!: (value: typeof currentStockfish) => void;
+  fixture.available.mockReturnValueOnce(new Promise((resolve) => { finishAsset = resolve; }));
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(fixture.available).toHaveBeenCalledTimes(1));
+    const finishEdit = await h.deferEdit();
+    await act(async () => finishAsset(currentStockfish));
+    await h.settle();
+    await finishEdit();
+    await h.settle();
+    await enginePreferences.flush();
+    expect(JSON.parse(fixture.disk!)[0].version).toBe("18");
+    expect(fixture.acknowledge).not.toHaveBeenCalled();
+  } finally { await h.close(); }
+});
+it("rejects a changed profile folder and reloads that folder's own choices on retry", async () => {
+  fixture.disk = JSON.stringify([previousStockfish]);
+  fixture.completed.mockResolvedValue(false);
+  let finishAsset!: (value: typeof currentStockfish) => void;
+  fixture.available.mockReturnValueOnce(new Promise((resolve) => { finishAsset = resolve; }));
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(fixture.available).toHaveBeenCalledTimes(1));
+    fixture.directory = "C:/Fixture/NewFolder";
+    fixture.disk = "[]";
+    await act(async () => finishAsset(currentStockfish));
+    await vi.waitFor(() => expect(stockfishUpgradeState.getSnapshot().error).toContain("folder changed"));
+    expect(fixture.writes).not.toHaveBeenCalled();
+    expect(fixture.acknowledge).not.toHaveBeenCalled();
+    await h.click("Retry upgrade");
+    await vi.waitFor(() => expect(fixture.acknowledge).toHaveBeenCalledTimes(1));
+    expect(fixture.acknowledge.mock.calls[0][0]).toBe(fixture.directory);
+    expect(fixture.disk).toBe("[]");
+    expect(h.host.querySelector("pre")?.textContent).toBe("[]");
+  } finally { await h.close(); }
+});
+it.each(["edit", "edit-then-revert", "busy"] as const)("rejects a late verified-engine reply after %s", async (action) => {
+  fixture.disk = JSON.stringify([previousStockfish]);
+  fixture.completed.mockResolvedValue(false);
+  let finish!: (value: typeof currentStockfish) => void;
+  fixture.available.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+  const h = await mount(true);
+  try {
+    await vi.waitFor(() => expect(fixture.available).toHaveBeenCalledTimes(1));
+    if (action === "busy") await h.enable();
+    else {
+      await h.click("Change label");
+      await h.settle();
+      await enginePreferences.flush();
+      if (action === "edit-then-revert") {
+        await h.replace([previousStockfish]);
+        await h.settle();
+        await enginePreferences.flush();
+      }
+    }
+    await act(async () => finish(currentStockfish));
+    await h.settle();
+    expect(JSON.parse(fixture.disk!)[0].version).toBe("18");
+    expect(fixture.acknowledge).not.toHaveBeenCalled();
+    if (action === "busy") {
+      fixture.available.mockResolvedValue(currentStockfish);
+      await h.release();
+    }
+    await vi.waitFor(() => expect(fixture.acknowledge).toHaveBeenCalledTimes(action === "busy" ? 1 : 0));
+  } finally { await h.close(); }
 });
