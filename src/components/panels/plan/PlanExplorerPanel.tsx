@@ -1,3 +1,4 @@
+import { useExplorerGameDates, useLocalGameDates } from "@/hooks/useGameDateOptions";
 import {
   ActionIcon,
   Alert,
@@ -175,9 +176,10 @@ function PlanExplorerPanel() {
   const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
   const currentTab = useAtomValue(currentTabAtom);
   const engines = useAtomValue(enginesAtom);
-  const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
-  const lichessOptions = useAtomValue(lichessOptionsAtom);
-  const masterOptions = useAtomValue(masterOptionsAtom);
+  const [rawLocalOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
+  const localOptions = useLocalGameDates(rawLocalOptions);
+  const lichessOptions = useExplorerGameDates(useAtomValue(lichessOptionsAtom), "month");
+  const masterOptions = useExplorerGameDates(useAtomValue(masterOptionsAtom), "year");
   const setPlanExplorerData = useSetAtom(currentPlanExplorerDataAtom);
   const setPreviewLine = useSetAtom(currentPlanExplorerPreviewLineAtom);
   const [engineStrengthEnabled, setEngineStrengthEnabled] = useAtom(

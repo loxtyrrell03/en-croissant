@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { applyExplorerGameDates, isGameDateRange, type GameDateRange } from "@/utils/gameDateRange";
 
 const lichessVariant = z.enum([
     "standard",
@@ -26,6 +27,7 @@ export type LichessGameSpeed = z.infer<typeof lichessGameSpeed>;
 export type LichessRating = 0 | 1000 | 1200 | 1400 | 1600 | 1800 | 2000 | 2200 | 2500;
 
 export const lichessGamesOptionsSchema = z.object({
+    dateRange: z.custom<GameDateRange>(isGameDateRange).optional(),
     //https://lichess.org/api#tag/Opening-Explorer/operation/openingExplorerLichess
     variant: lichessVariant.optional(),
     speeds: z.array(lichessGameSpeed).optional(),
@@ -56,6 +58,7 @@ export const lichessGamesOptionsSchema = z.object({
 export type LichessGamesOptions = z.infer<typeof lichessGamesOptionsSchema>;
 
 export const masterOptionsSchema = z.object({
+    dateRange: z.custom<GameDateRange>(isGameDateRange).optional(),
     //https://lichess.org/api#tag/Opening-Explorer/operation/openingExplorerMaster
     since: z.coerce.date().optional(),
     until: z.coerce.date().optional(),
@@ -70,6 +73,7 @@ export function getLichessGamesQueryParams(
     options: LichessGamesOptions | undefined,
     play: string[] = [],
 ): string {
+    if (options) options = applyExplorerGameDates(options, "month");
     const getDateQueryString = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}`;
 
     const params = new URLSearchParams();
@@ -107,6 +111,7 @@ export function getMasterGamesQueryParams(
     options: MasterGamesOptions | undefined,
     play: string[] = [],
 ): string {
+    if (options) options = applyExplorerGameDates(options, "year");
     const getDateQueryString = (date: Date) => date.getFullYear().toString();
 
     const params = new URLSearchParams();

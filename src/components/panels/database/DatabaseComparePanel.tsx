@@ -1,4 +1,15 @@
 import { findWorkspacePreference, setWorkspacePreference } from "@/utils/workspacePreferences";
+import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
+import { useCalendarDay } from "@/hooks/useCalendarDay";
+import {
+  applyExplorerGameDates,
+  displayExplorerGameDates,
+  displayLocalGameDates,
+  isGameDateRange,
+  applyLocalGameDates,
+  storedGameDateRange,
+  type GameDateRange,
+} from "@/utils/gameDateRange";
 import { reportFilePreferenceFailure } from "@/utils/fileBoardPreferences";
 import {
   Alert,
@@ -15,7 +26,7 @@ import {
 import { IconTarget } from "@tabler/icons-react";
 import { useDebouncedValue, useElementSize } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom, useStore as useAtomStore } from "jotai";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
@@ -94,6 +105,7 @@ const DEFAULT_COMPARE_LOCAL_OPTIONS: StoredDatabaseLocalOptions = {
 
 function toStoredLocalOptions(options: LocalOptions): StoredDatabaseLocalOptions {
   return {
+    dateRange: options.dateRange,
     type: options.type,
     player: options.player,
     playerName: options.playerName,
@@ -132,10 +144,26 @@ function DatabaseComparePanel() {
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const tab = useAtomValue(currentTabAtom);
   const settingsKey = useMemo(() => getTabWorkspaceKey(tab), [tab]);
+  const atoms = useAtomStore();
+  const hydrationContext = JSON.stringify([tab?.value, settingsKey]);
+  const [hydratedContext, setHydratedContext] = useState("");
+  const ownsDateControls = useCallback(() => {
+    const current = atoms.get(currentTabAtom);
+    return current?.value === tab?.value && getTabWorkspaceKey(current) === settingsKey;
+  }, [atoms, settingsKey, tab?.value]);
   const referenceDatabase = useAtomValue(referenceDbAtom);
   const baseLocalOptions = useAtomValue(currentLocalOptionsAtom);
-  const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsAtom);
-  const [masterOptions, setMasterOptions] = useAtom(masterOptionsAtom);
+  const [rawLichessOptions, setLichessOptions] = useAtom(lichessOptionsAtom);
+  const [rawMasterOptions, setMasterOptions] = useAtom(masterOptionsAtom);
+  const today = useCalendarDay();
+  const lichessOptions = useMemo(
+    () => displayExplorerGameDates(rawLichessOptions, "month", new Date(`${today}T12:00:00`)),
+    [rawLichessOptions, today],
+  );
+  const masterOptions = useMemo(
+    () => displayExplorerGameDates(rawMasterOptions, "year", new Date(`${today}T12:00:00`)),
+    [rawMasterOptions, today],
+  );
   const sessions = useAtomValue(sessionsAtom);
   const [selectedDatabases, setSelectedDatabases] = useAtom(currentCompareDatabasesAtom);
   const [rememberedCompareDatabases, setRememberedCompareDatabases] = useAtom(
@@ -206,6 +234,7 @@ function DatabaseComparePanel() {
     appliedSettingsKeyRef.current = hydrationKey;
     appliedOwnerRef.current = tab?.value ?? null;
     skipNextPersistKeyRef.current = rebind ? null : settingsKey;
+    setHydratedContext(hydrationContext);
     if (rebind) return;
 
     const defaultSlotOptions = getDefaultCompareSlotOptions(baseLocalOptions);
@@ -250,6 +279,7 @@ function DatabaseComparePanel() {
     setSelectedDatabases,
     settingsKey,
     tab?.value,
+    hydrationContext,
   ]);
 
   useEffect(() => {
@@ -299,14 +329,19 @@ function DatabaseComparePanel() {
     (sourceValue) => compareSources.find((item) => item.value === sourceValue) ?? null,
   );
   const slotOptions = [0, 1].map((index) =>
-    toSlotLocalOptions(
-      selectedSources[index],
-      debouncedFen,
-      slotLocalOptions[index] ?? getDefaultCompareSlotOptions(baseLocalOptions),
+    displayLocalGameDates(
+      toSlotLocalOptions(
+        selectedSources[index],
+        debouncedFen,
+        slotLocalOptions[index] ?? getDefaultCompareSlotOptions(baseLocalOptions),
+      ),
+      new Date(`${today}T12:00:00`),
     ),
   ) as [LocalOptions, LocalOptions];
   const searchIds = selectedSources.map((source, index) =>
-    source
+    source &&
+    hydratedContext === hydrationContext &&
+    isGameDateRange(compareGameDates(source, slotOptions[index], lichessOptions, masterOptions))
       ? getCompareSearchId(
           source,
           tab?.value ?? "compare",
@@ -439,6 +474,27 @@ function DatabaseComparePanel() {
             }
             onChange={(value) => setDatabaseAt(index, value)}
             onLocalOptionsChange={(updater) => setSlotLocalOptionsAt(index, updater)}
+            dateContext={`${settingsKey ?? tab?.value}:${index}:${databasePath}`}
+            onDateRangeChange={(dateRange) => {
+              if (
+                !ownsDateControls() ||
+                atoms.get(currentCompareDatabasesAtom)[index] !== databasePath
+              )
+                return;
+              const source = selectedSources[index];
+              if (source?.type === "local")
+                setSlotLocalOptionsAt(index, (current) =>
+                  applyLocalGameDates({ ...current, dateRange }),
+                );
+              else if (source?.type === "lch_all")
+                setLichessOptions((current) =>
+                  applyExplorerGameDates({ ...current, dateRange }, "month"),
+                );
+              else if (source?.type === "lch_master")
+                setMasterOptions((current) =>
+                  applyExplorerGameDates({ ...current, dateRange }, "year"),
+                );
+            }}
             onOpeningsLoaded={rememberOpenings}
           />
         ))}
@@ -465,6 +521,8 @@ function CompareDatabaseTable({
   referenceOpenings,
   onChange,
   onLocalOptionsChange,
+  dateContext,
+  onDateRangeChange,
   onOpeningsLoaded,
 }: {
   label: string;
@@ -483,6 +541,8 @@ function CompareDatabaseTable({
   currentPath: number[];
   referenceOpenings?: Opening[];
   onChange: (value: string | null) => void;
+  dateContext: string;
+  onDateRangeChange: (range: GameDateRange) => void;
   onLocalOptionsChange: (
     updater:
       | StoredDatabaseLocalOptions
@@ -497,8 +557,9 @@ function CompareDatabaseTable({
   const source = sources.find((item) => item.value === sourceValue) ?? null;
   const isOnlineSource = source?.type === "lch_all" || source?.type === "lch_master";
   const missingExplorerToken = isOnlineSource && !explorerToken;
+  const selectedDates = compareGameDates(source, localOptions, lichessOptions, masterOptions);
   const searchKey =
-    source && searchId && !missingExplorerToken
+    source && searchId && !missingExplorerToken && isGameDateRange(selectedDates)
       ? ([
           "database-compare-table",
           {
@@ -563,6 +624,7 @@ function CompareDatabaseTable({
       color: localOptions.color,
       start_date: localOptions.start_date,
       end_date: localOptions.end_date,
+      dateRanges: localOptions.dateRange ? { "player:local": localOptions.dateRange } : undefined,
       result: localOptions.result,
       rootPath: [...currentPath],
       completedBranches: {},
@@ -618,6 +680,7 @@ function CompareDatabaseTable({
 
   return (
     <Paper
+      data-game-date-source={source?.type}
       withBorder
       p={cardPadding}
       h="100%"
@@ -678,6 +741,18 @@ function CompareDatabaseTable({
             size="xs"
             playerWidth={dense ? 132 : 170}
             colorWidth={dense ? 112 : 126}
+          />
+        </Box>
+      )}
+      {source && (
+        <Box mt={dense ? 4 : 6}>
+          <GameDateRangeControl
+            key={dateContext}
+            value={selectedDates}
+            precision={
+              source.type === "local" ? "day" : source.type === "lch_all" ? "month" : "year"
+            }
+            onChange={onDateRangeChange}
           />
         </Box>
       )}
@@ -758,6 +833,19 @@ function getFilledCompareSelection(
     return current;
   }
   return next;
+}
+
+function compareGameDates(
+  source: CompareSource | null,
+  local: LocalOptions,
+  lichess: LichessGamesOptions,
+  masters: MasterGamesOptions,
+) {
+  if (source?.type === "local")
+    return storedGameDateRange(local.dateRange, local.start_date, local.end_date);
+  if (source?.type === "lch_all")
+    return storedGameDateRange(lichess.dateRange, lichess.since, lichess.until);
+  return storedGameDateRange(masters.dateRange, masters.since, masters.until);
 }
 
 function getCompareSearchId(

@@ -1,6 +1,15 @@
 import { findWorkspacePreference, setWorkspacePreference } from "@/utils/workspacePreferences";
 import { reportFilePreferenceFailure } from "@/utils/fileBoardPreferences";
 import {
+  applyExplorerGameDates,
+  displayExplorerGameDates,
+  displayLocalGameDates,
+  isGameDateRange,
+  applyLocalGameDates,
+  type GameDateRange,
+} from "@/utils/gameDateRange";
+import { useCalendarDay } from "@/hooks/useCalendarDay";
+import {
   ActionIcon,
   Alert,
   Group,
@@ -14,8 +23,10 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
-import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useAtom, useAtomValue, useStore as useAtomStore } from "jotai";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
+import { storedGameDateRange } from "@/utils/gameDateRange";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
 import equal from "fast-deep-equal";
@@ -94,6 +105,7 @@ type DBType =
     };
 
 export type LocalOptions = {
+  dateRange?: GameDateRange;
   path: string | null;
   fen: string;
   type: "exact" | "partial";
@@ -220,6 +232,7 @@ function normalizePlayerText(value: string) {
 
 function toStoredLocalOptions(options: LocalOptions): StoredDatabaseLocalOptions {
   return {
+    dateRange: options.dateRange,
     type: options.type,
     player: options.player,
     playerName: options.playerName,
@@ -335,16 +348,39 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     databasePanelSettingsByFileAtom,
   );
   const tab = useAtomValue(currentTabAtom);
+  const atoms = useAtomStore();
   const settingsKey = useMemo(
     () => getScopedDatabasePanelSettingsKey(getTabWorkspaceKey(tab), scope),
     [scope, tab],
   );
   const savedPanelSettings = findWorkspacePreference(databasePanelSettingsByFile, settingsKey);
+  const hydrationContext = JSON.stringify([tab?.value, settingsKey, scope]);
+  const [hydratedContext, setHydratedContext] = useState("");
+  const ownsControls = useCallback(() => {
+    const current = atoms.get(currentTabAtom);
+    return (
+      current?.value === tab?.value &&
+      getScopedDatabasePanelSettingsKey(getTabWorkspaceKey(current), scope) === settingsKey
+    );
+  }, [atoms, scope, settingsKey, tab?.value]);
   const sessions = useAtomValue(sessionsAtom);
   const [debouncedFen] = useDebouncedValue(fen, 50);
-  const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsStateAtom);
-  const [masterOptions, setMasterOptions] = useAtom(masterOptionsStateAtom);
-  const [localOptions, setLocalOptions] = useAtom(localOptionsAtom);
+  const [rawLichessOptions, setLichessOptions] = useAtom(lichessOptionsStateAtom);
+  const [rawMasterOptions, setMasterOptions] = useAtom(masterOptionsStateAtom);
+  const [rawLocalOptions, setLocalOptions] = useAtom(localOptionsAtom);
+  const today = useCalendarDay();
+  const lichessOptions = useMemo(
+    () => displayExplorerGameDates(rawLichessOptions, "month", new Date(`${today}T12:00:00`)),
+    [rawLichessOptions, today],
+  );
+  const masterOptions = useMemo(
+    () => displayExplorerGameDates(rawMasterOptions, "year", new Date(`${today}T12:00:00`)),
+    [rawMasterOptions, today],
+  );
+  const localOptions = useMemo(
+    () => displayLocalGameDates(rawLocalOptions, new Date(`${today}T12:00:00`)),
+    [rawLocalOptions, today],
+  );
   const [db, setDb] = useAtom(dbTypeAtom);
   const [moveHealthSide, setMoveHealthSide] = useAtom(moveHealthSideAtom);
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
@@ -432,6 +468,12 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
       token: explorerToken ?? "",
     }))
     .exhaustive();
+  const selectedDates = storedGameDateRange(
+    dbType.options.dateRange,
+    dbType.type === "local" ? dbType.options.start_date : dbType.options.since,
+    dbType.type === "local" ? dbType.options.end_date : dbType.options.until,
+  );
+  const dateFilterValid = isGameDateRange(selectedDates);
 
   const [tabType, setTabType] = useAtom(dbTabAtom);
   const appliedSettingsKeyRef = useRef<string | null>(null);
@@ -454,6 +496,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     appliedSettingsKeyRef.current = hydrationKey;
     appliedOwnerRef.current = tab?.value ?? null;
     skipNextPersistKeyRef.current = rebind ? null : settingsKey;
+    setHydratedContext(hydrationContext);
     if (rebind) return;
 
     const source = effectiveDatabaseSourcePreference(
@@ -488,6 +531,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     setTabType,
     settingsKey,
     tab?.value,
+    hydrationContext,
   ]);
 
   const selectedDefaultSource = useMemo(() => {
@@ -591,7 +635,10 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     isLoading,
     error,
   } = useSWR(
-    tabType !== "options" && !missingExplorerToken
+    hydratedContext === hydrationContext &&
+      dateFilterValid &&
+      tabType !== "options" &&
+      !missingExplorerToken
       ? { dbType, requestId: databaseRequestId }
       : null,
     async ({ dbType, requestId }) => {
@@ -712,6 +759,26 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
           </Group>
         )}
       </Group>
+      {tabType !== "options" && (
+        <GameDateRangeControl
+          key={`${hydrationContext}:${db}`}
+          value={selectedDates}
+          precision={db === "local" ? "day" : db === "lch_all" ? "month" : "year"}
+          onChange={(dateRange) => {
+            if (!ownsControls() || atoms.get(dbTypeAtom) !== db) return;
+            if (db === "local")
+              setLocalOptions((current) => applyLocalGameDates({ ...current, dateRange }));
+            else if (db === "lch_all")
+              setLichessOptions((current) =>
+                applyExplorerGameDates({ ...current, dateRange }, "month"),
+              );
+            else
+              setMasterOptions((current) =>
+                applyExplorerGameDates({ ...current, dateRange }, "year"),
+              );
+          }}
+        />
+      )}
       <DatabaseLoader
         isLoading={isLoading}
         tab={dbType.type === "local" ? databaseRequestId : (tab?.value ?? null)}
@@ -807,16 +874,34 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
             {match(db)
               .with("local", () => (
                 <LocalOptionsPanel
+                  key={settingsKey ?? tab?.value}
                   boardFen={debouncedFen}
                   options={localOptions}
-                  setOptions={setLocalOptions}
+                  setOptions={(update) => {
+                    if (ownsControls() && atoms.get(dbTypeAtom) === "local")
+                      setLocalOptions(update);
+                  }}
                 />
               ))
               .with("lch_all", () => (
-                <LichessOptionsPanel options={lichessOptions} setOptions={setLichessOptions} />
+                <LichessOptionsPanel
+                  key={settingsKey ?? tab?.value}
+                  options={lichessOptions}
+                  setOptions={(update) => {
+                    if (ownsControls() && atoms.get(dbTypeAtom) === "lch_all")
+                      setLichessOptions(update);
+                  }}
+                />
               ))
               .with("lch_master", () => (
-                <MasterOptionsPanel options={masterOptions} setOptions={setMasterOptions} />
+                <MasterOptionsPanel
+                  key={settingsKey ?? tab?.value}
+                  options={masterOptions}
+                  setOptions={(update) => {
+                    if (ownsControls() && atoms.get(dbTypeAtom) === "lch_master")
+                      setMasterOptions(update);
+                  }}
+                />
               ))
               .exhaustive()}
           </ScrollArea>

@@ -1,6 +1,19 @@
 import { useFilePrepSources } from "@/hooks/useFilePrepSources";
 import { useTabSaveTargets } from "@/utils/tabSaveTarget";
 import { WdlResultBar } from "@/components/common/WdlResultBar";
+import { useCalendarDay } from "@/hooks/useCalendarDay";
+import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
+import {
+  displayExplorerGameDates,
+  gameDateBounds,
+  isGameDateRange,
+  type GameDateRange,
+} from "@/utils/gameDateRange";
+import {
+  initialPrepGameDateRanges,
+  prepGameDateKey,
+  prepGameDateRange,
+} from "@/utils/prepGameDates";
 import {
   ActionIcon,
   Alert,
@@ -44,7 +57,7 @@ import { resolve, tempDir } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom, useStore as useAtomStore } from "jotai";
 import {
   memo,
   useCallback,
@@ -476,7 +489,54 @@ function OpponentPrepPanel({
     scope === "underBoard" ? underBoardLichessOptionsAtom : lichessOptionsAtom;
   const masterOptionsStateAtom =
     scope === "underBoard" ? underBoardMasterOptionsAtom : masterOptionsAtom;
-  const [prep, setPrep] = useAtom(prepAtom);
+  const [storedPrep, setPrep] = useAtom(prepAtom);
+  const atoms = useAtomStore();
+  const sharedLichessOptions = useAtomValue(lichessOptionsStateAtom);
+  const sharedMasterOptions = useAtomValue(masterOptionsStateAtom);
+  const today = useCalendarDay();
+  const prepMode = storedPrep.mode ?? "player";
+  const prepSource = storedPrep.source ?? "local";
+  const dateKey = prepGameDateKey(prepMode, prepSource);
+  const initialDates = useMemo(
+    () =>
+      initialPrepGameDateRanges(
+        { start_date: storedPrep.start_date, end_date: storedPrep.end_date },
+        sharedLichessOptions,
+        sharedMasterOptions,
+      ),
+    [storedPrep.start_date, storedPrep.end_date, sharedLichessOptions, sharedMasterOptions],
+  );
+  const selectedDates = prepGameDateRange(storedPrep.dateRanges ?? initialDates, dateKey);
+  const dateFilterValid = isGameDateRange(selectedDates);
+  const localDateBounds = useMemo(
+    () =>
+      dateFilterValid
+        ? gameDateBounds(selectedDates, "day", new Date(`${today}T12:00:00`))
+        : { since: storedPrep.start_date, until: storedPrep.end_date },
+    [dateFilterValid, selectedDates, today, storedPrep.start_date, storedPrep.end_date],
+  );
+  const prep = useMemo(
+    () => ({ ...storedPrep, start_date: localDateBounds.since, end_date: localDateBounds.until }),
+    [storedPrep, localDateBounds],
+  );
+  const lichessOptions = useMemo(
+    () =>
+      displayExplorerGameDates(
+        { ...sharedLichessOptions, dateRange: selectedDates },
+        "month",
+        new Date(`${today}T12:00:00`),
+      ),
+    [sharedLichessOptions, selectedDates, today],
+  );
+  const masterOptions = useMemo(
+    () =>
+      displayExplorerGameDates(
+        { ...sharedMasterOptions, dateRange: selectedDates },
+        "year",
+        new Date(`${today}T12:00:00`),
+      ),
+    [sharedMasterOptions, selectedDates, today],
+  );
   const underBoardStage = prep.panelStage ?? "setup";
   const setUnderBoardStage = useCallback(
     (panelStage: OpponentPrepPanelStage) => {
@@ -492,8 +552,6 @@ function OpponentPrepPanel({
     [setPrep],
   );
   const [savedPrepSettings, setSavedPrepSettings] = useAtom(prepSettingsAtom);
-  const lichessOptions = useAtomValue(lichessOptionsStateAtom);
-  const masterOptions = useAtomValue(masterOptionsStateAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
@@ -560,8 +618,6 @@ function OpponentPrepPanel({
   const seededDefaultPlayerDatabaseRef = useRef<string | null>(null);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
-  const prepMode = prep.mode ?? "player";
-  const prepSource = prep.source ?? "local";
   const builderSettings = useMemo(
     () =>
       normalizePrepBuilderSettings({
@@ -673,7 +729,7 @@ function OpponentPrepPanel({
   const targetReady = prepMode === "general" || hasPlayer;
   const canOpenPrepSourceGames =
     prepMode === "player" && prepSource === "local" && Boolean(prep.databasePath);
-  const configReady = sourceReady && targetReady;
+  const configReady = sourceReady && targetReady && dateFilterValid;
   const showSetupStage = !underBoard || underBoardStage === "setup";
   const showTrainingStage = !underBoard || underBoardStage === "train";
   const sourceValue =
@@ -682,9 +738,32 @@ function OpponentPrepPanel({
       : prepSource === "lch_master"
         ? LICHESS_MASTER_SOURCE
         : prep.databasePath;
+  const queryOwner = useMemo(() => {
+    const origin = currentTab?.gameOrigin;
+    if (origin?.kind === "file" || origin?.kind === "temp_file")
+      return [
+        currentTab?.value,
+        origin.kind,
+        origin.file.path,
+        origin.gameNumber,
+        origin.sourceIdentity,
+      ];
+    if (origin?.kind === "database")
+      return [
+        currentTab?.value,
+        origin.kind,
+        origin.database,
+        origin.gameId,
+        origin.sourceIdentity,
+      ];
+    return [currentTab?.value, origin?.kind];
+  }, [currentTab]);
   const queryScope = useMemo(
     () =>
       JSON.stringify({
+        owner: queryOwner,
+        startFen: root.fen,
+        rootPath: rootPathKey,
         scope,
         mode: prepMode,
         source: prepSource,
@@ -714,6 +793,9 @@ function OpponentPrepPanel({
       }),
     [
       explorerToken,
+      queryOwner,
+      root.fen,
+      rootPathKey,
       lichessOptions,
       masterOptions,
       prep.color,
@@ -729,6 +811,16 @@ function OpponentPrepPanel({
       prep.start_date,
     ],
   );
+  const activeQueryScopeRef = useRef<string | null>(queryScope);
+  activeQueryScopeRef.current = queryScope;
+  useEffect(() => {
+    activeQueryScopeRef.current = queryScope;
+    return () => {
+      activeQueryScopeRef.current = null;
+      builderCancelRef.current = true;
+      straightLineCancelRef.current = true;
+    };
+  }, [queryScope]);
   const currentSearchId =
     configReady && prepSource === "local" ? getPrepSearchId(queryScope, currentFen) : null;
 
@@ -783,6 +875,21 @@ function OpponentPrepPanel({
     setPrep,
     pristine: shouldApplyStoredPrepSettings(prep),
   });
+  useEffect(() => {
+    if (!ownsPreferenceContext()) return;
+    setPrep((current) =>
+      current.dateRanges === undefined
+        ? {
+            ...current,
+            dateRanges: initialPrepGameDateRanges(
+              current,
+              sharedLichessOptions,
+              sharedMasterOptions,
+            ),
+          }
+        : current,
+    );
+  }, [ownsPreferenceContext, setPrep, sharedLichessOptions, sharedMasterOptions]);
 
   useEffect(() => {
     if (!configReady || prep.rootPath !== null) return;
@@ -820,6 +927,9 @@ function OpponentPrepPanel({
 
   const loadOpeningsForFen = useCallback(
     async (fen: string, moveLimitOverride?: number, schedule: LichessRequestSchedule = {}) => {
+      if (activeQueryScopeRef.current !== queryScope)
+        throw new DOMException("The Prep source or dates changed.", "AbortError");
+      gameDateBounds(selectedDates);
       if (prepSource === "local" && !prep.databasePath) return [];
       if (prepSource !== "local" && !explorerToken) return [];
 
@@ -876,6 +986,8 @@ function OpponentPrepPanel({
         openings = localOpenings;
       }
 
+      if (activeQueryScopeRef.current !== queryScope)
+        throw new DOMException("The Prep source or dates changed.", "AbortError");
       moveCacheRef.current.set(cacheKey, openings);
       return openings;
     },
@@ -894,6 +1006,7 @@ function OpponentPrepPanel({
       prepMode,
       prepSource,
       queryScope,
+      selectedDates,
     ],
   );
 
@@ -1454,6 +1567,44 @@ function OpponentPrepPanel({
     },
     [ownsPreferenceContext, setPrep, setSavedPrepSettings],
   );
+  const updateDates = useCallback(
+    (dateRange: GameDateRange) => {
+      const currentPrep = atoms.get(prepAtom);
+      if (
+        !ownsPreferenceContext() ||
+        prepGameDateKey(currentPrep.mode, currentPrep.source) !== dateKey
+      )
+        return;
+      setSavedPrepSettings((current) => ({
+        ...current,
+        dateRanges: {
+          ...(storedPrep.dateRanges ?? initialDates),
+          ...current.dateRanges,
+          [dateKey]: dateRange,
+        },
+      }));
+      setPrep((current) =>
+        prepGameDateKey(current.mode, current.source) !== dateKey
+          ? current
+          : {
+              ...current,
+              dateRanges: { ...(current.dateRanges ?? initialDates), [dateKey]: dateRange },
+              completedBranches: {},
+              skippedBranches: {},
+            },
+      );
+    },
+    [
+      dateKey,
+      atoms,
+      prepAtom,
+      initialDates,
+      ownsPreferenceContext,
+      setPrep,
+      setSavedPrepSettings,
+      storedPrep.dateRanges,
+    ],
+  );
 
   useEffect(() => {
     if (
@@ -2010,6 +2161,7 @@ function OpponentPrepPanel({
           },
         );
         const match = await findPrepSourceGameMatch(games, fen, move, uci);
+        if (activeQueryScopeRef.current !== queryScope) return;
 
         if (!match) {
           notifications.show({
@@ -2096,6 +2248,7 @@ function OpponentPrepPanel({
       if (!branchNode) return;
 
       const openings = await loadOpeningsForFen(branchNode.fen);
+      if (activeQueryScopeRef.current !== queryScope) return;
       const rows = getOpponentPrepMoveRows({
         fen: branchNode.fen,
         node: branchNode,
@@ -2128,6 +2281,7 @@ function OpponentPrepPanel({
       setCommonMoving(false);
     }
   }, [
+    queryScope,
     clearMovePreview,
     commonMoving,
     configReady,
@@ -2238,6 +2392,7 @@ function OpponentPrepPanel({
       if (!branchNode) return;
 
       const openings = await loadOpeningsForFen(branchNode.fen);
+      if (activeQueryScopeRef.current !== queryScope) return;
       const rows = getOpponentPrepMoveRows({
         fen: branchNode.fen,
         node: branchNode,
@@ -2276,6 +2431,7 @@ function OpponentPrepPanel({
       setAdvancing(false);
     }
   }, [
+    queryScope,
     advancing,
     clearMovePreview,
     configReady,
@@ -2342,12 +2498,14 @@ function OpponentPrepPanel({
         loadEngineMoves,
         isCancelled: () => straightLineCancelRef.current,
         onProgress: (progress) =>
+          activeQueryScopeRef.current === queryScope &&
           setStraightLineStatus({
             ...progress,
             tone: "running",
           }),
       });
 
+      if (activeQueryScopeRef.current !== queryScope) return;
       if (search.best) {
         const result = {
           ...search.best,
@@ -2373,6 +2531,7 @@ function OpponentPrepPanel({
         tone: search.stopped ? "empty" : "error",
       });
     } catch (error) {
+      if (activeQueryScopeRef.current !== queryScope) return;
       setStraightLineStatus({
         phase: error instanceof Error ? error.message : String(error),
         checkedPositions: 0,
@@ -2389,6 +2548,7 @@ function OpponentPrepPanel({
       setStraightLineRunning(false);
     }
   }, [
+    queryScope,
     canRunStraightLine,
     loadOpeningsForFen,
     loadPrepBuilderEngineMoves,
@@ -2552,7 +2712,11 @@ function OpponentPrepPanel({
           ply,
         });
 
-      for (let ply = 0; ply < maxPly && !builderCancelRef.current; ply += 1) {
+      for (
+        let ply = 0;
+        ply < maxPly && !(builderCancelRef.current || activeQueryScopeRef.current !== queryScope);
+        ply += 1
+      ) {
         const turn = getFenTurn(fen);
 
         if (turn === userSide) {
@@ -2772,6 +2936,7 @@ function OpponentPrepPanel({
       } satisfies PrepGamePlanBrief;
     },
     [
+      queryScope,
       choosePrepBuilderAfterPrepMove,
       loadLichessAllOpeningsForFen,
       loadOpeningsForFen,
@@ -3109,6 +3274,7 @@ function OpponentPrepPanel({
       });
 
     const addMoveWithComment = (path: number[], moveSan: string, comment: string) => {
+      if (builderCancelRef.current || activeQueryScopeRef.current !== queryScope) return null;
       const state = store.getState();
       if (!pathExists(state.root, path)) return null;
 
@@ -3137,7 +3303,7 @@ function OpponentPrepPanel({
     const addUserResponseAtPath = async (
       task: PrepBuilderQueueItem,
     ): Promise<PrepBuilderQueueItem | null> => {
-      if (builderCancelRef.current) return null;
+      if (builderCancelRef.current || activeQueryScopeRef.current !== queryScope) return null;
 
       const currentState = store.getState();
       if (!pathExists(currentState.root, task.path)) return null;
@@ -3174,7 +3340,7 @@ function OpponentPrepPanel({
         loadLichessAllOpeningsForFen(node.fen, settings).catch(() => []),
         loadPrepBuilderEngineMoves(node.fen, userSide, settings).catch(() => []),
       ]);
-      if (builderCancelRef.current) return null;
+      if (builderCancelRef.current || activeQueryScopeRef.current !== queryScope) return null;
 
       rememberRootDatabaseGames(opponentOpenings);
       const evidenceMinGames = getEvidenceMinGames(task.ply);
@@ -3249,7 +3415,7 @@ function OpponentPrepPanel({
       const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
       updateStatus("Building game plan", true);
       const brief = await buildPrepGamePlanBrief(settings, safeRootPath);
-      if (brief && !builderCancelRef.current) {
+      if (brief && !(builderCancelRef.current || activeQueryScopeRef.current !== queryScope)) {
         setGamePlanBrief(brief);
       }
       const queue: PrepBuilderQueueItem[] = [
@@ -3284,10 +3450,10 @@ function OpponentPrepPanel({
       while (
         queue.length > 0 &&
         visitedPositions < safetyPositionLimit &&
-        !builderCancelRef.current
+        !(builderCancelRef.current || activeQueryScopeRef.current !== queryScope)
       ) {
         const task = queue.shift()!;
-        if (builderCancelRef.current) break;
+        if (builderCancelRef.current || activeQueryScopeRef.current !== queryScope) break;
         const currentState = store.getState();
         if (!pathExists(currentState.root, task.path)) continue;
 
@@ -3318,7 +3484,7 @@ function OpponentPrepPanel({
             node.fen,
             getPrepBuilderBranchSearchMoveLimit(settings),
           );
-          if (builderCancelRef.current) break;
+          if (builderCancelRef.current || activeQueryScopeRef.current !== queryScope) break;
           rememberRootDatabaseGames(openings);
           const replyMinGames = getEvidenceMinGames(task.ply + 1);
           const availableGames = getPlayableGames(openings);
@@ -3396,7 +3562,7 @@ function OpponentPrepPanel({
 
           const nextTasks: PrepBuilderQueueItem[] = [];
           for (const rankedRow of rankedRows) {
-            if (builderCancelRef.current) break;
+            if (builderCancelRef.current || activeQueryScopeRef.current !== queryScope) break;
 
             const { row, nextBranchShare, nextDepthShare, nextBranchValue, nextPly } = rankedRow;
             const branchStopReason = getPrepBuilderStopReason({
@@ -3459,12 +3625,20 @@ function OpponentPrepPanel({
         true,
       );
       setBuilderNeedsSave(touchedTree);
+      if (activeQueryScopeRef.current !== queryScope) {
+        setBuilderStatus(null);
+        return;
+      }
       notifications.show({
         title: builderCancelRef.current ? "Prep builder stopped" : "Prep builder done",
         message: `${addedMoves} move${addedMoves === 1 ? "" : "s"} added.`,
         color: builderCancelRef.current ? "yellow" : "green",
       });
     } catch (error) {
+      if (activeQueryScopeRef.current !== queryScope) {
+        setBuilderStatus(null);
+        return;
+      }
       notifications.show({
         title: "Prep builder failed",
         message: error instanceof Error ? error.message : String(error),
@@ -3474,6 +3648,7 @@ function OpponentPrepPanel({
       setBuilderRunning(false);
     }
   }, [
+    queryScope,
     buildPrepGamePlanBrief,
     builderRunning,
     choosePrepBuilderAfterPrepMove,
@@ -3935,6 +4110,15 @@ function OpponentPrepPanel({
         </>
       ) : null}
 
+      {!onlineImportOpen && !otbImportOpen && (
+        <GameDateRangeControl
+          key={`${currentTab?.value}:${scope}:${dateKey}`}
+          value={selectedDates}
+          precision={prepSource === "local" ? "day" : prepSource === "lch_all" ? "month" : "year"}
+          disabled={builderRunning || straightLineRunning}
+          onChange={updateDates}
+        />
+      )}
       <Collapse in={showSetupStage && onlineImportOpen} style={{ flexShrink: 0 }}>
         <Stack gap={dense ? 3 : 6} pt={dense ? 2 : 4} pb={dense ? 4 : 6}>
           <Group gap={dense ? 4 : 6} wrap="wrap" align="flex-end">
@@ -5161,6 +5345,7 @@ function getStoredPrepPreferences(
     moveLimit: settings.moveLimit,
     builder: settings.builder,
     sortDefaults: settings.sortDefaults,
+    dateRanges: settings.dateRanges,
   };
 }
 

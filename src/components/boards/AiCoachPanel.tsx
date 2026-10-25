@@ -1,3 +1,4 @@
+import { useExplorerGameDates } from "@/hooks/useGameDateOptions";
 import {
   ActionIcon,
   Alert,
@@ -1102,7 +1103,7 @@ export default function AiCoachPanel() {
   const activeTab = useAtomValue(activeTabAtom);
   const currentTab = useAtomValue(currentTabAtom);
   const sessions = useAtomValue(sessionsAtom);
-  const lichessOptions = useAtomValue(lichessOptionsAtom);
+  const lichessOptions = useExplorerGameDates(useAtomValue(lichessOptionsAtom), "month");
   const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;

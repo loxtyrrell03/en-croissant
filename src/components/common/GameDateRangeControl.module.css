@@ -1,0 +1,10 @@
+.control {
+  min-width: 0;
+}
+
+@media (pointer: coarse) {
+  .control button,
+  .control input {
+    min-height: 40px;
+  }
+}

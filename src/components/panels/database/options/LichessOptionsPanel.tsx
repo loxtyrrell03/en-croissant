@@ -1,5 +1,6 @@
+import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
+import { applyExplorerGameDates, storedGameDateRange } from "@/utils/gameDateRange";
 import { Group, Select, Stack, TextInput } from "@mantine/core";
-import { MonthPickerInput } from "@mantine/dates";
 import {
   IconChevronRight,
   IconChevronsRight,
@@ -14,7 +15,6 @@ import ToggleButtonGroup, {
   type ToggleButtonGroupOption,
 } from "@/components/common/ToggleButtonGroup";
 import { capitalize } from "@/utils/format";
-import { MIN_DATE } from "@/utils/lichess/api";
 import type {
   LichessGamesOptions,
   LichessGameSpeed,
@@ -113,36 +113,13 @@ const LichessOptionsPanel = ({
         toggleOption={toggleRating}
         minButtonWidth="9ch"
       />
-      <Group grow>
-        <MonthPickerInput
-          label="Since"
-          placeholder="Pick date"
-          value={options.since}
-          minDate={MIN_DATE}
-          maxDate={new Date()}
-          onChange={(value) =>
-            setOptions({
-              ...options,
-              since: value ? new Date(value) : undefined,
-            })
-          }
-          clearable
-        />
-        <MonthPickerInput
-          label="Until"
-          placeholder="Pick date"
-          value={options.until}
-          minDate={MIN_DATE}
-          maxDate={new Date()}
-          onChange={(value) =>
-            setOptions({
-              ...options,
-              until: value ? new Date(value) : undefined,
-            })
-          }
-          clearable
-        />
-      </Group>
+      <GameDateRangeControl
+        value={storedGameDateRange(options.dateRange, options.since, options.until)}
+        precision="month"
+        onChange={(dateRange) =>
+          setOptions((current) => applyExplorerGameDates({ ...current, dateRange }, "month"))
+        }
+      />
       <Group grow>
         <TextInput
           label="Player"

@@ -1,3 +1,23 @@
+## 2026-10-25 native game-date parity
+
+- Native Database in both placements, Compare and Prep reuse a compact
+  All/rolling/custom calendar control. Local bounds include both days; Lichess
+  All/Masters retain whole-month/year resolution. Invalid stored ranges remain
+  visible for explicit repair and never silently broaden a request.
+- Range metadata follows existing per-file Database/Compare settings. Prep
+  snapshots legacy explorer dates once into independent mode/source slots in
+  each tab/placement and retained defaults. Query serializers resolve rolling
+  bounds at use time; local midnight/focus/visibility refresh mounted query keys.
+  Plans, Engine Plans, Gaps and Coach also use effective dates. Prep owner/root/
+  source/date changes cancel stale work before it can append moves; already
+  generated moves remain saveable. See docs/GAME_DATE_RANGES.md.
+- Synthetic actual-control/query tests, calendar and daylight-saving checks join
+  559 passing related frontend checks across 69 files. Full types and 23-file
+  lint pass with no warnings/errors; a final context guard passes ten focused
+  checks. No native code, owner data or service changed. Phone date controls,
+  clean delivery builds, rendered interaction and installed publication remain
+  separately pending; the broader parity goal is active.
+
 ## 2026-10-25 phone source archive labels
 
 - Phone file/folder and device-collection archive labels use the existing root
