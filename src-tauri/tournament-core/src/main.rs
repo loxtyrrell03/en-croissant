@@ -10,6 +10,24 @@ use std::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().collect();
+    if matches!(
+        args.get(1).map(String::as_str),
+        Some("--third-party-notices" | "--help" | "-h")
+    ) && args.len() != 2
+    {
+        return Err("Use the help or notice argument alone, without state/cache paths.".into());
+    }
+    if args.len() == 2 && args[1] == "--third-party-notices" {
+        print!(
+            "{}",
+            include_str!("../../../licenses/PHONE_HELPER_NOTICES.txt")
+        );
+        return Ok(());
+    }
+    if args.len() == 2 && matches!(args[1].as_str(), "--help" | "-h") {
+        println!("usage: encroissant-tournament-core <state-root> <otb-cache>\n       encroissant-tournament-core --third-party-notices");
+        return Ok(());
+    }
     if args.len() != 3 {
         return Err("usage: encroissant-tournament-core <state-root> <otb-cache>".into());
     }

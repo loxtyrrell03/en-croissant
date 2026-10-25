@@ -16,6 +16,7 @@ if ($SiteUrl.TrimEnd('/') -ne 'https://lox-pc.tail89d19b.ts.net' -or
 }
 $repoRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot "phone-publish-guard.ps1")
+. (Join-Path $PSScriptRoot "phone-notices.ps1")
 
 $serverRoot = Join-Path $env:LOCALAPPDATA "EnCroissantHomeServer"
 $runtimeRoot = Join-Path $serverRoot "runtime"
@@ -46,6 +47,13 @@ try {
 
   Push-Location $repoRoot
   try {
+    $noticeNodeCommand = Get-Command node.exe -ErrorAction SilentlyContinue
+    $noticeNode = if ($noticeNodeCommand) { $noticeNodeCommand.Source } else { 'C:\Users\Lox\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' }
+    if (-not (Test-Path -LiteralPath $noticeNode)) { throw 'Compression notice verification needs the existing Node runtime.' }
+    & $noticeNode (Join-Path $PSScriptRoot 'verify-compression-notices.mjs')
+    if ($LASTEXITCODE -ne 0) { throw 'Collector compression notices failed verification.' }
+    & $noticeNode (Join-Path $PSScriptRoot 'verify-compression-notices.mjs') --scope hosted-helper
+    if ($LASTEXITCODE -ne 0) { throw 'Hosted helper compression notices failed verification.' }
     if (-not $SkipBuild) {
       $env:VITE_EN_CROISSANT_HOME_BUILD = "1"
       $env:VITE_EN_CROISSANT_SERVER_URL = $SiteUrl.TrimEnd("/")
@@ -100,6 +108,11 @@ try {
   } finally {
     Pop-Location
   }
+
+  # This argument exits before opening state/cache roots, also for SkipBuild.
+  Assert-EnCroissantHelperNotices `
+    -ExecutablePath (Join-Path $repoRoot 'src-tauri\target\release\encroissant-tournament-core.exe') `
+    -NoticePath (Join-Path $repoRoot 'licenses\PHONE_HELPER_NOTICES.txt')
 
   Assert-EnCroissantPublishSourceUnchanged `
     -RepoRoot $repoRoot `
@@ -168,6 +181,13 @@ try {
   $tournamentSource = Join-Path $repoRoot 'src-tauri\target\release\encroissant-tournament-core.exe'
   $tournamentHash = Get-EnCroissantFileSha256 -Path $tournamentSource
   New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+  $noticeVersion = $publishContext.SourceCommit.Substring(0, 12)
+  Copy-EnCroissantImmutableNotice `
+    -Source (Join-Path $repoRoot 'licenses\THIRD_PARTY_NOTICES.txt') `
+    -Destination (Join-Path $runtimeRoot "collect_otb_games-$noticeVersion.NOTICES.txt")
+  Copy-EnCroissantImmutableNotice `
+    -Source (Join-Path $repoRoot 'licenses\PHONE_HELPER_NOTICES.txt') `
+    -Destination (Join-Path $runtimeRoot "encroissant-tournament-core-$noticeVersion.NOTICES.txt")
   $collectorDestination = Join-Path $runtimeRoot $collectorName
   $temporaryCollector = "$collectorDestination.next-$PID"
   Copy-Item -LiteralPath $collectorSource -Destination $temporaryCollector -Force

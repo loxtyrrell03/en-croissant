@@ -129,6 +129,12 @@ try {
   Write-Host "phone publish guard tests passed"
 } finally {
   if (Test-Path -LiteralPath $testRoot) {
-    Remove-Item -LiteralPath $testRoot -Recurse -Force
+    $actualTestRoot = (Resolve-Path -LiteralPath $testRoot).Path
+    $expectedTempParent = (Resolve-Path -LiteralPath ([System.IO.Path]::GetTempPath())).Path.TrimEnd('\')
+    if ([System.IO.Directory]::GetParent($actualTestRoot).FullName -ne $expectedTempParent -or
+        [System.IO.Path]::GetFileName($actualTestRoot) -notlike 'en-croissant-publish-guard-*') {
+      throw 'Refusing cleanup outside the exact publisher fixture directory.'
+    }
+    Remove-Item -LiteralPath $actualTestRoot -Recurse -Force
   }
 }

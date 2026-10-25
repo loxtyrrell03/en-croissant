@@ -1,0 +1,45 @@
+{
+  "description": "Standalone hosted tournament helper compression grants, authenticated to its own Cargo.lock crate checksums.",
+  "entries": [
+    {
+      "name": "zstd",
+      "version": "0.13.3",
+      "sourcePath": "LICENSE",
+      "sha256": "129e8edef29e9abcd2ebabe252f4ef1b1289cdca356bf0040284a2fbccfb96c8",
+      "noticePath": "licenses/zstd/rust-wrapper-MIT.txt",
+      "selectedLicense": "MIT",
+      "component": "Rust wrapper",
+      "sourceUrl": "https://docs.rs/crate/zstd/0.13.3/source/LICENSE"
+    },
+    {
+      "name": "zstd-safe",
+      "version": "7.3.0",
+      "sourcePath": "LICENSE",
+      "sha256": "ce4868c8e4ebe47a7d4b3c93dbf6b802033e5ae2fa7638098173f80836daac60",
+      "noticePath": "licenses/zstd/rust-wrapper-BSD-3-Clause.txt",
+      "selectedLicense": "BSD-3-Clause",
+      "component": "Rust wrapper",
+      "sourceUrl": "https://docs.rs/crate/zstd-safe/7.3.0/source/LICENSE"
+    },
+    {
+      "name": "zstd-sys",
+      "version": "2.1.0+zstd.1.5.7",
+      "sourcePath": "LICENSE",
+      "sha256": "ce4868c8e4ebe47a7d4b3c93dbf6b802033e5ae2fa7638098173f80836daac60",
+      "noticePath": "licenses/zstd/rust-wrapper-BSD-3-Clause.txt",
+      "selectedLicense": "BSD-3-Clause",
+      "component": "Rust wrapper",
+      "sourceUrl": "https://docs.rs/crate/zstd-sys/2.1.0%2Bzstd.1.5.7/source/LICENSE"
+    },
+    {
+      "name": "zstd-sys",
+      "version": "2.1.0+zstd.1.5.7",
+      "sourcePath": "zstd/LICENSE",
+      "sha256": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8",
+      "noticePath": "licenses/zstd/zstandard-BSD-3-Clause.txt",
+      "selectedLicense": "BSD-3-Clause",
+      "component": "Bundled Zstandard C",
+      "sourceUrl": "https://docs.rs/crate/zstd-sys/2.1.0%2Bzstd.1.5.7/source/zstd/LICENSE"
+    }
+  ]
+}
