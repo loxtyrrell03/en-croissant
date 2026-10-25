@@ -4,11 +4,11 @@
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43",
+    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "41668e2b8877-1ac542e56304",
-    "appShellSha256": "1ac542e5630407df582db7a2c7b8935f0a8c06205d33b13474c3ff19e5a1610c",
-    "checkedAt": "2026-10-25T09:35:15.890Z",
+    "releaseId": "cbbff3b83165-1bead00de081",
+    "appShellSha256": "1bead00de081d3389751be6d25836c58a3653b63d839955996506e75c65b01de",
+    "checkedAt": "2026-10-25T11:24:00.622Z",
     "verified": [
       "canonical HTTPS deployment metadata and exact shell/entry/plan/WASM hashes",
       "unchanged saved workspace and tournament settings hashes",
@@ -23,40 +23,69 @@
     "publisherCleanup": {
       "temporaryTaskRemoved": true,
       "normalPublisherExitObserved": true,
-      "publicationReplayed": false
+      "firstAttemptRefusedActiveReview": true,
+      "laterAttemptPassedImmediateIdleGuard": true
     },
     "libraryBeforeAfterContentCompared": true,
-    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots."
-  },
-  "desktop": {
-    "exeBytes": 47868416,
-    "exeSha256": "e66658c11e3e6f7c8eeab67527781f59925bc53fb74c14b30acae664ace606f2",
+    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots.",
+    "phonePid": 54616,
     "assets": [
       {
-        "name": "App-BLHKjqIK.js",
-        "bytes": 192056,
-        "sha256": "ad6abd711a828ad5188576ad00c004080bedf453c6ec5a914ba13b97b349b822",
+        "path": "assets/index-Bv6osPFr.js",
+        "bytes": 295301,
+        "sha256": "133a0834592ce9eff8ea4d95cd81eb3bb10131d055ad4f55abed930f19de2eac"
+      },
+      {
+        "path": "assets/WebApp-K4uZd9L_.js",
+        "bytes": 433745,
+        "sha256": "c8a4a2f6762bcff576edf74ea732ed5e2fe0f34aa08bb82f92932a89e50d0b90"
+      },
+      {
+        "path": "assets/usePlanArrows-Cw5n9kVy.js",
+        "bytes": 8390,
+        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ]
+  },
+  "desktop": {
+    "exeBytes": 47872512,
+    "exeSha256": "2a558379a6a44a68247fc3d4b684d86a9245567408667a6c8af026c13a843e4e",
+    "assets": [
+      {
+        "name": "index-HinezAA2.js",
+        "bytes": 292437,
+        "sha256": "8da8f0b53f28efe4468cdb0da2b53c44e2d6167eb90cbba40a1f46ddbc860bbe",
         "encoding": "brotli",
-        "compressedBytes": 54670,
-        "compressedSha256": "5e530414969133853352db10b9812617fc28986ece7b5e13cb9fb9852432c0fa",
+        "compressedBytes": 89591,
+        "compressedSha256": "9d1db19f5f9dc4c96b285d42c42923ed54bc2554653a1fadebc15be08829439e",
         "embedded": true
       },
       {
-        "name": "workspaceLayout-w7264U0k.js",
-        "bytes": 4478,
-        "sha256": "80988ac5e144fa2d66a38391da2ae089612e1264dbf8d5585ef5de83d3da6fba",
+        "name": "EvalListener-D6S9xDpr.js",
+        "bytes": 85491,
+        "sha256": "305d80004961e92ef0a3ecc8ccc2049f8730b35e237480ad57155444a035fc26",
         "encoding": "brotli",
-        "compressedBytes": 1734,
-        "compressedSha256": "407c21098258f12fdd2090e2d61dac858e4615af72089a0ef0e455032efcfaf3",
+        "compressedBytes": 29427,
+        "compressedSha256": "edba84aa43496ebb99130fddc898e05010b528f8b1a542d99483dcdfd75e4821",
         "embedded": true
       },
       {
-        "name": "BoardsPage-Bh_5GiTh.js",
-        "bytes": 29432,
-        "sha256": "50965e44694ca9b2f3b60ec71da2c806f66c79d6ad4edd2314ffacef0fc42d37",
+        "name": "App-DqB1bPKK.js",
+        "bytes": 192199,
+        "sha256": "756d930225be051fb95f1c154d83a35a32b6652fb4d20432d62bcdfb3401c16d",
         "encoding": "brotli",
-        "compressedBytes": 10457,
-        "compressedSha256": "ddcd3a19bf27f4104ad18f201a6501402ae04f7db11ed94081106942ec9fcd87",
+        "compressedBytes": 54691,
+        "compressedSha256": "729259db14f67e2ddf9181f07fb72b6ef72b4667eea1f9fbb8832e2410254dbe",
         "embedded": true
       }
     ],
@@ -64,9 +93,30 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "cfc2a7f31e3b7b5cd9d22eb29e9040978aace375",
+    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "activeDevSessionPreserved": true,
-    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
+    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
+    "primarySourceCommit": "8a1c5928",
+    "cleanTests": 500,
+    "cleanTestFiles": 69,
+    "types": true,
+    "lintFiles": 7,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 178,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedProductFiles": 7,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "phonePublicationPending": false,
+    "ownerDataWritten": false
   },
   "checks": {
     "combinedFrontend": {
@@ -1979,7 +2029,7 @@
       "77e5c052",
       "158ccf01"
     ],
-    "status": "native-and-phone-source-fixed-clean-builds-pending",
+    "status": "native-package-and-canonical-phone-runtime-verified-rendered-proof-pending",
     "actualSharedRootLifetime": true,
     "nativeBoardWheelMarker": true,
     "touchNotIntercepted": true,
@@ -1993,8 +2043,8 @@
     "lintWarnings": 0,
     "lintErrors": 0,
     "rootStylesheetGuards": 3,
-    "cleanBuildsVerified": false,
-    "phonePublished": false,
+    "cleanBuildsVerified": true,
+    "phonePublished": true,
     "browserRendered": false,
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
@@ -2002,6 +2052,240 @@
     "initialScratchInclusiveTests": 527,
     "scratchCasesExcluded": 27,
     "scratchFilesPreserved": true,
-    "collectionNote": "Ignored historical tmp performance snapshot was collected by the initial primary run. Maintained primary and clean collections both have500 cases/69 files; actual source/tests unchanged."
+    "collectionNote": "Ignored historical tmp performance snapshot was collected by the initial primary run. Maintained primary and clean collections both have500 cases/69 files; actual source/tests unchanged.",
+    "desktopSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "phoneSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "phoneShellSha256": "1bead00de081d3389751be6d25836c58a3653b63d839955996506e75c65b01de"
+  },
+  "previousAppearanceResetDesktop": {
+    "exeBytes": 47868416,
+    "exeSha256": "e66658c11e3e6f7c8eeab67527781f59925bc53fb74c14b30acae664ace606f2",
+    "assets": [
+      {
+        "name": "App-BLHKjqIK.js",
+        "bytes": 192056,
+        "sha256": "ad6abd711a828ad5188576ad00c004080bedf453c6ec5a914ba13b97b349b822",
+        "encoding": "brotli",
+        "compressedBytes": 54670,
+        "compressedSha256": "5e530414969133853352db10b9812617fc28986ece7b5e13cb9fb9852432c0fa",
+        "embedded": true
+      },
+      {
+        "name": "workspaceLayout-w7264U0k.js",
+        "bytes": 4478,
+        "sha256": "80988ac5e144fa2d66a38391da2ae089612e1264dbf8d5585ef5de83d3da6fba",
+        "encoding": "brotli",
+        "compressedBytes": 1734,
+        "compressedSha256": "407c21098258f12fdd2090e2d61dac858e4615af72089a0ef0e455032efcfaf3",
+        "embedded": true
+      },
+      {
+        "name": "BoardsPage-Bh_5GiTh.js",
+        "bytes": 29432,
+        "sha256": "50965e44694ca9b2f3b60ec71da2c806f66c79d6ad4edd2314ffacef0fc42d37",
+        "encoding": "brotli",
+        "compressedBytes": 10457,
+        "compressedSha256": "ddcd3a19bf27f4104ad18f201a6501402ae04f7db11ed94081106942ec9fcd87",
+        "embedded": true
+      }
+    ],
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "nativeWindowVerified": false,
+    "devShortcutChanged": false,
+    "rollback": "task-owned ignored rollback directory",
+    "sourceCommit": "cfc2a7f31e3b7b5cd9d22eb29e9040978aace375",
+    "activeDevSessionPreserved": true,
+    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
+  },
+  "previousPanelScrollingPhone": {
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43",
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "41668e2b8877-1ac542e56304",
+    "appShellSha256": "1ac542e5630407df582db7a2c7b8935f0a8c06205d33b13474c3ff19e5a1610c",
+    "checkedAt": "2026-10-25T09:35:15.890Z",
+    "verified": [
+      "canonical HTTPS deployment metadata and exact shell/entry/plan/WASM hashes",
+      "unchanged saved workspace and tournament settings hashes",
+      "hosted live-library reads (25 files and 70 databases)",
+      "canonical route, owner enabled choice and PC engine service process preserved",
+      "actual Stockfish 19 legal exact bounded report and owned-worker release",
+      "unchanged normalized library content and normal uncaptured publisher return"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "publisherNormalExitObserved": true,
+    "publisherCleanup": {
+      "temporaryTaskRemoved": true,
+      "normalPublisherExitObserved": true,
+      "publicationReplayed": false
+    },
+    "libraryBeforeAfterContentCompared": true,
+    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots."
+  },
+  "currentPanelScrollingPackage": {
+    "exeBytes": 47872512,
+    "exeSha256": "2a558379a6a44a68247fc3d4b684d86a9245567408667a6c8af026c13a843e4e",
+    "assets": [
+      {
+        "name": "index-HinezAA2.js",
+        "bytes": 292437,
+        "sha256": "8da8f0b53f28efe4468cdb0da2b53c44e2d6167eb90cbba40a1f46ddbc860bbe",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "9d1db19f5f9dc4c96b285d42c42923ed54bc2554653a1fadebc15be08829439e",
+        "embedded": true
+      },
+      {
+        "name": "EvalListener-D6S9xDpr.js",
+        "bytes": 85491,
+        "sha256": "305d80004961e92ef0a3ecc8ccc2049f8730b35e237480ad57155444a035fc26",
+        "encoding": "brotli",
+        "compressedBytes": 29427,
+        "compressedSha256": "edba84aa43496ebb99130fddc898e05010b528f8b1a542d99483dcdfd75e4821",
+        "embedded": true
+      },
+      {
+        "name": "App-DqB1bPKK.js",
+        "bytes": 192199,
+        "sha256": "756d930225be051fb95f1c154d83a35a32b6652fb4d20432d62bcdfb3401c16d",
+        "encoding": "brotli",
+        "compressedBytes": 54691,
+        "compressedSha256": "729259db14f67e2ddf9181f07fb72b6ef72b4667eea1f9fbb8832e2410254dbe",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "primarySourceCommit": "8a1c5928",
+    "cleanTests": 500,
+    "cleanTestFiles": 69,
+    "types": true,
+    "lintFiles": 7,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 178,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedProductFiles": 7,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "phonePublicationPending": false,
+    "ownerDataWritten": false
+  },
+  "panelScrollingPhoneDelivery": {
+    "checkedAt": "2026-10-25T11:24:00.622Z",
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "appShellSha256": "1bead00de081d3389751be6d25836c58a3653b63d839955996506e75c65b01de",
+    "phonePid": 54616,
+    "workspaceSha256": "e325f5f56463bbebf0f2f8e05999181aaba8fcb4c0175b2aa045856c674fba2b",
+    "librarySha256": "bf58f60a808dfb7d308138fb3d534e55b3e544c39f278f882e939bbfa84270c7",
+    "libraryContentSha256": "b15264db2eb1cfb99050fdfc9b2a0e4e62e36fb5ca8301b4a06d0fa6df367d94",
+    "tournamentSettingsSha256": "ec60b2deb22f7143bfc32b9f194bfbfec634b92251c151b9b8945ceec52f8b0e",
+    "servicesEnabled": true,
+    "enginePid": 5816,
+    "engineReady": true,
+    "reviewRunning": false,
+    "activeWork": {
+      "library": false,
+      "explorer": 0,
+      "imports": 0,
+      "tournaments": 0
+    },
+    "serveSha256": "f25ac5a18efda388d5c9459aed3eec76066a507c84ba940c051e3c06de79a771",
+    "assets": [
+      {
+        "path": "assets/index-Bv6osPFr.js",
+        "bytes": 295301,
+        "sha256": "133a0834592ce9eff8ea4d95cd81eb3bb10131d055ad4f55abed930f19de2eac"
+      },
+      {
+        "path": "assets/WebApp-K4uZd9L_.js",
+        "bytes": 433745,
+        "sha256": "c8a4a2f6762bcff576edf74ea732ed5e2fe0f34aa08bb82f92932a89e50d0b90"
+      },
+      {
+        "path": "assets/usePlanArrows-Cw5n9kVy.js",
+        "bytes": 8390,
+        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "libraryRead": {
+      "files": 25,
+      "databases": 70,
+      "stableAcrossRepeatedReads": true,
+      "beforeAfterContentCompared": true,
+      "volatileGeneratedAtExcluded": true
+    },
+    "ownerStateAndRoutesPreserved": true,
+    "publisher": {
+      "completedAt": "2026-10-25T11:23:14.1945731+00:00",
+      "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+      "publisherReturned": true,
+      "preservedOwnerFiles": 3,
+      "ownerFileHashes": {
+        "C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\state\\web-state.json": "459736c741d25f79be25e358a35d7e5e5adbcbda5b82c562407932ee6350301a",
+        "C:\\Users\\Lox\\AppData\\Local\\Stockfish18Server\\config.json": "c5fee0d40adc5d4e9a8a0cd3d790cfbb2e22f4df34e607081d6eefb28e3739c1",
+        "C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\launcher\\controller-config.json": "7a1764ce4d1a8cd15e69cb41792bfbdd55391ffc1aca31b0291c3f8c604dd069"
+      }
+    },
+    "engine": {
+      "checkedAt": "2026-10-25T11:24:54.383Z",
+      "url": "https://lox-pc.tail89d19b.ts.net",
+      "processId": 5816,
+      "actualUciName": "Stockfish 19",
+      "bestmove": "e2e4",
+      "legal": true,
+      "exactChosenRootScore": true,
+      "allPvsLegal": true,
+      "reportLimits": {
+        "depth": 8,
+        "timeMs": 50
+      },
+      "reportedVersion": 19,
+      "reportedBuild": null,
+      "release": {
+        "ok": true,
+        "engineKind": "stockfish",
+        "pending": false,
+        "busy": 0,
+        "stopped": 1
+      },
+      "workerReadyAfter": false,
+      "versionAfterRelease": null,
+      "servicesRoutesChanged": false,
+      "ownerDataModified": false,
+      "physicalPhoneVerified": false
+    },
+    "temporaryTaskRemoved": true,
+    "reviewCompletionVerified": false,
+    "reviewObservation": {
+      "state": "error",
+      "error": "Engine did not reach the required review depth.",
+      "pendingGames": 1,
+      "manualCancellation": false,
+      "manualRetry": false,
+      "causalAttribution": "Not established; no completed-review claim."
+    }
   }
 }
