@@ -1,3 +1,16 @@
+## 2026-10-25 legacy import target review
+
+- Novelty aa25aa07/84308b8b/0b97d3bb checkpoint its En-db3-to-Novelty
+  Library converter. En desktop opens that native schema directly; hosted
+  phone catalogs db3 without the foreign migration CLI. No reverse importer
+  or duplicate Library is needed. General PGN interruption remains separate.
+- 701b7e10/6734869d optimize Novelty position_hit inserts/masks/WAL. En's
+  maintained-board visitor writes native Moves bytes, not those per-ply
+  rows; hosted core has no matching writer. Preserve the native schema and
+  existing staged OTB publication. This is source review, not measured En
+  speed parity or full-data validation. No owner data operation. See
+  docs/LEGACY_IMPORT_TARGET_REVIEW.md. Wider recovery/data audit remains.
+
 ## 2026-10-25 explicit default reset native package
 
 - Clean d4aab304/primary08c105ee packages48,862,208 bytes SHA256
