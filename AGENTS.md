@@ -1,3 +1,19 @@
+## 2026-10-25 converged desktop package
+
+- Primary and delivery now share completed source193ae3e6, preserving the
+  live phone lineage, personal-sync follow-ups and completed Study features.
+  Primary fast-forward/push retains its exact104/2 owner guidance remainder;
+  all five other untouched dirty files and untracked inventory are preserved.
+- Native release48,925,696 bytes SHA256
+  bd932e04022f0f8deb6c790034c077dc203416cfe60a28428308af5752e1de38
+  embeds13 exact assets including Study/tracker/export, Windows IPC, complete
+  notices and102 engine/source resources. Build126s/22 existing warnings,
+  frontend26.25s; two generated outputs match committed source.
+- No native launch/manual restart, owner profile/corpus or pinned sync-helper
+  change. Hosted publication still pending; its current live7e7804f2 lineage
+  is included. Keep exact snapshot receipts separate from later delivery claims.
+  See docs/SOURCE_CONVERGENCE_2026-10-25.md/current delivery JSON. Goal active.
+
 ## 2026-10-25 completed primary Study source retained
 
 - Delivery also merges completed primary0f1ac6e7, retaining Study6e87571f's
