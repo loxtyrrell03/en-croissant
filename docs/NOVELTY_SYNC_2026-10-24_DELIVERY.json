@@ -1196,8 +1196,19 @@
     "managedCatalogLifecycleScope": {
       "novelty": "66def21d",
       "reviewed": "Cancellation in that payload belongs to manual local-profile validation. Managed installs explicitly continue when the modal closes; the MiB/status/alert/retry changes remain separate.",
-      "native": "Manual setup and retained Stockfish card are verified. Legacy LC0/third-party EngineCard uses component-local install errors and ProgressButton download completion; evaluate reopening/failure/profile-save state with an actual component fixture before declaring full managed catalog parity.",
-      "status": "remaining-source-candidate-not-yet-behaviorally-reproduced"
+      "native": "LCZero/third-party catalog operations now retain per-app/source ownership, unique progress IDs, visible retryable errors and validated durable profile completion. Existing managed commands continue after close, with no new cancellation claim.",
+      "status": "native-source-fixed-with-actual-fixtures",
+      "priorFailuresReproduced": 3,
+      "newTests": 13,
+      "relatedTests": 98,
+      "relatedFiles": 11,
+      "types": true,
+      "lintFiles": 7,
+      "lintWarnings": 0,
+      "lintErrors": 0,
+      "cleanBuildVerified": false,
+      "phoneApplicable": false,
+      "phoneProductionChanges": false
     }
   },
   "storedEvaluationParity": {
