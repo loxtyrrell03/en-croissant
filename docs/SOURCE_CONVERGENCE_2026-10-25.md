@@ -35,5 +35,30 @@ This is source and package evidence. No native app was launched or manually
 restarted, and no owner corpus/profile was modified. Read-only unpackaged phone
 preflight resolves the expected installed runtime, canonical route and enabled
 state; engines/review/home jobs were idle and private sync had no current errors
-or conflicts. Phone publication and rendered/physical checks remain separate.
+or conflicts. Phone publication is recorded below; rendered/physical checks remain separate.
 The full history audit and recovery/snapshot parity remain open.
+
+## Hosted phone delivery
+
+The guarded publisher returned0 for documentation descendant
+`f1dab735d278a9b7ef0bd33b4f05824bf121cab5`. The canonical app at
+`https://lox-pc.tail89d19b.ts.net/` identifies that source and shell SHA256
+`cf49e94075e6f7cf70b777e1749d593c5de3effd607287a8b61ee594b06c06ae`.
+Ten exact served shell, entry, WebApp, CSS and Stockfish JS/WASM assets match
+the prepared build. The new complete-PGN failure control and existing sync
+transport are compiled into WebApp. Frontend25.58 seconds, collector48.10 seconds,
+helper10.45 seconds; generated outputs match committed source.
+
+HTTPS reads verify the saved workspace, a small saved PGN, real database manifest
+and position, tournament settings and healthy private sync. Workspace and complete
+catalogue hashes match the pre-publication session. Seven owner config/state and
+pinned-helper files, the permanent private-sync task and all Serve routes remain
+unchanged. The same enabled choice and cold engine process remain. A periodic
+in-progress sync was allowed to settle before the final check; it reported no
+current conflicts or errors. Both temporary broker/publisher tasks were removed
+after terminal success. No bridge reinitialization or owner game edit occurred.
+
+Browser control remains unavailable. These checks verify actual deployment,
+compiled assets and connected data services; they do not claim rendered touch,
+focus, native-window or physical-phone interaction. The native package is tied
+to193ae3e6, whose only difference from the phone source is delivery documentation.

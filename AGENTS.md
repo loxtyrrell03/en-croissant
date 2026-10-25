@@ -1,3 +1,21 @@
+## 2026-10-25 converged phone delivery
+
+- Guarded publisher normally returned0 for f1dab735 at the canonical private
+  HTTPS origin; shell cf49e94075e6f7cf70b777e1749d593c5de3effd607287a8b61ee594b06c06ae.
+  This includes the newer phone navigation/private sync and accumulated parity
+  fixes, including complete-PGN export error/retry, without rolling back either.
+- Ten exact served shell/entry/WebApp/Stockfish assets match the prepared build.
+  Actual workspace, saved PGN, database manifest/position, tournament settings
+  and private-sync APIs pass. Owner workspace/catalog hashes match before/after;
+  seven config/state/pinned-helper files, private-sync task and all Serve routes
+  are unchanged. Sync reports no current conflicts/errors; engine process8536
+  remains cold. Both owned temporary broker/publisher tasks are removed.
+- Phone frontend25.58s, collector48.10s and helper10.45s; source clean.
+  Desktop package remains verified193ae3e6, preceding documentation-only f1dab735.
+  Browser control remains unavailable; this is exact-asset/API and package
+  evidence, not rendered/native-window or physical-phone verification. The full
+  history/recovery audit remains active. See SOURCE_CONVERGENCE/current JSON.
+
 ## 2026-10-25 converged desktop package
 
 - Primary and delivery now share completed source193ae3e6, preserving the

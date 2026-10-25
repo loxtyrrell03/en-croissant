@@ -69,3 +69,13 @@ usability and personal-sync work absent from the current delivery checkout.
 Phone release therefore requires source reconciliation before publishing this
 toolbar change; the existing serving version and data remain intact. This is
 verified source-version evidence, not a phone update or rendered download proof.
+
+
+The converged phone source f1dab735 is now published through the normal guarded
+publisher and independently verified over canonical HTTPS. The new download
+failure/retry code is in the exact served WebApp asset; connected workspace,
+PGN, database and private-sync reads pass with owner data/settings/routes and
+pinned sync helpers preserved. Desktop source193ae3e6 is separately packaged.
+This extends delivery evidence without claiming a rendered browser download,
+operating-system save, native-window or physical-phone interaction. See
+SOURCE_CONVERGENCE_2026-10-25.md and the current delivery JSON.
