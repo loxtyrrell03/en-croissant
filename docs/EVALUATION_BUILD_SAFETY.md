@@ -30,12 +30,19 @@ Tests use tiny synthetic zstd sources and temporary directories only.
 
 The phone's installed readers consume the shared immutable corpus and expose no
 on-device evaluation builder. This slice neither copies nor rebuilds that corpus,
-changes a selected path, nor restarts a service. Native packaging is tracked in
-the current delivery JSON. Frontend source is unchanged; the previous frontend
-gate is not counted as rerun here. Native-window and physical-device checks are
-separate.
+changes a selected path, nor restarts a service. Native clean `2c342d72` packages
+in 1m44s with 22 existing warnings; the 47,892,480-byte EXE has SHA256
+33173d188a770296a180a80e3a39c5b8168e1abb83d2fd13690ffcb845f00439.
+The three exact embedded app chunks are unchanged; new builder refusal strings,
+the exact Windows IPC script and all 102 engine/source resources (104,581,828
+bytes) are verified. Four owned product/test files match primary `c2d054d1`. Only
+two known generated outputs were restored to exact HEAD bytes; checkout clean.
+Only synthetic test outputs were built; no Dev restart was requested. Packaging
+is also tracked in the current delivery JSON. Frontend source is unchanged; the
+previous frontend gate is not counted as rerun here. Native-window and
+physical-device checks are separate.
 
 This is the output-ownership portion of builder parity. Bounded input/sort/disk
 use, strict PV/score validation, duplicate-position selection, cancellation,
-network stall limits and durable interrupted-job recovery
-remain explicit audit work; this milestone does not claim those are delivered.
+network stall limits and durable interrupted-job recovery remain explicit audit
+work; this milestone does not claim those are delivered.

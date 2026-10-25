@@ -32,6 +32,8 @@
 
 - Optional evaluation build output ownership (Novelty2a083a83): native command/CLI atomically reserve a new directory, refuse existing/complete/concurrent outputs, reject empty exports and publish only completed shards. Cleanup/publication require canonical identity and a matching random marker; changed ownership/reparse points and prior unfinished directories are preserved. Four old-code failures reproduced;12 native evaluation checks pass independently on primary/clean, and CLI help is verified. No corpus/profile/phone-runtime write; phone has no on-device builder. Packaging and input/sort/disk/cancellation/network/recovery parity remain separate; see docs/EVALUATION_BUILD_SAFETY.md/current delivery JSON.
 
+- Evaluation build ownership package: clean2c342d72 / primaryc2d054d1, EXE47,892,480 bytes SHA25633173d188a770296a180a80e3a39c5b8168e1abb83d2fd13690ffcb845f00439. Native1m44s/22 existing warnings, unchanged exact boot/App/files chunks, exact IPC shim, compiled refusal strings and102 engine/source files match;12 native checks independently pass. Only two known generated outputs restored; clean checkout clean. No phone production change or explicit Dev restart. Audit also confirms existing native/phone OAuth and download-review blocking boundaries; three shared-token and15 transfer checks pass. Active data-pack fetch_manifest still lacks advertised-size rejection (2815afb4 class), despite the unused shared metadata helper already having it: next reproduce/fix that actual2 MiB caller. See EVALUATION_BUILD_SAFETY.md and additional history queue; broader bounded-build/recovery/UI audit remains.
+
 
 ## 2026-10-25 clean phone dates and refreshed history audit
 
