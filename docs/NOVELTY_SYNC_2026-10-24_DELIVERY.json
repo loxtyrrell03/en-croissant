@@ -516,5 +516,38 @@
       "c1f5b6591bf58710f561b581d3d77e6ec0cfe90b"
     ],
     "coverageProvenByHashComparison": false
+  },
+  "pendingNativeEnginePreferences": {
+    "primarySourceCommit": "66ffb51d385975a386fe0658f29212780320dd83",
+    "cleanSourceCommit": "9a37cc0be83a0ffc1be046ec318d3736ffeb4322",
+    "checkedAt": "2026-10-25T02:15:15.769729+00:00",
+    "relatedFrontendTests": 591,
+    "relatedFrontendFiles": 75,
+    "focusedFrontendTests": 21,
+    "focusedFrontendFiles": 4,
+    "types": true,
+    "lintFiles": 12,
+    "lintWarnings": 1,
+    "lintErrors": 0,
+    "lintWarning": "Existing engine-options effect dependency warning",
+    "desktopBuildSeconds": 22.56,
+    "canonicalPhoneBuildSeconds": 22.08,
+    "matchingOwnedSourceFiles": 12,
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "phonePublished": false,
+    "standalonePublished": false,
+    "nativeCodeChanged": false,
+    "engineBinaryChanged": false,
+    "ownerDataMigrated": false,
+    "servicesChanged": false,
+    "stockfish19DefaultMigrationImplemented": false,
+    "phoneBundle": {
+      "entry": "WebApp-B8e0OmiO.js",
+      "bytes": 428588,
+      "sha256": "30ae89ed46d5e6e301f507d44e241cb9633899886c567d1d4a19568d2514f49f",
+      "canonicalOriginPresent": true,
+      "inventedFixturesExcluded": true
+    }
   }
 }

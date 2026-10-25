@@ -1,3 +1,16 @@
+## 2026-10-25 clean engine preference verification
+
+- Clean delivery 9a37cc0b and primary 66ffb51d match all twelve owned engine
+  preference files. All 591 related frontend checks/75 files pass, including 21
+  focused checks; full types and twelve-file lint pass (one existing options
+  effect warning, no errors). Desktop/canonical-phone builds pass in 22.56/22.08s.
+- Preserve native profile identity, explicit empty/hidden/custom/newer choices
+  and pending saves. Version/default upgrades must wait for idle state and an
+  awaited write/flush before recording completion. See NATIVE_ENGINE_PREFERENCES.
+- Source/build verification only: no binary install, manual profile migration,
+  service change or phone/standalone publication. Stockfish 19/catalog/default
+  integration and rendered/runtime delivery remain in the active parity ledger.
+
 ## 2026-10-25 native engine profile access errors
 
 - A failed engines.json read is a fresh store only when its parent directory
