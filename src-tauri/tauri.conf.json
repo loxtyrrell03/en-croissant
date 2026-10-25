@@ -34,13 +34,14 @@
       "signingIdentity": "-"
     },
     "resources": {
-      "../sound/": "sound/"
+      "../sound/": "sound/",
+      "../licenses/THIRD_PARTY_NOTICES.txt": "THIRD_PARTY_NOTICES.txt"
     },
     "targets": "all"
   },
   "build": {
     "beforeDevCommand": "npm run start-vite",
-    "beforeBuildCommand": "npm run build-vite",
+    "beforeBuildCommand": "node scripts/verify-compression-notices.mjs && npm run build-vite",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420"
   },

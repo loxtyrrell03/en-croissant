@@ -1,7 +1,8 @@
-import { Anchor, Modal, Text } from "@mantine/core";
+import { Accordion, Anchor, Modal, ScrollArea, Text } from "@mantine/core";
 import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
 import { arch, version as OSVersion, type } from "@tauri-apps/plugin-os";
 import { useEffect, useState } from "react";
+import thirdPartyNotices from "../../licenses/THIRD_PARTY_NOTICES.txt?raw";
 
 function AboutModal({
   opened,
@@ -30,7 +31,13 @@ function AboutModal({
     load();
   }, []);
   return (
-    <Modal centered opened={opened} onClose={() => setOpened(false)} title="En Croissant">
+    <Modal
+      centered
+      opened={opened}
+      onClose={() => setOpened(false)}
+      title="En Croissant"
+      closeButtonProps={{ "aria-label": "Close" }}
+    >
       <Text>Version: {info?.version}</Text>
       <Text>Tauri version: {info?.tauri}</Text>
       <Text>
@@ -42,6 +49,24 @@ function AboutModal({
       <Anchor href="https://www.encroissant.org" target="_blank" rel="noreferrer">
         www.encroissant.org
       </Anchor>
+      <Accordion mt="md">
+        <Accordion.Item value="compression-notices">
+          <Accordion.Control>Compression library notices</Accordion.Control>
+          <Accordion.Panel>
+            <ScrollArea.Autosize mah="min(35dvh, 16rem)" type="auto" offsetScrollbars>
+              <Text
+                component="pre"
+                size="xs"
+                tabIndex={0}
+                aria-label="Compression library notice text"
+                style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontFamily: "inherit" }}
+              >
+                {thirdPartyNotices}
+              </Text>
+            </ScrollArea.Autosize>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
     </Modal>
   );
 }

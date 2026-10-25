@@ -5,3 +5,5 @@
 /node_modules.incomplete-from-laptop-archive/stockfish/bin/stockfish-18-single.wasm filter=lfs diff=lfs merge=lfs -text
 /node_modules.incomplete-from-laptop-archive/stockfish/bin/stockfish-18.wasm filter=lfs diff=lfs merge=lfs -text
 /node_modules.incomplete-from-laptop-archive/stockfish/bin/stockfish.wasm filter=lfs diff=lfs merge=lfs -text
+/licenses/**/*.txt text eol=lf
+/licenses/THIRD_PARTY_NOTICES.txt text eol=lf
