@@ -9,8 +9,8 @@ behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
 Current delivery (2026-10-25): clean `33670fec` is live on the canonical phone
-site. The latest native desktop artifact is clean `f33263de`, SHA256
-`876f001e3c571e67bf5ca964397c253dd85639e681da824c27de3997c921593c`.
+site. The latest native desktop artifact is clean `abf029e6`, SHA256
+`adc1ff307c51326697a872a30c827a18ab644d72c008337d91dcc7194e1ccad4`.
 The native package includes the Windows IPC and evaluation-readiness fixes;
 both installed PC/home evaluation readers now match the verified shared source.
 Exact served assets and the same normal stored evaluation response pass, with
@@ -207,3 +207,14 @@ Cleanf33263de native packaging and exact assets/resources/source are verified.
 The phone has no corpus builder; its delivered shared readers/corpus are retained.
 Durable termination recovery7128c5ed and data-management UI remain separate.
 See EVALUATION_BUILD_LIMITS.md. This does not close the remaining history audit.
+
+
+Compression notices (Noveltyd230b44f) now match the root native lockfile and ship
+in the optional About disclosure plus standalone native resource. Five Node
+checks/one actual About workflow/types/lint pass; cleanabf029e6 packaging verifies
+the exact complete notice literal, embedded assets and standalone file alongside
+all existing engine resources. Hosted helper notice delivery remains open: its
+newer safe/sys wrappers declare BSD-3-Clause, so native MIT wrapper labels cannot
+be reused. Four helper grants are source-authenticated to locked crate archives.
+See COMPRESSION_NOTICES.md. Native Dev watcher relaunched for configuration;
+phone runtime/data/routes remain unchanged by these two native slices.

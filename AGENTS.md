@@ -1,3 +1,19 @@
+## 2026-10-25 compression notices native package
+
+- Cleanabf029e6 / primary844beb1c packages47,958,016 bytes SHA256
+  adc1ff307c51326697a872a30c827a18ab644d72c008337d91dcc7194e1ccad4,
+  native114s/22 existing warnings, frontend24.21s. Guard ran before build;
+  exact full About notice literal/three assets/native IPC and standalone2931B
+  notice file match.102 engine/source resources and ten owned files match;
+  only two generated outputs restored, clean delivery source.
+- Separate helper grants match locked crate archive checksums without disk
+  extraction. Its newer safe/sys wrappers use BSD-3-Clause/2026 copyright;
+  do not label them with the native MIT grant. Helper notice distribution is
+  still open. Dev watcher relaunched to59432 for config; no uninterrupted Dev
+  process claim. No manual restart/phone publication/owner data operation.
+  Full history and rendered/native-window/physical checks remain. See
+  docs/COMPRESSION_NOTICES.md and current delivery JSON.
+
 ## 2026-10-25 native compression notices
 
 - Noveltyd230b44f native notice gap now uses En root Cargo.lock versions
