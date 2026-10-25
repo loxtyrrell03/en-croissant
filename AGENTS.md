@@ -1,3 +1,16 @@
+## 2026-10-25 bounded-builder native package
+
+- Cleanf33263de / primary4a3eb4a6 packages47,953,920 bytes SHA256
+  876f001e3c571e67bf5ca964397c253dd85639e681da824c27de3997c921593c,
+  native124s/22 existing warnings and frontend24.94s. Four exact assets, native
+  IPC,102 engine/source resources and eight owned source/test files match.
+  Both debug and actual packaged release CLIs pass the same eight acceptance
+  cases. Only two generated outputs restored; clean source. Phone builder is
+  absent, so its live33670fec/readers need no publication for this native-only
+  change. Existing Dev app22468 remains; no explicit restart/data/corpus change.
+  Durable recovery, remaining history and rendered/native/physical checks remain.
+  See docs/EVALUATION_BUILD_LIMITS.md and current delivery JSON.
+
 ## 2026-10-25 bounded optional evaluation builder
 
 - Novelty2a083a83 native command/CLI now stream with1 MiB source lines,64 MiB
