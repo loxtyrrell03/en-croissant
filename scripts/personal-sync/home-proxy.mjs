@@ -15,6 +15,9 @@ export function createPersonalSyncProxy({configPath,origins}){
     if(config.port!==8788||!/^[a-f0-9]{64}$/.test(config.secret??'')){json(503,{error:'Personal sync configuration needs attention'});return true;}
     const origin=String(request.headers.origin??'').replace(/\/$/,'');
     if(origin&&!origins.has(origin)){json(403,{error:'Origin is not allowed'});return true;}
+    // Explicit downloaded references retain the existing read-only native API.
+    // No unmatched personal/production request is allowed through this branch.
+    if(request.method==='GET'&&['/api/database-manifest','/api/database-position'].includes(pathname)&&(config.referenceDatabases??[]).some(r=>r.path===new URL(request.url,'http://127.0.0.1').searchParams.get('hostedPath')))return false;
     if(!['GET','HEAD'].includes(request.method)&&!String(request.headers['content-type']).startsWith('application/json')){json(415,{error:'JSON is required'});return true;}
     const upstream=httpRequest({hostname:'127.0.0.1',port:8788,path:request.url,method:request.method,headers:{'x-personal-sync-key':config.secret,'content-type':request.headers['content-type']??'application/json'}},incoming=>{
       response.writeHead(incoming.statusCode??502,{'content-type':incoming.headers['content-type']??'application/json','cache-control':'no-store'});incoming.pipe(response);

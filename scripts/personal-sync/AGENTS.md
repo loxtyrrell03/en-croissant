@@ -16,6 +16,8 @@ accounts, services or download preferences.
   mass deletions. Database deletion requires stable absence and unchanged peer
   content. Physical database renames/deletions defer while En Croissant is open.
 - Reference paths are explicitly excluded from mutable database discovery.
+  Explicit reference catalogue entries retain their existing read-only phone
+  query handler; this is not a fallback for personal or production databases.
   Unclassified large databases fail instead of being imported into Dev. Maintain
   the read-only attribute on the selected reference copies during activation.
 - `runner.mjs` requires a physically resolved Dev profile, initialized root
@@ -26,6 +28,9 @@ accounts, services or download preferences.
 - A user logon task may run `start-runner.ps1` hidden with explicit Node/config
   arguments. Pin the two native executables in the owner-local runtime and record
   their hashes before activation; never depend on a compiler overwriting them.
+- Windows ledger publication retries transient sharing denials against the same
+  durable staging file. Resume a partial initial file mirror from its existing
+  per-item baseline; never restart with a fresh empty ledger.
 - Phone exports carry transport-only stable references and revision hashes.
   Checked saves strip those tags before writing personal content. New phone
   imports validate every game and recover by request identity. Offline phone
