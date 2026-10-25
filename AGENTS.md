@@ -1,3 +1,19 @@
+## 2026-10-25 board shortcut ownership
+
+- Native BoardAnalysis's capture listener now yields Left/Right to editing,
+  menu triggers/items, resize separators and other arrow-driven controls, open
+  modals, composition and previously handled events. SVG/shadow children and
+  focus fallback retain the control's event; ordinary board/buttons still move.
+  The actual effect uses a shared binder with symmetric cleanup/latest callbacks.
+- The unchanged old callback fails26/33 DOM-event cases; current37 checks,
+  full types and three-file lint0 pass. This carries Novelty39015b80/daed08c0
+  through En's native architecture, with broader existing input ownership.
+  Phone has no matching global move-arrow listener and keeps its touch controls.
+- Source verified; the current desktop package193ae3e6 predates this fix and
+  needs rebuilding. Hosted f1dab735 is unchanged; no owner session/data/service
+  mutation. Rendered/native-window evidence remains unavailable. See
+  docs/BOARD_SHORTCUT_OWNERSHIP.md and current delivery JSON. Goal active.
+
 ## 2026-10-25 converged phone delivery
 
 - Guarded publisher normally returned0 for f1dab735 at the canonical private

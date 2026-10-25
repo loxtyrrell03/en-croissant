@@ -54,6 +54,7 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { appendTabGame } from "@/utils/appendTabGame";
+import { bindBoardMoveShortcuts } from "@/utils/boardMoveShortcuts";
 import { notePgnFileWrite } from "@/utils/pgnSourceTabs";
 import { getTabFile, getTabGameNumber, getTabPracticeKey, saveToFile } from "@/utils/tabs";
 import type { LiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
@@ -354,31 +355,10 @@ function BoardAnalysis() {
     }
   }, [currentTabSelected, selectedPanel, setCurrentTabSelected]);
 
-  useEffect(() => {
-    const navigateWithArrowKeys = (event: KeyboardEvent) => {
-      if (
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        (event.key !== "ArrowRight" && event.key !== "ArrowLeft")
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-      event.stopImmediatePropagation();
-
-      if (event.key === "ArrowRight") {
-        goToNext();
-      } else {
-        goToPrevious();
-      }
-    };
-
-    window.addEventListener("keydown", navigateWithArrowKeys, { capture: true });
-    return () => window.removeEventListener("keydown", navigateWithArrowKeys, { capture: true });
-  }, [goToNext, goToPrevious]);
+  useEffect(
+    () => bindBoardMoveShortcuts(goToNext, goToPrevious),
+    [goToNext, goToPrevious],
+  );
 
   useHotkeys([
     [keyMap.SAVE_FILE.keys, () => userSaveFile()],

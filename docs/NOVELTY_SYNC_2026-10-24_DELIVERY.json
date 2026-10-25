@@ -5256,5 +5256,23 @@
     "frontendBuildSeconds": 25.58,
     "collectorBuildSeconds": 48.1,
     "tournamentHelperBuildSeconds": 10.45
+  },
+  "boardShortcutOwnership20261025": {
+    "noveltySources": [
+      "39015b80",
+      "daed08c0"
+    ],
+    "oldCallbackFailed": 26,
+    "oldCallbackCases": 33,
+    "fixedCases": 37,
+    "types": true,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "desktopSource": true,
+    "desktopPackage": "pending",
+    "phoneDecision": "No matching global move-arrow listener; preserve existing native controls and touch navigation",
+    "ownerDataWritten": false,
+    "browserRendered": false,
+    "nativeWindowVerified": false
   }
 }
