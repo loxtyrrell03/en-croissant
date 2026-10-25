@@ -23,6 +23,9 @@ accounts, services or download preferences.
   8788. `home-proxy.mjs` uses an owner-local secret, validates origins and never
   falls back to production data when configured personal sync is unavailable.
   Preserve the established HTTPS/controller routes and their owner On/Off state.
+- A user logon task may run `start-runner.ps1` hidden with explicit Node/config
+  arguments. Pin the two native executables in the owner-local runtime and record
+  their hashes before activation; never depend on a compiler overwriting them.
 - Phone exports carry transport-only stable references and revision hashes.
   Checked saves strip those tags before writing personal content. New phone
   imports validate every game and recover by request identity. Offline phone
