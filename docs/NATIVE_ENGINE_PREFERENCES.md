@@ -39,14 +39,16 @@ it is not a durable-write receipt. Migration code must await the preference
 store's write/`flush()` before marking an upgrade complete. The controller owns
 failure status so rejected UI writes cannot silently disappear.
 
-Twenty-one focused synthetic checks cover unreadable/empty stores, preserved settings,
-native staged replacement, failed/uncertain/overlapping saves, observed external
-edits, mutation after capture, real startup/retry/remount behavior, enabled/paused
-analysis and stale replies. The 587-check related source baseline passes across 75 files; the final
-identity/newer-version cases add three passing focused checks. Full types pass
-on the baseline; clean combined verification is recorded separately. Scoped lint has one existing engine-options effect
-warning and no errors. This is source/component evidence, with no manual profile
-migration, binary install or service restart performed by this milestone.
+Twenty-one focused synthetic checks cover unreadable/empty stores, preserved
+settings, native staged replacement, failed/uncertain/overlapping saves, observed
+external edits, mutation after capture, real startup/retry/remount behavior,
+enabled/paused analysis and stale replies. Primary `66ffb51d` and clean delivery
+`9a37cc0b` independently retain the same twelve owned product/test files. Clean
+verification passes all 591 related checks across 75 files, whole-project types
+and twelve-file lint with one existing engine-options effect warning, no errors.
+Desktop and canonical-phone production builds pass in 22.56/22.08 seconds.
+This is source/component/build evidence, with no manual profile migration,
+binary install or service restart performed by this milestone.
 
 Stockfish 19 installation, catalog/default migration and PC/phone version routing
 remain a separate slice. These safeguards are its prerequisite; they do not
