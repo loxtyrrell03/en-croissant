@@ -6,6 +6,10 @@ authenticates the complete archive and stages its full source, licence and
 notices with the executable. The generated Tauri resource configuration retains
 the existing sound resources. Other target builds retain their existing path.
 The desktop build explicitly disables the phone-only build flag.
+Resource sources are relative to the native manifest, including shared-cache
+junctions. Tauri's Windows directory mapper strips drive prefixes from absolute
+sources and can otherwise resolve a copy destination back onto the source.
+The real Tauri resource iterator regression checks the nested destination.
 
 `stockfish_install` is also the explicit managed-download implementation. It
 limits archive size/entries, rejects traversal and links, checks cancellation

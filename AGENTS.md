@@ -1,3 +1,7 @@
+## Stockfish resource-path repair (2026-10-25)
+
+- The clean desktop build exposed a Windows Tauri directory-mapping bug with absolute resource sources (copy-to-self sharing error). The stager now computes a manifest-relative source across the reused target junction. A real Tauri resource-iterator regression verifies the nested engine destination; it passes. The first clean build failed before native packaging; a corrected build remains required. The 636 related frontend checks/77 files and clean types passed before this build-only correction.
+
 ## Native Stockfish 19 source milestone (2026-10-25)
 
 - Windows desktop builds now stage the SHA-256-pinned official universal x64/ARM64 release with full upstream source/licence/notices and merge its resource map with existing sounds. Use `scripts/build-desktop.mjs`; portable delivery needs the adjacent engine resource tree. Discovery is read-only and never warms an engine. The explicit installer authenticates bounded archives, rejects traversal/links, supports cancellation and preserves changed installs. See `docs/NATIVE_STOCKFISH_19.md`.

@@ -6,6 +6,38 @@ use std::{
     sync::{atomic::AtomicBool, Arc},
 };
 
+// Tauri's Windows resource iterator strips drive prefixes before computing the
+// destination of a directory mapping. Use a relative source so its child files
+// cannot become absolute copy targets (or be copied onto themselves).
+fn resource_directory(source: &Path, manifest: &Path) -> Result<String, String> {
+    let source = source.canonicalize().map_err(|e| e.to_string())?;
+    let manifest = manifest.canonicalize().map_err(|e| e.to_string())?;
+    let source = source.components().collect::<Vec<_>>();
+    let manifest = manifest.components().collect::<Vec<_>>();
+    let common = source
+        .iter()
+        .zip(&manifest)
+        .take_while(|(a, b)| a == b)
+        .count();
+    if common == 0 {
+        return Err("Stage Stockfish on the same filesystem as the desktop project.".into());
+    }
+    let mut relative = PathBuf::new();
+    for _ in common..manifest.len() {
+        relative.push("..");
+    }
+    for component in &source[common..] {
+        relative.push(component.as_os_str());
+    }
+    if relative.as_os_str().is_empty() {
+        return Err("The engine stage must be a separate directory.".into());
+    }
+    Ok(format!(
+        "{}/",
+        relative.to_string_lossy().replace('\\', "/")
+    ))
+}
+
 #[tokio::main]
 async fn main() -> Result<(), String> {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
@@ -60,7 +92,7 @@ async fn main() -> Result<(), String> {
         .ok_or("Expected a resource map.")?
         .clone();
     resources.insert(
-        format!("{}/", engine_root.to_string_lossy().replace('\\', "/")),
+        resource_directory(engine_root, manifest_root)?,
         "engines/stockfish-19/".into(),
     );
     let config = serde_json::json!({"bundle":{"resources":resources}});
@@ -75,4 +107,41 @@ async fn main() -> Result<(), String> {
         serde_json::json!({"path":installed.path,"version":installed.version,"architecture":architecture,"config":config_path})
     );
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tauri_maps_nested_resource_files_below_the_bundle_even_with_an_external_stage() {
+        let temporary = tempfile::tempdir().unwrap();
+        let manifest = temporary.path().join("project/src-tauri");
+        let source = temporary.path().join("shared stage/stockfish/src");
+        std::fs::create_dir_all(&manifest).unwrap();
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::write(source.join("engine.cpp"), "source fixture").unwrap();
+        let engine_root = source.parent().unwrap();
+        let relative = resource_directory(engine_root, &manifest).unwrap();
+        assert!(!Path::new(&relative).is_absolute());
+        // Rebase to the process cwd for the real parser without changing cwd
+        // in a parallel test; its mapping must retain the source subtree.
+        let cwd = std::env::current_dir().unwrap();
+        let path = resource_directory(engine_root, &cwd).unwrap();
+        let map = std::collections::HashMap::from([(path, "engines/stockfish-19/".into())]);
+        let resources = tauri::utils::resources::ResourcePaths::from_map(&map, true)
+            .iter()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        assert_eq!(resources.len(), 1);
+        assert_eq!(
+            resources[0].target(),
+            Path::new("engines/stockfish-19/src/engine.cpp")
+        );
+        assert!(!resources[0].target().is_absolute());
+        assert_eq!(
+            std::fs::read_to_string(resources[0].path()).unwrap(),
+            "source fixture"
+        );
+    }
 }
