@@ -1,4 +1,4 @@
-/// <reference types="vitest/config" />
+import type {} from "vitest/config";
 import * as os from "node:os";
 import { resolve } from "node:path";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
