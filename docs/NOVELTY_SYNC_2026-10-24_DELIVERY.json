@@ -58,8 +58,8 @@
     ]
   },
   "desktop": {
-    "exeBytes": 47854080,
-    "exeSha256": "2fa6c902ba31331bfc82b47fe3ab9851a800bed3b7043ed2fde6eb37e1b2c8dc",
+    "exeBytes": 47852032,
+    "exeSha256": "23fdc09158c092d35882d7197e89d80d3a617a6e1e1dfa4667267b970f3fa009",
     "assets": [
       {
         "name": "index-DyOp8GiP.js",
@@ -93,19 +93,16 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "13e6c69befc304a2760cea0782b5a305c2503a45",
+    "sourceCommit": "161f795760fdd7ff258b9c4037c108403ec97d6b",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
     "primarySourceCommit": "8a1c5928",
-    "cleanTests": 531,
-    "cleanTestFiles": 76,
-    "types": true,
-    "lintFiles": 8,
+    "lintFiles": 2,
     "lintWarnings": 0,
     "lintErrors": 0,
     "nativeBuild": true,
     "existingNativeWarnings": 22,
-    "nativeCargoSeconds": 198,
+    "nativeCargoSeconds": 195,
     "bundledFiles": 102,
     "bundledBytes": 104581828,
     "matchingOwnedProductFiles": 7,
@@ -117,14 +114,25 @@
     "physicalPhoneVerified": false,
     "phonePublicationPending": false,
     "ownerDataWritten": false,
-    "primaryCommit": "2c0f2efcffc4426655812b1a336e1766894c79d7",
+    "primaryCommit": "870dba8e69f418badf69c74682f0c91bf5a5a860",
     "nativeQueueChecks": 5,
     "actualCallbackControl": true,
-    "matchingMilestoneFiles": 16,
+    "matchingMilestoneFiles": 8,
     "matchingProductAndTestFiles": 12,
     "shellAssociationInteractionVerified": false,
     "phoneProductionChanges": false,
-    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e"
+    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "shimSha256": "687dd45a1822528bd0e9d544d37806570c7d2bf447773c85a21b914bc1e503d6",
+    "shimBytes": 1240,
+    "exactShimEmbedded": true,
+    "frontendSourceUnchanged": true,
+    "previousFrontendGateRerun": false,
+    "previousFrontendTests": 531,
+    "previousFrontendTestFiles": 76,
+    "frontendTypesPreviouslyPassed": true,
+    "nodeIpcChecks": 7,
+    "pinnedFallbackWireCompatibility": true,
+    "matchingProductTestAndCiFiles": 4
   },
   "checks": {
     "combinedFrontend": {
@@ -2486,7 +2494,7 @@
     "novelty": [
       "d52f614e"
     ],
-    "status": "windows-native-bridge-source-verified-package-pending",
+    "status": "windows-native-bridge-packaged-runtime-rendering-unverified",
     "pinnedTauri": "2.10.2",
     "baseline": {
       "checkedAt": "2026-10-25T12:09:41.684Z",
@@ -2535,11 +2543,149 @@
       "source": "13e6c69b",
       "rerunForIpc": false
     },
-    "packageVerified": false,
+    "packageVerified": true,
     "nativeWindowVerified": false,
     "actualLiveWindowsInterceptionReproduced": false,
     "otherPlatforms": "Default Tauri transport retained.",
     "phone": "Separate browser/server HTTPS transport unchanged; no publication required.",
+    "ownerDataWritten": false,
+    "packageSource": "161f795760fdd7ff258b9c4037c108403ec97d6b",
+    "exeSha256": "23fdc09158c092d35882d7197e89d80d3a617a6e1e1dfa4667267b970f3fa009",
+    "exactShimEmbedded": true
+  },
+  "previousNativeShellPgnDesktop": {
+    "exeBytes": 47854080,
+    "exeSha256": "2fa6c902ba31331bfc82b47fe3ab9851a800bed3b7043ed2fde6eb37e1b2c8dc",
+    "assets": [
+      {
+        "name": "index-DyOp8GiP.js",
+        "bytes": 292437,
+        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
+        "embedded": true
+      },
+      {
+        "name": "App-B27Iq3yU.js",
+        "bytes": 193045,
+        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
+        "encoding": "brotli",
+        "compressedBytes": 55005,
+        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
+        "embedded": true
+      },
+      {
+        "name": "files-CIwBSFWZ.js",
+        "bytes": 2228,
+        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
+        "encoding": "brotli",
+        "compressedBytes": 1143,
+        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
+        "embedded": true
+      }
+    ],
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "nativeWindowVerified": false,
+    "devShortcutChanged": false,
+    "rollback": "task-owned ignored rollback directory",
+    "sourceCommit": "13e6c69befc304a2760cea0782b5a305c2503a45",
+    "activeDevSessionPreserved": true,
+    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
+    "primarySourceCommit": "8a1c5928",
+    "cleanTests": 531,
+    "cleanTestFiles": 76,
+    "types": true,
+    "lintFiles": 8,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 198,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedProductFiles": 7,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "phonePublicationPending": false,
+    "ownerDataWritten": false,
+    "primaryCommit": "2c0f2efcffc4426655812b1a336e1766894c79d7",
+    "nativeQueueChecks": 5,
+    "actualCallbackControl": true,
+    "matchingMilestoneFiles": 16,
+    "matchingProductAndTestFiles": 12,
+    "shellAssociationInteractionVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e"
+  },
+  "currentNativeWindowsIpcPackage": {
+    "exeBytes": 47852032,
+    "exeSha256": "23fdc09158c092d35882d7197e89d80d3a617a6e1e1dfa4667267b970f3fa009",
+    "assets": [
+      {
+        "name": "index-DyOp8GiP.js",
+        "bytes": 292437,
+        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
+        "embedded": true
+      },
+      {
+        "name": "App-B27Iq3yU.js",
+        "bytes": 193045,
+        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
+        "encoding": "brotli",
+        "compressedBytes": 55005,
+        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
+        "embedded": true
+      },
+      {
+        "name": "files-CIwBSFWZ.js",
+        "bytes": 2228,
+        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
+        "encoding": "brotli",
+        "compressedBytes": 1143,
+        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
+        "embedded": true
+      }
+    ],
+    "shimSha256": "687dd45a1822528bd0e9d544d37806570c7d2bf447773c85a21b914bc1e503d6",
+    "shimBytes": 1240,
+    "exactShimEmbedded": true,
+    "frontendSourceUnchanged": true,
+    "previousFrontendGateRerun": false,
+    "sourceCommit": "161f795760fdd7ff258b9c4037c108403ec97d6b",
+    "primaryCommit": "870dba8e69f418badf69c74682f0c91bf5a5a860",
+    "previousFrontendTests": 531,
+    "previousFrontendTestFiles": 76,
+    "frontendTypesPreviouslyPassed": true,
+    "lintFiles": 2,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nodeIpcChecks": 7,
+    "pinnedFallbackWireCompatibility": true,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 195,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingMilestoneFiles": 8,
+    "matchingProductTestAndCiFiles": 4,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "shellAssociationInteractionVerified": false,
+    "physicalPhoneVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "ownerDataWritten": false
   }
 }
