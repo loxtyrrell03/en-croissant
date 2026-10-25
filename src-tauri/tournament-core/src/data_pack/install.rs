@@ -12,6 +12,10 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[cfg(test)]
+#[path = "manifest_tests.rs"]
+mod manifest_tests;
+
 /// This must come from a trusted catalog, never from a renderer-provided URL or
 /// a checksum fetched alongside an untrusted manifest.
 #[derive(Clone)]
@@ -233,6 +237,12 @@ pub(super) fn fetch_manifest(source: &Source, cancel: &AtomicBool) -> Result<Vec
         .send()
         .and_then(|r| r.error_for_status())
         .map_err(|e| e.to_string())?;
+    if response
+        .content_length()
+        .is_some_and(|length| length > MANIFEST_BYTES)
+    {
+        return Err("Data pack manifest is too large.".into());
+    }
     let mut bytes = Vec::new();
     let mut chunk = [0; 16 * 1024];
     loop {
