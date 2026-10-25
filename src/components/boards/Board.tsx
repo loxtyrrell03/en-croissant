@@ -1923,6 +1923,7 @@ function Board({
                         minHeight: 0,
                       }
                 }
+                data-board-area
                 className={classes.chessboard}
                 ref={boardRef}
                 w={boardSize || undefined}

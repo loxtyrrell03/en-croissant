@@ -1972,5 +1972,32 @@
     "sourceCommit": "2657c53b7f8f919e335f3e438ea2440f1f54f675",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
+  },
+  "panelScrollingParity": {
+    "novelty": [
+      "7bbe5984",
+      "77e5c052",
+      "158ccf01"
+    ],
+    "status": "native-and-phone-source-fixed-clean-builds-pending",
+    "actualSharedRootLifetime": true,
+    "nativeBoardWheelMarker": true,
+    "touchNotIntercepted": true,
+    "reducedMotionPreserved": true,
+    "twoActualEntryFailuresReproduced": true,
+    "newTests": 25,
+    "relatedTests": 527,
+    "relatedFiles": 70,
+    "types": true,
+    "lintFiles": 6,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "rootStylesheetGuards": 3,
+    "cleanBuildsVerified": false,
+    "phonePublished": false,
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false
   }
 }
