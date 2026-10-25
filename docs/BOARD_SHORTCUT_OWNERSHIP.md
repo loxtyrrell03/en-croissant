@@ -24,6 +24,12 @@ or live UI interaction was used. The phone has no matching global Left/Right
 listener, so its existing touch and native-control navigation is unchanged.
 
 This is source/DOM-event evidence, not rendered or native-window interaction.
-The prior verified native package193ae3e6 predates the fix; a fresh native
-package remains required. Hosted phone f1dab735 remains verified independently.
+Native package0987379c now contains the exact BoardAnalysis ownership asset
+alongside13 other verified assets, Windows IPC, complete notices and102 engine
+resources. The48,925,696-byte executable has SHA256
+`4d5126dcc4131965c44722a601afc42469e5a325e9ce2f2885cbd4a682c7ee74`.
+Build126 seconds/22 existing warnings, frontend27.50 seconds. Both checkouts
+pass37 focused checks and full types; clean scoped lint is warning-free.
+Generated source matches and the previous verified package remains rollback.
+No native app was launched or manually restarted. Hosted phone f1dab735 remains verified independently.
 The broader history audit is still active.

@@ -5269,10 +5269,160 @@
     "lintWarnings": 0,
     "lintErrors": 0,
     "desktopSource": true,
-    "desktopPackage": "pending",
+    "desktopPackage": "verified",
     "phoneDecision": "No matching global move-arrow listener; preserve existing native controls and touch navigation",
     "ownerDataWritten": false,
     "browserRendered": false,
-    "nativeWindowVerified": false
+    "nativeWindowVerified": false,
+    "primaryCases": 37,
+    "primaryTypes": true,
+    "nativePackage": {
+      "sourceCommit": "0987379cbda10b901e6e6bbdfb05ba1cdf88c23a",
+      "exeBytes": 48925696,
+      "exeSha256": "4d5126dcc4131965c44722a601afc42469e5a325e9ce2f2885cbd4a682c7ee74",
+      "assets": [
+        {
+          "name": "BoardAnalysis-B4aycYhO.js",
+          "bytes": 26499,
+          "sha256": "24a8a1fac724a87067572bda2fff14392d3c1fb59181849328bfa847000028b4",
+          "encoding": "brotli",
+          "compressedBytes": 8719,
+          "compressedSha256": "e5cd2dbbce456392f68a908efc1495d779e3db008574a52d9a0774817ce1e779",
+          "embedded": true
+        },
+        {
+          "name": "index-DS7jKrQA.js",
+          "bytes": 292437,
+          "sha256": "25e58ba9292d98c52e987fac5d38eaa6889c62295a17ae12ad54d3ddff5432b5",
+          "encoding": "brotli",
+          "compressedBytes": 89586,
+          "compressedSha256": "ef6c6e8dbe59b8f3f7b9c3b700553be38d48fff68f8ed6d4b03f614a652dabfb",
+          "embedded": true
+        },
+        {
+          "name": "App-XE5qEUWU.js",
+          "bytes": 197630,
+          "sha256": "526bc9eb52c4cfabb6b8b16eb375cd5123ac145c133621fe1bea98ed92f5d1fa",
+          "encoding": "brotli",
+          "compressedBytes": 56810,
+          "compressedSha256": "7dd08132d536314369503979585d84814c82cc2090f41b546ccca47ba2e52044",
+          "embedded": true
+        },
+        {
+          "name": "SettingsPage-Wy6YIO2s.js",
+          "bytes": 74511,
+          "sha256": "c06fea2bd1ecada600a77283d8ba11d9b69efb17d8682e3d9797427a6243ba7e",
+          "encoding": "brotli",
+          "compressedBytes": 21322,
+          "compressedSha256": "8e28d23d8924d5916a49a0b37aea881748f847170fe273fddb1afc51da873c04",
+          "embedded": true
+        },
+        {
+          "name": "bindings-B9iyyBPa.js",
+          "bytes": 21768,
+          "sha256": "a7d1c1746cd4a4cbb9a5ef67635a6c4f7cd0c8bd52fbbdb181c7ce335a438839",
+          "encoding": "brotli",
+          "compressedBytes": 3105,
+          "compressedSha256": "026db541d97fdb012a25b7273006cb152bf132865a85a93ed99f1f9efc7316dd",
+          "embedded": true
+        },
+        {
+          "name": "api-DaKfTQe9.js",
+          "bytes": 9642,
+          "sha256": "78f3dda708c21a1fe5297602a072be66d8678f57659a900f6c683c9b8f50016f",
+          "encoding": "brotli",
+          "compressedBytes": 3710,
+          "compressedSha256": "909a04a2eb5f2595ead3e3abd1d852afcdec807cad12b8cce81cc9a6d8055d87",
+          "embedded": true
+        },
+        {
+          "name": "EvalListener-yh2NqGj0.js",
+          "bytes": 85598,
+          "sha256": "684911586ea68711dc2f13e705cc94b7d0f7686c00ff8f326aa2dfe6c2296056",
+          "encoding": "brotli",
+          "compressedBytes": 29462,
+          "compressedSha256": "7ca775485719dfd530662c03640b4c8587cf8ee475b55969775f7e3ff4a0799e",
+          "embedded": true
+        },
+        {
+          "name": "BestMoves-DxFuY2or.js",
+          "bytes": 17614,
+          "sha256": "7f2cdac9750ea5757173da4957c40fb5cc657aeed3d8d7e714255ba45933d56b",
+          "encoding": "brotli",
+          "compressedBytes": 6716,
+          "compressedSha256": "6a2949e4d2b79edb7fd24b4150ff774d48b089c6fc6ee9d8dfc165a6fc580f1d",
+          "embedded": true
+        },
+        {
+          "name": "EnginePanelContent-BpsnVkQo.js",
+          "bytes": 15371,
+          "sha256": "ca044b569fc23d013f13d1864f3ee2643d240f6ecfcade759381e88f055b934f",
+          "encoding": "brotli",
+          "compressedBytes": 6199,
+          "compressedSha256": "20a86241008e239c0f48d99b5bf958a4ff0de7a62f7bc93962bb1d86eee06214",
+          "embedded": true
+        },
+        {
+          "name": "DatabasesPage-dbRgDj-Q.js",
+          "bytes": 70286,
+          "sha256": "2ba637a02d2af5ac868197af48f3c791cbcbbbb8fd3da3e4693c3e55648c3edc",
+          "encoding": "brotli",
+          "compressedBytes": 21398,
+          "compressedSha256": "384dbc990863f3e1e76a002e168db3e5885e00db7d737ac934b720c89676dbf9",
+          "embedded": true
+        },
+        {
+          "name": "NewTabHome-Bcb9LpuI.js",
+          "bytes": 175550,
+          "sha256": "b92572b6764612f0ead1027cbf6ac528426007afc704cb9c599137a2f2e13fb7",
+          "encoding": "brotli",
+          "compressedBytes": 50212,
+          "compressedSha256": "011b3e0a199e1c4763d347747bdacc6540dab458bdf400fc04cadbdfb14b6d72",
+          "embedded": true
+        },
+        {
+          "name": "TournamentWorkspace-rusk8_H9.js",
+          "bytes": 158504,
+          "sha256": "efe6cbaf6d7044e206e527d42e55e6b21cb3e542f33afec00b133d8a2cd4d50c",
+          "encoding": "brotli",
+          "compressedBytes": 46974,
+          "compressedSha256": "fd735f2fbfe266533691e342eeb5ac3c166825fe0f380e81087c5ede4d8258c5",
+          "embedded": true
+        },
+        {
+          "name": "App-C6tpCyFQ.css",
+          "bytes": 78146,
+          "sha256": "aad62e69ab184d0d54ba4726e5ad6707a52bf31ed4f00eea9dc1e019be4bd285",
+          "encoding": "brotli",
+          "compressedBytes": 9357,
+          "compressedSha256": "777d6c4a1dd5461421568ad01fed7251a3d4890101280319c9bb5e49a16e24a4",
+          "embedded": true
+        },
+        {
+          "name": "SettingsPage-BImvOGMM.css",
+          "bytes": 1645,
+          "sha256": "65ca92776ded0031a04ca6e6009360482d8fea993473f1aad489fc6dcf254fff",
+          "encoding": "brotli",
+          "compressedBytes": 473,
+          "compressedSha256": "61d6ef7cf72da61f4c381ce0210d225d7700067075b2607641fc22836aceec84",
+          "embedded": true
+        }
+      ],
+      "nativeSelectionAndDownloadContractsEmbedded": true,
+      "exactWindowsIpcShimEmbedded": true,
+      "bundledFiles": 102,
+      "bundledBytes": 104581828,
+      "exactNoticeResource": true,
+      "noticeSha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a",
+      "nativeWindowVerified": false,
+      "browserRendered": false,
+      "phoneRuntimeChanged": false,
+      "ownerDataWritten": false,
+      "corpusCopied": false
+    },
+    "nativeBuildSeconds": 126,
+    "nativeFrontendBuildSeconds": 27.5,
+    "nativeExistingWarnings": 22,
+    "generatedOutputsMatchCommittedSource": true
   }
 }

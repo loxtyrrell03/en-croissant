@@ -1,3 +1,17 @@
+## 2026-10-25 board shortcut native package
+
+- Clean0987379c packages48,925,696 bytes SHA256
+  4d5126dcc4131965c44722a601afc42469e5a325e9ce2f2885cbd4a682c7ee74.
+  Fourteen exact assets include the production BoardAnalysis ownership guard,
+  Study/tracker/export and evaluation controls; IPC, complete notices and102
+  engine/source resources match. Native126s/22 existing warnings, frontend27.50s.
+  Both primary/clean37 shortcut checks and full types pass; scoped lint0.
+- Generated content matches committed source; only clean checkout line endings
+  restored. Previous verified package retained as rollback. No native launch,
+  owner profile/corpus or hosted service change. Phone f1dab735 remains verified;
+  this keyboard path is native-only. Rendered/native-window proof remains.
+  Source snapshot and broader audit limits are in current delivery JSON.
+
 ## 2026-10-25 board shortcut ownership
 
 - Native BoardAnalysis's capture listener now yields Left/Right to editing,
