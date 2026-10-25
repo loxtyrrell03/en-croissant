@@ -1,3 +1,29 @@
+## 2026-10-25 phone game-date parity
+
+- Phone Database/Prep reuse the shared calendar/preset control. Workspace
+  gameDates groups keep Database sources and draft Prep mode/source families
+  independent; starting Prep retains its full dateRanges map. Legacy filters
+  migrate once through the retained root writer. Invalid recognizable selections
+  remain repairable; malformed shapes use preserved-workspace load failure.
+- Parent training/branch evidence, temporary/full PGN source tables and actual
+  direct/proxy explorer serializers resolve effective bounds. Local midnight and
+  focus/visibility refresh cached views. An initialized Prep dateRanges map is
+  authoritative over compatibility startDate/endDate snapshots; range writes
+  must update metadata. Old picker clamps cannot discard a selected API bound.
+  Non-date explorer options, review/progress and source identities retain their
+  existing storage. See docs/GAME_DATE_RANGES.md.
+- Intentional phone exception: lazy static position shards/current En helper
+  expose aggregate counts without individual dates. Filtered lazy queries/Start
+  are blocked with a visible full-PGN/All-time choice. Do not filter by aggregate
+  lastPlayed or silently show all-time counts for a selected date range.
+- Eleven new synthetic serializer/evidence/actual-control checks join 570 related
+  frontend checks across 71 files. Full types and nine-file lint pass with zero
+  warnings/errors; WebApp retains its 25 existing warnings and zero errors. Final
+  repair/obsolete-source guard passes all eleven focused checks. No Rust, owner
+  data or service changed. Clean delivery builds, rendered narrow/touch checks
+  and publication remain separate; fresh browser inventory still reports local
+  browser use disabled in Work settings. The wider parity goal remains active.
+
 ## 2026-10-25 clean native game-date verification
 
 - Clean delivery 74c3a1d6 independently passes all 559 related frontend checks

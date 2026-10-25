@@ -1,4 +1,6 @@
 import { getWebPrepMoveKey, type WebPrepMoveStat } from "./prepIndex";
+import { applyPhoneExplorerGameDates } from "./gameDates";
+import type { GameDateRange } from "@/utils/gameDateRange";
 import { resolvePrivateServiceUrl } from "./serverUrl";
 import { makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
@@ -30,6 +32,7 @@ export type WebLichessExplorerSpeed =
 export type WebLichessExplorerRating = 0 | 1000 | 1200 | 1400 | 1600 | 1800 | 2000 | 2200 | 2500;
 
 export type WebLichessExplorerOptions = {
+    dateRange?: GameDateRange;
     speeds: WebLichessExplorerSpeed[];
     ratings: WebLichessExplorerRating[];
     since?: string;
@@ -40,6 +43,7 @@ export type WebLichessExplorerOptions = {
 };
 
 export type WebMastersExplorerOptions = {
+    dateRange?: GameDateRange;
     since?: string;
     until?: string;
     moves: number;
@@ -249,7 +253,10 @@ export function buildWebExplorerUrl({
     });
 
     if (source === "lichess-all") {
-        const lichessOptions = normalizeWebLichessExplorerOptions(options?.lichess);
+        const lichessOptions = applyPhoneExplorerGameDates(
+            normalizeWebLichessExplorerOptions(options?.lichess),
+            "month",
+        );
         const player = lichessOptions.player?.trim();
         params.set("moves", String(clampExplorerMoves(lichessOptions.moves)));
         params.set("variant", "standard");
@@ -261,15 +268,28 @@ export function buildWebExplorerUrl({
         if (lichessOptions.ratings.length > 0) {
             params.set("ratings", lichessOptions.ratings.join(","));
         }
-        appendMonthParam(params, "since", lichessOptions.since);
-        appendMonthParam(params, "until", lichessOptions.until);
+        appendMonthParam(
+            params,
+            "since",
+            lichessOptions.since,
+            lichessOptions.dateRange !== undefined,
+        );
+        appendMonthParam(
+            params,
+            "until",
+            lichessOptions.until,
+            lichessOptions.dateRange !== undefined,
+        );
         return `${EXPLORER_BASE_URL}/${player ? "player" : "lichess"}?${params.toString()}`;
     }
 
-    const masterOptions = normalizeWebMastersExplorerOptions(options?.masters);
+    const masterOptions = applyPhoneExplorerGameDates(
+        normalizeWebMastersExplorerOptions(options?.masters),
+        "year",
+    );
     params.set("moves", String(clampExplorerMoves(masterOptions.moves)));
-    appendYearParam(params, "since", masterOptions.since);
-    appendYearParam(params, "until", masterOptions.until);
+    appendYearParam(params, "since", masterOptions.since, masterOptions.dateRange !== undefined);
+    appendYearParam(params, "until", masterOptions.until, masterOptions.dateRange !== undefined);
     return `${EXPLORER_BASE_URL}/masters?${params.toString()}`;
 }
 
@@ -310,6 +330,7 @@ export function normalizeWebLichessExplorerOptions(
                 ? Array.from(new Set(ratings)).sort((a, b) => a - b)
                 : DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS.ratings,
         since: normalizeMonthString(options?.since),
+        dateRange: options?.dateRange,
         until: normalizeMonthString(options?.until),
         player: options?.player?.trim() || undefined,
         color: options?.color === "black" ? "black" : "white",
@@ -322,6 +343,7 @@ export function normalizeWebMastersExplorerOptions(
 ): WebMastersExplorerOptions {
     return {
         since: normalizeYearString(options?.since),
+        dateRange: options?.dateRange,
         until: normalizeYearString(options?.until),
         moves: clampExplorerMoves(options?.moves),
     };
@@ -552,13 +574,23 @@ function normalizeYearString(value: unknown) {
     return String(year);
 }
 
-function appendMonthParam(params: URLSearchParams, key: string, value: string | undefined) {
-    const normalized = normalizeMonthString(value);
+function appendMonthParam(
+    params: URLSearchParams,
+    key: string,
+    value: string | undefined,
+    resolved = false,
+) {
+    const normalized = resolved ? value : normalizeMonthString(value);
     if (normalized) params.set(key, normalized);
 }
 
-function appendYearParam(params: URLSearchParams, key: string, value: string | undefined) {
-    const normalized = normalizeYearString(value);
+function appendYearParam(
+    params: URLSearchParams,
+    key: string,
+    value: string | undefined,
+    resolved = false,
+) {
+    const normalized = resolved ? value : normalizeYearString(value);
     if (normalized) params.set(key, normalized);
 }
 

@@ -1,6 +1,7 @@
 import { INITIAL_FEN } from "chessops/fen";
 import type { WebCompanionState } from "./model";
 import { validPhoneWorkspacePreferences } from "./workspacePreferences";
+import { validPhoneGameDateRanges } from "./gameDates";
 import { validPhoneSourceArchives } from "./sourceArchives";
 
 const DB_NAME = "en-croissant-web-companion";
@@ -174,6 +175,7 @@ function isValidState(value: unknown): value is WebCompanionState {
             (prep) =>
                 prep &&
                 typeof prep.id === "string" &&
+                validPhoneGameDateRanges(prep.dateRanges) &&
                 Array.isArray(prep.sourceIds) &&
                 Array.isArray(prep.line),
         ) &&

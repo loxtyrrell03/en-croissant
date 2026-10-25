@@ -1,4 +1,5 @@
 import { filePreferenceIdentity } from "@/utils/workspacePreferences";
+import { validPhoneGameDateRanges } from "./gameDates";
 import { getWebDatabaseSourceStorageValue, resolveWebDatabaseSourceId } from "./databaseSync";
 import type {
     WebColor,
@@ -181,6 +182,17 @@ export function validPhoneWorkspacePreferences(value: unknown): boolean {
 }
 
 function validPreferenceEntry(entry: WebWorkspacePreferences) {
+    if (
+        entry.gameDates !== undefined &&
+        (!entry.gameDates ||
+            typeof entry.gameDates !== "object" ||
+            Array.isArray(entry.gameDates) ||
+            Object.entries(entry.gameDates).some(
+                ([scope, ranges]) =>
+                    !["database", "prep"].includes(scope) || !validPhoneGameDateRanges(ranges),
+            ))
+    )
+        return false;
     if (
         entry.orientation !== undefined &&
         entry.orientation !== "white" &&
