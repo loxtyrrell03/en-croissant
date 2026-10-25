@@ -1,3 +1,18 @@
+## 2026-10-25 evaluation data UI direction selected
+
+- Owner selected A: compact native Settings/Directories row with dialogs for
+  validated existing-folder activation, optional reviewed acquisition, progress
+  and interrupted-job recovery. Use docs/design/evaluation-data/README.md and
+  STATE_MAP.md; three editable SVG alternatives include setup/loading/error/
+  review/progress/cancel/recovery/cleanup/confirmation/help/narrow states.
+  A is approved; do not ask for the same layout choice again.
+- Native serif/cyan theme is retained. Example paths/numbers are invented;
+  XML/text-width checks and offline raster visual review pass. These are design
+  artifacts, not implemented UI or browser/native-window proof. Existing
+  Stored evals preference/local-only scoring/shared corpus/phone service scope
+  stay authoritative. Backend journal/lease/recovery, commands and chosen UI
+  remain to implement. No download/profile/runtime/data change by prototypes.
+
 ## 2026-10-25 hosted notice delivery
 
 - Clean0ac83353 / primary9128b7c5 is live on canonical phone HTTPS, shell SHA
