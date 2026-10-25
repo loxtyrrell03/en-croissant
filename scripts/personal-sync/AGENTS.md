@@ -53,10 +53,29 @@ accounts, services or download preferences.
   using the existing native PGN parser and schema semantics without modifying
   product source or relying on pending Dev board-save APIs.
 
-Source validation on 2026-10-25: 26 focused Node tests, 17 focused phone/session tests,
+Source validation on 2026-10-25: 28 focused Node tests, 17 focused phone/session tests,
 TypeScript, and a real browser plus native synthetic fixture cover both
 directions, offline retry, concurrent edits, unknown headers, comments,
 variations, game IDs, container changes and recovery. The sync status/help
 renders at 1200/560/360 px and 200% text. The staged live Dev conversion matched
 every stored PGN and native row fingerprint, and every staged database passed
-SQLite quick-check. These checks are not installation or physical-phone proof.
+SQLite quick-check.
+
+Live activation on 2026-10-25 used the physically resolved Dev Files root and
+104 personal collections (174,166 games). Prior En content remains recoverable
+under `Documents/PersonalChessSync/recovery`; the existing downloaded Mega copy
+was preserved separately with the read-only attribute. A hidden user logon task,
+`Personal Chess Sync`, runs this bridge from the dedicated personal-library-sync
+delivery checkout with pinned native binaries and a private AppData config.
+Preserve that checkout/runtime and its ledger; never rerun initialization against
+the already-active roots. Production Novelty's original size/counts were checked
+read-only, and no customer release or app feature source was changed.
+
+The existing canonical phone service was published through its guarded workflow
+with the owner On state and all Serve routes preserved. Live temporary fixtures
+verified desktop files both ways, personal database edits both ways, the phone API,
+and a note entered through the actual rendered phone UI reaching both desktops.
+The independent native writer was checked after restart; fixture deletion was
+verified separately. Physical-phone and native-window interaction remain unverified.
+The private activation/recovery and verification receipts are under
+`Documents/PersonalChessSync`; never commit their game content or config secret.
