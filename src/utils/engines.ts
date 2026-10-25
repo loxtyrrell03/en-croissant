@@ -64,6 +64,23 @@ function normalizeEnginePath(path: string): string {
     return path.replaceAll("\\", "/").replace(/\/$/, "").toLowerCase();
 }
 
+function savedEngineVersionIsNewer(saved: string, installed: string): boolean {
+    const a = saved
+        .match(/\d+(?:\.\d+)*/)?.[0]
+        .split(".")
+        .map(Number);
+    const b = installed
+        .match(/\d+(?:\.\d+)*/)?.[0]
+        .split(".")
+        .map(Number);
+    if (!a || !b) return false;
+    for (let index = 0; index < Math.max(a.length, b.length); index++) {
+        const difference = (a[index] ?? 0) - (b[index] ?? 0);
+        if (difference) return difference > 0;
+    }
+    return false;
+}
+
 function mergeEngineSettings(
     current: EngineSettings | null | undefined,
     required: EngineSettings | null | undefined,
@@ -92,16 +109,17 @@ export function mergeInstalledDesktopEngines(
     for (const managed of installed) {
         const managedPath = normalizeEnginePath(managed.path);
         const index = next.findIndex(
-            (engine) =>
-                engine.id === managed.id ||
-                (engine.type === "local" && normalizeEnginePath(engine.path) === managedPath),
+            (engine) => engine.type === "local" && normalizeEnginePath(engine.path) === managedPath,
         );
         if (index < 0) {
+            // A saved ID may now point to an owner-selected install elsewhere.
+            if (next.some((engine) => engine.id === managed.id)) continue;
             next.push(managed);
             continue;
         }
         const existing = next[index];
         if (existing.type !== "local") continue;
+        if (savedEngineVersionIsNewer(existing.version, managed.version)) continue;
         next[index] = {
             ...managed,
             ...existing,

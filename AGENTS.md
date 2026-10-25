@@ -1,3 +1,13 @@
+## 2026-10-25 engine identity follow-up
+
+- Discovery matches an existing profile by normalized executable path. A reused
+  managed ID cannot repoint a different owner-selected install, and a newer saved
+  version cannot be downgraded. Saved labels/settings/visibility still win.
+- Three executable-identity/version cases join the passing 20-check focused
+  engine suite. The prior 587-check source/clean baseline remains separate until
+  the final combined recheck. No binary, service or manual profile migration was
+  changed. Stockfish 19 installation/default migration is still pending.
+
 ## 2026-10-25 native engine preference safeguards
 
 - Native engines.json now has a dedicated strict reader and retained ordered

@@ -16,6 +16,38 @@ const staleLc0: LocalEngine = {
 };
 
 describe("managed engine catalog", () => {
+    it("does not repoint an owner-selected path because its ID matches a managed install", () => {
+        const current: LocalEngine = {
+            type: "local",
+            id: "managed-stockfish-18",
+            name: "Owner choice",
+            version: "19",
+            path: "C:/Owner/stockfish-19.exe",
+            loaded: false,
+        };
+        const installed: LocalEngine = {
+            ...current,
+            version: "18",
+            path: "C:/Programs/Stockfish/18.exe",
+            loaded: true,
+        };
+        expect(mergeInstalledDesktopEngines([current], [installed])).toEqual([current]);
+    });
+    it.each([
+        ["20", "19"],
+        ["0.33.0", "0.32.1"],
+    ])("does not downgrade saved version %s to discovered %s", (saved, older) => {
+        const current: LocalEngine = {
+            type: "local",
+            id: "owner",
+            name: "Newer owner engine",
+            version: saved,
+            path: "C:/Owner/engine.exe",
+            loaded: false,
+        };
+        const installed: LocalEngine = { ...current, id: "managed", version: older, loaded: true };
+        expect(mergeInstalledDesktopEngines([current], [installed])).toEqual([current]);
+    });
     it("replaces the stale Windows LC0 offer with the ChessBot engine and network", () => {
         const merged = mergeManagedEngineCatalog([staleLc0], "windows");
 
