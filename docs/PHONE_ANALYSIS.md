@@ -72,7 +72,7 @@ engine startup (939 ms total); its selected exact depth is 8. No queue remains.
 The existing config, task, routes and owner enabled choice are preserved.
 
 Later committed deliveries supersede those historical snapshots. Canonical
-phone metadata currently identifies `89f64228`, with shell SHA-256
+phone metadata at that milestone identified `89f64228`, with shell SHA-256
 `cd2b67baafef215710391a4a0a58a21a9aabfc31b6acf1b7dc5ec7a43534d1dc`.
 That delivery includes managed WASM 19 and actual PC Stockfish 19 service
 evidence; native setup/logo package source is `0a0056a6`. Separate UI, backend
@@ -99,3 +99,14 @@ phone defaults and existing saved values remain. Failed settings writes survive
 panel remount and offer Retry saving without reanalysis. Local WASM, LCZero,
 game reports and Plans keep fresh evidence. See `STORED_EVALUATIONS.md`; source
 checks are separate from hosted publication and rendered narrow/touch proof.
+
+
+Current live source is `41f60e91`, including the plan-arrow and stored-evaluation
+controls, shell SHA-256
+`a0917a23e5df33c1c63646d8b6a001b2ae43f7905d99a650c30f5de3a463642c`.
+HTTPS version/asset/data reads and an actual bounded Stockfish 19 report pass;
+saved workspace/tournament settings, service enabled choice and Serve routes
+match preflight. Rendered narrow/touch and physical-phone proof remain absent.
+The output wrapper was stopped alone after independent live verification; the
+same server survived, and no normal publisher-exit receipt is claimed. See the
+current delivery JSON and `STORED_EVALUATIONS.md` for exact verification scope.

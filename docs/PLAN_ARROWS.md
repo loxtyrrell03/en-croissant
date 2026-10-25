@@ -60,6 +60,13 @@ live phone still identifies source `89f64228`.
 
 This is source/component/SVG and package evidence. Browser control remains
 disabled in Work settings; synthetic SVG checks do not prove layout at 320 or
-390 pixels or physical-phone behaviour. Rendered verification and phone
-publication remain. No service, route, native engine protocol, owner profile
+390 pixels or physical-phone behaviour. Rendered verification remained at that milestone. No service, route, native engine protocol, owner profile
 or database was manually changed for this slice.
+
+
+The later combined source `41f60e91` now publishes these controls together with
+the stored-evaluation preference. Exact canonical HTTPS entry and plan assets
+match the clean build; workspace/tournament settings, owner enabled choice and
+Serve routes are preserved. This supersedes the earlier unpublished build's
+delivery status. Browser-rendered narrow/touch and physical-phone proof remain
+open; see `STORED_EVALUATIONS.md` and the current delivery JSON.

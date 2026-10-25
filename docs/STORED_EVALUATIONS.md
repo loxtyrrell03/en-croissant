@@ -66,3 +66,32 @@ interaction or physical-phone behavior. Browser control remains disabled in
 Work settings. Clean delivery package/build and publication receipts are
 recorded separately in `NOVELTY_SYNC_2026-10-24_DELIVERY.json`; this document alone
 does not establish that a running installed binary or hosted app was updated.
+
+
+Clean source `41f60e91` independently passes 591 related checks across 79 files,
+including all phone tests, and full types. The native release build passes
+(22 existing warnings); eight exact compressed assets are embedded in the
+47,864,320-byte executable, SHA-256
+`13c5b5d33781d1fa4fd08e8375e10fb5a6372ad350300bc8a6c630c8b3cfe4bb`.
+All 102 engine/source files match the retained 104,581,828-byte tree, and all
+22 owned committed files match primary `645932cc`. The canonical phone build
+passes in 22.47 seconds; both native helpers build. Only the two known generated
+outputs were restored, leaving the delivery checkout clean.
+
+That source is now live at `https://lox-pc.tail89d19b.ts.net/`, shell SHA-256
+`a0917a23e5df33c1c63646d8b6a001b2ae43f7905d99a650c30f5de3a463642c`.
+Independent HTTPS checks verify metadata, exact entry/plan/WASM assets, unchanged
+saved workspace/tournament settings, library reads and a legal exact Stockfish 19
+depth-8/50-ms report. The owner enabled choice, engine-service PID and Serve
+configuration remain. The home-server PID changed for the intended publication.
+The live library has a volatile generatedAt, so a normalized before/after library
+content comparison is not claimed from the original complete-hash preflight.
+
+The publisher's redirected output wrapper remained open after successful live
+activation. After independent checks, only that wrapper was stopped and its
+temporary task removed; the same verified server stayed running. There is no
+normal publisher-exit receipt, and publication was not replayed. Future helpers
+must avoid PowerShell output capture around this publisher, including implicit
+file-redirection pipelines, until the inherited-output problem is repaired.
+Fresh browser inventory remains disabled. Rendered and physical-device checks
+and the wider history audit remain open.
