@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import {randomUUID} from 'node:crypto';
+import {setImmediate as yieldEventLoop} from 'node:timers/promises';
 import {digest} from './files.mjs';
 import {openEn,enRows,enRow,rowHash,writeEncoded,transaction,refreshCounts,pgnFromRow,encodedMatches} from './en-database.mjs';
 import {reconcileContainers} from './containers.mjs';
@@ -111,7 +112,9 @@ export class DatabaseSyncBridge {
       try{
         const left=new Map(sourceRows(this.source,c.id).map(g=>[g.id,g])),right=new Map(enRows(en).map(g=>[g.ID,g]));
         const bases=this.ledger.prepare('SELECT * FROM sync_games WHERE collection_id=?').all(c.id);
+        let checked=0;
         for(const base of bases){
+          if(++checked%500===0)await yieldEventLoop();
           const l=left.get(base.left_id),r=right.get(base.right_id),rh=rowHash(r);
           left.delete(base.left_id);right.delete(base.right_id);
           const lc=(l?.pgn??null)!==base.base_pgn,rc=rh!==base.right_hash;
@@ -147,6 +150,7 @@ export class DatabaseSyncBridge {
         }
         if(report.changed!==changedBefore)transaction(en,()=>refreshCounts(en));
       }finally{en.close();}
+      await yieldEventLoop();
     }
     return report;
   }

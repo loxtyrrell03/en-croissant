@@ -31,6 +31,10 @@ accounts, services or download preferences.
 - Windows ledger publication retries transient sharing denials against the same
   durable staging file. Resume a partial initial file mirror from its existing
   per-item baseline; never restart with a fresh empty ledger.
+- File scans retain full hash/safety checks with at most 16 parallel item reads
+  and stable catalogue order. Large database comparisons yield between batches
+  so private HTTP status requests remain responsive. Status includes phase timings
+  for diagnosing real-library latency; never substitute file size for validation.
 - Phone exports carry transport-only stable references and revision hashes.
   Checked saves strip those tags before writing personal content. New phone
   imports validate every game and recover by request identity. Offline phone
