@@ -188,3 +188,9 @@ CG/editor/control exclusions preserve domain wheel gestures; touch stays native.
 Two old-entry failures reproduced;25 new checks join527 related checks/70 files,
 full types, six-file lint0 and three root-style guards. Clean builds/runtime and
 rendered verification remain; see PANEL_SCROLLING.md.
+
+Scrolling verification totals are corrected to500 maintained cases/69 files on
+primary and clean source. The earlier527/70 report also collected27 cases in an
+ignored historical performance snapshot under tmp. Normal discovery now excludes
+scratch snapshots; their files remain intact. All25 current scrolling checks,
+full types, seven-file lint0 and the three style guards remain valid.

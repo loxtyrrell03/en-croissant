@@ -1986,10 +1986,10 @@
     "reducedMotionPreserved": true,
     "twoActualEntryFailuresReproduced": true,
     "newTests": 25,
-    "relatedTests": 527,
-    "relatedFiles": 70,
+    "relatedTests": 500,
+    "relatedFiles": 69,
     "types": true,
-    "lintFiles": 6,
+    "lintFiles": 7,
     "lintWarnings": 0,
     "lintErrors": 0,
     "rootStylesheetGuards": 3,
@@ -1998,6 +1998,10 @@
     "browserRendered": false,
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
-    "ownerDataWritten": false
+    "ownerDataWritten": false,
+    "initialScratchInclusiveTests": 527,
+    "scratchCasesExcluded": 27,
+    "scratchFilesPreserved": true,
+    "collectionNote": "Ignored historical tmp performance snapshot was collected by the initial primary run. Maintained primary and clean collections both have500 cases/69 files; actual source/tests unchanged."
   }
 }
