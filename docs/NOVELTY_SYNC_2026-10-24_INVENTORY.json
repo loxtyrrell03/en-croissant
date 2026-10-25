@@ -493,6 +493,7 @@
           "tournaments",
           "otb-and-downloads",
           "game-analysis",
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -602,7 +603,9 @@
           "scripts/pairing-20261002-fresh-page-proof-v1-tests.py",
           "scripts/pairing-20261002-fresh-page-proof-v1.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "531c84b123df96de288531edc6e73cd6ba8e4467",
@@ -626,7 +629,9 @@
           "scripts/pairing-20261002-fresh-generate-v1-tests.mts",
           "scripts/pairing-20261002-fresh-generate-v1.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "4be9eedc17cb27abdb89b756b43f8aee95857b2c",
@@ -636,7 +641,9 @@
           "scripts/pairing-20261002-fresh-page-proof-v1-tests.py",
           "scripts/pairing-20261002-fresh-page-proof-v1.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "8d3208d42feca19a050a81332388291364a15294",
@@ -663,7 +670,9 @@
           "scripts/pairing-20261002-fresh-generate-v1-tests.mts",
           "scripts/pairing-20261002-fresh-generate-v1.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "9c4ffd6adbbf2a34d1866b5f19d372e3df821d8b",
@@ -673,7 +682,9 @@
           "scripts/pairing-20261002-fresh-transport-v1-tests.py",
           "scripts/pairing-20261002-fresh-transport-v1.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "dc1b2eaaec22f0fe30ac1b573efbd9089f1b02f2",
@@ -683,7 +694,9 @@
           "scripts/pairing-20261002-fresh-store-v1-tests.mts",
           "scripts/pairing-20261002-fresh-store-v1.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0c099d3c4f74bbf284c58114c2f67f12acf7ad2d",
@@ -693,7 +706,9 @@
           "scripts/pairing-20261002-fresh-acquisition-v1-tests.py",
           "scripts/pairing-20261002-fresh-acquisition-v1.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "f9a1069a3d903d35dee5bfbce5af8a685880ee1b",
@@ -703,7 +718,9 @@
           "scripts/pairing-20261002-fresh-score-tests.py",
           "scripts/pairing-20261002-fresh-score.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "f5e9ee763a19d36abf8616d0088ea63eb9dbc25a",
@@ -717,7 +734,9 @@
           "scripts/pairing-20261002-fresh-inputs-v1-tests.mts",
           "scripts/pairing-20261002-fresh-inputs-v1.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "34349394ffc228286826d4a80fd43a66107fafba",
@@ -750,7 +769,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
-          "tournaments"
+          "tournaments",
+          "settings-and-shell"
         ]
       },
       {
@@ -781,7 +801,9 @@
           "scripts/pairing-20261002-replay-evidence-v1-tests.mts",
           "scripts/pairing-20261002-replay-evidence-v1.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "a842c73f5afcade243ff91fc8179fba2f93fa3b9",
@@ -815,7 +837,9 @@
           "scripts/pairing-20261002-fresh-weighting-tests.py",
           "scripts/pairing-20261002-fresh-weighting.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "26bc8548c252d3240b99320d760430a683ebd5df",
@@ -826,7 +850,9 @@
           "scripts/verify-performance-dynamic-extensions.py",
           "scripts/verify-performance-exterior-risk.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "e8db7707a9af5338af59d6d77b6469320b53d9fb",
@@ -836,7 +862,9 @@
           "scripts/evaluate-performance-final-test.py",
           "scripts/test-evaluate-performance-final-test.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "c1f5a7c4f07903b06a1e2ba4f24cfcd588bba955",
@@ -881,7 +909,9 @@
           "scripts/test-validate-performance-likelihood.py",
           "scripts/validate-performance-likelihood.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "9c9c326b69bd9a6d27185a880b9726dc28af31f9",
@@ -890,7 +920,9 @@
         "files": [
           "scripts/pairing-20261002-solver-score-diagnostic.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "32c4ca2dbe1b5734cda0aa7939b6fef07090b21a",
@@ -899,7 +931,9 @@
         "files": [
           "scripts/verify-performance-correlated-opponent.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "a763dceeabeda984697353ab068abec77de19b3f",
@@ -922,7 +956,9 @@
           "scripts/fit-performance-likelihood.py",
           "scripts/test-fit-performance-likelihood.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "a1b9f7dfdb83067f0b917d8c0309baeb049764e4",
@@ -947,7 +983,9 @@
         "files": [
           "scripts/check-performance-simulation.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "9ded396b940d64841a13563f6965c73215bb6c62",
@@ -977,7 +1015,9 @@
           "scripts/collect-performance-research.py",
           "scripts/test-collect-performance-research.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "37b1dbfb2f899ada037b77258bfdedfe1be293ce",
@@ -993,7 +1033,9 @@
           "scripts/pairing-20261002-kl-score-tests.py",
           "scripts/pairing-20261002-kl-score.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "7e3ae3e525c13c204b0e3a4d6c4cd0040ac25823",
@@ -1045,7 +1087,9 @@
           "scripts/pairing-20261002-kl-colours-tests.mts",
           "scripts/pairing-20261002-kl-colours.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "35e53078a0e9d0f0405bdd214399c196b42d9c24",
@@ -1088,7 +1132,9 @@
           "scripts/pairing-20261002-kl-tests.mts",
           "scripts/pairing-20261002-kl-worker.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "22a078cb049391a17d13f22169c1f180edf8d3b2",
@@ -1101,7 +1147,9 @@
           "scripts/pairing-source-frame-tests.py",
           "scripts/pairing-source-frame.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "ec2c2efd0daf7e3eb6f5daadeff3ebe2f72939f7",
@@ -1112,7 +1160,9 @@
           "scripts/pairing-20261002-replay-v2-tests.mts",
           "scripts/pairing-20261002-replay-v2.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "4c609ed41f0cf87fc1ad6cf8cf2cd1f9d8ab0ddf",
@@ -1161,7 +1211,9 @@
           "scripts/pairing-20261002-source-audit.py",
           "scripts/pairing-20261002-sources.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "ab71aaf93eeba8849471796d8a22f45e07f6c0b1",
@@ -1303,6 +1355,7 @@
           "src/features/settings/DataDownloadToolbar.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database"
@@ -1317,7 +1370,9 @@
           "src/platform/panelScrolling.test.ts",
           "src/platform/panelScrolling.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "77e5c05255d25d990896dc8753450f22966074c7",
@@ -1328,7 +1383,9 @@
           "src/platform/panelScrolling.test.ts",
           "src/platform/panelScrolling.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "d4e9478c5c78f40a78ac35c811dab7a00dcaf63e",
@@ -1431,6 +1488,7 @@
           "src/platform/shellIntegration.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "files-and-library"
         ]
       },
@@ -1524,7 +1582,9 @@
           "scripts/check-storage-policy.mjs",
           "scripts/check-storage-policy.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "d71f47a7f667f9f9bcb9c7e8a144e4b641476238",
@@ -1534,7 +1594,9 @@
           "scripts/check-storage-policy.mjs",
           "scripts/check-storage-policy.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "f35ffe128a3f731a98897c058f9cbc13dc509517",
@@ -1568,6 +1630,7 @@
         "areas": [
           "otb-and-downloads",
           "game-analysis",
+          "settings-and-shell",
           "engine-management",
           "prep-and-database"
         ]
@@ -1587,7 +1650,8 @@
           "src/features/settings/tests/otbDownloads.test.ts"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -1606,7 +1670,8 @@
           "src/features/settings/tests/otbDownloads.test.ts"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -1619,6 +1684,7 @@
           "src/features/prep/PrepScrollRegion.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "prep-and-database"
         ]
       },
@@ -1814,6 +1880,8 @@
           "tournaments",
           "otb-and-downloads",
           "game-analysis",
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -1844,7 +1912,9 @@
           "scripts/pairing-20260914-support-performance-tables.py",
           "scripts/pairing-20260914-support-performance-tests.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "4a7a34a6458a67afca98382174af32fda63b6044",
@@ -1868,7 +1938,9 @@
           "scripts/pairing-20260914-support-projection-tables.py",
           "scripts/pairing-20260914-support-projection-tests.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "012f613eb4ff510a1df1046c93c50903584301dd",
@@ -1905,7 +1977,9 @@
           "scripts/pairing-20260914-completion-fallback-tests-v3.mts",
           "scripts/pairing-20260914-completion-fallback-tests.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "41a954ac1472b6218c9cf37a02503f375f80201b",
@@ -1927,7 +2001,9 @@
           "scripts/pairing-20260914-grouped-performance-stress.mts",
           "scripts/pairing-20260914-grouped-performance-tables.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "36df9fd5146d8100d4f5068093b0a0c517eff48e",
@@ -1953,7 +2029,9 @@
           "scripts/pairing-20260914-grouped-performance-tests.mts",
           "scripts/pairing-20260914-grouped-performance-worker.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "26bbdabdb3d0804fb5b5ec700c8f813bfcfcb8fc",
@@ -1971,7 +2049,9 @@
           "scripts/pairing-20260914-grouped-marginals-source-audit.mts",
           "scripts/pairing-20260914-grouped-marginals-tables.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "098582b5e6c7ed83f13cb8e4e7c50a766dcacda4",
@@ -2000,7 +2080,9 @@
           "scripts/pairing-20260914-grouped-marginals-worker-v2.mts",
           "scripts/pairing-20260914-grouped-marginals-worker.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "fe8da39d6695b15744b09d4552d79415c267470a",
@@ -2021,7 +2103,9 @@
           "scripts/pairing-20260914-marginal-projection-tests.mts",
           "scripts/pairing-20260914-marginal-projection.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "eb37cf62ef5dde38f34302a6eeddb3e6656be786",
@@ -2042,7 +2126,9 @@
           "scripts/pairing-20260914-source-request-run.mts",
           "scripts/pairing-20260914-source-request-runtime.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "d1af090065bc1992156a55cbc9eb37777a0d01a2",
@@ -2077,7 +2163,9 @@
           "scripts/pairing-20260914-source-reuse-source.mts",
           "scripts/pairing-20260914-source-reuse-worker.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "03ef16d1da08fb41f7eb016a4f2dcdb1167df78e",
@@ -2101,7 +2189,9 @@
           "scripts/pairing-20260914-local-participation-report.py",
           "scripts/pairing-20260914-local-participation-reproduce.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0e9b1ad0c0722c243ff2a31a21fea5d46956e4f3",
@@ -2126,7 +2216,9 @@
           "scripts/pairing-20260914-local-participation-worker.mts",
           "scripts/pairing-20260914-local-participation.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "09765edf7729ddb26cb563eb050bc991f7bfb930",
@@ -2164,7 +2256,9 @@
           "scripts/pairing-20260914-coherent-forecast-workers.mts",
           "scripts/pairing-20260914-coherent-forecast.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "82f19819e7ae9c3bfb9207671861c6251e612885",
@@ -2186,7 +2280,9 @@
           "scripts/pairing-20260914-hybrid-workers.mts",
           "scripts/pairing-20260914-hybrid.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "b9ecbda4922d9db4796b26be5f7a614c9844e6da",
@@ -2220,7 +2316,9 @@
           "scripts/pairing-20260914-certified-workers.mts",
           "scripts/pairing-20260914-certified.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "44eb01fd8370fbb79d572e20ce203f34f9fa2e45",
@@ -2241,7 +2339,9 @@
           "scripts/pairing-20260914-request-budget-workers.mts",
           "scripts/pairing-20260914-request-budget.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "95cc1f68863a9a8c0001d009cb926ae95f76ded9",
@@ -2263,7 +2363,9 @@
           "scripts/pairing-20260914-source-background-worker.mts",
           "scripts/pairing-20260914-source-background.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "439357270ff9635fb3a98777affab57b888298ce",
@@ -2291,7 +2393,9 @@
           "scripts/pairing-20260914-source-graphs-v2.mts",
           "scripts/pairing-20260914-source-graphs.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "371a75e708a3d6ecdd506e8088f4910fb6886f00",
@@ -2317,7 +2421,9 @@
           "scripts/pairing-20260914-coherent/matching.mts",
           "scripts/pairing-20260914-coherent/tests.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0116bf5016455a273864dc6d45dd8c1e9944942e",
@@ -2338,7 +2444,9 @@
           "scripts/pairing-20260914-family-tests-v2.py",
           "scripts/pairing-20260914-family-tests.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "decf5d1a9e8d660b029701e08f089c7b2cfae521",
@@ -2355,7 +2463,9 @@
           "scripts/pairing_probability_intervals.py",
           "scripts/pairing_probability_intervals_v2.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "233e4cb4e9af32d509125bb2a5fa6a88f995124a",
@@ -2374,7 +2484,9 @@
           "scripts/pairing-20260914-factors/tests.mts",
           "scripts/pairing-20260914-factors/worker.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "74b53f80c3900c13038c5697510e9ca61c4d15da",
@@ -2389,7 +2501,9 @@
           "scripts/pairing-20260914-streaming-metrics.py",
           "scripts/pairing-20260914-streaming/benchmark.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "c6ed9fa56ab171a2e2f411eead3e2940f1a63887",
@@ -2402,7 +2516,9 @@
           "scripts/pairing-20260914-joint-comparison-report.py",
           "scripts/pairing-20260914-joint-details.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "60d92f23b1b3428ceff41f618e2835fbb58097c5",
@@ -2418,7 +2534,9 @@
           "scripts/pairing-20260914-streaming/tests.mts",
           "scripts/pairing-20260914-streaming/worker.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "d3ab655c3b933956c823e3cf457fe2b92eb83760",
@@ -2496,7 +2614,9 @@
           "scripts/pairing-20260914-replay.mts",
           "scripts/pairing_forward_identity_v2.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "ce6c96413782c2a7c5023266cc033130e9d59558",
@@ -2599,7 +2719,9 @@
           "scripts/pairing_forward_capture.py",
           "scripts/pairing_forward_identity.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "f98cb14a71ee4ea3937c3aeddb1f977dbd66fec9",
@@ -2616,7 +2738,9 @@
           "scripts/pairing-20260912-registration-setup.py",
           "scripts/pairing_registration_model.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "7e58d25fce1038ce8c17e1c6f50fdb3469651edf",
@@ -2701,7 +2825,9 @@
           "scripts/pairing-20260912-regimes-diagnose.mts",
           "scripts/pairing-20260912-regimes-report.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0918942be6cd77d5929f8210f21e1ee2add359ea",
@@ -2716,7 +2842,9 @@
           "scripts/pairing-20260912-participation-report.py",
           "scripts/pairing-20260912-participation-validation.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "372cd08ba647f6ef8fed32fb7989cbd8ff13933e",
@@ -3013,7 +3141,9 @@
           "scripts/pairing-20260912-odd-first/candidate/swissPairingSettings.ts",
           "scripts/pairing-20260912-odd-first/candidate/swissParticipation.ts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "6cf5406a31254233c8340feda16f405d015ba2ed",
@@ -3105,7 +3235,9 @@
           "scripts/pairing-20260912-first-mode-metrics-test.py",
           "scripts/pairing-20260912-first-mode-product-proof.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "1951ee38238b80a16da0705070416f3770d96aad",
@@ -3161,7 +3293,9 @@
           "scripts/pairing-20260912-first-mode/candidate-v2/swissPairingSettings.ts",
           "scripts/pairing-20260912-first-mode/candidate-v2/swissParticipation.ts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "619f9f1eed1c781cd3fc3142934569c0a014aed8",
@@ -3227,7 +3361,9 @@
           "scripts/pairing-20260912-first-mode/candidate/swissPairingSettings.ts",
           "scripts/pairing-20260912-first-mode/candidate/swissParticipation.ts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "e7d298c47439865ff869436ac645b23a20defc1b",
@@ -3244,6 +3380,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "files-and-library"
         ]
       },
@@ -3418,7 +3556,9 @@
           "scripts/pairing-20260912-acceleration/candidate/swissParticipation.ts",
           "scripts/pairing-20260912-first-round-diagnosis.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "847c607fcf25bd96fb81345ae95e3a22a96e827f",
@@ -3481,6 +3621,7 @@
           "src/features/settings/ReadyDataPacks.module.css"
         ],
         "areas": [
+          "settings-and-shell",
           "commercial-and-release"
         ]
       },
@@ -3590,7 +3731,9 @@
           "scripts/pairing-20260912-ranking/report.py",
           "scripts/pairing-20260912-ranking/sensitivity.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "4a6beb463371ab487f98b7ceeddf87d8749647fb",
@@ -3710,7 +3853,9 @@
           "scripts/pairing-20260912-source-audit.py",
           "scripts/pairing-20260912-sources.py"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0718c125eff5a8b036d55def7c3ae2c092f3e398",
@@ -3736,7 +3881,9 @@
         "files": [
           "scripts/qa-website-readiness.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "00564c8794f4b9bdb6efaa0022c8532c897c4d1f",
@@ -3777,6 +3924,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "settings-and-shell",
           "files-and-library",
           "commercial-and-release"
         ]
@@ -3826,6 +3974,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "reviews-and-training"
         ]
       },
@@ -3910,7 +4059,9 @@
           "src/platform/shellIntegration.test.ts",
           "src/platform/shellIntegration.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "74889fedf9c8393e8a5207d146b3e3376f5a1d7e",
@@ -3992,6 +4143,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "reviews-and-training"
         ]
       },
@@ -4078,7 +4230,9 @@
         "files": [
           "scripts/qa-macos-preview.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "4149a451a49118f2f0420e5a4c8fc621df84ae45",
@@ -4098,7 +4252,9 @@
         "files": [
           "scripts/qa-macos-preview.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "077e83ddeb9346954121c461b39787a54809d095",
@@ -4131,7 +4287,9 @@
           "src-tauri/src/app_environment.rs",
           "src-tauri/src/lib.rs"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "97c05217ac431ac9c0834118e3348e054172e36c",
@@ -4153,6 +4311,7 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "commercial-and-release"
         ]
@@ -4466,6 +4625,8 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -4481,7 +4642,9 @@
         "files": [
           "scripts/qa-site-monitoring.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "2dc7c4919ef8608699cbab7ef541df179c5ba377",
@@ -4542,6 +4705,7 @@
           "src/features/settings/DataDownloadControl.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "prep-and-database"
         ]
       },
@@ -4616,6 +4780,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "reviews-and-training"
         ]
       },
@@ -4664,6 +4829,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "reviews-and-training"
         ]
       },
@@ -4715,7 +4881,9 @@
         "files": [
           "scripts/qa-signin-fixture.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "fffecf55ce3a79a05b5a336d3c9c43b5811a1274",
@@ -4735,6 +4903,7 @@
           "src/features/settings/ReadyDataPacks.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "prep-and-database"
         ]
@@ -4747,7 +4916,9 @@
           "scripts/qa-site-monitoring.mjs",
           "scripts/site-trends.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "2e41fc65061e308513384d3621c0f01f2b388817",
@@ -4756,7 +4927,9 @@
         "files": [
           "scripts/qa-site-monitoring.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "51b59643e69765d57742136317c123a264191d39",
@@ -4794,6 +4967,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "settings-and-shell",
           "engine-management",
           "files-and-library",
           "accounts-and-home",
@@ -4884,6 +5058,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "app-and-controls"
         ]
@@ -4906,7 +5081,9 @@
         "files": [
           "src/features/shell/icons.tsx"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "10b6b77a7ff08ac357883335d193e49c2acb2ff1",
@@ -5150,6 +5327,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -5228,7 +5406,9 @@
           "src/platform/panelScrolling.test.ts",
           "src/platform/panelScrolling.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "c6fddca1ce024ce0da9ba444a1087cb5ae0fe8ed",
@@ -5267,7 +5447,9 @@
           "scripts/pairing-completion-audit.py",
           "scripts/pairing-v3-benchmark.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "61d67246d136dc1181187af123b9db4cfaee002e",
@@ -5278,7 +5460,9 @@
           "scripts/restore-dev-otb.ps1",
           "scripts/restore-dev-otb.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "48ed31ebbb35db6792b3ba8b0863a759622eec52",
@@ -5583,6 +5767,8 @@
           "performance",
           "tournaments",
           "otb-and-downloads",
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -5608,6 +5794,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -5622,6 +5809,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -5690,7 +5878,9 @@
         "files": [
           "scripts/qa-home-accounts.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "e9bb8760c461d1b2dede9a02fac6c1537071fd9d",
@@ -5704,6 +5894,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -5784,7 +5975,8 @@
         ],
         "areas": [
           "tournaments",
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -5802,6 +5994,7 @@
           "src/platform/sound.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -5901,7 +6094,9 @@
           "scripts/pairing-benchmark.mts",
           "scripts/pairing-improvements-benchmark.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "880b47727858c8a3c650db26c2a385454db21c9b",
@@ -5939,7 +6134,9 @@
         "files": [
           "src-tauri/src/migrate.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "805679d1ffc2e1bfd37c0e2c306812ce99dee816",
@@ -6021,7 +6218,9 @@
           "scripts/pairing-benchmark-select.mjs",
           "scripts/pairing-benchmark.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "b7d1e00f349b0f3de439381dbb68326a0de71ef5",
@@ -6076,6 +6275,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "settings-and-shell",
           "engine-plans",
           "prep-and-database",
           "accounts-and-home",
@@ -6107,6 +6307,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "app-and-controls",
           "commercial-and-release"
         ]
@@ -6119,7 +6321,9 @@
           "scripts/verify-source-provenance.mjs",
           "scripts/verify-source-provenance.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "97d6bda2a8d11bcf6c2b6083a7eacc13eb7fb5d9",
@@ -6156,6 +6360,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "settings-and-shell",
           "accounts-and-home",
           "app-and-controls",
           "commercial-and-release"
@@ -6172,7 +6377,9 @@
           "scripts/pairing-benchmark-select.mjs",
           "scripts/pairing-benchmark.mts"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0381814f55a8ae382c76943aa7f4609ab3d56293",
@@ -6183,7 +6390,9 @@
           "scripts/prepare-dev-profile.mjs",
           "scripts/windows-profile-context.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "76d31228a2bb435ac0ed8e535ee035f27f3e8a57",
@@ -6215,6 +6424,7 @@
           "src/platform/sound.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -6269,7 +6479,9 @@
           "src/features/settings/tests/dataPackPeriods.test.ts",
           "src/features/settings/tests/dataPackVariants.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "461bdaba8b9681d23206f8111541e4bfe389a76e",
@@ -6295,6 +6507,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "commercial-and-release"
         ]
       },
@@ -6346,6 +6560,7 @@
           "src/features/settings/DataDownloadControl.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -6367,7 +6582,9 @@
           "src/features/settings/tests/dataPackPeriods.test.ts",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "98aa52a83b5052867b0f078a7114f560bea35220",
@@ -6398,6 +6615,7 @@
           "src/features/settings/tests/lookupRouting.test.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "prep-and-database"
         ]
       },
@@ -6422,6 +6640,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "board-and-annotations"
@@ -6519,7 +6738,9 @@
           "src/features/settings/tests/dataPackPeriods.test.ts",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "8289bcba652feba022a4067a7dffb708fdc73b67",
@@ -6548,6 +6769,7 @@
           "src/features/settings/DataDownloadControl.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "plans"
         ]
       },
@@ -6569,6 +6791,7 @@
           "src/features/settings/tests/lookupRouting.test.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "prep-and-database"
         ]
       },
@@ -6593,6 +6816,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "board-and-annotations"
@@ -6759,7 +6983,9 @@
           "scripts/qa-info-spacing.mjs",
           "scripts/qa-plan-column-sort.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "a6181f1696ef58cdaef6c0c244ad4be7bd78c594",
@@ -6877,6 +7103,7 @@
           "performance",
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -6904,6 +7131,7 @@
           "src/features/settings/DataDownloadToolbar.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "plans",
           "prep-and-database"
         ]
@@ -6920,6 +7148,7 @@
           "src/features/shell/TitleBar.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "commercial-and-release"
         ]
       },
@@ -6939,7 +7168,10 @@
           "src/features/settings/dataDownloads.ts",
           "src/features/settings/tests/dataAvailability.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "7a83b9e110da94db28876e9962206ec8fb302346",
@@ -6998,6 +7230,7 @@
           "src-tauri/src/local_eval/download.rs"
         ],
         "areas": [
+          "local-data-and-recovery",
           "engine-management"
         ]
       },
@@ -7009,7 +7242,9 @@
           "src-tauri/src/local_lichess/transfer.rs",
           "src-tauri/src/local_lichess/transfer_tests.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "269a3734beac03a6d95478ab87c7f9b1bd82f821",
@@ -7018,7 +7253,9 @@
         "files": [
           "scripts/qa-ready-data-packs.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "85862df122e71c7ac81df8d6b54046c6880a80d4",
@@ -7064,7 +7301,9 @@
         "files": [
           "src-tauri/src/lib.rs"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "039189dede1bc36031b6dfbbd06d1cadbef936be",
@@ -7075,7 +7314,9 @@
           "src/features/settings/DataDownloadControl.tsx",
           "src/features/settings/ReadyDataPacks.tsx"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "a856b32e5bfa32963631e026542b27d76e1b38ac",
@@ -7085,7 +7326,9 @@
           "scripts/qa-downloaded-research.mjs",
           "src-tauri/src/bin/query_research_pack.rs"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "9862ea99735c2bf0caaa44aa384169404d2d6673",
@@ -7096,7 +7339,9 @@
           "scripts/verify-native-notices.mjs",
           "scripts/verify-native-notices.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "f8b3ba67055b29f85030d8a2eba5ddf8841f0d2d",
@@ -7107,7 +7352,9 @@
           "scripts/derive-broadcast-month.test.mjs",
           "scripts/lib/derive-broadcast-month.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "d52f614e22eea735c71cb6f080d258d7b64d72a2",
@@ -7120,7 +7367,9 @@
           "src/features/settings/dataDownloadErrors.ts",
           "src/features/settings/tests/dataDownloadErrors.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "101bc2e2c0c9294b22ebfca6e6e12f29d044ecee",
@@ -7132,7 +7381,9 @@
           "src/features/settings/dataDownloadErrors.ts",
           "src/features/settings/tests/dataDownloadErrors.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "bdd01550dbe0664b89d511175299bd7830fb527b",
@@ -7189,7 +7440,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -7269,7 +7521,9 @@
           "scripts/qa-context-downloads.mjs",
           "src/features/settings/DataDownloadControl.module.css"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "356b018af7fb1b9139299f98ec026a56d7b269f1",
@@ -7278,7 +7532,9 @@
         "files": [
           "scripts/qa-latest-download.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "f4c1292dcfe5d79b26cdaad96537725d4925f5d0",
@@ -7302,7 +7558,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -7315,7 +7572,9 @@
           "scripts/verify-native-notices.mjs",
           "scripts/verify-native-notices.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "29c92766dd08bb329b77d500446094a727aca1f4",
@@ -7325,7 +7584,9 @@
           "scripts/verify-frontend-notices.mjs",
           "scripts/verify-frontend-notices.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "b83200b56b12d40ad6fe45f62c9339a17dcb858c",
@@ -7334,7 +7595,9 @@
         "files": [
           "src/features/settings/DataDownloadControl.module.css"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "e80ea4207ad0ea05fac6689a1e4d2486f873e8c2",
@@ -7372,6 +7635,7 @@
           "src/features/settings/dataDownloads.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -7385,7 +7649,9 @@
         "files": [
           "scripts/verify-purchase-policies.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "73de1b7c36042b6339b75f9413d4dee1af70a94a",
@@ -7394,7 +7660,9 @@
         "files": [
           "scripts/qa-installer-contents.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "ad38afd268aaf00b34e96308ede577a63443d305",
@@ -7479,7 +7747,9 @@
           "scripts/worker-secret-vault.ps1",
           "scripts/worker-secrets.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "dd41ea8c0414be79a92f5a790f65c5aba52d9fe4",
@@ -7499,7 +7769,9 @@
         "files": [
           "scripts/qa-installer-contents.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "7b1ca772d570996bb0fecba1bbf9960df9597df8",
@@ -7527,7 +7799,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -7552,7 +7825,9 @@
           "scripts/worker-secrets.mjs",
           "scripts/worker-secrets.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "c379a8a69a08b8c19d1d56c2fde8818f10d865b4",
@@ -7573,6 +7848,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "settings-and-shell",
           "engine-management"
         ]
       },
@@ -7626,6 +7902,8 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "local-data-and-recovery",
+          "settings-and-shell",
           "prep-and-database",
           "commercial-and-release"
         ]
@@ -7643,7 +7921,8 @@
           "src-tauri/src/local_lichess/transfer.rs"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "local-data-and-recovery"
         ]
       },
       {
@@ -7655,7 +7934,9 @@
           "scripts/lib/data-packs.mjs",
           "scripts/prepare-data-pack.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "3ab6cf2ee003671fcdda8614f1d243af26726d62",
@@ -7670,7 +7951,10 @@
           "src/features/settings/SettingsSurface.tsx",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "51552d2d9d298bfa7cecd72ea17f984b8346d8fc",
@@ -7679,7 +7963,9 @@
         "files": [
           "scripts/qa-installer-contents.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "fe54baa4fd1345f0825fceb7e676d631bb7b9be7",
@@ -7772,6 +8058,8 @@
           "src/main.tsx"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -7808,7 +8096,9 @@
           "src/features/shell/TitleBar.module.css",
           "src/features/shell/TitleBar.tsx"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "9f148863cc03d49ea270fc88ba3d031ace4a1371",
@@ -7825,6 +8115,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "local-data-and-recovery",
           "commercial-and-release"
         ]
       },
@@ -7853,6 +8144,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "app-and-controls",
           "commercial-and-release"
         ]
@@ -7896,6 +8189,8 @@
           "src/platform/workspaceLifecycle.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-management",
           "prep-and-database",
           "files-and-library",
@@ -7923,7 +8218,9 @@
         "files": [
           "scripts/sync-public-seller.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "ef7af871f6a14ddde7a587465167780c3af67ec1",
@@ -7944,6 +8241,7 @@
           "src/web/tests/productionConfigScript.test.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "phone",
           "commercial-and-release"
         ]
@@ -8039,7 +8337,9 @@
         "files": [
           "scripts/qa-true-performance.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "6f0d95d6475cef0b8dba9f8fc6093129be7a7afd",
@@ -8075,6 +8375,7 @@
           "src/features/settings/tests/lookupRouting.test.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "prep-and-database"
         ]
@@ -8115,7 +8416,9 @@
           "src/features/shell/clearSavedData.ts",
           "src/features/shell/tests/clearSavedData.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "b570968db913eac64fafa57ffa2182af8c5c9d85",
@@ -8126,7 +8429,9 @@
           "scripts/qa-tournament-options.mjs",
           "scripts/serve-tournament-options.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "e8a23ec71e7f05b71ee04934f4aabc4f4d8b1dfd",
@@ -8235,6 +8540,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "app-and-controls",
           "commercial-and-release"
         ]
@@ -8263,7 +8570,9 @@
         "files": [
           "scripts/qa-true-performance.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "89af6af29dc3542de134817003c48b50e06a0687",
@@ -8272,7 +8581,9 @@
         "files": [
           "src-tauri/src/recovery_export.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "e5f36b8eaefa5ad0e36c70e8270c7b5120eb854b",
@@ -8322,6 +8633,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "commercial-and-release"
         ]
       },
@@ -8343,6 +8655,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "reviews-and-training"
         ]
       },
@@ -8353,7 +8667,9 @@
         "files": [
           "scripts/design-true-performance.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "081e47dc2d7b21dfe45e91680552de77536ac63f",
@@ -8403,6 +8719,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "reviews-and-training"
         ]
       },
@@ -8456,6 +8774,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -8486,7 +8805,9 @@
           "src-tauri/src/local_lichess/staging.rs",
           "src-tauri/src/local_lichess/staging_tests.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "9dce28a5e6352ac504aeb7425b91de535be0e962",
@@ -8554,7 +8875,9 @@
           "src-tauri/src/local_lichess/transfer.rs",
           "src-tauri/src/local_lichess/transfer_tests.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "92e6a3723092552611bdac54340e645b9bbec806",
@@ -8566,7 +8889,9 @@
           "src/features/shell/ClearSavedDataModal.tsx",
           "src/features/shell/TitleBar.tsx"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "1e47f37f76e448b2c2801412a6c14b4928b15cf9",
@@ -8585,6 +8910,7 @@
           "src/platform/workspaceLifecycle.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "app-and-controls"
         ]
       },
@@ -8679,6 +9005,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "files-and-library",
           "commercial-and-release"
         ]
@@ -8704,6 +9032,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "plans",
           "commercial-and-release"
         ]
@@ -8726,6 +9055,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "files-and-library",
           "commercial-and-release"
         ]
@@ -8744,6 +9075,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "files-and-library"
         ]
       },
@@ -8787,7 +9120,10 @@
           "src/features/settings/EvalDownloadControl.tsx",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "6ac7c2b6069d05f6a259d999c8bb27c55eae8067",
@@ -8850,6 +9186,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-management"
         ]
       },
@@ -8860,7 +9198,9 @@
         "files": [
           "src/features/settings/SettingsSurface.tsx"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "2a083a83fd8a03cb189cf6d832fb43ce1a06aca4",
@@ -8870,7 +9210,9 @@
           "src-tauri/src/local_eval.rs",
           "src-tauri/src/local_eval/build.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "135060cabfba5887903c4d1ce92f1682b6b00129",
@@ -8895,6 +9237,7 @@
           "src/features/settings/tests/lookupRouting.test.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -8915,7 +9258,10 @@
           "src/features/settings/tests/localOpeningControls.test.ts",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "70e85c2bc5c1cfda8712ea95d43127945e2f2d92",
@@ -8939,6 +9285,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "prep-and-database",
           "files-and-library",
           "board-and-annotations",
@@ -8958,6 +9306,7 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -9023,6 +9372,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "board-and-annotations",
           "app-and-controls"
         ]
@@ -9041,6 +9392,7 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -9055,7 +9407,9 @@
           "src/features/settings/settingsNavigation.ts",
           "src/features/settings/tests/settingsNavigation.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "d31b8da6393c6dd99c00bc694bc776cbdf62d6df",
@@ -9067,7 +9421,9 @@
           "scripts/dev-server-identity.test.mjs",
           "scripts/ensure-dev-server.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "1290880cb93317d1c78fc91cb6e6a2ec7e2014fb",
@@ -9077,7 +9433,10 @@
           "src-tauri/src/local_lichess.rs",
           "src/features/settings/SettingsSurface.tsx"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "bf325179e8cbdf06475f6cbfdab7545968484d8a",
@@ -9101,6 +9460,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management",
           "engine-plans",
           "plans",
@@ -9187,6 +9547,8 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "prep-and-database"
         ]
       },
@@ -9209,6 +9571,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database"
@@ -9237,6 +9601,8 @@
           "src/platform/referenceStats.test.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database"
@@ -9260,6 +9626,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -9275,7 +9643,9 @@
           "src-tauri/src/bin/migrate_cli.rs",
           "src-tauri/src/migrate.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "84308b8b521b7f8416b87ce286b6d3f57db05c1d",
@@ -9285,7 +9655,9 @@
           "src-tauri/src/bin/migrate_cli.rs",
           "src-tauri/src/migrate.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "0b97d3bb7c580313712a534b5db1b459b1b3ca15",
@@ -9295,7 +9667,9 @@
           "src-tauri/src/bin/migrate_cli.rs",
           "src-tauri/src/migrate.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "d6aa64fef9deb36cd72c07444858d2099989e0a0",
@@ -9315,6 +9689,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -9341,6 +9717,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database"
@@ -9532,6 +9910,7 @@
           "src/features/shell/icons.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "prep-and-database",
           "accounts-and-home",
           "app-and-controls"
@@ -9696,6 +10075,7 @@
           "src/features/structures/pawnStructureTypes.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -9744,6 +10124,7 @@
           "src/features/structures/pawnStructureTypes.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-plans",
           "plans",
           "prep-and-database",
@@ -9845,6 +10226,7 @@
           "src/platform/sound.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -9912,6 +10294,7 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "engine-management"
         ]
       },
@@ -9969,7 +10352,8 @@
           "src-tauri/src/pgn_stream.rs"
         ],
         "areas": [
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "local-data-and-recovery"
         ]
       },
       {
@@ -9982,7 +10366,9 @@
           "src-tauri/src/pgn_stream.rs",
           "src-tauri/src/storage.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "0aa8874f5587a9851a348054ba3c82b97a541131",
@@ -10002,6 +10388,8 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "local-data-and-recovery",
+          "settings-and-shell",
           "accounts-and-home"
         ]
       },
@@ -10015,7 +10403,9 @@
           "src-tauri/src/pgn_stream.rs",
           "src-tauri/src/storage.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "bb7e6e04b4e072f20a043ae7fc920174359052bf",
@@ -10048,6 +10438,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "accounts-and-home"
         ]
       },
@@ -10115,6 +10506,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "prep-and-database",
           "board-and-annotations",
           "accounts-and-home"
@@ -10172,6 +10564,7 @@
           "src/features/shell/TitleBar.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -10198,6 +10591,7 @@
           "src/features/settings/SettingsSurface.tsx"
         ],
         "areas": [
+          "settings-and-shell",
           "commercial-and-release"
         ]
       },
@@ -10259,6 +10653,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "plans",
           "reviews-and-training",
           "app-and-controls",
@@ -10339,6 +10735,7 @@
           "src/platform/sound.ts"
         ],
         "areas": [
+          "settings-and-shell",
           "board-and-annotations"
         ]
       },
@@ -10501,7 +10898,8 @@
         ],
         "areas": [
           "tournaments",
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -10533,6 +10931,8 @@
           "src/platform/bridge.ts"
         ],
         "areas": [
+          "local-data-and-recovery",
+          "settings-and-shell",
           "files-and-library"
         ]
       },
@@ -10715,7 +11115,8 @@
         ],
         "areas": [
           "tournaments",
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -10758,7 +11159,8 @@
         ],
         "areas": [
           "tournaments",
-          "otb-and-downloads"
+          "otb-and-downloads",
+          "settings-and-shell"
         ]
       },
       {
@@ -10826,6 +11228,7 @@
         "areas": [
           "tournaments",
           "otb-and-downloads",
+          "settings-and-shell",
           "accounts-and-home",
           "app-and-controls"
         ]
@@ -10899,6 +11302,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "settings-and-shell",
           "accounts-and-home"
         ]
       },
@@ -10932,6 +11336,7 @@
         ],
         "areas": [
           "otb-and-downloads",
+          "settings-and-shell",
           "accounts-and-home"
         ]
       },
@@ -10955,7 +11360,9 @@
           "src-tauri/src/lib.rs",
           "src/platform/bridge.ts"
         ],
-        "areas": []
+        "areas": [
+          "settings-and-shell"
+        ]
       },
       {
         "commit": "a281b0a2e32d7f7ff29dd52db02709f9d241afe8",
@@ -10992,8 +11399,462 @@
     ]
   },
   "en": {
-    "head": "cc5680bd2ecd09a5d658549b61edb8cade120529",
+    "head": "67ccb7a9c76b27b08c44d3253f02b46e7a3bfa29",
     "commits": [
+      {
+        "commit": "2657c53b7f8f919e335f3e438ea2440f1f54f675",
+        "date": "2026-10-25",
+        "subject": "Clarify Engine Plans controls and map engine history targets",
+        "files": [
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "67ccb7a9c76b27b08c44d3253f02b46e7a3bfa29",
+        "date": "2026-10-25",
+        "subject": "Clarify Engine Plans controls and map engine history targets",
+        "files": [
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43",
+        "date": "2026-10-25",
+        "subject": "Validate phone stored evaluation evidence before caching",
+        "files": [
+          "src/web/lichessCloud.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/stockfishEngine.test.ts",
+          "src/web/tests/storedEvaluationValidation.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "phone"
+        ]
+      },
+      {
+        "commit": "c8297ebad9e64a86cce7de96a7471333a26aa1ce",
+        "date": "2026-10-25",
+        "subject": "Validate phone stored evaluation evidence before caching",
+        "files": [
+          "src/web/lichessCloud.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/stockfishEngine.test.ts",
+          "src/web/tests/storedEvaluationValidation.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "phone"
+        ]
+      },
+      {
+        "commit": "e386a802179d3487e8fe16a7160fe1d059dd5e99",
+        "date": "2026-10-25",
+        "subject": "Retain catalog installs through validation and profile saving",
+        "files": [
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/CatalogEngineCard.tsx",
+          "src/components/engines/CatalogInstall.controls.test.tsx",
+          "src/utils/catalogInstall.ts",
+          "src/utils/catalogInstallState.ts",
+          "src/utils/engines.ts",
+          "src/utils/tests/catalogInstallIdentity.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "a43114f757f7288b8155f5f8fb8986119770e09e",
+        "date": "2026-10-25",
+        "subject": "Retain catalog installs through validation and profile saving",
+        "files": [
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/CatalogEngineCard.tsx",
+          "src/components/engines/CatalogInstall.controls.test.tsx",
+          "src/utils/catalogInstall.ts",
+          "src/utils/catalogInstallState.ts",
+          "src/utils/engines.ts",
+          "src/utils/tests/catalogInstallIdentity.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "18e8c74e712170a6916c177b29658d7b645bdfcc",
+        "date": "2026-10-25",
+        "subject": "Keep unreadable downloaded evaluations retryable",
+        "files": [
+          "src/components/boards/EvalListener.stored.test.tsx",
+          "src/utils/lichess/api.tsx",
+          "src/utils/tests/lichessStoredReadRecovery.test.ts",
+          "src/web/tests/storedEvaluationPolicy.test.ts"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "d976261aefe45afcf4e973352097084a4d8a8fcf",
+        "date": "2026-10-25",
+        "subject": "Keep unreadable downloaded evaluations retryable",
+        "files": [
+          "src/components/boards/EvalListener.stored.test.tsx",
+          "src/utils/lichess/api.tsx",
+          "src/utils/tests/lichessStoredReadRecovery.test.ts",
+          "src/web/tests/storedEvaluationPolicy.test.ts"
+        ],
+        "areas": [
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "41f60e91c8958a7a2e6422818d69a7f6fca8daf9",
+        "date": "2026-10-25",
+        "subject": "Honor stored-evaluation preferences across live analysis",
+        "files": [
+          "src/components/boards/EvalListener.stored.test.tsx",
+          "src/components/boards/EvalListener.tsx",
+          "src/components/common/DetachedEval.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StoredEvaluationSwitch.test.tsx",
+          "src/components/engines/StoredEvaluationSwitch.tsx",
+          "src/components/panels/analysis/BestMoves.tsx",
+          "src/components/panels/analysis/EnginePanelContent.tsx",
+          "src/state/atoms.ts",
+          "src/utils/localEngineSearchOwnership.ts",
+          "src/utils/storedEvaluationPolicy.ts",
+          "src/utils/tests/localEngineSearchOwnership.test.ts",
+          "src/utils/tests/storedEvaluationCache.test.ts",
+          "src/web/WebApp.tsx",
+          "src/web/liveEnginePolicy.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/storedEvaluationControl.test.tsx",
+          "src/web/tests/storedEvaluationPolicy.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "645932ccd80d655e4404cf2dd28386ca25445658",
+        "date": "2026-10-25",
+        "subject": "Honor stored-evaluation preferences across live analysis",
+        "files": [
+          "src/components/boards/EvalListener.stored.test.tsx",
+          "src/components/boards/EvalListener.tsx",
+          "src/components/common/DetachedEval.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StoredEvaluationSwitch.test.tsx",
+          "src/components/engines/StoredEvaluationSwitch.tsx",
+          "src/components/panels/analysis/BestMoves.tsx",
+          "src/components/panels/analysis/EnginePanelContent.tsx",
+          "src/state/atoms.ts",
+          "src/utils/localEngineSearchOwnership.ts",
+          "src/utils/storedEvaluationPolicy.ts",
+          "src/utils/tests/localEngineSearchOwnership.test.ts",
+          "src/utils/tests/storedEvaluationCache.test.ts",
+          "src/web/WebApp.tsx",
+          "src/web/liveEnginePolicy.ts",
+          "src/web/stockfishEngine.ts",
+          "src/web/tests/storedEvaluationControl.test.tsx",
+          "src/web/tests/storedEvaluationPolicy.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "1f59719590119bdb9c03d63458b6cc7894db9ad6",
+        "date": "2026-10-25",
+        "subject": "Keep plan arrows owned and persistent across desktop and phone previews",
+        "files": [
+          "src/components/boards/Board.tsx",
+          "src/components/panels/analysis/BestMoves.tsx",
+          "src/components/panels/analysis/EnginePanelContent.tsx",
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx",
+          "src/components/panels/plan/PlanExplorerPanel.tsx",
+          "src/hooks/usePlanArrows.test.tsx",
+          "src/hooks/usePlanArrows.ts",
+          "src/state/atoms.ts",
+          "src/utils/planArrowLayers.ts",
+          "src/utils/tests/planArrowLayers.test.ts",
+          "src/web/PhoneEnginePlansPanel.tsx",
+          "src/web/WebApp.tsx",
+          "src/web/tests/phoneDrawingFlow.test.tsx",
+          "src/web/tests/phonePlanArrows.test.tsx"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "69da8d731f9baec4cacea0361d415f6427d220fc",
+        "date": "2026-10-25",
+        "subject": "Keep plan arrows owned and persistent across desktop and phone previews",
+        "files": [
+          "src/components/boards/Board.tsx",
+          "src/components/panels/analysis/BestMoves.tsx",
+          "src/components/panels/analysis/EnginePanelContent.tsx",
+          "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx",
+          "src/components/panels/plan/PlanExplorerPanel.tsx",
+          "src/hooks/usePlanArrows.test.tsx",
+          "src/hooks/usePlanArrows.ts",
+          "src/state/atoms.ts",
+          "src/utils/planArrowLayers.ts",
+          "src/utils/tests/planArrowLayers.test.ts",
+          "src/web/PhoneEnginePlansPanel.tsx",
+          "src/web/WebApp.tsx",
+          "src/web/tests/phoneDrawingFlow.test.tsx",
+          "src/web/tests/phonePlanArrows.test.tsx"
+        ],
+        "areas": [
+          "engine-plans",
+          "plans",
+          "board-and-annotations",
+          "app-and-controls",
+          "phone"
+        ]
+      },
+      {
+        "commit": "0a0056a6954e74140f9f4c251b26203c91c1d540",
+        "date": "2026-10-25",
+        "subject": "Recover engine logos with bundled marks and owned image state",
+        "files": [
+          "src/assets/engines/README.md",
+          "src/assets/engines/lc0.png",
+          "src/assets/engines/stockfish.png",
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/EngineLogo.test.tsx",
+          "src/components/engines/EngineLogo.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StockfishCatalogCard.tsx"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "4fdff710bfc346c14628145a5dbe7e2a14fac364",
+        "date": "2026-10-25",
+        "subject": "Recover engine logos with bundled marks and owned image state",
+        "files": [
+          "src/assets/engines/README.md",
+          "src/assets/engines/lc0.png",
+          "src/assets/engines/stockfish.png",
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/EngineLogo.test.tsx",
+          "src/components/engines/EngineLogo.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StockfishCatalogCard.tsx"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "dab8e02d87f8c94a88357b72d4e75cf5969a3a11",
+        "date": "2026-10-25",
+        "subject": "Guard local engine setup and retain failed profile saves",
+        "files": [
+          "scripts/fixtures/fake-config-engine.rs",
+          "src-tauri/src/chess.rs",
+          "src-tauri/src/engine/config.rs",
+          "src-tauri/src/engine/mod.rs",
+          "src-tauri/src/engine/process.rs",
+          "src-tauri/src/error.rs",
+          "src-tauri/src/main.rs",
+          "src/bindings/generated.ts",
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/EditEngine.tsx",
+          "src/components/engines/EngineForm.controls.test.tsx",
+          "src/components/engines/EngineForm.tsx",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/LocalEngineRegistration.controls.test.tsx",
+          "src/components/engines/StockfishCatalogCard.tsx"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "d7f563ca11f197ae2aaf0f5580547f7b30cb4809",
+        "date": "2026-10-25",
+        "subject": "Guard local engine setup and retain failed profile saves",
+        "files": [
+          "scripts/fixtures/fake-config-engine.rs",
+          "src-tauri/src/chess.rs",
+          "src-tauri/src/engine/config.rs",
+          "src-tauri/src/engine/mod.rs",
+          "src-tauri/src/engine/process.rs",
+          "src-tauri/src/error.rs",
+          "src-tauri/src/main.rs",
+          "src/bindings/generated.ts",
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/EditEngine.tsx",
+          "src/components/engines/EngineForm.controls.test.tsx",
+          "src/components/engines/EngineForm.tsx",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/LocalEngineRegistration.controls.test.tsx",
+          "src/components/engines/StockfishCatalogCard.tsx"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "10b440d80b2d4a9ba23846c72996dc9754aa0078",
+        "date": "2026-10-25",
+        "subject": "Add safe persistent Stockfish 19 catalog setup and cancellation",
+        "files": [
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StockfishCatalogCard.tsx",
+          "src/utils/engines.ts",
+          "src/utils/stockfishCatalog.ts",
+          "src/utils/stockfishCatalogInstall.ts",
+          "src/utils/tests/engines.test.ts",
+          "src/utils/tests/stockfishCatalogInstall.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "a9a29117e98fafb99dca7e1eecb6f6cef90030ab",
+        "date": "2026-10-25",
+        "subject": "Add safe persistent Stockfish 19 catalog setup and cancellation",
+        "files": [
+          "src/components/engines/AddEngine.tsx",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StockfishCatalogCard.tsx",
+          "src/utils/engines.ts",
+          "src/utils/stockfishCatalog.ts",
+          "src/utils/stockfishCatalogInstall.ts",
+          "src/utils/tests/engines.test.ts",
+          "src/utils/tests/stockfishCatalogInstall.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "89f642282b02f66704b63a638b2376868a74dbd0",
+        "date": "2026-10-25",
+        "subject": "Keep Stockfish resource sources relative for Windows Tauri builds",
+        "files": [
+          "src-tauri/src/bin/stage_stockfish19.rs"
+        ],
+        "areas": [
+          "engine-management"
+        ]
+      },
+      {
+        "commit": "f6bbb0de89ac253a3cc13f2410654fb96857fb7c",
+        "date": "2026-10-25",
+        "subject": "Keep Stockfish resource sources relative for Windows Tauri builds",
+        "files": [
+          "src-tauri/src/bin/stage_stockfish19.rs"
+        ],
+        "areas": [
+          "engine-management"
+        ]
+      },
+      {
+        "commit": "cf3ee2acdb475b33215664842ab59420a83c9ee4",
+        "date": "2026-10-25",
+        "subject": "Stage verified native Stockfish 19 and preserve default choices",
+        "files": [
+          "scripts/build-desktop.mjs",
+          "scripts/tests/desktop-stockfish-build.test.mjs",
+          "src-tauri/src/bin/stage_stockfish19.rs",
+          "src-tauri/src/engine_install.rs",
+          "src-tauri/src/lib.rs",
+          "src-tauri/src/main.rs",
+          "src-tauri/src/stockfish_install.rs",
+          "src/bindings/generated.ts",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StockfishUpgradeNotice.tsx",
+          "src/hooks/useEnsureDesktopEngines.ts",
+          "src/state/atoms.ts",
+          "src/utils/enginePreferenceStore.ts",
+          "src/utils/enginePreferences.ts",
+          "src/utils/stockfishDefaultUpgrade.ts",
+          "src/utils/stockfishUpgrade.ts",
+          "src/utils/tests/enginePreferences.nativeIO.test.ts",
+          "src/utils/tests/stockfishDefaultUpgrade.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
+      {
+        "commit": "7e03ded1c59e46ce733e2c4c9505f244a1a9ac31",
+        "date": "2026-10-25",
+        "subject": "Stage verified native Stockfish 19 and preserve default choices",
+        "files": [
+          "scripts/build-desktop.mjs",
+          "scripts/tests/desktop-stockfish-build.test.mjs",
+          "src-tauri/src/bin/stage_stockfish19.rs",
+          "src-tauri/src/engine_install.rs",
+          "src-tauri/src/lib.rs",
+          "src-tauri/src/main.rs",
+          "src-tauri/src/stockfish_install.rs",
+          "src/bindings/generated.ts",
+          "src/components/engines/EnginePreferences.controls.test.tsx",
+          "src/components/engines/EnginesPage.tsx",
+          "src/components/engines/StockfishUpgradeNotice.tsx",
+          "src/hooks/useEnsureDesktopEngines.ts",
+          "src/state/atoms.ts",
+          "src/utils/enginePreferenceStore.ts",
+          "src/utils/enginePreferences.ts",
+          "src/utils/stockfishDefaultUpgrade.ts",
+          "src/utils/stockfishUpgrade.ts",
+          "src/utils/tests/enginePreferences.nativeIO.test.ts",
+          "src/utils/tests/stockfishDefaultUpgrade.test.ts"
+        ],
+        "areas": [
+          "engine-management",
+          "app-and-controls"
+        ]
+      },
       {
         "commit": "5442126706fa49c94ba5e683dd4dba3b32a66834",
         "date": "2026-10-25",
@@ -11072,7 +11933,9 @@
           "src/utils/enginePreferences.ts",
           "src/utils/tests/enginePreferences.nativeIO.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "66ffb51d385975a386fe0658f29212780320dd83",
@@ -11082,7 +11945,9 @@
           "src/utils/enginePreferences.ts",
           "src/utils/tests/enginePreferences.nativeIO.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "9ab3d91657887ba6771aa4b0d14615eee201daa5",
@@ -11161,7 +12026,9 @@
         "files": [
           "scripts/audit-novelty-changes.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "793195dba74ef8e7ed1258ccd1a88ab7b0f378c5",
@@ -11170,7 +12037,9 @@
         "files": [
           "scripts/audit-novelty-changes.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "be9e7eb1c89fa6dd687c318ca939d883d62b06ce",
@@ -11756,7 +12625,9 @@
           "src/utils/chess.ts",
           "src/utils/tests/pgnExport.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "577b1b87111bfbb72eb8ea2ce29dc7fea9aab898",
@@ -11766,7 +12637,9 @@
           "src/utils/chess.ts",
           "src/utils/tests/pgnExport.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "6549365d53d832bb5976ba6a2a36b147d888746c",
@@ -12235,7 +13108,9 @@
           "src-tauri/src/report_limits.rs",
           "src/bindings/generated.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "969d4b0841747f892fd6e99d73a76bb11f2f6b6c",
@@ -12336,7 +13211,9 @@
         "files": [
           "scripts/audit-novelty-changes.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "8ff91aaac8bb1c4cea21a35fc285368601781d1c",
@@ -13457,7 +14334,9 @@
           "scripts/check-storage-policy.mjs",
           "scripts/check-storage-policy.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "ddb23bf43cd1b539072efa4218d7ca8103f0b51a",
@@ -13467,7 +14346,9 @@
           "scripts/check-storage-policy.mjs",
           "scripts/check-storage-policy.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "6dcdcd85a3cae104445614ee5fe1357be8b58806",
@@ -13520,7 +14401,9 @@
           "src/utils/tests/fixtures/advancedPawnHistory.ts",
           "src/utils/tests/ownerCaptureRecallAudit.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "25456fc1023ca55085c0b387bd62e2a6443af245",
@@ -13555,7 +14438,9 @@
         "files": [
           "src/utils/tests/captureTrapRecallAudit.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "9e99287ab57dbcc780141da2b2fa0535ff9724b0",
@@ -13586,7 +14471,9 @@
         "files": [
           "src/utils/tests/checkingOpportunityAudit.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "f70e3ac461fe07237be49149427ebfe74f9a0953",
@@ -13653,7 +14540,9 @@
         "files": [
           "src/utils/tests/tacticalBuiltWorker.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "dcbe0777653998cccf5e94bf88c08692066ab71a",
@@ -13728,7 +14617,9 @@
         "files": [
           "src/utils/tests/quietPinRecallAudit.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "b614387c84da667436976e6bbc3dad80cfd5fb2c",
@@ -14207,7 +15098,9 @@
         "files": [
           "src/utils/tests/discoveredPinPriority.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "f5e066f50850ae1d5df2eaf2f1f3855a529788e2",
@@ -14278,7 +15171,9 @@
           "src/utils/tests/tacticalCandidateMoves.test.ts",
           "src/utils/tests/tacticalJudgement.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "94b7c9e4a1444ec148f027b3277e83e42853b2be",
@@ -14379,7 +15274,9 @@
           "src/utils/tests/persistentCaptureAudit.test.ts",
           "src/utils/tests/persistentCapturePolicyAudit.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "f042025efc96d47bca5b56b06f4bdc6b7d581d4e",
@@ -14528,7 +15425,9 @@
         "files": [
           "src/utils/tests/tacticalRecallGapAudit.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "d94e77675e31bf4155c133ab4b2c8aee7abf1ea8",
@@ -14619,7 +15518,9 @@
           "scripts/benchmarks/chesscom-recall-sample.mjs",
           "scripts/tests/chesscom-recall-sample.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "346be881deff15f605fc1d1670d055600717dcfb",
@@ -15690,7 +16591,9 @@
         "files": [
           "scripts/qa-phone-engine.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "73061f1dcb05c825bbcf7416ab5e5708f60547c5",
@@ -15700,7 +16603,9 @@
           "scripts/qa-phone-engine.mjs",
           "scripts/tests/phone-service-worker.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "b9ab51564791f12dcf9f6ab55e3eebe196c72485",
@@ -15864,7 +16769,9 @@
           "scripts/shared-review-service.ts",
           "scripts/tests/background-review-engine.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0993409ea5e4db4b7b2f9c63ab90f0c9d5aa5cba",
@@ -15898,7 +16805,9 @@
           "scripts/vite-tactical-worker.mjs",
           "src/utils/tacticalMotifs/liveTactics.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "8d38cc157b7ed20089cf44da0bf9d1abefb4da75",
@@ -16609,7 +17518,9 @@
           "scripts/tests/private-pgn-sample.test.mjs",
           "src/utils/tests/tacticalJudgement.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "025d26620ea77708bba978fb6d193f9c5317999d",
@@ -16719,7 +17630,9 @@
           "src/utils/closeApplication.ts",
           "src/utils/tests/closeApplication.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "e098d2b32c445a6ec0d9f90bb29a32b20f9869fa",
@@ -16833,7 +17746,9 @@
           "src/utils/tests/doubleThreatDefence.test.ts",
           "src/utils/tests/tacticalJudgement.test.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "4e6ccc41a89338c63239149b02091f60c2764540",
@@ -17765,7 +18680,9 @@
         "files": [
           "src-tauri/src/local_lichess.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "951247c504f9873b64a920546c39904bd1fb6bae",
@@ -17774,7 +18691,9 @@
         "files": [
           "src-tauri/src/local_lichess.rs"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "84b5f223360070666fd68975e5bc294e78f92b36",
@@ -17787,7 +18706,9 @@
           "src-tauri/src/main.rs",
           "src/bindings/generated.ts"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "8a5f792e594f3148f67e941f753542d536ca2d72",
@@ -17800,7 +18721,9 @@
           "src-tauri/src/main.rs",
           "src/bindings/generated.ts"
         ],
-        "areas": []
+        "areas": [
+          "local-data-and-recovery"
+        ]
       },
       {
         "commit": "bce2d2bd42a7b4df69e53470a6dc07eb363f3539",
@@ -18036,7 +18959,9 @@
         "files": [
           "scripts/generated/otb-prep-database.js"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "8b5acbcdea90d46d358678fb9b40511034986c72",
@@ -18233,7 +19158,9 @@
         "files": [
           "scripts/start-home-server.ps1"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "8564cc6802d522cad6e70e554d075ce909f15d63",
@@ -18284,7 +19211,9 @@
           "scripts/tests/fixtures/otb-pgn-boundaries.mjs",
           "scripts/tests/otb-import-service.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "bf2788da73a67c638c5ee4c1b7f0943c1f26db14",
@@ -18887,7 +19816,9 @@
           "scripts/otb-import-service.mjs",
           "scripts/tests/otb-import-service.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "76b12c28868329956bb7b6fc7975df9e5e04da4d",
@@ -18932,7 +19863,9 @@
         "files": [
           "scripts/install-home-server.ps1"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "4f867715d4abe4cd067e29fdcfddee8c146f96a8",
@@ -18984,7 +19917,9 @@
         "files": [
           "scripts/generated/web-sw.js"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "4cc2319dc9d03adacb03c099af905b0a30138664",
@@ -19625,6 +20560,7 @@
         "areas": [
           "otb-and-downloads",
           "game-analysis",
+          "local-data-and-recovery",
           "engine-management",
           "engine-plans",
           "plans",
@@ -19777,7 +20713,9 @@
         "files": [
           "scripts/tests/web-service-worker.test.mjs"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "448078469a83d63ea5ee3444de2cfc7d9c489b52",
@@ -19868,7 +20806,9 @@
         "files": [
           "scripts/install-home-server.ps1"
         ],
-        "areas": []
+        "areas": [
+          "scripts-research-and-verification-review"
+        ]
       },
       {
         "commit": "0d169a5054497411008b9d1678660287f939a5b7",
@@ -19980,7 +20920,9 @@
         "files": [
           "src/bindings/generated.ts"
         ],
-        "areas": []
+        "areas": [
+          "other-native-and-app-review"
+        ]
       },
       {
         "commit": "dd4fe88721800fa4f2c52a654a361eb11afc093d",
@@ -20009,47 +20951,8 @@
           "scripts/tests/chess-coach-service.test.mjs",
           "src-tauri/src/coach.rs"
         ],
-        "areas": []
-      },
-      {
-        "commit": "b5defdbf02876bd5dcb19eed99d0df2f34c965f3",
-        "date": "2026-07-24",
-        "subject": "Add phone board flip and reset controls",
-        "files": [
-          "src/web/WebApp.tsx"
-        ],
         "areas": [
-          "phone"
-        ]
-      },
-      {
-        "commit": "6e82035fd2e9fdb6164c2561b9f9bc91b738f072",
-        "date": "2026-07-24",
-        "subject": "Place phone board players by side",
-        "files": [
-          "src/web/WebApp.module.css",
-          "src/web/WebApp.tsx",
-          "src/web/boardTitle.ts",
-          "src/web/tests/webCompanion.test.ts"
-        ],
-        "areas": [
-          "phone"
-        ]
-      },
-      {
-        "commit": "1b13ba4e59843aa55e5a0134896ee92fce062152",
-        "date": "2026-07-24",
-        "subject": "Add accessible live replay to phone app",
-        "files": [
-          "src/web/WebApp.module.css",
-          "src/web/WebApp.tsx",
-          "src/web/liveReplay.ts",
-          "src/web/model.ts",
-          "src/web/pgn.ts",
-          "src/web/tests/liveReplay.test.ts"
-        ],
-        "areas": [
-          "phone"
+          "other-native-and-app-review"
         ]
       }
     ]
@@ -20193,7 +21096,7 @@
       "en": [
         {
           "path": "src/components/boards/Board.tsx",
-          "sha256": "2ad455c59a6f27b6ec0e240b6971899bf13ee1525b5731821a71eb6f666b226f",
+          "sha256": "fb6d7ff7163955a62256342b839f03aff8a609f90e282d419a454889eb544278",
           "identical": false
         }
       ]
@@ -20429,7 +21332,7 @@
       "en": [
         {
           "path": "src/components/panels/plan/PlanExplorerPanel.tsx",
-          "sha256": "c787063b6df98d1198d7af17d967712359f9d60d39bdf72600b00ea1a5f1b085",
+          "sha256": "234019bf8167bf72b1a2a850386d4b1324766dd0c4feceacf53406774b87f606",
           "identical": false
         }
       ]
