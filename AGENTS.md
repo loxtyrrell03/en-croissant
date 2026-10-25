@@ -36,6 +36,8 @@
 
 - Pack manifest limits (Novelty2815afb4): active core data_pack::install::fetch_manifest now rejects advertised responses above its existing2 MiB limit before body reads, retaining streamed size/pinned hash/identity/host/cancellation/timeout checks. The separate shared metadata helper already had a bound and was not this active caller. One actual header-only failure reproduced; three new HTTP cases join83 passing core checks/three existing ignored independently on primary/clean, including15 transfer cases. Native/phone packaging and guarded runtime delivery remain; no frontend/profile/corpus change. See docs/PACK_MANIFEST_LIMITS.md/current delivery JSON.
 
+- Pack manifest delivery: clean33670fec / primarybdf22f00 is native-packaged and live on the canonical phone site. Desktop47,892,992 bytes SHA256ee4d6ac791253ae6279f3bdeca6101013b88d1e03621dd07fb9bf8bf4b49b1db;105s/22 existing warnings, unchanged exact app assets/IPC and102 engine/source resources verified. Phone shell737e2674590c and installed core-helper SHA256ddebefb36297d5925fee41de8efb0fd3e9cbd5c25e2d202dabbc6e54194e720f match; unpackaged backing and actual child50800 under home54308 verified.83 core checks/three existing ignored independently pass. Active-review refusal occurred before activation; later engine/client/server-idle-guarded publisher returned normally. Workspace/normalized library/settings/enabled/Serve and PC engine8536 preserved; same depth65 stored reply/cold workers. Both owned temporary tasks removed. No new owner archive download, explicit Dev restart or browser/native-window/physical claim; broader audit remains. See PACK_MANIFEST_LIMITS.md/current delivery JSON.
+
 
 ## 2026-10-25 clean phone dates and refreshed history audit
 

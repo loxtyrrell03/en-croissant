@@ -8,9 +8,9 @@ hashes. Filename/hash comparisons nominate candidates; they do not prove
 behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
-Current delivery (2026-10-25): clean `4270ba4e` is live on the canonical phone
-site. The latest native desktop artifact is clean `2c342d72`, SHA256
-`33173d188a770296a180a80e3a39c5b8168e1abb83d2fd13690ffcb845f00439`.
+Current delivery (2026-10-25): clean `33670fec` is live on the canonical phone
+site. The latest native desktop artifact is clean `33670fec`, SHA256
+`ee4d6ac791253ae6279f3bdeca6101013b88d1e03621dd07fb9bf8bf4b49b1db`.
 The native package includes the Windows IPC and evaluation-readiness fixes;
 both installed PC/home evaluation readers now match the verified shared source.
 Exact served assets and the same normal stored evaluation response pass, with
@@ -24,7 +24,7 @@ separate. Older row receipts below describe their historical milestones.
 
 | Novelty improvement | Source evidence | En Croissant follow-up |
 | --- | --- | --- |
-| Advertised pack-manifest size bound | `2815afb4`; reject oversized metadata before reading | Actual native/phone core caller now applies its existing2 MiB limit to Content-Length as well as streamed bytes. One prior failure reproduced; three new HTTP cases join83 passing core checks/three existing ignored, independently on primary/clean. Packaging/runtime delivery remain; see `PACK_MANIFEST_LIMITS.md` |
+| Advertised pack-manifest size bound | `2815afb4`; reject oversized metadata before reading | Actual native/phone core caller now applies its existing2 MiB limit to Content-Length as well as streamed bytes. One prior failure reproduced; three new HTTP cases join83 passing core checks/three existing ignored, independently on primary/clean. Clean33670fec native package and hosted helper are verified with exact assets/resources, unpackaged binary/process identity and preserved workspace/normalized-library/settings/routes; see `PACK_MANIFEST_LIMITS.md` |
 | Evaluation build output ownership | `2a083a83`; new-directory ownership and guarded cleanup | Native command/CLI now refuse existing files/directories/stores and concurrent builds. Failed cleanup requires exact canonical path/marker/no reparse redirection; nonempty completed output is preserved. Four old-code failures reproduced,12 native evaluation checks independently pass on primary/clean; CLI help verified. Phone readers have no on-device builder. Clean2c342d72 native packaging is verified with unchanged app assets, compiled refusal strings and102 engine/source resources. Remaining bounded-build/cancellation/recovery behavior stays separate; see `EVALUATION_BUILD_SAFETY.md` |
 | Stored evaluation position binding and finite scores | `c2760248`; raw FEN/score validation | Six old-parser failures reproduced and fixed at the shared phone live/cache/Prep boundary. Supplied four-field FEN, finite scores, legal prefixes, original ranks, zero and legacy replies are handled; invalid HTTP200 remains retryable. Clean41668e2b passes454 checks/63 files/types/canonical build22.53s and is live with exact assets, unchanged workspace/normalized-library/settings/routes and actual bounded legal Stockfish19 evidence. Native typed/hash-keyed local lookup is unchanged. Rendered/touch proof remains; see `STORED_EVALUATIONS.md` |
 | Managed catalog installation survives dialog close | `66def21d`, `1274bc9f`; managed state, file progress and retry | Native LCZero/third-party cards now retain operation ownership across close/reorder, separate file/validation/save phases, and require durable matching profiles. Failed saves retry without reinstalling; owner changes/removals and existing custom paths remain. Three prior failures reproduced; 98 related checks/eleven files, types and warning-free seven-file lint pass. Clean e386a802 passes633 related checks/85 files, types and native packaging; exact embedded engine-page bytes/all102 engine resources match. Rendered proof remains; phone managed WASM/PC controls have no arbitrary desktop installer. See `CATALOG_ENGINE_INSTALLS.md` |
