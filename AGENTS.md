@@ -12,8 +12,10 @@
 - Primary passes 414 product phone tests/55 files, types and nine-file lint;
   WebApp keeps 25 baseline warnings/zero errors. Eighteen focused checks include
   actual controls, owner data retention, refresh, folder boundaries and help.
-  Clean/build and rendered/runtime verification remain. Browser control was
-  freshly checked and is still disabled. See docs/PHONE_SOURCE_ARCHIVES.md.
+  Clean 46b48b02 passes 419 combined checks/56 files, types/lint and canonical
+  phone/desktop builds in 24.67/22.92 s. All eleven owned files match primary.
+  Rendered/runtime verification remains. Browser control was freshly checked
+  and is still disabled. See docs/PHONE_SOURCE_ARCHIVES.md and the receipt.
 
 ## 2026-10-25 phone workspace preferences
 
