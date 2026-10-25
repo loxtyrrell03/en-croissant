@@ -16,6 +16,20 @@
   physical checks, remaining20 source rows and recovery remain. See
   docs/COMPRESSION_NOTICES.md/current delivery JSON.
 
+## 2026-10-25 phone usability audit and stop following
+
+- Stop following is now before the tournament title/tab strip, with the existing
+  keep-games confirmation and cancellation lifecycle. A targeted interaction
+  regression reproduces the prior hidden action; 14 tracker/removal checks and
+  full types pass. One pre-existing redundant-boolean lint warning remains.
+- docs/design/phone-usability-20261025 contains an affected-surface/state audit,
+  three editable navigation designs, all six pages, nested tools/setup and eight
+  common state sheets. Data is illustrative. Broader implementation awaits the
+  owner's design choice; these prototypes do not establish app wiring.
+- Work is isolated from dirty primary source and active profiles/services. Live
+  publication and rendered verification follow separately; no physical-phone
+  verification is claimed.
+
 ## 2026-10-25 hosted helper compression notices
 
 - Standalone helper now uses its own authenticated notice manifest/full text;

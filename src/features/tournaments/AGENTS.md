@@ -1,3 +1,15 @@
+## 2026-10-25 discoverable stop following
+
+- The shared tracker exposes Stop following before its title and tab strip, so
+  it remains reachable from the initial phone view and every tracker tab. It
+  uses the existing keep-games confirmation/lifecycle; deleting databases stays
+  a separate explicit Tracking action. The control remains available during a
+  running check, and locks during settings/removal writes.
+- The new interaction regression fails against the old hidden-control layout;
+  14 focused tracker/removal checks and whole-project types pass. Existing
+  removal coverage waits for an in-flight roster check and verifies no database
+  deletion. Rendered/deployed checks are recorded separately.
+
 ## 2026-10-24 combined delivery-source verification
 
 - Parity integration carries primary search source 3e504902 into clean delivery

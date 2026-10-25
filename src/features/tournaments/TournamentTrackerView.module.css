@@ -104,6 +104,9 @@
 .tracker .danger { color: var(--op-loss); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 .tracker .back { background: transparent; border: 0; padding-left: 0; color: var(--op-accent); margin-bottom: 8px; font-size: var(--op-fs-xs); }
+.trackerNavigation { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 8px; }
+.trackerNavigation > button { min-height: 44px; }
+.tracker .trackerNavigation .back { margin-bottom: 0; }
 .beforePlay { font-size: var(--op-fs-xs); color: var(--op-text-faint); }
 .entrantHead, .entrantRow { display: grid; grid-template-columns: minmax(150px,1.7fr) 90px minmax(120px,1fr) 145px; gap: 16px; align-items: center; padding: 12px 0; }
 .entrantHead { font-size: var(--op-fs-xs); color: var(--op-text-faint); }
