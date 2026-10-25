@@ -60,6 +60,8 @@ export type WebStockfishAnalyzeRequest = {
      */
     preferStoredEvaluation?: boolean;
     minimumStoredDepth?: number;
+    /** Interactive opt-out also excludes cached hits, prefetch and failure fallback. */
+    useStoredEvaluations?: boolean;
     engineKind?: PcEngineKind;
     performancePreset?: EnginePerformancePreset;
     lc0AutoNetwork?: boolean;
@@ -78,6 +80,7 @@ export async function analyzeWithWebStockfish18({
     prefetchFens = [],
     preferStoredEvaluation = false,
     minimumStoredDepth = 0,
+    useStoredEvaluations = true,
     engineKind = "stockfish",
     performancePreset = "good",
     lc0AutoNetwork = true,
@@ -149,6 +152,12 @@ export async function analyzeWithWebStockfish18({
         });
     }
 
+    if (!useStoredEvaluations) {
+        return await analyzeWithRemoteStockfish18WithRetry({
+            fen,multipv,depth,infinite,signal,engineKind,performancePreset,onUpdate,
+        });
+    }
+
     if (preferStoredEvaluation) {
         try {
             const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
@@ -182,6 +191,7 @@ export async function analyzeWithWebStockfish18({
     let deepestLiveDepth = 0;
     const storedLookup = queryRemoteStoredCloudLines({ fen, multipv, signal })
         .then((storedLines) => {
+            throwIfAborted(signal);
             if (storedLines.length === 0) return storedLines;
             void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
             // Live lines always win once they exist, so a late stored answer can never
@@ -220,6 +230,7 @@ export async function analyzeWithWebStockfish18({
         // The PC engine is busy or unreachable: keep the position answered with the
         // saved evaluation instead of failing, unless the dead search already got deeper.
         const storedLines = await storedLookup;
+        throwIfAborted(signal);
         if (storedLines.length === 0 || maxLineDepth(storedLines) < deepestLiveDepth) throw error;
         return storedLines;
     }

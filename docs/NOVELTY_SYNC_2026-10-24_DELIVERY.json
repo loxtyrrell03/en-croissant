@@ -1070,9 +1070,9 @@
         "18f81ed0",
         "ece3e18e"
       ],
-      "status": "confirmed-missing-local-analysis-opt-out",
-      "native": "Local UCI analysis always enters stored Lichess lookup helper",
-      "phone": "PC interactive Stockfish starts stored lookup without a request opt-out; local WASM and finite reports/Plans remain separate"
+      "status": "source-controls-routing-cache-ownership-verified",
+      "native": "Local UCI opt-out, filtered cache/live/deferred readers, owned lookup and continuation cancellation, ordered stop settlement",
+      "phone": "Existing saved useCloud honored by PC Stockfish requests and retained score/arrow policy; local WASM/LCZero/reports/Plans fresh paths retained"
     },
     "duplicateCodePayloads": [
       {
@@ -1097,5 +1097,35 @@
       }
     ],
     "full55CandidateReviewComplete": false
+  },
+  "storedEvaluationParity": {
+    "novelty": [
+      "ece3e18e",
+      "18f81ed0"
+    ],
+    "status": "source-verified-clean-builds-and-publication-pending",
+    "nativeDefault": true,
+    "phoneSavedValuesPreserved": true,
+    "phoneFreshDefault": false,
+    "nativeExplicitCloudProfilesUnchanged": true,
+    "freshReportAndPlansPreserved": true,
+    "retainedSaveFailureRetry": true,
+    "sameEngineTabStopRpcBarrier": true,
+    "focusedChecks": 21,
+    "relatedChecks": 128,
+    "relatedTestFiles": 19,
+    "types": true,
+    "lint": {
+      "warningFreeOwnedFiles": 16,
+      "existingEnginesPageWarnings": 1,
+      "existingWebAppWarnings": 25
+    },
+    "cleanVerification": false,
+    "phonePublished": false,
+    "servicesChanged": false,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "nativeWindowVerified": false,
+    "existingBroadNativeBaselineFailures": 13
   }
 }

@@ -66,6 +66,7 @@ import AddEngine from "./AddEngine";
 import { EngineLogo } from "./EngineLogo";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
 import { StockfishUpgradeNotice } from "./StockfishUpgradeNotice";
+import { StoredEvaluationSwitch } from "./StoredEvaluationSwitch";
 
 export default function EnginesPage() {
   const { t } = useTranslation();
@@ -122,6 +123,7 @@ export default function EnginesPage() {
       <Group align="baseline" py="sm" pl="lg">
         <Title>{t("Engines.Title")}</Title>
         <OpenFolderButton base="Engines" folder="engines" />
+        <StoredEvaluationSwitch />
       </Group>
       <Group
         inert={loadBlocked || undefined}

@@ -142,8 +142,10 @@ import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
 import WebGameReportPanel from "./WebGameReportPanel";
 import PhoneEnginePlansPanel from "./PhoneEnginePlansPanel";
+import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import { usePlanArrowSnapshot } from "@/hooks/usePlanArrows";
 import { engineArrowsAllowed, planOverlayShapes, PLAN_ARROW_BRUSHES } from "@/utils/planArrowLayers";
+import { retainWebEngineAnalysis, visibleWebEngineLines, type LiveEnginePolicy } from "./liveEnginePolicy";
 import { loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
@@ -1803,11 +1805,11 @@ function BoardWorkspace({
         : [],
     [activePrep, prepBranchFen, prepGames, prepMoveLimit, prepMinGames, prepRootEngineMoves],
   );
-  const handleEngineAnalysisLinesChange = useCallback((fen: string, lines: WebEngineLine[]) => {
+  const handleEngineAnalysisLinesChange = useCallback((fen: string, lines: WebEngineLine[], policy?: LiveEnginePolicy) => {
     // Keep the previous score available while the next position is waiting on
     // cache/live analysis. Arrows remain FEN-scoped below, so stale moves are
     // never drawn on the new position.
-    if (lines.length > 0) setEngineArrowAnalysis({ fen, lines });
+    setEngineArrowAnalysis(previous => retainWebEngineAnalysis(previous, fen, lines, policy));
   }, []);
   const engineArrowShapes = useMemo(
     () => {
@@ -4725,7 +4727,7 @@ function EngineNumberStepper({
   );
 }
 
-function EngineUnderBoardPanel({
+export function EngineUnderBoardPanel({
   analysisRequestId,
   compact = false,
   currentFen,
@@ -4738,20 +4740,25 @@ function EngineUnderBoardPanel({
   compact?: boolean;
   currentFen: string;
   upcomingFens: string[];
-  onAnalysisLinesChange: (fen: string, lines: WebEngineLine[]) => void;
+  onAnalysisLinesChange: (fen: string, lines: WebEngineLine[], policy?: LiveEnginePolicy) => void;
   onPlayMove: (uci: string) => void;
   suspended?: boolean;
 }) {
-  const [settings, setSettings] = usePersistentJson(
+  const [settings, setSettings, preferenceError, retrySaving] = usePersistentJson(
     WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
     DEFAULT_WEB_ENGINE_PANEL_SETTINGS,
     normalizeWebEnginePanelSettings,
+    true,
   );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pcServices = usePcServicesAvailability();
+  const sourcePolicy = useMemo(
+    () => ({ engineKind: settings.engineKind, useStoredEvaluations: settings.useCloud }),
+    [settings.engineKind, settings.useCloud],
+  );
   const performancePreset =
     settings.engineKind === "lc0" ? settings.lc0Preset : settings.stockfishPreset;
 
@@ -4790,6 +4797,7 @@ function EngineUnderBoardPanel({
       performancePreset,
       lc0AutoNetwork: settings.lc0AutoNetwork,
       lc0Network: settings.lc0Network,
+      useStoredEvaluations: settings.useCloud,
       prefetchFens: upcomingFens,
       signal: controller.signal,
       onUpdate: (lines) => {
@@ -4823,6 +4831,7 @@ function EngineUnderBoardPanel({
     settings.lc0AutoNetwork,
     settings.lc0Network,
     settings.multipv,
+    settings.useCloud,
     performancePreset,
     suspended,
     upcomingFens,
@@ -4840,10 +4849,13 @@ function EngineUnderBoardPanel({
     };
   }, [settings.engineKind]);
 
-  const displayLines = stockfishLines;
+  const displayLines = useMemo(
+    () => visibleWebEngineLines(stockfishLines, sourcePolicy),
+    [stockfishLines, sourcePolicy],
+  );
   useEffect(() => {
-    onAnalysisLinesChange(currentFen, settings.enabled && !suspended ? displayLines : []);
-  }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled, suspended]);
+    onAnalysisLinesChange(currentFen, settings.enabled && !suspended ? displayLines : [], sourcePolicy);
+  }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled, suspended, sourcePolicy]);
 
   useEffect(() => {
     return () => onAnalysisLinesChange(currentFen, []);
@@ -5089,6 +5101,29 @@ function EngineUnderBoardPanel({
                 );
               }}
             />
+            {settings.engineKind === "stockfish" && (
+              <Group gap={5}>
+                <Switch
+                  label="Stored evals"
+                  aria-label="Use stored evaluations"
+                  checked={settings.useCloud}
+                  onChange={(event) => updateSettings({ useCloud: event.currentTarget.checked })}
+                />
+                <TournamentHelp label="About stored evaluations">
+                  Downloaded evaluations can appear while the PC engine starts. Turn off to use only the PC engine.
+                </TournamentHelp>
+              </Group>
+            )}
+            {preferenceError && (
+              <Group gap="xs" align="start">
+                <Text size="xs" c="red" role="alert" style={{ flex: 1 }}>
+                  Could not save engine settings. Your choices stay active until this page closes.
+                </Text>
+                <Button size="compact-xs" variant="default" onClick={retrySaving}>
+                  Retry saving
+                </Button>
+              </Group>
+            )}
             {settings.engineKind === "lc0" ? (
               <>
                 <Switch
@@ -10139,12 +10174,21 @@ function isAbortError(error: unknown) {
   );
 }
 
+const unsavedJsonPreferences = new Map<string, unknown>();
+
 function usePersistentJson<T>(
   key: string,
   fallback: T,
   normalize: (value: Partial<T> | null | undefined) => T,
+  retainFailedWrites = false,
 ) {
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveRevision, setSaveRevision] = useState(0);
+  const retry = useCallback(() => setSaveRevision(value => value + 1), []);
   const [value, setValue] = useState<T>(() => {
+    if (retainFailedWrites && unsavedJsonPreferences.has(key)) {
+      return normalize(unsavedJsonPreferences.get(key) as Partial<T>);
+    }
     try {
       const stored = window.localStorage.getItem(key);
       return stored
@@ -10158,12 +10202,15 @@ function usePersistentJson<T>(
   useEffect(() => {
     try {
       window.localStorage.setItem(key, JSON.stringify(value));
+      if (retainFailedWrites) unsavedJsonPreferences.delete(key);
+      setSaveError(null);
     } catch {
-      // Browser storage is best-effort for these small source options.
+      if (retainFailedWrites) unsavedJsonPreferences.set(key, value);
+      setSaveError("Could not save this preference");
     }
-  }, [key, value]);
+  }, [key, value, saveRevision, retainFailedWrites]);
 
-  return [value, setValue] as const;
+  return [value, setValue, saveError, retry] as const;
 }
 
 function usePersistentString(key: string, fallback: string) {

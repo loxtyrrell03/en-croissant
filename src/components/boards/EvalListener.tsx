@@ -18,6 +18,7 @@ import {
   enginesAtom,
   firstEngineWithLinesFamily,
   tabEngineSettingsFamily,
+  useStoredEvaluationsAtom,
 } from "@/state/atoms";
 import { getVariationLine } from "@/utils/chess";
 import { positionFromFen, swapMove } from "@/utils/chessops";
@@ -33,6 +34,11 @@ import {
 import { getBestMoves as lichessGetBestMoves, getLichessCloudFailure } from "@/utils/lichess/api";
 import { getPcEngineBestMoves, type PcEngineAnalysisUpdate } from "@/utils/pcEngine";
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
+import {
+  ownedEngineReply,
+  queueLocalEngineStop,
+  waitForLocalEngineStops,
+} from "@/utils/localEngineSearchOwnership";
 import { TreeStateContext } from "../common/TreeStateContext";
 
 const LOCAL_ENGINE_OUTPUT_TIMEOUT_MS = 15000;
@@ -41,6 +47,15 @@ const LOCAL_ENGINE_SEARCH_DELAY_MS = 0;
 const REMOTE_ENGINE_SEARCH_DELAY_MS = 120;
 const LOCAL_ENGINE_UI_UPDATE_INTERVAL_MS = 0;
 const MAX_ENGINE_RESULT_CACHE_ENTRIES = 80;
+
+function queueStop(engine: LocalEngine, tab: string, stop = () => stopEngine(engine, tab)) {
+  return queueLocalEngineStop(engine.id, tab, stop).catch((error) => {
+    console.error(`Failed to stop old analysis for ${engine.name}`, error);
+  });
+}
+function requireActive(signal: AbortSignal) {
+  if (signal.aborted) throw new DOMException("Analysis cancelled", "AbortError");
+}
 
 function EvalListener({ active }: { active: boolean }) {
   const [engines] = useAtom(enginesAtom);
@@ -84,7 +99,7 @@ function EvalListener({ active }: { active: boolean }) {
 
     for (const engine of engines ?? []) {
       if (engine.loaded && engine.type === "local") {
-        void stopEngine(engine, activeTab);
+        void queueStop(engine, activeTab);
       }
     }
   }, [active, activeTab, engines]);
@@ -177,7 +192,7 @@ function useEngineWakeRevision(active: boolean) {
   return revision;
 }
 
-function EngineListener({
+export function EngineListener({
   engine,
   engineWakeRevision,
   firstEngineWithLines,
@@ -201,6 +216,8 @@ function EngineListener({
   threat: boolean;
 }) {
   const activeTab = useAtomValue(activeTabAtom);
+  const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
+  const storedPolicy = engine.type === "local" ? storedEnabled : true;
   const [, setLiveEval] = useAtom(currentLiveEvalAtom);
 
   const [, setProgress] = useAtom(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
@@ -238,7 +255,7 @@ function EngineListener({
   useEffect(() => {
     return () => {
       if (engine.type === "local" && activeTab) {
-        void stopEngine(engine, activeTab);
+        void queueStop(engine, activeTab);
       }
     };
   }, [activeTab, engine]);
@@ -295,6 +312,7 @@ function EngineListener({
               fen,
               movesKey: displayedMovesKey,
               score: ev[0].score,
+              storedForLocal: false,
             });
           }
         });
@@ -359,17 +377,18 @@ function EngineListener({
     let localRestartAttempts = 0;
     let localRestartTimer: number | null = null;
     let pcController: AbortController | null = null;
+    const localController = new AbortController();
 
     if (!settings.enabled) {
       if (engine.type === "local") {
-        void stopEngine(engine, tab);
+        void queueStop(engine, tab);
       }
       return;
     }
 
     if (isGameOver) {
       if (engine.type === "local") {
-        void stopEngine(engine, tab);
+        void queueStop(engine, tab);
       }
       return;
     }
@@ -377,7 +396,6 @@ function EngineListener({
     const startSearch = () => {
       if (cancelled || requestSequenceRef.current !== requestId) return;
 
-      startedLocalSearch = engine.type === "local";
       if (engine.type === "local") {
         cloudCoveredSearchKeysRef.current.delete(searchKey);
         startTransition(() => {
@@ -420,6 +438,7 @@ function EngineListener({
               fen,
               movesKey: displayedMovesKey,
               score: lines[0].score,
+              storedForLocal: false,
             });
           }
         });
@@ -433,6 +452,11 @@ function EngineListener({
           settings.go,
           engineOptions,
           updateCloudStatus,
+          storedPolicy,
+          localController.signal,
+          () => {
+            startedLocalSearch = true;
+          },
         );
       } else if (engine.type === "pc") {
         pcController = new AbortController();
@@ -503,6 +527,7 @@ function EngineListener({
                   fen,
                   movesKey: displayedMovesKey,
                   score: bestMoves[0].score,
+                  storedForLocal: false,
                 });
               }
             });
@@ -527,6 +552,7 @@ function EngineListener({
                 fen,
                 movesKey: displayedMovesKey,
                 score: bestMoves[0].score,
+                storedForLocal: engine.type === "local" && cloudCovered,
               });
             }
           });
@@ -538,6 +564,7 @@ function EngineListener({
               settings.go,
               engineOptions,
               bestMoves,
+              localController.signal,
             ).then((extendedMoves) => {
               if (
                 cancelled ||
@@ -602,15 +629,16 @@ function EngineListener({
       const timer = window.setTimeout(startSearch, searchDelay);
       return () => {
         cancelled = true;
+        localController.abort();
         window.clearTimeout(timer);
         if (localRestartTimer !== null) {
           window.clearTimeout(localRestartTimer);
         }
         pcController?.abort();
         if (startedLocalSearch && engine.type === "local") {
-          void stopMatchingEngine(engine, tab, settings.go, engineOptions).catch((error) => {
-            console.error(`Failed to cancel stale analysis for ${engine.name}`, error);
-          });
+          void queueStop(engine, tab, () =>
+            stopMatchingEngine(engine, tab, settings.go, engineOptions),
+          );
         }
       };
     }
@@ -619,14 +647,15 @@ function EngineListener({
 
     return () => {
       cancelled = true;
+      localController.abort();
       if (localRestartTimer !== null) {
         window.clearTimeout(localRestartTimer);
       }
       pcController?.abort();
       if (startedLocalSearch && engine.type === "local") {
-        void stopMatchingEngine(engine, tab, settings.go, engineOptions).catch((error) => {
-          console.error(`Failed to cancel stale analysis for ${engine.name}`, error);
-        });
+        void queueStop(engine, tab, () =>
+          stopMatchingEngine(engine, tab, settings.go, engineOptions),
+        );
       }
     };
   }, [
@@ -647,6 +676,7 @@ function EngineListener({
     settings.enabled,
     settings.go,
     settingsOptionsKey,
+    storedPolicy,
   ]);
   return null;
 }
@@ -668,38 +698,54 @@ async function getLocalBestMovesWithLichessCloud(
   goMode: GoMode,
   options: EngineOptions,
   updateCloudStatus: (status: EngineCloudEvalStatus) => void,
+  storedEnabled: boolean,
+  signal: AbortSignal,
+  onLocalStart: () => void,
 ) {
   let cloudLookupFailed = false;
-  try {
-    updateCloudStatus({
-      phase: "checking",
-      message: "Checking local Lichess evals...",
-      updatedAt: Date.now(),
-    });
-
-    const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
-    if (cloudMoves?.[1]?.length) {
+  if (storedEnabled) {
+    try {
       updateCloudStatus({
-        phase: "available",
-        message: formatCloudAvailableMessage(cloudMoves[1]),
+        phase: "checking",
+        message: "Checking local Lichess evals...",
         updatedAt: Date.now(),
       });
-      return cloudMoves;
-    }
-  } catch (error) {
-    cloudLookupFailed = true;
-    updateCloudStatus(cloudFailureStatus(error));
-  }
 
-  if (!cloudLookupFailed) {
+      const cloudMoves = await ownedEngineReply(lichessGetBestMoves(tab, goMode, options), signal);
+      requireActive(signal);
+      if (cloudMoves?.[1]?.length) {
+        updateCloudStatus({
+          phase: "available",
+          message: formatCloudAvailableMessage(cloudMoves[1]),
+          updatedAt: Date.now(),
+        });
+        return cloudMoves;
+      }
+    } catch (error) {
+      requireActive(signal);
+      cloudLookupFailed = true;
+      updateCloudStatus(cloudFailureStatus(error));
+    }
+
+    if (!cloudLookupFailed) {
+      updateCloudStatus({
+        phase: "missing",
+        message: "No local Lichess eval was found for this position; using the local engine.",
+        updatedAt: Date.now(),
+      });
+    }
+  } else {
     updateCloudStatus({
-      phase: "missing",
-      message: "No local Lichess eval was found for this position; using Stockfish.",
+      phase: "disabled",
+      message: "Stored evaluations are off; using the local engine.",
       updatedAt: Date.now(),
     });
   }
+  requireActive(signal);
+  onLocalStart();
   const localStart = startLocalBestMoves(engine, tab, goMode, options, {
     timeoutMs: LOCAL_ENGINE_OUTPUT_TIMEOUT_MS,
+    signal,
   });
   try {
     return await localStart.promise;
@@ -779,10 +825,12 @@ async function extendMissingCloudLinesWithLocalSearches(
   goMode: GoMode,
   options: EngineOptions,
   cloudMoves: BestMoves[],
+  signal: AbortSignal,
 ) {
   let extendedMoves = cloudMoves;
 
   for (const [index, cloudMove] of extendedMoves.entries()) {
+    if (signal.aborted) return extendedMoves;
     const cloudState = cloudMove as CloudBackedBestMove;
     const firstMove = cloudMove.uciMoves[0];
     if (!cloudState.cloudLinePartial || !firstMove || cloudMove.uciMoves.length > 1) {
@@ -796,6 +844,7 @@ async function extendMissingCloudLinesWithLocalSearches(
       options,
       firstMove,
       index,
+      signal,
     );
     if (!localMove?.uciMoves.length) continue;
 
@@ -815,6 +864,7 @@ async function getLocalContinuationAfterCloudMove(
   options: EngineOptions,
   firstMove: string,
   index: number,
+  signal: AbortSignal,
 ) {
   const forcedOptions: EngineOptions = {
     ...options,
@@ -824,6 +874,7 @@ async function getLocalContinuationAfterCloudMove(
   const forcedTab = `${tab}:cloud-tail:${engine.id}:${index}:${firstMove}`;
   const localStart = startLocalBestMoves(engine, forcedTab, goMode, forcedOptions, {
     timeoutMs: LOCAL_ENGINE_TAIL_OUTPUT_TIMEOUT_MS,
+    signal,
   });
 
   try {
@@ -880,15 +931,23 @@ function startLocalBestMoves(
   tab: string,
   goMode: GoMode,
   options: EngineOptions,
-  startOptions: { timeoutMs?: number } = {},
+  startOptions: { timeoutMs?: number; signal?: AbortSignal } = {},
 ): { promise: Promise<[number, BestMoves[]] | null>; cleanup: (stopSearch: boolean) => void } {
   let unlisten: (() => void) | null = null;
   let resolveEvent: ((value: [number, BestMoves[]] | null) => void) | null = null;
   let disposed = false;
+  let timeout: number | undefined;
 
   const eventPromise = new Promise<[number, BestMoves[]] | null>((resolve) => {
     resolveEvent = resolve;
   });
+  const cancel = () => {
+    disposed = true;
+    unlisten?.();
+    resolveEvent?.(null);
+  };
+  startOptions.signal?.addEventListener("abort", cancel, { once: true });
+  if (startOptions.signal?.aborted) cancel();
 
   const promise = (async () => {
     try {
@@ -904,6 +963,7 @@ function startLocalBestMoves(
         }
       });
 
+      await waitForLocalEngineStops(engine.id, tab, startOptions.signal);
       if (disposed) {
         return null;
       }
@@ -917,43 +977,36 @@ function startLocalBestMoves(
 
       if (startOptions.timeoutMs !== undefined) {
         waits.push(
-          rejectAfter<[number, BestMoves[]] | null>(
-            startOptions.timeoutMs,
-            `Timed out waiting for ${engine.name} to return analysis`,
-          ),
+          new Promise((_, reject) => {
+            timeout = window.setTimeout(
+              () => reject(new Error(`Timed out waiting for ${engine.name} to return analysis`)),
+              startOptions.timeoutMs,
+            );
+          }),
         );
       }
 
       return await Promise.race(waits);
     } catch (error) {
-      void killEngine(engine, tab).catch((killError) => {
-        console.error(`Failed to restart stalled analysis for ${engine.name}`, killError);
-      });
+      if (disposed || startOptions.signal?.aborted) return null;
+      void queueStop(engine, tab, () => killEngine(engine, tab));
       throw error;
     } finally {
       unlisten?.();
+      if (timeout !== undefined) window.clearTimeout(timeout);
+      startOptions.signal?.removeEventListener("abort", cancel);
     }
   })();
 
   return {
     promise,
     cleanup: (stopSearch: boolean) => {
-      disposed = true;
-      unlisten?.();
-      resolveEvent?.(null);
+      cancel();
       if (stopSearch) {
-        void stopMatchingEngine(engine, tab, goMode, options).catch((error) => {
-          console.error(`Failed to stop covered local analysis for ${engine.name}`, error);
-        });
+        void queueStop(engine, tab, () => stopMatchingEngine(engine, tab, goMode, options));
       }
     },
   };
-}
-
-function rejectAfter<T>(timeoutMs: number, message: string): Promise<T> {
-  return new Promise<T>((_, reject) => {
-    window.setTimeout(() => reject(new Error(message)), timeoutMs);
-  });
 }
 
 export default EvalListener;

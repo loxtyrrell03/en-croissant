@@ -27,6 +27,10 @@ import {
 } from "@/utils/databaseArchive";
 import { type Engine, type EngineSettings } from "@/utils/engines";
 import { enginePreferences } from "@/utils/enginePreferences";
+import {
+    NATIVE_STORED_EVALUATIONS_KEY,
+    visibleEngineMoveCache,
+} from "@/utils/storedEvaluationPolicy";
 import type { EnginePlanReport } from "@/utils/enginePlanExplorer";
 import type { PlanHorizon } from "@/utils/planHorizon";
 import { DEFAULT_MOVE_STRENGTH_SETTINGS, type MoveStrengthSettings } from "@/utils/moveStrength";
@@ -187,6 +191,35 @@ export const enginesAtom = atom(
 );
 
 // Settings
+
+const storedEvaluationPreferenceAtom = atomWithStorage<boolean>(
+    NATIVE_STORED_EVALUATIONS_KEY,
+    true,
+    undefined,
+    { getOnInit: true },
+);
+export const storedEvaluationSaveErrorAtom = atom<string | null>(null);
+const pendingStoredEvaluationPreferenceAtom = atom<boolean | undefined>(undefined);
+export const useStoredEvaluationsAtom = atom(
+    (get) => get(pendingStoredEvaluationPreferenceAtom) ?? get(storedEvaluationPreferenceAtom),
+    (get, set, update: boolean | ((previous: boolean) => boolean)) => {
+        const previous =
+            get(pendingStoredEvaluationPreferenceAtom) ?? get(storedEvaluationPreferenceAtom);
+        const next = typeof update === "function" ? update(previous) : update;
+        set(pendingStoredEvaluationPreferenceAtom, next);
+        try {
+            set(storedEvaluationPreferenceAtom, next);
+            set(pendingStoredEvaluationPreferenceAtom, undefined);
+            set(storedEvaluationSaveErrorAtom, null);
+        } catch (error) {
+            set(
+                storedEvaluationSaveErrorAtom,
+                "Could not save this setting. Your choice stays active until the app closes.",
+            );
+            throw error;
+        }
+    },
+);
 
 export const tableViewAtom = atomWithStorage<boolean>("table-view", false);
 
@@ -955,10 +988,22 @@ export type LiveEvalState = {
     fen: string;
     movesKey: string;
     score: Score;
+    storedForLocal?: boolean;
 };
 
 const liveEvalFamily = atomFamily((_tab: string) => atom<LiveEvalState | null>(null));
-export const currentLiveEvalAtom = tabValue(liveEvalFamily);
+const rawLiveEvalAtom = tabValue(liveEvalFamily);
+export const currentLiveEvalAtom = atom(
+    (get) => {
+        const value = get(rawLiveEvalAtom);
+        return !get(useStoredEvaluationsAtom) && value?.storedForLocal ? null : value;
+    },
+    (
+        _get,
+        set,
+        update: LiveEvalState | null | ((previous: LiveEvalState | null) => LiveEvalState | null),
+    ) => set(rawLiveEvalAtom, update),
+);
 
 // Per tab settings
 
@@ -1476,8 +1521,30 @@ const practiceCardStartTimeFamily = atomFamily((_tab: string) => atom<number>(0)
 export const practiceCardStartTimeAtom = tabValue(practiceCardStartTimeFamily);
 
 export const engineMovesFamily = atomFamily(
-    ({ tab: _tab, engine: _engine }: { tab: string; engine: string }) =>
-        atom<Map<string, BestMoves[]>>(new Map()),
+    ({ engine }: { tab: string; engine: string }) => {
+        const raw = atom<Map<string, BestMoves[]>>(new Map());
+        return atom(
+            (get) =>
+                visibleEngineMoveCache(
+                    get(raw),
+                    get(enginesAtom)?.find((profile) => profile.id === engine)?.type,
+                    get(useStoredEvaluationsAtom),
+                ),
+            (
+                get,
+                set,
+                update:
+                    | Map<string, BestMoves[]>
+                    | ((previous: Map<string, BestMoves[]>) => Map<string, BestMoves[]>),
+            ) => {
+                const type = get(enginesAtom)?.find((profile) => profile.id === engine)?.type;
+                const enabled = get(useStoredEvaluationsAtom);
+                const previous = visibleEngineMoveCache(get(raw), type, enabled);
+                const next = typeof update === "function" ? update(previous) : update;
+                set(raw, visibleEngineMoveCache(next, type, enabled));
+            },
+        );
+    },
     (a, b) => a.tab === b.tab && a.engine === b.engine,
 );
 
@@ -1487,7 +1554,7 @@ export const engineProgressFamily = atomFamily(
 );
 
 export type EngineCloudEvalStatus = {
-    phase: "checking" | "available" | "missing" | "error";
+    phase: "checking" | "available" | "missing" | "error" | "disabled";
     message: string;
     detail?: string;
     updatedAt: number;
