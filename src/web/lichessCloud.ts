@@ -25,14 +25,13 @@ const LICHESS_CLOUD_MIN_REQUEST_INTERVAL_MS = 1_000;
 const LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS = 60_000;
 const PC_STORED_EVAL_TIMEOUT_MS = 2_000;
 const configuredRemoteStockfishUrl = resolvePrivateServiceUrl(
-  import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ??
-    "https://lox-pc.tail89d19b.ts.net",
+  import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://lox-pc.tail89d19b.ts.net",
 ).trim();
 const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 
-const cloudCache = new BoundedMap<string, WebLichessCloudData>(500);
+const cloudCache = new BoundedMap<string, unknown>(500);
 const missingCloudCache = new BoundedSet<string>(2000);
-const inFlightCloudCache = new Map<string, Promise<WebLichessCloudData>>();
+const inFlightCloudCache = new Map<string, Promise<unknown>>();
 let cloudRequestQueue: Promise<void> = Promise.resolve();
 let nextCloudRequestAt = 0;
 let cloudRateLimitedUntil = 0;
@@ -51,17 +50,16 @@ export async function queryWebLichessCloudEngineMoves({
   signal?: AbortSignal;
 }): Promise<PrepBuilderEngineMove[]> {
   const uniqueMoves = Array.from(new Set((moves ?? []).map(normalizeSan).filter(Boolean)));
-  const requestedMultipv = Math.max(1, Math.min(8, Math.round((multipv ?? uniqueMoves.length) || 1)));
+  const requestedMultipv = Math.max(
+    1,
+    Math.min(8, Math.round((multipv ?? uniqueMoves.length) || 1)),
+  );
   const data = await getPcStoredEvaluation(fen, requestedMultipv, signal).catch(() => null);
-  if (!data?.pvs?.length) return [];
-
   const rootMoves = cloudDataToPrepBuilderMoves({ fen, side, data });
   const allowedMoves = new Set(uniqueMoves);
   return rootMoves
     .filter((move) => allowedMoves.size === 0 || allowedMoves.has(normalizeSan(move.san)))
-    .sort(
-      (a, b) => (a.rank ?? 99) - (b.rank ?? 99) || a.san.localeCompare(b.san),
-    );
+    .sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99) || a.san.localeCompare(b.san));
 }
 
 export async function queryWebLichessCloudLines({
@@ -80,29 +78,58 @@ export async function queryWebLichessCloudLines({
   return webLichessCloudDataToLines(fen, data);
 }
 
-export function webLichessCloudDataToLines(
-  fen: string,
-  data: WebLichessCloudData,
-): WebEngineLine[] {
-  return (data.pvs ?? [])
-    .map((pv, index) => {
-      const uciMoves = pv.moves.trim().split(/\s+/).filter(Boolean);
-      const sanMoves = makeSanLineFromUci(fen, uciMoves);
-      return {
+export function webLichessCloudDataToLines(fen: string, data: unknown): WebEngineLine[] {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return [];
+  const raw = data as Record<string, unknown>;
+  const positionKey = (value: string) => value.trim().split(/\s+/).slice(0, 4).join(" ");
+  if (
+    raw.fen !== undefined &&
+    (typeof raw.fen !== "string" || positionKey(raw.fen) !== positionKey(fen))
+  )
+    return [];
+  if (!Array.isArray(raw.pvs)) return [];
+  const depth =
+    typeof raw.depth === "number" && Number.isFinite(raw.depth) && raw.depth >= 0 ? raw.depth : 0;
+  const nodes =
+    typeof raw.knodes === "number" && raw.knodes >= 0 && Number.isFinite(raw.knodes * 1000)
+      ? raw.knodes * 1000
+      : null;
+  return raw.pvs.flatMap((value: unknown, index): WebEngineLine[] => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+    const pv = value as Record<string, unknown>;
+    const score: WebEngineLine["score"] | null =
+      typeof pv.mate === "number" && Number.isFinite(pv.mate)
+        ? { type: "mate", value: pv.mate }
+        : typeof pv.cp === "number" && Number.isFinite(pv.cp)
+          ? { type: "cp", value: pv.cp }
+          : null;
+    if (!score || typeof pv.moves !== "string") return [];
+    const { uciMoves, sanMoves } = legalCloudLine(
+      fen,
+      pv.moves.trim().split(/\s+/).filter(Boolean),
+    );
+    if (!uciMoves.length) return [];
+    return [
+      {
         source: "lichess-cloud" as const,
         multipv: index + 1,
-        depth: data.depth ?? 0,
-        nodes: data.knodes ? data.knodes * 1000 : null,
+        depth,
+        nodes,
         nps: null,
-        score:
-          "cp" in pv
-            ? ({ type: "cp", value: pv.cp } as const)
-            : ({ type: "mate", value: pv.mate } as const),
+        score,
         uciMoves,
         sanMoves,
-      };
-    })
-    .filter((line) => line.uciMoves.length > 0);
+      },
+    ];
+  });
+}
+
+/** HTTP 200 with malformed evidence is a failed read, never a cacheable miss. */
+export function requireWebLichessCloudLines(fen: string, data: unknown): WebEngineLine[] {
+  const lines = webLichessCloudDataToLines(fen, data);
+  if (!lines.length)
+    throw new Error("Stored evaluation data is invalid for this position. Retry lookup.");
+  return lines;
 }
 
 function cloudDataToPrepBuilderMoves({
@@ -112,26 +139,16 @@ function cloudDataToPrepBuilderMoves({
 }: {
   fen: string;
   side: WebColor;
-  data: WebLichessCloudData;
+  data: unknown;
 }) {
-  const [position] = positionFromFen(fen);
-  if (!position) return [];
-
   const moves: PrepBuilderEngineMove[] = [];
-  for (const [index, pv] of (data.pvs ?? []).entries()) {
-    const [firstMove] = pv.moves.trim().split(/\s+/);
-    if (!firstMove) continue;
-
-    const move = parseUci(firstMove);
-    if (!move || !position.isLegal(move)) continue;
-
-    const positionCopy = position.clone();
-    const san = makeSan(positionCopy, move);
-    const scoreCpForWhite = cloudPvToCp(pv);
+  for (const line of webLichessCloudDataToLines(fen, data)) {
+    const scoreCpForWhite =
+      line.score.type === "cp" ? line.score.value : mateToCloudCp(line.score.value);
     moves.push({
-      san,
+      san: line.sanMoves[0],
       scoreCpForSide: side === "black" ? -scoreCpForWhite : scoreCpForWhite,
-      rank: index + 1,
+      rank: line.multipv,
       source: "lichess",
     });
   }
@@ -143,7 +160,7 @@ async function getPcStoredEvaluation(
   fen: string,
   multipv: number,
   signal?: AbortSignal,
-): Promise<WebLichessCloudData> {
+): Promise<unknown> {
   if (!REMOTE_STOCKFISH_URL) throw new Error("Gaming PC evaluation service is unavailable.");
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), PC_STORED_EVAL_TIMEOUT_MS);
@@ -166,7 +183,9 @@ async function getPcStoredEvaluation(
     if (!response.ok) {
       throw new Error(`Gaming PC stored evaluation returned HTTP ${response.status}.`);
     }
-    return (await response.json()) as WebLichessCloudData;
+    const data: unknown = await response.json();
+    requireWebLichessCloudLines(fen, data);
+    return data;
   } finally {
     window.clearTimeout(timeoutId);
     signal?.removeEventListener("abort", onAbort);
@@ -177,7 +196,7 @@ async function getCloudEvaluation(
   fen: string,
   multipv: number,
   signal?: AbortSignal,
-): Promise<WebLichessCloudData> {
+): Promise<unknown> {
   const safeMultipv = normalizeCloudMultipv(multipv);
   const cacheKey = `${fen}-${safeMultipv}`;
   if (cloudCache.has(cacheKey)) return cloudCache.get(cacheKey)!;
@@ -205,7 +224,7 @@ async function fetchCloudEvaluation(
   multipv: number,
   cacheKey: string,
   signal?: AbortSignal,
-): Promise<WebLichessCloudData> {
+): Promise<unknown> {
   const url = new URL(LICHESS_CLOUD_URL);
   url.searchParams.set("fen", fen);
   url.searchParams.set("multiPv", String(multipv));
@@ -225,7 +244,8 @@ async function fetchCloudEvaluation(
     throw new Error(`Lichess cloud evaluation failed: ${response.status}`);
   }
 
-  const data = (await response.json()) as WebLichessCloudData;
+  const data: unknown = await response.json();
+  requireWebLichessCloudLines(fen, data);
   cloudCache.set(cacheKey, data);
   return data;
 }
@@ -328,25 +348,23 @@ async function fetchWithTimeout(url: string, signal?: AbortSignal) {
   }
 }
 
-function cloudPvToCp(pv: WebLichessCloudPv) {
-  return "cp" in pv ? pv.cp : mateToCloudCp(pv.mate);
-}
-
-function makeSanLineFromUci(fen: string, uciMoves: string[]) {
+function legalCloudLine(fen: string, moves: string[]) {
+  const uciMoves: string[] = [],
+    sanMoves: string[] = [];
   const [position] = positionFromFen(fen);
-  if (!position) return [];
+  if (!position) return { uciMoves, sanMoves };
 
-  const sans: string[] = [];
-  for (const uci of uciMoves) {
+  for (const uci of moves) {
     const move = parseUci(uci);
     if (!move || !position.isLegal(move)) break;
 
     const normalized = normalizeMove(position, move);
-    sans.push(makeSan(position, normalized));
+    sanMoves.push(makeSan(position, normalized));
+    uciMoves.push(uci);
     position.play(normalized);
   }
 
-  return sans;
+  return { uciMoves, sanMoves };
 }
 
 function mateToCloudCp(mate: number) {

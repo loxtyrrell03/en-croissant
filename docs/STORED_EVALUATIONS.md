@@ -136,3 +136,31 @@ shared scoring must not fall through to remote Lichess cloud or ChessDB.
 Novelty's optional remote-lookup preference is therefore not copied. This
 restriction is recorded in root AGENTS.md after the 22 June correction; the new
 opt-out and read recovery preserve it and the retained immutable corpus.
+
+## Phone stored-response validation
+
+Novelty c2760248 position/finite-score checks and legal-PV normalization now
+share one phone boundary in lichessCloud.ts. A supplied FEN must match the
+requested position's first four fields; counters may differ and legacy replies
+without a FEN remain compatible. Only finite numeric scores and a legal first
+move enter analysis or Prep. Legal prefixes keep UCI/SAN aligned, source ranks
+are not renumbered, zero stays zero and stored scores remain White-relative.
+Prep alone converts that value to its requested player's perspective.
+
+An HTTP 200 without usable evidence is a failed read, never a cacheable miss.
+Validation runs before both stored-line and raw-response cache writes; genuine
+404 misses retain their existing behavior. A failed same-position lookup can
+recover on retry. Optional Prep consumers keep their absence/failure contract,
+and fresh reports, Plans and the Stored evals off path remain independent.
+Native Rust lookup already hashes the requested four-field FEN and returns typed
+numeric evidence; its local-only scoring rule is unchanged.
+
+Six failures were reproduced against the old parser; seven new checks cover
+wrong positions, malformed scores, legal prefixes, zero/counters/legacy replies,
+actual live fallback/retry, optional Prep and shared-cache retry. An older
+fallback fixture used a Black move on a White-to-move board; it now uses a legal
+White root while retaining the PC-unavailable fallback assertion. All 95 related
+checks across seven files and full types pass. Three changed/new files have
+warning-free lint; the adjusted existing fixture retains its one unrelated
+conditional-expect warning. Clean builds and live publication are tracked in the
+delivery JSON. Rendered/touch and physical-phone checks remain outstanding.

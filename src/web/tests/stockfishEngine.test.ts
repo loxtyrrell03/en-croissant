@@ -167,7 +167,7 @@ describe("Stockfish phone line updates", () => {
                 return jsonResponse(200, {
                     fen: PC_ONLY_FEN,
                     depth: 55,
-                    pvs: [{ moves: "e7e5", cp: -12 }],
+                    pvs: [{ moves: "e2e4", cp: -12 }],
                 });
             }
             if (String(input).includes("/api/engine/start")) return engineWakeResponse();
@@ -182,7 +182,7 @@ describe("Stockfish phone line updates", () => {
         });
 
         expect(lines.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
-            ["lichess-cloud", 55, "e7e5"],
+            ["lichess-cloud", 55, "e2e4"],
         ]);
         expect(
             fetchMock.mock.calls.filter(([input]) => String(input).includes("/v1/analyze")),
