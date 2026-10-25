@@ -1536,6 +1536,7 @@ export default function StatsWorkspace() {
           <Select
             size="xs"
             value={settings.source}
+            label="Website"
             allowDeselect={false}
             onChange={(value) =>
               updateSettings({ source: value === "lichess" ? "lichess" : "chesscom" })
@@ -1556,9 +1557,12 @@ export default function StatsWorkspace() {
               if (event.key === "Enter") event.currentTarget.blur();
             }}
             placeholder={settings.source === "chesscom" ? "chess.com username" : "Lichess username"}
+            label="Username"
             aria-label="Username"
           />
         </Group>
+        <details className={classes.taskDetails}>
+          <summary>Filters and dates <span className={styles.filterScope}>{timeClassOptions.find(option => option.value === settings.timeClass)?.label} · {effectiveRated === "both" ? "Rated & unrated" : effectiveRated === "rated" ? "Rated" : "Unrated"} · {settings.tab === "overview" ? PERFORMANCE_PERIODS.find(([value]) => value === overviewPeriod)?.[1] ?? `${overviewRange.amount} ${overviewRange.unit}` : STATS_PERIOD_OPTIONS.find(option => option.value === settings.period)?.label}</span></summary>
         <div className={styles.selectRow}>
           <Select
             size="xs"
@@ -1567,6 +1571,7 @@ export default function StatsWorkspace() {
             data={timeClassOptions}
             allowDeselect={false}
             aria-label="Time class"
+            label="Time control"
           />
           <Select
             size="xs"
@@ -1579,6 +1584,7 @@ export default function StatsWorkspace() {
             ]}
             allowDeselect={false}
             aria-label="Rated filter"
+            label="Games"
           />
           {settings.tab === "overview" ? (
             <Select
@@ -1597,6 +1603,8 @@ export default function StatsWorkspace() {
               data={[...PERFORMANCE_PERIODS.map(([value, label]) => ({ value, label })), { value: "custom", label: "Custom…" }]}
               allowDeselect={false}
               aria-label="Performance period"
+              className={styles.periodSelect}
+              label="Period"
             />
           ) : (
             <Select
@@ -1609,6 +1617,8 @@ export default function StatsWorkspace() {
               }))}
               allowDeselect={false}
               aria-label="Stats period"
+              className={styles.periodSelect}
+              label="Period"
             />
           )}
         </div>
@@ -1631,6 +1641,7 @@ export default function StatsWorkspace() {
             {!customPeriod && <Text size="xs" mt={4} role="alert">Enter a positive duration.</Text>}
           </form>
         )}
+        </details>
       </Box>
 
       <SegmentedControl

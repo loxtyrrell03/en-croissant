@@ -62,6 +62,7 @@ import {
 import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
 import { createLichessExplorerLane } from "./lichess-explorer-lane.mjs";
 import { SharedReviewService } from "./generated/shared-review-service.js";
+import { createPersonalSyncProxy } from "./personal-sync/home-proxy.mjs";
 
 const repoRoot = resolve(
   process.env.EN_CROISSANT_REPO_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), ".."),
@@ -183,6 +184,10 @@ const privateCredentialOrigins = new Set([
   "https://tauri.localhost",
   ...configuredPrivateCredentialOrigins,
 ]);
+const personalSyncProxy = createPersonalSyncProxy({
+  configPath: join(localAppData, "PersonalChessSync", "config.json"),
+  origins: new Set(["https://lox-pc.tail89d19b.ts.net", "http://localhost:1420", ...configuredPrivateCredentialOrigins]),
+});
 
 let outpostCatalog = null;
 let outpostCatalogLoadedAt = 0;
@@ -282,6 +287,7 @@ async function handleRequest(request, response) {
   const requestUrl = new URL(request.url || "/", `http://${host}:${port}`);
   const pathname = decodeURIComponent(requestUrl.pathname);
   const sensitiveApi =
+    pathname.startsWith("/api/personal-sync/") ||
     pathname === "/api/lichess-credential" ||
     pathname.startsWith("/api/chess-coach") ||
     pathname.startsWith("/api/chess-books") ||
@@ -296,6 +302,8 @@ async function handleRequest(request, response) {
     response.writeHead(204);
     return response.end();
   }
+
+  if (await personalSyncProxy(request, response)) return;
 
   if (pathname.startsWith("/api/mistake-review")) {
     const origin = String(request.headers.origin || "").replace(/\/$/, "");

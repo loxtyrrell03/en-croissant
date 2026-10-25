@@ -21,6 +21,8 @@
   min-width: 0; width: 100%; color: var(--op-text); font-family: var(--mantine-font-family,system-ui);
 }
 .surface button, .surface input, .surface select {font-family:inherit;}
+.toolNav { display: flex; flex-wrap: wrap; gap: 4px; }
+.toolNav > button { flex: 1 1 auto; min-width: 0; padding-inline: 10px; font-size: .8rem; }
 .confirm {max-width:min(480px,calc(100vw - 32px));padding:24px;background:var(--op-bg-raised);border:1px solid var(--op-border);border-radius:10px;}
 .confirm::backdrop {background:rgba(0,0,0,.65);}
 .confirm h2 {font-size:1.25rem;margin:0 0 16px;}.confirm p {line-height:1.5;}

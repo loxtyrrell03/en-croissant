@@ -1,3 +1,20 @@
+## 2026-10-25 serving phone source reconciliation
+
+- Delivery now merges the deployed phone7e7804f2 and its completed b9a25bdc
+  follow-ups, retaining approved compact navigation/Stop following, personal
+  library sync, read-only references and aligned retained workers beside all
+  accumulated parity fixes and the new PGN export safety. No owner checkout,
+  permanent bridge/runtime, initialization, profile or service was changed.
+- Combined467 web/component checks across66 files,28 isolated Node fixtures,
+  full types and scoped lint0 pass. Codec builds with the existing target and
+  common strict decoder; runtime pinned helpers are untouched. Proxy fixtures
+  use ephemeral ports through a default-preserving transport seam, never the
+  live8788 listener; product identity/origin/key checks remain unchanged.
+- Source reconciliation is verified; phone publication/rendered checks remain.
+  Native b4d2f671 package proof is historical for that source. Preserve owner
+  routes/OnOff/data, and recheck authoritative serving state before deployment.
+  Whole recovery/snapshot export and wider history audit remain open.
+
 ## 2026-10-25 PGN export native package
 
 - Cleanb4d2f671/primary6924750f packages48,909,312 bytes SHA256
@@ -184,6 +201,46 @@
   baseline matches. No owner data/corpus migration. Browser/native-window/
   physical checks, remaining20 source rows and recovery remain. See
   docs/COMPRESSION_NOTICES.md/current delivery JSON.
+
+## 2026-10-25 compact phone navigation (owner selected A)
+
+- All six pages retain their existing destinations, with Events as the short
+  phone label for Tournaments. Navigation wraps at enlarged text sizes and
+  returns to the page top. The header owns the top safe-area inset once.
+- PC services uses a compact status row with the existing accessible help;
+  status, failure/retry and the explicit switch remain. Board tools wrap into
+  full-labelled rows and use ordinary page scrolling instead of a fixed-height
+  inner pane. Long hosted file names wrap without changing source identity.
+- PGN files/paste, Review add-games setup and Stats filters/dates use native
+  disclosures. Drafts/controls stay mounted; active Review work/errors force its
+  setup open. Stats keeps the selected scope visible and labels its inputs.
+- Source verification: 23 focused checks/11 files, full types and canonical
+  production build. Touched-file lint reports 25 warnings and zero errors.
+  Actual production-build browser QA uses isolated synthetic APIs, including
+  Cancel/Confirm unfollow without collectionDelete, board tools, PGN draft and
+  successful import, and six-page navigation at 320/390/430/760px. Enlarged-text
+  fixes address intrinsic grid widths and Mantine's grow-button limits.
+- Phone dd1dfa4a is live (shell35373ba0b419), with seven exact served assets,
+  healthy workspace/library (25 files/70 databases), a path-scoped live database
+  manifest and connected real tracker verification. Unpackaged hidden publisher
+  returned0; workspace/settings/library/service choice/Serve/engine PID match
+  immediately before/after. Temporary task actions were removed. Existing
+  owner event remains followed; no physical-iPhone proof is claimed. See
+  docs/PHONE_USABILITY_2026-10-25.md and its compact delivery receipt.
+
+## 2026-10-25 phone usability audit and stop following
+
+- Stop following is now before the tournament title/tab strip, with the existing
+  keep-games confirmation and cancellation lifecycle. A targeted interaction
+  regression reproduces the prior hidden action; 14 tracker/removal checks and
+  full types pass. One pre-existing redundant-boolean lint warning remains.
+- docs/design/phone-usability-20261025 contains an affected-surface/state audit,
+  three editable navigation designs, all six pages, nested tools/setup and eight
+  common state sheets. Data is illustrative. The owner selected A, implemented
+  in the subsequent compact-navigation milestone above.
+- Work is isolated from dirty primary source and active profiles/services. Live
+  publication and rendered verification follow separately; no physical-phone
+  verification is claimed.
 
 ## 2026-10-25 hosted helper compression notices
 

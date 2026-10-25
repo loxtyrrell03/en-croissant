@@ -1,0 +1,42 @@
+{
+  "publishedSource": "dd1dfa4ad941def98dc1b92c4ad7d77a752f69cc",
+  "appShellSha256": "35373ba0b419a96cc9b0f80c08d012e4d859480d2ffd14ca1c38205efc029a01",
+  "servedAssetsVerified": [
+    "assets/index-B0EJQwjh.js",
+    "assets/index-BzvDLW8i.js",
+    "assets/index-Tug_JiH6.js",
+    "assets/WebApp-BFTCp2ry.js",
+    "assets/WebApp-IB4YSzk0.css",
+    "manifest.webmanifest",
+    "web-sw.js"
+  ],
+  "health": true,
+  "tournamentService": true,
+  "workspaceStatus": 200,
+  "libraryFiles": 25,
+  "databases": 70,
+  "databaseManifestStatus": 200,
+  "preserved": {
+    "enabled": true,
+    "settingsHash": true,
+    "libraryHash": true,
+    "serveHash": true,
+    "enginePid": true,
+    "state/web-state.json": true,
+    "phone-services.json": true
+  },
+  "focusedTests": 23,
+  "focusedFiles": 11,
+  "typecheck": "passed",
+  "homeBuild": "passed",
+  "browserWidths": [
+    320,
+    390,
+    430,
+    760
+  ],
+  "enlargedRootText": "32px at 320px",
+  "physicalPhoneVerified": false,
+  "ownerEventUnfollowed": false,
+  "taskGeneratedMiB": 54.2
+}

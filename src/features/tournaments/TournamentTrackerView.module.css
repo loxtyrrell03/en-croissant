@@ -104,6 +104,9 @@
 .tracker .danger { color: var(--op-loss); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 .tracker .back { background: transparent; border: 0; padding-left: 0; color: var(--op-accent); margin-bottom: 8px; font-size: var(--op-fs-xs); }
+.trackerNavigation { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 8px; }
+.trackerNavigation > button { min-height: 44px; }
+.tracker .trackerNavigation .back { margin-bottom: 0; }
 .beforePlay { font-size: var(--op-fs-xs); color: var(--op-text-faint); }
 .entrantHead, .entrantRow { display: grid; grid-template-columns: minmax(150px,1.7fr) 90px minmax(120px,1fr) 145px; gap: 16px; align-items: center; padding: 12px 0; }
 .entrantHead { font-size: var(--op-fs-xs); color: var(--op-text-faint); }
@@ -139,8 +142,10 @@
  .eventControls, .entryChoice, .entryChoice label { width: 100%; }
  .entryChoice select { width: 100%; }
  .entryChoice { gap: 8px; }
- .tabs { gap: 10px; margin-bottom: 14px; }
- .tracker .tabs button { margin-right: 2px; }
+ .tabs { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 4px; margin-bottom: 14px; overflow: visible; border-bottom: 0; }
+ .tracker .tabs button { grid-column: span 2; margin-right: 0; min-height: 44px; white-space: normal; overflow-wrap: anywhere; padding: 8px 4px; border: 1px solid var(--op-border); border-radius: var(--op-radius-control); }
+ .tracker .tabs button:nth-child(n+4) { grid-column: span 3; }
+ .tracker .tabs button[aria-selected=true] { background: var(--op-accent-soft); border-color: var(--op-accent); }
  .resultRow { grid-template-columns: 1fr 1fr; }
  .resultRow > span { grid-column: 1 / -1; }
  .resultRow > strong { grid-column: 1 / -1; }

@@ -194,7 +194,10 @@ export function TournamentTrackerView(props: Props) {
     {!visible.length&&<p className={styles.empty}>{snapshot.players.length?"No matching players.":"Players not published yet."}</p>}
   </div>;
   return <div className={styles.tracker}>
-    {props.onBack&&<button type="button" className={styles.back} disabled={settingBusy||removeBusy} onClick={props.onBack}>← Discover tournaments</button>}
+    <div className={styles.trackerNavigation}>
+      {props.onBack&&<button type="button" className={styles.back} disabled={settingBusy||removeBusy} onClick={props.onBack}>← Discover tournaments</button>}
+      {props.onUnfollow&&<button type="button" disabled={settingBusy||removeBusy} onClick={()=>void props.onUnfollow?.()}>{removeBusy ? "Stopping following…" : "Stop following"}</button>}
+    </div>
     <header className={styles.header}>
       <div className={styles.eventOverview}>
         <h2>{record.title}</h2>
@@ -273,7 +276,7 @@ export function TournamentTrackerView(props: Props) {
       {tab === "tracking" && <div className={styles.settings}>
         <section><h3>Updates</h3><div className={styles.settingRow}><label><input type="checkbox" checked={record.autoUpdate} disabled={settingBusy || removeBusy} onChange={() => void props.onToggleUpdate()} />Automatically check entries and pairings</label><HelpTip label="Automatic pairing checks">{"Checks every 15 minutes while En Croissant is open. This does not import games."}</HelpTip></div><p>{record.lastRosterSyncAt?`Last checked ${new Date(record.lastRosterSyncAt).toLocaleString()}`:"Not checked yet"}</p><button type="button" disabled={busy} onClick={() => void props.onCheck()}>Check tournament</button></section>
         <section><h3>Opponent databases<HelpTip label="Database counts">{"Ready means games are saved. Checked, no games means the search finished but found none."}</HelpTip></h3><p>{readyCount} ready · {emptyCount} checked, no games</p><p>Default import year: {record.fromYear}</p></section>
-        <section><h3>Following</h3>{props.onUnfollow&&<button type="button" disabled={removeBusy} onClick={()=>void props.onUnfollow?.()}>Stop following…</button>}<details className={styles.deleteDetails}><summary>Delete tracker and games</summary><p>{tournamentPrepDatabaseIds(record).length} opponent databases will also be deleted.</p><button type="button" className={styles.danger} disabled={removeBusy} onClick={() => void props.onRemove()}>{removeBusy ? "Removing…" : "Remove tracker…"}</button></details></section>
+        <section><h3>Delete tracker and games</h3><details className={styles.deleteDetails}><summary>Delete options</summary><p>{tournamentPrepDatabaseIds(record).length} opponent databases will also be deleted.</p><button type="button" className={styles.danger} disabled={removeBusy} onClick={() => void props.onRemove()}>{removeBusy ? "Removing…" : "Remove tracker…"}</button></details></section>
       </div>}
     </section>
   </div>;

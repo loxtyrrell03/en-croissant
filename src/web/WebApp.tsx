@@ -1,4 +1,6 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
+import PhonePersonalSync from "./PhonePersonalSync";
+import { PERSONAL_LIBRARY_CHANGED } from "./personalSync";
 import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
 import { useCalendarDay } from "@/hooks/useCalendarDay";
 import {
@@ -1273,12 +1275,14 @@ function WebAppContent() {
                     type="button"
                     data-view={value}
                     aria-pressed={view === value}
+                    aria-label={label}
                     onClick={() => {
                       setView(value);
                       if (value === "board") setBoardPanelMode("moves");
+                      window.scrollTo({ top: 0, behavior: "auto" });
                     }}
                   >
-                    {label}
+                    {value === "tournaments" ? <><span className={classes.workspaceLabelLong}>{label}</span><span className={classes.workspaceLabelShort}>Events</span></> : label}
                   </button>
                 ))}
               </nav>
@@ -1312,6 +1316,7 @@ function WebAppContent() {
         </Box>
 
         <PhonePcServices />
+        <PhonePersonalSync />
         <main className={classes.main}>
           {workspace.saveError && (
             <Stack
@@ -1424,6 +1429,9 @@ function WebAppContent() {
                     setBoardPanelMode("moves");
                   }}
                 />
+                <details className={classes.taskDetails} open={pastedPgn.trim() ? true : undefined}>
+                  <summary>PGN files or pasted games</summary>
+                  <Stack gap="sm" mt="sm">
                 <Button component="label" variant="light">
                   Open PGN files
                   <input
@@ -1467,7 +1475,9 @@ function WebAppContent() {
                 >
                   Import pasted games
                 </Button>
-                <Button variant="light" onClick={() => setView("review")}>
+                  </Stack>
+                </details>
+                <Button variant="subtle" onClick={() => setView("review")}>
                   Review mistakes across my games
                 </Button>
                 <PhoneSavedImports
@@ -8930,6 +8940,7 @@ function HostedFilesPanel({
   const [loading, setLoading] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const archivedFolder = phoneHostedArchiveAncestor(state, path);
+  const hostedLoadGeneration = useRef(0);
   const visibleEntries = listing ? phoneHostedEntries(state, listing.entries, showArchived) : [];
   const directPgnFilesInPath = useMemo(
     () =>
@@ -8941,13 +8952,16 @@ function HostedFilesPanel({
 
   const load = useCallback(
     async (nextPath = path, forceRefresh = false) => {
+      const generation = ++hostedLoadGeneration.current;
       setLoading(true);
       try {
         const result = await getHostedWebLibraryPath(nextPath, { forceRefresh });
+        if (generation !== hostedLoadGeneration.current) return;
         setLibrary(result.library);
         setListing(result.listing);
         setPath(nextPath);
       } catch (error) {
+        if (generation !== hostedLoadGeneration.current) return;
         console.error(error);
         setLibrary(null);
         setListing(null);
@@ -8958,7 +8972,7 @@ function HostedFilesPanel({
           color: "red",
         });
       } finally {
-        setLoading(false);
+        if (generation === hostedLoadGeneration.current) setLoading(false);
       }
     },
     [path],
@@ -8989,6 +9003,12 @@ function HostedFilesPanel({
     void load("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const refresh = () => void load(path, true);
+    window.addEventListener(PERSONAL_LIBRARY_CHANGED, refresh);
+    return () => window.removeEventListener(PERSONAL_LIBRARY_CHANGED, refresh);
+  }, [load, path]);
 
   const currentFolderName = path.split("/").filter(Boolean).at(-1) ?? "Files";
 

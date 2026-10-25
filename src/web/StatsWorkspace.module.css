@@ -1,5 +1,6 @@
 .workspace {
   display: grid;
+  grid-template-columns: minmax(0,1fr);
   gap: 0.6rem;
   width: 100%;
   min-width: 0;
@@ -34,12 +35,15 @@
 
 .controlsCard {
   display: grid;
+  grid-template-columns: minmax(0,1fr);
   gap: 0.45rem;
   padding: 0.6rem;
 }
 
 .controlsRow {
   min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,8rem),1fr));
 }
 
 .usernameInput {
@@ -52,6 +56,8 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
 }
+.filterScope { color: var(--mantine-color-dimmed); font-size: .75rem; font-weight: 400; overflow-wrap: anywhere; }
+.controlsCard details .selectRow { margin-top: .5rem; }
 .customPeriod {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
@@ -68,6 +74,7 @@
 
 .subNav {
   width: 100%;
+  min-width: 0;
 }
 
 .emptyState {
@@ -729,6 +736,9 @@
 }
 
 @media (max-width: 520px) {
+  .selectRow { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .periodSelect { grid-column: 1 / -1; }
+  .filterScope { display: block; margin-top: 4px; }
   .workspace {
     gap: 0.5rem;
   }

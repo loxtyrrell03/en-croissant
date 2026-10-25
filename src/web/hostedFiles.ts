@@ -8,6 +8,8 @@ export type WebHostedFileEntry = {
     lastModified: number;
     sizeBytes: number;
     pinned?: boolean;
+    databaseName?: string;
+    databaseLabel?: string;
 };
 
 export type WebHostedDirectoryEntry = {
@@ -251,7 +253,7 @@ export function listHostedLibraryPath(
 export async function readHostedPgnFile(
     entry: WebHostedFileEntry,
 ): Promise<WebHostedPgnFileResponse> {
-    const response = await fetch(getHostedRawFileUrl(entry));
+    const response = await fetch(getHostedRawFileUrl(entry), entry.url.startsWith("files/__personal/") ? {cache:"no-store"} : undefined);
     if (!response.ok) {
         throw new Error(`Hosted file request failed: ${response.status}`);
     }
@@ -302,8 +304,8 @@ export function getHostedDatabaseFolders(library: WebHostedLibrary) {
         const existing = folders.get(directoryPath);
         folders.set(directoryPath, {
             path: directoryPath,
-            name: getHostedFileName(directoryPath),
-            label: getHostedDatabaseLabel(directoryPath),
+            name: file.databaseName || getHostedFileName(directoryPath),
+            label: file.databaseLabel || getHostedDatabaseLabel(directoryPath),
             fileCount: (existing?.fileCount ?? 0) + 1,
             sizeBytes: (existing?.sizeBytes ?? 0) + file.sizeBytes,
             lastModified: Math.max(existing?.lastModified ?? 0, file.lastModified),

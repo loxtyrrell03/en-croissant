@@ -1,4 +1,5 @@
 import { TacticalLineExplanation, TacticalAlternativeExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
+import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import {
   Alert,
   Badge,
@@ -744,17 +745,19 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
       >
         Daily review · {queue.length} positions
       </Button>
-      <Text size="sm" c="dimmed">
-        Meaningful swings in winning chances, recent games and spaced retries. At most two positions
-        from one game. No daily backlog to clear.
-      </Text>
+      <Group gap={5}>
+        <Text size="xs" c="dimmed">Up to five positions a day</Text>
+        <PerformanceHelp label="About daily review">Recent mistakes and spaced retries, with at most two positions from one game. There is no daily backlog to clear.</PerformanceHelp>
+      </Group>
       {sharedMode ? (
         <Button variant="light" onClick={() => setOtherGames(true)}>
           Review imported or other games
         </Button>
       ) : (
         <>
-          <Title order={4}>Add games to review</Title>
+          <details className={classes.taskDetails} open={busy || !!error || !queue.length}>
+          <summary>Add games to review</summary>
+          <Stack gap="sm" mt="sm">
           <SegmentedControl
             fullWidth
             value={source}
@@ -846,6 +849,8 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
             }{" "}
             useful positions saved on this device.
           </Text>
+          </Stack>
+          </details>
         </>
       )}
     </Stack>

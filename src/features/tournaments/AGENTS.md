@@ -1,3 +1,24 @@
+## 2026-10-25 discoverable stop following
+
+- The shared tracker exposes Stop following before its title and tab strip, so
+  it remains reachable from the initial phone view and every tracker tab. It
+  uses the existing keep-games confirmation/lifecycle; deleting databases stays
+  a separate explicit Tracking action. The control remains available during a
+  running check, and locks during settings/removal writes.
+- The new interaction regression fails against the old hidden-control layout;
+  14 focused tracker/removal checks and whole-project types pass. Existing
+  removal coverage waits for an in-flight roster check and verifies no database
+  deletion. Rendered/deployed checks are recorded separately.
+- Owner-selected compact phone design A keeps tournament tools on a short row
+  and exposes all five tracker tabs in wrapping rows at narrow container widths.
+  The existing desktop tab behavior and player-prediction design remain. Actual
+  production-build browser QA confirms Cancel/Confirm through the real modal and
+  settings bridge using synthetic records; no collectionDelete is requested.
+- Phone source dd1dfa4a is live on the canonical route. The real connected
+  tracker retains the owner's event, selected entry and saved opponent games;
+  Stop following and all five tabs render at 390px. Actual unfollow is tested
+  only against isolated synthetic records. See the phone-usability delivery doc.
+
 ## 2026-10-24 combined delivery-source verification
 
 - Parity integration carries primary search source 3e504902 into clean delivery

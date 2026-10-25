@@ -4707,7 +4707,7 @@
     "noveltyRelated": [
       "89af6af2"
     ],
-    "status": "native-package-verified-phone-reconciliation-and-full-recovery-scope-open",
+    "status": "native-package-verified-phone-source-reconciled-delivery-and-full-recovery-open",
     "actualOldNativeExportFailuresReproduced": 3,
     "primaryFocusedNativeChecks": 44,
     "cleanNativeLibraryChecks": 112,
@@ -4744,7 +4744,7 @@
     "browserRendered": false,
     "physicalPhoneVerified": false,
     "remaining": [
-      "phone serving-source reconciliation and delivery",
+      "phone build and delivery",
       "rendered verification",
       "whole-profile recovery/snapshot export evaluation"
     ],
@@ -4754,7 +4754,9 @@
       "builtAt": "2026-10-25T19:35:25.2424381Z",
       "appShellSha256": "1c0b7edbf324ea1fcc901f88a7bcbc799bd8e9157da3f1ab662c7bfbe9bf1946"
     },
-    "phoneServingSourceReconciliationRequired": true
+    "phoneServingSourceReconciliationRequired": false,
+    "phoneSourceReconciled": true,
+    "phoneSourceReconciledThrough": "b9a25bdcb2495382a588bee7bceccde84d3bf0db"
   },
   "currentNativePgnExportPackage": {
     "sourceCommit": "b4d2f671e842ac8a44fb857927e8bffb5cf12c16",
@@ -4903,5 +4905,23 @@
     "rollbackVerified": true,
     "noNewCliTestEntryOrOwnerBinChange": true,
     "explicitDevRestart": false
+  },
+  "servingPhoneSourceReconciliation": {
+    "liveSourceIncluded": "7e7804f20b4268910c2e208b2f9fe540fa70780b",
+    "completedFollowupsIncluded": "b9a25bdcb2495382a588bee7bceccde84d3bf0db",
+    "webChecks": 467,
+    "webFiles": 66,
+    "nodeFixtureChecks": 28,
+    "types": true,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "ownedExportFilesPreserved": 10,
+    "standaloneCodecBuild": true,
+    "pinnedLiveHelpersChanged": false,
+    "proxyFixturesUseEphemeralPorts": true,
+    "productionProxyPort": 8788,
+    "runtimeChanged": false,
+    "phonePublished": false,
+    "browserRendered": false
   }
 }
