@@ -376,6 +376,26 @@ Adopted as cross-repository user guidance on 2026-09-08. Project-specific archit
 
 # AGENTS.md
 
+## 2026-10-25 study timer seeking and block restart
+
+- Desktop Daily Study supports fractional clicks on its weighted block strip and
+  click/drag, touch and keyboard seeking on the timer. Optional signed
+  `timerOffsetMs` separates countdown position from actual recorded `elapsedMs`;
+  old journals default to zero offset. Seeking never adds skipped time to history
+  or completes blocks; rewinding can record actual work beyond the planned target.
+- Opening saved partial work resumes its existing attempt. Restart block creates
+  a fresh paused attempt in the same session, clears only that block's current
+  completion and preserves previous attempts, notes and time. Drafts flush through
+  the revision-checked writer before seeks/resets; failed saves leave state intact.
+- The prior study frontend foundation is included with this repair; independent
+  Chessable collection/automation work remains outside the milestone. This feature
+  is desktop-specific; Novelty and the phone app do not expose Daily Study.
+- Verification: 34 focused session, journal, schema and mounted-panel checks,
+  full TypeScript, scoped lint and production frontend build; actual-component
+  Chrome checks cover seeking, touch at 390px, saved-partial restart after reload
+  and retained history notes. The existing Dev server serves these controls.
+  Installed-native interaction and physical-phone checks were not performed.
+
 ## 2026-10-07 native and phone root stylesheet loading
 
 - Keep `src/index.tsx` native and phone imports in separate async loaders. Vite
