@@ -34,11 +34,18 @@ for (const idle of [0, 1000]) test(`engine service idle timeout ${idle} preserve
     assert.ok(health?.ok, output);
     assert.equal(health.backendIdleMs, idle);
     assert.equal(health.engineReady, false);
+    assert.equal(health.service, "stockfish-18-remote");
+    assert.equal(health.version, null);
+    assert.equal(health.build, null);
+    assert.equal(health.engines.stockfish.name, null);
+    assert.equal(health.engines.lc0.name, null);
     assert.equal(health.engines.lc0.ready, false);
     await delay(1800);
     if (idle === 0) {
       assert.equal(child.exitCode, null, output);
-      assert.equal((await (await fetch(`http://127.0.0.1:${port}/v1/health`)).json()).engineReady, false);
+      const idleHealth = await (await fetch(`http://127.0.0.1:${port}/v1/health`)).json();
+      assert.equal(idleHealth.engineReady, false);
+      assert.equal(idleHealth.version, null);
     } else assert.equal(child.exitCode, 0, output);
   } finally {
     if (child.exitCode === null) { const exited = new Promise((done) => child.once("exit", done)); child.kill(); await exited; }
