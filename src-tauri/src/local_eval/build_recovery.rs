@@ -313,13 +313,39 @@ pub fn discard_build_job(root: &Path, id: &str) -> Result<(), String> {
 }
 
 pub fn build_compact_eval_database_recoverable<F>(
+    options: LocalEvalBuildOptions,
+    control: LocalEvalBuildControl,
+    root: &Path,
+    progress: F,
+) -> Result<LocalEvalBuildReport, LocalEvalError>
+where
+    F: FnMut(LocalEvalBuildProgress),
+{
+    build_recoverable_with(
+        options,
+        control,
+        root,
+        progress,
+        |options, control, progress| {
+            build_compact_eval_database_controlled(options, control, progress)
+        },
+    )
+}
+
+pub(super) fn build_recoverable_with<F, B>(
     mut options: LocalEvalBuildOptions,
     mut control: LocalEvalBuildControl,
     root: &Path,
     mut progress: F,
+    build: B,
 ) -> Result<LocalEvalBuildReport, LocalEvalError>
 where
     F: FnMut(LocalEvalBuildProgress),
+    B: FnOnce(
+        LocalEvalBuildOptions,
+        LocalEvalBuildControl,
+        &mut dyn FnMut(LocalEvalBuildProgress),
+    ) -> Result<LocalEvalBuildReport, LocalEvalError>,
 {
     let failure = |detail: String| LocalEvalError::InvalidOption(detail);
     control.check()?;
@@ -378,7 +404,7 @@ where
     control.ownership = Some(record.identity);
     let cancel = control.cancel.clone();
     let mut persistence_error = None;
-    let result = build_compact_eval_database_controlled(options, control, |event| {
+    let result = build(options, control, &mut |event| {
         record.state = "running".into();
         record.progress = Some(event.clone());
         if persistence_error.is_none() {

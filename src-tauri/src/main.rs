@@ -192,6 +192,8 @@ fn main() {
             cancel_local_lichess_eval_db,
             get_local_eval_build_job,
             discard_local_eval_build_job,
+            review_local_eval_download,
+            start_local_eval_download,
             analyze_game,
             scan_mistake_review,
             get_mistake_review_game_metadata,
@@ -478,4 +480,20 @@ async fn get_local_eval_build_job(
 #[specta::specta]
 async fn discard_local_eval_build_job(id: String, app: tauri::AppHandle) -> Result<(), String> {
     local_eval::discard_local_eval_build_job(id, app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn review_local_eval_download(
+    output_dir: String,
+    disk_limit_gib: u16,
+    app: tauri::AppHandle,
+) -> Result<local_eval::LocalEvalDownloadReview, String> {
+    local_eval::review_local_eval_download(output_dir, disk_limit_gib, app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn start_local_eval_download(token: String, app: tauri::AppHandle) -> Result<String, String> {
+    local_eval::start_local_eval_download(token, app).await
 }

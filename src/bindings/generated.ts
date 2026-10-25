@@ -72,6 +72,22 @@ async discardLocalEvalBuildJob(id: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async reviewLocalEvalDownload(outputDir: string, diskLimitGib: number) : Promise<Result<LocalEvalDownloadReview, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("review_local_eval_download", { outputDir, diskLimitGib }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async startLocalEvalDownload(token: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("start_local_eval_download", { token }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisOptions, uciOptions: EngineOption[]) : Promise<Result<MoveAnalysis[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("analyze_game", { id, engine, goMode, options, uciOptions }) };
@@ -986,6 +1002,7 @@ export type LocalEvalBuildProgress = { id: string; phase: string; progress: numb
 export type LocalEvalBuildReport = { outputDir: string; source: string; positions: bigint; skipped: bigint; duplicates: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt: bigint }
 export type LocalEvalBuildRequest = { id: string | null; source: string | null; sourceUrl: string | null; outputDir: string | null; maxPvs: number | null; shardCount: number | null; diskLimitGib?: number | null }
 export type LocalEvalDbStatus = { available: boolean; path: string; positions: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt?: bigint | null; source?: string | null; error?: string | null }
+export type LocalEvalDownloadReview = { token: string; outputDir: string; source: string; downloadBytes: bigint; availableBytes: bigint; diskLimitBytes: bigint; reserveBytes: bigint }
 export type LocalLichessCloudEval = { fen: string; knodes: number; depth: number; pvs: LocalLichessCloudPv[] }
 export type LocalLichessCloudPv = { moves: string; cp?: number | null; mate?: number | null }
 export type ManagedLc0Install = { path: string; weightsPath: string; version: string; network: string }

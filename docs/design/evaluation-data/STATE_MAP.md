@@ -33,7 +33,7 @@ files do not start a download or alter a profile.
 | Review expired / source changed / low space / path exists | Exact reason visible; Review again or choose new folder | No build starts; an existing destination is never replaced | 2, 6 |
 | Help | Adjacent question mark, same focus/touch/hover help contract as existing controls | Short explanation of quota/scope, dismissible and bounded; essential errors stay visible | help frame |
 | Starting | Starting download; cancellation remains available | Persistent job identity and OS lease acquired before network/body/output work | 3 |
-| Network progress | Archive received bytes out of reviewed compressed total | Transport quantity is labelled separately from build work | 3 |
+| Network progress | Compressed archive bytes read out of reviewed total | Label bytes read; transport quantity is separate from completed positions/build work | 3 |
 | Parsing / preparing / sorting | Exact current phase and applicable position/shard counters | Indeterminate work has no fabricated percentage; bounded memory/disk/reads | 3 |
 | Close / navigate / reopen | Close view; later reopen the same job | UI close does not cancel; native job owns lifetime and failure state | 3 |
 | Cancel requested | Stopping…; no second cancel or start | Do not say cancelled until worker/network/build cleanup has settled | 3 |
@@ -53,7 +53,8 @@ files do not start a download or alter a profile.
 
 The backend journal/OS lease, guarded recovery and native status/cleanup commands
 are source-verified with real process-termination fixtures; see
-../../EVALUATION_BUILD_RECOVERY.md. Next are reviewed acquisition, validated
+../../EVALUATION_BUILD_RECOVERY.md. The reviewed acquisition backend is also
+source-verified in ../../EVALUATION_DOWNLOAD_REVIEW.md. Next are validated
 persistent source activation and the chosen Settings layout, followed by actual
 rendered and interaction checks when browser control is available. Existing
 bounded builder/output ownership is retained. Runtime delivery and physical-device
