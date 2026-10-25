@@ -35,7 +35,7 @@ export class DatabaseSyncBridge {
     const canonical=fs.realpathSync.native(library);
     if(path.basename(canonical)!=='library.sqlite' || path.basename(path.dirname(canonical))!=='app.outpost.chess.dev')throw Error('Personal sync only accepts the physical Novelty Dev library');
     this.library=library;this.enRoot=enRoot;this.codec=codec;this.native=native;this.recoveryRoot=recoveryRoot;this.canMove=canMove;this.referencePaths=referencePaths;
-    this.cacheUnchanged=cacheUnchanged;this.checked=new Map();
+    this.cacheUnchanged=cacheUnchanged;this.checked=new Map();this.containerCache=new Map();
     this.source=new DatabaseSync(library);this.source.exec('PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON');
     this.ledger=openLedger(ledger);
     const identity=JSON.stringify({library:fs.realpathSync.native(library),enRoot:path.resolve(enRoot)});
