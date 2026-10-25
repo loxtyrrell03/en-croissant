@@ -6,6 +6,8 @@ list, valid profiles and an unreadable file. Reading never rewrites the file.
 Recognized legacy defaults are normalized in memory, while extra fields from
 newer versions remain present. Invalid JSON or profiles leave the saved bytes
 untouched and stop automatic discovery from treating the list as a new install.
+File absence is confirmed by listing its parent directory after a failed read;
+a boolean existence check cannot turn an access error into a fresh installation.
 
 Startup respects an intentionally empty list. Discovery waits while any tab has
 analysis enabled, including focus-paused analysis, or a Play tab remains open.
@@ -37,7 +39,7 @@ it is not a durable-write receipt. Migration code must await the preference
 store's write/`flush()` before marking an upgrade complete. The controller owns
 failure status so rejected UI writes cannot silently disappear.
 
-Twenty focused synthetic checks cover unreadable/empty stores, preserved settings,
+Twenty-one focused synthetic checks cover unreadable/empty stores, preserved settings,
 native staged replacement, failed/uncertain/overlapping saves, observed external
 edits, mutation after capture, real startup/retry/remount behavior, enabled/paused
 analysis and stale replies. The 587-check related source baseline passes across 75 files; the final

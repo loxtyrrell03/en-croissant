@@ -1,3 +1,13 @@
+## 2026-10-25 native engine profile access errors
+
+- A failed engines.json read is a fresh store only when its parent directory
+  confirms no matching entry. Access errors cannot be hidden by a boolean
+  existence check or trigger discovery/replacement of saved profiles.
+- All 21 focused checks, full types and twelve-file lint pass (one existing
+  engine-options effect warning, no errors). The permission regression uses
+  synthetic IO; no owner profile, engine binary or service was changed.
+  Final clean combined verification and Stockfish 19 migration remain separate.
+
 ## 2026-10-25 engine identity follow-up
 
 - Discovery matches an existing profile by normalized executable path. A reused
