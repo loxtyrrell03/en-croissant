@@ -58,8 +58,8 @@
     ]
   },
   "desktop": {
-    "exeBytes": 47852032,
-    "exeSha256": "23fdc09158c092d35882d7197e89d80d3a617a6e1e1dfa4667267b970f3fa009",
+    "exeBytes": 47852544,
+    "exeSha256": "7a95e74955de351c88a1426ab89bcaf3671862b0a16670890f5334c2d4008a5c",
     "assets": [
       {
         "name": "index-DyOp8GiP.js",
@@ -93,7 +93,7 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "161f795760fdd7ff258b9c4037c108403ec97d6b",
+    "sourceCommit": "d20de2cd95719a1431f7f9ba30f0b83f90802a42",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
     "primarySourceCommit": "8a1c5928",
@@ -102,7 +102,7 @@
     "lintErrors": 0,
     "nativeBuild": true,
     "existingNativeWarnings": 22,
-    "nativeCargoSeconds": 195,
+    "nativeCargoSeconds": 191,
     "bundledFiles": 102,
     "bundledBytes": 104581828,
     "matchingOwnedProductFiles": 7,
@@ -114,7 +114,7 @@
     "physicalPhoneVerified": false,
     "phonePublicationPending": false,
     "ownerDataWritten": false,
-    "primaryCommit": "870dba8e69f418badf69c74682f0c91bf5a5a860",
+    "primaryCommit": "8bbeb6a56fcb8f6d5bdf0e7093372579487744eb",
     "nativeQueueChecks": 5,
     "actualCallbackControl": true,
     "matchingMilestoneFiles": 8,
@@ -132,7 +132,11 @@
     "frontendTypesPreviouslyPassed": true,
     "nodeIpcChecks": 7,
     "pinnedFallbackWireCompatibility": true,
-    "matchingProductTestAndCiFiles": 4
+    "matchingProductTestAndCiFiles": 4,
+    "nativeReadinessChecks": 6,
+    "nodeReadinessAndHomeHttpChecks": 8,
+    "homeHelperDelivered": false,
+    "pcEngineHelperDelivered": false
   },
   "checks": {
     "combinedFrontend": {
@@ -2692,7 +2696,7 @@
     "novelty": [
       "1290880c"
     ],
-    "status": "native-and-shared-phone-reader-source-verified-delivery-pending",
+    "status": "native-packaged-home-and-pc-helper-runtime-delivery-pending",
     "baseline": {
       "nativeTests": 5,
       "nativePassed": 3,
@@ -2722,10 +2726,169 @@
     "ownerDataWritten": false,
     "frontendSourceChanged": false,
     "frontendGateRerun": false,
-    "nativePackageVerified": false,
+    "nativePackageVerified": true,
     "homeHelperDelivered": false,
     "pcEngineHelperDelivered": false,
     "nativeWindowVerified": false,
-    "physicalPhoneVerified": false
+    "physicalPhoneVerified": false,
+    "packageSource": "d20de2cd95719a1431f7f9ba30f0b83f90802a42",
+    "exeSha256": "7a95e74955de351c88a1426ab89bcaf3671862b0a16670890f5334c2d4008a5c",
+    "installedEngineReaderInspectedReadOnly": true,
+    "installedEngineReaderMatchesPreviousSource": true,
+    "baselineRealStoredLookup": {
+      "url": "https://lox-pc.tail89d19b.ts.net/",
+      "depth": 65,
+      "pvs": 1,
+      "allPvsLegal": true,
+      "workersRemainedCold": true,
+      "ownerDataModified": false
+    }
+  },
+  "previousNativeWindowsIpcDesktop": {
+    "exeBytes": 47852032,
+    "exeSha256": "23fdc09158c092d35882d7197e89d80d3a617a6e1e1dfa4667267b970f3fa009",
+    "assets": [
+      {
+        "name": "index-DyOp8GiP.js",
+        "bytes": 292437,
+        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
+        "embedded": true
+      },
+      {
+        "name": "App-B27Iq3yU.js",
+        "bytes": 193045,
+        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
+        "encoding": "brotli",
+        "compressedBytes": 55005,
+        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
+        "embedded": true
+      },
+      {
+        "name": "files-CIwBSFWZ.js",
+        "bytes": 2228,
+        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
+        "encoding": "brotli",
+        "compressedBytes": 1143,
+        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
+        "embedded": true
+      }
+    ],
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "nativeWindowVerified": false,
+    "devShortcutChanged": false,
+    "rollback": "task-owned ignored rollback directory",
+    "sourceCommit": "161f795760fdd7ff258b9c4037c108403ec97d6b",
+    "activeDevSessionPreserved": true,
+    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d",
+    "primarySourceCommit": "8a1c5928",
+    "lintFiles": 2,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 195,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedProductFiles": 7,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "phonePublicationPending": false,
+    "ownerDataWritten": false,
+    "primaryCommit": "870dba8e69f418badf69c74682f0c91bf5a5a860",
+    "nativeQueueChecks": 5,
+    "actualCallbackControl": true,
+    "matchingMilestoneFiles": 8,
+    "matchingProductAndTestFiles": 12,
+    "shellAssociationInteractionVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "shimSha256": "687dd45a1822528bd0e9d544d37806570c7d2bf447773c85a21b914bc1e503d6",
+    "shimBytes": 1240,
+    "exactShimEmbedded": true,
+    "frontendSourceUnchanged": true,
+    "previousFrontendGateRerun": false,
+    "previousFrontendTests": 531,
+    "previousFrontendTestFiles": 76,
+    "frontendTypesPreviouslyPassed": true,
+    "nodeIpcChecks": 7,
+    "pinnedFallbackWireCompatibility": true,
+    "matchingProductTestAndCiFiles": 4
+  },
+  "currentLocalEvaluationReadinessPackage": {
+    "exeBytes": 47852544,
+    "exeSha256": "7a95e74955de351c88a1426ab89bcaf3671862b0a16670890f5334c2d4008a5c",
+    "assets": [
+      {
+        "name": "index-DyOp8GiP.js",
+        "bytes": 292437,
+        "sha256": "94c41fdea075bea829ad95188281366ebb41e5434698fb0b8b99e570355635ec",
+        "encoding": "brotli",
+        "compressedBytes": 89591,
+        "compressedSha256": "f41a0bb908ac0122714fccf56fbcc38c11b688fed99126ca1b881411e4e48ff1",
+        "embedded": true
+      },
+      {
+        "name": "App-B27Iq3yU.js",
+        "bytes": 193045,
+        "sha256": "be93dcfbef2f538815192fe6b1964b1cefed3b8e0442a2bceb3774ed49c7e676",
+        "encoding": "brotli",
+        "compressedBytes": 55005,
+        "compressedSha256": "d5177f83ec146f195d5f2e095ca4e937af60fc9e0586ffecdee68011a2c71165",
+        "embedded": true
+      },
+      {
+        "name": "files-CIwBSFWZ.js",
+        "bytes": 2228,
+        "sha256": "37a389614c4e53ccd741e52b9c5ffa2b9e1917012a50380cec651b0044801fa8",
+        "encoding": "brotli",
+        "compressedBytes": 1143,
+        "compressedSha256": "03aaa6a2d14f780f0e50bc5c06b88b6c1c0132c8e8e7022c6688f9277c50170f",
+        "embedded": true
+      }
+    ],
+    "shimSha256": "687dd45a1822528bd0e9d544d37806570c7d2bf447773c85a21b914bc1e503d6",
+    "shimBytes": 1240,
+    "exactShimEmbedded": true,
+    "frontendSourceUnchanged": true,
+    "previousFrontendGateRerun": false,
+    "sourceCommit": "d20de2cd95719a1431f7f9ba30f0b83f90802a42",
+    "primaryCommit": "8bbeb6a56fcb8f6d5bdf0e7093372579487744eb",
+    "previousFrontendTests": 531,
+    "previousFrontendTestFiles": 76,
+    "frontendTypesPreviouslyPassed": true,
+    "lintFiles": 2,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nodeIpcChecks": 7,
+    "nativeReadinessChecks": 6,
+    "nodeReadinessAndHomeHttpChecks": 8,
+    "homeHelperDelivered": false,
+    "pcEngineHelperDelivered": false,
+    "pinnedFallbackWireCompatibility": true,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 191,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingMilestoneFiles": 8,
+    "matchingProductTestAndCiFiles": 4,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "shellAssociationInteractionVerified": false,
+    "physicalPhoneVerified": false,
+    "phoneProductionChanges": false,
+    "phonePublishedSource": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "ownerDataWritten": false
   }
 }
