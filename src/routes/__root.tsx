@@ -5,7 +5,7 @@ import { TauriEvent } from "@tauri-apps/api/event";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { appLogDir, resolve } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { ask, open } from "@tauri-apps/plugin-dialog";
+import { open } from "@tauri-apps/plugin-dialog";
 import { platform } from "@tauri-apps/plugin-os";
 import { exit } from "@tauri-apps/plugin-process";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
@@ -17,6 +17,7 @@ import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
 import type { Dirs } from "@/App";
 import AboutModal from "@/components/About";
+import AppearanceResetModal from "@/components/settings/AppearanceResetModal";
 import { SideBar } from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import {
@@ -136,6 +137,7 @@ function RootLayout() {
   useHotkeys(keyMap.NEW_TAB.keys, createNewTab);
   useHotkeys(keyMap.OPEN_FILE.keys, openNewFile);
   const [opened, setOpened] = useState(false);
+  const [appearanceResetOpened, setAppearanceResetOpened] = useState(false);
 
   const isMacOS = platform() === "macos";
   const closeOrWaitForCoach = useCallback(async () => {
@@ -277,19 +279,9 @@ function RootLayout() {
             action: () => openUrl("https://encroissant.org/docs/"),
           },
           {
-            label: t("Menu.Help.ClearSavedData"),
+            label: "Reset appearance and layout",
             id: "clear_saved_data",
-            action: () => {
-              ask("Are you sure you want to clear all saved data?", {
-                title: "Clear data",
-              }).then((res) => {
-                if (res) {
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  location.reload();
-                }
-              });
-            },
+            action: () => setAppearanceResetOpened(true),
           },
           {
             label: t("Menu.Help.OpenLogs"),
@@ -390,6 +382,7 @@ function RootLayout() {
       }}
     >
       <AboutModal opened={opened} setOpened={setOpened} />
+      {appearanceResetOpened && <AppearanceResetModal onClose={() => setAppearanceResetOpened(false)} />}
       <Modal
         opened={dailyGoalPrompt !== null}
         onClose={() => setDailyGoalPrompt(null)}
