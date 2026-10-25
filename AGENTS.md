@@ -1,3 +1,23 @@
+## 2026-10-25 clean phone dates and refreshed history audit
+
+- Clean delivery be9e7eb1 passes all 570 related frontend checks/71 files, full
+  types, nine-file lint without warnings/errors and desktop/canonical-phone
+  builds in 28.51/26.23 seconds. Ten owned files match primary 5e12da56; WebApp
+  retains its 25 existing warnings. The initial parallel build/UI run hit one
+  existing five-second preference-test timeout; its isolated recheck and full
+  default-timeout recheck pass. Keep builds separate from heavy actual-app tests.
+- The refreshed inventory has 580 Novelty commits and explicitly categorizes
+  55 engine-management candidates. New prediction-history/empty-state and search
+  candidates are already mirrored. Stockfish 19/default upgrade and the managed
+  engine/catalog/download behavior still require target evaluation: En currently
+  uses a managed Stockfish 18 setup, not Novelty's included-engine architecture.
+  Do not claim every engine candidate is a new gap or promote a version/default
+  silently. See the gap ledger and docs/GAME_DATE_RANGES.md.
+- Source/component/query/build evidence only. No installed binary, hosted app,
+  owner data, helper/runtime folder, service or route changed. Browser inventory
+  still reports local browser use disabled. Final engine evaluation, rendered
+  interaction, runtime delivery and requirement-by-requirement audit remain.
+
 ## 2026-10-25 phone game-date parity
 
 - Phone Database/Prep reuse the shared calendar/preset control. Workspace

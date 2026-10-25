@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "fourth-batch-delivered-with-newer-phone-publication",
+  "status": "source-parity-progress-with-rendered-and-runtime-delivery-pending",
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
@@ -458,5 +458,63 @@
       "canonicalOriginPresent": true,
       "inventedFixturesExcluded": true
     }
+  },
+  "pendingPhoneGameDates": {
+    "primarySourceCommit": "5e12da564e1ddb6d224c60c59c9506f85e488532",
+    "cleanSourceCommit": "be9e7eb1c89fa6dd687c318ca939d883d62b06ce",
+    "checkedAt": "2026-10-25T01:13:44.150185+00:00",
+    "relatedFrontendTests": 570,
+    "relatedFrontendFiles": 71,
+    "newDateTests": 11,
+    "newDateFiles": 2,
+    "types": true,
+    "lintFiles": 9,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "webAppExistingWarnings": 25,
+    "desktopBuildSeconds": 28.51,
+    "canonicalPhoneBuildSeconds": 26.23,
+    "matchingOwnedSourceFiles": 10,
+    "initialConcurrentBuildRun": {
+      "passed": 569,
+      "failed": 1,
+      "reason": "Existing phone workspace-preference fixture exceeded its unchanged 5000ms timeout during the parallel production build (5222ms).",
+      "isolatedDefaultTimeoutRecheck": true,
+      "fullDefaultTimeoutRecheckPassed": 570,
+      "fullRecheckWorkers": 2
+    },
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "phonePublished": false,
+    "standalonePublished": false,
+    "nativeCodeChanged": false,
+    "ownerDataMigrated": false,
+    "servicesChanged": false,
+    "phoneBundle": {
+      "entry": "WebApp-DIxAWrbB.js",
+      "bytes": 428588,
+      "sha256": "b2b61d4dadf7ca9bcffc2f98066a01af5fa5d589ddfb0d2b98e78afd0ff0f8b9",
+      "canonicalOriginPresent": true,
+      "inventedFixturesExcluded": true
+    }
+  },
+  "historyRefresh": {
+    "checkedAt": "2026-10-25T01:13:44.150185+00:00",
+    "noveltyHead": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
+    "enSourceHead": "5e12da564e1ddb6d224c60c59c9506f85e488532",
+    "noveltyCommits": 580,
+    "enCommits": 443,
+    "matchingNames": 191,
+    "identicalNames": 50,
+    "engineManagementCandidates": 55,
+    "alreadyMirroredNewCandidates": [
+      "641036423d1b0ab73389a37271163bef9d38d445",
+      "a7fdf330240a83847daca163a7cbe29226c213d2",
+      "647c4efb92f3b2ed42249559fe802d3dc2532c06"
+    ],
+    "pendingNewCandidateEvaluation": [
+      "c1f5b6591bf58710f561b581d3d77e6ec0cfe90b"
+    ],
+    "coverageProvenByHashComparison": false
   }
 }
