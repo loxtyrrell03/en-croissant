@@ -8,17 +8,17 @@ hashes. Filename/hash comparisons nominate candidates; they do not prove
 behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
-Current delivery (2026-10-25): clean `41668e2b` is live on the canonical phone
-site. The latest native desktop artifact is clean `cfc2a7f3`, including guarded
-local-engine setup, logo recovery, persistent plan arrows and all verified
-Stockfish 19 resources and stored-evaluation controls.
-These include the committed ports described below. The existing PC
-helper also runs the verified 19 executable; actual HTTPS analysis and phone
-version/asset/workspace/library/tournament reads pass. Individual rows retain
-historical milestone receipts. Browser-rendered, native-window and physical-phone
-checks remain unverified. The Windows Stockfish catalog controls pass 655 clean
-related checks/types and the native build; rendered verification and the full candidate audit
-remain active; see `NATIVE_STOCKFISH_19.md` and the current delivery JSON.
+Current delivery (2026-10-25): clean `4270ba4e` is live on the canonical phone
+site. The latest native desktop artifact is clean `d20de2cd`, SHA256
+`7a95e74955de351c88a1426ab89bcaf3671862b0a16670890f5334c2d4008a5c`.
+The native package includes the Windows IPC and evaluation-readiness fixes;
+both installed PC/home evaluation readers now match the verified shared source.
+Exact served assets and the same normal stored evaluation response pass, with
+saved workspace, normalized library, tournament settings, engine process, owner
+enabled choice and all hosting routes preserved. See the current delivery JSON
+and `LOCAL_EVAL_READINESS.md`. Browser-rendered, native-window and physical-phone
+checks, the remaining history candidates and full review completion remain
+separate. Older row receipts below describe their historical milestones.
 
 ## Confirmed remaining differences requiring implementation or target evaluation
 

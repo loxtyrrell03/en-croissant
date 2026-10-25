@@ -4,18 +4,19 @@
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
+    "sourceCommit": "4270ba4eed2c428d722a828dadb744b1f8319ec9",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "cbbff3b83165-1bead00de081",
-    "appShellSha256": "1bead00de081d3389751be6d25836c58a3653b63d839955996506e75c65b01de",
-    "checkedAt": "2026-10-25T11:24:00.622Z",
+    "releaseId": "4270ba4eed2c-b44ccea44fd9",
+    "appShellSha256": "b44ccea44fd9c9f8b62edd25a75566b3e0dafe8b24b1d295d7e266563e452b5b",
+    "checkedAt": "2026-10-25T13:38:31.533Z",
     "verified": [
-      "canonical HTTPS deployment metadata and exact shell/entry/plan/WASM hashes",
-      "unchanged saved workspace and tournament settings hashes",
-      "hosted live-library reads (25 files and 70 databases)",
-      "canonical route, owner enabled choice and PC engine service process preserved",
-      "actual Stockfish 19 legal exact bounded report and owned-worker release",
-      "unchanged normalized library content and normal uncaptured publisher return"
+      "canonical HTTPS metadata and exact shell/entry/plan/Stockfish19 JS/WASM hashes",
+      "unchanged saved workspace, normalized library and tournament settings hashes",
+      "hosted library reads (25 files, 70 databases) and repeated stable content",
+      "canonical routes, owner enabled choice and PC engine PID8536 preserved",
+      "unpackaged installed home-reader backing/hash and process created after publication",
+      "same normal stored depth65 response as before publication; workers remain cold",
+      "normal uncaptured publisher return and owned task cleanup"
     ],
     "browserRendered": false,
     "physicalPhoneVerified": false,
@@ -28,17 +29,17 @@
     },
     "libraryBeforeAfterContentCompared": true,
     "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots.",
-    "phonePid": 54616,
+    "phonePid": 45508,
     "assets": [
       {
-        "path": "assets/index-Bv6osPFr.js",
+        "path": "assets/index-BOveYi5-.js",
         "bytes": 295301,
-        "sha256": "133a0834592ce9eff8ea4d95cd81eb3bb10131d055ad4f55abed930f19de2eac"
+        "sha256": "f26e742a1e07f7dca2c55b48d1f2f34c18aa34ad048fc7fcd0d0ba0c4e76677f"
       },
       {
-        "path": "assets/WebApp-K4uZd9L_.js",
+        "path": "assets/WebApp-DNI3ly0W.js",
         "bytes": 433745,
-        "sha256": "c8a4a2f6762bcff576edf74ea732ed5e2fe0f34aa08bb82f92932a89e50d0b90"
+        "sha256": "79b19697b634f8addc771349f2a49fcfca55a98f07075fd1e3c3808ef3399df8"
       },
       {
         "path": "assets/usePlanArrows-Cw5n9kVy.js",
@@ -2119,11 +2120,11 @@
   },
   "previousPanelScrollingPhone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43",
+    "sourceCommit": "cbbff3b831654014de7babd51b6f1e61a09e420e",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "41668e2b8877-1ac542e56304",
-    "appShellSha256": "1ac542e5630407df582db7a2c7b8935f0a8c06205d33b13474c3ff19e5a1610c",
-    "checkedAt": "2026-10-25T09:35:15.890Z",
+    "releaseId": "cbbff3b83165-1bead00de081",
+    "appShellSha256": "1bead00de081d3389751be6d25836c58a3653b63d839955996506e75c65b01de",
+    "checkedAt": "2026-10-25T11:24:00.622Z",
     "verified": [
       "canonical HTTPS deployment metadata and exact shell/entry/plan/WASM hashes",
       "unchanged saved workspace and tournament settings hashes",
@@ -2138,10 +2139,39 @@
     "publisherCleanup": {
       "temporaryTaskRemoved": true,
       "normalPublisherExitObserved": true,
-      "publicationReplayed": false
+      "firstAttemptRefusedActiveReview": true,
+      "laterAttemptPassedImmediateIdleGuard": true
     },
     "libraryBeforeAfterContentCompared": true,
-    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots."
+    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots.",
+    "phonePid": 54616,
+    "assets": [
+      {
+        "path": "assets/index-Bv6osPFr.js",
+        "bytes": 295301,
+        "sha256": "133a0834592ce9eff8ea4d95cd81eb3bb10131d055ad4f55abed930f19de2eac"
+      },
+      {
+        "path": "assets/WebApp-K4uZd9L_.js",
+        "bytes": 433745,
+        "sha256": "c8a4a2f6762bcff576edf74ea732ed5e2fe0f34aa08bb82f92932a89e50d0b90"
+      },
+      {
+        "path": "assets/usePlanArrows-Cw5n9kVy.js",
+        "bytes": 8390,
+        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ]
   },
   "currentPanelScrollingPackage": {
     "exeBytes": 47872512,
@@ -2696,7 +2726,7 @@
     "novelty": [
       "1290880c"
     ],
-    "status": "native-packaged-and-pc-engine-reader-delivered-home-runtime-pending",
+    "status": "native-packaged-and-both-shared-readers-delivered",
     "baseline": {
       "nativeTests": 5,
       "nativePassed": 3,
@@ -2727,7 +2757,7 @@
     "frontendSourceChanged": false,
     "frontendGateRerun": false,
     "nativePackageVerified": true,
-    "homeHelperDelivered": false,
+    "homeHelperDelivered": true,
     "pcEngineHelperDelivered": true,
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
@@ -2743,7 +2773,23 @@
       "workersRemainedCold": true,
       "ownerDataModified": false
     },
-    "pcEngineHelperPid": 8536
+    "pcEngineHelperPid": 8536,
+    "homeHelperPid": 45508,
+    "homeReaderSha256": "6dfb9b0e2222c830522de677749df281b6cba5fb5584065b3756e8497f394b2e",
+    "homeReaderBacking": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\lichess-local-eval-reader.mjs",
+    "homeProcessStartedAfterReaderPublication": true,
+    "phoneSourceCommit": "4270ba4eed2c428d722a828dadb744b1f8319ec9",
+    "canonicalStoredLookup": {
+      "checkedAt": "2026-10-25T13:39:44.505Z",
+      "canonicalStoredLookup": true,
+      "storedResponseSha256": "605d968e425b0800d9377380a97b91a15f3adec35987d6b4f3858b12cdbd23be",
+      "storedDepth": 65,
+      "pvs": 1,
+      "enginePid": 8536,
+      "workerReady": false,
+      "queued": 0,
+      "ownerDataWritten": false
+    }
   },
   "previousNativeWindowsIpcDesktop": {
     "exeBytes": 47852032,
@@ -2934,5 +2980,88 @@
       "ownerDataWritten": false
     },
     "ownedTemporaryTasksRemoved": true
+  },
+  "localEvaluationReadinessPhoneDelivery": {
+    "checkedAt": "2026-10-25T13:39:36.9527663+00:00",
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "4270ba4eed2c428d722a828dadb744b1f8319ec9",
+    "appShellSha256": "b44ccea44fd9c9f8b62edd25a75566b3e0dafe8b24b1d295d7e266563e452b5b",
+    "phonePid": 45508,
+    "workspaceSha256": "e325f5f56463bbebf0f2f8e05999181aaba8fcb4c0175b2aa045856c674fba2b",
+    "librarySha256": "5cfe98e9d83998182cfdda313cc23da1c929ddc08f861f028297ead342f103ec",
+    "libraryContentSha256": "205d3c6150159083702e02ebc67749776e3098f1ec8331bcc0e179af7c9ed385",
+    "tournamentSettingsSha256": "ec60b2deb22f7143bfc32b9f194bfbfec634b92251c151b9b8945ceec52f8b0e",
+    "servicesEnabled": true,
+    "enginePid": 8536,
+    "engineReady": false,
+    "reviewRunning": false,
+    "activeWork": {
+      "library": true,
+      "explorer": 0,
+      "imports": 0,
+      "tournaments": 0
+    },
+    "serveSha256": "f25ac5a18efda388d5c9459aed3eec76066a507c84ba940c051e3c06de79a771",
+    "assets": [
+      {
+        "path": "assets/index-BOveYi5-.js",
+        "bytes": 295301,
+        "sha256": "f26e742a1e07f7dca2c55b48d1f2f34c18aa34ad048fc7fcd0d0ba0c4e76677f"
+      },
+      {
+        "path": "assets/WebApp-DNI3ly0W.js",
+        "bytes": 433745,
+        "sha256": "79b19697b634f8addc771349f2a49fcfca55a98f07075fd1e3c3808ef3399df8"
+      },
+      {
+        "path": "assets/usePlanArrows-Cw5n9kVy.js",
+        "bytes": 8390,
+        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "libraryRead": {
+      "files": 25,
+      "databases": 70,
+      "stableAcrossRepeatedReads": true,
+      "beforeAfterContentCompared": true,
+      "volatileGeneratedAtExcluded": true
+    },
+    "ownerStateAndRoutesPreserved": true,
+    "readerBacking": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\lichess-local-eval-reader.mjs",
+    "readerSha256": "6dfb9b0e2222c830522de677749df281b6cba5fb5584065b3756e8497f394b2e",
+    "processStartedAfterReaderPublication": true,
+    "publisherReturnedNormally": true,
+    "temporaryTasksRemoved": true,
+    "storedLookup": {
+      "checkedAt": "2026-10-25T13:39:44.505Z",
+      "canonicalStoredLookup": true,
+      "storedResponseSha256": "605d968e425b0800d9377380a97b91a15f3adec35987d6b4f3858b12cdbd23be",
+      "storedDepth": 65,
+      "pvs": 1,
+      "enginePid": 8536,
+      "workerReady": false,
+      "queued": 0,
+      "ownerDataWritten": false
+    },
+    "backgroundReviewObservation": {
+      "state": "error",
+      "message": "Engine did not reach the required review depth.",
+      "readerFailureObserved": false,
+      "reviewSourceUnchangedFromPreviousPhoneRelease": true,
+      "notACompletedReviewClaim": true
+    }
   }
 }
