@@ -646,5 +646,120 @@
     "nativeWindowVerified": false,
     "phonePublished": false,
     "standalonePublished": false
+  },
+  "currentStockfish19Delivery": {
+    "checkedAt": "2026-10-25T04:23:35.126Z",
+    "sourceCommit": "89f642282b02f66704b63a638b2376868a74dbd0",
+    "desktopArtifact": {
+      "sourceCommit": "89f642282b02f66704b63a638b2376868a74dbd0",
+      "primaryCommit": "f6bbb0de89ac253a3cc13f2410654fb96857fb7c",
+      "exeBytes": 47774720,
+      "exeSha256": "7f24fea458f561207bda2af98a5fa91339a920994f118a47f9411fe9d59248e1",
+      "bundledEngineFiles": 102,
+      "bundledEngineBytes": 104581828,
+      "bundledFullSourceMatches": true,
+      "bundledExecutableSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "resourceTreeSha256": "69b0b4f83738dc3e9b3b2cfd9d2664503230c82fc9d49f4e88b77202ac1d2ce8",
+      "embeddedDesktopAssets": [
+        {
+          "entry": "EnginesPage-zPb5SoFj.js",
+          "sha256": "f75a2361eeb4d0c0da4be4eb9ea3f6cd46ab79d9716e2d98369df5059456415a",
+          "embedded": true
+        },
+        {
+          "entry": "atoms-ky1UyRRb.js",
+          "sha256": "79a7b0e8c9d68b3a9df719a817dc3376a787382d50a86cb24703047983322fc1",
+          "embedded": true
+        },
+        {
+          "entry": "GameNotation-D506mCSO.js",
+          "sha256": "f6e4eca6c665fbc6000d01f8ece92a5e91d6bf365caad6495b3633fd7c8a184f",
+          "embedded": true
+        },
+        {
+          "entry": "GameNotation-Dq0-pUGD.js",
+          "sha256": "6251a18cb6931c6b95d067c8bc1528826169385c8c3cb643750aa565b975c227",
+          "embedded": true
+        },
+        {
+          "entry": "WebApp-CTGa0LQs.js",
+          "sha256": "4ebb951e3c9cf41551f812c69e3992b57e54c7a54a986739f9e4b42f8e5186b9",
+          "embedded": true
+        },
+        {
+          "entry": "EnginePlanExplorerPanel-ia5zRTmA.js",
+          "sha256": "c91f28f3902289c106e952d0cfa72028d7ec6e38c8f9e5a55ddeac507e0026bc",
+          "embedded": true
+        }
+      ],
+      "matchingOwnedSourceFiles": 26,
+      "relatedFrontendTests": 636,
+      "relatedFrontendFiles": 77,
+      "nativeCoreTests": 10,
+      "realTauriResourceRegressionTests": 1,
+      "buildTargetTests": 2,
+      "types": true,
+      "nativeWindowVerified": false,
+      "standalonePublished": false,
+      "phonePublished": false
+    },
+    "sharedNativeSoftwareInstalled": true,
+    "sharedNativeFullSourceFiles": 102,
+    "sharedNativeAllHashesMatch": true,
+    "pcHelper": {
+      "url": "https://lox-pc.tail89d19b.ts.net",
+      "actualUciName": "Stockfish 19",
+      "bestmove": "e2e4",
+      "legal": true,
+      "exactChosenRootScore": true,
+      "allPvsLegal": true,
+      "reportLimits": {
+        "depth": 8,
+        "timeMs": 50
+      },
+      "reportedVersion": 19,
+      "reportedBuild": null,
+      "workerReadyAfter": false,
+      "versionAfterRelease": null
+    },
+    "helperRuntimeDataAndLc0ModulesPreserved": true,
+    "helperConfigurationPreservedExceptEnginePath": true,
+    "existingTaskXmlAndServePreserved": true,
+    "ownerServicesEnabled": true,
+    "phone": {
+      "url": "https://lox-pc.tail89d19b.ts.net/",
+      "appShellSha256": "cd2b67baafef215710391a4a0a58a21a9aabfc31b6acf1b7dc5ec7a43534d1dc",
+      "assets": [
+        {
+          "path": "assets/WebApp-DIgnsA11.js",
+          "sha256": "9d9bed94eafa06e3854ea44dd585334ac4b6a857c108371829fbf29f6e038c80",
+          "bytes": 429391
+        },
+        {
+          "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+          "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a",
+          "bytes": 28230
+        },
+        {
+          "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+          "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de",
+          "bytes": 1845971
+        }
+      ],
+      "workspaceRead": true,
+      "libraryRead": true,
+      "tournamentSettingsRead": true
+    },
+    "phonePublished": true,
+    "desktopArtifactRebuilt": true,
+    "publisherWrapperNormalExit": false,
+    "publisherWrapperStoppedAloneAfterIndependentVerification": true,
+    "servingProcessPreservedDuringWrapperCleanup": true,
+    "oneTimeHelperTasksRemoved": true,
+    "engineProfilesManuallyMigrated": false,
+    "activeDevSessionManuallyRestarted": false,
+    "manualEngineCatalogControlsComplete": false,
+    "browserRendered": false,
+    "physicalPhoneVerified": false
   }
 }

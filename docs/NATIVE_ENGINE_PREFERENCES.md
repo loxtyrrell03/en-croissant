@@ -52,6 +52,7 @@ binary install or service restart performed by this milestone.
 
 Native Stockfish 19 authenticated staging/installation and the idle one-time
 default upgrade are implemented in source; see `NATIVE_STOCKFISH_19.md`. The
-manual catalog flow and live PC/phone delivery remain separate. Phone WASM 19 and shared-helper UCI identity are now
+manual catalog flow and rendered verification remain separate. Native assets,
+the live PC helper and phone WASM 19 are delivered as recorded there. Shared-helper UCI identity is
 implemented and verified in source; see `ENGINE_VERSION_ROUTING.md`. These
 profile safeguards alone do not establish installed/rendered version parity.

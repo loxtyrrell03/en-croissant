@@ -59,7 +59,43 @@ bytes, and the temporary ZIP is removed. Two real native Low reports cover all
 pass with the actual Stockfish 19 executable. ARM64 runtime execution has not
 been verified.
 
-This milestone is source and isolated-engine evidence. Clean packaged-resource
-verification, the manual catalog install/cancel flow, owner software/profile
-delivery, shared-helper upgrade and rendered desktop/phone verification remain
-separate. It does not claim a live installation or physical-device test.
+Clean source `89f64228` passes all 636 related frontend checks across 77 files,
+types and the complete desktop build. A real Tauri resource-iterator regression
+passes. All 102 copied engine files match the staged full source tree byte for
+byte (104,581,828 bytes). The native executable is 47,774,720 bytes, SHA-256
+`7f24fea458f561207bda2af98a5fa91339a920994f118a47f9411fe9d59248e1`;
+its desktop engine, profile, notation and Plans asset keys match the clean build.
+The primary and clean checkouts match all 26 owned source/document files apart
+from their separate root milestone histories.
+
+The same verified full tree is installed in the durable shared native software
+folder. Its physical backing was resolved through an unpackaged process; all
+file hashes match and previous engines remain. No engine profile file or active
+Dev session was manually migrated/restarted. An already-open app can retain its
+old default until its next safe startup upgrade; explicit choices remain intact.
+
+The existing PC helper now selects that verified executable. Only its server
+module and the configured executable path changed. Existing runtime data-reader,
+report, performance and LCZero modules, other configuration fields, service
+task XML, canonical hosting routes and enabled state were preserved. Health
+reads leave identity unavailable and workers stopped. An actual canonical HTTPS
+bounded request reports Stockfish 19, scores its legal chosen root exactly and
+returns legal PVs within depth eight/50 ms. Release returns it to stopped standby;
+identity clears when the worker exits.
+
+The phone is published from clean `89f64228` with pinned local WASM 19. Canonical
+HTTPS version/index, compiled WebApp and both worker assets match the build;
+workspace, library and native tournament-settings reads pass. The workspace
+readback is unchanged across verification. See the current delivery receipt in
+`NOVELTY_SYNC_2026-10-24_DELIVERY.json`.
+
+For unpackaged publication helpers, avoid piping the publisher through
+`Tee-Object`: a wrapper can retain its output pipeline after the service starts.
+This run's stalled wrapper was stopped alone after independent live checks;
+the serving process stayed healthy and all one-time helper tasks were removed.
+The wrapper did not provide a normal success exit; deployment evidence comes
+from the independently verified live version, hashes and data APIs.
+
+Manual catalog install/cancel controls, the remaining engine-management audit
+and rendered desktop/phone checks are unfinished. Browser control remains
+disabled. No native-window, browser-rendered or physical-device test is claimed.
