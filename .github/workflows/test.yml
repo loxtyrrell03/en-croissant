@@ -34,3 +34,6 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+
+      - name: Check Windows IPC protocol
+        run: node --test scripts/tests/windows-ipc.test.mjs

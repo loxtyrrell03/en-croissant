@@ -24,7 +24,7 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | `a0c3d55d` | Fix native database download review task | other-native-and-app-review | Target evaluation required |
 | `039189de` | Distinguish unavailable download checks from missing files | settings-and-shell | Target evaluation required |
 | `a856b32e` | Verify combined monthly databases through real research views | other-native-and-app-review | Target evaluation required |
-| `d52f614e` | Route Windows IPC through the native WebView bridge | settings-and-shell | En uses default Tauri IPC without Novelty Windows postMessage override. Serialization/routing baseline and target evaluation pending; do not assume a foreign shim is either necessary or safe from a filename match |
+| `d52f614e` | Route Windows IPC through the native WebView bridge | settings-and-shell | Native Windows bridge source implemented. Actual pinned Tauri2.10.2 isolated403 fixture loses native delivery; current fallback and shim envelopes match exactly. Seven independent Node checks, explicit two-file lint0 and Windows native command check/22 existing warnings pass; CI guard configured. Package/native-window proof pending; other platforms/phone retain their own transport. See NATIVE_WINDOWS_IPC.md |
 | `101bc2e2` | Start data downloads directly and clarify failures | settings-and-shell | Target evaluation required |
 | `c367b2c2` | Remove the inherited checkmark from downloaded-data switches | settings-and-shell | Target evaluation required |
 | `b83200b5` | Use the defined lookup status colour token | settings-and-shell | Target evaluation required |
@@ -89,8 +89,10 @@ No user file was opened or existing app restarted for this source inspection.
 
 En already uses Tabler settings gears, has one Tauri context macro invocation,
 and needs no behavior port for a requested Novelty-only source-comment deletion.
-The Windows IPC override remains a separate active evaluation, including its
-Tauri serialization/message-key contract; it was not silently copied or dismissed.
+The Windows IPC override is now source-verified against pinned Tauri's fallback
+envelope and a synthetic resolved403 routing failure. Its Windows-only native
+builder, authentication and binary/channel handling are tested; see
+NATIVE_WINDOWS_IPC.md for remaining package/runtime boundaries.
 
 ## Scrolling source milestone
 
