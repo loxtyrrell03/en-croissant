@@ -499,11 +499,11 @@
     }
   },
   "historyRefresh": {
-    "checkedAt": "2026-10-25T01:13:44.150185+00:00",
+    "checkedAt": "2026-10-25T02:33:18.810913+00:00",
     "noveltyHead": "e4233ec20d67ee6700f2ec40c7ea99edbe9c5689",
-    "enSourceHead": "5e12da564e1ddb6d224c60c59c9506f85e488532",
+    "enSourceHead": "cc5680bd2ecd09a5d658549b61edb8cade120529",
     "noveltyCommits": 580,
-    "enCommits": 443,
+    "enCommits": 453,
     "matchingNames": 191,
     "identicalNames": 50,
     "engineManagementCandidates": 55,
@@ -515,7 +515,10 @@
     "pendingNewCandidateEvaluation": [
       "c1f5b6591bf58710f561b581d3d77e6ec0cfe90b"
     ],
-    "coverageProvenByHashComparison": false
+    "coverageProvenByHashComparison": false,
+    "noveltyRemoteHeads": 169,
+    "allNoveltyRemoteHeadsMatchFetchedRefs": true,
+    "remoteHeadsCheckedAt": "2026-10-25T02:30:41.996244+00:00"
   },
   "pendingNativeEnginePreferences": {
     "primarySourceCommit": "66ffb51d385975a386fe0658f29212780320dd83",
@@ -549,5 +552,66 @@
       "canonicalOriginPresent": true,
       "inventedFixturesExcluded": true
     }
+  },
+  "pendingEngineVersionRouting": {
+    "primarySourceCommit": "cc5680bd2ecd09a5d658549b61edb8cade120529",
+    "cleanSourceCommit": "5442126706fa49c94ba5e683dd4dba3b32a66834",
+    "checkedAt": "2026-10-25T02:33:18.810913+00:00",
+    "helperPrimarySourceCommit": "a3203af5",
+    "helperCleanSourceCommit": "a9f7f4f7",
+    "phonePackage": "stockfish@19.0.1",
+    "relatedFrontendTests": 599,
+    "relatedFrontendFiles": 76,
+    "focusedPhoneTests": 76,
+    "focusedPhoneFiles": 7,
+    "focusedProfileTests": 21,
+    "cleanHelperStockfish19AndStandbyTests": 3,
+    "cleanHelperStockfish18ReviewAndPerformanceTests": 7,
+    "cleanHelperClientTests": 38,
+    "cleanHelperClientFiles": 6,
+    "realLiteWasmTest": true,
+    "realLiteWasmSearchSides": [
+      "white",
+      "black"
+    ],
+    "realLiteWasmDepth": 8,
+    "types": true,
+    "engineRoutingLintFiles": 12,
+    "engineRoutingLintWarnings": 0,
+    "engineRoutingLintErrors": 0,
+    "webAppExistingWarnings": 25,
+    "desktopBuildSeconds": 22.01,
+    "canonicalPhoneBuildSeconds": 22.12,
+    "matchingOwnedSourceFiles": 27,
+    "nativeCodeChanged": false,
+    "nativeStockfish19Installed": false,
+    "nativeDefaultMigrationImplemented": false,
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "phonePublished": false,
+    "standalonePublished": false,
+    "ownerDataManuallyMigrated": false,
+    "servicesChanged": false,
+    "phoneBundle": {
+      "entry": "WebApp-CdYlfqkH.js",
+      "bytes": 429391,
+      "sha256": "1a3711a208fb51b6ba98cf2c7065bce4c43729c0ecb0057daa11571734278af0",
+      "canonicalOriginPresent": true,
+      "inventedFixturesExcluded": true
+    },
+    "phoneWorkerAssets": [
+      {
+        "entry": "stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a",
+        "matchesPinnedDependency": true
+      },
+      {
+        "entry": "stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de",
+        "matchesPinnedDependency": true
+      }
+    ]
   }
 }

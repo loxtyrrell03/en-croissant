@@ -50,6 +50,7 @@ Desktop and canonical-phone production builds pass in 22.56/22.08 seconds.
 This is source/component/build evidence, with no manual profile migration,
 binary install or service restart performed by this milestone.
 
-Stockfish 19 installation, catalog/default migration and PC/phone version routing
-remain a separate slice. These safeguards are its prerequisite; they do not
-establish engine-version parity or installed/rendered delivery.
+Native Stockfish 19 installation/catalog/default migration and live PC/phone
+delivery remain separate. Phone WASM 19 and shared-helper UCI identity are now
+implemented and verified in source; see `ENGINE_VERSION_ROUTING.md`. These
+profile safeguards alone do not establish installed/rendered version parity.

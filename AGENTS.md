@@ -1,3 +1,18 @@
+## 2026-10-25 clean engine version routing verification
+
+- Primary cc5680bd and clean 54421267 match 27 owned profile/helper/phone files.
+  All 599 related frontend checks/76 files, full types, twelve-file routing lint
+  without warnings/errors and actual lite WASM checks pass. WebApp retains 25
+  existing warnings. Clean helper checks also pass with real native 18 and 19,
+  standby/review/performance and desktop/phone clients. Production desktop and
+  canonical-phone builds pass in 22.01/22.12s; both compiled
+  lite worker assets match pinned dependency bytes and exclude test fixtures.
+- The refreshed audit still has 580 Novelty candidates, now 453 En commits.
+  All 169 live Novelty remote branch heads match fetched refs. Candidate history
+  and hash parity are not requirement/delivery proof. See the active gap ledger
+  and docs/ENGINE_VERSION_ROUTING.md; native 19 install/catalog/defaults and
+  rendered/live delivery remain. No live helper, owner profile or hosting change.
+
 ## 2026-10-25 phone Stockfish 19 source
 
 - Local phone live/Plans/report workers pin stockfish 19.0.1 and its matched
