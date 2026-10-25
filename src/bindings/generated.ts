@@ -53,6 +53,9 @@ async buildLocalLichessEvalDb(request: LocalEvalBuildRequest) : Promise<Result<L
     else return { status: "error", error: e  as any };
 }
 },
+async cancelLocalLichessEvalDb(id: string) : Promise<boolean> {
+    return await TAURI_INVOKE("cancel_local_lichess_eval_db", { id });
+},
 async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisOptions, uciOptions: EngineOption[]) : Promise<Result<MoveAnalysis[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("analyze_game", { id, engine, goMode, options, uciOptions }) };
@@ -963,8 +966,8 @@ export type GameStatus = "playing" | { finished: { result: GameResult } }
 export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
 export type InstalledStockfish = { path: string; version: string }
 export type LocalEvalBuildProgress = { id: string; phase: string; progress: number; positions: bigint; skipped: bigint; compressedBytesRead: bigint; compressedBytesTotal: bigint | null; finished: boolean }
-export type LocalEvalBuildReport = { outputDir: string; source: string; positions: bigint; skipped: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt: bigint }
-export type LocalEvalBuildRequest = { id: string | null; source: string | null; sourceUrl: string | null; outputDir: string | null; maxPvs: number | null; shardCount: number | null }
+export type LocalEvalBuildReport = { outputDir: string; source: string; positions: bigint; skipped: bigint; duplicates: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt: bigint }
+export type LocalEvalBuildRequest = { id: string | null; source: string | null; sourceUrl: string | null; outputDir: string | null; maxPvs: number | null; shardCount: number | null; diskLimitGib?: number | null }
 export type LocalEvalDbStatus = { available: boolean; path: string; positions: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt?: bigint | null; source?: string | null; error?: string | null }
 export type LocalLichessCloudEval = { fen: string; knodes: number; depth: number; pvs: LocalLichessCloudPv[] }
 export type LocalLichessCloudPv = { moves: string; cp?: number | null; mate?: number | null }
