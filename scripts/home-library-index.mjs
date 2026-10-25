@@ -156,6 +156,8 @@ function normalizeHostedFile(value) {
     url: value.url,
     lastModified: finiteNonNegativeNumber(value.lastModified),
     sizeBytes: finiteNonNegativeNumber(value.sizeBytes),
+    ...(typeof value.databaseName === 'string' ? {databaseName:value.databaseName} : {}),
+    ...(typeof value.databaseLabel === 'string' ? {databaseLabel:value.databaseLabel} : {}),
     ...(value.pinned ? { pinned: true } : {}),
   };
 }
