@@ -176,6 +176,40 @@ it("validates a picked folder and waits for the explicit Use action", async () =
   expect(io.activateLocalEvalSource).toHaveBeenCalledWith("checked");
   expect(host.textContent).toContain("C:/Fixture/chosen");
 });
+it("reviews an empty default folder before an explicit reset without using the picker", async () => {
+  io.validateLocalEvalSource.mockImplementationOnce(async () => {
+    io.checked = {
+      token: "reset-checked",
+      store: { ...initial, available: false, path: "C:/Fixture/default", positions: BigInt(0) },
+    };
+    return ok(io.checked);
+  });
+  await render();
+  await click("Reset to default");
+  expect(io.open).not.toHaveBeenCalled();
+  expect(io.validateLocalEvalSource).toHaveBeenCalledWith("", "before");
+  expect(io.activateLocalEvalSource).not.toHaveBeenCalled();
+  expect(host.textContent).toContain("C:/Fixture/current");
+  expect(document.body.textContent).toContain(
+    "No evaluations are downloaded in the default folder.",
+  );
+  await click("Use default folder");
+  expect(io.activateLocalEvalSource).toHaveBeenCalledWith("reset-checked");
+  expect(host.textContent).toContain("C:/Fixture/default");
+  expect(host.textContent).toContain("Not connected");
+  expect(io.startLocalEvalDownload).not.toHaveBeenCalled();
+});
+it("keeps the selected folder when the default check fails", async () => {
+  io.validateLocalEvalSource.mockResolvedValueOnce({
+    status: "error",
+    error: "Incomplete default data",
+  });
+  await render();
+  await click("Reset to default");
+  expect(document.body.textContent).toContain("Incomplete default data");
+  expect(io.selection.path).toBe("C:/Fixture/current");
+  expect(io.activateLocalEvalSource).not.toHaveBeenCalled();
+});
 it("leaves a cancelled picker and a rejected candidate unselected", async () => {
   io.open.mockResolvedValueOnce(null);
   await render();

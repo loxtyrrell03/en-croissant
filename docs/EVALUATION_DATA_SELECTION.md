@@ -28,7 +28,7 @@ store; evaluation data is expected to be immutable.
 Reading an untouched profile retains its legacy `lichess-cloud-evals` location
 without creating a settings database or downloading data. This slice adds
 explicit selection, not automatic source discovery or fallback. Remaining
-Novelty default/readiness history is still listed in the audit queue.
+Novelty automatic-discovery/readiness history is still listed in the audit queue.
 
 Successful activation clears native shard caches and emits a source event.
 Frontend cache epochs reject old hits, misses, pending responses and displayed
@@ -83,3 +83,20 @@ exact source bytes in the delivery checkout; primary owner changes were kept.
 The prior verified executable remains as the task's rollback artifact. No app
 was launched or manually restarted, and no phone runtime was published by this
 milestone. This proves package linkage, not rendered or native-window behaviour.
+
+Reset to default closes the remaining selection action in Novelty `3ab6cf2e`.
+It uses the same check/explicit-Use/token/transaction path: an empty validation
+request is reserved for this explicit action and resolves only the legacy
+profile default. An existing default must pass normal compatibility checks.
+Only a confirmed absent or empty default may be selected without evaluations;
+the dialog says so before Use default folder. Unreadable, corrupt, incomplete or
+unrecognized contents remain intact and cannot replace the current selection.
+The target is checked again before use, including a folder appearing after a
+missing-folder check, and stale windows cannot overwrite a newer preference.
+Reset does not create/download evaluation data or change Stored evals On/Off.
+
+Both checkouts pass 104 native library checks and all 50 focused frontend
+checks/eight files after the reset addition. Three new native tests and two
+real-component cases cover this action; types and scoped reset lint pass, and
+the normal registry compiles with its existing 22 warnings. The previous package
+above predates Reset; its subsequent packaging and rendered proof are separate.

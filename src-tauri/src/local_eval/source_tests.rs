@@ -65,6 +65,85 @@ fn validates_then_commits_a_separate_preference_without_changing_corpus() {
 }
 
 #[test]
+fn explicit_reset_checks_then_selects_only_a_confirmed_absent_or_empty_default() {
+    let _serial = SERIAL.lock().unwrap();
+    let temp = fixture();
+    let root = temp.path().canonicalize().unwrap();
+    let profile = root.join("profile");
+    let custom = store(&root, "custom", 24);
+    let checked = validate(&profile, &custom, "default").unwrap();
+    let mut selected = activate(&profile, &checked.token).unwrap();
+    let default = profile.join("lichess-cloud-evals");
+    for empty_directory in [false, true] {
+        if empty_directory {
+            fs::create_dir(&default).unwrap();
+        }
+        let before = fs::read(profile.join("evaluation-source.sqlite3")).unwrap();
+        let reset = validate(&profile, Path::new(""), &selected.revision).unwrap();
+        assert!(!reset.store.available);
+        assert!(reset.store.error.is_none());
+        assert_eq!(reset.store.path, default.display().to_string());
+        assert_eq!(
+            fs::read(profile.join("evaluation-source.sqlite3")).unwrap(),
+            before
+        );
+        assert_eq!(default.exists(), empty_directory);
+        selected = activate(&profile, &reset.token).unwrap();
+        assert_eq!(source_selection::read(&profile).unwrap(), selected);
+        assert!(!status(&profile).unwrap().available);
+        assert_eq!(default.exists(), empty_directory);
+        assert_eq!(
+            lookup_eval(&custom, START, 1).unwrap().unwrap().pvs[0].cp,
+            Some(24)
+        );
+    }
+}
+
+#[test]
+fn explicit_reset_validates_an_existing_default_and_preserves_invalid_data() {
+    let _serial = SERIAL.lock().unwrap();
+    let temp = fixture();
+    let profile = temp.path().canonicalize().unwrap();
+    let default = store(&profile, "lichess-cloud-evals", 31);
+    let candidate = validate(&profile, Path::new(""), "default").unwrap();
+    assert!(candidate.store.available);
+    assert_eq!(candidate.store.path, default.display().to_string());
+    assert!(!profile.join("evaluation-source.sqlite3").exists());
+    let selected = activate(&profile, &candidate.token).unwrap();
+    for contents in [b"{corrupt".as_slice(), br#"{"complete":false}"#.as_slice()] {
+        fs::write(default.join(MANIFEST_FILE), contents).unwrap();
+        assert!(validate(&profile, Path::new(""), &selected.revision).is_err());
+        assert_eq!(fs::read(default.join(MANIFEST_FILE)).unwrap(), contents);
+        assert_eq!(source_selection::read(&profile).unwrap(), selected);
+    }
+    fs::remove_file(default.join(MANIFEST_FILE)).unwrap();
+    assert!(validate(&profile, Path::new(""), &selected.revision).is_err());
+    assert!(default.join(SHARDS_DIR).exists());
+    assert_eq!(source_selection::read(&profile).unwrap(), selected);
+}
+
+#[test]
+fn reset_rechecks_a_default_that_changes_after_review_and_rejects_stale_windows() {
+    let _serial = SERIAL.lock().unwrap();
+    let temp = fixture();
+    let root = temp.path().canonicalize().unwrap();
+    let profile = root.join("profile");
+    let custom = store(&root, "custom", 24);
+    let checked = validate(&profile, &custom, "default").unwrap();
+    let selected = activate(&profile, &checked.token).unwrap();
+    let reset = validate(&profile, Path::new(""), &selected.revision).unwrap();
+    let default = profile.join("lichess-cloud-evals");
+    fs::create_dir(&default).unwrap();
+    assert!(activate(&profile, &reset.token).is_err());
+    assert_eq!(source_selection::read(&profile).unwrap(), selected);
+    let reset = validate(&profile, Path::new(""), &selected.revision).unwrap();
+    let other = source_selection::save(&profile, &selected.revision, &custom).unwrap();
+    assert!(activate(&profile, &reset.token).is_err());
+    assert_eq!(source_selection::read(&profile).unwrap(), other);
+    assert!(validate(&profile, Path::new(""), &selected.revision).is_err());
+}
+
+#[test]
 fn missing_invalid_empty_foreign_and_incomplete_choices_never_write_preferences() {
     let _serial = SERIAL.lock().unwrap();
     for mode in [

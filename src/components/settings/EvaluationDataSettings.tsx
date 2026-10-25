@@ -51,7 +51,7 @@ function displayPath(path: string) {
 function freshPath(base: string) {
   return `${displayPath(base)}-download-${Date.now()}`;
 }
-type Checked = { choice: LocalEvalSourceCandidate; baseRevision: string };
+type Checked = { choice: LocalEvalSourceCandidate; baseRevision: string; reset?: boolean };
 type View = "download" | "candidate" | "cleanup" | null;
 
 export default function EvaluationDataSettings() {
@@ -203,6 +203,17 @@ export default function EvaluationDataSettings() {
     setCandidate(null);
     if (owner === viewSequence.current) setView(null);
     void refreshCurrent();
+  }
+  async function resetFolder() {
+    const owner = viewSequence.current;
+    await act("reset", async () => {
+      if (!selection) throw new Error("Check the current folder before resetting it.");
+      setCandidate(null);
+      setView("candidate");
+      const checked = value(await commands.validateLocalEvalSource("", selection.revision));
+      if (alive.current && owner === viewSequence.current)
+        setCandidate({ choice: checked, baseRevision: selection.revision, reset: true });
+    });
   }
   function showDownloads() {
     viewSequence.current += 1;
@@ -528,6 +539,15 @@ export default function EvaluationDataSettings() {
           >
             Choose folder
           </Button>
+          <Button
+            size="compact-sm"
+            variant="default"
+            disabled={!!busy || !selection}
+            loading={busy === "reset"}
+            onClick={() => void resetFolder()}
+          >
+            Reset to default
+          </Button>
           <Button size="compact-sm" variant="default" onClick={showDownloads}>
             Download details
           </Button>
@@ -569,7 +589,7 @@ export default function EvaluationDataSettings() {
           )}
           {view === "candidate" && (
             <>
-              {busy === "choose" && (
+              {(busy === "choose" || busy === "reset") && (
                 <Group>
                   <Loader size="sm" />
                   <Text>Checking the selected folder…</Text>
@@ -580,10 +600,14 @@ export default function EvaluationDataSettings() {
                   <Text size="sm" className={classes.path}>
                     {displayPath(candidate.choice.store.path)}
                   </Text>
-                  <Text size="sm">
-                    {candidate.choice.store.positions.toLocaleString()} positions ·{" "}
-                    {bytes(candidate.choice.store.storageBytes)} on disk
-                  </Text>
+                  {candidate.choice.store.available ? (
+                    <Text size="sm">
+                      {candidate.choice.store.positions.toLocaleString()} positions ·{" "}
+                      {bytes(candidate.choice.store.storageBytes)} on disk
+                    </Text>
+                  ) : (
+                    <Text size="sm">No evaluations are downloaded in the default folder.</Text>
+                  )}
                 </div>
               )}
               {stale && busy !== "use" && (
@@ -604,7 +628,7 @@ export default function EvaluationDataSettings() {
                     })
                   }
                 >
-                  Use evaluations
+                  {candidate?.reset ? "Use default folder" : "Use evaluations"}
                 </Button>
               </div>
             </>

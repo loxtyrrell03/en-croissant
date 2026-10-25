@@ -15,6 +15,7 @@ struct Candidate {
     profile: PathBuf,
     revision: String,
     fingerprint: String,
+    reset_default: bool,
     at: Instant,
 }
 #[derive(Default)]
@@ -236,6 +237,43 @@ fn inspect(path: &Path) -> Result<(LocalEvalDbStatus, String), String> {
     Ok((status, format!("{metadata}:{sample}")))
 }
 
+fn inspect_default(profile: &Path) -> Result<(LocalEvalDbStatus, String), String> {
+    let path = profile.join("lichess-cloud-evals");
+    let identity = match fs::symlink_metadata(&path) {
+        Err(error) if error.kind() == io::ErrorKind::NotFound => "missing".to_string(),
+        Err(error) => return Err(format!("Could not check the default folder: {error}")),
+        Ok(_) => {
+            let root = path.canonicalize().map_err(|error| error.to_string())?;
+            plain(&root, true)?;
+            match fs::symlink_metadata(root.join(MANIFEST_FILE)) {
+                Ok(_) => return inspect(&root),
+                Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.to_string()),
+            }
+            if let Some(entry) = fs::read_dir(&root)
+                .map_err(|error| error.to_string())?
+                .next()
+            {
+                entry.map_err(|error| error.to_string())?;
+                return Err("The default folder contains unrecognized or incomplete data. Your current folder was kept.".into());
+            }
+            format!("empty:{}", root.display())
+        }
+    };
+    let status = LocalEvalDbStatus {
+        available: false,
+        path: path.display().to_string(),
+        positions: 0,
+        shard_count: DEFAULT_SHARD_COUNT,
+        max_pvs: DEFAULT_MAX_PVS,
+        storage_bytes: 0,
+        built_at: None,
+        source: None,
+        error: None,
+    };
+    Ok((status, format!("default:{identity}:{}", path.display())))
+}
+
 pub(super) fn status(profile: &Path) -> Result<LocalEvalDbStatus, String> {
     let selection = source_selection::read(profile)?;
     let path = Path::new(&selection.path);
@@ -282,7 +320,13 @@ pub(super) fn validate(
             "The current evaluation folder changed. Refresh it before choosing again.".into(),
         );
     }
-    let (store, fingerprint) = inspect(path)?;
+    // An empty request is the explicit Reset action, never a picker fallback.
+    let reset_default = path.as_os_str().is_empty();
+    let (store, fingerprint) = if reset_default {
+        inspect_default(profile)?
+    } else {
+        inspect(path)?
+    };
     let view = LocalEvalSourceCandidate {
         token: format!("{:032x}", rand::random::<u128>()),
         store,
@@ -298,13 +342,14 @@ pub(super) fn validate(
         profile: profile.into(),
         revision: expected.into(),
         fingerprint,
+        reset_default,
         at: Instant::now(),
     });
     Ok(view)
 }
 
 pub(super) fn activate(profile: &Path, token: &str) -> Result<LocalEvalSourceSelection, String> {
-    let (path, fingerprint, revision) = {
+    let (path, fingerprint, revision, reset_default) = {
         let choice = CHOICE
             .lock()
             .map_err(|_| "Folder selection is unavailable.")?;
@@ -321,9 +366,15 @@ pub(super) fn activate(profile: &Path, token: &str) -> Result<LocalEvalSourceSel
             PathBuf::from(&candidate.view.store.path),
             candidate.fingerprint.clone(),
             candidate.revision.clone(),
+            candidate.reset_default,
         )
     };
-    if inspect(&path)?.1 != fingerprint {
+    let current = if reset_default {
+        inspect_default(profile)?
+    } else {
+        inspect(&path)?
+    };
+    if current.1 != fingerprint {
         return Err("The checked evaluation store changed. Choose the folder again; your current selection was kept.".into());
     }
     let mut choice = CHOICE
