@@ -9,7 +9,7 @@ behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
 Current delivery (2026-10-25): clean `41668e2b` is live on the canonical phone
-site. The latest native desktop artifact is clean `e386a802`, including guarded
+site. The latest native desktop artifact is clean `2657c53b`, including guarded
 local-engine setup, logo recovery, persistent plan arrows and all verified
 Stockfish 19 resources and stored-evaluation controls.
 These include the committed ports described below. The existing PC
@@ -161,3 +161,9 @@ review categories keep every commit visible. The38 are enumerated in
 NOVELTY_ADDITIONAL_SOURCE_REVIEW.md for target evaluation; classification is not
 parity or omission proof. Script-only research/verification stays reviewable and
 is not automatically promoted. The same55 engine candidates remain mapped.
+
+Clean2657c53b native packaging now passes:56 selected checks/six files, full types,
+release build with22 existing warnings, five exact embedded chunks and all102
+Stockfish/source resources. Native controls and phone parser are included; source
+is clean after restoring only two generated outputs. Live phone remains41668e2b.
+The additional38 source candidates and rendered verification remain open.

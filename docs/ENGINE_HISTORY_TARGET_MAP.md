@@ -163,8 +163,14 @@ Reintegrates validated root choices, conditional supporting-line scores/White pe
 ## Verification boundary
 
 Phone41668e2b is live with exact HTTPS assets/data/bounded Stockfish19 checks;
-clean source passes454 related checks/63 files and full types. Native catalog
-artifacte386a802 remains separately identified. The small native control-label
-slice passes49 existing plan/evidence/coverage/presentation/request-lane checks,
-types and warning-free lint; clean native packaging remains. It adds no algorithm
+clean source passes454 related checks/63 files and full types. Clean native
+source2657c53b passes56 selected checks/six files and full types. Its rebuilt
+artifact contains all five exact embedded plan/catalog/phone chunks; the complete
+102-file Stockfish tree matches. The small native control-label slice has
+warning-free lint and adds no algorithm or setting. It adds no algorithm
 or setting. The wider580 final audit and rendered verification remain open.
+
+Native release build succeeds with22 existing warnings. The47868416-byte EXE has
+SHA-256703c4487caa5eaf115611b707f300a91031f03d357354fdf549dc013e028c7cf.
+Only two known generated outputs were restored; source checkout is clean.
+No native window, Dev restart or phone republish was required for native labels.
