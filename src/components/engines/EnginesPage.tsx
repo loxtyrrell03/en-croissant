@@ -21,13 +21,13 @@ import {
   TextInput,
   ThemeIcon,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import {
   IconCloud,
   IconCopy,
   IconCpu,
+  IconDownload,
   IconPhotoPlus,
   IconPlus,
   IconSearch,
@@ -37,6 +37,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { enginePreferences } from "@/utils/enginePreferences";
+import { stockfishCatalog } from "@/utils/stockfishCatalog";
 import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
 import { match, P } from "ts-pattern";
@@ -70,6 +71,8 @@ export default function EnginesPage() {
   const { t } = useTranslation();
 
   const [engines, setEngines] = useAtom(enginesAtom);
+  const catalog = useSyncExternalStore(stockfishCatalog.subscribe, stockfishCatalog.getSnapshot);
+  const catalogBusy = ["checking", "installing", "cancelling", "saving"].includes(catalog.phase);
   const preferences = useSyncExternalStore(
     enginePreferences.subscribe,
     enginePreferences.getSnapshot,
@@ -140,11 +143,15 @@ export default function EnginesPage() {
                 value={search}
                 onChange={(e) => setSearch(e.currentTarget.value)}
               />
-              <Tooltip label={t("Common.AddNew")}>
-                <ActionIcon variant="default" size="lg" onClick={() => setOpened(true)}>
-                  <IconPlus size="1rem" />
-                </ActionIcon>
-              </Tooltip>
+              <Button
+                size="sm"
+                variant="default"
+                aria-haspopup="dialog"
+                leftSection={catalogBusy ? <IconDownload size="1rem" /> : <IconPlus size="1rem" />}
+                onClick={() => setOpened(true)}
+              >
+                {catalogBusy ? "View installation" : "Add engine"}
+              </Button>
             </Group>
             <Divider />
             <ScrollArea flex={1}>
@@ -152,12 +159,9 @@ export default function EnginesPage() {
                 {filteredEngines.map(({ item, index }) => {
                   const stats =
                     item.type === "local"
-                      ? [
-                          {
-                            label: "ELO",
-                            value: item.elo ? item.elo.toString() : "??",
-                          },
-                        ]
+                      ? Number.isFinite(item.elo)
+                        ? [{ label: "ELO", value: String(item.elo) }]
+                        : []
                       : [
                           {
                             label: "Type",
