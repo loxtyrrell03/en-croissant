@@ -613,5 +613,38 @@
         "matchesPinnedDependency": true
       }
     ]
+  },
+  "pendingNativeStockfish19": {
+    "sourceStatus": "implemented; clean verification and delivery pending",
+    "focusedFrontendTests": 58,
+    "focusedFrontendFiles": 5,
+    "nativeCoreTests": 10,
+    "buildTargetTests": 2,
+    "actual19LiveOutputTests": 8,
+    "realLowReportPositions": 81,
+    "realLowReportDepth": 8,
+    "realLowReportMs": [
+      571,
+      580
+    ],
+    "types": true,
+    "lintFiles": 12,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "nativeMainAndStagerCheck": true,
+    "existingNativeWarnings": 22,
+    "authenticatedX64StageBytes": 104581828,
+    "temporaryArchiveRetained": false,
+    "defaultMigrationImplemented": true,
+    "manualCatalogFlowImplemented": false,
+    "arm64Executed": false,
+    "packagedResourceBuildVerified": false,
+    "ownerProfilesManuallyChanged": false,
+    "ownerSoftwareInstalled": false,
+    "servicesChanged": false,
+    "browserVerified": false,
+    "nativeWindowVerified": false,
+    "phonePublished": false,
+    "standalonePublished": false
   }
 }

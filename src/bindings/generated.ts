@@ -637,6 +637,46 @@ async installChessbotLc0(id: string, enginesDir: string) : Promise<Result<Manage
     else return { status: "error", error: e  as any };
 }
 },
+async getStockfish19(enginesDir: string, preferredPaths: string[] | null) : Promise<Result<InstalledStockfish | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_stockfish_19", { enginesDir, preferredPaths }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async installStockfish19(id: string, enginesDir: string) : Promise<Result<InstalledStockfish, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("install_stockfish_19", { id, enginesDir }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async cancelStockfish19Install(id: string) : Promise<Result<boolean, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("cancel_stockfish_19_install", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getStockfish19Upgrade(enginesDir: string) : Promise<Result<boolean, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_stockfish_19_upgrade", { enginesDir }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async completeStockfish19Upgrade(enginesDir: string, expectedProfileSha256: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("complete_stockfish_19_upgrade", { enginesDir, expectedProfileSha256 }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getTournaments(file: string, query: TournamentQuery) : Promise<Result<QueryResponse<Event[]>, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_tournaments", { file, query }) };
@@ -897,6 +937,7 @@ export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "ply_count"
 export type GameState = { gameId: string; status: GameStatus; initialFen: string; moves: GameMove[]; currentFen: string; ply: number; turn: string; whiteTime: bigint | null; blackTime: bigint | null; whitePlayer: string; blackPlayer: string }
 export type GameStatus = "playing" | { finished: { result: GameResult } }
 export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
+export type InstalledStockfish = { path: string; version: string }
 export type LocalEvalBuildProgress = { id: string; phase: string; progress: number; positions: bigint; skipped: bigint; compressedBytesRead: bigint; compressedBytesTotal: bigint | null; finished: boolean }
 export type LocalEvalBuildReport = { outputDir: string; source: string; positions: bigint; skipped: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt: bigint }
 export type LocalEvalBuildRequest = { id: string | null; source: string | null; sourceUrl: string | null; outputDir: string | null; maxPvs: number | null; shardCount: number | null }

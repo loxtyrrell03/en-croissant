@@ -19,7 +19,7 @@
     "build-web-library": "npm run web:library && npm run build-vite",
     "review-worker:build": "node node_modules/vite/bin/vite.js build --config vite.review-worker.config.ts",
     "build-vite": "npm run otb-prep:build && npm run review-worker:build && node node_modules/@typescript/native-preview/bin/tsgo.js --noEmit -p tsconfig.review-worker.json && node node_modules/vite/bin/vite.js build",
-    "build": "tauri build --no-bundle",
+    "build": "node scripts/build-desktop.mjs",
     "dev": "powershell -ExecutionPolicy Bypass -File scripts/safe-dev.ps1 -SkipBackup",
     "dev:tauri": "tauri dev",
     "dev:safe": "powershell -ExecutionPolicy Bypass -File scripts/safe-dev.ps1",

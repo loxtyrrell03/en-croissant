@@ -13,7 +13,11 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use tauri::Manager;
+
+use en_croissant_fork::stockfish_install::{self, InstalledStockfish};
 
 use crate::progress::update_progress;
 use crate::AppState;
@@ -29,6 +33,133 @@ const INSTALL_DIR: &str = "lc0-0.32.1-bt4-it332";
 const NETWORK_FILE: &str = "BT4-it332.pb.gz";
 
 static INSTALLING: AtomicBool = AtomicBool::new(false);
+
+static STOCKFISH_INSTALL: Mutex<Option<(String, Arc<AtomicBool>)>> = Mutex::new(None);
+struct StockfishInstallGuard {
+    id: String,
+    cancel: Arc<AtomicBool>,
+}
+impl Drop for StockfishInstallGuard {
+    fn drop(&mut self) {
+        if let Ok(mut current) = STOCKFISH_INSTALL.lock() {
+            if current
+                .as_ref()
+                .is_some_and(|(id, cancel)| id == &self.id && Arc::ptr_eq(cancel, &self.cancel))
+            {
+                *current = None;
+            }
+        }
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_stockfish_19(
+    engines_dir: String,
+    preferred_paths: Option<Vec<String>>,
+    app: tauri::AppHandle,
+) -> Result<Option<InstalledStockfish>, String> {
+    let Some(asset) = stockfish_install::current_asset() else {
+        return Ok(None);
+    };
+    let engines_dir = PathBuf::from(engines_dir);
+    if !engines_dir.is_absolute() {
+        return Err("Choose an absolute engines directory.".into());
+    }
+    let resources = app.path().resource_dir().map_err(|e| e.to_string())?;
+    let shared = app
+        .path()
+        .local_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("Programs/Stockfish/19");
+    tauri::async_runtime::spawn_blocking(move || {
+        for path in preferred_paths.unwrap_or_default().iter().take(32) {
+            if let Ok(Some(engine)) =
+                stockfish_install::verified_existing_executable(Path::new(path), &asset)
+            {
+                return Ok(Some(engine));
+            }
+        }
+        if let Some(engine) = stockfish_install::discover(&engines_dir, &resources, &asset)? {
+            return Ok(Some(engine));
+        }
+        stockfish_install::discover(&shared, &resources, &asset)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn install_stockfish_19(
+    id: String,
+    engines_dir: String,
+    app: tauri::AppHandle,
+) -> Result<InstalledStockfish, String> {
+    let asset = stockfish_install::current_asset()
+        .ok_or("The managed Stockfish 19 install requires Windows x64 or ARM64.")?;
+    if id.is_empty() || id.len() > 80 {
+        return Err("Invalid engine installation request.".into());
+    }
+    let cancel = Arc::new(AtomicBool::new(false));
+    {
+        let mut current = STOCKFISH_INSTALL.lock().map_err(|e| e.to_string())?;
+        if current.is_some() {
+            return Err("A Stockfish installation is already running.".into());
+        }
+        *current = Some((id.clone(), cancel.clone()));
+    }
+    let _guard = StockfishInstallGuard {
+        id: id.clone(),
+        cancel: cancel.clone(),
+    };
+    let progress_app = app.clone();
+    let progress = Arc::new(move |value: f32| {
+        // The asset is only part of the UI operation. Profile registration must
+        // succeed durably before the caller can show Installed.
+        let state = progress_app.state::<AppState>();
+        let _ = emit_progress(&progress_app, &state, &id, value.min(95.0), false);
+    });
+    stockfish_install::install(PathBuf::from(engines_dir), asset, cancel, progress).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn cancel_stockfish_19_install(id: String) -> Result<bool, String> {
+    let current = STOCKFISH_INSTALL.lock().map_err(|e| e.to_string())?;
+    if let Some((owner, cancel)) = current.as_ref() {
+        if owner == &id {
+            cancel.store(true, Ordering::SeqCst);
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_stockfish_19_upgrade(engines_dir: String) -> Result<bool, String> {
+    let directory = PathBuf::from(engines_dir);
+    if !directory.is_absolute() {
+        return Err("Choose an absolute engines directory.".into());
+    }
+    tauri::async_runtime::spawn_blocking(move || stockfish_install::upgrade_is_complete(&directory))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn complete_stockfish_19_upgrade(
+    engines_dir: String,
+    expected_profile_sha256: String,
+) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        stockfish_install::complete_upgrade(Path::new(&engines_dir), &expected_profile_sha256)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
 
 struct InstallGuard;
 

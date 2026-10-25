@@ -8,7 +8,8 @@ type Status = {
     error: string | null;
     value: Engine[] | undefined;
 };
-type IO = { read: () => Promise<string | null>; write: (text: string) => Promise<void> };
+type IO = { read: () => Promise<string | null>; write: (text: string) => Promise<void>;
+    beginLoad?: () => Promise<void>; identity?: () => string | undefined };
 
 /** Engine reads never repair by overwriting. Writes retain failed snapshots for retry. */
 export function createEnginePreferenceStore(io: IO) {
@@ -21,6 +22,8 @@ export function createEnginePreferenceStore(io: IO) {
     };
     let expected: string | null | undefined;
     let canonical: string | undefined;
+    let mutationRevision = 0;
+    let loadedContext: string | undefined;
     let pending: { text: string; value: Engine[] } | null = null;
     let queue = Promise.resolve();
     const listeners = new Set<() => void>();
@@ -49,10 +52,12 @@ export function createEnginePreferenceStore(io: IO) {
         if (pending) throw new Error("Retry the pending engine save before reloading.");
         publish({ phase: "loading", error: null });
         try {
+            await io.beginLoad?.();
             const text = await io.read();
             const value = text === null ? [] : parse(text);
             expected = text;
             canonical = JSON.stringify(value, null, 4);
+            loadedContext = io.identity?.();
             publish({ phase: text === null ? "missing" : "ready", value, error: null });
             return value;
         } catch (error) {
@@ -120,6 +125,7 @@ export function createEnginePreferenceStore(io: IO) {
             if (expected === undefined) await load();
             const text = JSON.stringify(value, null, 4);
             if (expected !== null && !pending && canonical === text) return;
+            mutationRevision++;
             const target = { text, value: parse(text) };
             pending = target;
             publish({ pending: true });
@@ -132,6 +138,19 @@ export function createEnginePreferenceStore(io: IO) {
     return {
         storage,
         getSnapshot: () => status,
+        getSavedText: () => expected,
+        getLoadedContext: () => loadedContext,
+        getMutationRevision: () => mutationRevision,
+        noteModelUpdate(update: unknown) {
+            // Async/function edits establish ownership before their result or
+            // disk write exists. Equal concrete load/readback snapshots do not.
+            let equal = false;
+            try { equal = Array.isArray(update) && JSON.stringify(update, null, 4) === canonical; } catch { /* Save reports invalid values. */ }
+            if (!equal) mutationRevision++;
+        },
+        isSavedValue: (value: Engine[] | undefined) =>
+            expected !== undefined && !pending && !status.saving && !status.error &&
+            value !== undefined && JSON.stringify(value, null, 4) === canonical,
         subscribe: (listener: () => void) => {
             listeners.add(listener);
             return () => {

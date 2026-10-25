@@ -5,10 +5,11 @@ const files = vi.hoisted(() => ({
     failRename: true,
     failRead: false,
     hideExists: false,
+    directory: "C:/Synthetic/Engines",
     moved: vi.fn(),
     removed: vi.fn(),
 }));
-vi.mock("@/utils/directories", () => ({ getEnginesDir: async () => "C:/Synthetic/Engines" }));
+vi.mock("@/utils/directories", () => ({ getEnginesDir: async () => files.directory }));
 vi.mock("@tauri-apps/api/path", () => ({ resolve: async (...parts: string[]) => parts.join("/") }));
 vi.mock("@tauri-apps/plugin-fs", () => ({
     exists: async (path: string) =>
@@ -85,4 +86,30 @@ it("confirms absence before seeding and preserves an unreadable profile even whe
     await expect(enginePreferences.storage.setItem("engines", [])).rejects.toThrow("Read denied");
     expect(files.data.get(path)).toBe(original);
     expect(files.moved).not.toHaveBeenCalled();
+});
+it("does not redirect a pending edit into a different engine folder even when its original bytes match", async () => {
+    files.failRead = false;
+    files.failRename = false;
+    files.directory = "C:/Synthetic/Engines";
+    const first = `${files.directory}/engines.json`;
+    const second = "C:/Synthetic/OtherEngines/engines.json";
+    files.data.set(first, "[]");
+    files.data.set(second, "[]");
+    await enginePreferences.reload();
+    expect(enginePreferences.getLoadedContext()).toBe(files.directory);
+    files.directory = "C:/Synthetic/OtherEngines";
+    await expect(enginePreferences.storage.setItem("engines", [{
+        type: "local", id: "pending-original", name: "Original edit", version: "19", path: "C:/Synthetic/original.exe",
+    }])).rejects.toThrow(/folder changed/);
+    expect(files.data.get(first)).toBe("[]");
+    expect(files.data.get(second)).toBe("[]");
+    files.directory = "C:/Synthetic/Engines";
+    await enginePreferences.retry();
+    await enginePreferences.flush();
+    expect(JSON.parse(files.data.get(first)!)[0].id).toBe("pending-original");
+    files.directory = "C:/Synthetic/OtherEngines";
+    await enginePreferences.reload();
+    expect(enginePreferences.getSnapshot().value).toEqual([]);
+    expect(enginePreferences.getLoadedContext()).toBe(files.directory);
+    expect(files.data.get(second)).toBe("[]");
 });

@@ -1,3 +1,9 @@
+## Native Stockfish 19 source milestone (2026-10-25)
+
+- Windows desktop builds now stage the SHA-256-pinned official universal x64/ARM64 release with full upstream source/licence/notices and merge its resource map with existing sounds. Use `scripts/build-desktop.mjs`; portable delivery needs the adjacent engine resource tree. Discovery is read-only and never warms an engine. The explicit installer authenticates bounded archives, rejects traversal/links, supports cancellation and preserves changed installs. See `docs/NATIVE_STOCKFISH_19.md`.
+- Idle startup upgrades only a compatible recognized older Stockfish fallback (or a missing store), retaining old profiles and explicit custom/empty/current/newer/network choices. UCI compatibility uses the pinned 19 option contract. Async edits, edit/revert, active/paused sessions and loaded-folder changes invalidate stale work. Completion follows an exact saved-profile hash; acknowledgement retry preserves later owner choices. These guards are not a cross-process lock.
+- Primary verification: 58 frontend checks/five files, ten native core checks, two build-target checks, whole types and twelve-file lint pass. Main/stager native check passes with 22 existing warnings. The authenticated x64 full tree is 104,581,828 bytes; real Stockfish 19 Low reports score 81 positions at depth eight in 571/580 ms, and eight live-output checks pass. ARM64 execution, clean packaged resources, manual catalog controls and live/rendered PC/phone delivery remain separate. No owner profile migration or service restart is claimed.
+
 ## 2026-10-25 clean engine version routing verification
 
 - Primary cc5680bd and clean 54421267 match 27 owned profile/helper/phone files.
