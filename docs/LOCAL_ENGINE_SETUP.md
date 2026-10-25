@@ -48,7 +48,20 @@ PC service do not offer arbitrary local-program selection, so these native
 setup commands do not apply there. No phone publication or service restart is
 required for this slice. Clean source `dab8e02d` independently passes 549
 related frontend checks across 71 files and full types. Primary `d7f563ca` and
-clean source contain the same owned setup changes. Combined package checks
-follow separately.
+clean source contain the same owned setup changes. Combined package verification is recorded below.
 Browser control remains disabled; no rendered native-window or physical-phone
 verification is claimed.
+
+Clean combined source `0a0056a6` passes all 107 engine checks across nine files
+and full types. Setup's broader clean run passes 549 related checks/71 files;
+the six native configuration checks include actual Stockfish 19. The complete
+desktop build passes with 22 existing native warnings. Its 47,864,320-byte EXE
+has SHA-256 `50b7e48da6a76ff973860fb6517453c362452fc8c94c1083a8274db5fe1916d9`.
+The exact engine-page asset, including both inline marks and setup controls,
+matches its Brotli-compressed Tauri asset and those compressed bytes are found
+in the executable. Both native setup commands are present. All 102 bundled
+engine/source files (104,581,828 bytes) match the verified stage, and all 25 owned
+committed files match primary. Only two known generated build outputs were
+restored afterward; the delivery checkout is clean. The Dev server serves the
+new component; this is source/package evidence, not rendered-window proof.
+No phone service, PC engine helper or owner profile was manually changed.
