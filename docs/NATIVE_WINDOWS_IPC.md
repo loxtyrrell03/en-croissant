@@ -49,8 +49,19 @@ separate node --test step, since normal Vitest discovery excludes scripts/tests.
 The two changed JavaScript files pass scoped lint with zero warnings/errors;
 an explicit task lint config clears the normal src-tauri ignore for this check.
 
-Native compilation/package evidence and target-specific boundaries are tracked
-in NOVELTY_SYNC_2026-10-24_DELIVERY.json. Frontend source is unchanged from the
+Clean161f7957 passes the native command check and packages in3m15s with22 existing
+warnings. The47,852,032-byte EXE has SHA256
+23fdc09158c092d35882d7197e89d80d3a617a6e1e1dfa4667267b970f3fa009.
+The exact1,240-byte initialization script (SHA256
+687dd45a1822528bd0e9d544d37806570c7d2bf447773c85a21b914bc1e503d6) is embedded,
+as are the unchanged boot/App/protected-file assets from the prior package.
+All102 engine/source resources match the retained stage; all eight milestone
+files match primary870dba8e. Only two known generated outputs were restored to
+their exact committed bytes; the delivery checkout is clean. No explicit Dev
+restart or phone publication was performed for this native slice.
+
+Exact package evidence and target-specific boundaries are tracked in
+NOVELTY_SYNC_2026-10-24_DELIVERY.json. Frontend source is unchanged from the
 previous independent531-check milestone; these Node checks exercise a different
 transport boundary and are not presented as another frontend suite run. Actual
 native-window response/rendering and physical-device proof remain separate.

@@ -24,7 +24,7 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | `a0c3d55d` | Fix native database download review task | other-native-and-app-review | Target evaluation required |
 | `039189de` | Distinguish unavailable download checks from missing files | settings-and-shell | Target evaluation required |
 | `a856b32e` | Verify combined monthly databases through real research views | other-native-and-app-review | Target evaluation required |
-| `d52f614e` | Route Windows IPC through the native WebView bridge | settings-and-shell | Native Windows bridge source implemented. Actual pinned Tauri2.10.2 isolated403 fixture loses native delivery; current fallback and shim envelopes match exactly. Seven independent Node checks, explicit two-file lint0 and Windows native command check/22 existing warnings pass; CI guard configured. Package/native-window proof pending; other platforms/phone retain their own transport. See NATIVE_WINDOWS_IPC.md |
+| `d52f614e` | Route Windows IPC through the native WebView bridge | settings-and-shell | Native Windows bridge source implemented. Actual pinned Tauri2.10.2 isolated403 fixture loses native delivery; current fallback and shim envelopes match exactly. Seven independent Node checks, explicit two-file lint0 and Windows native command check/22 existing warnings pass; CI guard configured. Clean161f7957 package contains the exact native initialization script, unchanged frontend assets and102 engine/source resources. Native-window proof remains; other platforms/phone retain their own transport. See NATIVE_WINDOWS_IPC.md |
 | `101bc2e2` | Start data downloads directly and clarify failures | settings-and-shell | Target evaluation required |
 | `c367b2c2` | Remove the inherited checkmark from downloaded-data switches | settings-and-shell | Target evaluation required |
 | `b83200b5` | Use the defined lookup status colour token | settings-and-shell | Target evaluation required |
@@ -63,11 +63,13 @@ ownership and immediate runtime updates replace broad clears/reload. See
 APPEARANCE_RESET.md for keys, states and verification; clean cfc2a7f3 native package is verified; rendered delivery
 remains separate. No owner storage was reset. Other rows remain active candidates.
 
-The En native evaluation reader is different from Novelty's active-folder
-selector: commands use default_store_dir and database_status already separates
-manifest validation/missing/read errors. There is no matching Settings evaluation
-folder chooser in the inspected source. The builder/transfer/recovery candidates
-still require their own evaluation; absence of this chooser does not certify them.
+En's evaluation reader uses default_store_dir and has no matching Settings
+folder chooser. Further inspection found an important limit to its status error
+field: read_manifest and shard lookup use exists(), which can hide filesystem
+access-check errors as absence/misses. The earlier status-only assessment was
+too broad. Reproduce this against the actual reader and evaluate the phone helper
+before resolving1290880c/related rows. Builder/transfer/recovery and any future
+folder selection still require separate target evaluation.
 
 ## Next shell behavior checks
 
