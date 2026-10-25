@@ -7,6 +7,7 @@ import { enginesAtom } from "@/state/atoms";
 import { enginePreferences } from "@/utils/enginePreferences";
 import { stockfishCatalog } from "@/utils/stockfishCatalog";
 import { hasStockfishCatalogPath } from "@/utils/stockfishCatalogInstall";
+import { EngineLogo } from "./EngineLogo";
 
 function FileProgress({ id }: { id: string }) {
   const { progress } = useProgress(id);
@@ -52,6 +53,7 @@ export function StockfishCatalogCard() {
           ENGINE
         </Text>
         <Group gap="xs">
+          <EngineLogo engine={{ name: "Stockfish 19", type: "local" }} size="2rem" />
           <Text fw="bold" size="sm">
             Stockfish 19
           </Text>

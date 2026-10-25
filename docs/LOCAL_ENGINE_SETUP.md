@@ -46,6 +46,9 @@ as passing by these focused checks.
 This is a desktop setup surface. The phone's managed WASM engine and existing
 PC service do not offer arbitrary local-program selection, so these native
 setup commands do not apply there. No phone publication or service restart is
-required for this slice. Clean delivery/package checks follow separately.
+required for this slice. Clean source `dab8e02d` independently passes 549
+related frontend checks across 71 files and full types. Primary `d7f563ca` and
+clean source contain the same owned setup changes. Combined package checks
+follow separately.
 Browser control remains disabled; no rendered native-window or physical-phone
 verification is claimed.

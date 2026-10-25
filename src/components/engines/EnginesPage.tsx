@@ -24,7 +24,6 @@ import {
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import {
-  IconCloud,
   IconCopy,
   IconCpu,
   IconDownload,
@@ -64,6 +63,7 @@ import LocalImage from "../common/LocalImage";
 import OpenFolderButton from "../common/OpenFolderButton";
 import LinesSlider from "../panels/analysis/LinesSlider";
 import AddEngine from "./AddEngine";
+import { EngineLogo } from "./EngineLogo";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
 import { StockfishUpgradeNotice } from "./StockfishUpgradeNotice";
 
@@ -749,15 +749,7 @@ function EngineName({ engine }: { engine: Engine }) {
 
   return (
     <Group wrap="nowrap">
-      {engine.image ? (
-        <LocalImage src={engine.image} alt={engine.name} h="2.5rem" fit="contain" flex={0} />
-      ) : engine.type === "pc" ? (
-        <IconCpu size="2.5rem" />
-      ) : engine.type !== "local" ? (
-        <IconCloud size="2.5rem" />
-      ) : (
-        <IconCpu size="2.5rem" />
-      )}
+      <EngineLogo engine={engine} />
       <Stack gap={0}>
         <Text fw="bold" lineClamp={1} c={hasError ? "red" : undefined}>
           {engine.name} {hasError ? "(file missing)" : ""}

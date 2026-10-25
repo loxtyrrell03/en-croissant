@@ -806,7 +806,7 @@
     "servicesChanged": false
   },
   "pendingLocalEngineSetup": {
-    "status": "primary-source-verified-clean-package-pending",
+    "status": "clean-source-verified-package-pending",
     "focusedFrontendTests": 95,
     "focusedFrontendFiles": 8,
     "nativeTests": 6,
@@ -821,6 +821,25 @@
     "phoneSourceChanged": false,
     "servicesChanged": false,
     "browserRendered": false,
-    "nativeWindowVerified": false
+    "nativeWindowVerified": false,
+    "primaryCommit": "d7f563ca11f197ae2aaf0f5580547f7b30cb4809",
+    "cleanCommit": "dab8e02d",
+    "cleanFrontendTests": 549,
+    "cleanFrontendFiles": 71,
+    "cleanTypes": true
+  },
+  "pendingEngineLogos": {
+    "status": "primary-source-verified-clean-package-pending",
+    "oldFailuresReproduced": 3,
+    "focusedImageTests": 12,
+    "combinedControlTests": 40,
+    "combinedControlFiles": 3,
+    "types": true,
+    "scopedLintFiles": 5,
+    "scopedLintExistingWarnings": 1,
+    "scopedLintErrors": 0,
+    "phoneCustomEngineImageStateApplicable": false,
+    "servicesChanged": false,
+    "browserRendered": false
   }
 }
