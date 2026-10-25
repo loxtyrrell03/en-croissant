@@ -1,3 +1,19 @@
+## 2026-10-25 native compression notices
+
+- Noveltyd230b44f native notice gap now uses En root Cargo.lock versions
+  zstd0.13.2/safe7.2.1/sys2.0.13+zstd.1.5.6. Exact MIT wrapper/BSD C texts
+  match two existing registry copies; retain LF bytes and manifest hashes.
+  About uses an optional existing Mantine disclosure with wrapped bounded text
+  and a labelled close action. Native resource mapping includes the full file;
+  the Tauri before-build hook checks versions/bytes/text/mapping first.
+- Five Node checks plus actual About workflow/types independently pass primary
+  and clean, four-file lint0. Native package follows separately. Hosted helper
+  lockfile13.3/safe7.3/sys2.1+1.5.7 notice audit is still open; phone frontend
+  has no native About and no Rust compression code. Other dependency notices
+  are outside this slice. Existing Dev watcher relaunched for config changes;
+  no manual restart, phone publication or owner data/profile/corpus operation.
+  Browser-rendered/native-window/physical proof remains. See COMPRESSION_NOTICES.md.
+
 ## 2026-10-25 bounded-builder native package
 
 - Cleanf33263de / primary4a3eb4a6 packages47,953,920 bytes SHA256

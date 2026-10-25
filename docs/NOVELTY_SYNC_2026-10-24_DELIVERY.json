@@ -3757,5 +3757,39 @@
     "phoneProductionChanged": false,
     "ownerDataWritten": false,
     "corpusCopied": false
+  },
+  "compressionNoticesParity": {
+    "novelty": [
+      "d230b44f"
+    ],
+    "status": "native-source-verified-package-pending",
+    "lockedVersions": {
+      "zstd": "0.13.2",
+      "zstd-safe": "7.2.1",
+      "zstd-sys": "2.0.13+zstd.1.5.6"
+    },
+    "verifiedExistingRegistryCopies": 2,
+    "exactGrants": 4,
+    "standaloneNoticeBytes": 2931,
+    "nodeChecks": 5,
+    "aboutComponentChecks": 1,
+    "independentPrimaryAndClean": true,
+    "types": true,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "nativeBuildGuard": true,
+    "fullTextInAbout": true,
+    "nativeResourceMapping": true,
+    "nativeReleasePackageVerified": false,
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "phoneAboutEntryExists": false,
+    "hostedHelperHasDifferentLockfile": true,
+    "hostedHelperNoticeAuditPending": true,
+    "phoneRuntimeChanged": false,
+    "explicitDevRestart": false,
+    "existingDevWatcherRelaunched": true,
+    "ownerDataWritten": false,
+    "dependencyVersionsChanged": false
   }
 }
