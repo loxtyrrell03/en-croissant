@@ -231,9 +231,11 @@ async function handleHttpRequest(request, response) {
     return writeJson(response, 200, {
       ok: true,
       service: "stockfish-18-remote",
-      version: 18,
+      // The service ID remains compatible with existing launchers. Health
+      // reads never start a worker just to discover an engine's version.
+      version: stockfishVersion(httpEngine.name),
       reportProtocolVersion: 1,
-      build: "x86-64-bmi2",
+      build: null,
       enginePath,
       threads,
       hashMb,
@@ -251,7 +253,7 @@ async function handleHttpRequest(request, response) {
           available: true,
           ready: httpEngine.ready,
           queuedAnalyses: httpEngine.queued,
-          name: "Stockfish 18",
+          name: httpEngine.name,
         },
         lc0: {
           available: lc0Available,
@@ -260,7 +262,7 @@ async function handleHttpRequest(request, response) {
             lc0Available &&
             lc0Engines.get("bt4")?.ready === true &&
             !unavailableLc0Families.has("bt4"),
-          name: "LCZero 0.32.1",
+          name: lc0Engines.get("bt4")?.name ?? null,
           enginePath: lc0Path,
           searchContemptEnginePath: lc0ScPath,
           tuning: lc0Tuning,
@@ -468,13 +470,13 @@ async function handleHttpRequest(request, response) {
     "x-content-type-options": "nosniff",
   });
   response.flushHeaders?.();
-  response.write(
+  const sendMetadata = () => response.write(
     `${JSON.stringify({
       type: "meta",
       reportLimits,
-      engine: engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18",
+      engine: selectedEngine.name || (engineKind === "lc0" ? "LCZero" : "Stockfish"),
       engineKind,
-      build: engineKind === "lc0" ? lc0Tuning.backend : "bmi2",
+      build: engineKind === "lc0" ? lc0Tuning.backend : null,
       performancePreset: performancePreset || "server",
       performanceLabel: performancePreset
         ? ENGINE_PERFORMANCE_PRESETS[performancePreset].label
@@ -500,6 +502,7 @@ async function handleHttpRequest(request, response) {
       },
       controller.signal,
       dynamicOptions,
+      sendMetadata,
     );
     if (!response.destroyed) {
       response.end(`${JSON.stringify({ type: "done", bestmove })}\n`);
@@ -574,6 +577,7 @@ class PersistentUciEngine {
     this.startPromise = null;
     this.queueTail = Promise.resolve();
     this.ready = false;
+    this.name = null;
     this.queued = 0;
     this.supportedOptions = new Set();
     this.optionValues = new Map();
@@ -582,7 +586,7 @@ class PersistentUciEngine {
     this.idleCloseTimer = null;
   }
 
-  async analyze(params, onInfo, signal, dynamicOptions = {}) {
+  async analyze(params, onInfo, signal, dynamicOptions = {}, onReady = () => {}) {
     this.clearIdleClose();
     this.queued += 1;
     let release;
@@ -604,6 +608,7 @@ class PersistentUciEngine {
       }
       await this.sendAndWaitReady();
       if (signal?.aborted) throw abortError();
+      onReady();
       this.send(`position fen ${params.fen}`);
       if (params.reportLimits) {
         return await runBoundedUciReport({
@@ -636,6 +641,8 @@ class PersistentUciEngine {
   }
 
   async startProcess() {
+    this.name = null;
+    this.supportedOptions.clear();
     const child = spawn(this.path, this.args, {
       cwd: dirname(this.path),
       windowsHide: true,
@@ -731,6 +738,7 @@ class PersistentUciEngine {
   }
 
   handleLine(line) {
+    if (line.startsWith("id name ")) this.name = line.slice(8).trim() || null;
     const optionMatch = line.match(/^option name (.+?) type /);
     if (optionMatch) this.supportedOptions.add(optionMatch[1]);
     for (const waiter of [...this.waiters]) {
@@ -754,6 +762,7 @@ class PersistentUciEngine {
     if (child && this.child !== child) return;
     this.clearIdleClose();
     this.ready = false;
+    this.name = null;
     this.startPromise = null;
     this.child = null;
     this.optionValues.clear();
@@ -823,7 +832,7 @@ function waitForUciTurn(previous, signal) {
 }
 
 httpEngine = new PersistentUciEngine(enginePath, {
-  label: "Stockfish 18",
+  label: "Stockfish",
   initialOptions: {
     Threads: threads,
     Hash: hashMb,
@@ -831,7 +840,7 @@ httpEngine = new PersistentUciEngine(enginePath, {
   },
 });
 selectorEngine = new PersistentUciEngine(enginePath, {
-  label: "Stockfish 18 LC0 selector",
+  label: "Stockfish LC0 selector",
   priorityRole: "LC0 selector",
   initialOptions: {
     Threads: 2,
@@ -902,7 +911,7 @@ function shutdownIdleStockfishEngine() {
   const stopped = httpEngine?.child ? 1 : 0;
   if (stopped) {
     httpEngine.close();
-    log("Stockfish 18 released after the client disabled analysis.");
+    log("Stockfish released after the client disabled analysis.");
   }
   stockfishShutdownPending = false;
   return { pending: false, busy: 0, stopped };
@@ -999,6 +1008,11 @@ function normalizeFen(value) {
   if (fields.length < 4 || fields.length > 6 || fen.length > 160) return "";
   if (!/^[prnbqkPRNBQK1-8/]+$/.test(fields[0]) || !/^[wb]$/.test(fields[1])) return "";
   return fen;
+}
+
+function stockfishVersion(name) {
+  const match = name?.match(/^Stockfish (\d+(?:\.\d+)?)(?:\s|$)/i);
+  return match ? Number(match[1]) : null;
 }
 
 function positiveInteger(value, fallback, min = 1, max = Number.MAX_SAFE_INTEGER) {

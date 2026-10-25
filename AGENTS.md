@@ -1,3 +1,17 @@
+## 2026-10-25 shared engine identity
+
+- The PC helper learns each worker's UCI name at requested startup and sends it
+  before scores. Health reads leave workers stopped and show unknown identity
+  until that session; architecture/version are no longer hard-coded as 18/BMI2.
+  Exit clears identity and new processes learn their own options. Keep the
+  existing service ID/runtime root/task/ports as compatibility identities.
+- Isolated real Stockfish 19 passes bounded reports, cancellation and recovery
+  after strict invalid-position exit; existing Stockfish 18 also passes. Three
+  19/standby checks, seven 18/report/review/performance checks, 38 client checks
+  and three-file lint pass. See docs/ENGINE_VERSION_ROUTING.md. Test services use
+  owned temporary roots and loopback ports; the live helper was not warmed or
+  restarted. Native installation/defaults, WASM and runtime delivery remain.
+
 ## 2026-10-25 clean engine preference verification
 
 - Clean delivery 9a37cc0b and primary 66ffb51d match all twelve owned engine

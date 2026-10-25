@@ -76,6 +76,8 @@ test(
         }
       }
       assert.equal(health?.reportProtocolVersion, 1, output);
+      assert.equal(health.version, null);
+      assert.equal(health.engines.stockfish.name, null);
       assert.equal((await request({ reportLimits: { depth: 31, timeMs: 50 } })).status, 400);
       assert.equal(
         (await request({ reportLimits: { depth: 8, timeMs: 50 }, infinite: true })).status,
@@ -120,6 +122,15 @@ test(
         depth: 8,
         timeMs: 50,
       });
+      const expectedName = process.env.EN_CROISSANT_REPORT_TEST_NAME;
+      if (expectedName) {
+        assert.equal(messages[0].type, "meta");
+        assert.equal(messages[0].engine, expectedName);
+        assert.equal(messages[0].build, null);
+        const runningHealth = await (await fetch(`${base}/v1/health`)).json();
+        assert.equal(runningHealth.engines.stockfish.name, expectedName);
+        assert.equal(runningHealth.version, Number(expectedName.match(/Stockfish (\d+)/)?.[1]));
+      }
       const selected = messages.find((m) => m.type === "done")?.bestmove;
       assert.match(selected, /^[a-h][1-8][a-h][1-8][qrbn]?$/);
       const lines = messages.filter((m) => m.type === "uci").map((m) => m.line);
@@ -135,6 +146,19 @@ test(
           (line) => !/\bdepth (\d+)/.test(line) || Number(line.match(/\bdepth (\d+)/)[1]) <= 8,
         ),
       );
+      if (expectedName === "Stockfish 19") {
+        // Version 19 terminates on invalid positions. Reject that request and
+        // recover with a fresh worker; never keep or invent a completed score.
+        const failed = await request({ fen: "8/8/8/8/8/8/8/8 w - - 0 1", depth: 8 });
+        const failedMessages = (await failed.text()).trim().split(/\r?\n/).map(JSON.parse);
+        assert.ok(failedMessages.some((m) => m.type === "error"));
+        assert.equal(failedMessages.some((m) => m.type === "done"), false);
+        const recovered = await request({ depth: 8 });
+        const recoveredMessages = (await recovered.text()).trim().split(/\r?\n/).map(JSON.parse);
+        assert.equal(recoveredMessages[0].engine, expectedName);
+        assert.equal(recoveredMessages.some((m) => m.type === "error"), false);
+        assert.match(recoveredMessages.find((m) => m.type === "done")?.bestmove, /^[a-h][1-8][a-h][1-8][qrbn]?$/);
+      }
       await fetch(`${base}/v1/engine/release`, {
         method: "POST",
         headers: { "content-type": "application/json" },
