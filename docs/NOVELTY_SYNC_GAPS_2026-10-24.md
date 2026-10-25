@@ -9,8 +9,9 @@ behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
 Current delivery (2026-10-25): clean `89f64228` is live on the canonical phone
-site. The latest native desktop artifact is clean `0a0056a6`, including guarded
-local-engine setup, logo recovery and all verified Stockfish 19 resources.
+site. The latest native desktop artifact is clean `1f597195`, including guarded
+local-engine setup, logo recovery, persistent plan arrows and all verified
+Stockfish 19 resources.
 These include the committed ports described below. The existing PC
 helper also runs the verified 19 executable; actual HTTPS analysis and phone
 version/asset/workspace/library/tournament reads pass. Individual rows retain
@@ -23,9 +24,10 @@ remain active; see `NATIVE_STOCKFISH_19.md` and the current delivery JSON.
 
 | Novelty improvement | Source evidence | En Croissant follow-up |
 | --- | --- | --- |
+| Stored/cloud-evaluation switch for local analysis | `ece3e18e`, `18f81ed0`; Novelty engine panel and Engines cloud-enabled preference | Newly confirmed source gap: native `EvalListener` always routes local engines through `getLocalBestMovesWithLichessCloud`, with no visible opt-out. Phone PC interactive Stockfish likewise starts stored lookup without a request opt-out; local WASM, finite reports and Plans are separate fresh paths. Port the explicit preference and native/phone controls with cache invalidation and late-lookup ownership, preserving the existing default, explicit cloud-source profiles and fresh bounded evidence |
 | Stable official engine logos and custom-image failure recovery | `497f656b`, Novelty `engineLogo.tsx` and bundled marks | Native engine names and both catalog flows now try custom images, inline official marks and existing generic icons in order. Profile/image ownership rejects late replies/errors; navigation retries without rewriting saved choices. Three prior failures reproduced; twelve image checks plus catalog/registration regressions (40 checks/three files), types and scoped lint pass. Attribution retains original artwork limitations. Phone managed-engine text controls have no custom profile image state. Clean combined source `0a0056a6` passes 107 engine checks/nine files, types and the complete native build; exact embedded asset and all 102 engine resource hashes match. Rendered verification remains; see `ENGINE_LOGOS.md` |
 | Cancellable local-engine setup and late validation replies | `66def21d`, Novelty engine profile validation signal and Add engine lifecycle | Native source now guards chooser/UCI/save ownership, preserves custom settings/images/names, and retains failed profile writes for retry without duplicates. UCI requires `uciok`, a total 15-second deadline and awaited owned-process cleanup; cancel/late replies cannot register. Four failures reproduced on the old form; 95 focused frontend checks/eight files, six native checks including actual Stockfish 19, full types, warning-free seven-file lint and native compile pass. Clean setup source `dab8e02d` passes 549 related checks/71 files and types; combined source `0a0056a6` passes 107 engine checks/nine files and the native build with exact embedded assets/resources verified. Rendered checks remain. Phone managed WASM/service surfaces do not select arbitrary local programs; no native-setup parity applies. See `LOCAL_ENGINE_SETUP.md` |
-| Automatic plan arrows take priority, with independent hover layers | `ea3bbbd9`, `c3ec2b03`; Novelty `planArrowPriority.ts` and persistent overlay owners | Native Plans/Engine Plans claim priority per tree store even while empty/loading; automatic/hover/saved layers persist, filter by displayed FEN and deduplicate without changing saved annotations. Owned preview lifetimes reject stale cleanup/setters. Phone Analysis A now has Auto arrows/limit, side/horizon routes and hover/focus/tapped details; hidden panels release claims and workspace changes reject same-FEN late results. Three prior composition failures reproduced; 65 checks/seven files, types and warning-free twelve-file lint pass. WebApp retains its exact 25 baseline warnings. Clean builds, rendered verification and phone publication remain separate; see `PLAN_ARROWS.md` |
+| Automatic plan arrows take priority, with independent hover layers | `ea3bbbd9`, `c3ec2b03`; Novelty `planArrowPriority.ts` and persistent overlay owners | Native Plans/Engine Plans claim priority per tree store even while empty/loading; automatic/hover/saved layers persist, filter by displayed FEN and deduplicate without changing saved annotations. Owned preview lifetimes reject stale cleanup/setters. Phone Analysis A now has Auto arrows/limit, side/horizon routes and hover/focus/tapped details; hidden panels release claims and workspace changes reject same-FEN late results. Three prior composition failures reproduced; 65 checks/seven files, types and warning-free twelve-file lint pass. WebApp retains its exact 25 baseline warnings. Clean `1f597195` passes 619 related checks/77 files, types, native packaging and the canonical phone build. Nine exact embedded chunks/all 102 engine resources match. Rendered verification and phone publication remain; see `PLAN_ARROWS.md` |
 | Fast game-analysis presets and combined depth/time bounds | `b6089855`; Low 8/50ms, Medium 16/250ms, High 22/1s, custom limits | Native bounds/recovery, both actions and PGN/session metadata are delivered. Real Stockfish 81-position Low runs complete in 1.66/1.04 s. Phone now has a fresh bounded-report transport with exact legal chosen-root evidence, a shared recovery budget and cancellation/queue guards; 30 frontend, 19 Node and an isolated real-service check pass. Phone controls and canonical report persistence are now wired in the selected A surface; shared engine protocol is delivered and HTTPS-verified; the phone UI is included in observed `dfc21831`; responsive and end-to-end runtime checks remain; see `GAME_ANALYSIS_LIMITS.md` |
 | Exact game-accuracy math and custom starts | `a923445e`, `docs/GAME_ACCURACY.md` | Native canonical reports are delivered. Phone report core now reuses those pure tree/history/accuracy/run modules, validates SAN/UCI/FEN replay, handles Black/custom starts and terminal/repetition/fifty-move results, and verifies saved game/score/depth evidence before rebuilding display data. Thirty-two mixed core/transport/metadata checks pass. Calibrated `statsStrength.ts` stays separate. The owner selected Board Analysis (A) in `design/phone-analysis-parity`; controls and durable save/retry wiring are included in observed `dfc21831`; responsive and end-to-end runtime checks remain |
 | Engine Plans default depth 17 | `ff7e42db` / `a212c9e1` | Native source and rebuilt standalone artifact now use 17 for fresh preferences/empty input; explicit saved choices remain. The new phone Plans surface defaults to 17 with independent saved preferences; source/component checks pass and the UI is included in observed `dfc21831`; responsive/end-to-end runtime checks remain |
@@ -63,6 +65,17 @@ remain active; see `NATIVE_STOCKFISH_19.md` and the current delivery JSON.
   join 93 PGN/preview/report/phone checks in a passing 137-check combined build.
   Source/browser evidence from that feature is documented separately; hosted
   and installed delivery remain pending.
+
+- Saved Play UCI options (`51e4751c`) are already present through En's native
+  architecture: BoardGame resolves per-player/profile settings,
+  buildPracticeBotOptions preserves custom options (apart from analysis-only
+  MultiPV), and GameManager sends the resolved options to each engine before
+  search. Thirteen current practice-bot checks pass, including custom network
+  forwarding. Keep per-game overrides and the richer Maia/strength behavior.
+- Two branch pairs have identical engine code patch IDs: `e3e2be1e`/`06df535e`
+  (retarget stability) and `badb59cb`/`e87c2c4c` (main-board hover). They are
+  duplicate source payloads, rather than four separate missing improvements.
+  This does not replace target-specific behavior verification.
 
 - The current shared performance model, worker lifecycle and custom-period
   modules were already mirrored in source. Their missing committed prerequisites
