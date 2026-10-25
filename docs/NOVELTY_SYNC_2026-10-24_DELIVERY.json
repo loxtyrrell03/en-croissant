@@ -30,15 +30,51 @@
   },
   "desktop": {
     "exeBytes": 47868416,
-    "exeSha256": "a675f637362c1706c70ace1de92f7b4ba569430d0b356c8e3594bbdc6e2cfd78",
+    "exeSha256": "703c4487caa5eaf115611b707f300a91031f03d357354fdf549dc013e028c7cf",
     "assets": [
       {
-        "name": "EnginesPage-CwQw21mI.js",
-        "bytes": 87472,
-        "sha256": "3665b013f62bd3e712f43d3937e43756be4712e65c3d4620f3751d8a3be12cb8",
+        "name": "EnginePlanExplorerPanel-BIX6cs7P.js",
+        "bytes": 48274,
+        "sha256": "9bea936011063885fe9530f1cb57f2fcb6a9164b551023893afc136e5216277f",
         "encoding": "brotli",
-        "compressedBytes": 44325,
-        "compressedSha256": "9aa9fa97d73268957aa3d583eef8037f1e9812b871b1b73703c75261ac71be30",
+        "compressedBytes": 15319,
+        "compressedSha256": "bd476f8b39df3753652a7ff67386e0c40e655b57fdaff21c286051feef788773",
+        "embedded": true
+      },
+      {
+        "name": "EnginePlanPresentation-IxRNW-3z.js",
+        "bytes": 2785,
+        "sha256": "4eee94bd17df959fb0b20607cafa408bebb8f6d661752d925c02b8172986d21b",
+        "encoding": "brotli",
+        "compressedBytes": 1300,
+        "compressedSha256": "9a5d6aca2a377a4623bad136cb0403832728c4bafbc8ff0a2af1c6c8c4ac5a94",
+        "embedded": true
+      },
+      {
+        "name": "enginePlanExplorer-CMilGUNq.js",
+        "bytes": 36332,
+        "sha256": "f41873e306578443acdbf8ced2d024ab763e97a3d96262b1578d28bd3613693c",
+        "encoding": "brotli",
+        "compressedBytes": 11070,
+        "compressedSha256": "7b875008af00e76d639e46497616391e4be7c404c9cfe4c39b37e6d4e9515702",
+        "embedded": true
+      },
+      {
+        "name": "EnginesPage-nkUbGLr-.js",
+        "bytes": 87472,
+        "sha256": "2919eda3588314e3ad9eb472b06a5307a901783167b08a2cea578758a599961d",
+        "encoding": "brotli",
+        "compressedBytes": 44326,
+        "compressedSha256": "a96e1e337bd4de84459bb027ace51e172afe40ca6465f9eba8b0a2ed8417439d",
+        "embedded": true
+      },
+      {
+        "name": "WebApp-CpWT4KcA.js",
+        "bytes": 411738,
+        "sha256": "149401829874c010581d9d933de43e520db4ca93823497e2b9bd14e878838ae4",
+        "encoding": "brotli",
+        "compressedBytes": 117677,
+        "compressedSha256": "09817d1670acd6295d84801f053a72545330737b764e7fb33c6cb602f430b00b",
         "embedded": true
       }
     ],
@@ -46,7 +82,7 @@
     "nativeWindowVerified": false,
     "devShortcutChanged": false,
     "rollback": "task-owned ignored rollback directory",
-    "sourceCommit": "e386a802179d3487e8fe16a7160fe1d059dd5e99",
+    "sourceCommit": "2657c53b7f8f919e335f3e438ea2440f1f54f675",
     "activeDevSessionPreserved": true,
     "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
   },
@@ -1702,6 +1738,103 @@
     "types": true,
     "lintWarnings": 0,
     "lintErrors": 0,
-    "cleanPackagingVerified": false
+    "cleanPackagingVerified": true,
+    "cleanSourceCommit": "2657c53b7f8f919e335f3e438ea2440f1f54f675",
+    "cleanChecks": 56,
+    "cleanFiles": 6,
+    "exactAssets": 5,
+    "bundledFiles": 102
+  },
+  "currentEnginePlanClarityPackage": {
+    "exeBytes": 47868416,
+    "exeSha256": "703c4487caa5eaf115611b707f300a91031f03d357354fdf549dc013e028c7cf",
+    "assets": [
+      {
+        "name": "EnginePlanExplorerPanel-BIX6cs7P.js",
+        "bytes": 48274,
+        "sha256": "9bea936011063885fe9530f1cb57f2fcb6a9164b551023893afc136e5216277f",
+        "encoding": "brotli",
+        "compressedBytes": 15319,
+        "compressedSha256": "bd476f8b39df3753652a7ff67386e0c40e655b57fdaff21c286051feef788773",
+        "embedded": true
+      },
+      {
+        "name": "EnginePlanPresentation-IxRNW-3z.js",
+        "bytes": 2785,
+        "sha256": "4eee94bd17df959fb0b20607cafa408bebb8f6d661752d925c02b8172986d21b",
+        "encoding": "brotli",
+        "compressedBytes": 1300,
+        "compressedSha256": "9a5d6aca2a377a4623bad136cb0403832728c4bafbc8ff0a2af1c6c8c4ac5a94",
+        "embedded": true
+      },
+      {
+        "name": "enginePlanExplorer-CMilGUNq.js",
+        "bytes": 36332,
+        "sha256": "f41873e306578443acdbf8ced2d024ab763e97a3d96262b1578d28bd3613693c",
+        "encoding": "brotli",
+        "compressedBytes": 11070,
+        "compressedSha256": "7b875008af00e76d639e46497616391e4be7c404c9cfe4c39b37e6d4e9515702",
+        "embedded": true
+      },
+      {
+        "name": "EnginesPage-nkUbGLr-.js",
+        "bytes": 87472,
+        "sha256": "2919eda3588314e3ad9eb472b06a5307a901783167b08a2cea578758a599961d",
+        "encoding": "brotli",
+        "compressedBytes": 44326,
+        "compressedSha256": "a96e1e337bd4de84459bb027ace51e172afe40ca6465f9eba8b0a2ed8417439d",
+        "embedded": true
+      },
+      {
+        "name": "WebApp-CpWT4KcA.js",
+        "bytes": 411738,
+        "sha256": "149401829874c010581d9d933de43e520db4ca93823497e2b9bd14e878838ae4",
+        "encoding": "brotli",
+        "compressedBytes": 117677,
+        "compressedSha256": "09817d1670acd6295d84801f053a72545330737b764e7fb33c6cb602f430b00b",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "2657c53b7f8f919e335f3e438ea2440f1f54f675",
+    "primarySourceCommit": "67ccb7a9",
+    "cleanTests": 56,
+    "cleanTestFiles": 6,
+    "types": true,
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 172,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingOwnedProductFiles": 5,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "phonePublishedSource": "41668e2b8877703785d9e5ebffcef9b3fb6d8e43"
+  },
+  "previousCatalogDesktop": {
+    "exeBytes": 47868416,
+    "exeSha256": "a675f637362c1706c70ace1de92f7b4ba569430d0b356c8e3594bbdc6e2cfd78",
+    "assets": [
+      {
+        "name": "EnginesPage-CwQw21mI.js",
+        "bytes": 87472,
+        "sha256": "3665b013f62bd3e712f43d3937e43756be4712e65c3d4620f3751d8a3be12cb8",
+        "encoding": "brotli",
+        "compressedBytes": 44325,
+        "compressedSha256": "9aa9fa97d73268957aa3d583eef8037f1e9812b871b1b73703c75261ac71be30",
+        "embedded": true
+      }
+    ],
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "nativeWindowVerified": false,
+    "devShortcutChanged": false,
+    "rollback": "task-owned ignored rollback directory",
+    "sourceCommit": "e386a802179d3487e8fe16a7160fe1d059dd5e99",
+    "activeDevSessionPreserved": true,
+    "rollbackSha256": "6dc8bea7db02715d7423db1e56f3d8041f0ad092004ed3416646bca24f8c809d"
   }
 }
