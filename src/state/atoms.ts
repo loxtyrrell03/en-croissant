@@ -1,17 +1,11 @@
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { MantineColor } from "@mantine/core";
-import { resolve } from "@tauri-apps/api/path";
-import { exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import { atom, type PrimitiveAtom } from "jotai";
 import { atomFamily, atomWithStorage, createJSONStorage, unwrap } from "jotai/utils";
 import type { AtomFamily } from "jotai/vanilla/utils/atomFamily";
-import type {
-    AsyncStorage,
-    AsyncStringStorage,
-    SyncStorage,
-} from "jotai/vanilla/utils/atomWithStorage";
+import type { SyncStorage } from "jotai/vanilla/utils/atomWithStorage";
 import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
 import type {
@@ -31,7 +25,8 @@ import {
     ARCHIVED_DATABASE_ENTRIES_STORAGE_KEY,
     ARCHIVED_DATABASE_FOLDERS_STORAGE_KEY,
 } from "@/utils/databaseArchive";
-import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines";
+import { type Engine, type EngineSettings } from "@/utils/engines";
+import { enginePreferences } from "@/utils/enginePreferences";
 import type { EnginePlanReport } from "@/utils/enginePlanExplorer";
 import type { PlanHorizon } from "@/utils/planHorizon";
 import { DEFAULT_MOVE_STRENGTH_SETTINGS, type MoveStrengthSettings } from "@/utils/moveStrength";
@@ -50,9 +45,8 @@ import {
 } from "@/utils/lichess/explorer";
 import { getWinChance, normalizeScore } from "@/utils/score";
 import { getTabGameNumber, getTabPracticeKey, type Tab, tabSchema } from "@/utils/tabs";
-import { getEnginesDir } from "../utils/directories";
 import type { Session } from "../utils/session";
-import { createAsyncZodStorage, createZodStorage } from "./utils";
+import { createZodStorage } from "./utils";
 import { workspacePreferenceStorage } from "@/utils/workspacePreferences";
 import { reportFilePreferenceFailure } from "@/utils/fileBoardPreferences";
 
@@ -176,54 +170,20 @@ export const storedPuzzlesDirAtom = atomWithStorage<string>("puzzles-dir", "", u
     getOnInit: true,
 });
 
-async function ensureParentDir(path: string): Promise<void> {
-    const separator = path.includes("\\") ? "\\" : "/";
-    const lastSeparator = path.lastIndexOf(separator);
-    if (lastSeparator === -1) return;
-
-    const parentDir = path.slice(0, lastSeparator);
-    if (!parentDir) return;
-
-    if (!(await exists(parentDir))) {
-        await mkdir(parentDir, { recursive: true });
-    }
-}
-
-async function getEnginesStoragePath(key: string): Promise<string> {
-    const enginesDir = await getEnginesDir();
-    const filename = key.replace(/^engines[\\/]/, "");
-    return resolve(enginesDir, filename);
-}
-
-const enginesFileStorage: AsyncStringStorage = {
-    async getItem(key) {
-        try {
-            return await readTextFile(await getEnginesStoragePath(key));
-        } catch {
-            return null;
-        }
+const storedEnginesAtom = atomWithStorage<Engine[]>(
+    "engines/engines.json",
+    [],
+    enginePreferences.storage,
+);
+const loadedEnginesAtom = unwrap(storedEnginesAtom);
+// UI updates stay visible on a failed save; the store retains the snapshot and
+// publishes a retryable error. Call enginePreferences.flush() for a disk receipt.
+export const enginesAtom = atom(
+    (get) => get(loadedEnginesAtom),
+    (_get, set, update: Parameters<typeof storedEnginesAtom.write>[2]) => {
+        const operation = set(storedEnginesAtom, update);
+        void Promise.resolve(operation).catch(() => enginePreferences.noteUpdateError());
     },
-    async setItem(key, newValue) {
-        const path = await getEnginesStoragePath(key);
-        await ensureParentDir(path);
-        await writeTextFile(path, newValue);
-    },
-    async removeItem(key) {
-        const path = await getEnginesStoragePath(key);
-        try {
-            await writeTextFile(path, "[]");
-        } catch {
-            // no-op
-        }
-    },
-};
-
-export const enginesAtom = unwrap(
-    atomWithStorage<Engine[]>(
-        "engines/engines.json",
-        [],
-        createAsyncZodStorage(zodArray(engineSchema), enginesFileStorage) as AsyncStorage<Engine[]>,
-    ),
 );
 
 // Settings
@@ -1734,6 +1694,26 @@ export const allEnabledAtom = atom((get) => {
         });
 
     return v;
+});
+
+// Enabled also covers focus-paused analysis; do not retarget its profile on reload.
+export const desktopEngineSessionsBusyAtom = atom((get) => {
+    const engines = get(enginesAtom) ?? [];
+    return get(tabsAtom).some(
+        (tab) =>
+            tab.type === "play" ||
+            engines.some(
+                (engine) =>
+                    get(
+                        tabEngineSettingsFamily({
+                            tab: tab.value,
+                            engineId: engine.id,
+                            defaultSettings: engine.settings ?? undefined,
+                            defaultGo: engine.go ?? undefined,
+                        }),
+                    ).enabled,
+            ),
+    );
 });
 
 export const enableAllAtom = atom(null, (get, set, value: boolean) => {

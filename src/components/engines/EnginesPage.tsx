@@ -35,7 +35,8 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { enginePreferences } from "@/utils/enginePreferences";
 import { useTranslation } from "react-i18next";
 import useSWRImmutable from "swr/immutable";
 import { match, P } from "ts-pattern";
@@ -62,11 +63,17 @@ import LocalImage from "../common/LocalImage";
 import OpenFolderButton from "../common/OpenFolderButton";
 import LinesSlider from "../panels/analysis/LinesSlider";
 import AddEngine from "./AddEngine";
+import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
 
 export default function EnginesPage() {
   const { t } = useTranslation();
 
   const [engines, setEngines] = useAtom(enginesAtom);
+  const preferences = useSyncExternalStore(
+    enginePreferences.subscribe,
+    enginePreferences.getSnapshot,
+  );
+  const loadBlocked = preferences.phase === "loading" || preferences.phase === "error";
   const enginesList = useMemo(() => engines ?? [], [engines]);
   const [opened, setOpened] = useState(false);
   const [search, setSearch] = useState("");
@@ -106,11 +113,20 @@ export default function EnginesPage() {
   return (
     <Stack h="100%">
       <AddEngine opened={opened} setOpened={setOpened} />
+      <EnginePreferencesNotice />
       <Group align="baseline" py="sm" pl="lg">
         <Title>{t("Engines.Title")}</Title>
         <OpenFolderButton base="Engines" folder="engines" />
       </Group>
-      <Group grow flex={1} style={{ overflow: "hidden" }} align="start" px="md" pb="md">
+      <Group
+        inert={loadBlocked || undefined}
+        grow
+        flex={1}
+        style={{ overflow: "hidden" }}
+        align="start"
+        px="md"
+        pb="md"
+      >
         <Paper withBorder style={{ borderWidth: 2 }} h="100%">
           <Stack gap={0} h="100%" style={{ overflow: "hidden" }}>
             <Group p="xs" gap="xs">
@@ -211,11 +227,13 @@ export default function EnginesPage() {
                   label={t("Common.Name")}
                   value={selectedEngine.name}
                   onChange={(e) => {
-                    setEngines(async (prev) => {
-                      const copy = [...(await prev)];
-                      copy[selected].name = e.currentTarget.value;
-                      return copy;
-                    });
+                    const name = e.currentTarget.value,
+                      id = selectedEngine.id;
+                    setEngines(async (prev) =>
+                      (await prev).map((engine) =>
+                        engine.id === id ? { ...engine, name } : engine,
+                      ),
+                    );
                   }}
                 />
 
