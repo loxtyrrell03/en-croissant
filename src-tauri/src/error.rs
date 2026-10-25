@@ -102,6 +102,12 @@ pub enum Error {
     #[error("Engine did not respond with {0}")]
     EngineStartupTimedOut(String),
 
+    #[error("Engine check cancelled")]
+    EngineValidationCancelled,
+
+    #[error("{0}")]
+    InvalidEngineValidation(String),
+
     #[error("Analysis cancelled")]
     AnalysisCancelled,
 

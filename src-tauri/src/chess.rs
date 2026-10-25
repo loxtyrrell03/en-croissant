@@ -3784,31 +3784,19 @@ pub struct EngineConfig {
 #[tauri::command]
 #[specta::specta]
 pub async fn get_engine_config(path: PathBuf) -> Result<EngineConfig, Error> {
-    let mut base = BaseEngine::spawn(path).await?;
+    crate::engine::config::read(path, None, Duration::from_secs(15)).await
+}
 
-    base.send("uci").await?;
+#[tauri::command]
+#[specta::specta]
+pub async fn validate_local_engine(id: String, path: PathBuf) -> Result<EngineConfig, Error> {
+    crate::engine::config::validate(id, path).await
+}
 
-    let mut config = EngineConfig::default();
-
-    let reader = base.reader_mut().ok_or(Error::EngineDisconnected)?;
-    while let Some(line) = reader.next_line().await? {
-        if let UciMessage::Id {
-            name: Some(name),
-            author: _,
-        } = parse_one(&line)
-        {
-            config.name = name;
-        }
-        if let UciMessage::Option(opt) = parse_one(&line) {
-            config.options.push(opt);
-        }
-        if let UciMessage::UciOk = parse_one(&line) {
-            break;
-        }
-    }
-    println!("{:?}", config);
-    base.quit().await?;
-    Ok(config)
+#[tauri::command]
+#[specta::specta]
+pub fn cancel_local_engine_validation(id: String) -> Result<bool, Error> {
+    crate::engine::config::cancel(&id)
 }
 
 #[cfg(test)]

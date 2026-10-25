@@ -352,6 +352,22 @@ async getEngineConfig(path: string) : Promise<Result<EngineConfig, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async validateLocalEngine(id: string, path: string) : Promise<Result<EngineConfig, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("validate_local_engine", { id, path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async cancelLocalEngineValidation(id: string) : Promise<Result<boolean, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("cancel_local_engine_validation", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async fileExists(path: string) : Promise<Result<boolean, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("file_exists", { path }) };

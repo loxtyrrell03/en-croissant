@@ -34,6 +34,7 @@ export function StockfishCatalogCard() {
   const busy = ["checking", "installing", "cancelling", "saving"].includes(status.phase);
   const added =
     status.phase === "complete" &&
+    !preferences.saving && !preferences.pending && !preferences.error &&
     hasStockfishCatalogPath(profiles, status.path) &&
     enginePreferences.isSavedValue(profiles);
   const blocked =

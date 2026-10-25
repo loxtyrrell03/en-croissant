@@ -184,6 +184,20 @@ impl BaseEngine {
     pub fn kill_sync(&mut self) {
         let _ = self.child.start_kill();
     }
+
+    /// Configuration probes own their process through actual exit, including
+    /// programs that ignore quit. Other engine lifecycles remain unchanged.
+    pub async fn kill_and_wait(&mut self) -> Result<(), Error> {
+        if self.child.try_wait()?.is_some() {
+            return Ok(());
+        }
+        if let Err(error) = self.child.kill().await {
+            if self.child.try_wait()?.is_none() {
+                return Err(error.into());
+            }
+        }
+        Ok(())
+    }
 }
 
 impl Drop for BaseEngine {
