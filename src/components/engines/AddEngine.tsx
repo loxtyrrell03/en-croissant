@@ -17,12 +17,13 @@ import { useForm } from "@mantine/form";
 import { IconAlertCircle, IconDatabase, IconTrophy } from "@tabler/icons-react";
 import { invoke } from "@tauri-apps/api/core";
 import { join, resolve } from "@tauri-apps/api/path";
-import { useAtom } from "jotai";
-import { useCallback, useState } from "react";
+import { useAtom, useStore } from "jotai";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
 import { enginesAtom } from "@/state/atoms";
 import { getEnginesDir } from "@/utils/directories";
+import { enginePreferences } from "@/utils/enginePreferences";
 import {
   type LocalEngine,
   type RemoteEngine,
@@ -53,6 +54,14 @@ function AddEngine({
   const { t } = useTranslation();
 
   const [allEngines, setEngines] = useAtom(enginesAtom);
+  const atoms = useStore();
+  const preferences = useSyncExternalStore(
+    enginePreferences.subscribe,
+    enginePreferences.getSnapshot,
+  );
+  const localRegistration = useRef<string | null>(null);
+  const [registrationId, setRegistrationId] = useState<string | null>(null);
+  const [tab, setTab] = useState<string | null>("download");
   const engines = (allEngines ?? []).filter((e): e is LocalEngine => e.type === "local");
 
   const { os } = usePlatform();
@@ -73,7 +82,8 @@ function AddEngine({
     validate: {
       name: (value) => {
         if (!value) return t("Common.RequireName");
-        if (engines.find((e) => e.name === value)) return t("Common.NameAlreadyUsed");
+        if (engines.find((e) => e.name === value && e.id !== localRegistration.current))
+          return t("Common.NameAlreadyUsed");
       },
       path: (value) => {
         if (!value) return t("Common.RequirePath");
@@ -89,7 +99,7 @@ function AddEngine({
       size="80%"
     >
       <EnginePreferencesNotice />
-      <Tabs defaultValue="download">
+      <Tabs value={tab} onChange={setTab}>
         <Tabs.List>
           <Tabs.Tab value="download">{t("Common.Download")}</Tabs.Tab>
           <Tabs.Tab value="cloud">{t("Engines.Add.Cloud")}</Tabs.Tab>
@@ -136,9 +146,52 @@ function AddEngine({
           <EngineForm
             submitLabel={t("Common.Add")}
             form={form}
-            onSubmit={(values: LocalEngine) => {
-              setEngines(async (prev) => [...(await prev), values]);
+            active={opened && tab === "local"}
+            disabled={
+              preferences.phase === "loading" ||
+              preferences.phase === "error" ||
+              preferences.saving ||
+              (!registrationId && (preferences.pending || !!preferences.error))
+            }
+            registration={
+              registrationId
+                ? {
+                    saved:
+                      !preferences.saving &&
+                      !preferences.pending &&
+                      !preferences.error &&
+                      enginePreferences.isSavedValue(allEngines),
+                  }
+                : undefined
+            }
+            onSuccess={() => {
+              localRegistration.current = null;
+              setRegistrationId(null);
+              form.reset();
               setOpened(false);
+            }}
+            onSubmit={async (values: LocalEngine) => {
+              if (localRegistration.current) {
+                if (!enginePreferences.isSavedValue(atoms.get(enginesAtom)))
+                  await enginePreferences.retry();
+                await enginePreferences.flush();
+                return;
+              }
+              const current = atoms.get(enginesAtom);
+              if (!current || !enginePreferences.isSavedValue(current))
+                throw new Error("Load and save engine settings before adding an engine.");
+              const name = values.name.trim();
+              if (!name || current.some((profile) => profile.name === name))
+                throw new Error("Choose a name that is not already used.");
+              const id = crypto.randomUUID();
+              if (current.some((profile) => profile.id === id))
+                throw new Error("Could not create a unique engine profile. Retry adding it.");
+              localRegistration.current = id;
+              setRegistrationId(id);
+              setEngines([...current, { ...values, id, name }]);
+              await enginePreferences.flush();
+              if (!enginePreferences.isSavedValue(atoms.get(enginesAtom)))
+                throw new Error("Engine settings have not finished saving.");
             }}
           />
         </Tabs.Panel>

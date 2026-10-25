@@ -44,10 +44,10 @@ use tauri::{AppHandle, Manager, Runtime, WebviewWindow, Window};
 use tauri_plugin_log::{Target, TargetKind};
 
 use crate::chess::{
-    analyze_game, cancel_analysis, get_engine_config, get_engine_logs,
+    analyze_game, cancel_analysis, cancel_local_engine_validation, get_engine_config, get_engine_logs,
     get_mistake_review_clock_timings, get_mistake_review_sample_line, kill_engine, kill_engines,
     scan_mistake_review, score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
-    stop_interactive_engines, stop_matching_engine, MistakeReviewScanProgress,
+    stop_interactive_engines, stop_matching_engine, validate_local_engine, MistakeReviewScanProgress,
 };
 use crate::coach::{ask_ai_coach, ask_plan_coach};
 use crate::coach_persistence::{
@@ -206,6 +206,8 @@ fn main() {
             get_opening_from_name,
             get_players_game_info,
             get_engine_config,
+            validate_local_engine,
+            cancel_local_engine_validation,
             file_exists,
             get_file_metadata,
             merge_players,

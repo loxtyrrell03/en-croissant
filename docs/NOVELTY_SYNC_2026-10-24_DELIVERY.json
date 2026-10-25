@@ -804,5 +804,23 @@
     "browserRendered": false,
     "nativeWindowVerified": false,
     "servicesChanged": false
+  },
+  "pendingLocalEngineSetup": {
+    "status": "primary-source-verified-clean-package-pending",
+    "focusedFrontendTests": 95,
+    "focusedFrontendFiles": 8,
+    "nativeTests": 6,
+    "realStockfish19Config": true,
+    "nativeMainCheck": true,
+    "types": true,
+    "scopedLintFiles": 7,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "oldFormFailuresReproduced": 4,
+    "phoneArbitraryLocalProgramSetupApplicable": false,
+    "phoneSourceChanged": false,
+    "servicesChanged": false,
+    "browserRendered": false,
+    "nativeWindowVerified": false
   }
 }

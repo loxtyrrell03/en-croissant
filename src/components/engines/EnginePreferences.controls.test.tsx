@@ -227,6 +227,20 @@ it("adds the included Stockfish through real controls and the retained preferenc
   } finally { await h.close(); }
 });
 
+it("does not retain Added when the same profile array loses confirmed saved-file state", async () => {
+  fixture.disk = JSON.stringify([profile]); fixture.available.mockResolvedValue(currentStockfish);
+  await enginePreferences.reload();
+  const h = await mount(false, false, true);
+  let saved = fixture.disk;
+  try {
+    await h.settle(); await h.click("Add Stockfish 19");
+    await vi.waitFor(async () => { await h.settle(); expect(h.host.querySelector('[aria-label="Stockfish 19 setup"]')?.textContent).toContain("Added"); });
+    saved = fixture.disk; fixture.disk = '{"unreadable"';
+    await act(async () => { await enginePreferences.reload().catch(() => {}); });
+    expect(h.host.querySelector('[aria-label="Stockfish 19 setup"]')?.textContent).not.toContain("Added");
+  } finally { fixture.disk = saved; await act(async () => { await enginePreferences.reload(); }); await h.close(); }
+});
+
 it("retains an installation across dialog remount and ignores a premature progress-finished event", async () => {
   fixture.disk = JSON.stringify([profile]); await enginePreferences.reload();
   let finish!: (result: unknown) => void;
