@@ -9,13 +9,13 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 
 | Novelty | Candidate | Refreshed area | Evaluation |
 | --- | --- | --- | --- |
-| `158ccf01` | Make panel wheel motion continuous with small frame steps | settings-and-shell | Target evaluation required |
-| `77e5c052` | Fix mouse-wheel smoothing across all scroll surfaces | settings-and-shell | Target evaluation required |
-| `e8914f49` | Retain Finder PGN requests until the workspace is ready | settings-and-shell | Target evaluation required |
-| `974725a1` | Share Tauri context to fix duplicate Mac test metadata | other-native-and-app-review | Target evaluation required |
-| `882830ac` | Replace sun-like settings icon with a gear | settings-and-shell | Target evaluation required |
-| `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | Target evaluation required |
-| `d9acb4d0` | Remove requested migration header comment | local-data-and-recovery | Target evaluation required |
+| `158ccf01` | Make panel wheel motion continuous with small frame steps | settings-and-shell | Confirmed source feature gap with 77e5c052/7bbe5984: En has no global bounded wheel interpolation. Synthetic baseline and native/phone hook adaptation pending; preserve board wheel navigation, editable targets and touch/reduced motion |
+| `77e5c052` | Fix mouse-wheel smoothing across all scroll surfaces | settings-and-shell | Same wheel-controller family as158ccf01; retain SVG/document/nested-boundary and small-delta behavior when adapting. No implementation or rendered wheel claim yet |
+| `e8914f49` | Retain Finder PGN requests until the workspace is ready | settings-and-shell | Confirmed native source gap: single-instance callback ignores args/cwd and only reveals main window; frontend reads CLI only at initial startup. Retained PGN-open readiness/queue baseline and port pending; preserve native file ownership. Mac delivery separate |
+| `974725a1` | Share Tauri context to fix duplicate Mac test metadata | other-native-and-app-review | Specific duplicate-context Mac test defect absent: En has one generate_context invocation in main.rs. No additional macro/factory or Mac build claim needed |
+| `882830ac` | Replace sun-like settings icon with a gear | settings-and-shell | Already present: native Sidebar and phone controls use Tabler IconSettings gear; no foreign SVG/artwork replacement needed. Source evidence, no new rendered claim |
+| `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | Initial wheel-controller payload, superseded by77e5c052/158ccf01. Evaluate/port latest behavior as one native/phone feature, not three independent fixes |
+| `d9acb4d0` | Remove requested migration header comment | local-data-and-recovery | Comment-only/provenance edit; actual diff changes no decoder behavior. Preserve En source/provenance rather than copy a Novelty header deletion |
 | `76c93459` | Default downloads to Full and add compact cloud evaluations | settings-and-shell | Target evaluation required |
 | `df7bd865` | Recognize existing downloaded Lichess stores | settings-and-shell | Target evaluation required |
 | `676f8206` | Recognize existing downloaded Lichess stores | settings-and-shell | Target evaluation required |
@@ -24,7 +24,7 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | `a0c3d55d` | Fix native database download review task | other-native-and-app-review | Target evaluation required |
 | `039189de` | Distinguish unavailable download checks from missing files | settings-and-shell | Target evaluation required |
 | `a856b32e` | Verify combined monthly databases through real research views | other-native-and-app-review | Target evaluation required |
-| `d52f614e` | Route Windows IPC through the native WebView bridge | settings-and-shell | Target evaluation required |
+| `d52f614e` | Route Windows IPC through the native WebView bridge | settings-and-shell | En uses default Tauri IPC without Novelty Windows postMessage override. Serialization/routing baseline and target evaluation pending; do not assume a foreign shim is either necessary or safe from a filename match |
 | `101bc2e2` | Start data downloads directly and clarify failures | settings-and-shell | Target evaluation required |
 | `c367b2c2` | Remove the inherited checkmark from downloaded-data switches | settings-and-shell | Target evaluation required |
 | `b83200b5` | Use the defined lookup status colour token | settings-and-shell | Target evaluation required |
@@ -68,3 +68,26 @@ selector: commands use default_store_dir and database_status already separates
 manifest validation/missing/read errors. There is no matching Settings evaluation
 folder chooser in the inspected source. The builder/transfer/recovery candidates
 still require their own evaluation; absence of this chooser does not certify them.
+
+## Next shell behavior checks
+
+Actual Novelty panelScrolling source now uses a bounded critically damped motion,
+subpixel accumulation, small/stalled frame caps, SVG-to-scroll-parent traversal,
+line/page normalization, boundary containment, reversal, external-position guards
+and cleanup. Current En has native ScrollArea surfaces and a chessboard onWheel
+move handler but no corresponding global controller. The port must adapt En's
+real chessboard selectors; copying Novelty data-board-area alone would miss it.
+Phone touch scrolling is independent; evaluate wheel input without adding touch
+interception. Native/phone production hooks and behavioral fixtures remain.
+
+Novelty e8914f49 also retains second-instance paths until a workspace subscribes.
+En main.rs currently ignores args/cwd in its single-instance callback; App reads
+getMatches only in startup. Its Mac-only Finder part is not the whole shared
+payload. Next: synthetic argument/readiness/batch/lifetime baseline, then a native
+retained queue and frontend subscription through En's own openFile/source guards.
+No user file was opened or existing app restarted for this source inspection.
+
+En already uses Tabler settings gears, has one Tauri context macro invocation,
+and needs no behavior port for a requested Novelty-only source-comment deletion.
+The Windows IPC override remains a separate active evaluation, including its
+Tauri serialization/message-key contract; it was not silently copied or dismissed.
