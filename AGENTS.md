@@ -1,3 +1,16 @@
+## 2026-10-25 clean native game-date verification
+
+- Clean delivery 74c3a1d6 independently passes all 559 related frontend checks
+  across 69 files, full types, 23-file lint with zero warnings/errors and desktop/
+  canonical-phone builds in 26.91/22.64 seconds. All 24 owned source/test/style
+  files match primary ac39c301; the compact private receipt records their hashes
+  and phone bundle identity. See docs/GAME_DATE_RANGES.md.
+- This is source/component/query/build evidence. No native code, owner data,
+  installed artifact, phone service or hosting changed. Phone date controls and
+  persisted source/mode scopes, rendered narrow/touch interaction, publication
+  and the refreshed final parity audit remain. Preserve the existing thirteen
+  broad native baseline failures separately from these passing frontend checks.
+
 ## 2026-10-25 native game-date parity
 
 - Native Database in both placements, Compare and Prep reuse a compact
