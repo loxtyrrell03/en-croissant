@@ -164,3 +164,20 @@ checks across seven files and full types pass. Three changed/new files have
 warning-free lint; the adjusted existing fixture retains its one unrelated
 conditional-expect warning. Clean builds and live publication are tracked in the
 delivery JSON. Rendered/touch and physical-phone checks remain outstanding.
+
+Clean source `41668e2b` independently passes 454 checks across 63 files and full
+types. Its canonical phone build completes in 22.53 seconds, with the validator
+in the exact verified WebApp asset. It is live at the canonical HTTPS root,
+shell SHA-256 `1ac542e5630407df582db7a2c7b8935f0a8c06205d33b13474c3ff19e5a1610c`.
+Workspace, normalized library content, tournament settings, owner enabled state,
+engine-service PID and Serve match preflight. Actual Stockfish 19 returns legal
+exact depth-8/50-ms evidence, then the owned worker is released to standby.
+The home-server restart is the intended publication; no native desktop behavior
+changed. The existing native catalog artifact remains separately identified.
+
+The no-trigger unpackaged publisher completed normally in a hidden detached
+console with Console.IsOutputRedirected=false and no PowerShell capture around
+the publisher. Three owner-file hashes match afterward; its temporary task was
+removed. This confirms a working invocation boundary without changing production
+launcher/service identity. Do not infer that captured-output publication is
+repaired. Browser rendering/touch/native-window/device checks remain separate.
