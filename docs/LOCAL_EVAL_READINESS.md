@@ -47,6 +47,18 @@ checks; normal Vitest discovery continues to exclude Node suites.
 Temporary fixtures remain tiny, and recursive cleanup verifies the canonical
 temporary parent/prefix first. No full-data download or corpus copy is used.
 Frontend source/types are unchanged from the prior531-case milestone; that
-suite is not counted as rerun here. Native packaging and both installed helper
-copies require their own delivery receipts in NOVELTY_SYNC_2026-10-24_DELIVERY.json.
+suite is not counted as rerun here.
+
+Native clean d20de2cd packages in3m11s with22 existing warnings. Its47,852,544-byte
+EXE has SHA2567a95e74955de351c88a1426ab89bcaf3671862b0a16670890f5334c2d4008a5c.
+All eight primary8bbeb6a5 milestone files match. The unchanged boot/App/protected
+file assets, exact Windows IPC initialization script and102 engine/source
+resources are verified in the package. Only two known generated outputs were
+restored to their exact committed bytes; the delivery checkout is clean.
+
+Both installed helper copies still require separate delivery receipts in
+NOVELTY_SYNC_2026-10-24_DELIVERY.json. Read-only unpackaged inspection confirms
+the PC engine's installed reader matches the prior source; no runtime update has
+been attempted. A canonical HTTPS lookup before delivery returns a legal stored
+PV at depth65 and leaves workers cold. No owner corpus is altered for testing.
 Runtime and rendered/native-window evidence remain distinct from these fixtures.
