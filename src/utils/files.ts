@@ -29,8 +29,10 @@ export async function openFile(
         gameNumber?: number;
         pgn?: string;
         expectedIdentity?: string;
+        signal?: AbortSignal;
     },
 ) {
+    options?.signal?.throwIfAborted();
     const store = getDefaultStore();
     const gameNumber = options?.gameNumber ?? 0;
     let fileInfo: FileMetadata;
@@ -100,6 +102,9 @@ export async function openFile(
         recentName = tabName;
     }
 
+    // All reads/parsing/temp-directory checks finish before the synchronous tab
+    // commit. An obsolete shell owner retains this request for its replacement.
+    options?.signal?.throwIfAborted();
     const id = await createTab({
         tab: {
             name: tabName,
