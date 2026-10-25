@@ -17,6 +17,10 @@ pub(super) struct BuildDirectory {
 
 impl BuildDirectory {
     pub fn create(output: &Path) -> Result<Self, LocalEvalError> {
+        Self::create_with_identity(output, rand::random())
+    }
+
+    pub fn create_with_identity(output: &Path, identity: [u8; 16]) -> Result<Self, LocalEvalError> {
         let name = output.file_name().ok_or_else(|| {
             LocalEvalError::InvalidOption("Choose a new evaluation output directory.".into())
         })?;
@@ -34,7 +38,6 @@ impl BuildDirectory {
                     "Evaluation output {} already exists. Choose a new directory; existing data will not be replaced.",path.display()))
             } else { error.into() }
         })?;
-        let identity = rand::random::<[u8; 16]>();
         let marker_result = (|| {
             let mut marker = OpenOptions::new()
                 .write(true)

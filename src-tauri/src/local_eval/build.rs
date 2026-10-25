@@ -30,7 +30,12 @@ where
     let shard_count = validate_shard_count(options.shard_count)?;
     let source_label = options.source.label();
     let built_at = unix_now();
-    let mut owned = build_directory::BuildDirectory::create(&options.output_dir)?;
+    let mut owned = match control.ownership {
+        Some(identity) => {
+            build_directory::BuildDirectory::create_with_identity(&options.output_dir, identity)?
+        }
+        None => build_directory::BuildDirectory::create(&options.output_dir)?,
+    };
     let build_dir = owned.path.clone();
     if let Some(signal) = &control.cancel_file {
         let name = signal.file_name().ok_or_else(|| {

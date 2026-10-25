@@ -45,5 +45,6 @@ physical-device checks are separate.
 The subsequent bounded-builder milestone in EVALUATION_BUILD_LIMITS.md adds
 input/sort/disk bounds, strict PV/score validation, unique-position selection,
 cooperative cancellation and network stall limits. The ownership package above
-is historical proof of that earlier slice. Durable interrupted-job recovery and
-the wider data-management UI remain separate audit work.
+is historical proof of that earlier slice. EVALUATION_BUILD_RECOVERY.md records
+the subsequent native journal, process lease and guarded recovery commands.
+Reviewed acquisition and the wider data-management UI remain separate work.

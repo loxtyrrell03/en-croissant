@@ -3615,8 +3615,9 @@
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
     "remaining": [
-      "durable interrupted-job recovery (7128c5ed)",
-      "data-management UI evaluation"
+      "reviewed acquisition and persistent folder activation",
+      "approved data-management UI",
+      "native package for recovery slice"
     ],
     "packageSource": "f33263de887f2a2a496eda4753288a1722586220",
     "primarySource": "4a3eb4a629ea65ce280ba8275a08ebf7dfeb4337",
@@ -4219,7 +4220,7 @@
     }
   },
   "nativeEvaluationDataDesign": {
-    "status": "direction-A-selected-backend-and-ui-implementation-pending",
+    "status": "direction-A-selected-recovery-backend-source-verified-acquisition-folder-ui-pending",
     "selected": "A - Settings row + dialogs",
     "ownerSelected": true,
     "alternativesPresented": 3,
@@ -4235,5 +4236,49 @@
     "phoneNewBuilderProposed": false,
     "runtimeChanged": false,
     "ownerDataWritten": false
+  },
+  "nativeEvaluationRecovery": {
+    "novelty": [
+      "7128c5ed"
+    ],
+    "status": "native-backend-and-commands-source-verified-ui-and-package-pending",
+    "nativeLibraryTestsPerCheckout": 76,
+    "newRecoveryTests": 13,
+    "privateChildHelperIgnoredButExplicitlyExercised": true,
+    "generatedTransportTestsPerCheckout": 6,
+    "independentPrimaryAndClean": true,
+    "types": true,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "nativeCommandRegistryCheck": true,
+    "existingNativeWarnings": 22,
+    "cliAcceptanceCases": 15,
+    "latestCleanCliSha256": "f056d0855670c15bd378070f31486e17e3e621adb5d9cbe7df6d9de1e9fecbef",
+    "durableJournal": "profile/evaluation-download/jobs.sqlite3",
+    "processOwnership": "OS exclusive file lease",
+    "killedChildPhases": [
+      "ingesting",
+      "sorting",
+      "after manifest publication"
+    ],
+    "unknownFinalCountersRemainUnknown": true,
+    "exactRecordedCleanupIdRequired": true,
+    "canonicalMarkerAndCompleteInventoryRequired": true,
+    "windowsJunctionAndLockedFileAndFolderFixtures": true,
+    "cancelOwnershipRetainedUntilWorkerSettles": true,
+    "automaticResume": false,
+    "automaticActivation": false,
+    "ownerProfileWrittenByFixtures": false,
+    "corpusCopiedOrBuilt": false,
+    "phoneBuilderExists": false,
+    "phoneRuntimeChanged": false,
+    "nativePackageVerified": false,
+    "renderedAppVerified": false,
+    "remaining": [
+      "reviewed network acquisition",
+      "validated persistent source folder",
+      "approved Settings A UI",
+      "native packaging and rendered verification"
+    ]
   }
 }

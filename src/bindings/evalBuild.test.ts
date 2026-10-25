@@ -49,4 +49,46 @@ describe("native evaluation build transport", () => {
         });
         expect(invoke).toHaveBeenCalledTimes(1);
     });
+    it("restores a recorded job without starting or replaying work", async () => {
+        const recovered = {
+            id: "interrupted-build",
+            state: "interrupted",
+            active: false,
+            canCancel: false,
+        };
+        invoke.mockResolvedValueOnce(recovered).mockResolvedValueOnce(null);
+        expect(await commands.getLocalEvalBuildJob()).toEqual({ status: "ok", data: recovered });
+        expect(await commands.getLocalEvalBuildJob()).toEqual({ status: "ok", data: null });
+        expect(invoke.mock.calls).toEqual([
+            ["get_local_eval_build_job"],
+            ["get_local_eval_build_job"],
+        ]);
+    });
+    it("removes the exact recorded ID and preserves cleanup refusal", async () => {
+        invoke
+            .mockResolvedValueOnce(null)
+            .mockRejectedValueOnce("The output ownership marker changed. Files were kept.");
+        expect(await commands.discardLocalEvalBuildJob("interrupted-build")).toEqual({
+            status: "ok",
+            data: null,
+        });
+        expect(await commands.discardLocalEvalBuildJob("changed-build")).toEqual({
+            status: "error",
+            error: "The output ownership marker changed. Files were kept.",
+        });
+        expect(invoke.mock.calls).toEqual([
+            ["discard_local_eval_build_job", { id: "interrupted-build" }],
+            ["discard_local_eval_build_job", { id: "changed-build" }],
+        ]);
+    });
+    it("keeps status failures visible instead of treating them as no recorded job", async () => {
+        invoke.mockRejectedValueOnce(
+            "Recovery state uses an unsupported version. Its contents were kept.",
+        );
+        expect(await commands.getLocalEvalBuildJob()).toEqual({
+            status: "error",
+            error: "Recovery state uses an unsupported version. Its contents were kept.",
+        });
+        expect(invoke).toHaveBeenCalledTimes(1);
+    });
 });

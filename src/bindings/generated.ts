@@ -56,6 +56,22 @@ async buildLocalLichessEvalDb(request: LocalEvalBuildRequest) : Promise<Result<L
 async cancelLocalLichessEvalDb(id: string) : Promise<boolean> {
     return await TAURI_INVOKE("cancel_local_lichess_eval_db", { id });
 },
+async getLocalEvalBuildJob() : Promise<Result<LocalEvalBuildJob | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_local_eval_build_job") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async discardLocalEvalBuildJob(id: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("discard_local_eval_build_job", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisOptions, uciOptions: EngineOption[]) : Promise<Result<MoveAnalysis[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("analyze_game", { id, engine, goMode, options, uciOptions }) };
@@ -965,6 +981,7 @@ export type GameState = { gameId: string; status: GameStatus; initialFen: string
 export type GameStatus = "playing" | { finished: { result: GameResult } }
 export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
 export type InstalledStockfish = { path: string; version: string }
+export type LocalEvalBuildJob = { id: string; outputDir: string; state: string; progress: LocalEvalBuildProgress | null; report: LocalEvalBuildReport | null; store: LocalEvalDbStatus | null; detail: string | null; active: boolean; canCancel: boolean }
 export type LocalEvalBuildProgress = { id: string; phase: string; progress: number; positions: bigint; skipped: bigint; compressedBytesRead: bigint; compressedBytesTotal: bigint | null; finished: boolean }
 export type LocalEvalBuildReport = { outputDir: string; source: string; positions: bigint; skipped: bigint; duplicates: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt: bigint }
 export type LocalEvalBuildRequest = { id: string | null; source: string | null; sourceUrl: string | null; outputDir: string | null; maxPvs: number | null; shardCount: number | null; diskLimitGib?: number | null }

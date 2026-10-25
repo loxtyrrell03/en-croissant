@@ -1,3 +1,23 @@
+## 2026-10-25 durable evaluation build recovery
+
+- Native evaluation builds and CLI now persist the canonical output, random
+  ownership token, progress and outcome under profile/evaluation-download.
+  An OS lease survives view closure and is released by process death; status
+  never resumes, downloads or activates data. Cancel remains owned until the
+  worker settles. Completed manifests survive a missing final journal update;
+  unknown final counters remain unknown. Corrupt/newer records are preserved.
+- Explicit cleanup requires the current ID, lease, exact marker and complete
+  plain-file inventory using En's recorded16..8192 shard count. Published
+  manifests, changed paths/markers, links and unknown content refuse. Windows
+  locked-file/folder failures preserve retry state; failed marker restoration
+  requires visible manual inspection. No legacy/unrecorded folder sweep.
+- Primary/clean each pass76 native library tests (13 recovery plus an exercised
+  private kill-test helper), six generated transport checks and full types;
+  scoped lint0, actual CLI15 synthetic cases, native command check22 existing
+  warnings. No archive/corpus/profile/phone-service work or manual Dev restart.
+  Packaging, reviewed acquisition, validated source activation and approved A
+  Settings UI remain. See docs/EVALUATION_BUILD_RECOVERY.md. Goal stays active.
+
 ## 2026-10-25 evaluation data UI direction selected
 
 - Owner selected A: compact native Settings/Directories row with dialogs for
@@ -10,7 +30,8 @@
   XML/text-width checks and offline raster visual review pass. These are design
   artifacts, not implemented UI or browser/native-window proof. Existing
   Stored evals preference/local-only scoring/shared corpus/phone service scope
-  stay authoritative. Backend journal/lease/recovery, commands and chosen UI
+  stay authoritative. Native recovery is now source-verified; see
+  EVALUATION_BUILD_RECOVERY.md. Reviewed acquisition, folder activation and UI
   remain to implement. No download/profile/runtime/data change by prototypes.
 
 ## 2026-10-25 hosted notice delivery

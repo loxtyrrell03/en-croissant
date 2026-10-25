@@ -91,6 +91,7 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
     let generated = [
         specta_typescript::export::<LocalEvalBuildRequest>(&config).unwrap(),
         specta_typescript::export::<LocalEvalBuildReport>(&config).unwrap(),
+        specta_typescript::export::<LocalEvalBuildJob>(&config).unwrap(),
     ];
     let actual = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -101,9 +102,13 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
             .filter(|value| !value.is_whitespace())
             .collect::<String>()
     };
-    for (name, expected) in ["LocalEvalBuildRequest", "LocalEvalBuildReport"]
-        .into_iter()
-        .zip(generated)
+    for (name, expected) in [
+        "LocalEvalBuildRequest",
+        "LocalEvalBuildReport",
+        "LocalEvalBuildJob",
+    ]
+    .into_iter()
+    .zip(generated)
     {
         let prefix = format!("export type {name} =");
         let actual = actual
@@ -138,6 +143,24 @@ fn native_build_schema_and_cancel_metadata_match_the_transport_contract() {
     let limited: LocalEvalBuildRequest =
         serde_json::from_value(serde_json::json!({"diskLimitGib":32})).unwrap();
     assert_eq!(limited.disk_limit_gib, Some(32));
+    let recovery = (specta::function::collect_functions![
+        crate::local_eval::get_local_eval_build_job,
+        crate::local_eval::discard_local_eval_build_job
+    ])(&mut types);
+    assert_eq!(recovery[0].name(), "get_local_eval_build_job");
+    assert_eq!(
+        recovery[0].args().count(),
+        0,
+        "AppHandle is not a transport argument"
+    );
+    assert_eq!(recovery[1].name(), "discard_local_eval_build_job");
+    let args = recovery[1].args().collect::<Vec<_>>();
+    assert_eq!(args.len(), 1);
+    assert_eq!(args[0].0, "id");
+    assert!(matches!(
+        args[0].1,
+        DataType::Primitive(PrimitiveType::String)
+    ));
 }
 
 #[test]
