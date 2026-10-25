@@ -6,17 +6,28 @@ import {
   Progress,
   Select,
   Stack,
+  Switch,
   Text,
   UnstyledButton,
 } from "@mantine/core";
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useAutoPlanArrowClaim,
+  useAutoPlanArrowData,
+  usePlanArrowPreview,
+} from "@/hooks/usePlanArrows";
 import {
   EnginePlanEvaluation,
   EnginePlanHorizonControl,
 } from "@/components/panels/enginePlan/EnginePlanPresentation";
 import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import { positionFromFen } from "@/utils/chessops";
-import { enginePlanDisplayForHorizon, type EnginePlanReport } from "@/utils/enginePlanExplorer";
+import {
+  enginePlanDisplayForHorizon,
+  engineReportToPlanExplorerData,
+  type EnginePlanReport,
+} from "@/utils/enginePlanExplorer";
+import type { PlanPreviewLines } from "@/utils/planArrowLayers";
 import { PLAN_HORIZONS, type PlanHorizon } from "@/utils/planHorizon";
 import { usePcServicesAvailability } from "./pcServices";
 import { phoneEnginePlanReport } from "./phoneEnginePlans";
@@ -31,9 +42,14 @@ function preferences() {
       horizon: PLAN_HORIZONS.some((option) => option.value === raw?.horizon)
         ? (raw.horizon as PlanHorizon)
         : ("all" as PlanHorizon),
+      autoArrows: raw?.autoArrows !== false,
+      arrowLimit:
+        Number.isSafeInteger(raw?.arrowLimit) && raw.arrowLimit >= 1 && raw.arrowLimit <= 32
+          ? raw.arrowLimit
+          : 10,
     };
   } catch {
-    return { depth: 17, horizon: "all" as PlanHorizon };
+    return { depth: 17, horizon: "all" as PlanHorizon, autoArrows: true, arrowLimit: 10 };
   }
 }
 export default function PhoneEnginePlansPanel({
@@ -41,13 +57,21 @@ export default function PhoneEnginePlansPanel({
   onBusy,
   onPlayLine,
   blocked = false,
+  arrowBoard,
+  active = true,
 }: {
   fen: string;
   onBusy: (busy: boolean) => void;
   onPlayLine: (fen: string, moves: string[]) => void;
   blocked?: boolean;
+  arrowBoard?: object;
+  active?: boolean;
 }) {
   const [settings, setSettings] = useState(preferences);
+  const ownArrowBoard = useMemo(() => ({}), []);
+  const boardOwner = arrowBoard ?? ownArrowBoard;
+  useAutoPlanArrowClaim(boardOwner, "engine-plans", active && settings.autoArrows);
+  const preview = usePlanArrowPreview(boardOwner, fen, active);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -109,6 +133,32 @@ export default function PhoneEnginePlansPanel({
     [report, fen, settings.horizon, side],
   );
   const detail = plans.find((plan) => plan.signature === selected);
+  const arrowData = useMemo(
+    () => (report?.fen === fen ? engineReportToPlanExplorerData({ ...report, plans }) : null),
+    [report, fen, plans],
+  );
+  useAutoPlanArrowData(
+    boardOwner,
+    "engine-plans",
+    arrowData,
+    active && settings.autoArrows,
+    settings.arrowLimit,
+  );
+  function previewLines(plan: (typeof plans)[number]): PlanPreviewLines | null {
+    if (report?.fen !== fen) return null;
+    const data = engineReportToPlanExplorerData({ ...report, plans: [plan] });
+    const lines = data.pieces.flatMap((piece) =>
+      piece.lines.map((line) => ({ ...line, color: piece.color })),
+    );
+    return lines.length ? lines : null;
+  }
+  const detailLines = detail ? previewLines(detail) : null;
+  const detailPreview = useRef<PlanPreviewLines | null>(null);
+  detailPreview.current = detailLines;
+  useEffect(() => {
+    preview(detailPreview.current);
+    return () => preview(null);
+  }, [selected, arrowData, preview]);
   const run = async () => {
     if (request.current || blocked || terminal || !validDepth || availability === "off") return;
     const controller = new AbortController(),
@@ -192,6 +242,32 @@ export default function PhoneEnginePlansPanel({
           onChange={(value) => setSide(value ?? "all")}
         />
       </Group>
+      <Group gap="xs" align="end">
+        <Switch
+          label="Auto arrows"
+          aria-label="Auto plan arrows"
+          checked={settings.autoArrows}
+          onChange={(event) => update({ ...settings, autoArrows: event.currentTarget.checked })}
+        />
+        {settings.autoArrows && (
+          <NumberInput
+            label="Max arrows"
+            aria-label="Max plan arrows"
+            min={1}
+            max={32}
+            allowDecimal={false}
+            w={110}
+            value={settings.arrowLimit}
+            onChange={(value) =>
+              update({ ...settings, arrowLimit: Math.max(1, Math.min(32, Number(value) || 1)) })
+            }
+          />
+        )}
+        <TournamentHelp label="Plan arrows">
+          Automatic plan arrows stay on the board while you preview another plan. Turn them off to
+          show live engine arrows.
+        </TournamentHelp>
+      </Group>
       {availability === "off" && (
         <Text size="sm">PC services are off. Turn them on to explore plans.</Text>
       )}
@@ -244,6 +320,10 @@ export default function PhoneEnginePlansPanel({
         <UnstyledButton
           key={plan.signature}
           onClick={() => setSelected(plan.signature)}
+          onMouseEnter={() => preview(previewLines(plan))}
+          onMouseLeave={() => preview(detailPreview.current)}
+          onFocus={() => preview(previewLines(plan))}
+          onBlur={() => preview(detailPreview.current)}
           style={{ padding: 10, border: "1px solid var(--mantine-color-dark-4)", borderRadius: 6 }}
           aria-expanded={detail?.signature === plan.signature}
         >

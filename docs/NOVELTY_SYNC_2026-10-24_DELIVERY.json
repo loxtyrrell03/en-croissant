@@ -892,5 +892,23 @@
     "physicalPhoneVerified": false,
     "phoneSourceChanged": false,
     "servicesChanged": false
+  },
+  "pendingPlanArrowParity": {
+    "status": "native-phone-source-verified-clean-runtime-pending",
+    "focusedTests": 65,
+    "focusedFiles": 7,
+    "types": true,
+    "scopedLintFiles": 12,
+    "scopedLintWarnings": 0,
+    "scopedLintErrors": 0,
+    "WebAppBaselineWarnings": 25,
+    "WebAppWarningsMatchHead": true,
+    "oldCompositionFailuresReproduced": 3,
+    "actualChessgroundSvgTest": true,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "phoneSourceChanged": true,
+    "phonePublished": false,
+    "servicesChanged": false
   }
 }

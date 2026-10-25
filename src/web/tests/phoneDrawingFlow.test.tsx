@@ -247,7 +247,7 @@ it("keeps saved drawings separate from changing engine overlays in the real rend
   const root = createRoot(host);
   const changes = vi.fn();
   const saved = [{ orig: "a2", dest: "a4", brush: "green" as const }];
-  const render = async (engineDestination: "c3" | "a3", keepSaved = true) => {
+  const render = async (engineDestination: "c3" | "a3", keepSaved = true, brush = "blue") => {
     await act(async () => {
       root.render(
         <MantineProvider>
@@ -257,7 +257,7 @@ it("keeps saved drawings separate from changing engine overlays in the real rend
             lastMoveUci={null}
             savedDrawings={keepSaved ? saved : []}
             onDrawingsChange={changes}
-            engineArrowShapes={[{ orig: "b1", dest: engineDestination, brush: "blue" }]}
+            engineArrowShapes={[{ orig: "b1", dest: engineDestination, brush }]}
             engineScore={null}
             onMove={() => {}}
             canGoToPreviousMove={false}
@@ -275,6 +275,9 @@ it("keeps saved drawings separate from changing engine overlays in the real rend
     expect(host.querySelectorAll("svg.cg-shapes line")).toHaveLength(2);
     await render("a3");
     expect(host.querySelectorAll("svg.cg-shapes line")).toHaveLength(2);
+    await render("a3", true, "planWhite");
+    expect(host.querySelectorAll("svg.cg-shapes line")).toHaveLength(2);
+    expect(Array.from(host.querySelectorAll("svg.cg-shapes line")).some(line => line.getAttribute("stroke") === "#228be6")).toBe(true);
     await render("a3", false);
     expect(host.querySelectorAll("svg.cg-shapes line")).toHaveLength(1);
     expect(changes).not.toHaveBeenCalled();

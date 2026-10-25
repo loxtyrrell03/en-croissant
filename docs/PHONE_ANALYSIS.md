@@ -71,12 +71,21 @@ evidence and an ordinary finite depth-2 search. The first request includes
 engine startup (939 ms total); its selected exact depth is 8. No queue remains.
 The existing config, task, routes and owner enabled choice are preserved.
 
-The concurrent tournament publication from `dfc21831` includes the earlier
-Analysis source. Canonical HTTPS version metadata confirms that bundle (see
-`TOURNAMENT_PREDICTION_HISTORY.md`); this supersedes the earlier unpublished
-status. This audit still lacks responsive/end-to-end checks of the new Analysis
-controls. Its latest verified standalone desktop remains `44c37e09`. The later
-drawing slice is pending its own visual verification and delivery.
-See `NOVELTY_SYNC_2026-10-24_DELIVERY.json` for separate UI/backend receipts.
+Later committed deliveries supersede those historical snapshots. Canonical
+phone metadata currently identifies `89f64228`, with shell SHA-256
+`cd2b67baafef215710391a4a0a58a21a9aabfc31b6acf1b7dc5ec7a43534d1dc`.
+That delivery includes managed WASM 19 and actual PC Stockfish 19 service
+evidence; native setup/logo package source is `0a0056a6`. Separate UI, backend
+and package receipts are in `NOVELTY_SYNC_2026-10-24_DELIVERY.json`.
+
+Plans now has source-verified Auto arrows/limit controls within direction A.
+Visible plan controls take priority over live arrows without changing live
+settings. Automatic routes remain during hover/focus/tapped details; hidden
+panels and changed workspaces release their owned layers. All layers follow the
+displayed FEN and stay outside saved annotations. Sixty-five shared checks
+include actual phone controls and Chessground SVG rendering; this does not
+prove narrow layout or physical-phone interaction. The new arrow slice still
+requires clean builds, rendered verification and its own phone publication.
+See `PLAN_ARROWS.md`.
 Install the UCI report helper before the engine entry point; never interrupt an
 active shared engine. No full corpus test or database migration is required.

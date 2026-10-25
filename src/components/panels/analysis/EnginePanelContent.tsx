@@ -14,6 +14,7 @@ import {
   Stack,
   Switch,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import {
   IconChevronsRight,
@@ -28,6 +29,8 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import { usePlanArrowSnapshot } from "@/hooks/usePlanArrows";
+import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import {
   activeTabAtom,
   allEnabledAtom,
@@ -81,6 +84,12 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
   const allEnabled = useAtomValue(allEnabledAtom);
   const [expanded, setExpanded] = useAtom(currentExpandedEnginesAtom);
   const [showEngineArrows, setShowEngineArrows] = useAtom(showArrowsAtom);
+  const planArrowsActive = usePlanArrowSnapshot(store).claims.length > 0;
+  const arrowHelp = planArrowsActive
+    ? "Plan arrows are on"
+    : showEngineArrows
+      ? "Hide engine arrows"
+      : "Show engine arrows";
   const pos = useMemo(() => positionFromFen(currentNodeFen)[0], [currentNodeFen]);
   const navigate = useNavigate();
 
@@ -92,18 +101,32 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
             Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
             explore.
           </Text>
-          <Switch
-            size="sm"
-            label="Arrows"
-            labelPosition="left"
-            checked={showEngineArrows}
-            onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
-            aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
-            styles={{
-              root: { flexShrink: 0 },
-              label: { fontSize: "var(--mantine-font-size-xs)", fontWeight: 600 },
-            }}
-          />
+          <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+            <Tooltip label={arrowHelp}>
+            <span
+              style={{ display: "inline-flex", flexShrink: 0 }}
+            >
+              <Switch
+                size="sm"
+                label="Arrows"
+                labelPosition="left"
+                checked={showEngineArrows && !planArrowsActive}
+                disabled={planArrowsActive}
+                onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
+                aria-label={arrowHelp}
+                styles={{
+                  root: { flexShrink: 0 },
+                  label: { fontSize: "var(--mantine-font-size-xs)", fontWeight: 600 },
+                }}
+              />
+            </span>
+            </Tooltip>
+            {planArrowsActive && (
+              <PerformanceHelp label="About engine arrow priority">
+                Turn off Auto arrows in the plan panel to show engine arrows. Your engine-arrow setting is kept.
+              </PerformanceHelp>
+            )}
+          </Group>
         </Group>
       )}
       {!compact &&
@@ -189,6 +212,7 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
                               dragHandleProps={provided.dragHandleProps}
                               orientation={headers.orientation || "white"}
                               compact={compact}
+                              planArrowsActive={planArrowsActive}
                             />
                           </Accordion.Item>
                         </div>
