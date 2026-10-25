@@ -190,6 +190,8 @@ fn main() {
             get_local_lichess_eval_db_status,
             build_local_lichess_eval_db,
             cancel_local_lichess_eval_db,
+            get_local_eval_build_job,
+            discard_local_eval_build_job,
             analyze_game,
             scan_mistake_review,
             get_mistake_review_game_metadata,
@@ -462,4 +464,18 @@ async fn build_local_lichess_eval_db(
 #[specta::specta]
 fn cancel_local_lichess_eval_db(id: String) -> bool {
     local_eval::cancel_local_lichess_eval_db(id)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_local_eval_build_job(
+    app: tauri::AppHandle,
+) -> Result<Option<local_eval::LocalEvalBuildJob>, String> {
+    local_eval::get_local_eval_build_job(app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn discard_local_eval_build_job(id: String, app: tauri::AppHandle) -> Result<(), String> {
+    local_eval::discard_local_eval_build_job(id, app).await
 }

@@ -1455,6 +1455,7 @@ dependencies = [
  "derivative",
  "diesel",
  "encroissant-tournament-core",
+ "fs2",
  "futures-util",
  "governor",
  "hex",

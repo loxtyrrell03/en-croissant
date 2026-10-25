@@ -27,6 +27,7 @@ pub struct LocalEvalBuildControl {
     pub(super) max_line_bytes: u64,
     pub(super) max_shard_bytes: u64,
     pub(super) read_stall: Duration,
+    pub(super) ownership: Option<[u8; 16]>,
 }
 
 impl Default for LocalEvalBuildControl {
@@ -39,6 +40,7 @@ impl Default for LocalEvalBuildControl {
             max_line_bytes: MAX_LINE_BYTES,
             max_shard_bytes: MAX_SHARD_BYTES,
             read_stall: Duration::from_secs(30),
+            ownership: None,
         }
     }
 }
@@ -199,6 +201,14 @@ pub(super) fn cancel_build(id: &str) -> bool {
     }
     build.cancel.store(true, Ordering::Relaxed);
     true
+}
+
+pub(super) fn local_state(id: &str) -> Option<u8> {
+    ACTIVE
+        .lock()
+        .ok()?
+        .get(id)
+        .map(|build| build.state.load(Ordering::Acquire))
 }
 
 impl Drop for BuildLease {

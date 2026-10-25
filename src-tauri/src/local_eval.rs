@@ -16,8 +16,12 @@ use tauri::Manager;
 mod build;
 mod build_control;
 mod build_directory;
+mod build_recovery;
 pub use build::build_compact_eval_database_controlled;
 pub use build_control::{LocalEvalBuildControl, DEFAULT_BUILD_DISK_LIMIT_BYTES};
+pub use build_recovery::{
+    build_compact_eval_database_recoverable, discard_build_job, get_build_job, LocalEvalBuildJob,
+};
 use tauri_specta::Event;
 
 const FORMAT_VERSION: u16 = 2;
@@ -104,8 +108,8 @@ pub struct LocalEvalBuildRequest {
     pub disk_limit_gib: Option<u16>,
 }
 
-#[derive(Debug, Clone, Serialize, Type, tauri_specta::Event)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LocalEvalBuildProgress {
     pub id: String,
     pub phase: String,
@@ -117,8 +121,8 @@ pub struct LocalEvalBuildProgress {
     pub finished: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Type)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LocalEvalBuildReport {
     pub output_dir: String,
     pub source: String,
@@ -260,13 +264,18 @@ pub async fn build_local_lichess_eval_db(
     let mut control = LocalEvalBuildControl::for_gib(request.disk_limit_gib.unwrap_or(64))
         .map_err(String::from)?;
     let options = request_to_options(request, &app).map_err(String::from)?;
+    let journal_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?
+        .join("evaluation-download");
     let lease = build_control::BuildLease::start(&options.id).map_err(String::from)?;
     control.cancel = lease.cancel.clone();
     control.state = lease.state.clone();
     let emit_app = app.clone();
     tokio::task::spawn_blocking(move || {
         let _lease = lease;
-        build_compact_eval_database_controlled(options, control, |progress| {
+        build_compact_eval_database_recoverable(options, control, &journal_dir, |progress| {
             if let Err(error) = progress.emit(&emit_app) {
                 log::warn!("Failed to emit local eval build progress: {error}");
             }
@@ -281,6 +290,34 @@ pub async fn build_local_lichess_eval_db(
 #[specta::specta]
 pub fn cancel_local_lichess_eval_db(id: String) -> bool {
     build_control::cancel_build(&id)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_local_eval_build_job(
+    app: tauri::AppHandle,
+) -> Result<Option<LocalEvalBuildJob>, String> {
+    let root = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?
+        .join("evaluation-download");
+    tokio::task::spawn_blocking(move || get_build_job(&root))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn discard_local_eval_build_job(id: String, app: tauri::AppHandle) -> Result<(), String> {
+    let root = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?
+        .join("evaluation-download");
+    tokio::task::spawn_blocking(move || discard_build_job(&root, &id))
+        .await
+        .map_err(|error| error.to_string())?
 }
 
 pub fn build_compact_eval_database<F>(

@@ -1,8 +1,9 @@
 use std::{env, path::PathBuf, time::Instant};
 
 use en_croissant_fork::local_eval::{
-    build_compact_eval_database_controlled, database_status, default_cli_store_dir,
-    default_source_url, lookup_eval, LocalEvalBuildControl, LocalEvalBuildOptions, LocalEvalSource,
+    build_compact_eval_database_recoverable, database_status, default_cli_store_dir,
+    default_source_url, discard_build_job, get_build_job, lookup_eval, LocalEvalBuildControl,
+    LocalEvalBuildOptions, LocalEvalSource,
 };
 
 fn main() {
@@ -15,6 +16,23 @@ fn main() {
 fn run() -> Result<(), String> {
     let args = parse_args()?;
     let output_dir = args.output.clone().unwrap_or_else(default_cli_store_dir);
+    let journal_dir = args
+        .journal_dir
+        .clone()
+        .unwrap_or_else(|| default_cli_store_dir().with_file_name("evaluation-download"));
+    if args.job_status {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&get_build_job(&journal_dir)?)
+                .map_err(|error| error.to_string())?
+        );
+        return Ok(());
+    }
+    if let Some(id) = args.remove_incomplete {
+        discard_build_job(&journal_dir, &id)?;
+        println!("Recorded incomplete build removed. Existing stores were kept.");
+        return Ok(());
+    }
     if args.status {
         let status = database_status(&output_dir);
         println!(
@@ -47,7 +65,7 @@ fn run() -> Result<(), String> {
         _ => LocalEvalSource::Url(default_source_url().to_string()),
     };
     let options = LocalEvalBuildOptions {
-        id: "lichess-eval-cli-build".to_string(),
+        id: format!("eval-build-{:032x}", rand::random::<u128>()),
         source,
         output_dir,
         max_pvs: args.max_pvs.unwrap_or(5),
@@ -59,6 +77,8 @@ fn run() -> Result<(), String> {
     println!("Source: {}", options.source.label());
     println!("Max PVs: {}", options.max_pvs);
     println!("Shards: {}", options.shard_count);
+    println!("Build ID: {}", options.id);
+    println!("Recovery journal: {}", journal_dir.display());
 
     let started = Instant::now();
     let mut control = LocalEvalBuildControl::for_gib(args.disk_limit_gib.unwrap_or(64))
@@ -68,21 +88,22 @@ fn run() -> Result<(), String> {
         "Maximum build space: {}",
         human_bytes(control.disk_limit_bytes)
     );
-    let report = build_compact_eval_database_controlled(options, control, |progress| {
-        println!(
-            "{:>6.2}% {:<10} positions={} skipped={} compressed={}/{}",
-            progress.progress,
-            progress.phase,
-            progress.positions,
-            progress.skipped,
-            human_bytes(progress.compressed_bytes_read),
-            progress
-                .compressed_bytes_total
-                .map(human_bytes)
-                .unwrap_or_else(|| "?".to_string())
-        );
-    })
-    .map_err(|error| error.to_string())?;
+    let report =
+        build_compact_eval_database_recoverable(options, control, &journal_dir, |progress| {
+            println!(
+                "{:>6.2}% {:<10} positions={} skipped={} compressed={}/{}",
+                progress.progress,
+                progress.phase,
+                progress.positions,
+                progress.skipped,
+                human_bytes(progress.compressed_bytes_read),
+                progress
+                    .compressed_bytes_total
+                    .map(human_bytes)
+                    .unwrap_or_else(|| "?".to_string())
+            );
+        })
+        .map_err(|error| error.to_string())?;
 
     println!(
         "Done in {:.1}s. Stored {} positions at {} ({}).",
@@ -106,6 +127,9 @@ struct Args {
     status: bool,
     disk_limit_gib: Option<u16>,
     cancel_file: Option<PathBuf>,
+    journal_dir: Option<PathBuf>,
+    job_status: bool,
+    remove_incomplete: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -117,6 +141,11 @@ fn parse_args() -> Result<Args, String> {
             "--url" => parsed.url = Some(next_value(&mut args, "--url")?),
             "--output" => parsed.output = Some(next_path(&mut args, "--output")?),
             "--cancel-file" => parsed.cancel_file = Some(next_path(&mut args, "--cancel-file")?),
+            "--journal-dir" => parsed.journal_dir = Some(next_path(&mut args, "--journal-dir")?),
+            "--job-status" => parsed.job_status = true,
+            "--remove-incomplete" => {
+                parsed.remove_incomplete = Some(next_value(&mut args, "--remove-incomplete")?)
+            }
             "--disk-limit-gib" => {
                 let value = next_value(&mut args, "--disk-limit-gib")?
                     .parse::<u16>()
@@ -154,6 +183,24 @@ fn parse_args() -> Result<Args, String> {
 
     if parsed.source.is_some() && parsed.url.is_some() {
         return Err("Use either --source or --url, not both.".to_string());
+    }
+    let modes = usize::from(parsed.job_status)
+        + usize::from(parsed.remove_incomplete.is_some())
+        + usize::from(parsed.status)
+        + usize::from(parsed.lookup_fen.is_some());
+    if (parsed.job_status || parsed.remove_incomplete.is_some())
+        && (parsed.output.is_some()
+            || parsed.source.is_some()
+            || parsed.url.is_some()
+            || parsed.max_pvs.is_some()
+            || parsed.shards.is_some()
+            || parsed.disk_limit_gib.is_some()
+            || parsed.cancel_file.is_some())
+    {
+        return Err("Job recovery uses its recorded path and ID; do not combine it with build or output arguments.".into());
+    }
+    if modes > 1 || (modes > 0 && (parsed.source.is_some() || parsed.url.is_some())) {
+        return Err("Choose one status, lookup, cleanup or build operation.".into());
     }
 
     Ok(parsed)
@@ -198,6 +245,9 @@ Options:\n\
   --output <dir>    New output directory; existing data is never replaced\n\
   --disk-limit-gib <1-512> Maximum build space in GiB (default: 64)\n\
   --cancel-file <path>    Stop when this signal file exists; file is kept\n\
+  --journal-dir <path>    Recovery state folder outside the build output\n\
+  --job-status           Restore the recorded job as JSON; no download starts\n\
+  --remove-incomplete <id> Remove only the recorded owned partial build\n\
   --max-pvs <1-5>   Number of root moves/evals to store per position (default: 5)\n\
   --shards <n>      Number of binary shards (default: 2048)\n\
   --status          Print local store status and exit\n\

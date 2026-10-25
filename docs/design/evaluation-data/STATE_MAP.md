@@ -51,9 +51,10 @@ files do not start a download or alter a profile.
 | Corrupt / newer journal or unreadable state | Cannot read recovery state; files kept; Retry | No fresh-state overwrite or guessed cleanup | 6, help frame |
 | Narrow / high text size | Stacked controls and bounded help/dialog; path wraps | Native directory/help/action semantics remain; no clipped critical actions | compact frame |
 
-Implementation sequence: backend journal/OS lease and guarded recovery with real
-process-termination fixtures; native command/status/activation contracts; chosen
-Settings layout; actual rendered and interaction checks when browser control is
-available. Existing bounded builder/output-ownership code is retained, not replaced
-with a second incompatible record format. Runtime delivery and physical-device
+The backend journal/OS lease, guarded recovery and native status/cleanup commands
+are source-verified with real process-termination fixtures; see
+../../EVALUATION_BUILD_RECOVERY.md. Next are reviewed acquisition, validated
+persistent source activation and the chosen Settings layout, followed by actual
+rendered and interaction checks when browser control is available. Existing
+bounded builder/output ownership is retained. Runtime delivery and physical-device
 evidence remain separate from prototype, source and fixture results.
