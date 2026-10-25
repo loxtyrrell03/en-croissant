@@ -146,3 +146,10 @@ build. Physical-device interaction remains a separate evidence boundary.
   adjusted existing fixture's unrelated warning. Native typed/hash-keyed lookup
   already supplies this contract. Clean phone build/publication remain; see
   `STORED_EVALUATIONS.md`.
+
+The55 engine payload candidates now have an individual native/phone target map in
+ENGINE_HISTORY_TARGET_MAP.md, including explicit platform/local-only/product
+exceptions. This closes the unnamed engine candidate list, not the wider580
+requirement audit or rendered checks. The native Engine Plans label/help slice
+passes49 existing related checks, types and warning-free lint; packaging remains.
+Phone production is unchanged by those native labels.

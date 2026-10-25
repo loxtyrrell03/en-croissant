@@ -1,3 +1,4 @@
+import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import { useExplorerGameDates } from "@/hooks/useGameDateOptions";
 import { useAutoPlanArrowClaim, usePlanArrowPreview } from "@/hooks/usePlanArrows";
 import {
@@ -797,6 +798,9 @@ function EnginePlanExplorerPanel() {
               allowDeselect={false}
               comboboxProps={{ withinPortal: true }}
             />
+            <TournamentHelp label="Analysis engine">
+              Choose the chess program that checks this position when you press Analyze.
+            </TournamentHelp>
             <SegmentedControl
               size="sm"
               value={limitMode}
@@ -806,6 +810,9 @@ function EnginePlanExplorerPanel() {
                 { label: "Time", value: "time" },
               ]}
             />
+            <TournamentHelp label="Search limit">
+              Limit how far ahead the computer searches, or how long it spends. Time is in milliseconds: 1,000 means one second.
+            </TournamentHelp>
             {limitMode === "depth" ? (
               <NumberInput
                 aria-label="Depth"
@@ -820,6 +827,7 @@ function EnginePlanExplorerPanel() {
             ) : (
               <NumberInput
                 aria-label="Time in milliseconds"
+                suffix=" ms"
                 value={clampedTimeMs}
                 onChange={(value) => setTimeMs(clampNumber(Number(value) || 2000, 250, 30000))}
                 min={250}
@@ -831,16 +839,19 @@ function EnginePlanExplorerPanel() {
               />
             )}
             <NumberInput
-              aria-label="MultiPV"
+              aria-label="Engine lines"
               value={clampedMultipv}
               onChange={(value) => setMultipv(clampNumber(Number(value) || 5, 1, 10))}
               min={1}
               max={10}
               clampBehavior="strict"
               size="sm"
-              w={88}
-              prefix="PV "
+              w={112}
+              prefix="Lines "
             />
+            <TournamentHelp label="Engine lines">
+              Your preferred number of alternative move sequences; more can slow analysis. Additional lines may be requested to cover movable pieces; the actual count is shown beside the controls.
+            </TournamentHelp>
             <SegmentedControl
               aria-label="Plan side filter"
               size="sm"
@@ -885,11 +896,11 @@ function EnginePlanExplorerPanel() {
               disabled={!showPlanArrows}
             />
             {analysisMultipv > clampedMultipv && (
-              <Badge variant="light">{analysisMultipv} coverage PVs</Badge>
+              <Badge variant="light">{analysisMultipv} analysis lines</Badge>
             )}
           </Group>
           <Group gap="xs" wrap="nowrap">
-            <Tooltip label={running ? "Stop analysis" : "Run Engine Plans"}>
+            <Tooltip label={running ? "Stop analysis" : "Analyze Engine Plans"}>
               <Button
                 size="sm"
                 variant={running ? "default" : "filled"}
@@ -899,7 +910,7 @@ function EnginePlanExplorerPanel() {
                 onClick={running ? stopAnalysis : () => void runAnalysis()}
                 disabled={!selectedEngine}
               >
-                {running ? "Stop" : "Run"}
+                {running ? "Stop" : "Analyze"}
               </Button>
             </Tooltip>
             <Tooltip label="Refresh">
