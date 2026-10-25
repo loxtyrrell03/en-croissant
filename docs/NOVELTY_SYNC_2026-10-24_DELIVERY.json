@@ -806,7 +806,7 @@
     "servicesChanged": false
   },
   "pendingLocalEngineSetup": {
-    "status": "clean-source-verified-package-pending",
+    "status": "source-clean-package-verified-rendered-pending",
     "focusedFrontendTests": 95,
     "focusedFrontendFiles": 8,
     "nativeTests": 6,
@@ -826,10 +826,12 @@
     "cleanCommit": "dab8e02d",
     "cleanFrontendTests": 549,
     "cleanFrontendFiles": 71,
-    "cleanTypes": true
+    "cleanTypes": true,
+    "cleanPackageCommit": "0a0056a6954e74140f9f4c251b26203c91c1d540",
+    "nativeArtifactUpdated": true
   },
   "pendingEngineLogos": {
-    "status": "primary-source-verified-clean-package-pending",
+    "status": "source-clean-package-verified-rendered-pending",
     "oldFailuresReproduced": 3,
     "focusedImageTests": 12,
     "combinedControlTests": 40,
@@ -840,6 +842,55 @@
     "scopedLintErrors": 0,
     "phoneCustomEngineImageStateApplicable": false,
     "servicesChanged": false,
-    "browserRendered": false
+    "browserRendered": false,
+    "cleanPackageCommit": "0a0056a6954e74140f9f4c251b26203c91c1d540",
+    "cleanVerification": true,
+    "nativeArtifactUpdated": true
+  },
+  "currentNativeEngineSetupAndLogos": {
+    "sourceCommit": "0a0056a6954e74140f9f4c251b26203c91c1d540",
+    "primaryCommit": "4fdff710bfc346c14628145a5dbe7e2a14fac364",
+    "localSetupPrimaryCommit": "d7f563ca11f197ae2aaf0f5580547f7b30cb4809",
+    "primaryFocusedTests": 95,
+    "primaryFocusedFiles": 8,
+    "cleanRelatedTests": 549,
+    "cleanRelatedFiles": 71,
+    "cleanCombinedEngineTests": 107,
+    "cleanCombinedEngineFiles": 9,
+    "nativeConfigTests": 6,
+    "actualStockfish19Config": true,
+    "types": true,
+    "desktopBuild": true,
+    "existingNativeWarnings": 22,
+    "exeBytes": 47864320,
+    "exeSha256": "50b7e48da6a76ff973860fb6517453c362452fc8c94c1083a8274db5fe1916d9",
+    "enginePageChunk": "EnginesPage-IL5qpuR_.js",
+    "enginePageChunkSha256": "533494f90a13b164c4eb5d6771125598f697f5a88710d06462026a7981f63fef",
+    "exactChunkEmbedded": true,
+    "embeddedChunkEncoding": "brotli",
+    "embeddedChunkBytes": 43027,
+    "embeddedChunkSha256": "8de89b14bfa29212c7db9958c750322856cd6875cf977cfae3e6b4ab2cbde74e",
+    "nativeCommandsEmbedded": true,
+    "logos": {
+      "stockfish.png": {
+        "bytes": 25928,
+        "sha256": "dd6475c967ca6f32dab76f7b23446020b76549cd5ea70b4f51be7c5c1c5d40b7",
+        "embeddedInline": true
+      },
+      "lc0.png": {
+        "bytes": 775,
+        "sha256": "4b90d4dca54e6c3ac9ca920dcc5a7859061b793dc843bd2406f10fae23719a4c",
+        "embeddedInline": true
+      }
+    },
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "bundledHashesMatch": true,
+    "matchingOwnedCommittedFiles": 25,
+    "browserRendered": false,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "phoneSourceChanged": false,
+    "servicesChanged": false
   }
 }
