@@ -5493,6 +5493,25 @@
     ],
     "homeHealthLocalEvalsExposed": true,
     "homeHealthFocusedHttpCases": 4,
-    "homeHealthScopedLint": true
+    "homeHealthScopedLint": true,
+    "resetFollowsEffectiveDefault": true,
+    "resetPinsReviewedCanonicalPath": true,
+    "equalContentDifferentDefaultPathRejected": true,
+    "latestFocusedNativeSourceChecks": 30,
+    "latestFrontendChecks": 52,
+    "latestFrontendFiles": 9,
+    "latestTypes": true,
+    "latestScopedLint": true,
+    "preResetRefinementPackage": {
+      "sourceCommit": "0cda777abada8d8d39ee178e2e522585d51fc61c",
+      "bytes": 48961024,
+      "sha256": "d3868f4ebf3ed6beb6d83c49f4a12754db36804abdef1497413ea5599a75521d",
+      "nativeBuildSeconds": 156,
+      "frontendBuildSeconds": 29.55,
+      "embeddedAssets": 14,
+      "engineResources": 102,
+      "noticesAndIpcVerified": true,
+      "latestResetRefinementIncluded": false
+    }
   }
 }

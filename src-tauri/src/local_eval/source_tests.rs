@@ -47,13 +47,11 @@ fn discovered_defaults_use_the_existing_checked_choice_and_explicit_reset_contra
     let auto = source_selection::read(&profile, Some(&shared)).unwrap();
     assert_eq!(auto.path, shared.display().to_string());
     let checked = validate(&profile, Some(&shared), Path::new(""), &auto.revision).unwrap();
-    assert!(!checked.store.available);
+    assert!(checked.store.available);
+    assert_eq!(checked.store.path, shared.display().to_string());
     assert!(activate(&profile, Some(&root.join("other-root")), &checked.token).is_err());
     let reset = activate(&profile, Some(&shared), &checked.token).unwrap();
-    assert_eq!(
-        reset.path,
-        profile.join("lichess-cloud-evals").display().to_string()
-    );
+    assert_eq!(reset.path, shared.display().to_string());
     assert_eq!(
         source_selection::read(&profile, Some(&shared)).unwrap(),
         reset
@@ -83,6 +81,56 @@ fn discovered_defaults_use_the_existing_checked_choice_and_explicit_reset_contra
     assert_eq!(
         fs::read_to_string(incomplete.join("owner.txt")).unwrap(),
         "retained"
+    );
+}
+
+#[test]
+fn a_new_default_path_cannot_replace_a_reviewed_reset_even_with_identical_data() {
+    let _serial = SERIAL.lock().unwrap();
+    let temp = fixture();
+    let root = temp.path().canonicalize().unwrap();
+    let profile = root.join("profile");
+    let shared = store(&root, "shared", 24);
+    let custom = store(&root, "custom", 31);
+    let automatic = source_selection::read(&profile, Some(&shared)).unwrap();
+    let checked = validate(&profile, Some(&shared), &custom, &automatic.revision).unwrap();
+    let selected = activate(&profile, Some(&shared), &checked.token).unwrap();
+    let reset = validate(&profile, Some(&shared), Path::new(""), &selected.revision).unwrap();
+    assert_eq!(reset.store.path, shared.display().to_string());
+
+    // Copy this one-position synthetic store, retaining shard metadata. The
+    // reset must own the path, not just equal sample bytes and timestamps.
+    let legacy = profile.join("lichess-cloud-evals");
+    fs::create_dir_all(legacy.join(SHARDS_DIR)).unwrap();
+    fs::copy(shared.join(MANIFEST_FILE), legacy.join(MANIFEST_FILE)).unwrap();
+    for entry in fs::read_dir(shared.join(SHARDS_DIR)).unwrap() {
+        let entry = entry.unwrap();
+        let destination = legacy.join(SHARDS_DIR).join(entry.file_name());
+        fs::copy(entry.path(), &destination).unwrap();
+        File::options()
+            .write(true)
+            .open(destination)
+            .unwrap()
+            .set_times(
+                fs::FileTimes::new().set_modified(entry.metadata().unwrap().modified().unwrap()),
+            )
+            .unwrap();
+    }
+    assert_eq!(inspect(&shared).unwrap().1, inspect(&legacy).unwrap().1);
+    assert!(activate(&profile, Some(&shared), &reset.token)
+        .unwrap_err()
+        .contains("changed"));
+    assert_eq!(
+        source_selection::read(&profile, Some(&shared)).unwrap(),
+        selected
+    );
+    let fresh = validate(&profile, Some(&shared), Path::new(""), &selected.revision).unwrap();
+    assert_eq!(fresh.store.path, legacy.display().to_string());
+    assert_eq!(
+        activate(&profile, Some(&shared), &fresh.token)
+            .unwrap()
+            .path,
+        legacy.display().to_string()
     );
 }
 

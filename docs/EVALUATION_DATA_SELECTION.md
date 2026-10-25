@@ -89,9 +89,12 @@ milestone. This proves package linkage, not rendered or native-window behaviour.
 
 Reset to default closes the remaining selection action in Novelty `3ab6cf2e`.
 It uses the same check/explicit-Use/token/transaction path: an empty validation
-request is reserved for this explicit action and resolves only the legacy
-profile default. An existing default must pass normal compatibility checks.
-Only a confirmed absent or empty default may be selected without evaluations;
+request is reserved for this explicit action and previews the effective default
+under SHARED_EVALUATION_DISCOVERY.md. Existing legacy data remains first; after
+confirmed absence/emptiness a recognized shared store can be the default.
+Existing pinned choices change only after the new explicit confirmation. An
+existing default must pass normal compatibility checks. Only confirmed absent
+or empty default candidates may be selected without evaluations;
 the dialog says so before Use default folder. Unreadable, corrupt, incomplete or
 unrecognized contents remain intact and cannot replace the current selection.
 The target is checked again before use, including a folder appearing after a

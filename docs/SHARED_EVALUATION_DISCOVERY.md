@@ -4,8 +4,10 @@ Novelty df7bd865/676f8206 recognizes existing immutable evaluation data without
 requiring a new download ledger. En Croissant now does this through its own
 native source preference and the existing phone/PC read-only services.
 
-A saved native selection always wins, including an explicit Reset to the legacy
-folder when it is empty. Service environment/config paths also remain authoritative.
+A saved native selection always wins, including an older explicit Reset pinned
+to an empty legacy folder. A new Reset previews the effective unconfigured
+default under the current discovery rules; it does not change saved choices
+until Use default folder is confirmed. Service environment/config paths also remain authoritative.
 For an unconfigured default, an existing nonempty legacy En store stays first.
 Only confirmed absence or emptiness permits recognition of the shared store.
 This target-specific order preserves older En data instead of silently replacing
@@ -80,3 +82,16 @@ existing service/catalogue fields. Four real isolated home HTTP cases verify
 ready shared data and explicit incomplete-data failure; this adds delivery
 observability without changing lookup fallback policy or service configuration.
 Source/runtime and rendered/physical evidence remain distinct.
+
+
+Reset now follows the same default resolver as an untouched profile. Existing
+legacy data stays first, otherwise a recognized shared store can be previewed;
+only genuinely absent/empty candidates permit an empty default. Unsupported
+default data refuses Reset and retains the current choice. Applying a reset pins
+the exact reviewed canonical path. Revalidation compares that path as well as
+its fingerprint, so a different default cannot take over even with identical
+sample bytes and timestamps. The prior saved reset remains authoritative until
+a new action is explicitly confirmed. Thirty focused native source checks and
+52 frontend/nine-file checks pass after this refinement, alongside full types
+and scoped lint0. The0cda777a package is a verified historical snapshot preceding
+this refinement; the latest native package must be rebuilt before delivery.

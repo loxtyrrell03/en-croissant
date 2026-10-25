@@ -238,7 +238,19 @@ pub(super) fn inspect(path: &Path) -> Result<(LocalEvalDbStatus, String), String
     Ok((status, format!("{metadata}:{sample}")))
 }
 
-fn inspect_default(profile: &Path) -> Result<(LocalEvalDbStatus, String), String> {
+fn inspect_default(
+    profile: &Path,
+    shared: Option<&Path>,
+) -> Result<(LocalEvalDbStatus, String), String> {
+    if let Some(shared) = shared {
+        let selected = super::source_discovery::select(profile, shared);
+        if let Some(error) = selected.discovery_error {
+            return Err(error);
+        }
+        if selected.revision != "default" {
+            return inspect(Path::new(&selected.path));
+        }
+    }
     let path = profile.join("lichess-cloud-evals");
     let identity = match fs::symlink_metadata(&path) {
         Err(error) if error.kind() == io::ErrorKind::NotFound => "missing".to_string(),
@@ -328,7 +340,7 @@ pub(super) fn validate(
     // An empty request is the explicit Reset action, never a picker fallback.
     let reset_default = path.as_os_str().is_empty();
     let (store, fingerprint) = if reset_default {
-        inspect_default(profile)?
+        inspect_default(profile, shared)?
     } else {
         inspect(path)?
     };
@@ -381,11 +393,11 @@ pub(super) fn activate(
         )
     };
     let current = if reset_default {
-        inspect_default(profile)?
+        inspect_default(profile, shared)?
     } else {
         inspect(&path)?
     };
-    if current.1 != fingerprint {
+    if current.1 != fingerprint || Path::new(&current.0.path) != path.as_path() {
         return Err("The checked evaluation store changed. Choose the folder again; your current selection was kept.".into());
     }
     let mut choice = CHOICE

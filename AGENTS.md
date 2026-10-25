@@ -1,3 +1,19 @@
+## 2026-10-25 effective-default reset ownership
+
+- New Reset previews the same effective default as an untouched profile: retain
+  existing legacy data, otherwise recognize shared data after confirmed absence/
+  emptiness. Older saved reset/custom paths stay pinned until a new explicit Use.
+  A confirmed reset pins the exact reviewed canonical path; default-path changes
+  cannot take over even when sample bytes/timestamps match. Invalid default data
+  refuses Reset while keeping the current choice and visible retry.
+- Thirty focused native source and52 frontend/nine-file checks, full types and
+  scoped lint0 pass. The new tiny equal-content/different-default-path regression
+  verifies actual filesystem/review/use ownership. Phone code is unchanged.
+- Historical0cda777a package49MB/d3868f4e has14 exact assets/IPC/notices/102 engine
+  resources, but predates this refinement. A fresh native package and hosted
+  reader/service delivery remain; do not label the historical package current.
+  See docs/SHARED_EVALUATION_DISCOVERY.md/current delivery JSON. Goal active.
+
 ## 2026-10-25 retained shared-default acceptance
 
 - Primary mirrors b9e7e061 with exact owner104/2 guidance and25/1 binding

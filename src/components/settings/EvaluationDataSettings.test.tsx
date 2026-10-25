@@ -215,6 +215,26 @@ it("reviews an empty default folder before an explicit reset without using the p
   expect(host.textContent).toContain("Not connected");
   expect(io.startLocalEvalDownload).not.toHaveBeenCalled();
 });
+it("previews a recognized shared default before explicitly applying the reset", async () => {
+  io.validateLocalEvalSource.mockImplementationOnce(async () => {
+    io.checked = {
+      token: "shared-default",
+      store: { ...initial, path: "C:/Fixture/shared", positions: BigInt(456) },
+    };
+    return ok(io.checked);
+  });
+  await render();
+  await click("Reset to default");
+  expect(document.body.textContent).toContain("C:/Fixture/shared");
+  expect(document.body.textContent).toContain("456 positions");
+  expect(document.body.textContent).not.toContain(
+    "No evaluations are downloaded in the default folder.",
+  );
+  expect(io.activateLocalEvalSource).not.toHaveBeenCalled();
+  await click("Use default folder");
+  expect(io.activateLocalEvalSource).toHaveBeenCalledWith("shared-default");
+  expect(host.textContent).toContain("C:/Fixture/shared");
+});
 it("keeps the selected folder when the default check fails", async () => {
   io.validateLocalEvalSource.mockResolvedValueOnce({
     status: "error",
