@@ -8,7 +8,7 @@ hashes. Filename/hash comparisons nominate candidates; they do not prove
 behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
-Current delivery (2026-10-25): clean `33670fec` is live on the canonical phone
+Current delivery (2026-10-25): clean `0ac83353` is live on the canonical phone
 site. The latest native desktop artifact is clean `abf029e6`, SHA256
 `adc1ff307c51326697a872a30c827a18ab644d72c008337d91dcc7194e1ccad4`.
 The native package includes the Windows IPC and evaluation-readiness fixes;
@@ -218,3 +218,14 @@ newer safe/sys wrappers declare BSD-3-Clause, so native MIT wrapper labels canno
 be reused. Four helper grants are source-authenticated to locked crate archives.
 See COMPRESSION_NOTICES.md. Native Dev watcher relaunched for configuration;
 phone runtime/data/routes remain unchanged by these two native slices.
+
+
+Hosted helper notices are delivered in canonical phone source0ac83353, alongside
+the already packaged native notices. Exact installed helper binary/actual child,
+complete CLI text and both per-target immutable notice sidecars are verified.
+Canonical assets and Library/workspace/tournament reads pass; fresh before/after
+data/settings/routes/enabled/engine identity match. Temporary tasks are removed.
+An earlier transient Library404 recovered before publishing; its cause remains
+unproven, not attributed as a fix. See COMPRESSION_NOTICES.md/current delivery
+JSON. The native artifact staysabf029e6. Remaining20 source rows, recovery and
+rendered/native-window/physical checks remain open.

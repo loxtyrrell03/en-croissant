@@ -66,8 +66,23 @@ settings RPC. The release helper SHA256 is
 `be1eb13d15f517c9aff997f87ba6768b105941a6c488db00981051a317dbfa71`;
 its 6,230-byte notices have SHA256
 `75546853135bc1ddbef9982386b7745e56d0edba281d8ad4ea7cbb4dd1ff1610`.
-These are source/build/fixture checks. Hosted runtime delivery is pending;
-no live service or owner data was changed by those checks. The existing Stockfish source/licence
+Hosted source `0ac83353` is now live on the canonical phone route, shell SHA256
+`6008627c0999581c5e1eda248c3c13573012f06469ee8cbd16bbfcce0a63fd04`.
+The idle-guarded uncaptured publisher returned normally. Unpackaged readback
+verifies the installed helper binary, actual child process, both exact immutable
+sidecars and the installed CLI's complete text. The canonical app serves all
+expected assets and stable Library/workspace/tournament APIs; workspace,
+normalized Library content, settings, owner enabled state, engine process and
+all Serve routes match the immediate pre-publication baseline. Both task-owned
+deployment/verification actions were removed after successful terminal proof.
+The native artifact remains the `abf029e6` package above. Browser-rendered and
+physical-device verification remain separate.
+
+An initial Library-manifest read returned404 before publication, while the
+home process changed from54308 to23240. Repeated reads recovered with all25
+files/70 databases before the publisher ran. Its cause was not established;
+this notice milestone does not claim to repair that transient failure. The
+preservation comparison uses the fresh recovered baseline. The existing Stockfish source/licence
 resources are retained. This is not a complete third-party dependency inventory.
 
 The existing Dev watcher relaunched after the native resource configuration

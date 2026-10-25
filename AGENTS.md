@@ -1,3 +1,21 @@
+## 2026-10-25 hosted notice delivery
+
+- Clean0ac83353 / primary9128b7c5 is live on canonical phone HTTPS, shell SHA
+  6008627c0999581c5e1eda248c3c13573012f06469ee8cbd16bbfcce0a63fd04.
+  Home40080/actual helper37696, installed binarybe1eb13d.../complete CLI and
+  both exact target-specific notice sidecars verified through unpackaged backing.
+  Phone build24.77s/collector33.19s; native abf029e6 artifactadc1ff30 remains.
+  Ten owned files match. Idle/cold-engine/client/source/origin guards passed;
+  direct uncaptured publisher returned0, both owned tasks removed after proof.
+  Current workspace/normalized Library/settings/enabled/Serve/engine8536 remain;
+  repeated API reads show25 files/70 databases and exact served assets.
+- An initial Library404 and server restart54308->23240 occurred before our
+  publication; repeated reads recovered before staging. Cause is unproven;
+  do not relabel this as a repaired failure. Fresh recovered before/after data
+  baseline matches. No owner data/corpus migration. Browser/native-window/
+  physical checks, remaining20 source rows and recovery remain. See
+  docs/COMPRESSION_NOTICES.md/current delivery JSON.
+
 ## 2026-10-25 hosted helper compression notices
 
 - Standalone helper now uses its own authenticated notice manifest/full text;
