@@ -125,6 +125,7 @@ export type WebPrepTemporarySource = {
 };
 
 export type WebPrepWorkspace = {
+    dateRanges?: import("./gameDates").PhoneGameDateRanges;
     rootShapes?: WebDrawing[];
     drawings?: Record<string, WebDrawing[]>;
     id: string;
@@ -206,6 +207,9 @@ export type WebDatabasePreferenceKey =
     | "endDate"
     | "result";
 export type WebWorkspacePreferences = {
+    gameDates?: Partial<
+        Record<import("./gameDates").PhoneGameDateScope, import("./gameDates").PhoneGameDateRanges>
+    >;
     orientation?: WebColor;
     database?: Partial<Record<WebDatabasePreferenceKey, string>>;
     prep?: {

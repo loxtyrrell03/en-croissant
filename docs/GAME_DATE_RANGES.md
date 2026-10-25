@@ -34,8 +34,8 @@ Prep and date controls, plus actual native-query and online-query serializers.
 It covers both placements, source/mode independence, stored selection hydration,
 repair, calendar validation, delayed replies, help focus/Escape and the 25-hour
 October calendar day. Source tests and builds are separate from installed-app,
-rendered narrow/touch and physical-phone verification. Phone controls and their
-independent persisted date scopes remain a separate delivery slice.
+rendered narrow/touch and physical-phone verification. The phone implementation
+uses the same calendar control and pure date calculations, as described below.
 
 Primary `ac39c301` and clean delivery `74c3a1d6` pass 559 related frontend
 checks across 69 files and full types. The new date suites pass 17 checks/five
@@ -44,3 +44,39 @@ zero warnings/errors across 23 code files. Clean desktop and canonical-phone
 builds pass in 26.91/22.64 seconds; all 24 owned source/test/style files match.
 The compact private receipt records hashes and the phone bundle identity.
 These builds do not deploy the controls or add phone date UI.
+
+## Phone dates
+
+Phone Database and Prep now reuse the calendar control, including in their
+started move/training views. Database stores independent Local/Lichess All/
+Lichess Masters choices in each workspace's `workspacePreferences.gameDates`.
+Draft Prep has its own group, with independent Player/General and source-family
+slots; temporary imports have a separate slot. Starting Prep copies the entire
+Prep date map into its durable `dateRanges`, so a rolling choice keeps rolling
+after creation, file switches and remounts. Existing filters migrate once through
+the retained root writer; non-date explorer options keep their existing storage.
+
+Both the parent training/branch calculations and child source tables use the
+effective range. Pure Prep evidence and actual direct/proxy explorer URL builders
+resolve metadata again at use time. Midnight/focus/visibility refresh cached
+views; online abort guards discard superseded current/root requests. Chosen
+bounds are never discarded by the old picker defaults: an unsupported API
+request reports its error instead of silently showing a broader range.
+Recognizable invalid saved selections remain repairable; malformed map shapes
+use the existing preserved-workspace load failure path.
+
+Lazy synced sources are an intentional phone exception. Their static position
+shards and current En position helper expose aggregate move counts, without
+individual game dates. Filtering those counts by the latest game date would
+produce incorrect results. A date-filtered lazy source therefore shows the
+full-PGN requirement and blocks the query/Start action. Choosing All time restores
+its existing position query. Full PGN databases, temporary PGNs and online
+explorers support the new ranges; no corpus rebuild or owner-data migration is
+performed. Native local queries retain their existing full date support.
+
+Synthetic actual-phone controls cover custom calendars, file/source/mode
+independence, starting/remounting Prep, daily training-row refresh and explicit
+repair/clearing before a lazy query. Serializer/evidence tests cover inclusive
+bounds, rolling updates and unchanged unrelated options. These source/component
+checks do not establish browser layout, installed delivery or physical-phone
+verification.

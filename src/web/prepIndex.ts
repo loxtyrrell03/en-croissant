@@ -1,4 +1,5 @@
 import { INITIAL_FEN } from "chessops/fen";
+import { phonePrepGameDatesValid, resolvePhonePrepGameDates } from "./gameDates";
 import {
     getPrepMoveStrengthMap,
     normalizePrepBuilderSettings,
@@ -93,7 +94,16 @@ export type WebDatabaseStatsSort =
 
 export type WebPrepMoveStatsPrep = Pick<
     WebPrepWorkspace,
-    "mode" | "opponent" | "userColor" | "sourceIds" | "builder" | "startDate" | "endDate" | "result"
+    | "mode"
+    | "source"
+    | "dateRanges"
+    | "opponent"
+    | "userColor"
+    | "sourceIds"
+    | "builder"
+    | "startDate"
+    | "endDate"
+    | "result"
 > | null;
 
 export function collectGamesForSources(
@@ -245,6 +255,8 @@ export function getWebPrepMoveStats({
     engineMoves?: PrepBuilderEngineMove[];
     maxExamples?: number;
 }): WebPrepMoveStat[] {
+    if (prep && !phonePrepGameDatesValid(prep)) return [];
+    prep = prep ? resolvePhonePrepGameDates(prep) : null;
     const key = normalizeWebFen(fen || INITIAL_FEN);
     const userColor = prep?.userColor ?? getFenColor(fen || INITIAL_FEN);
     const opponentColor = oppositeWebColor(userColor);
@@ -817,9 +829,12 @@ export function getWebPrepDatabaseOpponent(
     if (/(?:_| )(?:lichess|chesscom|chess\.com)(?: recent| games)*$/i.test(onlineLabel)) {
         return getWebDatabaseLabelPlayerCandidate(onlineLabel);
     }
-    const match = database.name.replace(/\.(?:db3|pgn)$/i, "").trim().match(
-        /^(.*?)\s+[-–—]\s+(?:OTB\s+prep|OTB\s+games(?:\s+since\s+\d{4})?|as\s+(?:White|Black)|opponent\s+prep)(?:\s*\([\d,]+\s+games?\))?$/i,
-    );
+    const match = database.name
+        .replace(/\.(?:db3|pgn)$/i, "")
+        .trim()
+        .match(
+            /^(.*?)\s+[-–—]\s+(?:OTB\s+prep|OTB\s+games(?:\s+since\s+\d{4})?|as\s+(?:White|Black)|opponent\s+prep)(?:\s*\([\d,]+\s+games?\))?$/i,
+        );
     const candidate = match?.[1].trim();
     return candidate || null;
 }

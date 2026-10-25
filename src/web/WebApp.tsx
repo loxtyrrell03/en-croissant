@@ -1,4 +1,15 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
+import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
+import { useCalendarDay } from "@/hooks/useCalendarDay";
+import {
+  displayPhoneExplorerGameDates,
+  displayPhonePrepGameDates,
+  legacyPhoneDatabaseDates,
+  legacyPhonePrepDates,
+  phonePrepDateKey,
+} from "./gameDates";
+import { ALL_GAME_DATES } from "@/utils/gameDateRange";
+import { usePhoneGameDates } from "./usePhoneGameDates";
 import { webGameBoardSetup } from "./gameBoardSetup";
 import { PhoneTournaments } from "@/features/tournaments/PhoneTournaments";
 import "@lichess-org/chessground/assets/chessground.base.css";
@@ -133,7 +144,12 @@ import PhoneEnginePlansPanel from "./PhoneEnginePlansPanel";
 import { loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
-import { annotatePhoneDrawings, annotatePhoneMove, phonePrepAnnotationContext, savedPhoneDrawings } from "./phoneAnnotations";
+import {
+  annotatePhoneDrawings,
+  annotatePhoneMove,
+  phonePrepAnnotationContext,
+  savedPhoneDrawings,
+} from "./phoneAnnotations";
 import {
   newPhoneAnnotationOwner,
   phoneDrawingSeat,
@@ -314,7 +330,14 @@ import {
 } from "./workspacePreferences";
 import { usePhoneDatabasePreference } from "./useWorkspacePreferences";
 import { PhoneArchiveFilter, PhoneSavedImports } from "./PhoneSourceArchives";
-import { phoneDatabaseArchive, phoneHostedArchiveAncestor, phoneHostedEntries, phoneVisibleDatabases, phoneVisibleHostedFolders, setPhoneHostedArchived } from "./sourceArchives";
+import {
+  phoneDatabaseArchive,
+  phoneHostedArchiveAncestor,
+  phoneHostedEntries,
+  phoneVisibleDatabases,
+  phoneVisibleHostedFolders,
+  setPhoneHostedArchived,
+} from "./sourceArchives";
 import {
   getWebBoardPlayerLabels,
   getWebBoardSourceTitle,
@@ -719,10 +742,11 @@ function WebAppContent() {
     };
   }, [setLichessToken]);
 
-  const activePrep = useMemo(
-    () => state.prepWorkspaces.find((prep) => prep.id === state.activePrepId) ?? null,
-    [state.activePrepId, state.prepWorkspaces],
-  );
+  const calendarDay = useCalendarDay();
+  const activePrep = useMemo(() => {
+    const prep = state.prepWorkspaces.find((prep) => prep.id === state.activePrepId);
+    return prep ? displayPhonePrepGameDates(prep, new Date(`${calendarDay}T12:00:00`)) : null;
+  }, [state.activePrepId, state.prepWorkspaces, calendarDay]);
   const loadGameOnBoard = useCallback(
     (game: WebGame, options: { cursor?: number; orientation?: WebColor } = {}) => {
       const setup = webGameBoardSetup(game, options.orientation);
@@ -1350,7 +1374,17 @@ function WebAppContent() {
                 </Stack>
               </Center>
             ) : view === "tournaments" ? (
-              <PhoneTournaments onClose={() => setView("board")} onPrep={() => { setView("board"); setBoardPanelMode("prep"); }} onDatabase={id => { setSelectedDatabaseId(id); setView("files"); }} />
+              <PhoneTournaments
+                onClose={() => setView("board")}
+                onPrep={() => {
+                  setView("board");
+                  setBoardPanelMode("prep");
+                }}
+                onDatabase={(id) => {
+                  setSelectedDatabaseId(id);
+                  setView("files");
+                }}
+              />
             ) : view === "review" ? (
               <PhoneMistakeReview
                 state={state}
@@ -1435,17 +1469,24 @@ function WebAppContent() {
                   state={state}
                   setState={setState}
                   onOpen={(database) => {
-                    const game = state.gamesByDatabase[database.id]?.find(game => game.moves.length)
-                      ?? state.gamesByDatabase[database.id]?.[0];
+                    const game =
+                      state.gamesByDatabase[database.id]?.find((game) => game.moves.length) ??
+                      state.gamesByDatabase[database.id]?.[0];
                     if (game) {
                       loadGameOnBoard(game, { cursor: 0 });
                       setBoardPanelMode("moves");
                     }
                   }}
                   onPrep={(database) => {
-                    const prep = state.prepWorkspaces.find(prep => prep.sourceIds.includes(database.id));
+                    const prep = state.prepWorkspaces.find((prep) =>
+                      prep.sourceIds.includes(database.id),
+                    );
                     if (!prep) return;
-                    setState(current => ({ ...current, activePrepId: prep.id, board: { ...current.board, cursor: 0 } }));
+                    setState((current) => ({
+                      ...current,
+                      activePrepId: prep.id,
+                      board: { ...current.board, cursor: 0 },
+                    }));
                     setView("board");
                     setBoardPanelMode("prep");
                   }}
@@ -1543,12 +1584,18 @@ function BoardWorkspace({
   useEffect(() => {
     if (panelMode !== "moves") setDrawing(false);
   }, [panelMode]);
-  const updateDrawings = useCallback((update: PhoneDrawingUpdate) => {
-    setState((current) =>
-      annotatePhoneDrawings(current, annotationSeat,
-        typeof update === "function" ? update(savedPhoneDrawings(current)) : update),
-    );
-  }, [annotationSeat, setState]);
+  const updateDrawings = useCallback(
+    (update: PhoneDrawingUpdate) => {
+      setState((current) =>
+        annotatePhoneDrawings(
+          current,
+          annotationSeat,
+          typeof update === "function" ? update(savedPhoneDrawings(current)) : update,
+        ),
+      );
+    },
+    [annotationSeat, setState],
+  );
   const upcomingEngineFens = useMemo(
     () => activeLine.slice(cursor, cursor + 3).map((move) => move.fenAfter),
     [activeLine, cursor],
@@ -2179,7 +2226,9 @@ function BoardWorkspace({
                     key={annotationSeat}
                     move={activeLine[cursor - 1]}
                     onChange={(patch) =>
-                      setState((current) => annotatePhoneMove(current, cursor, patch, annotationSeat))
+                      setState((current) =>
+                        annotatePhoneMove(current, cursor, patch, annotationSeat),
+                      )
                     }
                     drawing={{
                       enabled: drawing,
@@ -3619,6 +3668,8 @@ function webMovesMatch(left: WebPrepLineMove, right: WebPrepLineMove | undefined
   );
 }
 
+const EMPTY_DATE_MOVE_STATS: WebPrepMoveStat[] = [];
+
 type WebDatabasePanelSource = "local" | WebDatabaseExplorerSource;
 type WebDatabasePanelView = "stats" | "games" | "options";
 
@@ -3677,28 +3728,38 @@ function DatabaseUnderBoardPanel({
     [selectedLocalIdValue],
   );
   const [localPlayerName, setLocalPlayerName] = usePhoneDatabasePreference(
-    state, setState, "player",
+    state,
+    setState,
+    "player",
     WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY,
     "",
   );
   const [localColorValue, setLocalColorValue] = usePhoneDatabasePreference(
-    state, setState, "color",
+    state,
+    setState,
+    "color",
     WEB_DATABASE_PANEL_COLOR_STORAGE_KEY,
     "white",
   );
   const localColor: WebColor = localColorValue === "black" ? "black" : "white";
-  const [localStartDate, setLocalStartDate] = usePhoneDatabasePreference(
-    state, setState, "startDate",
+  const [legacyLocalStartDate] = usePhoneDatabasePreference(
+    state,
+    setState,
+    "startDate",
     WEB_DATABASE_PANEL_START_DATE_STORAGE_KEY,
     "",
   );
-  const [localEndDate, setLocalEndDate] = usePhoneDatabasePreference(
-    state, setState, "endDate",
+  const [legacyLocalEndDate] = usePhoneDatabasePreference(
+    state,
+    setState,
+    "endDate",
     WEB_DATABASE_PANEL_END_DATE_STORAGE_KEY,
     "",
   );
   const [localResultValue, setLocalResultValue] = usePhoneDatabasePreference(
-    state, setState, "result",
+    state,
+    setState,
+    "result",
     WEB_DATABASE_PANEL_RESULT_STORAGE_KEY,
     "any",
   );
@@ -3711,21 +3772,72 @@ function DatabaseUnderBoardPanel({
   const [onlineStats, setOnlineStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
-  const { lichessOptions, setLichessOptions, mastersOptions, setMastersOptions, explorerOptions } =
-    useWebExplorerOptions();
+  const {
+    lichessOptions: rawLichessOptions,
+    setLichessOptions,
+    mastersOptions: rawMastersOptions,
+    setMastersOptions,
+    explorerOptions: legacyExplorerOptions,
+  } = useWebExplorerOptions();
+  const dateScope = usePhoneGameDates(
+    state,
+    setState,
+    "database",
+    source,
+    legacyPhoneDatabaseDates(
+      { startDate: legacyLocalStartDate, endDate: legacyLocalEndDate },
+      legacyExplorerOptions,
+    ),
+  );
+  const localStartDate = dateScope.bounds.since ?? "",
+    localEndDate = dateScope.bounds.until ?? "";
+  const lichessOptions = useMemo(
+    () =>
+      displayPhoneExplorerGameDates(
+        { ...rawLichessOptions, dateRange: dateScope.ranges["lichess-all"] ?? ALL_GAME_DATES },
+        "month",
+        new Date(`${dateScope.today}T12:00:00`),
+      ),
+    [rawLichessOptions, dateScope.ranges, dateScope.today],
+  );
+  const mastersOptions = useMemo(
+    () =>
+      displayPhoneExplorerGameDates(
+        { ...rawMastersOptions, dateRange: dateScope.ranges["lichess-masters"] ?? ALL_GAME_DATES },
+        "year",
+        new Date(`${dateScope.today}T12:00:00`),
+      ),
+    [rawMastersOptions, dateScope.ranges, dateScope.today],
+  );
+  const explorerOptions = useMemo(
+    () => ({ lichess: lichessOptions, masters: mastersOptions }),
+    [lichessOptions, mastersOptions],
+  );
   const hostedDatabases = useHostedDatabaseFolders();
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
   const sourceArchives = state.sourceArchives;
   const rememberedLocalId = resolveWebDatabaseSourceId(
-    state.workspacePreferences?.[phoneWorkspaceKey(state)]?.database?.local, databases,
+    state.workspacePreferences?.[phoneWorkspaceKey(state)]?.database?.local,
+    databases,
   );
   const visibleDatabases = useMemo(
-    () => phoneVisibleDatabases({ databases, sourceArchives }, rememberedLocalId ? [rememberedLocalId] : []),
+    () =>
+      phoneVisibleDatabases(
+        { databases, sourceArchives },
+        rememberedLocalId ? [rememberedLocalId] : [],
+      ),
     [databases, sourceArchives, rememberedLocalId],
   );
-  const retainedHostedPath = databases.find(database => database.id === rememberedLocalId)?.hostedPath;
+  const retainedHostedPath = databases.find(
+    (database) => database.id === rememberedLocalId,
+  )?.hostedPath;
   const sourceFolders = useMemo(
-    () => phoneVisibleHostedFolders({ sourceArchives }, hostedDatabases.folders, retainedHostedPath ? [retainedHostedPath] : []),
+    () =>
+      phoneVisibleHostedFolders(
+        { sourceArchives },
+        hostedDatabases.folders,
+        retainedHostedPath ? [retainedHostedPath] : [],
+      ),
     [sourceArchives, hostedDatabases.folders, retainedHostedPath],
   );
   const selectableDatabases = useMemo(
@@ -3760,6 +3872,13 @@ function DatabaseUnderBoardPanel({
   const isSelectedLocalLazy = Boolean(
     selectedLocalDatabase?.hostedLazy && selectedLocalDatabase.hostedPath,
   );
+  const dateIssue = !dateScope.valid
+    ? "Choose valid dates before searching."
+    : source === "local" &&
+        isSelectedLocalLazy &&
+        (dateScope.bounds.since || dateScope.bounds.until)
+      ? "Date filters require a full PGN import for this source. Choose All time to use its position index."
+      : null;
   const selectedLocalHostedPath =
     selectedLocalDatabase?.hostedPath ?? selectedLocalStoredHostedPath;
   const selectedLocalHostedFolder = useMemo(
@@ -3901,7 +4020,12 @@ function DatabaseUnderBoardPanel({
   );
 
   useEffect(() => {
-    if (source !== "local" || !isSelectedLocalLazy || !selectedLocalDatabase?.hostedPath) {
+    if (
+      dateIssue ||
+      source !== "local" ||
+      !isSelectedLocalLazy ||
+      !selectedLocalDatabase?.hostedPath
+    ) {
       setLocalLazyMoves([]);
       setLocalLazyLoading(false);
       setLocalLazyError(null);
@@ -3936,7 +4060,14 @@ function DatabaseUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, isSelectedLocalLazy, refreshKey, selectedLocalDatabase?.hostedPath, source]);
+  }, [
+    currentFen,
+    dateIssue,
+    isSelectedLocalLazy,
+    refreshKey,
+    selectedLocalDatabase?.hostedPath,
+    source,
+  ]);
 
   useEffect(() => {
     setSelectedLocalIdValue((current) => {
@@ -4111,7 +4242,7 @@ function DatabaseUnderBoardPanel({
 
   useEffect(() => {
     if (source === "local") return;
-    if (!lichessToken.trim()) {
+    if (dateIssue || !lichessToken.trim()) {
       setOnlineStats([]);
       setOnlineError(null);
       setOnlineLoading(false);
@@ -4150,9 +4281,17 @@ function DatabaseUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, databaseStrengthSettings, explorerOptions, lichessToken, refreshKey, source]);
+  }, [
+    currentFen,
+    dateIssue,
+    databaseStrengthSettings,
+    explorerOptions,
+    lichessToken,
+    refreshKey,
+    source,
+  ]);
 
-  const stats = source === "local" ? localStats : onlineStats;
+  const stats = dateIssue ? EMPTY_DATE_MOVE_STATS : source === "local" ? localStats : onlineStats;
   const sortedStats = useMemo(
     () => sortWebDatabaseMoveStats(stats, databaseStatsSort),
     [databaseStatsSort, stats],
@@ -4172,133 +4311,129 @@ function DatabaseUnderBoardPanel({
       ? getHostedDatabaseLeafLabel(selectedLocalHostedFolder.path)
       : "";
   const databaseCanStart =
-    source === "local"
+    !dateIssue &&
+    (source === "local"
       ? Boolean(selectedLocalId) && !loadingLocalSource && !localLazyLoading
-      : Boolean(lichessToken.trim()) && !onlineLoading;
+      : Boolean(lichessToken.trim()) && !onlineLoading);
   const startDatabaseMoves = () => {
     setStoredView("stats");
     setStoredPanelStage("moves");
   };
 
-  const databaseContent =
-    source === "local" && loadingLocalSource ? (
-      <Center h={150}>
-        <Stack align="center" gap="xs">
-          <Loader size="sm" />
-          <Text size="xs" c="dimmed">
-            {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
-          </Text>
-        </Stack>
-      </Center>
-    ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
-      <Center h={150}>
-        <Stack align="center" gap="xs">
-          <Loader size="sm" />
-          <Text size="xs" c="dimmed">
-            Loading one position from {sourceLabel}
-          </Text>
-        </Stack>
-      </Center>
-    ) : source === "local" && isSelectedLocalLazy && localLazyError ? (
+  const databaseContent = dateIssue ? null : source === "local" && loadingLocalSource ? (
+    <Center h={150}>
+      <Stack align="center" gap="xs">
+        <Loader size="sm" />
+        <Text size="xs" c="dimmed">
+          {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
+        </Text>
+      </Stack>
+    </Center>
+  ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
+    <Center h={150}>
+      <Stack align="center" gap="xs">
+        <Loader size="sm" />
+        <Text size="xs" c="dimmed">
+          Loading one position from {sourceLabel}
+        </Text>
+      </Stack>
+    </Center>
+  ) : source === "local" && isSelectedLocalLazy && localLazyError ? (
+    <UnderBoardEmpty
+      icon={<IconDatabase size={30} />}
+      title="Position index unavailable"
+      text={localLazyError}
+    />
+  ) : source !== "local" && !lichessToken.trim() ? (
+    <UnderBoardEmpty
+      icon={<IconDatabase size={30} />}
+      title={`${sourceLabel} locked`}
+      text="Sign in to use this source."
+    />
+  ) : onlineLoading && source !== "local" ? (
+    <Center h={150}>
+      <Stack align="center" gap="xs">
+        <Loader size="sm" />
+        <Text size="xs" c="dimmed">
+          Querying {sourceLabel}
+        </Text>
+      </Stack>
+    </Center>
+  ) : onlineError && source !== "local" ? (
+    <UnderBoardEmpty
+      icon={<IconDatabase size={30} />}
+      title="Explorer unavailable"
+      text={onlineError}
+    />
+  ) : visibleDatabaseView === "options" ? (
+    source === "local" && selectedLocalId && isSelectedLocalLazy ? (
       <UnderBoardEmpty
         icon={<IconDatabase size={30} />}
-        title="Position index unavailable"
-        text={localLazyError}
+        title="Lazy synced source"
+        text="This database is queried one position at a time on phone, so player/date/result filters need a full PGN import."
       />
-    ) : source !== "local" && !lichessToken.trim() ? (
+    ) : source === "local" && selectedLocalId ? (
+      <WebDatabaseOptionsPanel
+        sourceLabel={sourceLabel}
+        result={localResult}
+        onResultChange={(result) => setLocalResultValue(result)}
+      />
+    ) : source !== "local" ? (
+      <WebExplorerOptionsPanel
+        source={source}
+        lichessOptions={lichessOptions}
+        mastersOptions={mastersOptions}
+        onLichessOptionsChange={setLichessOptions}
+        onMastersOptionsChange={setMastersOptions}
+      />
+    ) : null
+  ) : visibleDatabaseView === "games" ? (
+    source === "local" && selectedLocalId && isSelectedLocalLazy ? (
       <UnderBoardEmpty
         icon={<IconDatabase size={30} />}
-        title={`${sourceLabel} locked`}
-        text="Sign in to use this source."
+        title="No game samples"
+        text="This synced database is lazy-loaded for move stats. Open the PGN from Files if you need individual source games on phone."
       />
-    ) : onlineLoading && source !== "local" ? (
-      <Center h={150}>
-        <Stack align="center" gap="xs">
-          <Loader size="sm" />
-          <Text size="xs" c="dimmed">
-            Querying {sourceLabel}
-          </Text>
-        </Stack>
-      </Center>
-    ) : onlineError && source !== "local" ? (
+    ) : source === "local" && selectedLocalId ? (
+      <WebDatabaseGamesList games={localPositionGames} onOpenGame={onOpenSourceGame} />
+    ) : source !== "local" ? (
       <UnderBoardEmpty
         icon={<IconDatabase size={30} />}
-        title="Explorer unavailable"
-        text={onlineError}
+        title="No game samples"
+        text={`${sourceLabel} move stats are available here; sample games are not downloaded on phone yet.`}
       />
-    ) : visibleDatabaseView === "options" ? (
-      source === "local" && selectedLocalId && isSelectedLocalLazy ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="Lazy synced source"
-          text="This database is queried one position at a time on phone, so player/date/result filters need a full PGN import."
-        />
-      ) : source === "local" && selectedLocalId ? (
-        <WebDatabaseOptionsPanel
-          sourceLabel={sourceLabel}
-          startDate={localStartDate}
-          endDate={localEndDate}
-          result={localResult}
-          onStartDateChange={setLocalStartDate}
-          onEndDateChange={setLocalEndDate}
-          onResultChange={(result) => setLocalResultValue(result)}
-        />
-      ) : source !== "local" ? (
-        <WebExplorerOptionsPanel
-          source={source}
-          lichessOptions={lichessOptions}
-          mastersOptions={mastersOptions}
-          onLichessOptionsChange={setLichessOptions}
-          onMastersOptionsChange={setMastersOptions}
-        />
-      ) : null
-    ) : visibleDatabaseView === "games" ? (
-      source === "local" && selectedLocalId && isSelectedLocalLazy ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="No game samples"
-          text="This synced database is lazy-loaded for move stats. Open the PGN from Files if you need individual source games on phone."
-        />
-      ) : source === "local" && selectedLocalId ? (
-        <WebDatabaseGamesList games={localPositionGames} onOpenGame={onOpenSourceGame} />
-      ) : source !== "local" ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="No game samples"
-          text={`${sourceLabel} move stats are available here; sample games are not downloaded on phone yet.`}
-        />
-      ) : null
-    ) : source === "local" && !hasLocalChoices ? (
-      <UnderBoardEmpty
-        icon={<IconDatabase size={30} />}
-        title="No local databases"
-        text={
-          hostedDatabases.loading
-            ? "Loading hosted database list."
-            : "Import PGNs or wait for the phone-site sync."
-        }
-      />
-    ) : source === "local" && !selectedLocalId ? (
-      <UnderBoardEmpty
-        icon={<IconDatabase size={30} />}
-        title="Pick a database"
-        text="Choose one synced source."
-      />
-    ) : stats.length === 0 ? (
-      <UnderBoardEmpty
-        icon={<IconDatabase size={30} />}
-        title="No moves here"
-        text={`${sourceLabel} has no games at this position.`}
-      />
-    ) : (
-      <CompactMoveTable
-        stats={sortedStats}
-        showState={false}
-        emptyLabel="No database moves"
-        onPlayMove={onPlayMove}
-        onOpenSourceGame={source === "local" && !isSelectedLocalLazy ? onOpenSourceGame : undefined}
-      />
-    );
+    ) : null
+  ) : source === "local" && !hasLocalChoices ? (
+    <UnderBoardEmpty
+      icon={<IconDatabase size={30} />}
+      title="No local databases"
+      text={
+        hostedDatabases.loading
+          ? "Loading hosted database list."
+          : "Import PGNs or wait for the phone-site sync."
+      }
+    />
+  ) : source === "local" && !selectedLocalId ? (
+    <UnderBoardEmpty
+      icon={<IconDatabase size={30} />}
+      title="Pick a database"
+      text="Choose one synced source."
+    />
+  ) : stats.length === 0 ? (
+    <UnderBoardEmpty
+      icon={<IconDatabase size={30} />}
+      title="No moves here"
+      text={`${sourceLabel} has no games at this position.`}
+    />
+  ) : (
+    <CompactMoveTable
+      stats={sortedStats}
+      showState={false}
+      emptyLabel="No database moves"
+      onPlayMove={onPlayMove}
+      onOpenSourceGame={source === "local" && !isSelectedLocalLazy ? onOpenSourceGame : undefined}
+    />
+  );
 
   return (
     <Stack gap={databaseStarted ? 4 : 6}>
@@ -4455,6 +4590,19 @@ function DatabaseUnderBoardPanel({
         </Stack>
       ) : null}
 
+      <Box data-phone-date-scope="database">
+        <GameDateRangeControl
+          key={dateScope.context}
+          value={dateScope.value}
+          precision={source === "local" ? "day" : source === "lichess-all" ? "month" : "year"}
+          onChange={dateScope.setRange}
+        />
+        {dateIssue && (
+          <Text size="xs" c="red" role="alert">
+            {dateIssue}
+          </Text>
+        )}
+      </Box>
       {databaseStarted ? (
         <Box className={classes.databaseStartedMoves}>
           <Group gap={4} wrap="nowrap" justify="flex-end" className={classes.startedMovesToolbar}>
@@ -5171,7 +5319,7 @@ function PrepUnderBoardPanel({
   const initialPrepSource = rememberedPrep?.sources?.[initialPrepMode];
   const initialPrepSourceRef = initialPrepSource
     ? initialPrepSource.sourceRef
-    : storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId;
+    : (storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId);
   const mountedPreferenceOwner = useRef(true);
   const currentPreferenceOwner = useRef(preferenceOwner);
   currentPreferenceOwner.current = preferenceOwner;
@@ -5187,15 +5335,12 @@ function PrepUnderBoardPanel({
   const [prepSource, setPrepSource] = useState<WebPrepSource>(
     initialPrepSource?.source ?? storedPrepSetup.source,
   );
-  const [prepStartDate, setPrepStartDate] = useState(storedPrepSetup.startDate ?? "");
-  const [prepEndDate, setPrepEndDate] = useState(storedPrepSetup.endDate ?? "");
+  const [prepStartDate] = useState(storedPrepSetup.startDate ?? "");
+  const [prepEndDate] = useState(storedPrepSetup.endDate ?? "");
   const [prepResult, setPrepResult] = useState<WebLocalResultFilter>(storedPrepSetup.result);
   const [sourceId, setSourceId] = useState<string | null>(
     () =>
-      resolveWebDatabaseSourceId(
-        initialPrepSourceRef,
-        state.databases,
-      ) ??
+      resolveWebDatabaseSourceId(initialPrepSourceRef, state.databases) ??
       state.databases[0]?.id ??
       null,
   );
@@ -5244,22 +5389,35 @@ function PrepUnderBoardPanel({
   const [prepCandidateSort, setPrepCandidateSort] = useState<
     WebPrepSortState<WebPrepCandidateSortColumn>
   >(() => getDefaultWebPrepSortState(storedPrepSetup.sortDefaults).candidate);
-  const { lichessOptions, setLichessOptions, mastersOptions, setMastersOptions, explorerOptions } =
-    useWebExplorerOptions();
+  const {
+    lichessOptions: rawLichessOptions,
+    setLichessOptions,
+    mastersOptions: rawMastersOptions,
+    setMastersOptions,
+    explorerOptions: legacyExplorerOptions,
+  } = useWebExplorerOptions();
   const hostedDatabases = useHostedDatabaseFolders();
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
   const sourceArchives = state.sourceArchives;
   const activeSourceIds = activePrep?.sourceIds;
   const rememberedPrepSourceId = initialPrepSource
-    ? resolveWebDatabaseSourceId(initialPrepSourceRef, state.databases) : null;
+    ? resolveWebDatabaseSourceId(initialPrepSourceRef, state.databases)
+    : null;
   const visibleDatabases = useMemo(
-    () => phoneVisibleDatabases({ databases: state.databases, sourceArchives },
-      activeSourceIds ?? (rememberedPrepSourceId ? [rememberedPrepSourceId] : [])),
+    () =>
+      phoneVisibleDatabases(
+        { databases: state.databases, sourceArchives },
+        activeSourceIds ?? (rememberedPrepSourceId ? [rememberedPrepSourceId] : []),
+      ),
     [state.databases, sourceArchives, activeSourceIds, rememberedPrepSourceId],
   );
   const sourceFolders = useMemo(
-    () => phoneVisibleHostedFolders({ sourceArchives }, hostedDatabases.folders,
-      visibleDatabases.flatMap(database => database.hostedPath ? [database.hostedPath] : [])),
+    () =>
+      phoneVisibleHostedFolders(
+        { sourceArchives },
+        hostedDatabases.folders,
+        visibleDatabases.flatMap((database) => (database.hostedPath ? [database.hostedPath] : [])),
+      ),
     [sourceArchives, hostedDatabases.folders, visibleDatabases],
   );
   const selectableDatabases = useMemo(
@@ -5293,6 +5451,41 @@ function PrepUnderBoardPanel({
   );
   const selectedPrepMode = activePrep?.mode ?? prepMode;
   const selectedPrepSource = activePrep?.source ?? prepSource;
+  const dateScope = usePhoneGameDates(
+    state,
+    setState,
+    "prep",
+    phonePrepDateKey(selectedPrepMode, selectedPrepSource),
+    legacyPhonePrepDates(
+      {
+        startDate: activePrep?.startDate ?? prepStartDate,
+        endDate: activePrep?.endDate ?? prepEndDate,
+      },
+      legacyExplorerOptions,
+    ),
+  );
+  const lichessOptions = useMemo(
+    () =>
+      displayPhoneExplorerGameDates(
+        { ...rawLichessOptions, dateRange: dateScope.value },
+        "month",
+        new Date(`${dateScope.today}T12:00:00`),
+      ),
+    [rawLichessOptions, dateScope.value, dateScope.today],
+  );
+  const mastersOptions = useMemo(
+    () =>
+      displayPhoneExplorerGameDates(
+        { ...rawMastersOptions, dateRange: dateScope.value },
+        "year",
+        new Date(`${dateScope.today}T12:00:00`),
+      ),
+    [rawMastersOptions, dateScope.value, dateScope.today],
+  );
+  const explorerOptions = useMemo(
+    () => ({ lichess: lichessOptions, masters: mastersOptions }),
+    [lichessOptions, mastersOptions],
+  );
   const selectedTemporarySource = activePrep?.temporarySource ?? draftTemporarySource;
   const selectedPrepSourceId = getWebPrepSelectedLocalSourceId({
     activePrep,
@@ -5314,6 +5507,11 @@ function PrepUnderBoardPanel({
     activePrepSourceDatabase?.hostedLazy &&
     activePrepSourceDatabase.hostedPath,
   );
+  const dateIssue = !dateScope.valid
+    ? "Choose valid dates before searching."
+    : selectedPrepSourceIsLazy && (dateScope.bounds.since || dateScope.bounds.until)
+      ? "Date filters require a full PGN import for this source. Choose All time to use its position index."
+      : null;
   const selectedPrepHostedPath = activePrepSourceDatabase?.hostedPath ?? draftPrepStoredHostedPath;
   const selectedPrepHostedFolder = useMemo(
     () =>
@@ -5345,8 +5543,8 @@ function PrepUnderBoardPanel({
   const activePrepHostedFolder = selectedPrepHostedFolder;
   const selectedMinGames = activePrep?.minGames ?? minGames;
   const selectedMoveLimit = activePrep?.moveLimit ?? moveLimit;
-  const selectedPrepStartDate = activePrep?.startDate ?? prepStartDate;
-  const selectedPrepEndDate = activePrep?.endDate ?? prepEndDate;
+  const selectedPrepStartDate = dateScope.bounds.since ?? "";
+  const selectedPrepEndDate = dateScope.bounds.until ?? "";
   const selectedPrepResult = normalizeWebLocalResultFilter(activePrep?.result ?? prepResult);
   const selectedPrepLocalFilters = useMemo<WebLocalGameFilters>(
     () => ({
@@ -5358,7 +5556,7 @@ function PrepUnderBoardPanel({
   );
   const selectedPrepFilteredSourceGames = useMemo(
     () =>
-      selectedPrepSource === "local"
+      selectedPrepSource === "local" || selectedPrepSource === "temporary"
         ? filterWebGamesByLocalFilters(selectedPrepSourceGames, selectedPrepLocalFilters)
         : selectedPrepSourceGames,
     [selectedPrepLocalFilters, selectedPrepSource, selectedPrepSourceGames],
@@ -5397,7 +5595,7 @@ function PrepUnderBoardPanel({
         ? Boolean(selectedTemporarySource)
         : Boolean(lichessToken.trim());
   const targetReady = selectedPrepMode === "general" || trimmedSelectedOpponentName.length >= 3;
-  const configReady = sourceReady && targetReady;
+  const configReady = sourceReady && targetReady && !dateIssue;
   const selectedSourceLabel =
     selectedPrepSource === "temporary"
       ? selectedTemporarySource
@@ -5470,14 +5668,16 @@ function PrepUnderBoardPanel({
         : [],
     [activePrep, branchFen, lazyRootPrepEngineMoves, lazyRootPrepMoves, selectedPrepSourceIsLazy],
   );
-  const displayedStats =
-    activePrep && isOnlinePrepSource(selectedPrepSource)
+  const displayedStats = dateIssue
+    ? EMPTY_DATE_MOVE_STATS
+    : activePrep && isOnlinePrepSource(selectedPrepSource)
       ? onlinePrepStats.filter((stat) => stat.total >= selectedMinGames).slice(0, selectedMoveLimit)
       : activePrep && selectedPrepSourceIsLazy
         ? lazyPrepStats.filter((stat) => stat.total >= selectedMinGames).slice(0, selectedMoveLimit)
         : stats;
-  const displayedRootStats =
-    activePrep && isOnlinePrepSource(selectedPrepSource)
+  const displayedRootStats = dateIssue
+    ? EMPTY_DATE_MOVE_STATS
+    : activePrep && isOnlinePrepSource(selectedPrepSource)
       ? onlineRootPrepStats
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
@@ -5621,7 +5821,7 @@ function PrepUnderBoardPanel({
 
   const persistPrepSetupSelection = (selection: WebPrepSetupSelection) => {
     if (!ownsPreferences()) return;
-    setState(current => rememberPhonePrepSource(current, preferenceOwner, selection));
+    setState((current) => rememberPhonePrepSource(current, preferenceOwner, selection));
     const selectedDatabase =
       selection.source === "local" && selection.sourceId
         ? (state.databases.find((database) => database.id === selection.sourceId) ?? null)
@@ -5646,14 +5846,9 @@ function PrepUnderBoardPanel({
       if (current && selectableDatabases.some((database) => database.id === current)) {
         return current;
       }
-      const storedSourceId = resolveWebDatabaseSourceId(
-        initialPrepSourceRef,
-        selectableDatabases,
-      );
+      const storedSourceId = resolveWebDatabaseSourceId(initialPrepSourceRef, selectableDatabases);
       if (storedSourceId) return storedSourceId;
-      const storedHostedPath = getWebDatabaseHostedPathFromSourceStorageValue(
-        initialPrepSourceRef,
-      );
+      const storedHostedPath = getWebDatabaseHostedPathFromSourceStorageValue(initialPrepSourceRef);
       if (
         storedHostedPath &&
         (hostedDatabases.loading ||
@@ -5700,7 +5895,7 @@ function PrepUnderBoardPanel({
   }, [onlineMode, onlineRange]);
 
   useEffect(() => {
-    if (!activePrep || !isOnlinePrepSource(selectedPrepSource)) {
+    if (dateIssue || !activePrep || !isOnlinePrepSource(selectedPrepSource)) {
       setOnlinePrepStats([]);
       setOnlineRootPrepStats([]);
       setOnlinePrepError(null);
@@ -5782,6 +5977,7 @@ function PrepUnderBoardPanel({
   }, [
     activePrep?.id,
     activePrep?.builder,
+    dateIssue,
     branchFen,
     currentFen,
     explorerOptions,
@@ -5790,7 +5986,12 @@ function PrepUnderBoardPanel({
   ]);
 
   useEffect(() => {
-    if (!activePrep || !selectedPrepSourceIsLazy || !activePrepSourceDatabase?.hostedPath) {
+    if (
+      dateIssue ||
+      !activePrep ||
+      !selectedPrepSourceIsLazy ||
+      !activePrepSourceDatabase?.hostedPath
+    ) {
       setLazyPrepMoves([]);
       setLazyRootPrepMoves([]);
       setLazyPrepError(null);
@@ -5854,6 +6055,7 @@ function PrepUnderBoardPanel({
   }, [
     activePrep?.id,
     activePrepSourceDatabase?.hostedPath,
+    dateIssue,
     branchFen,
     currentFen,
     selectedPrepSourceIsLazy,
@@ -5946,8 +6148,9 @@ function PrepUnderBoardPanel({
           ? [selectedTemporarySource.id]
           : [],
       temporarySource: selectedTemporarySource,
-      startDate: prepStartDate || undefined,
-      endDate: prepEndDate || undefined,
+      dateRanges: dateScope.ranges,
+      startDate: selectedPrepStartDate || undefined,
+      endDate: selectedPrepEndDate || undefined,
       result: prepResult,
       minGames,
       moveLimit,
@@ -5981,12 +6184,16 @@ function PrepUnderBoardPanel({
 
   const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
     if (!activePrep) return;
-    setState((current) => phoneWorkspaceOwner(current) !== preferenceOwner ? current : ({
-      ...current,
-      prepWorkspaces: current.prepWorkspaces.map((prep) =>
-        prep.id === activePrep.id ? updater(prep) : prep,
-      ),
-    }));
+    setState((current) =>
+      phoneWorkspaceOwner(current) !== preferenceOwner
+        ? current
+        : {
+            ...current,
+            prepWorkspaces: current.prepWorkspaces.map((prep) =>
+              prep.id === activePrep.id ? updater(prep) : prep,
+            ),
+          },
+    );
   };
 
   const markMoveDone = (stat: WebPrepMoveStat) => {
@@ -6159,7 +6366,9 @@ function PrepUnderBoardPanel({
   };
 
   const updatePrepMode = (mode: WebPrepMode) => {
-    setState(current => rememberPhonePrepSource(current, preferenceOwner, currentPrepSetupSelection));
+    setState((current) =>
+      rememberPhonePrepSource(current, preferenceOwner, currentPrepSetupSelection),
+    );
     applyPrepSetupSelection(
       restorePhonePrepSource(state, applyWebPrepModeChange(currentPrepSetupSelection, mode)),
     );
@@ -6177,20 +6386,6 @@ function PrepUnderBoardPanel({
     setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, moveLimit: next }));
     if (activePrep) updateActivePrepSettings({ moveLimit: next });
     else setMoveLimit(next);
-  };
-
-  const updatePrepStartDate = (value: string) => {
-    const next = normalizeWebDateFilter(value) ?? "";
-    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, startDate: next }));
-    if (activePrep) updateActivePrepSettings({ startDate: next || undefined });
-    else setPrepStartDate(next);
-  };
-
-  const updatePrepEndDate = (value: string) => {
-    const next = normalizeWebDateFilter(value) ?? "";
-    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, endDate: next }));
-    if (activePrep) updateActivePrepSettings({ endDate: next || undefined });
-    else setPrepEndDate(next);
   };
 
   const updatePrepResult = (value: WebLocalResultFilter) => {
@@ -6787,11 +6982,7 @@ function PrepUnderBoardPanel({
               )}
               {selectedPrepSource === "local" && activePrepSourceId && !selectedPrepSourceIsLazy ? (
                 <WebLocalFiltersControls
-                  startDate={selectedPrepStartDate}
-                  endDate={selectedPrepEndDate}
                   result={selectedPrepResult}
-                  onStartDateChange={updatePrepStartDate}
-                  onEndDateChange={updatePrepEndDate}
                   onResultChange={updatePrepResult}
                 />
               ) : null}
@@ -6928,6 +7119,25 @@ function PrepUnderBoardPanel({
         </>
       ) : null}
 
+      <Box data-phone-date-scope="prep">
+        <GameDateRangeControl
+          key={dateScope.context}
+          value={dateScope.value}
+          precision={
+            selectedPrepSource === "lichess-all"
+              ? "month"
+              : selectedPrepSource === "lichess-masters"
+                ? "year"
+                : "day"
+          }
+          onChange={dateScope.setRange}
+        />
+        {dateIssue && (
+          <Text size="xs" c="red" role="alert">
+            {dateIssue}
+          </Text>
+        )}
+      </Box>
       {showTrainingStage && activePrep ? (
         <Stack gap="xs">
           {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
@@ -7102,22 +7312,6 @@ function WebExplorerOptionsPanel({
             />
           </Group>
           <Group gap="xs" wrap="wrap" align="flex-end">
-            <TextInput
-              label="Since"
-              size="xs"
-              type="month"
-              value={lichessOptions.since ?? ""}
-              onChange={(event) => updateLichessOptions({ since: event.currentTarget.value })}
-              style={{ flex: "1 1 8.5rem" }}
-            />
-            <TextInput
-              label="Until"
-              size="xs"
-              type="month"
-              value={lichessOptions.until ?? ""}
-              onChange={(event) => updateLichessOptions({ until: event.currentTarget.value })}
-              style={{ flex: "1 1 8.5rem" }}
-            />
             <NumberInput
               label="Show moves"
               size="xs"
@@ -7166,30 +7360,6 @@ function WebExplorerOptionsPanel({
       ) : (
         <Group gap="xs" wrap="wrap" align="flex-end">
           <NumberInput
-            label="Since"
-            size="xs"
-            min={1952}
-            max={new Date().getFullYear()}
-            step={1}
-            value={mastersOptions.since ? Number(mastersOptions.since) : ""}
-            onChange={(value) =>
-              updateMastersOptions({ since: typeof value === "number" ? String(value) : undefined })
-            }
-            w={108}
-          />
-          <NumberInput
-            label="Until"
-            size="xs"
-            min={1952}
-            max={new Date().getFullYear()}
-            step={1}
-            value={mastersOptions.until ? Number(mastersOptions.until) : ""}
-            onChange={(value) =>
-              updateMastersOptions({ until: typeof value === "number" ? String(value) : undefined })
-            }
-            w={108}
-          />
-          <NumberInput
             label="Show moves"
             size="xs"
             min={1}
@@ -7216,19 +7386,11 @@ function WebExplorerOptionsPanel({
 
 function WebDatabaseOptionsPanel({
   sourceLabel,
-  startDate,
-  endDate,
   result,
-  onStartDateChange,
-  onEndDateChange,
   onResultChange,
 }: {
   sourceLabel: string;
-  startDate: string;
-  endDate: string;
   result: WebLocalResultFilter;
-  onStartDateChange: (value: string) => void;
-  onEndDateChange: (value: string) => void;
   onResultChange: (value: WebLocalResultFilter) => void;
 }) {
   return (
@@ -7241,14 +7403,7 @@ function WebDatabaseOptionsPanel({
           {sourceLabel}
         </Badge>
       </Group>
-      <WebLocalFiltersControls
-        startDate={startDate}
-        endDate={endDate}
-        result={result}
-        onStartDateChange={onStartDateChange}
-        onEndDateChange={onEndDateChange}
-        onResultChange={onResultChange}
-      />
+      <WebLocalFiltersControls result={result} onResultChange={onResultChange} />
     </Stack>
   );
 }
@@ -7361,40 +7516,16 @@ function WebLichessAccessControls({
 }
 
 function WebLocalFiltersControls({
-  startDate,
-  endDate,
   result,
-  onStartDateChange,
-  onEndDateChange,
   onResultChange,
 }: {
-  startDate: string;
-  endDate: string;
   result: WebLocalResultFilter;
-  onStartDateChange: (value: string) => void;
-  onEndDateChange: (value: string) => void;
   onResultChange: (value: WebLocalResultFilter) => void;
 }) {
-  const hasFilters = Boolean(startDate || endDate || result !== "any");
+  const hasFilters = result !== "any";
 
   return (
     <Group gap="xs" wrap="wrap" align="flex-end">
-      <TextInput
-        label="From"
-        size="xs"
-        type="date"
-        value={normalizeWebDateFilter(startDate) ?? ""}
-        onChange={(event) => onStartDateChange(event.currentTarget.value)}
-        style={{ flex: "1 1 8.5rem" }}
-      />
-      <TextInput
-        label="To"
-        size="xs"
-        type="date"
-        value={normalizeWebDateFilter(endDate) ?? ""}
-        onChange={(event) => onEndDateChange(event.currentTarget.value)}
-        style={{ flex: "1 1 8.5rem" }}
-      />
       <Select
         label="Result"
         size="xs"
@@ -7414,12 +7545,10 @@ function WebLocalFiltersControls({
         variant="default"
         disabled={!hasFilters}
         onClick={() => {
-          onStartDateChange("");
-          onEndDateChange("");
           onResultChange("any");
         }}
       >
-        Reset filters
+        Reset result
       </Button>
     </Group>
   );
@@ -8848,21 +8977,33 @@ function HostedFilesPanel({
         <Group gap="xs" wrap="wrap" justify="flex-end">
           <PhoneArchiveFilter checked={showArchived} onChange={setShowArchived} />
           <ActionIcon
-          aria-label="Refresh files"
-          className={embedded ? undefined : classes.filesRefreshButton}
-          size={embedded ? "md" : "lg"}
-          onClick={() => void load(path, true)}
-          loading={loading}
-        >
-          <IconRefresh size={embedded ? 16 : 20} />
-        </ActionIcon>
+            aria-label="Refresh files"
+            className={embedded ? undefined : classes.filesRefreshButton}
+            size={embedded ? "md" : "lg"}
+            onClick={() => void load(path, true)}
+            loading={loading}
+          >
+            <IconRefresh size={embedded ? 16 : 20} />
+          </ActionIcon>
         </Group>
       </Group>
 
-      {archivedFolder && <Group gap="xs" mb="xs">
-        <Text size="xs" c="dimmed" style={{ overflowWrap: "anywhere" }}>Archived folder: {archivedFolder}</Text>
-        <Button size="compact-xs" variant="light" onClick={() => setState(current => setPhoneHostedArchived(current, archivedFolder, false))}>Unarchive folder</Button>
-      </Group>}
+      {archivedFolder && (
+        <Group gap="xs" mb="xs">
+          <Text size="xs" c="dimmed" style={{ overflowWrap: "anywhere" }}>
+            Archived folder: {archivedFolder}
+          </Text>
+          <Button
+            size="compact-xs"
+            variant="light"
+            onClick={() =>
+              setState((current) => setPhoneHostedArchived(current, archivedFolder, false))
+            }
+          >
+            Unarchive folder
+          </Button>
+        </Group>
+      )}
 
       {embedded && listing && listing.parentPath !== null && (
         <Group gap="xs" mb="xs" wrap="wrap">
@@ -8913,88 +9054,119 @@ function HostedFilesPanel({
       {listing && (
         <ScrollArea.Autosize mah={embedded ? 420 : undefined}>
           <Box className={`${classes.itemList} ${embedded ? "" : classes.hostedFileList}`}>
-            {!visibleEntries.length && <Text size="sm" c="dimmed">{listing.entries.length ? "Turn on Show archived to restore hidden items." : "This folder is empty."}</Text>}
+            {!visibleEntries.length && (
+              <Text size="sm" c="dimmed">
+                {listing.entries.length
+                  ? "Turn on Show archived to restore hidden items."
+                  : "This folder is empty."}
+              </Text>
+            )}
             {visibleEntries.map((entry) => {
               const archived = phoneHostedArchiveAncestor(state, entry.path);
               const inherited = archived && archived !== entry.path;
-              const archiveAction = inherited ? `Archived by folder ${archived}` : `${archived ? "Unarchive" : "Archive"} ${entry.name}`;
-              return <div key={`${entry.type}-${entry.path}`} className={classes.hostedFileRow} data-hosted-path={entry.path}>
-                <button
-                key={`${entry.type}-${entry.path}`}
-                className={`${classes.listButton} ${embedded ? "" : classes.hostedFileButton}`}
-                type="button"
-                onClick={() => {
-                  if (entry.type === "directory") {
-                    if (
-                      preferFolderImport &&
-                      importHostedFolder &&
-                      entry.directPgnFileCount > 0 &&
-                      library
-                    ) {
-                      void importFolder(entry.path, false);
-                      return;
-                    }
-                    void load(entry.path);
-                    return;
-                  }
-                  if (entry.extension === "pdf") {
-                    window.open(getHostedRawFileUrl(entry), "_blank", "noopener,noreferrer");
-                    return;
-                  }
-                  void importHostedPgn(entry);
-                }}
-              >
-                <Group gap={embedded ? "xs" : "sm"} wrap="nowrap">
-                  {entry.type === "directory" ? (
-                    <IconFolder
-                      className={classes.listMainIcon}
-                      size={embedded ? 14 : 22}
-                      stroke={1.7}
-                    />
-                  ) : (
-                    <IconFileText
-                      className={classes.listMainIcon}
-                      size={embedded ? 14 : 22}
-                      stroke={1.7}
-                    />
-                  )}
-                  {entry.pinned && (
-                    <IconPinned className={classes.listPinIcon} size={embedded ? 12 : 15} />
-                  )}
-                  <Box className={classes.hostedFileText} miw={0}>
-                    <Text
-                      className={embedded ? undefined : classes.hostedFileName}
-                      fw={700}
-                      size={embedded ? "xs" : undefined}
-                      truncate
-                    >
-                      {entry.name}
-                    </Text>
-                    <Text
-                      className={embedded ? undefined : classes.hostedFileMeta}
-                      size={embedded ? "0.66rem" : undefined}
-                      c="dimmed"
-                      truncate
-                    >
-                      {entry.type === "directory"
-                        ? entry.pgnFileCount > 0
-                          ? pluralWeb(entry.pgnFileCount, "PGN")
-                          : "Folder"
-                        : `${entry.extension.toUpperCase()} · ${formatBytes(entry.sizeBytes)}`}
-                    </Text>
-                  </Box>
-                  {archived && <Badge size="xs" color="gray">Archived</Badge>}
-                  {entry.type === "directory" && !embedded && (
-                    <IconChevronRight className={classes.hostedFolderChevron} size={20} />
-                  )}
-                </Group>
-              </button>
-              <Tooltip label={archiveAction}>
-                <span><ActionIcon aria-label={archiveAction} disabled={Boolean(inherited)} variant="subtle" size="lg" style={{ minWidth: 40, minHeight: 40 }} onClick={() => setState(current => setPhoneHostedArchived(current, entry.path, !archived))}>
-                  {archived ? <IconArchiveOff size={18} /> : <IconArchive size={18} />}
-                </ActionIcon></span>
-              </Tooltip>
-              </div>;
+              const archiveAction = inherited
+                ? `Archived by folder ${archived}`
+                : `${archived ? "Unarchive" : "Archive"} ${entry.name}`;
+              return (
+                <div
+                  key={`${entry.type}-${entry.path}`}
+                  className={classes.hostedFileRow}
+                  data-hosted-path={entry.path}
+                >
+                  <button
+                    key={`${entry.type}-${entry.path}`}
+                    className={`${classes.listButton} ${embedded ? "" : classes.hostedFileButton}`}
+                    type="button"
+                    onClick={() => {
+                      if (entry.type === "directory") {
+                        if (
+                          preferFolderImport &&
+                          importHostedFolder &&
+                          entry.directPgnFileCount > 0 &&
+                          library
+                        ) {
+                          void importFolder(entry.path, false);
+                          return;
+                        }
+                        void load(entry.path);
+                        return;
+                      }
+                      if (entry.extension === "pdf") {
+                        window.open(getHostedRawFileUrl(entry), "_blank", "noopener,noreferrer");
+                        return;
+                      }
+                      void importHostedPgn(entry);
+                    }}
+                  >
+                    <Group gap={embedded ? "xs" : "sm"} wrap="nowrap">
+                      {entry.type === "directory" ? (
+                        <IconFolder
+                          className={classes.listMainIcon}
+                          size={embedded ? 14 : 22}
+                          stroke={1.7}
+                        />
+                      ) : (
+                        <IconFileText
+                          className={classes.listMainIcon}
+                          size={embedded ? 14 : 22}
+                          stroke={1.7}
+                        />
+                      )}
+                      {entry.pinned && (
+                        <IconPinned className={classes.listPinIcon} size={embedded ? 12 : 15} />
+                      )}
+                      <Box className={classes.hostedFileText} miw={0}>
+                        <Text
+                          className={embedded ? undefined : classes.hostedFileName}
+                          fw={700}
+                          size={embedded ? "xs" : undefined}
+                          truncate
+                        >
+                          {entry.name}
+                        </Text>
+                        <Text
+                          className={embedded ? undefined : classes.hostedFileMeta}
+                          size={embedded ? "0.66rem" : undefined}
+                          c="dimmed"
+                          truncate
+                        >
+                          {entry.type === "directory"
+                            ? entry.pgnFileCount > 0
+                              ? pluralWeb(entry.pgnFileCount, "PGN")
+                              : "Folder"
+                            : `${entry.extension.toUpperCase()} · ${formatBytes(entry.sizeBytes)}`}
+                        </Text>
+                      </Box>
+                      {archived && (
+                        <Badge size="xs" color="gray">
+                          Archived
+                        </Badge>
+                      )}
+                      {entry.type === "directory" && !embedded && (
+                        <IconChevronRight className={classes.hostedFolderChevron} size={20} />
+                      )}
+                    </Group>
+                  </button>
+                  <Tooltip label={archiveAction}>
+                    <span>
+                      <ActionIcon
+                        aria-label={archiveAction}
+                        disabled={Boolean(inherited)}
+                        variant="subtle"
+                        size="lg"
+                        style={{ minWidth: 40, minHeight: 40 }}
+                        onClick={() =>
+                          setState((current) =>
+                            setPhoneHostedArchived(current, entry.path, !archived),
+                          )
+                        }
+                      >
+                        {archived ? <IconArchiveOff size={18} /> : <IconArchive size={18} />}
+                      </ActionIcon>
+                    </span>
+                  </Tooltip>
+                </div>
+              );
             })}
           </Box>
         </ScrollArea.Autosize>
@@ -9043,7 +9215,11 @@ export function WebChessboard({
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
   const [pendingPromotion, setPendingPromotion] = useState<{ orig: Key; dest: Key } | null>(null);
-  const [drawingOrigin, setDrawingOrigin] = useState<{ key: Key; seat?: string; brush: WebDrawingBrush } | null>(null);
+  const [drawingOrigin, setDrawingOrigin] = useState<{
+    key: Key;
+    seat?: string;
+    brush: WebDrawingBrush;
+  } | null>(null);
   const drawingOriginRef = useRef(drawingOrigin);
   useBoardTouchGestures(boardRef, {
     enabled: !drawingBrush,
@@ -9097,7 +9273,9 @@ export function WebChessboard({
           } else {
             drawingOriginRef.current = null;
             setDrawingOrigin(null);
-            onDrawingsChange((current) => togglePhoneDrawing(current, origin.key, square, drawingBrush));
+            onDrawingsChange((current) =>
+              togglePhoneDrawing(current, origin.key, square, drawingBrush),
+            );
           }
         },
       },
@@ -9106,22 +9284,39 @@ export function WebChessboard({
         visible: true,
         eraseOnMovablePieceClick: !onDrawingsChange,
         shapes: onDrawingsChange ? phoneDrawingsToChessground(savedDrawings) : undefined,
-        onChange: onDrawingsChange ? (shapes: DrawShape[]) => {
-          const api = apiRef.current;
-          // Ordinary move/empty-square taps must not erase saved PGN marks.
-          // Native draw gestures notify before clearing drawable.current.
-          if (api?.state.drawable.current) onDrawingsChange(shapes);
-          else api?.setShapes(phoneDrawingsToChessground(savedDrawings));
-        } : undefined,
-        autoShapes: drawingOrigin && drawingBrush && drawingOrigin.seat === drawingSeat && drawingOrigin.brush === drawingBrush
-          ? [...engineArrowShapes, { orig: drawingOrigin.key, brush: drawingOrigin.brush }]
-          : engineArrowShapes,
+        onChange: onDrawingsChange
+          ? (shapes: DrawShape[]) => {
+              const api = apiRef.current;
+              // Ordinary move/empty-square taps must not erase saved PGN marks.
+              // Native draw gestures notify before clearing drawable.current.
+              if (api?.state.drawable.current) onDrawingsChange(shapes);
+              else api?.setShapes(phoneDrawingsToChessground(savedDrawings));
+            }
+          : undefined,
+        autoShapes:
+          drawingOrigin &&
+          drawingBrush &&
+          drawingOrigin.seat === drawingSeat &&
+          drawingOrigin.brush === drawingBrush
+            ? [...engineArrowShapes, { orig: drawingOrigin.key, brush: drawingOrigin.brush }]
+            : engineArrowShapes,
       },
       animation: {
         enabled: interactive,
       },
     };
-  }, [engineArrowShapes, fen, lastMoveUci, orientation, interactive, drawingBrush, drawingOrigin, drawingSeat, savedDrawings, onDrawingsChange]);
+  }, [
+    engineArrowShapes,
+    fen,
+    lastMoveUci,
+    orientation,
+    interactive,
+    drawingBrush,
+    drawingOrigin,
+    drawingSeat,
+    savedDrawings,
+    onDrawingsChange,
+  ]);
 
   const initialConfigRef = useRef(config);
 
