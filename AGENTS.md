@@ -1,3 +1,19 @@
+## 2026-10-25 phone Stockfish 19 source
+
+- Local phone live/Plans/report workers pin stockfish 19.0.1 and its matched
+  lite single-threaded JS/WASM pair. Identity comes from UCI for new lines,
+  reports and review exports. Legacy versioned evidence keeps its provenance;
+  missing identity uses generic Stockfish. Selection labels no longer assume
+  the PC helper's version. Existing *Stockfish18 exports are compatibility APIs.
+- Critical UCI/worker failures reject promptly and reset only their local
+  worker, allowing a fresh retry; cancelled/failed reports terminate their own
+  worker. All 76 focused phone checks, types, nine-file lint without warnings
+  or errors and the actual upstream lite WASM Node entry point pass (legal
+  White/Black depth-eight searches). See docs/ENGINE_VERSION_ROUTING.md.
+- This is source/component/WASM evidence, not rendered phone proof. Native 19
+  installation/catalog/defaults, clean combined builds and runtime publication
+  remain pending. Preserve the live helper root/task/ports and explicit On/Off.
+
 ## 2026-10-25 shared engine identity
 
 - The PC helper learns each worker's UCI name at requested startup and sends it

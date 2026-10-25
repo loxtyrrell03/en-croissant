@@ -53,6 +53,8 @@ export type PhoneReviewCard = {
     tacticalHistory?: TacticalGameHistory;
     alternativeReply?: TacticalMotifEvidence;
     tacticalClassification?: MistakeReviewMotifClassification;
+    /** Actual search identity when supplied; legacy cards remain unspecified. */
+    engineName?: string;
     before: number;
     after: number;
     drop: number;
@@ -201,6 +203,7 @@ export function createPhoneReviewCard(
         previousMoveUci: game.moves[index - 1]?.uci ?? undefined,
         tacticalHistory,
         tacticalClassification: motifs,
+        engineName: [...new Set([best.engineName?.trim(), reply.engineName?.trim()].filter(Boolean))].join(" / ") || undefined,
         bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
         refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),
         before,

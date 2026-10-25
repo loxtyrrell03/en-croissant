@@ -132,6 +132,8 @@ test("a cancelled report cannot abort its replacement's shared engine startup", 
 class ReportWorker extends EventTarget {
     static instances: ReportWorker[] = [];
     static silent = false;
+    static critical = false;
+    static engineName = "Stockfish 19 Lite fixture";
     commands: string[] = [];
     terminated = false;
     constructor() {
@@ -144,11 +146,11 @@ class ReportWorker extends EventTarget {
             if (this.terminated) return;
             const lines =
                 command === "uci"
-                    ? ["uciok"]
+                    ? [`id name ${ReportWorker.engineName}`, "uciok"]
                     : command === "isready"
                       ? ["readyok"]
                       : command.startsWith("go ") && !ReportWorker.silent
-                        ? [info.line, "bestmove e2e4"]
+                        ? ReportWorker.critical ? ["info string CRITICAL ERROR: Invalid position"] : [info.line, "bestmove e2e4"]
                         : [];
             for (const data of lines) this.dispatchEvent(new MessageEvent("message", { data }));
         });
@@ -169,7 +171,26 @@ test("local reports own their worker and send combined limits through the real s
     const worker = ReportWorker.instances.at(-1)!;
     expect(worker.commands).toContain("go depth 8 movetime 40");
     expect(worker.terminated).toBe(true);
-    expect(result[0]).toMatchObject({ executionLocation: "phone", depth: 7 });
+    expect(result[0]).toMatchObject({ executionLocation: "phone", depth: 7, engineName: "Stockfish 19 Lite fixture" });
+});
+
+test("a critical local report failure rejects immediately and a new owned worker can recover", async () => {
+    ReportWorker.silent = false;
+    ReportWorker.critical = true;
+    vi.stubGlobal("Worker", ReportWorker);
+    const request = { fen, multipv: 1, reportLimits: limits, signal: new AbortController().signal };
+    await expect(analyzeBoundedWebReport("", request)).rejects.toThrow(/rejected this position/);
+    const failed = ReportWorker.instances.at(-1)!;
+    expect(failed.terminated).toBe(true);
+    ReportWorker.critical = false;
+    ReportWorker.engineName = "Stockfish 20 custom fixture";
+    try {
+        expect((await analyzeBoundedWebReport("", request))[0].engineName).toBe(ReportWorker.engineName);
+        expect(ReportWorker.instances.at(-1)).not.toBe(failed);
+    } finally {
+        ReportWorker.engineName = "Stockfish 19 Lite fixture";
+        ReportWorker.critical = false;
+    }
 });
 test("cancelling a silent local report terminates only its owned worker", async () => {
     ReportWorker.silent = true;
