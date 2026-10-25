@@ -14,6 +14,8 @@ owner edit or unmount. File lookup does not start an engine. Existing profile
 IDs, labels, images, visibility, search limits and explicit tuning values remain;
 discovered defaults only fill missing settings. Metadata can refresh the known
 installed version/path without replacing the owner's choices.
+Matching is by executable path; a reused managed ID cannot repoint an owner's
+different install. A newer saved engine version is never downgraded by discovery.
 
 Engine edits use an ordered writer that captures an immutable JSON snapshot.
 Native file output is staged beside the destination and renamed into place;
@@ -35,11 +37,12 @@ it is not a durable-write receipt. Migration code must await the preference
 store's write/`flush()` before marking an upgrade complete. The controller owns
 failure status so rejected UI writes cannot silently disappear.
 
-Seventeen synthetic checks cover unreadable/empty stores, preserved settings,
+Twenty focused synthetic checks cover unreadable/empty stores, preserved settings,
 native staged replacement, failed/uncertain/overlapping saves, observed external
 edits, mutation after capture, real startup/retry/remount behavior, enabled/paused
-analysis and stale replies. They join 587 passing related frontend checks across
-75 files; full types pass. Scoped lint has one existing engine-options effect
+analysis and stale replies. The 587-check related source baseline passes across 75 files; the final
+identity/newer-version cases add three passing focused checks. Full types pass
+on the baseline; clean combined verification is recorded separately. Scoped lint has one existing engine-options effect
 warning and no errors. This is source/component evidence, with no manual profile
 migration, binary install or service restart performed by this milestone.
 
