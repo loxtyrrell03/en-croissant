@@ -56,7 +56,7 @@ are source-verified with real process-termination fixtures; see
 ../../EVALUATION_BUILD_RECOVERY.md. The reviewed acquisition backend is also
 source-verified in ../../EVALUATION_DOWNLOAD_REVIEW.md. Validated persistent
 source activation and the chosen A Settings controls are implemented and tested
-in ../../EVALUATION_DATA_SELECTION.md. Native packaging and actual rendered
-interaction checks remain separate gates; browser control is unavailable. Existing
+in ../../EVALUATION_DATA_SELECTION.md. The combined native package is verified there. Actual rendered
+interaction remains a separate gate; browser control is unavailable. Existing
 bounded builder/output ownership is retained. Runtime delivery and physical-device
 evidence remain separate from prototype, source and fixture results.

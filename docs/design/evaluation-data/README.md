@@ -36,4 +36,5 @@ acquisition backend in [EVALUATION_DOWNLOAD_REVIEW.md](../../EVALUATION_DOWNLOAD
 Persistent folder activation and the chosen UI are source-verified in
 [EVALUATION_DATA_SELECTION.md](../../EVALUATION_DATA_SELECTION.md).
 No real archive or owner data is changed by the prototypes or synthetic fixtures.
-Rendered application interaction and delivery remain future gates.
+The combined native package is verified in EVALUATION_DATA_SELECTION.md.
+Rendered application interaction and physical-device checks remain separate gates.

@@ -3615,7 +3615,6 @@
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
     "remaining": [
-      "native packaging for subsequent backends and UI",
       "rendered verification"
     ],
     "packageSource": "f33263de887f2a2a496eda4753288a1722586220",
@@ -4219,7 +4218,7 @@
     }
   },
   "nativeEvaluationDataDesign": {
-    "status": "direction-A-implemented-and-source-verified-package-rendered-pending",
+    "status": "direction-A-implemented-source-and-native-package-verified-rendered-pending",
     "selected": "A - Settings row + dialogs",
     "ownerSelected": true,
     "alternativesPresented": 3,
@@ -4274,9 +4273,10 @@
     "nativePackageVerified": false,
     "renderedAppVerified": false,
     "remaining": [
-      "native packaging and rendered verification"
+      "rendered verification"
     ],
-    "laterUiSourceVerified": "docs/EVALUATION_DATA_SELECTION.md"
+    "laterUiSourceVerified": "docs/EVALUATION_DATA_SELECTION.md",
+    "laterCombinedNativePackageVerified": true
   },
   "nativeReviewedEvaluationDownload": {
     "sourceSnapshot": "7128c5ed",
@@ -4322,16 +4322,17 @@
     "nativePackageVerified": false,
     "renderedAppVerified": false,
     "remaining": [
-      "native packaging and rendered verification"
+      "rendered verification"
     ],
-    "laterUiSourceVerified": "docs/EVALUATION_DATA_SELECTION.md"
+    "laterUiSourceVerified": "docs/EVALUATION_DATA_SELECTION.md",
+    "laterCombinedNativePackageVerified": true
   },
   "nativeEvaluationSourceSelection": {
     "novelty": [
       "3ab6cf2e",
       "209593ff"
     ],
-    "status": "explicit-folder-selection-and-approved-A-ui-source-verified-package-pending",
+    "status": "native-package-verified-rendered-and-default-discovery-audit-pending",
     "primaryAndSeparateDeliveryCheckout": true,
     "nativeLibraryTestsPerCheckout": 101,
     "newSourceTests": 12,
@@ -4372,15 +4373,151 @@
     },
     "phoneServiceRepointed": false,
     "automaticDefaultDiscoveryAdded": false,
-    "nativePackageVerified": false,
+    "nativePackageVerified": true,
     "browserRenderedApp": false,
     "nativeWindowVerified": false,
     "physicalPhoneVerified": false,
     "remaining": [
-      "native package verification",
       "rendered narrow/help interaction",
       "default-discovery and explicit reset audit",
       "other directory actions audit"
     ]
+  },
+  "currentNativeEvaluationDataPackage": {
+    "sourceCommit": "97b66650b088c4cb116cae67a65c319d020cf7a1",
+    "exeBytes": 48861696,
+    "exeSha256": "a1a1f83361e2b3b868ff05843844cc68ec1556923c9dec105dfb1e4ceb16f51f",
+    "assets": [
+      {
+        "name": "index-ConodTCm.js",
+        "bytes": 292437,
+        "sha256": "57386773784edbb96604bf089f52be0bb0ff26c8309aca498fa7f6aff3a01360",
+        "encoding": "brotli",
+        "compressedBytes": 89588,
+        "compressedSha256": "f75423d3df00d1d29c21dbc7a295b52eb29a1e42ac0afd3af19a858171bd201c",
+        "embedded": true
+      },
+      {
+        "name": "App-s5SzSv0j.js",
+        "bytes": 197588,
+        "sha256": "8c49021d5ed0b590fda5992bc43e005630edca7ca407f77dfa2e2365dd11809e",
+        "encoding": "brotli",
+        "compressedBytes": 56803,
+        "compressedSha256": "857b3d15b43663b17d1fac8ab712ec2694694bf88401900e5a49e74b7be772bc",
+        "embedded": true
+      },
+      {
+        "name": "SettingsPage-C6mgokt9.js",
+        "bytes": 73923,
+        "sha256": "96e47e55ff56ea702f0c4ce72c68660d030d5bf1dda6dc88dba8d3bbcf6e83cd",
+        "encoding": "brotli",
+        "compressedBytes": 21225,
+        "compressedSha256": "0a282560c5e3dd5a3408a306ab40a0824c275f626fbd66c830631fa0b37fecd3",
+        "embedded": true
+      },
+      {
+        "name": "bindings-B9iyyBPa.js",
+        "bytes": 21768,
+        "sha256": "a7d1c1746cd4a4cbb9a5ef67635a6c4f7cd0c8bd52fbbdb181c7ce335a438839",
+        "encoding": "brotli",
+        "compressedBytes": 3105,
+        "compressedSha256": "026db541d97fdb012a25b7273006cb152bf132865a85a93ed99f1f9efc7316dd",
+        "embedded": true
+      },
+      {
+        "name": "api-BtRZAcFR.js",
+        "bytes": 9642,
+        "sha256": "89023207e4dd08af523c991401c8d904de9814c726124bf40600cf93c57ae497",
+        "encoding": "brotli",
+        "compressedBytes": 3710,
+        "compressedSha256": "8565c05e0e9c2488b4f14eec6d718bad48de209d0d6fdabffadc77bfa05aeb49",
+        "embedded": true
+      },
+      {
+        "name": "EvalListener-CdWMVly7.js",
+        "bytes": 85598,
+        "sha256": "94364e7584e68d4b60e97d19a6d59bc397ca05c52d939afa423986cf3e7ed048",
+        "encoding": "brotli",
+        "compressedBytes": 29501,
+        "compressedSha256": "d03900b40653a892db01544c7d57266083e45cd31ad8c3de386ecd837e2064b8",
+        "embedded": true
+      },
+      {
+        "name": "BestMoves-BiSQdSu1.js",
+        "bytes": 17614,
+        "sha256": "2bd896ff55964f05a3ae20574ec5c089750e4526a17d5b9b286c3afff59f5116",
+        "encoding": "brotli",
+        "compressedBytes": 6719,
+        "compressedSha256": "6dca84e5e60de882db13d2f223a968e0a704dfe9fc5f7be8b7a7a617924c905c",
+        "embedded": true
+      },
+      {
+        "name": "EnginePanelContent-DFzTSN1Y.js",
+        "bytes": 15371,
+        "sha256": "8bce19f020452e374dcfe9c1789f0970d6658c3cde6a612178fed198253b4936",
+        "encoding": "brotli",
+        "compressedBytes": 6201,
+        "compressedSha256": "58da6f96027445324df2dc277733ecf9acfd934c27a76aea07b8dc6bf260bb79",
+        "embedded": true
+      },
+      {
+        "name": "App-C6tpCyFQ.css",
+        "bytes": 78146,
+        "sha256": "aad62e69ab184d0d54ba4726e5ad6707a52bf31ed4f00eea9dc1e019be4bd285",
+        "encoding": "brotli",
+        "compressedBytes": 9357,
+        "compressedSha256": "777d6c4a1dd5461421568ad01fed7251a3d4890101280319c9bb5e49a16e24a4",
+        "embedded": true
+      },
+      {
+        "name": "SettingsPage-BImvOGMM.css",
+        "bytes": 1645,
+        "sha256": "65ca92776ded0031a04ca6e6009360482d8fea993473f1aad489fc6dcf254fff",
+        "encoding": "brotli",
+        "compressedBytes": 473,
+        "compressedSha256": "61d6ef7cf72da61f4c381ce0210d225d7700067075b2607641fc22836aceec84",
+        "embedded": true
+      }
+    ],
+    "nativeSelectionAndDownloadContractsEmbedded": true,
+    "exactWindowsIpcShimEmbedded": true,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "exactNoticeResource": true,
+    "noticeSha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a",
+    "nativeWindowVerified": false,
+    "browserRendered": false,
+    "phoneRuntimeChanged": false,
+    "ownerDataWritten": false,
+    "corpusCopied": false,
+    "primarySourceCommit": "46476bebeca6cfc9b8cc6ca800e6b15b89f66ed1",
+    "nativeCargoSeconds": 120,
+    "frontendSeconds": 24.2,
+    "existingNativeWarnings": 22,
+    "matchingProductAndTestFiles": 28,
+    "nativeLibraryChecksPerCheckout": 101,
+    "focusedFrontendChecksPerCheckout": 48,
+    "types": true,
+    "existingScopedLintWarnings": 1,
+    "scopedLintErrors": 0,
+    "actualReleaseCliCases": 15,
+    "releaseCliSha256": "e6d532d4eba85b6b90a61043854bc4e655e420b85d98434e23644a703fefd98e",
+    "aboutFullNoticeLiteralVerified": true,
+    "restoredBuildGeneratedOutputs": [
+      {
+        "path": "scripts/generated/otb-prep-database.js",
+        "generatedSha256": "72efd94c235a3dcc84c042c225f7fad984c70e52da1b14036599afd1c3d3642c",
+        "restoredSourceSha256": "6e356e819672b17b2ef7f7d066841cfd9947121e694d84587ff7a5727efe3564"
+      },
+      {
+        "path": "scripts/generated/shared-review-service.js",
+        "generatedSha256": "8fa9aef65947dfded34a281b00a0ea82c2b15b77060e664de09f6af07d54d13b",
+        "restoredSourceSha256": "69ec7d765bace20d72b65e4a7af427f974113752b62501b8080a1fed26b6df87"
+      }
+    ],
+    "cleanCheckoutVerified": true,
+    "rollbackVerified": true,
+    "explicitDevRestart": false,
+    "newDatasetOrCorpusCopy": false
   }
 }

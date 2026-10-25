@@ -69,3 +69,17 @@ phone service or add a phone corpus builder. Hosted phone routes, service
 choices, Library/opening/OTB data and running sessions remain separate. Browser
 control is unavailable; component/static/package evidence does not establish
 rendered 320/390-pixel, touch, native-window or physical-phone verification.
+
+The combined native package from clean `97b66650` (primary source `46476beb`)
+passes: 48,861,696 bytes, SHA-256
+`a1a1f83361e2b3b868ff05843844cc68ec1556923c9dec105dfb1e4ceb16f51f`.
+Native release compilation takes 120 seconds with 22 existing warnings; the
+frontend build takes 24.20 seconds. Ten exact embedded JavaScript/CSS assets
+cover boot, Settings, App, source bindings/reads and evaluation consumers. Native
+commands/event, the Windows IPC shim, all 102 Stockfish/source resources and
+the full About/standalone notice text match. The rebuilt release CLI passes all
+15 synthetic cases. Two reviewed generated service outputs were restored to
+exact source bytes in the delivery checkout; primary owner changes were kept.
+The prior verified executable remains as the task's rollback artifact. No app
+was launched or manually restarted, and no phone runtime was published by this
+milestone. This proves package linkage, not rendered or native-window behaviour.

@@ -1,3 +1,17 @@
+## 2026-10-25 evaluation controls native package
+
+- Clean97b66650/primary46476beb packages48,861,696 bytes, SHA256
+  a1a1f83361e2b3b868ff05843844cc68ec1556923c9dec105dfb1e4ceb16f51f.
+  Native120s/22 existing warnings and frontend24.20s pass. Ten exact JS/CSS
+  assets, source/review/recovery commands/event, IPC shim, full notices and
+  all102 engine/source resources match; actual release CLI15 cases pass.
+- Existing build target/cache reused; current verified rollback kept. Two
+  reviewed generated service outputs restored only in clean checkout;
+  primary owner remainder preserved. No native launch/manual Dev restart,
+  corpus copy/profile activation or phone publication. Rendered/help/touch,
+  native-window and physical proof remain; default/reset/other-source audit
+  remains active. See docs/EVALUATION_DATA_SELECTION.md/current delivery JSON.
+
 ## 2026-10-25 evaluation folder and Settings controls
 
 - Approved A is implemented in native Directories: checked folder choice and
@@ -15,8 +29,9 @@
   CLI cases; normal registry22 existing warnings, lint0 errors/one old warning.
   Actual retained-store metadata/sample and one real lookup pass read-only;
   no corpus copy or preference activation. Phone service stays separate.
-  Package/rendered/native-window/physical proof remain distinct; browser
-  control unavailable. See docs/EVALUATION_DATA_SELECTION.md. Full goal active.
+  Combined native package is verified separately; rendered/native-window/
+  physical proof remains unavailable. See docs/EVALUATION_DATA_SELECTION.md.
+  Full goal and remaining default/reset/source audit stay active.
 
 ## 2026-10-25 reviewed evaluation download backend
 
