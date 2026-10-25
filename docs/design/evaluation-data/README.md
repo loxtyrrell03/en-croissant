@@ -2,8 +2,8 @@
 
 The recovery/history audit confirmed a missing native evaluation data-management
 surface. En already has a bounded optional builder and installed-store readers;
-its Settings page has no reviewed download/recovery flow or validated source-folder
-activation. The original Novelty flow separates optional acquisition from using
+its former Settings page lacked reviewed download/recovery and validated source-folder
+activation. Those native controls are now implemented in the approved A layout. The original Novelty flow separates optional acquisition from using
 finished data and restores interrupted jobs without silently deleting them.
 
 These three editable SVG sheets map that flow into En's existing Settings style:
@@ -29,10 +29,11 @@ The B/C sheets remain review alternatives, not implementation targets.
 
 SVG text widths are checked against the installed native serif font and the
 sheets are rasterized for visual review without controlling a browser or app.
-These remain prototypes of the UI. The native journal, process lease and guarded
+These remain editable design artifacts, not rendered-app proof. The native journal, process lease and guarded
 recovery commands are implemented separately in
 [EVALUATION_BUILD_RECOVERY.md](../../EVALUATION_BUILD_RECOVERY.md), and the reviewed
 acquisition backend in [EVALUATION_DOWNLOAD_REVIEW.md](../../EVALUATION_DOWNLOAD_REVIEW.md).
-Persistent folder activation and the chosen UI remain to implement.
+Persistent folder activation and the chosen UI are source-verified in
+[EVALUATION_DATA_SELECTION.md](../../EVALUATION_DATA_SELECTION.md).
 No real archive or owner data is changed by the prototypes or synthetic fixtures.
 Rendered application interaction and delivery remain future gates.

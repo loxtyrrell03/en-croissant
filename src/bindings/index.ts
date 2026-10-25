@@ -13,6 +13,7 @@ export type BestMoveSource = "lichess" | "chessdb";
 export type BestMoves = Omit<BestMovesT, "score"> & {
     score: Score;
     source?: BestMoveSource | null;
+    evaluationSourceEpoch?: number;
 };
 
 export type DatabaseInfo =

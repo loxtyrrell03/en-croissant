@@ -13,7 +13,7 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { useHotkeys, useMediaQuery } from "@mantine/hooks";
 import {
   IconBook,
   IconBrush,
@@ -87,6 +87,7 @@ import PiecesSelect from "./PiecesSelect";
 import RepertoireMinGamesSetting from "./RepertoireMinGamesSetting";
 import classes from "./SettingsPage.module.css";
 import SettingsSwitch from "./SettingsSwitch";
+import EvaluationDataSettings from "./EvaluationDataSettings";
 import SoundSelect from "./SoundSelect";
 import ThemeButton from "./ThemeButton";
 import VolumeSlider from "./VolumeSlider";
@@ -222,6 +223,8 @@ function TextSetting({
 export default function Page() {
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<SettingCategory>("board");
+  const compact = useMediaQuery("(max-width: 700px)");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [keyMap, setKeyMap] = useAtom(keyMapAtom);
@@ -754,6 +757,14 @@ export default function Page() {
       },
       // Directories settings
       {
+        id: "evaluation-data",
+        category: "directories",
+        title: "Evaluation data",
+        description: "Downloaded evaluations, folders and build recovery",
+        keywords: ["evaluations", "data", "download", "recovery", "folder", "lichess"],
+        render: () => <EvaluationDataSettings />,
+      },
+      {
         id: "files-directory",
         category: "directories",
         title: t("Settings.Directories.Files"),
@@ -948,7 +959,7 @@ export default function Page() {
 
     if (filteredSettings.length === 0) {
       return (
-        <Card withBorder p="lg" className={classes.card} w="100%">
+        <Card withBorder p={compact ? "sm" : "lg"} className={classes.card} w="100%">
           <Text c="dimmed" ta="center">
             No settings found for "{searchQuery}"
           </Text>
@@ -969,7 +980,7 @@ export default function Page() {
     );
 
     return (
-      <Card withBorder p="lg" className={classes.card} w="100%">
+      <Card withBorder p={compact ? "sm" : "lg"} className={classes.card} w="100%">
         {Object.entries(groupedSettings).map(([category, categorySettings]) => (
           <div key={category}>
             <Group gap="xs" mt="md" mb="xs">
@@ -978,11 +989,19 @@ export default function Page() {
                 {categoryInfo[category as SettingCategory].title}
               </Text>
             </Group>
-            {categorySettings.map((setting) => (
-              <SettingRow key={setting.id} title={setting.title} description={setting.description}>
-                {setting.render()}
-              </SettingRow>
-            ))}
+            {categorySettings.map((setting) =>
+              setting.id === "evaluation-data" ? (
+                <EvaluationDataSettings key={setting.id} />
+              ) : (
+                <SettingRow
+                  key={setting.id}
+                  title={setting.title}
+                  description={setting.description}
+                >
+                  {setting.render()}
+                </SettingRow>
+              ),
+            )}
           </div>
         ))}
       </Card>
@@ -991,15 +1010,19 @@ export default function Page() {
 
   const renderCategorySettings = (category: SettingCategory) => {
     const categorySettings = settings.filter((s) => s.category === category);
-    return categorySettings.map((setting) => (
-      <SettingRow key={setting.id} title={setting.title} description={setting.description}>
-        {setting.render()}
-      </SettingRow>
-    ));
+    return categorySettings.map((setting) =>
+      setting.id === "evaluation-data" ? (
+        <EvaluationDataSettings key={setting.id} />
+      ) : (
+        <SettingRow key={setting.id} title={setting.title} description={setting.description}>
+          {setting.render()}
+        </SettingRow>
+      ),
+    );
   };
 
   return (
-    <Stack h="100%" gap={0}>
+    <Stack h="100%" gap={0} style={{ minWidth: 0, minHeight: 0 }}>
       <Group px="md" pt="md" pb="sm">
         <TextInput
           ref={searchInputRef}
@@ -1028,17 +1051,32 @@ export default function Page() {
         </ScrollArea>
       ) : (
         <Tabs
-          defaultValue="board"
+          value={activeCategory}
+          onChange={(value) => value && setActiveCategory(value as SettingCategory)}
           orientation="vertical"
           flex={1}
-          style={{ overflow: "hidden" }}
+          style={{ overflow: "hidden", minHeight: 0, flexDirection: compact ? "column" : "row" }}
           styles={{
             tabLabel: {
               textAlign: "left",
             },
           }}
         >
-          <Tabs.List h="100%">
+          {compact && (
+            <Select
+              aria-label="Settings category"
+              value={activeCategory}
+              onChange={(value) => value && setActiveCategory(value as SettingCategory)}
+              data={Object.entries(categoryInfo).map(([value, category]) => ({
+                value,
+                label: category.title,
+              }))}
+              allowDeselect={false}
+              mx="xs"
+              mb="sm"
+            />
+          )}
+          <Tabs.List h="100%" style={{ display: compact ? "none" : undefined }}>
             <Tabs.Tab value="board" leftSection={<IconChess size="1rem" />}>
               {t("Settings.Board")}
             </Tabs.Tab>
@@ -1070,9 +1108,9 @@ export default function Page() {
               {t("Settings.Privacy")}
             </Tabs.Tab>
           </Tabs.List>
-          <Stack flex={1} px="md">
-            <ScrollArea>
-              <Card withBorder p="lg" className={classes.card} w="100%">
+          <Stack flex={1} px={compact ? "xs" : "md"} style={{ minWidth: 0, minHeight: 0 }}>
+            <ScrollArea flex={1}>
+              <Card withBorder p={compact ? "sm" : "lg"} className={classes.card} w="100%">
                 <Tabs.Panel value="board">
                   <Text size="lg" fw={500} className={classes.title}>
                     {t("Settings.Board")}

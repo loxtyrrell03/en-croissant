@@ -56,6 +56,7 @@ import "@/styles/global.css";
 
 import { commands, events } from "./bindings";
 import { useNativePgnOpening } from "@/hooks/useNativePgnOpening";
+import { useEvaluationSourceSelection } from "@/hooks/useEvaluationSourceSelection";
 
 const STALE_DOWNLOAD_CONVERSION_MS = 2 * 60 * 1000;
 const STALE_DATABASE_CONVERSION_MS = 20 * 60 * 1000;
@@ -505,6 +506,7 @@ export default function App() {
 
   const startupReady = useAppStartup();
   useNativePgnOpening(startupReady);
+  useEvaluationSourceSelection(startupReady);
   useSharedLichessSession();
   useStopInteractiveEnginesWhenInactive();
   useEnsureDesktopEngines();

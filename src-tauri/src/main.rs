@@ -194,6 +194,9 @@ fn main() {
             discard_local_eval_build_job,
             review_local_eval_download,
             start_local_eval_download,
+            get_local_eval_source_selection,
+            validate_local_eval_source,
+            activate_local_eval_source,
             analyze_game,
             scan_mistake_review,
             get_mistake_review_game_metadata,
@@ -311,6 +314,7 @@ fn main() {
             MistakeReviewScanProgress,
             ProgressEvent,
             LocalEvalBuildProgress,
+            local_eval::LocalEvalSourceChanged,
             OtbImportProgress,
             GameMoveEvent,
             ClockUpdateEvent,
@@ -439,18 +443,18 @@ fn memory_size() -> u32 {
 
 #[tauri::command]
 #[specta::specta]
-fn lookup_local_lichess_cloud_eval(
+async fn lookup_local_lichess_cloud_eval(
     fen: String,
     multipv: Option<u8>,
     app: tauri::AppHandle,
 ) -> Result<Option<LocalLichessCloudEval>, String> {
-    local_eval::lookup_local_lichess_cloud_eval(fen, multipv, app)
+    local_eval::lookup_local_lichess_cloud_eval(fen, multipv, app).await
 }
 
 #[tauri::command]
 #[specta::specta]
-fn get_local_lichess_eval_db_status(app: tauri::AppHandle) -> Result<LocalEvalDbStatus, String> {
-    local_eval::get_local_lichess_eval_db_status(app)
+async fn get_local_lichess_eval_db_status(app: tauri::AppHandle) -> Result<LocalEvalDbStatus, String> {
+    local_eval::get_local_lichess_eval_db_status(app).await
 }
 
 #[tauri::command]
@@ -496,4 +500,31 @@ async fn review_local_eval_download(
 #[specta::specta]
 async fn start_local_eval_download(token: String, app: tauri::AppHandle) -> Result<String, String> {
     local_eval::start_local_eval_download(token, app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_local_eval_source_selection(
+    app: tauri::AppHandle,
+) -> Result<local_eval::LocalEvalSourceSelection, String> {
+    local_eval::get_local_eval_source_selection(app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn validate_local_eval_source(
+    path: String,
+    expected_revision: String,
+    app: tauri::AppHandle,
+) -> Result<local_eval::LocalEvalSourceCandidate, String> {
+    local_eval::validate_local_eval_source(path, expected_revision, app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn activate_local_eval_source(
+    token: String,
+    app: tauri::AppHandle,
+) -> Result<local_eval::LocalEvalSourceSelection, String> {
+    local_eval::activate_local_eval_source(token, app).await
 }

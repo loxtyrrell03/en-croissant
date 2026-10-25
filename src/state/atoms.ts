@@ -1,5 +1,6 @@
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { MantineColor } from "@mantine/core";
+import { evaluationSourceEpochAtom } from "@/state/evaluationSource";
 import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import { atom, type PrimitiveAtom } from "jotai";
@@ -989,6 +990,7 @@ export type LiveEvalState = {
     movesKey: string;
     score: Score;
     storedForLocal?: boolean;
+    evaluationSourceEpoch?: number;
 };
 
 const liveEvalFamily = atomFamily((_tab: string) => atom<LiveEvalState | null>(null));
@@ -996,6 +998,8 @@ const rawLiveEvalAtom = tabValue(liveEvalFamily);
 export const currentLiveEvalAtom = atom(
     (get) => {
         const value = get(rawLiveEvalAtom);
+        if (value && (value.evaluationSourceEpoch !== undefined || value.storedForLocal)
+            && (value.evaluationSourceEpoch ?? 0) !== get(evaluationSourceEpochAtom)) return null;
         return !get(useStoredEvaluationsAtom) && value?.storedForLocal ? null : value;
     },
     (
@@ -1529,6 +1533,7 @@ export const engineMovesFamily = atomFamily(
                     get(raw),
                     get(enginesAtom)?.find((profile) => profile.id === engine)?.type,
                     get(useStoredEvaluationsAtom),
+                    get(evaluationSourceEpochAtom),
                 ),
             (
                 get,
@@ -1539,9 +1544,10 @@ export const engineMovesFamily = atomFamily(
             ) => {
                 const type = get(enginesAtom)?.find((profile) => profile.id === engine)?.type;
                 const enabled = get(useStoredEvaluationsAtom);
-                const previous = visibleEngineMoveCache(get(raw), type, enabled);
+                const epoch = get(evaluationSourceEpochAtom);
+                const previous = visibleEngineMoveCache(get(raw), type, enabled, epoch);
                 const next = typeof update === "function" ? update(previous) : update;
-                set(raw, visibleEngineMoveCache(next, type, enabled));
+                set(raw, visibleEngineMoveCache(next, type, enabled, epoch));
             },
         );
     },

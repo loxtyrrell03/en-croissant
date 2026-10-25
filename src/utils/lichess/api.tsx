@@ -18,6 +18,7 @@ import {
 import { parsePGN, uciNormalize } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { apiHeaders } from "@/utils/http";
+import { getEvaluationSourceEpoch } from "@/utils/evaluationSource";
 import {
   getLichessGamesQueryParams,
   getMasterGamesQueryParams,
@@ -446,6 +447,7 @@ export async function getBestMoves(
           wdl: null,
         },
         source: "lichess" as const,
+        evaluationSourceEpoch: data.sourceEpoch,
         nodes: data.knodes * 1000,
         depth: data.depth,
         multipv: i + 1,
@@ -484,6 +486,7 @@ type LichessCloudData = {
   depth: number;
   pvs: (LichessCp | LichessMate)[];
   source: LichessCloudSource;
+  sourceEpoch?: number;
 };
 
 type LichessCp = {
@@ -507,7 +510,8 @@ export type LichessCloudMove = {
 
 async function getCloudEvaluation(fen: string, multipv: number): Promise<LichessCloudData> {
   const safeMultipv = normalizeCloudMultipv(multipv);
-  const cacheKey = `${fen}-${safeMultipv}`;
+  const epoch = getEvaluationSourceEpoch();
+  const cacheKey = `${epoch}:${fen}-${safeMultipv}`;
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey)!;
   }
@@ -522,7 +526,14 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
   if (!pending) {
     pending = (async () => {
       const localData = await getLocalCloudEvaluation(fen, safeMultipv);
+      if (epoch !== getEvaluationSourceEpoch()) {
+        throw new LichessCloudEvaluationError(
+          "network",
+          "The evaluation source changed. Try again.",
+        );
+      }
       if (localData?.pvs?.length) {
+        localData.sourceEpoch = epoch;
         cache.set(cacheKey, localData);
         missingCache.delete(cacheKey);
         return localData;

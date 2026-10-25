@@ -32,6 +32,7 @@ import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { usePlanArrowSnapshot } from "@/hooks/usePlanArrows";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import { visibleEngineLines } from "@/utils/storedEvaluationPolicy";
+import { evaluationSourceEpochAtom } from "@/state/evaluationSource";
 import { StoredEvaluationSwitch } from "@/components/engines/StoredEvaluationSwitch";
 import {
   activeTabAtom,
@@ -310,6 +311,7 @@ function EngineSummary({
   const activeTab = useAtomValue(activeTabAtom);
   const [ev] = useAtom(engineMovesFamily({ engine: engine.id, tab: activeTab! }));
   const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
+  const sourceEpoch = useAtomValue(evaluationSourceEpochAtom);
   const settings = useAtomValue(
     tabEngineSettingsFamily({
       tab: activeTab!,
@@ -322,7 +324,7 @@ function EngineSummary({
   const deferredEval = useDeferredValue(
     useMemo(() => ev.get(`${fen}:${moves.join(",")}`), [ev, fen, moves]),
   );
-  const curEval = visibleEngineLines(deferredEval, engine.type, storedEnabled);
+  const curEval = visibleEngineLines(deferredEval, engine.type, storedEnabled, sourceEpoch);
   const score = settings.enabled && curEval && curEval.length > 0 ? curEval[0].score : null;
 
   return (
