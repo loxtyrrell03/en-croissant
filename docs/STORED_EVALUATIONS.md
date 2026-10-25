@@ -118,3 +118,21 @@ fallback and same-FEN wake/retry recovery.
 Twenty-four related checks across five files, full types and four-file lint
 without warnings/errors pass. Native package verification is tracked separately
 in the delivery JSON; the live phone remains verified source `41f60e91`.
+
+
+Clean read-recovery source `18e8c74e` passes 607 related checks across 82 files,
+full types and the native release build (22 existing warnings). The new shared
+reader plus seven consumer chunks match exact embedded compressed assets.
+The 47,864,320-byte executable has SHA-256
+`f59f4aeef9e9330d9da95e0935729e26f23c319a9467bc8fbdeaac79d3134ccc`;
+all 102 engine/source files and seven owned committed files match. Only the
+two known generated outputs were restored; the delivery checkout is clean.
+The phone's production path is unchanged and its same-FEN recovery test passes;
+no second phone publication is needed for this native reader fix. Live phone
+source remains `41f60e91`. Rendered/native-window/device proof remains separate.
+
+En Croissant's standing local-only evaluation rule is intentional: native
+shared scoring must not fall through to remote Lichess cloud or ChessDB.
+Novelty's optional remote-lookup preference is therefore not copied. This
+restriction is recorded in root AGENTS.md after the 22 June correction; the new
+opt-out and read recovery preserve it and the retained immutable corpus.

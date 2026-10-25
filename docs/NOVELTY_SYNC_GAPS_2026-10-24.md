@@ -9,7 +9,7 @@ behavioral parity. Repeated integrations and rejected research are included in
 the history inventory, not counted as separate missing features.
 
 Current delivery (2026-10-25): clean `41f60e91` is live on the canonical phone
-site. The latest native desktop artifact is clean `41f60e91`, including guarded
+site. The latest native desktop artifact is clean `18e8c74e`, including guarded
 local-engine setup, logo recovery, persistent plan arrows and all verified
 Stockfish 19 resources and stored-evaluation controls.
 These include the committed ports described below. The existing PC
@@ -24,7 +24,7 @@ remain active; see `NATIVE_STOCKFISH_19.md` and the current delivery JSON.
 
 | Novelty improvement | Source evidence | En Croissant follow-up |
 | --- | --- | --- |
-| Retryable downloaded-evaluation read failures | `848f4527`; rejecting local reader and failed-promise eviction | Native structured read failures no longer become cached misses; same-FEN/PV consumers share a bounded pending read and failed requests remain retryable. Genuine misses retain caching, optional consumers keep their existing catches and no global unwrap toast/network fallback is added. Three prior failures reproduced; 24 related checks/five files, types and warning-free four-file lint pass. Phone already distinguishes 503 from JSON404 and evicts rejected requests; its actual same-FEN recovery fixture passes without production changes. Native clean build remains; live phone stays41f60e91. See `STORED_EVALUATIONS.md` |
+| Retryable downloaded-evaluation read failures | `848f4527`; rejecting local reader and failed-promise eviction | Native structured read failures no longer become cached misses; same-FEN/PV consumers share a bounded pending read and failed requests remain retryable. Genuine misses retain caching, optional consumers keep their existing catches and no global unwrap toast/network fallback is added. Three prior failures reproduced; 24 related checks/five files, types and warning-free four-file lint pass. Phone already distinguishes 503 from JSON404 and evicts rejected requests; its actual same-FEN recovery fixture passes without production changes. Clean18e8c74e passes607 related checks/82 files, types and native packaging; exact reader/consumer assets and all102 engine/source files match. Phone production is unchanged; live source stays41f60e91. See `STORED_EVALUATIONS.md` |
 | Stored/cloud-evaluation switch for local analysis | `ece3e18e`, `18f81ed0`; Novelty engine panel and Engines cloud-enabled preference | Native Engines/analysis and phone Live settings now share an explicit stored-evaluation choice through each native architecture. Cache/deferred score/arrow filters, abortable stored consumers and ordered same-engine stop settlement prevent old data or searches returning after Off. Failed saves retain the session choice through remount with retry. Native default On, existing phone saved/default values, separate explicit cloud profiles and fresh reports/Plans remain. Three actual prior failures were reproduced; 128 related checks/19 files, full types and scoped lint pass (only unchanged baseline warnings). Clean `41f60e91` passes all 591 related checks/79 files, types, native packaging and the canonical phone build; exact embedded/engine resources match. It is now HTTPS-verified live with owner workspace/settings/routes preserved. Rendered checks remain; see `STORED_EVALUATIONS.md` |
 | Stable official engine logos and custom-image failure recovery | `497f656b`, Novelty `engineLogo.tsx` and bundled marks | Native engine names and both catalog flows now try custom images, inline official marks and existing generic icons in order. Profile/image ownership rejects late replies/errors; navigation retries without rewriting saved choices. Three prior failures reproduced; twelve image checks plus catalog/registration regressions (40 checks/three files), types and scoped lint pass. Attribution retains original artwork limitations. Phone managed-engine text controls have no custom profile image state. Clean combined source `0a0056a6` passes 107 engine checks/nine files, types and the complete native build; exact embedded asset and all 102 engine resource hashes match. Rendered verification remains; see `ENGINE_LOGOS.md` |
 | Cancellable local-engine setup and late validation replies | `66def21d`, Novelty engine profile validation signal and Add engine lifecycle | Native source now guards chooser/UCI/save ownership, preserves custom settings/images/names, and retains failed profile writes for retry without duplicates. UCI requires `uciok`, a total 15-second deadline and awaited owned-process cleanup; cancel/late replies cannot register. Four failures reproduced on the old form; 95 focused frontend checks/eight files, six native checks including actual Stockfish 19, full types, warning-free seven-file lint and native compile pass. Clean setup source `dab8e02d` passes 549 related checks/71 files and types; combined source `0a0056a6` passes 107 engine checks/nine files and the native build with exact embedded assets/resources verified. Rendered checks remain. Phone managed WASM/service surfaces do not select arbitrary local programs; no native-setup parity applies. See `LOCAL_ENGINE_SETUP.md` |
@@ -52,6 +52,18 @@ remain active; see `NATIVE_STOCKFISH_19.md` and the current delivery JSON.
 | Always-visible Database W/D/L percentages | `de844abd` (new since the first inventory) | Delivered from clean `5f5f45c4` in the standalone desktop and hosted phone. Shared native Database/Prep/review/health and phone Database/Prep rows retain tiny/zero labels, empty/invalid distinction and original perspective/precision/palettes. Nine checks and connected Chrome at 390px verify actual result rows and computed segment colours; source fixtures cover 320px/doubled text/light/dark. See `DATABASE_RESULTS.md` |
 
 ## Already present or deliberately separate
+
+- Native evaluation/scoring deliberately remains local-only under the existing
+  En Croissant owner rule recorded after the 22 June correction in AGENTS.md.
+  Novelty's optional remote Lichess/ChessDB lookup switches (`135060ca`,
+  `e8ddefb9`, `c379a8a6`) must not override it or duplicate the retained corpus.
+  The new stored-evaluation control and read-recovery behavior keep that rule.
+- The `66def21d` cancellation payload applies to manual profile validation;
+  managed installs explicitly continue after closing their modal. Manual setup
+  and retained Stockfish state are verified. Reopen/failure/profile-save state
+  in En's legacy LC0/third-party EngineCard remains a source candidate requiring
+  an actual component fixture, rather than a claim that every installer is
+  cancellable or already has the retained Stockfish lifecycle.
 
 - Saved tournament prediction history/player comparison (`a7fdf330`) and the
   concise empty state (`647c4efb`) are already mirrored in native/phone source
