@@ -4,18 +4,18 @@
   "goalComplete": false,
   "phone": {
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "33670fec0a86599cb9b04bb6a6ed4b57ca076e8d",
+    "sourceCommit": "0ac83353e9efbcf0fc142b6a072c6cda0b0b0fd6",
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "33670fec0a86-737e2674590c",
-    "appShellSha256": "737e2674590cb1426c3968782351478f01deffab8e8db9d5b5a17e101648cc28",
-    "checkedAt": "2026-10-25T14:22:19.533Z",
+    "releaseId": "0ac83353e9ef-6008627c0999",
+    "appShellSha256": "6008627c0999581c5e1eda248c3c13573012f06469ee8cbd16bbfcce0a63fd04",
+    "checkedAt": "2026-10-25T16:47:48.768Z",
     "verified": [
-      "canonical HTTPS deployment metadata and exact shell/entry/plan/Stockfish19 JS/WASM hashes",
+      "canonical HTTPS metadata and exact shell/entry/plan/Stockfish19 JS/WASM hashes",
       "unchanged saved workspace, normalized library content and tournament settings",
-      "stable repeated library reads (25 files and 70 databases)",
+      "stable repeated library reads (25 files and70 databases)",
       "unchanged full Serve configuration, owner enabled choice and PC engine PID8536",
-      "unpackaged installed core-helper backing/hash and actual matching child after publication",
-      "normal depth65 stored response unchanged; shared workers remain cold",
+      "unpackaged installed helper backing/hash and actual matching child after publication",
+      "both target-specific immutable notice sidecars and exact installed CLI output",
       "normal uncaptured publisher return and both temporary tasks removed"
     ],
     "browserRendered": false,
@@ -24,24 +24,23 @@
     "publisherCleanup": {
       "temporaryTaskRemoved": true,
       "normalPublisherExitObserved": true,
-      "firstAttemptRefusedActiveReview": true,
-      "laterAttemptPassedImmediateIdleGuard": true,
+      "immediateIdleGuardPassed": true,
       "bothEngineFamiliesColdBeforePublish": true,
       "noUciClientsBeforePublish": true
     },
     "libraryBeforeAfterContentCompared": true,
     "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots.",
-    "phonePid": 54308,
+    "phonePid": 40080,
     "assets": [
       {
-        "path": "assets/index-BOveYi5-.js",
+        "path": "assets/index-dU5SAf6m.js",
         "bytes": 295301,
-        "sha256": "f26e742a1e07f7dca2c55b48d1f2f34c18aa34ad048fc7fcd0d0ba0c4e76677f"
+        "sha256": "5537d4c58a230b84c3731860639a73d2e26fa59ae8c6b2d74998fcb009e8025e"
       },
       {
-        "path": "assets/WebApp-DNI3ly0W.js",
+        "path": "assets/WebApp-DTjvJocc.js",
         "bytes": 433745,
-        "sha256": "79b19697b634f8addc771349f2a49fcfca55a98f07075fd1e3c3808ef3399df8"
+        "sha256": "6b2e5181a9a7391cd4edc89a0f421730e6b6a908adaf6179896b591020f566e2"
       },
       {
         "path": "assets/usePlanArrows-Cw5n9kVy.js",
@@ -58,7 +57,31 @@
         "bytes": 1845971,
         "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
       }
-    ]
+    ],
+    "workspaceSha256": "e325f5f56463bbebf0f2f8e05999181aaba8fcb4c0175b2aa045856c674fba2b",
+    "librarySha256": "088c8feb837605cb4e31517d44e94b1de146c07fc7993a5be070c3e0f0514117",
+    "libraryContentSha256": "e8dfbcad5f7a14a5226f30fccfc298cf8dd6cd964aa44b95f207d026ca29b951",
+    "tournamentSettingsSha256": "ec60b2deb22f7143bfc32b9f194bfbfec634b92251c151b9b8945ceec52f8b0e",
+    "servicesEnabled": true,
+    "enginePid": 8536,
+    "engineReady": false,
+    "reviewRunning": false,
+    "activeWork": {
+      "library": false,
+      "explorer": 0,
+      "imports": 0,
+      "tournaments": 0
+    },
+    "serveSha256": "f25ac5a18efda388d5c9459aed3eec76066a507c84ba940c051e3c06de79a771",
+    "ownerDataWritten": false,
+    "libraryRead": {
+      "files": 25,
+      "databases": 70,
+      "stableAcrossRepeatedReads": true,
+      "beforeAfterContentCompared": true,
+      "volatileGeneratedAtExcluded": true
+    },
+    "ownerStateAndRoutesPreserved": true
   },
   "desktop": {
     "exeBytes": 47958016,
@@ -3748,7 +3771,7 @@
     "novelty": [
       "d230b44f"
     ],
-    "status": "native-packaged-hosted-helper-source-verified",
+    "status": "native-packaged-and-hosted-helper-delivered",
     "lockedVersions": {
       "zstd": "0.13.2",
       "zstd-safe": "7.2.1",
@@ -3832,7 +3855,7 @@
       "archivesUnpackedToDisk": false,
       "phoneRuntimeChanged": false
     },
-    "hostedHelperNoticeDeliveryPending": true
+    "hostedHelperNoticeDeliveryPending": false
   },
   "previousBoundedBuilderDesktop": {
     "exeBytes": 47953920,
@@ -3985,7 +4008,7 @@
     "novelty": [
       "d230b44f"
     ],
-    "status": "source-and-helper-release-verified-live-delivery-pending",
+    "status": "hosted-runtime-delivered-and-verified",
     "sourceGrantAudit": "compressionNoticesParity.hostedHelperSourceGrantAudit",
     "scopeChecks": 10,
     "newScopeChecks": 5,
@@ -4010,10 +4033,189 @@
     "nativeBinaryRebuilt": false,
     "nativeLibraryChanged": false,
     "previousCoreLibraryGateRerun": false,
-    "phonePublished": false,
+    "phonePublished": true,
     "ownerDataWritten": false,
     "corpusCopied": false,
     "browserRendered": false,
-    "physicalPhoneVerified": false
+    "physicalPhoneVerified": false,
+    "sourceCommit": "0ac83353e9efbcf0fc142b6a072c6cda0b0b0fd6",
+    "appShellSha256": "6008627c0999581c5e1eda248c3c13573012f06469ee8cbd16bbfcce0a63fd04",
+    "phonePid": 40080,
+    "helperPid": 37696,
+    "helperBacking": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\encroissant-tournament-core-0ac83353e9ef.exe",
+    "sidecars": [
+      {
+        "name": "collect_otb_games-0ac83353e9ef.NOTICES.txt",
+        "backing": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\collect_otb_games-0ac83353e9ef.NOTICES.txt",
+        "bytes": 2931,
+        "sha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a"
+      },
+      {
+        "name": "encroissant-tournament-core-0ac83353e9ef.NOTICES.txt",
+        "backing": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\encroissant-tournament-core-0ac83353e9ef.NOTICES.txt",
+        "bytes": 6230,
+        "sha256": "75546853135bc1ddbef9982386b7745e56d0edba281d8ad4ea7cbb4dd1ff1610"
+      }
+    ],
+    "installedCliMatchesCompleteNotice": true,
+    "publisherReturnedNormally": true,
+    "temporaryTasksRemoved": true,
+    "ownerStateAndRoutesPreserved": true,
+    "phoneBuildSeconds": 24.77,
+    "collectorBuildSeconds": 33.19,
+    "nativeArtifactPreserved": true,
+    "matchingOwnedFiles": 10
+  },
+  "previousPackManifestPhone": {
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "33670fec0a86599cb9b04bb6a6ed4b57ca076e8d",
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "33670fec0a86-737e2674590c",
+    "appShellSha256": "737e2674590cb1426c3968782351478f01deffab8e8db9d5b5a17e101648cc28",
+    "checkedAt": "2026-10-25T14:22:19.533Z",
+    "verified": [
+      "canonical HTTPS deployment metadata and exact shell/entry/plan/Stockfish19 JS/WASM hashes",
+      "unchanged saved workspace, normalized library content and tournament settings",
+      "stable repeated library reads (25 files and 70 databases)",
+      "unchanged full Serve configuration, owner enabled choice and PC engine PID8536",
+      "unpackaged installed core-helper backing/hash and actual matching child after publication",
+      "normal depth65 stored response unchanged; shared workers remain cold",
+      "normal uncaptured publisher return and both temporary tasks removed"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "publisherNormalExitObserved": true,
+    "publisherCleanup": {
+      "temporaryTaskRemoved": true,
+      "normalPublisherExitObserved": true,
+      "firstAttemptRefusedActiveReview": true,
+      "laterAttemptPassedImmediateIdleGuard": true,
+      "bothEngineFamiliesColdBeforePublish": true,
+      "noUciClientsBeforePublish": true
+    },
+    "libraryBeforeAfterContentCompared": true,
+    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots.",
+    "phonePid": 54308,
+    "assets": [
+      {
+        "path": "assets/index-BOveYi5-.js",
+        "bytes": 295301,
+        "sha256": "f26e742a1e07f7dca2c55b48d1f2f34c18aa34ad048fc7fcd0d0ba0c4e76677f"
+      },
+      {
+        "path": "assets/WebApp-DNI3ly0W.js",
+        "bytes": 433745,
+        "sha256": "79b19697b634f8addc771349f2a49fcfca55a98f07075fd1e3c3808ef3399df8"
+      },
+      {
+        "path": "assets/usePlanArrows-Cw5n9kVy.js",
+        "bytes": 8390,
+        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ]
+  },
+  "hostedHelperCompressionNoticeDelivery": {
+    "checkedAt": "2026-10-25T16:47:51.8259420+00:00",
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "0ac83353e9efbcf0fc142b6a072c6cda0b0b0fd6",
+    "appShellSha256": "6008627c0999581c5e1eda248c3c13573012f06469ee8cbd16bbfcce0a63fd04",
+    "phonePid": 40080,
+    "workspaceSha256": "e325f5f56463bbebf0f2f8e05999181aaba8fcb4c0175b2aa045856c674fba2b",
+    "librarySha256": "088c8feb837605cb4e31517d44e94b1de146c07fc7993a5be070c3e0f0514117",
+    "libraryContentSha256": "e8dfbcad5f7a14a5226f30fccfc298cf8dd6cd964aa44b95f207d026ca29b951",
+    "tournamentSettingsSha256": "ec60b2deb22f7143bfc32b9f194bfbfec634b92251c151b9b8945ceec52f8b0e",
+    "servicesEnabled": true,
+    "enginePid": 8536,
+    "engineReady": false,
+    "reviewRunning": false,
+    "activeWork": {
+      "library": false,
+      "explorer": 0,
+      "imports": 0,
+      "tournaments": 0
+    },
+    "serveSha256": "f25ac5a18efda388d5c9459aed3eec76066a507c84ba940c051e3c06de79a771",
+    "assets": [
+      {
+        "path": "assets/index-dU5SAf6m.js",
+        "bytes": 295301,
+        "sha256": "5537d4c58a230b84c3731860639a73d2e26fa59ae8c6b2d74998fcb009e8025e"
+      },
+      {
+        "path": "assets/WebApp-DTjvJocc.js",
+        "bytes": 433745,
+        "sha256": "6b2e5181a9a7391cd4edc89a0f421730e6b6a908adaf6179896b591020f566e2"
+      },
+      {
+        "path": "assets/usePlanArrows-Cw5n9kVy.js",
+        "bytes": 8390,
+        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "libraryRead": {
+      "files": 25,
+      "databases": 70,
+      "stableAcrossRepeatedReads": true,
+      "beforeAfterContentCompared": true,
+      "volatileGeneratedAtExcluded": true
+    },
+    "ownerStateAndRoutesPreserved": true,
+    "helperPid": 37696,
+    "helperBacking": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\encroissant-tournament-core-0ac83353e9ef.exe",
+    "helperSha256": "be1eb13d15f517c9aff997f87ba6768b105941a6c488db00981051a317dbfa71",
+    "matchesBuiltBinary": true,
+    "actualChildAfterBinaryPublication": true,
+    "sidecars": [
+      {
+        "name": "collect_otb_games-0ac83353e9ef.NOTICES.txt",
+        "backing": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\collect_otb_games-0ac83353e9ef.NOTICES.txt",
+        "bytes": 2931,
+        "sha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a"
+      },
+      {
+        "name": "encroissant-tournament-core-0ac83353e9ef.NOTICES.txt",
+        "backing": "\\\\?\\C:\\Users\\Lox\\AppData\\Local\\EnCroissantHomeServer\\runtime\\encroissant-tournament-core-0ac83353e9ef.NOTICES.txt",
+        "bytes": 6230,
+        "sha256": "75546853135bc1ddbef9982386b7745e56d0edba281d8ad4ea7cbb4dd1ff1610"
+      }
+    ],
+    "installedCliMatchesCompleteNotice": true,
+    "publisherReturnedNormally": true,
+    "temporaryTasksRemoved": true,
+    "beforeAfterContentCompared": true,
+    "prePublicationObservation": {
+      "initialLibraryManifestHttpStatus": 404,
+      "repeatedReadsRecoveredBeforePublishing": true,
+      "serverProcessChangedBeforeOurPublication": true,
+      "priorObservedPid": 54308,
+      "preflightPid": 23240,
+      "preflightFiles": 25,
+      "preflightDatabases": 70,
+      "causeEstablished": false,
+      "notAClaimThatThisMilestoneFixedIt": true
+    }
   }
 }
