@@ -38,9 +38,9 @@ accounts, services or download preferences.
   and conflict decisions must preserve both sides before any replacement.
 - Build the codec with its standalone Cargo manifest and the existing target
   directory. The Novelty native helper is a separate process; no GPL code is
-  imported into Novelty. Its checked save APIs currently depend on unfinished
-  primary Novelty source work and need scoped reconciliation before claiming a
-  clean, reproducible cross-repository build.
+  imported into Novelty. The helper has its own checked transactional writer,
+  using the existing native PGN parser and schema semantics without modifying
+  product source or relying on pending Dev board-save APIs.
 
 Source validation on 2026-10-25: 26 focused Node tests, 17 focused phone/session tests,
 TypeScript, and a real browser plus native synthetic fixture cover both
