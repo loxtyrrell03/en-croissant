@@ -223,7 +223,7 @@ export const CHESSBOT_LC0_ENGINE: LocalEngine = {
     version: "0.32.1",
     path: "lc0-0.32.1-bt4-it332/lc0.exe",
     image: "https://lczero.org/images/logo.svg",
-    elo: 3440,
+    elo: null,
     downloadSize: 581_970_338 + 382_645_315,
     managedInstall: "chessbot-lc0-0.32.1",
 };
@@ -236,6 +236,7 @@ export function mergeManagedEngineCatalog(engines: LocalEngine[], os: Platform):
         return !(
             name.includes("leela chess zero") ||
             name.includes("lczero") ||
+            /^stockfish(?:\s+\d+(?:\.\d+)*)?$/.test(name.trim()) ||
             /(^|[\\/])lc0(?:-|[\\/.])/.test(path)
         );
     });

@@ -55,6 +55,12 @@ describe("managed engine catalog", () => {
         expect(merged[0].version).toBe("0.32.1");
         expect(merged[0].managedInstall).toBe("chessbot-lc0-0.32.1");
         expect(merged[0].downloadSize).toBe(964_615_653);
+        expect(merged[0].elo).toBeNull();
+    });
+
+    it("replaces old official Windows Stockfish offers with the separately pinned built-in card while retaining forks", () => {
+        const fork: LocalEngine = { ...staleLc0, id: "fairy", name: "Fairy Stockfish", path: "fairy.exe" };
+        expect(mergeManagedEngineCatalog([{ ...fork, name: "Stockfish", version: "18" }, { ...fork, name: "Stockfish 19" }, fork], "windows")).toEqual([fork, CHESSBOT_LC0_ENGINE]);
     });
 
     it("leaves non-Windows catalogs unchanged", () => {

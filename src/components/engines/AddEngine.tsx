@@ -30,10 +30,11 @@ import {
   useDefaultEngines,
 } from "@/utils/engines";
 import { usePlatform } from "@/utils/files";
-import { formatBytes } from "@/utils/format";
 import { unwrap } from "@/utils/unwrap";
 import ProgressButton from "../common/ProgressButton";
 import EngineForm from "./EngineForm";
+import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
+import { StockfishCatalogCard } from "./StockfishCatalogCard";
 
 type ManagedLc0Install = {
   path: string;
@@ -87,6 +88,7 @@ function AddEngine({
       title={t("Engines.Add.Title")}
       size="80%"
     >
+      <EnginePreferencesNotice />
       <Tabs defaultValue="download">
         <Tabs.List>
           <Tabs.Tab value="download">{t("Common.Download")}</Tabs.Tab>
@@ -101,6 +103,7 @@ function AddEngine({
           )}
           <ScrollArea.Autosize mah={720} offsetScrollbars>
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
+              {os === "windows" && <StockfishCatalogCard />}
               {defaultEngines?.map((engine, i) => (
                 <EngineCard
                   engine={engine}
@@ -281,13 +284,19 @@ function EngineCard({
           <Text fw="bold" size="sm" mb="xs">
             {engine.name} {engine.version}
           </Text>
-          <Group wrap="nowrap" gap="xs" fz="xs">
-            <IconTrophy size="1rem" />
-            <Text size="xs">{`${engine.elo} ELO`}</Text>
-          </Group>
+          {Number.isFinite(engine.elo) && (
+            <Group wrap="nowrap" gap="xs" fz="xs">
+              <IconTrophy size="1rem" />
+              <Text size="xs">{`${engine.elo} ELO`}</Text>
+            </Group>
+          )}
           <Group wrap="nowrap" gap="xs" mb="xs" fz="xs">
             <IconDatabase size="1rem" />
-            <Text size="xs">{formatBytes(engine.downloadSize ?? 0)}</Text>
+            <Text size="xs">
+              {engine.downloadSize == null || !Number.isFinite(engine.downloadSize)
+                ? "Download size unavailable"
+                : `Download: ${Math.round(engine.downloadSize / (1024 * 1024))} MiB`}
+            </Text>
           </Group>
           <ProgressButton
             id={`engine_${engineId}`}

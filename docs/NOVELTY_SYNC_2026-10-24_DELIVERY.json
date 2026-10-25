@@ -761,5 +761,19 @@
     "manualEngineCatalogControlsComplete": false,
     "browserRendered": false,
     "physicalPhoneVerified": false
+  },
+  "pendingNativeStockfish19Catalog": {
+    "sourceImplemented": true,
+    "focusedFrontendTests": 77,
+    "focusedFrontendFiles": 6,
+    "types": true,
+    "scopedLintFiles": 9,
+    "scopedLintExistingWarnings": 1,
+    "scopedLintErrors": 0,
+    "cleanVerification": false,
+    "nativeArtifactUpdated": false,
+    "browserRendered": false,
+    "phoneNativeCatalogApplicable": false,
+    "legacyLc0AndThirdPartyCancellationClaimed": false
   }
 }

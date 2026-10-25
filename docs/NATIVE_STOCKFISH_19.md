@@ -96,6 +96,30 @@ the serving process stayed healthy and all one-time helper tasks were removed.
 The wrapper did not provide a normal success exit; deployment evidence comes
 from the independently verified live version, hashes and data APIs.
 
-Manual catalog install/cancel controls, the remaining engine-management audit
-and rendered desktop/phone checks are unfinished. Browser control remains
-disabled. No native-window, browser-rendered or physical-device test is claimed.
+The Windows catalog now has an offline-available Stockfish 19 card that first
+reuses a verified install, then downloads explicitly if needed. It appends a
+disabled profile while retaining the chosen default, paths, IDs and tuning.
+An existing executable path is reused without changing its custom profile.
+Operation ownership survives dialog/route unmount. Cancel remains busy until
+the native result settles, including a result that completes during cancellation.
+A failed cancel request can retry; a failed profile save keeps its snapshot and
+offers Retry save without downloading again or re-adding a removed profile.
+The page's stable Add engine button becomes View installation while busy.
+
+File progress is explicitly scoped to engine files; completion is Added only
+after profile flush/readback succeeds. Saving is a separate visible state.
+The generic catalog no longer shows unknown Elo as zero/undefined, and the new
+LCZero offer makes no hardware-independent rating claim. Owner ratings remain.
+Downloads use binary MiB. The existing LCZero/third-party installer remains its
+separate architecture; this Stockfish card does not claim cancellation support
+for those existing commands. Non-Windows catalogs retain their existing install
+flow. The phone uses its managed WASM runtime and has no native program catalog.
+
+Seventy-seven focused frontend checks across six files and whole types pass;
+the nine-file lint has one unchanged engine-options effect warning, no errors.
+The tests exercise actual Add engine controls with an unavailable remote catalog,
+dialog remount, cancellation, premature finished progress and save retry, plus
+the retained preference writer and ownership races. Clean regression/package
+verification and the individual remaining engine-management audit are ongoing.
+Browser control remains disabled. No native-window, browser-rendered or
+physical-device test is claimed.
