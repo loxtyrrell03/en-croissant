@@ -44,3 +44,8 @@ variations, game IDs, container changes and recovery. The sync status/help
 renders at 1200/560/360 px and 200% text. The staged live Dev conversion matched
 every stored PGN and native row fingerprint, and every staged database passed
 SQLite quick-check. These checks are not installation or physical-phone proof.
+
+The isolated phone delivery is based on the previously served usability release.
+Its retained runtime worker bundles were regenerated from that same source to
+include the existing portable board drawings; no new evaluation/download feature
+is included. Full TypeScript and the phone build pass in this delivery checkout.

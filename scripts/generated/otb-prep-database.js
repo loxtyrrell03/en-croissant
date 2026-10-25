@@ -2673,6 +2673,40 @@ A(y(w)), u(y(function(t) {
 	return null == t;
 }));
 //#endregion
+//#region src/web/phoneDrawings.ts
+var PHONE_DRAWING_BRUSHES = [
+	"green",
+	"red",
+	"blue",
+	"yellow"
+];
+/** Only portable user marks are saved. Engine/piece/SVG overlays stay separate. */
+function normalizePhoneDrawings(shapes) {
+	const result = [];
+	if (!Array.isArray(shapes)) return result;
+	for (const value of shapes ?? []) {
+		if (!value || typeof value !== "object") continue;
+		const shape = value;
+		if (shape.piece || shape.customSvg || !PHONE_DRAWING_BRUSHES.includes(shape.brush)) continue;
+		if (typeof shape.orig !== "string" || !/^[a-h][1-8]$/.test(shape.orig)) continue;
+		if (shape.dest !== void 0 && (typeof shape.dest !== "string" || !/^[a-h][1-8]$/.test(shape.dest))) continue;
+		const drawing = {
+			orig: shape.orig,
+			brush: shape.brush
+		};
+		if (shape.dest && shape.dest !== shape.orig) drawing.dest = shape.dest;
+		if (!result.some((old) => old.orig === drawing.orig && old.dest === drawing.dest && old.brush === drawing.brush)) result.push(drawing);
+	}
+	return result;
+}
+function phoneDrawingsFromComments(comments) {
+	return normalizePhoneDrawings((comments ?? []).flatMap((comment) => parseComment(comment).shapes.map((shape) => ({
+		orig: makeSquare(shape.from),
+		dest: makeSquare(shape.to),
+		brush: shape.color
+	}))));
+}
+//#endregion
 //#region src/web/pgn.ts
 var MAX_PLAYER_NAMES = 80;
 function parsePgnDatabase(name, pgn, importedAt = Date.now()) {
@@ -2712,6 +2746,7 @@ function parsePgnDatabase(name, pgn, importedAt = Date.now()) {
 		countPlayer(players, white);
 		countPlayer(players, black);
 		const webGame = {
+			rootShapes: phoneDrawingsFromComments(game.comments),
 			id: `${id}:${index + 1}`,
 			databaseId: id,
 			databaseName: name,
@@ -2809,6 +2844,7 @@ function buildWebMove({ child, position, fenBefore, previousPly, gameIndex, warn
 	const annotations = formatWebNags(child.data.nags);
 	const startingComments = formatWebComments(child.data.startingComments);
 	const comments = formatWebComments(child.data.comments);
+	const shapes = phoneDrawingsFromComments(child.data.comments);
 	const variations = buildWebVariationLines({
 		children: child.children.slice(1),
 		position: positionAfter,
@@ -2821,6 +2857,7 @@ function buildWebMove({ child, position, fenBefore, previousPly, gameIndex, warn
 	if (annotations.length > 0) webMove.annotations = annotations;
 	if (startingComments.length > 0) webMove.startingComments = startingComments;
 	if (comments.length > 0) webMove.comments = comments;
+	if (shapes.length > 0) webMove.shapes = shapes;
 	if (variations.length > 0) webMove.variations = variations;
 	return {
 		move: webMove,
