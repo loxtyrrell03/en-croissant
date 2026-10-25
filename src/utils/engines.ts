@@ -58,7 +58,7 @@ const localEngineSchema = z.object({
 export type LocalEngine = z.output<typeof localEngineSchema>;
 
 const MANAGED_STOCKFISH_ID = "managed-stockfish-18";
-const MANAGED_LC0_ID = "managed-lc0-0.32.1-bt4-it332";
+export const MANAGED_LC0_ID = "managed-lc0-0.32.1-bt4-it332";
 
 function normalizeEnginePath(path: string): string {
     return path.replaceAll("\\", "/").replace(/\/$/, "").toLowerCase();

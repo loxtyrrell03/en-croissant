@@ -24,6 +24,7 @@ remain active; see `NATIVE_STOCKFISH_19.md` and the current delivery JSON.
 
 | Novelty improvement | Source evidence | En Croissant follow-up |
 | --- | --- | --- |
+| Managed catalog installation survives dialog close | `66def21d`, `1274bc9f`; managed state, file progress and retry | Native LCZero/third-party cards now retain operation ownership across close/reorder, separate file/validation/save phases, and require durable matching profiles. Failed saves retry without reinstalling; owner changes/removals and existing custom paths remain. Three prior failures reproduced; 98 related checks/eleven files, types and warning-free seven-file lint pass. Native build/rendered proof remains; phone managed WASM/PC controls have no arbitrary desktop installer. See `CATALOG_ENGINE_INSTALLS.md` |
 | Retryable downloaded-evaluation read failures | `848f4527`; rejecting local reader and failed-promise eviction | Native structured read failures no longer become cached misses; same-FEN/PV consumers share a bounded pending read and failed requests remain retryable. Genuine misses retain caching, optional consumers keep their existing catches and no global unwrap toast/network fallback is added. Three prior failures reproduced; 24 related checks/five files, types and warning-free four-file lint pass. Phone already distinguishes 503 from JSON404 and evicts rejected requests; its actual same-FEN recovery fixture passes without production changes. Clean18e8c74e passes607 related checks/82 files, types and native packaging; exact reader/consumer assets and all102 engine/source files match. Phone production is unchanged; live source stays41f60e91. See `STORED_EVALUATIONS.md` |
 | Stored/cloud-evaluation switch for local analysis | `ece3e18e`, `18f81ed0`; Novelty engine panel and Engines cloud-enabled preference | Native Engines/analysis and phone Live settings now share an explicit stored-evaluation choice through each native architecture. Cache/deferred score/arrow filters, abortable stored consumers and ordered same-engine stop settlement prevent old data or searches returning after Off. Failed saves retain the session choice through remount with retry. Native default On, existing phone saved/default values, separate explicit cloud profiles and fresh reports/Plans remain. Three actual prior failures were reproduced; 128 related checks/19 files, full types and scoped lint pass (only unchanged baseline warnings). Clean `41f60e91` passes all 591 related checks/79 files, types, native packaging and the canonical phone build; exact embedded/engine resources match. It is now HTTPS-verified live with owner workspace/settings/routes preserved. Rendered checks remain; see `STORED_EVALUATIONS.md` |
 | Stable official engine logos and custom-image failure recovery | `497f656b`, Novelty `engineLogo.tsx` and bundled marks | Native engine names and both catalog flows now try custom images, inline official marks and existing generic icons in order. Profile/image ownership rejects late replies/errors; navigation retries without rewriting saved choices. Three prior failures reproduced; twelve image checks plus catalog/registration regressions (40 checks/three files), types and scoped lint pass. Attribution retains original artwork limitations. Phone managed-engine text controls have no custom profile image state. Clean combined source `0a0056a6` passes 107 engine checks/nine files, types and the complete native build; exact embedded asset and all 102 engine resource hashes match. Rendered verification remains; see `ENGINE_LOGOS.md` |
@@ -59,11 +60,13 @@ remain active; see `NATIVE_STOCKFISH_19.md` and the current delivery JSON.
   `e8ddefb9`, `c379a8a6`) must not override it or duplicate the retained corpus.
   The new stored-evaluation control and read-recovery behavior keep that rule.
 - The `66def21d` cancellation payload applies to manual profile validation;
-  managed installs explicitly continue after closing their modal. Manual setup
-  and retained Stockfish state are verified. Reopen/failure/profile-save state
-  in En's legacy LC0/third-party EngineCard remains a source candidate requiring
-  an actual component fixture, rather than a claim that every installer is
-  cancellable or already has the retained Stockfish lifecycle.
+  managed installs explicitly continue after closing their modal. Native LCZero
+  and third-party catalog cards now retain owned progress/errors/retries across
+  close/reopen and require validated durable profile completion. Three prior
+  actual-component failures reproduced; 98 related checks/eleven files, types
+  and seven-file warning-free lint pass. The phone has no matching arbitrary
+  desktop installer. Native clean builds/rendered checks remain separate;
+  see `CATALOG_ENGINE_INSTALLS.md`.
 
 - Saved tournament prediction history/player comparison (`a7fdf330`) and the
   concise empty state (`647c4efb`) are already mirrored in native/phone source

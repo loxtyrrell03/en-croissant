@@ -13,36 +13,19 @@ import {
   Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconAlertCircle, IconDatabase, IconTrophy } from "@tabler/icons-react";
-import { invoke } from "@tauri-apps/api/core";
-import { join, resolve } from "@tauri-apps/api/path";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { useAtom, useStore } from "jotai";
-import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
-import { commands } from "@/bindings";
 import { enginesAtom } from "@/state/atoms";
-import { getEnginesDir } from "@/utils/directories";
 import { enginePreferences } from "@/utils/enginePreferences";
-import {
-  type LocalEngine,
-  type RemoteEngine,
-  requiredEngineSettings,
-  useDefaultEngines,
-} from "@/utils/engines";
+import { type LocalEngine, type RemoteEngine, useDefaultEngines } from "@/utils/engines";
 import { usePlatform } from "@/utils/files";
-import { unwrap } from "@/utils/unwrap";
-import ProgressButton from "../common/ProgressButton";
 import EngineForm from "./EngineForm";
-import { EngineLogo } from "./EngineLogo";
+import { CatalogEngineCard } from "./CatalogEngineCard";
+import { catalogInstallKey } from "@/utils/catalogInstallState";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
 import { StockfishCatalogCard } from "./StockfishCatalogCard";
-
-type ManagedLc0Install = {
-  path: string;
-  weightsPath: string;
-  version: string;
-  network: string;
-};
 
 function AddEngine({
   opened,
@@ -114,13 +97,8 @@ function AddEngine({
           <ScrollArea.Autosize mah={720} offsetScrollbars>
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
               {os === "windows" && <StockfishCatalogCard />}
-              {defaultEngines?.map((engine, i) => (
-                <EngineCard
-                  engine={engine}
-                  engineId={i}
-                  key={i}
-                  initInstalled={engines.some((e) => e.name === engine.name)}
-                />
+              {defaultEngines?.map((engine) => (
+                <CatalogEngineCard engine={engine} key={catalogInstallKey(engine)} />
               ))}
               {error && (
                 <Alert icon={<IconAlertCircle size="1rem" />} title={t("Common.Error")} color="red">
@@ -241,134 +219,6 @@ function CloudCard({ engine }: { engine: RemoteEngine }) {
           >
             {t("Common.Add")}
           </Button>
-        </Box>
-      </Group>
-    </Paper>
-  );
-}
-
-function EngineCard({
-  engine,
-  engineId,
-  initInstalled,
-}: {
-  engine: LocalEngine;
-  engineId: number;
-  initInstalled: boolean;
-}) {
-  const { t } = useTranslation();
-
-  const [inProgress, setInProgress] = useState<boolean>(false);
-  const [installError, setInstallError] = useState<string | null>(null);
-  const [, setEngines] = useAtom(enginesAtom);
-  const installEngine = useCallback(
-    async (id: number) => {
-      setInProgress(true);
-      setInstallError(null);
-      try {
-        const enginesDir = await getEnginesDir();
-        let enginePath: string;
-        let weightsPath: string | null = null;
-        if (engine.managedInstall === "chessbot-lc0-0.32.1") {
-          const installed = await invoke<ManagedLc0Install>("install_chessbot_lc0", {
-            id: `engine_${id}`,
-            enginesDir,
-          });
-          enginePath = installed.path;
-          weightsPath = installed.weightsPath;
-        } else {
-          const url = engine.downloadLink;
-          if (!url) throw new Error("This engine does not have an install source.");
-          let path = await resolve(enginesDir, `${url.slice(url.lastIndexOf("/") + 1)}`);
-          if (url.endsWith(".zip") || url.endsWith(".tar")) {
-            path = enginesDir;
-          }
-          await commands.downloadFile(`engine_${id}`, url, path, null, null, null);
-          let enginesDirPath = enginesDir;
-          if (enginesDirPath.endsWith("/") || enginesDirPath.endsWith("\\")) {
-            enginesDirPath = enginesDirPath.slice(0, -1);
-          }
-          enginePath = await join(enginesDirPath, ...engine.path.split("/"));
-          await commands.setFileAsExecutable(enginePath);
-        }
-        const config = unwrap(await commands.getEngineConfig(enginePath));
-        const settings = config.options
-          .filter((option) => requiredEngineSettings.includes(option.value.name))
-          .map((option) => ({
-            name: option.value.name,
-            // @ts-expect-error generated UCI option defaults have a wider union
-            value: option.value.default,
-          }));
-        if (weightsPath) {
-          settings.push({ name: "WeightsFile", value: weightsPath });
-        }
-        setEngines(async (prev) => [
-          ...(await prev),
-          {
-            ...engine,
-            id: crypto.randomUUID(),
-            type: "local",
-            path: enginePath,
-            loaded: true,
-            settings,
-          },
-        ]);
-      } catch (error) {
-        setInstallError(String(error));
-      } finally {
-        setInProgress(false);
-      }
-    },
-    [engine, setEngines],
-  );
-
-  return (
-    <Paper withBorder radius="md" p={0} key={engine.name}>
-      <Group wrap="nowrap" gap={0} grow>
-        <Box p="xs" style={{ flexShrink: 0 }}>
-          <EngineLogo engine={engine} />
-        </Box>
-        <Box p="sm" flex={1}>
-          <Text tt="uppercase" c="dimmed" fw={700} size="xs">
-            ENGINE
-          </Text>
-          <Text fw="bold" size="sm" mb="xs">
-            {engine.name} {engine.version}
-          </Text>
-          {Number.isFinite(engine.elo) && (
-            <Group wrap="nowrap" gap="xs" fz="xs">
-              <IconTrophy size="1rem" />
-              <Text size="xs">{`${engine.elo} ELO`}</Text>
-            </Group>
-          )}
-          <Group wrap="nowrap" gap="xs" mb="xs" fz="xs">
-            <IconDatabase size="1rem" />
-            <Text size="xs">
-              {engine.downloadSize == null || !Number.isFinite(engine.downloadSize)
-                ? "Download size unavailable"
-                : `Download: ${Math.round(engine.downloadSize / (1024 * 1024))} MiB`}
-            </Text>
-          </Group>
-          <ProgressButton
-            id={`engine_${engineId}`}
-            initInstalled={initInstalled}
-            labels={{
-              completed: t("Common.Installed"),
-              action: t("Common.Install"),
-              inProgress: t("Common.Downloading"),
-              finalizing: t("Common.Extracting"),
-            }}
-            onClick={() => {
-              void installEngine(engineId);
-            }}
-            inProgress={inProgress}
-            setInProgress={setInProgress}
-          />
-          {installError && (
-            <Text size="xs" c="red" mt="xs">
-              {installError}
-            </Text>
-          )}
         </Box>
       </Group>
     </Paper>
