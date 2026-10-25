@@ -9,6 +9,11 @@
   14 focused tracker/removal checks and whole-project types pass. Existing
   removal coverage waits for an in-flight roster check and verifies no database
   deletion. Rendered/deployed checks are recorded separately.
+- Owner-selected compact phone design A keeps tournament tools on a short row
+  and exposes all five tracker tabs in wrapping rows at narrow container widths.
+  The existing desktop tab behavior and player-prediction design remain. Actual
+  production-build browser QA confirms Cancel/Confirm through the real modal and
+  settings bridge using synthetic records; no collectionDelete is requested.
 
 ## 2026-10-24 combined delivery-source verification
 

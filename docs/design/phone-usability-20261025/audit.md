@@ -1,5 +1,8 @@
 # Phone usability audit — 25 October 2026
 
+The owner selected A (Compact tabs). Its implementation and verification are
+recorded in ../../PHONE_USABILITY_2026-10-25.md. B and C remain alternatives.
+
 The supplied iPhone screenshot matches the rendered live route at 390px. The
 Stop following action is wired, but appears only inside Tracking, beyond the
 visible portion of a horizontally scrolling tab strip. The independent fix

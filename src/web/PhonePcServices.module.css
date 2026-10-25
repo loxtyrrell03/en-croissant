@@ -1,7 +1,7 @@
 .root {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 0.3rem var(--mantine-spacing-md) 0.45rem;
+  padding: 0.1rem max(0.5rem, env(safe-area-inset-right)) 0.1rem max(0.5rem, env(safe-area-inset-left));
 }
 .toggle {
   min-height: 44px;

@@ -72,12 +72,12 @@ export default function PhonePcServices() {
               : "Starting…";
   return (
     <section className={classes.root} aria-label="PC services">
-      <Group justify="space-between" wrap="nowrap" gap="xs">
+      <Group justify="space-between" wrap="wrap" gap="xs">
         <Group gap={5} wrap="nowrap">
           <Text size="sm" fw={700}>
             PC services
           </Text>
-          <PerformanceHelp label="About PC services">Starts the PC engine and review server. The PC must be awake and connected to Tailscale.</PerformanceHelp>
+          <PerformanceHelp label="About PC services">The PC must be awake and connected to Tailscale. Turning this off stops PC analysis and reviews; saved games stay.</PerformanceHelp>
         </Group>
         <Group gap="sm" wrap="nowrap">
           <Text
@@ -123,11 +123,6 @@ export default function PhonePcServices() {
             : status.busy ? "Stopping PC analysis and reviews…" : "PC analysis and reviews are stopped."}
           </Text>
         )
-      )}
-      {status?.enabled && (
-        <Text size="xs" c="dimmed">
-          Off stops PC analysis and reviews. Saved games stay.
-        </Text>
       )}
     </section>
   );

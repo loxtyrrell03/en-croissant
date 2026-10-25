@@ -1273,12 +1273,14 @@ function WebAppContent() {
                     type="button"
                     data-view={value}
                     aria-pressed={view === value}
+                    aria-label={label}
                     onClick={() => {
                       setView(value);
                       if (value === "board") setBoardPanelMode("moves");
+                      window.scrollTo({ top: 0, behavior: "auto" });
                     }}
                   >
-                    {label}
+                    {value === "tournaments" ? <><span className={classes.workspaceLabelLong}>{label}</span><span className={classes.workspaceLabelShort}>Events</span></> : label}
                   </button>
                 ))}
               </nav>
@@ -1424,6 +1426,9 @@ function WebAppContent() {
                     setBoardPanelMode("moves");
                   }}
                 />
+                <details className={classes.taskDetails} open={pastedPgn.trim() ? true : undefined}>
+                  <summary>PGN files or pasted games</summary>
+                  <Stack gap="sm" mt="sm">
                 <Button component="label" variant="light">
                   Open PGN files
                   <input
@@ -1467,7 +1472,9 @@ function WebAppContent() {
                 >
                   Import pasted games
                 </Button>
-                <Button variant="light" onClick={() => setView("review")}>
+                  </Stack>
+                </details>
+                <Button variant="subtle" onClick={() => setView("review")}>
                   Review mistakes across my games
                 </Button>
                 <PhoneSavedImports

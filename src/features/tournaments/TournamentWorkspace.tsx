@@ -22,21 +22,24 @@ export function TournamentWorkspace({
   return (
     <TournamentEmbedded.Provider value={true}>
       <Stack className={styles.surface} gap="md">
-        <Group gap="xs" aria-label="Tournament tools">
+        <Group gap="xs" aria-label="Tournament tools" className={styles.toolNav}>
           <Button
             variant={page === "tournaments" ? "filled" : "light"}
+            aria-pressed={page === "tournaments"}
             onClick={() => setPage("tournaments")}
           >
-            Tournaments
+            Events
           </Button>
           <Button
             variant={page === "import" ? "filled" : "light"}
+            aria-pressed={page === "import"}
             onClick={() => setPage("import")}
           >
             Import player
           </Button>
           <Button
             variant={page === "downloads" ? "filled" : "light"}
+            aria-pressed={page === "downloads"}
             onClick={() => setPage("downloads")}
           >
             Downloads

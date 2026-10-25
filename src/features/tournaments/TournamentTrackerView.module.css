@@ -142,8 +142,10 @@
  .eventControls, .entryChoice, .entryChoice label { width: 100%; }
  .entryChoice select { width: 100%; }
  .entryChoice { gap: 8px; }
- .tabs { gap: 10px; margin-bottom: 14px; }
- .tracker .tabs button { margin-right: 2px; }
+ .tabs { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 4px; margin-bottom: 14px; overflow: visible; border-bottom: 0; }
+ .tracker .tabs button { grid-column: span 2; margin-right: 0; min-height: 44px; white-space: normal; overflow-wrap: anywhere; padding: 8px 4px; border: 1px solid var(--op-border); border-radius: var(--op-radius-control); }
+ .tracker .tabs button:nth-child(n+4) { grid-column: span 3; }
+ .tracker .tabs button[aria-selected=true] { background: var(--op-accent-soft); border-color: var(--op-accent); }
  .resultRow { grid-template-columns: 1fr 1fr; }
  .resultRow > span { grid-column: 1 / -1; }
  .resultRow > strong { grid-column: 1 / -1; }
