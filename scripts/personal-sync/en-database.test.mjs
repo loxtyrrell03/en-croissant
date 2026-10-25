@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import {openEn,enRows,enRow,rowHash,writeEncoded,transaction,refreshCounts,pgnFromRow} from './en-database.mjs';
+import {JsonLineProcess} from './rpc.mjs';
+test('database adapter retains stable IDs, annotations and unknown headers with checked edits',async t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'personal-db-test-'));const db=openEn(path.join(root,'sample.db3'),{create:true,name:'Test',syncId:'collection:1'});const codec=new JsonLineProcess(path.resolve('src-tauri/target/debug/personal-chess-sync-codec.exe'));
+ t.after(()=>{db.close();codec.close();fs.rmSync(root,{recursive:true,force:true});});
+ const pgn='[Event "Test"]\n[White "A"]\n[Black "B"]\n[Round "3.1"]\n[Result "*"]\n[Custom "keep"]\n\n{root} 1. e4 {annotation} (1. d4 $1) e5 *';
+ const encoded=await codec.request({pgn});
+ const hash=transaction(db,()=>{const hash=writeEncoded(db,{id:42,encoded,expected:null});refreshCounts(db);return hash;});
+ assert.equal(enRows(db).length,1);assert.equal(db.prepare("SELECT Value FROM Info WHERE Name='GameCount'").get().Value,'1');
+ const exported=await pgnFromRow(enRow(db,42),codec,pgn);assert.match(exported,/\[Custom "keep"\]/);assert.match(exported,/\[Round "3.1"\]/);assert.match(exported,/annotation/);assert.match(exported,/d4!/);
+ const changed=await codec.request({pgn:pgn.replace('annotation','new annotation')});
+ const nextHash=transaction(db,()=>writeEncoded(db,{id:42,encoded:changed,expected:hash}));assert.notEqual(nextHash,hash);
+ assert.throws(()=>transaction(db,()=>writeEncoded(db,{id:42,encoded,expected:hash})),/Concurrent/);assert.equal(rowHash(enRow(db,42)),nextHash);
+ assert.equal(db.prepare('PRAGMA quick_check').get().quick_check,'ok');
+});

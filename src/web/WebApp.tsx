@@ -1,4 +1,6 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
+import PhonePersonalSync from "./PhonePersonalSync";
+import { PERSONAL_LIBRARY_CHANGED } from "./personalSync";
 import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
 import { useCalendarDay } from "@/hooks/useCalendarDay";
 import {
@@ -1314,6 +1316,7 @@ function WebAppContent() {
         </Box>
 
         <PhonePcServices />
+        <PhonePersonalSync />
         <main className={classes.main}>
           {workspace.saveError && (
             <Stack
@@ -8937,6 +8940,7 @@ function HostedFilesPanel({
   const [loading, setLoading] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const archivedFolder = phoneHostedArchiveAncestor(state, path);
+  const hostedLoadGeneration = useRef(0);
   const visibleEntries = listing ? phoneHostedEntries(state, listing.entries, showArchived) : [];
   const directPgnFilesInPath = useMemo(
     () =>
@@ -8948,13 +8952,16 @@ function HostedFilesPanel({
 
   const load = useCallback(
     async (nextPath = path, forceRefresh = false) => {
+      const generation = ++hostedLoadGeneration.current;
       setLoading(true);
       try {
         const result = await getHostedWebLibraryPath(nextPath, { forceRefresh });
+        if (generation !== hostedLoadGeneration.current) return;
         setLibrary(result.library);
         setListing(result.listing);
         setPath(nextPath);
       } catch (error) {
+        if (generation !== hostedLoadGeneration.current) return;
         console.error(error);
         setLibrary(null);
         setListing(null);
@@ -8965,7 +8972,7 @@ function HostedFilesPanel({
           color: "red",
         });
       } finally {
-        setLoading(false);
+        if (generation === hostedLoadGeneration.current) setLoading(false);
       }
     },
     [path],
@@ -8996,6 +9003,12 @@ function HostedFilesPanel({
     void load("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const refresh = () => void load(path, true);
+    window.addEventListener(PERSONAL_LIBRARY_CHANGED, refresh);
+    return () => window.removeEventListener(PERSONAL_LIBRARY_CHANGED, refresh);
+  }, [load, path]);
 
   const currentFolderName = path.split("/").filter(Boolean).at(-1) ?? "Files";
 

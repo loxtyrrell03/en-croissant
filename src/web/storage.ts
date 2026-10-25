@@ -53,6 +53,34 @@ export async function saveWebState(state: WebCompanionState) {
     await runTransaction(database, "readwrite", (store) => store.put(state, STATE_KEY));
 }
 
+/** Preserve the phone's pre-sync workspace before adopting the Dev library.
+ * It remains in the same durable store under a separate recovery key. */
+export async function savePersonalSyncRecovery(id: string, state: WebCompanionState) {
+    const database = await openDatabase();
+    await new Promise<void>((resolve, reject) => {
+        const transaction = database.transaction(STORE_NAME, "readwrite");
+        const timer = setTimeout(() => {
+            try { transaction.abort(); } catch { /* Already settled. */ }
+            reject(new Error("Phone recovery took too long. Keep this tab open and retry sync."));
+        }, 10_000);
+        const store = transaction.objectStore(STORE_NAME);
+        const key = `personal-sync-recovery:${id}`;
+        const request = store.get(key);
+        request.onsuccess = () => {
+            try {
+                if (request.result === undefined) store.put(state, key);
+            } catch (error) {
+                clearTimeout(timer);
+                try { transaction.abort(); } catch { /* Already settled. */ }
+                reject(error);
+            }
+        };
+        transaction.oncomplete = () => { clearTimeout(timer); resolve(); };
+        transaction.onabort = () => { clearTimeout(timer); reject(transaction.error ?? new Error("Phone recovery could not be saved.")); };
+        transaction.onerror = () => { clearTimeout(timer); reject(transaction.error ?? new Error("Phone recovery could not be saved.")); };
+    });
+}
+
 function openDatabase() {
     if (databasePromise) return databasePromise;
     const pending = new Promise<IDBDatabase>((resolve, reject) => {
