@@ -4,7 +4,7 @@ Novelty b186d2d7 supplies device-balanced CPU/hash presets, gesture-safe sliders
 and explicit settings-application ownership. En's per-engine/tab/default settings
 and separate PC/phone/LCZero architecture must retain their existing contracts.
 Three editable native/phone directions are in `design/engine-resources`; the
-owner's layout choice is pending. The approved evaluation Settings A, phone
+owner selected A, inline controls. The approved evaluation Settings A, phone
 Analysis A and compact navigation remain separate choices.
 
 The first source slice adds only read-only capability metadata. Native
@@ -31,11 +31,33 @@ facts while both engine families stay cold, and the original config is unchanged
 Full TypeScript and four-file lint0 pass. Installer syntax and dependency order
 are checked without running installation, tasks or a live service.
 
-This is a source capability slice, not the completed preset feature. Device-aware
-allocation, first-use ownership, slider/exact-field lifecycle, failed-save retry/
-restoration, selected layout, native packaging and PC/phone runtime reconciliation
+This capability slice is independently mirrored and verified in primary: four
+native device/wire checks,44 exact CI Node helper checks and full types pass.
+Its owner guidance104/2 and binding25/1 remainders are preserved.
+
+The pure CPU policy is now exported from `scripts/engine-resource-presets.mjs`
+with a typed frontend facade. It divides the source resource budget across the
+included engines, retains conservative unknown-device values, matches exact
+non-power-of-two custom settings and supplies bounded memory slider stops.
+Ten cases pass. Thirty invented device/count combinations compare its preset
+numbers and maxima directly with the unchanged actual Novelty b186d2d7 module;
+they match. The target additionally exposes `canRecommend=false` when aggregate
+minimum resources cannot fit, rather than claiming that the minimum floor is a
+safe budget. The selected controls must show this state without changing current
+choices. Full types, three-file lint0 and four-file formatting pass.
+
+This remains source groundwork, not the completed preset feature. First-use
+ownership, slider/exact-field lifecycle, failed-save retry/restoration, the approved
+inline controls, native packaging and PC/phone runtime reconciliation
 remain to implement and verify. Existing explicit/default-looking saved choices
 must not be silently retuned. Phone PC requests must use PC capabilities, while
 LCZero GPU and managed single-thread phone settings retain their own limits.
 No owner profile, corpus or PC-hosting route was changed by these checks. No
 manual native launch, installed-service update or physical-device proof is claimed.
+
+Do not confuse the new CPU policy's balanced name with the phone's existing
+fixed balanced preset ID. A separate resource policy/config field must preserve
+legacy fixed choices. The future gateway must explicitly advertise support for
+resource requests before the phone submits them; a device snapshot alone is not
+proof that resource settings will be applied. Profile/tab/sync save and engine
+restart ownership require actual integration checks through En's own architecture.

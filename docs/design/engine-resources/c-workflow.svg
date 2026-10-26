@@ -199,7 +199,7 @@
 </g>
 <g id="C-confirmation">
 <rect x="1008" y="1613" width="468" height="410" rx="5" fill="#25262b" stroke="#373a40"/>
-<text x="1024" y="1644" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Confirmation / changed engine</text>
+<text x="1024" y="1644" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Apply draft / changed engine</text>
 <path d="M1008,1660H1476" stroke="#373a40"/>
 <text x="1026" y="1690" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">Apply to Stockfish 19 in this tab: 10 threads and</text>
 <text x="1026" y="1719" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">1024 MiB per engine.</text>

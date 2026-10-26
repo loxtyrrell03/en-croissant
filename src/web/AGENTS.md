@@ -5,7 +5,7 @@ workers; live service delivery and the final controls remain pending.
 Use the remote PC capability snapshot for PC CPU/hash recommendations. Preserve
 existing saved/fixed presets and LCZero GPU controls; phone WASM has separate
 supported limits. Three editable resource layouts are in
-../../docs/design/engine-resources; owner choice is pending. Do not reinterpret
+../../docs/design/engine-resources; owner selected A inline controls. Do not reinterpret
 phone Analysis A or the compact navigation approval as this new editor choice.
 
 # Phone analysis view lifetime

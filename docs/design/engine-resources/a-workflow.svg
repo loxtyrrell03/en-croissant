@@ -192,16 +192,16 @@
 </g>
 <g id="A-confirmation">
 <rect x="1008" y="1613" width="468" height="410" rx="5" fill="#25262b" stroke="#373a40"/>
-<text x="1024" y="1644" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Confirmation / changed engine</text>
+<text x="1024" y="1644" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Changed engine / interrupted apply</text>
 <path d="M1008,1660H1476" stroke="#373a40"/>
-<text x="1026" y="1690" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">Apply to Stockfish 19 in this tab: 10 threads and</text>
-<text x="1026" y="1719" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">1024 MiB per engine.</text>
-<text x="1026" y="1790" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">If a save fails or the selected profile changes, keep</text>
-<text x="1026" y="1818" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">its old values and show retry. Do not warm an</text>
-<text x="1026" y="1846" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">engine that is Off.</text>
+<text x="1026" y="1690" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">Resource change was not applied after this tab</text>
+<text x="1026" y="1719" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">or profile changed.</text>
+<text x="1026" y="1790" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">Return to the original engine to retry, or dismiss.</text>
+<text x="1026" y="1818" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">An engine that is Off stays Off. Ordinary edits</text>
+<text x="1026" y="1846" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">have no second confirmation.</text>
 <rect x="1026" y="1910" width="140" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
-<text x="1036" y="1934" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Cancel</text>
-<rect x="1176" y="1910" width="280" height="36" rx="5" fill="#15aabf" stroke="#373a40"/>
-<text x="1186" y="1934" font-family="Times New Roman,serif" font-size="16" fill="#fff" font-weight="700">Apply resources</text>
+<text x="1036" y="1934" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Dismiss</text>
+<rect x="1176" y="1910" width="280" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1186" y="1934" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Open original engine</text>
 </g>
 </svg>

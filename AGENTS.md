@@ -1,3 +1,20 @@
+## 2026-10-26 approved inline resources and pure CPU budget policy
+
+- Owner selected A inline controls. Shared pure CPU policy and typed frontend
+  facade now preserve source Quiet/Balanced/Faster numerics:30 direct comparisons
+  with unchanged actual Novelty b186d2d7 match across invented hosts/counts. Ten
+  unit cases, fulltypes, three-file lint0/four-file formatting pass. An explicit
+  canRecommend flag refuses infeasible aggregate minima without moving settings.
+- Primary capability mirror independently passes4 native device/wire cases and
+  all44 exact CI helper cases/types, preserving owner104/2 guide and25/1 binding
+  remainders. No live service, native package or resource preference changed.
+- Inline UI, first-use/saved choice ownership, gesture/exact-input commits, save
+  retry/restore, engine stop/restart handling and runtime delivery remain. Keep
+  new CPU balanced separate from the phone legacy fixed balanced ID; require a
+  resource-protocol capability before submitting new settings. Do not apply PC
+  budgets from phone hardware or overwrite En LCZero/WASM controls. See
+  docs/ENGINE_RESOURCES.md and selected design/state map. Full goal remains active.
+
 ## 2026-10-26 read-only engine resource capabilities source
 
 - Native engine_device_info and PC gateway health.device expose the same typed
@@ -10,7 +27,7 @@
   capabilities with both engines cold and original config unchanged. New installer
   dependency is staged before its entry point; syntax checked, installer not run.
   CI includes the metadata/standby/preset checks.
-- Capability source only: owner resource layout choice, allocation/preset/slider
+- Capability source only: approved inline A allocation/preset/slider
   lifecycle and save/apply ownership, packaging and live service delivery remain.
   No manual app/service restart, owner profile/corpus change or physical proof.
   See docs/ENGINE_RESOURCES.md and editable designs. Full goal remains active.
@@ -26,9 +43,9 @@
   C dedicated Performance editor. All14 groups per sheet parse, Times/Segoe widths
   are measured and offline raster previews were visually reviewed. Example data
   is invented; no browser/native-app rendering or runtime/data change occurred.
-- Owner layout question is pending. Continue independent read-only device and pure
-  resource behavior; do not assume a final UI direction. Prior evaluation SettingsA
-  and phone AnalysisA/compact navigation remain approved separately. Goal active.
+- Owner selected A inline engine controls on26 October2026. Implement A without
+  asking for the same choice again. B/C remain review alternatives. Prior evaluation
+  SettingsA and phone AnalysisA/compact navigation remain separate approvals.
 
 ## 2026-10-26 report visibility delivery and toolbar target review
 

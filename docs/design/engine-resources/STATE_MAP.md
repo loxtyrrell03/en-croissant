@@ -17,6 +17,7 @@
 | Applying/search | Apply once after ownership checks. Preserve the selected game/position. A stopped, removed, replaced or focus-paused engine must not be revived. |
 | Failed save/apply | Keep current and previous settings separate; show the error next to Retry/Restore previous. A failed preference write cannot be described as saved. |
 | Another included engine | Refresh recommendations from a device snapshot and engine count, without moving sliders or changing current choices automatically. |
+| Insufficient aggregate budget | If minimum threads/hash cannot fit the snapshot budget, explain that a recommendation is unavailable and disable preset application; keep existing explicit settings readable and unchanged. |
 | Changed profile/tab | Late capability, validation, save and apply replies belong to the captured owner and cannot overwrite its replacement. |
 | PC Off/offline | Existing service On/Off is authoritative. Keep saved choices, expose connection/retry near controls, and start no worker merely to read resources. |
 | Help | Adjacent question marks support hover/focus/tap, viewport bounds, outside-tap and Escape dismissal. Errors and required choices stay visible. |
@@ -26,3 +27,7 @@ All examples use an invented20-thread/32-GiB computer and one included CPU engin
 10 threads and1024 MiB are an example recommendation, not this owner's measured
 machine configuration. Native and phone delivery, actual search behavior,
 preference writes and rendered-device evidence require separate verification.
+
+Direction A is selected. Its completed field/preset edit applies once without a
+second confirmation. B/C's dialog/editor draft behavior remains an alternative,
+not the selected implementation. Preserve native per-tab/default ownership.

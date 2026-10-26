@@ -25,7 +25,7 @@ changed by these static prototypes.
 Each sheet covers desktop, phone and 320px controls, plus first use, existing
 saved/custom values, loading/unavailable device, application progress, failures/
 retry/restore, gesture cancellation, scope changes, engine Off/offline, help,
-unsupported engine options and changed-owner confirmation. The detailed
+unsupported engine options and changed-owner failures. The detailed
 [state map](STATE_MAP.md) is shared by all three directions.
 
 The native form's existing per-tab/default synchronization stays explicit.
@@ -39,7 +39,7 @@ and rasterized with the existing offline renderer for visual review, without
 browser or native app control. These are editable design artifacts, not evidence
 of rendered application interactions or physical-device verification.
 
-Direction selection is pending. The device snapshot and pure budget behavior can
-be developed independently; do not implement a final control layout until the
-owner chooses a direction. The approved evaluation Settings A and phone Analysis
-A remain their own decisions and are not reopened by this new resource editor.
+The owner selected **A — Inline controls** on26 October2026. Implement A throughout
+the native/phone resource surfaces; do not ask for the same layout choice again.
+B/C remain editable review alternatives. The approved evaluation Settings A and
+phone Analysis A remain their own decisions and are not reopened by this editor.
