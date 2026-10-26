@@ -242,7 +242,8 @@ test("Plans starts fresh at depth 17, retains real ranks/evidence and filters ca
   });
   expect(analyze.mock.calls[0][0]).toMatchObject({ depth: 17, multipv: 8, planSearch: true });
   const detail = Array.from(host.querySelectorAll("button")).find(
-    (button) => button.getAttribute("aria-expanded") === "false",
+    (button) =>
+      button.hasAttribute("data-plan-detail") && button.getAttribute("aria-expanded") === "false",
   )!;
   await act(async () => detail.click());
   expect(host.textContent).toContain("Supporting PV");

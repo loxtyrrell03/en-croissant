@@ -1,3 +1,19 @@
+## 2026-10-26 shared phone CPU ownership in Plans
+
+- Board workspace now supplies one verified CPU store to actual Live/Plans forms.
+  Plans captures the saved choice once per request; later edits affect the next
+  explicit search without retuning/cancelling the running job, clearing results
+  or enabling Live. Failed writes remain shared; retry is available in both views.
+- Owned restoration cannot overwrite a newer cross-view edit. Off/Starting and
+  unreadable CPU preferences block a different fallback. Existing per-view fixed
+  presets, LCZero and independent game-report resources remain. Novelty's report
+  runner explicitly uses its own Threads2/Hash128; b186 does not retune it.
+-102 focused cases11 files, types, seven-file lint0/format pass. Actual prior
+  Plans source fails saved-CPU request regression; the real Board Analysis flow
+  verifies report independence and shared Plans values with Live Off. Exact25
+  baseline WebApp diagnostics remain. New phone delivery/rendered proof, phone
+  search limits, native target review and wider audit remain. See ENGINE_RESOURCES.
+
 ## 2026-10-26 phone CPU resource delivery
 
 - Approved inline A is live at canonical phone product f6271cdf.444 build manifest

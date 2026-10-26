@@ -196,3 +196,38 @@ brokers were removed. No owner settings, service choice or corpus was replaced.
 The separate native78c77926 artifact remains. Rendered layouts/native-window and
 physical-phone proof remain unverified. Plans/report launch resource scope,
 phone search-limit controls and the broader parity audit remain open.
+
+
+## Shared phone CPU resources for Plans
+
+Plans now uses the same verified CPU preference store as Live. The actual board
+workspace owns it and passes it to both mounted forms; failed edits and field
+ownership cannot split between views. Inline controls remain under each view’s
+settings. Plans shows its kept CPU choice beside the search and exposes read/save
+retry there. Existing fixed behavior remains when no new policy is selected;
+clearing it returns each view to its own prior fixed preset. LCZero and game
+reports retain their separate resources.
+
+A Plans job captures an immutable verified selection before starting. Editing
+resources changes later explicit searches without retuning or cancelling that
+job, clearing results, enabling Live, or altering depth/lines/arrows. Off/Starting
+and unreadable CPU data block another fallback. Restore previous uses the original
+owned transaction, so an old action cannot overwrite a later edit from the other
+form. Device checks remain read-only, bounded and limited to an opened active
+settings form.
+
+Novelty b186d2d7 changes the global live/Plans CPU settings. Its separate game
+report runner explicitly allocates Threads2/Hash128; it does not consume those
+live resources. En native reports already capture selected profile options and
+phone bounded reports retain their independent budget. Preserving those runners
+is an intentional target distinction; optional transport support does not make
+Live settings their owner. Native Plans and remote-PC control applicability
+remain in the audit.
+
+102 focused cases across11 files, full types, seven-file lint0 and format pass.
+The real Board Analysis flow saves a report with independent limits/resources,
+changes the shared CPU choice, and submits it to Plans while Live stays Off.
+The actual prior Plans source fails the saved CPU/depth/lines request regression;
+current source passes. WebApp retains its exact25 baseline lint diagnostics.
+New phone package/live delivery and rendered/physical evidence remain separate.
+Phone search-limit controls and the full historical parity audit remain open.

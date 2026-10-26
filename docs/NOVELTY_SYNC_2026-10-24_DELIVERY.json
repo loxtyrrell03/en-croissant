@@ -6839,5 +6839,34 @@
     "nativeWindowVerified": false,
     "installedAppChanged": false,
     "evidence": "ENGINE_RESOURCES.md"
+  },
+  "phonePlansCpuSource20261026": {
+    "status": "source-verified-delivery-pending",
+    "noveltyCommit": "b186d2d7",
+    "baseline": "d674d2e5f36751344db5f8346b890073fee3a814",
+    "tests": 102,
+    "files": 11,
+    "types": true,
+    "lintNewFiles": 7,
+    "lintNewDiagnostics": 0,
+    "formattedFiles": 7,
+    "existingWebAppDiagnostics": 25,
+    "actualRootFlowVerified": true,
+    "sharedPreferenceOwner": true,
+    "immutableJobSelection": true,
+    "restoreCannotOverwriteNewerCrossViewEdit": true,
+    "realPriorSourceFailureReproduced": true,
+    "reportsRetainIndependentResources": true,
+    "nativeArtifactChangeRequired": false,
+    "phonePublished": false,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "remaining": [
+      "phone delivery",
+      "native Plans and PC remote target review",
+      "phone search limits",
+      "full historical audit"
+    ]
   }
 }

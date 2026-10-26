@@ -1,3 +1,17 @@
+# Shared CPU ownership in Live and Engine Plans
+
+The actual board workspace supplies one verified CPU preference store to both
+mounted forms. Plans snapshots it once per explicit search; later edits apply
+on the next run and preserve existing results/running ownership. Shared pending
+writes retry from either view. Off/Starting/unreadable resources prevent another
+fallback. Restoring old resources uses the captured owned transaction and cannot
+overwrite a later edit in the other form. Fixed per-view choices, LCZero, report
+jobs and Live On/Off remain independent. Settings checks never start a worker.
+102 focused cases11 files/types/seven-file lint0 and format pass; actual old
+Plans source fails the saved CPU regression. Real board Report-to-Plans flow
+verifies wiring and retained Live Off. New phone delivery/rendered proof remain;
+see ../../docs/ENGINE_RESOURCES.md. Broader resource/history audit remains active.
+
 # Verified phone CPU resource delivery
 
 Canonical phone f6271cdf has 444 manifest files/11 exact HTTPS assets verified.

@@ -10,7 +10,7 @@ import {
   Text,
   UnstyledButton,
 } from "@mantine/core";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   useAutoPlanArrowClaim,
   useAutoPlanArrowData,
@@ -32,6 +32,18 @@ import { PLAN_HORIZONS, type PlanHorizon } from "@/utils/planHorizon";
 import { usePcServicesAvailability } from "./pcServices";
 import { phoneEnginePlanReport } from "./phoneEnginePlans";
 import { analyzeWithWebStockfish18 } from "./stockfishEngine";
+import { capturePcCpuResources } from "./pcCpuResources";
+import {
+  PhoneCpuResourceControls,
+  usePhonePcCpuCapability,
+  type PhoneCpuStore,
+} from "./PhoneCpuResourceControls";
+import {
+  PHONE_CPU_RESOURCES_KEY,
+  DEFAULT_PHONE_CPU_PREFERENCES,
+  normalizePhoneCpuPreferences,
+} from "./phoneCpuPreferences";
+import { useVerifiedJsonPreference } from "./useVerifiedJsonPreference";
 
 const PREFS = "en-croissant-phone-engine-plans";
 function preferences() {
@@ -59,6 +71,7 @@ export default function PhoneEnginePlansPanel({
   blocked = false,
   arrowBoard,
   active = true,
+  cpuPreferenceStore,
 }: {
   fen: string;
   onBusy: (busy: boolean) => void;
@@ -66,6 +79,7 @@ export default function PhoneEnginePlansPanel({
   blocked?: boolean;
   arrowBoard?: object;
   active?: boolean;
+  cpuPreferenceStore?: PhoneCpuStore;
 }) {
   const [settings, setSettings] = useState(preferences);
   const ownArrowBoard = useMemo(() => ({}), []);
@@ -86,6 +100,16 @@ export default function PhoneEnginePlansPanel({
   const busy = useRef(onBusy);
   busy.current = onBusy;
   const availability = usePcServicesAvailability();
+  const unavailable = availability === "off" || availability === "starting";
+  const [cpuPreferences, , cpuError, retryCpu, cpuStore, cpuSnapshot] = useVerifiedJsonPreference(
+    PHONE_CPU_RESOURCES_KEY,
+    DEFAULT_PHONE_CPU_PREFERENCES,
+    normalizePhoneCpuPreferences,
+    cpuPreferenceStore,
+  );
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const resourceControlsId = useId();
+  const pcCapability = usePhonePcCpuCapability(active && resourcesOpen && !unavailable);
   const key = `${fen}|${settings.depth}`;
   const keyRef = useRef(key);
   keyRef.current = key;
@@ -113,7 +137,7 @@ export default function PhoneEnginePlansPanel({
     [],
   );
   useEffect(() => {
-    if (availability === "off") request.current?.abort();
+    if (availability === "off" || availability === "starting") request.current?.abort();
   }, [availability]);
   const update = (next: typeof settings) => {
     setSettings(next);
@@ -160,7 +184,14 @@ export default function PhoneEnginePlansPanel({
     return () => preview(null);
   }, [selected, arrowData, preview]);
   const run = async () => {
-    if (request.current || blocked || terminal || !validDepth || availability === "off") return;
+    if (request.current || blocked || terminal || !validDepth || unavailable) return;
+    // Capture the verified shared choice once. Live edits during this job apply
+    // to a later search, without cancelling or retuning this owned request.
+    const snapshot = cpuStore.getSnapshot();
+    if (snapshot.phase === "unreadable") return;
+    const cpuResources = snapshot.value.cpuResources
+      ? capturePcCpuResources(snapshot.value.cpuResources)
+      : undefined;
     const controller = new AbortController(),
       sourceKey = key;
     request.current = controller;
@@ -177,6 +208,7 @@ export default function PhoneEnginePlansPanel({
         depth: settings.depth,
         multipv: 8,
         planSearch: true,
+        cpuResources,
         signal: controller.signal,
         onUpdate: (lines) => {
           if (current()) setReachedDepth(Math.max(0, ...lines.map((line) => line.depth)));
@@ -268,12 +300,64 @@ export default function PhoneEnginePlansPanel({
           show live engine arrows.
         </TournamentHelp>
       </Group>
-      {availability === "off" && (
-        <Text size="sm">PC services are off. Turn them on to explore plans.</Text>
+      <Group gap="xs" justify="space-between">
+        <Text size="xs">
+          {cpuSnapshot.phase === "unreadable"
+            ? "Could not read saved PC resources."
+            : cpuPreferences.cpuResources
+              ? `PC resources: ${cpuPreferences.cpuResources.threads} threads · ${cpuPreferences.cpuResources.hashMb} MiB hash`
+              : "PC resources: fixed Good preset"}
+        </Text>
+        <Button
+          size="compact-xs"
+          variant="subtle"
+          aria-controls={resourceControlsId}
+          aria-expanded={resourcesOpen}
+          onClick={() => setResourcesOpen((value) => !value)}
+        >
+          PC resource settings
+        </Button>
+      </Group>
+      {resourcesOpen && (
+        <Stack id={resourceControlsId} gap="xs" role="group" aria-label="Plan PC resources">
+          <PhoneCpuResourceControls
+            store={cpuStore}
+            state={pcCapability}
+            fixedPreset="good"
+            unavailable={unavailable}
+            starting={availability === "starting"}
+            requestError={error}
+            fixedPresetActionLabel="Use fixed presets for Live and Plans"
+          />
+          <Text size="xs" c="dimmed">
+            Changes apply to the next plan search. Fixed presets restore each view’s previous
+            choice.
+          </Text>
+        </Stack>
+      )}
+      {cpuError && (
+        <Group gap="xs" align="start">
+          <Text size="xs" c="red" role="alert">
+            PC resources: {cpuError}
+          </Text>
+          <Button size="compact-xs" variant="default" onClick={retryCpu}>
+            Retry PC settings
+          </Button>
+        </Group>
+      )}
+      {unavailable && (
+        <Text size="sm">
+          {availability === "starting"
+            ? "PC services are starting. Saved resources are kept."
+            : "PC services are off. Turn them on to explore plans."}
+        </Text>
       )}
       {blocked && <Text size="xs">Finish or cancel the game report before exploring plans.</Text>}
       <Button
-        disabled={!running && (blocked || terminal || !validDepth || availability === "off")}
+        disabled={
+          !running &&
+          (blocked || terminal || !validDepth || unavailable || cpuSnapshot.phase === "unreadable")
+        }
         color={running ? "red" : undefined}
         onClick={() => {
           if (running) request.current?.abort();
@@ -318,6 +402,7 @@ export default function PhoneEnginePlansPanel({
       )}
       {plans.map((plan) => (
         <UnstyledButton
+          data-plan-detail
           key={plan.signature}
           onClick={() => setSelected(plan.signature)}
           onMouseEnter={() => preview(previewLines(plan))}

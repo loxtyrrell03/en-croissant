@@ -6,8 +6,10 @@ export function useVerifiedJsonPreference<T extends object>(
     key: string,
     fallback: T,
     normalize: (value: Partial<T> | null) => T,
+    suppliedStore?: ReturnType<typeof createVerifiedJsonPreference<T>>,
 ) {
     const ref = useRef<ReturnType<typeof createVerifiedJsonPreference<T>> | null>(null);
+    if (!ref.current && suppliedStore) ref.current = suppliedStore;
     if (!ref.current && unfinishedPreferences.has(key))
         ref.current = unfinishedPreferences.get(key) as ReturnType<
             typeof createVerifiedJsonPreference<T>

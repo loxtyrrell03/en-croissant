@@ -135,7 +135,7 @@ import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import PhoneMistakeReview from "./PhoneMistakeReview";
 import PhonePcServices from "./PhonePcServices";
-import { PhoneCpuResourceControls, usePhonePcCpuCapability, useFirstUsePhoneCpu } from "./PhoneCpuResourceControls";
+import { PhoneCpuResourceControls, usePhonePcCpuCapability, useFirstUsePhoneCpu, type PhoneCpuStore } from "./PhoneCpuResourceControls";
 import { PHONE_CPU_RESOURCES_KEY, DEFAULT_PHONE_CPU_PREFERENCES, normalizePhoneCpuPreferences } from "./phoneCpuPreferences";
 import { useVerifiedJsonPreference } from "./useVerifiedJsonPreference";
 import { PHONE_ENGINE_SETTINGS_KEY, DEFAULT_PHONE_ENGINE_SETTINGS, normalizePhoneEngineSettings, type PhoneEngineSettings } from "./phoneEngineSettings";
@@ -1557,6 +1557,11 @@ function BoardWorkspace({
   const [coachReviewRunning, setCoachReviewRunning] = useState(false);
   const [gameReportRunning, setGameReportRunning] = useState(false);
   const [planAnalysisRunning, setPlanAnalysisRunning] = useState(false);
+  const [, , , , sharedCpuPreferenceStore] = useVerifiedJsonPreference(
+    PHONE_CPU_RESOURCES_KEY,
+    DEFAULT_PHONE_CPU_PREFERENCES,
+    normalizePhoneCpuPreferences,
+  );
   const [engineArrowAnalysis, setEngineArrowAnalysis] = useState<{
     fen: string;
     lines: WebEngineLine[];
@@ -2212,6 +2217,7 @@ function BoardWorkspace({
               tabs cannot abort an active PC search. */}
           <Box hidden={panelMode === "engine" && analysisView !== "live"}>
             <EngineUnderBoardPanel
+              cpuPreferenceStore={sharedCpuPreferenceStore}
               analysisRequestId={onlineAnalysisRequestId}
               compact={panelMode !== "engine" && panelMode !== "moves"}
               currentFen={currentFen}
@@ -2231,6 +2237,7 @@ function BoardWorkspace({
           </Box>
           <Box hidden={panelMode !== "engine" || analysisView !== "plans"}>
             <PhoneEnginePlansPanel
+              cpuPreferenceStore={sharedCpuPreferenceStore}
               key={workspaceOwner}
               arrowBoard={planArrowBoard}
               active={panelMode === "engine" && analysisView === "plans"}
@@ -4735,6 +4742,7 @@ export function EngineUnderBoardPanel({
   onAnalysisLinesChange,
   onPlayMove,
   suspended = false,
+  cpuPreferenceStore: suppliedCpuPreferenceStore,
 }: {
   analysisRequestId?: number;
   compact?: boolean;
@@ -4743,6 +4751,7 @@ export function EngineUnderBoardPanel({
   onAnalysisLinesChange: (fen: string, lines: WebEngineLine[], policy?: LiveEnginePolicy) => void;
   onPlayMove: (uci: string) => void;
   suspended?: boolean;
+  cpuPreferenceStore?: PhoneCpuStore;
 }) {
   const [settings, setSettings, preferenceError, retrySaving, firstUsePreferences] =
     usePersistentJson(
@@ -4757,6 +4766,7 @@ export function EngineUnderBoardPanel({
       PHONE_CPU_RESOURCES_KEY,
       DEFAULT_PHONE_CPU_PREFERENCES,
       normalizePhoneCpuPreferences,
+      suppliedCpuPreferenceStore,
     );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");

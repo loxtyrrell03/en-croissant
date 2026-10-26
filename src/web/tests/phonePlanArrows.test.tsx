@@ -152,7 +152,9 @@ it("retains automatic arrows across hover, focus and selected details", async ()
   await click("Explore plans");
   await vi.waitFor(() => expect(shapes().length).toBeGreaterThan(1));
   const automatic = shapes();
-  const row = host.querySelector<HTMLButtonElement>('button[aria-expanded="false"]')!;
+  const row = host.querySelector<HTMLButtonElement>(
+    'button[data-plan-detail][aria-expanded="false"]',
+  )!;
   await act(async () => row.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
   expect(result().getAttribute("data-preview")).toBe("true");
   expect(shapes()).toEqual(expect.arrayContaining(automatic));

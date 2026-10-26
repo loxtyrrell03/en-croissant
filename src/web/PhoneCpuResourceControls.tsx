@@ -2,7 +2,7 @@ import { Button, Stack, Text } from "@mantine/core";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { CpuResourceControls } from "@/components/engines/CpuResourceControls";
 import { engineResourcePlan } from "@/utils/engineResources";
-import { createVerifiedJsonPreference } from "./verifiedJsonPreference";
+import { createVerifiedJsonPreference, type BrowserPreferenceEdit } from "./verifiedJsonPreference";
 import type { PhoneCpuPreferences } from "./phoneCpuPreferences";
 import { capturePcCpuResources, loadPcCpuCapability, type PcCpuCapability } from "./pcCpuResources";
 import {
@@ -97,6 +97,7 @@ export function PhoneCpuResourceControls({
   unavailable,
   starting = false,
   requestError,
+  fixedPresetActionLabel,
 }: {
   store: PhoneCpuStore;
   state: ReturnType<typeof usePhonePcCpuCapability>;
@@ -104,6 +105,7 @@ export function PhoneCpuResourceControls({
   unavailable: boolean;
   starting?: boolean;
   requestError?: string | null;
+  fixedPresetActionLabel?: string;
 }) {
   const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   const selected = snapshot.value.cpuResources;
@@ -111,7 +113,7 @@ export function PhoneCpuResourceControls({
   // from this phone or silently changed into the new policy.
   const legacyValues = enginePerformanceSettings("stockfish", fixedPreset)!;
   const values = selected ?? legacyValues;
-  const previous = useRef<PhoneCpuPreferences | null>(null);
+  const previous = useRef<BrowserPreferenceEdit | null>(null);
   const [error, setError] = useState<string | null>(null);
   if (snapshot.phase === "unreadable") return null;
   return (
@@ -126,10 +128,9 @@ export function PhoneCpuResourceControls({
           bounds={state.capability.bounds}
           disabled={unavailable || state.checking || Boolean(state.error)}
           applyUnchanged={!selected}
-          scope="Live PC Stockfish for this phone profile. Other engines keep their settings."
+          scope="PC Stockfish for Live and Engine Plans in this phone profile. Game reports keep their own resources."
           successLabel="PC resources saved."
           prepare={(next) => {
-            const before = store.getSnapshot().value;
             const edit = store.prepare(() => ({
               cpuResources: capturePcCpuResources({ version: 1, ...next }),
             }));
@@ -138,7 +139,7 @@ export function PhoneCpuResourceControls({
               isApplied: edit.isApplied,
               async save() {
                 edit.save();
-                previous.current = before;
+                previous.current = edit;
               },
               async restore() {
                 edit.restore();
@@ -185,18 +186,21 @@ export function PhoneCpuResourceControls({
             }
           }}
         >
-          Use fixed preset:{" "}
-          {ENGINE_PERFORMANCE_PRESETS.find((preset) => preset.value === fixedPreset)?.label}
+          {fixedPresetActionLabel ?? (
+            <>
+              Use fixed preset:{" "}
+              {ENGINE_PERFORMANCE_PRESETS.find((preset) => preset.value === fixedPreset)?.label}
+            </>
+          )}
         </Button>
       )}
-      {requestError && previous.current && selected && (
+      {requestError && previous.current?.owns() && selected && (
         <Button
           size="compact-xs"
           variant="subtle"
           onClick={() => {
             try {
-              const before = previous.current!;
-              store.prepare(() => before).save();
+              previous.current!.restore();
               previous.current = null;
               setError(null);
             } catch (error) {

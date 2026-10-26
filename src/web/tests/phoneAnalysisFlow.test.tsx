@@ -7,6 +7,7 @@ import { createEmptyWebState } from "../storage";
 import { webStateSession } from "../webStateSession";
 import { analyzeWithWebStockfish18 } from "../stockfishEngine";
 import WebApp from "../WebApp";
+import { PHONE_CPU_RESOURCES_KEY } from "../phoneCpuPreferences";
 vi.mock("../storage", async (original) => ({
   ...(await original()),
   loadWebState: async () => createEmptyWebState(),
@@ -22,6 +23,10 @@ vi.mock("../stockfishEngine", () => ({
   releaseWebPcEngine: vi.fn(async () => {}),
 }));
 test("the real phone Board Analysis path saves a report, selects its mistake and plays a Plans line without changing the source game", async () => {
+  localStorage.setItem(
+    PHONE_CPU_RESOURCES_KEY,
+    JSON.stringify({ cpuResources: { version: 1, threads: 3, hashMb: 333 } }),
+  );
   vi.stubGlobal("crypto", webcrypto);
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal(
@@ -39,7 +44,17 @@ test("the real phone Board Analysis path saves a report, selects its mistake and
   }));
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => new Response("{}", { status: 404 })),
+    vi.fn(async (url) =>
+      String(url).endsWith("/v1/health")
+        ? new Response(
+            JSON.stringify({
+              resourceProtocolVersion: 1,
+              device: { logicalThreads: 20, totalMemoryMb: 32768, availableMemoryMb: 24000 },
+              cpuResources: { threads: { min: 1, max: 64 }, hashMb: { min: 16, max: 8192 } },
+            }),
+          )
+        : new Response("{}", { status: 404 }),
+    ),
   );
   Element.prototype.scrollIntoView = vi.fn();
   const imported = parsePgnDatabase(
@@ -132,6 +147,11 @@ test("the real phone Board Analysis path saves a report, selects its mistake and
       expect(panel.querySelector('[aria-label="Saved game report"]')).not.toBeNull();
     });
     expect(engine.mock.calls.filter(([request]) => request.reportLimits)).toHaveLength(3);
+    expect(
+      engine.mock.calls
+        .filter(([request]) => request.reportLimits)
+        .every(([request]) => request.cpuResources === undefined),
+    ).toBe(true);
     const mistake = Array.from(panel.querySelectorAll("button")).find((button) =>
       button.textContent?.includes("blunder"),
     )!;
@@ -139,13 +159,29 @@ test("the real phone Board Analysis path saves a report, selects its mistake and
     expect(webStateSession.getSnapshot().state.board.cursor).toBe(1);
     await switchView("plans");
     const plans = host.querySelector('[data-testid="phone-engine-plans"]')!;
+    await click(plans, "PC resource settings");
+    await vi.waitFor(() =>
+      expect(
+        Array.from(plans.querySelectorAll("button")).some(
+          (button) => button.textContent === "Balanced",
+        ),
+      ).toBe(true),
+    );
+    await click(plans, "Balanced");
     await click(plans, "Explore plans");
+    expect(engine.mock.calls.find(([request]) => request.planSearch)?.[0].cpuResources).toEqual({
+      version: 1,
+      threads: 10,
+      hashMb: 1024,
+    });
     await vi.waitFor(async () => {
       await tick();
       expect(plans.textContent).toContain("1 evaluated root choices");
     });
     await act(async () =>
-      (plans.querySelector('button[aria-expanded="false"]') as HTMLButtonElement).click(),
+      (
+        plans.querySelector('button[data-plan-detail][aria-expanded="false"]') as HTMLButtonElement
+      ).click(),
     );
     await click(plans, "Play this line");
     const saved = webStateSession.getSnapshot().state;
