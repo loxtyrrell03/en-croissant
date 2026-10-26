@@ -114,13 +114,10 @@ import { getWinChance, normalizeScore } from "@/utils/score";
 import {
   getLc0NetworkDisplayName,
   LC0_NETWORK_PROFILES,
-  type Lc0NetworkProfile,
   normalizeLc0NetworkProfile,
-  type PcEngineKind,
 } from "@/utils/lc0Networks";
 import {
   ENGINE_PERFORMANCE_PRESETS,
-  type EnginePerformancePreset,
   getEnginePerformanceDescription,
   getEnginePerformancePreset,
   normalizeEnginePerformancePreset,
@@ -138,6 +135,10 @@ import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import PhoneMistakeReview from "./PhoneMistakeReview";
 import PhonePcServices from "./PhonePcServices";
+import { PhoneCpuResourceControls, usePhonePcCpuCapability, useFirstUsePhoneCpu } from "./PhoneCpuResourceControls";
+import { PHONE_CPU_RESOURCES_KEY, DEFAULT_PHONE_CPU_PREFERENCES, normalizePhoneCpuPreferences } from "./phoneCpuPreferences";
+import { useVerifiedJsonPreference } from "./useVerifiedJsonPreference";
+import { PHONE_ENGINE_SETTINGS_KEY, DEFAULT_PHONE_ENGINE_SETTINGS, normalizePhoneEngineSettings, type PhoneEngineSettings } from "./phoneEngineSettings";
 import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
 import PhoneAppBoundary from "./PhoneAppBoundary";
@@ -414,7 +415,7 @@ const WEB_DATABASE_PANEL_STAGE_STORAGE_KEY = "en-croissant-web-database-panel-st
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
-const WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY = "en-croissant-web-engine-panel-settings";
+const WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY = PHONE_ENGINE_SETTINGS_KEY;
 const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsSort }[] = [
   { label: "Blended strength", value: "strengthHigh" },
   { label: "Blended weakness", value: "strengthLow" },
@@ -489,31 +490,9 @@ const WEB_ENGINE_ARROW_SMALL_BRUSH = 4;
 const WEB_ENGINE_ARROW_WIN_CHANCE_LIMIT = 10;
 const WEB_ENGINE_ARROW_COLOR = { strong: "blue", pale: "paleBlue" } as const;
 
-type WebEnginePanelSettings = {
-  enabled: boolean;
-  useCloud: boolean;
-  multipv: number;
-  depth: number;
-  infinite: boolean;
-  engineKind: PcEngineKind;
-  stockfishPreset: EnginePerformancePreset;
-  lc0Preset: EnginePerformancePreset;
-  lc0AutoNetwork: boolean;
-  lc0Network: Lc0NetworkProfile;
-};
-
-const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
-  enabled: false,
-  useCloud: false,
-  multipv: 3,
-  depth: 14,
-  infinite: false,
-  engineKind: "stockfish",
-  stockfishPreset: "good",
-  lc0Preset: "good",
-  lc0AutoNetwork: true,
-  lc0Network: "none",
-};
+type WebEnginePanelSettings = PhoneEngineSettings;
+const DEFAULT_WEB_ENGINE_PANEL_SETTINGS = DEFAULT_PHONE_ENGINE_SETTINGS;
+const normalizeWebEnginePanelSettings = normalizePhoneEngineSettings;
 
 type WebPrepStoredSetup = {
   mode: WebPrepMode;
@@ -4765,17 +4744,43 @@ export function EngineUnderBoardPanel({
   onPlayMove: (uci: string) => void;
   suspended?: boolean;
 }) {
-  const [settings, setSettings, preferenceError, retrySaving] = usePersistentJson(
-    WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
-    DEFAULT_WEB_ENGINE_PANEL_SETTINGS,
-    normalizeWebEnginePanelSettings,
-    true,
-  );
+  const [settings, setSettings, preferenceError, retrySaving, firstUsePreferences] =
+    usePersistentJson(
+      WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
+      DEFAULT_WEB_ENGINE_PANEL_SETTINGS,
+      normalizeWebEnginePanelSettings,
+      true,
+      false,
+    );
+  const [cpuPreferences, , cpuPreferenceError, retryCpuSaving, cpuPreferenceStore, cpuSnapshot] =
+    useVerifiedJsonPreference(
+      PHONE_CPU_RESOURCES_KEY,
+      DEFAULT_PHONE_CPU_PREFERENCES,
+      normalizePhoneCpuPreferences,
+    );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pcServices = usePcServicesAvailability();
+  const pcUnavailable = pcServices === "off" || pcServices === "starting";
+  const pcCpuCapability = usePhonePcCpuCapability(
+    settings.engineKind === "stockfish" &&
+      !pcUnavailable &&
+      (settingsOpen ||
+        (pcServices === "ready" &&
+          firstUsePreferences.isFirstUse() &&
+          cpuSnapshot.firstUseEligible)),
+  );
+  useFirstUsePhoneCpu(
+    cpuPreferenceStore,
+    pcCpuCapability.capability,
+    pcServices === "ready" && settings.engineKind === "stockfish",
+    firstUsePreferences,
+  );
+  const selectedCpuResources =
+    settings.engineKind === "stockfish" ? cpuPreferences.cpuResources : null;
+
   const sourcePolicy = useMemo(
     () => ({ engineKind: settings.engineKind, useStoredEvaluations: settings.useCloud }),
     [settings.engineKind, settings.useCloud],
@@ -4795,10 +4800,20 @@ export function EngineUnderBoardPanel({
   }, [analysisRequestId, setSettings]);
 
   useEffect(() => {
-    if (!settings.enabled || suspended || pcServices === "off" || pcServices === "starting") {
+    if (
+      !settings.enabled ||
+      suspended ||
+      pcServices === "off" ||
+      pcServices === "starting" ||
+      (settings.engineKind === "stockfish" && cpuSnapshot.phase === "unreadable")
+    ) {
       if (!suspended) void releaseWebPcEngine(settings.engineKind);
       setStatus("idle");
-      setError(null);
+      setError(
+        cpuSnapshot.phase === "unreadable"
+          ? "Could not read saved PC resources. Retry the settings check."
+          : null,
+      );
       setStockfishLines([]);
       return;
     }
@@ -4816,6 +4831,7 @@ export function EngineUnderBoardPanel({
       infinite: settings.infinite,
       engineKind: settings.engineKind,
       performancePreset,
+      cpuResources: selectedCpuResources ?? undefined,
       lc0AutoNetwork: settings.lc0AutoNetwork,
       lc0Network: settings.lc0Network,
       useStoredEvaluations: settings.useCloud,
@@ -4854,6 +4870,8 @@ export function EngineUnderBoardPanel({
     settings.multipv,
     settings.useCloud,
     performancePreset,
+    selectedCpuResources,
+    cpuSnapshot.phase,
     suspended,
     upcomingFens,
     pcServices,
@@ -4875,7 +4893,11 @@ export function EngineUnderBoardPanel({
     [stockfishLines, sourcePolicy],
   );
   useEffect(() => {
-    onAnalysisLinesChange(currentFen, settings.enabled && !suspended ? displayLines : [], sourcePolicy);
+    onAnalysisLinesChange(
+      currentFen,
+      settings.enabled && !suspended ? displayLines : [],
+      sourcePolicy,
+    );
   }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled, suspended, sourcePolicy]);
 
   useEffect(() => {
@@ -4902,16 +4924,40 @@ export function EngineUnderBoardPanel({
     ? "Auto network"
     : getLc0NetworkDisplayName(settings.lc0Network);
   const analysisSource = topLine ? getWebEngineSourceLabel(topLine) : engineLabel;
-  const compactEngineMeta = pcServices === "off"
-    ? { label: "PC services off", accessibleLabel: "PC services are off" }
-    : status === "error"
-    ? { label: "Unavailable", accessibleLabel: "PC engine is unavailable" }
-    : getWebCompactEngineMeta({
-    enabled: analysisEnabled,
-    topLine,
-    nodeCount,
-    liveLineSpeed,
-  });
+  const compactEngineMeta =
+    pcServices === "off"
+      ? { label: "PC services off", accessibleLabel: "PC services are off" }
+      : status === "error"
+        ? { label: "Unavailable", accessibleLabel: "PC engine is unavailable" }
+        : getWebCompactEngineMeta({
+            enabled: analysisEnabled,
+            topLine,
+            nodeCount,
+            liveLineSpeed,
+          });
+
+  const enginePreferenceNotice = preferenceError ? (
+    <Group gap="xs" align="start">
+      <Text size="xs" c="red" role="alert" style={{ flex: 1 }}>
+        {preferenceError.includes("read")
+          ? "Could not read engine settings. Saved choices were preserved."
+          : "Could not save engine settings. Your current choices stay active until this page closes."}
+      </Text>
+      <Button size="compact-xs" variant="default" onClick={retrySaving}>
+        Retry saving
+      </Button>
+    </Group>
+  ) : null;
+  const cpuPreferenceNotice = cpuPreferenceError ? (
+    <Group gap="xs" align="start">
+      <Text size="xs" c="red" role="alert" style={{ flex: 1 }}>
+        PC resources: {cpuPreferenceError}
+      </Text>
+      <Button size="compact-xs" variant="default" onClick={retryCpuSaving}>
+        Retry PC settings
+      </Button>
+    </Group>
+  ) : null;
 
   if (compact) {
     return (
@@ -4949,6 +4995,8 @@ export function EngineUnderBoardPanel({
           </Group>
         </Group>
 
+        {enginePreferenceNotice}
+        {cpuPreferenceNotice}
         {settings.enabled ? (
           suspended ? (
             <Text className={classes.compactEngineMessage} size="xs" c="dimmed" lineClamp={1}>
@@ -5012,7 +5060,11 @@ export function EngineUnderBoardPanel({
           }
           variant={analysisEnabled ? "filled" : "subtle"}
           color={analysisEnabled ? "blue" : "gray"}
-          onClick={() => updateSettings({ enabled: !settings.enabled })}
+          onClick={() =>
+            setSettings((current) =>
+              normalizeWebEnginePanelSettings({ ...current, enabled: !current.enabled }),
+            )
+          }
         >
           {analysisEnabled ? <IconPlayerPause size={17} /> : <IconPlayerPlay size={17} />}
         </ActionIcon>
@@ -5023,7 +5075,11 @@ export function EngineUnderBoardPanel({
               {engineLabel}
             </Text>
             <Code className={classes.enginePanelCode} title="PC engine performance level">
-              {getEnginePerformancePreset(performancePreset).label}
+              {settings.engineKind === "stockfish" && cpuSnapshot.phase === "unreadable"
+                ? "Check PC resources"
+                : selectedCpuResources
+                  ? "CPU resources"
+                  : getEnginePerformancePreset(performancePreset).label}
             </Code>
             {settings.engineKind === "lc0" ? (
               <Code className={classes.enginePanelCode} title="LCZero network selection">
@@ -5087,6 +5143,8 @@ export function EngineUnderBoardPanel({
         </Group>
       </Box>
 
+      {enginePreferenceNotice}
+      {cpuPreferenceNotice}
       <Collapse in={settingsOpen}>
         <Box className={classes.enginePanelSettings}>
           <Stack gap="xs" mb="xs">
@@ -5107,21 +5165,37 @@ export function EngineUnderBoardPanel({
                 updateSettings({ engineKind });
               }}
             />
-            <Select
-              label="Performance"
-              description={getEnginePerformanceDescription(settings.engineKind, performancePreset)}
-              allowDeselect={false}
-              data={ENGINE_PERFORMANCE_PRESETS.map(({ value, label }) => ({ value, label }))}
-              value={performancePreset}
-              onChange={(value) => {
-                const preset = normalizeEnginePerformancePreset(value);
-                updateSettings(
-                  settings.engineKind === "lc0"
-                    ? { lc0Preset: preset }
-                    : { stockfishPreset: preset },
-                );
-              }}
-            />
+            {!selectedCpuResources &&
+              (settings.engineKind !== "stockfish" || cpuSnapshot.phase !== "unreadable") && (
+                <Select
+                  label="Performance"
+                  description={getEnginePerformanceDescription(
+                    settings.engineKind,
+                    performancePreset,
+                  )}
+                  allowDeselect={false}
+                  data={ENGINE_PERFORMANCE_PRESETS.map(({ value, label }) => ({ value, label }))}
+                  value={performancePreset}
+                  onChange={(value) => {
+                    const preset = normalizeEnginePerformancePreset(value);
+                    updateSettings(
+                      settings.engineKind === "lc0"
+                        ? { lc0Preset: preset }
+                        : { stockfishPreset: preset },
+                    );
+                  }}
+                />
+              )}
+            {settings.engineKind === "stockfish" && settingsOpen && (
+              <PhoneCpuResourceControls
+                store={cpuPreferenceStore}
+                state={pcCpuCapability}
+                fixedPreset={settings.stockfishPreset}
+                unavailable={pcUnavailable}
+                starting={pcServices === "starting"}
+                requestError={error}
+              />
+            )}
             {settings.engineKind === "stockfish" && (
               <Group gap={5}>
                 <Switch
@@ -5131,18 +5205,9 @@ export function EngineUnderBoardPanel({
                   onChange={(event) => updateSettings({ useCloud: event.currentTarget.checked })}
                 />
                 <TournamentHelp label="About stored evaluations">
-                  Downloaded evaluations can appear while the PC engine starts. Turn off to use only the PC engine.
+                  Downloaded evaluations can appear while the PC engine starts. Turn off to use only
+                  the PC engine.
                 </TournamentHelp>
-              </Group>
-            )}
-            {preferenceError && (
-              <Group gap="xs" align="start">
-                <Text size="xs" c="red" role="alert" style={{ flex: 1 }}>
-                  Could not save engine settings. Your choices stay active until this page closes.
-                </Text>
-                <Button size="compact-xs" variant="default" onClick={retrySaving}>
-                  Retry saving
-                </Button>
               </Group>
             )}
             {settings.engineKind === "lc0" ? (
@@ -10150,22 +10215,6 @@ function normalizeWebDateFilter(value: unknown) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function normalizeWebEnginePanelSettings(
-  value: Partial<WebEnginePanelSettings> | null | undefined,
-): WebEnginePanelSettings {
-  return {
-    enabled: Boolean(value?.enabled),
-    useCloud: value?.useCloud !== false,
-    multipv: clampWholeNumber(value?.multipv, 1, 8, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.multipv),
-    depth: clampWholeNumber(value?.depth, 6, 70, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
-    infinite: Boolean(value?.infinite),
-    engineKind: value?.engineKind === "lc0" ? "lc0" : "stockfish",
-    stockfishPreset: normalizeEnginePerformancePreset(value?.stockfishPreset),
-    lc0Preset: normalizeEnginePerformancePreset(value?.lc0Preset),
-    lc0AutoNetwork: value?.lc0AutoNetwork !== false,
-    lc0Network: normalizeLc0NetworkProfile(value?.lc0Network),
-  };
-}
 
 function normalizeWebPlayerName(value: string) {
   return value
@@ -10206,42 +10255,147 @@ function isAbortError(error: unknown) {
 }
 
 const unsavedJsonPreferences = new Map<string, unknown>();
+const jsonPreferenceIntents = new Map<string, number>();
 
 function usePersistentJson<T>(
   key: string,
   fallback: T,
   normalize: (value: Partial<T> | null | undefined) => T,
   retainFailedWrites = false,
+  writeDefaults = true,
 ) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveRevision, setSaveRevision] = useState(0);
-  const retry = useCallback(() => setSaveRevision(value => value + 1), []);
-  const [value, setValue] = useState<T>(() => {
-    if (retainFailedWrites && unsavedJsonPreferences.has(key)) {
-      return normalize(unsavedJsonPreferences.get(key) as Partial<T>);
-    }
+  const retry = useCallback(() => setSaveRevision((value) => value + 1), []);
+  const schema = useRef({ normalize, fallback });
+  schema.current = { normalize, fallback };
+  const lifecycle = useRef({
+    readable: false,
+    initiallyMissing: false,
+    source: null as string | null,
+    intent: 0,
+    initialGlobalIntent: jsonPreferenceIntents.get(key) ?? 0,
+    dirty: new Set<string>(),
+  });
+  const [value, setInternalValue] = useState<T>(() => {
+    const cached = retainFailedWrites && unsavedJsonPreferences.has(key);
     try {
       const stored = window.localStorage.getItem(key);
-      return stored
-        ? normalize(JSON.parse(stored) as Partial<T>)
-        : normalize(fallback as Partial<T>);
+      const parsed = stored ? JSON.parse(stored) : fallback;
+      if (
+        !writeDefaults &&
+        parsed !== null &&
+        (typeof parsed !== "object" || Array.isArray(parsed))
+      )
+        throw Error("Invalid engine settings");
+      const loaded = normalize(parsed as Partial<T>);
+      lifecycle.current.readable = true;
+      lifecycle.current.source = stored;
+      lifecycle.current.initiallyMissing = stored === null && !cached;
+      if (!cached) return loaded;
+      const pending = normalize(unsavedJsonPreferences.get(key) as Partial<T>);
+      for (const name of Object.keys(pending ?? {}))
+        if (JSON.stringify((pending as any)[name]) !== JSON.stringify((loaded as any)[name]))
+          lifecycle.current.dirty.add(name);
+      return pending;
     } catch {
-      return normalize(fallback as Partial<T>);
+      return normalize(
+        cached ? (unsavedJsonPreferences.get(key) as Partial<T>) : (fallback as Partial<T>),
+      );
     }
   });
+  const current = useRef(value);
+  const setValue = useCallback(
+    (update: T | ((previous: T) => T)) => {
+      const before = current.current;
+      const next = typeof update === "function" ? (update as (previous: T) => T)(before) : update;
+      if (JSON.stringify(before) === JSON.stringify(next)) return;
+      for (const name of Object.keys(next ?? {}))
+        if (JSON.stringify((next as any)[name]) !== JSON.stringify((before as any)[name]))
+          lifecycle.current.dirty.add(name);
+      lifecycle.current.intent++;
+      jsonPreferenceIntents.set(key, (jsonPreferenceIntents.get(key) ?? 0) + 1);
+      current.current = next;
+      setInternalValue(next);
+    },
+    [key],
+  );
 
   useEffect(() => {
+    if (current.current !== value) return;
     try {
-      window.localStorage.setItem(key, JSON.stringify(value));
+      const stored = window.localStorage.getItem(key);
+      if (!lifecycle.current.readable || stored !== lifecycle.current.source) {
+        const parsed = stored ? JSON.parse(stored) : schema.current.fallback;
+        if (
+          !writeDefaults &&
+          parsed !== null &&
+          (typeof parsed !== "object" || Array.isArray(parsed))
+        )
+          throw Error("Invalid engine settings");
+        const fresh = schema.current.normalize(parsed as Partial<T>);
+        const rebased = Object.assign(
+          {},
+          fresh,
+          Object.fromEntries(
+            [...lifecycle.current.dirty].map((name) => [name, (value as any)[name]]),
+          ),
+        ) as T;
+        lifecycle.current.readable = true;
+        lifecycle.current.source = stored;
+        if (!lifecycle.current.intent && !unsavedJsonPreferences.has(key))
+          lifecycle.current.initiallyMissing = stored === null;
+        if (JSON.stringify(rebased) !== JSON.stringify(value)) {
+          current.current = rebased;
+          setInternalValue(rebased);
+          return;
+        }
+      }
+      if (!writeDefaults && !lifecycle.current.intent && !unsavedJsonPreferences.has(key)) {
+        setSaveError(null);
+        return;
+      }
+      const base = stored ? JSON.parse(stored) : null;
+      const text = JSON.stringify({ ...base, ...value });
+      window.localStorage.setItem(key, text);
+      if (window.localStorage.getItem(key) !== text)
+        throw Error("Could not verify this preference");
+      lifecycle.current.source = text;
+      lifecycle.current.dirty.clear();
       if (retainFailedWrites) unsavedJsonPreferences.delete(key);
       setSaveError(null);
     } catch {
-      if (retainFailedWrites) unsavedJsonPreferences.set(key, value);
-      setSaveError("Could not save this preference");
+      if (retainFailedWrites && (lifecycle.current.intent > 0 || unsavedJsonPreferences.has(key)))
+        unsavedJsonPreferences.set(key, value);
+      setSaveError(
+        lifecycle.current.readable
+          ? "Could not save this preference"
+          : "Could not read this preference",
+      );
     }
-  }, [key, value, saveRevision, retainFailedWrites]);
+  }, [key, value, saveRevision, retainFailedWrites, writeDefaults]);
 
-  return [value, setValue, saveError, retry] as const;
+  const firstUse = useMemo(
+    () => ({
+      isFirstUse: () => {
+        if (
+          !lifecycle.current.readable ||
+          !lifecycle.current.initiallyMissing ||
+          lifecycle.current.intent ||
+          (jsonPreferenceIntents.get(key) ?? 0) !== lifecycle.current.initialGlobalIntent ||
+          unsavedJsonPreferences.has(key)
+        )
+          return false;
+        try {
+          return localStorage.getItem(key) === null;
+        } catch {
+          return false;
+        }
+      },
+    }),
+    [key],
+  );
+  return [value, setValue, saveError, retry, firstUse] as const;
 }
 
 function usePersistentString(key: string, fallback: string) {
@@ -10293,6 +10447,7 @@ function formatCount(value: number) {
 }
 
 function enablePhoneAnalysis() {
+  jsonPreferenceIntents.set(WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY, (jsonPreferenceIntents.get(WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY) ?? 0) + 1);
   try {
     const current = JSON.parse(localStorage.getItem(WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY) || "{}");
     localStorage.setItem(

@@ -31,6 +31,7 @@ export function CpuResourceControls({
   successLabel = "Resources saved.",
   prepare,
   disabled = false,
+  applyUnchanged = false,
 }: {
   values: EngineResourceValues;
   device: EngineDevice | null;
@@ -43,6 +44,7 @@ export function CpuResourceControls({
   successLabel?: string;
   prepare: (values: EngineResourceValues) => ResourceEdit;
   disabled?: boolean;
+  applyUnchanged?: boolean;
 }) {
   const plan = engineResourcePlan(device, includedEngines);
   const [state, setState] = useState<{
@@ -125,7 +127,7 @@ export function CpuResourceControls({
     if (
       edit.current ||
       locked ||
-      (next.threads === values.threads && next.hashMb === values.hashMb)
+      (!applyUnchanged && next.threads === values.threads && next.hashMb === values.hashMb)
     )
       return;
     try {

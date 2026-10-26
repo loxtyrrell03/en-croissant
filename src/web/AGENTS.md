@@ -1,4 +1,33 @@
-# Phone PC resource transport
+# Phone PC resource controls and transport
+
+Approved inline A now reaches the actual Live PC engine form. The versioned
+`en-croissant-phone-cpu-resources-v1` preference is independent from legacy fixed
+preset/network/OnOff settings. It owns CPU-only verified save/readback, retry,
+field-scoped restoration and pending edits across navigation. Equal-number preset
+selection can explicitly enter the new policy; Use fixed preset returns to the
+untouched older choice. Recommendations use remote PC metadata. Existing older
+values remain exact, while new edits respect the PC budget. The form subscribes
+directly to the preference store so compiler memoization cannot leave stale actions.
+
+First-use Balanced requires confirmed absence of both stores, no manual/failed
+legacy intent, a valid bounded PC check and known Ready service state. It never
+enables analysis. Late replies after a manual choice or service Off are ignored.
+Unreadable CPU bytes block a different fixed fallback and remain preserved. The
+legacy preference hook retains its existing transient/remount retry contract and
+immediate Pause even on save failure, while it no longer writes fallback defaults
+after a failed read or writes a stale render over newer choices. Unknown fields
+are preserved. The actual prior source fails the unreadable-byte regression.
+
+147 focused cases across11 files, full types, nine-file lint0 and ten-file format
+pass. WebApp retains exactly its25 baseline lint diagnostics; edited functions
+were formatted locally. Fixtures exercise actual phone/native forms, storage,
+transport, compiler-driven subscriptions, first use, Off and focus/touch help.
+Rendered narrow layouts, installed delivery and physical proof remain separate.
+Live supplies the new policy; Plans/report job-launch scope and phone search-limit
+controls remain in the family audit. The transport already supports explicit
+policy for those jobs, but capability support alone does not wire their callers.
+Whole-profile backup work must account for the new CPU preference key; game PGN
+export and personal-library sync do not transport device preferences.
 
 Phone transport now snapshots separate cpuResources requests across live,
 PC-only, stored-preferred, Plans and bounded reports. It checks explicit protocol
@@ -8,8 +37,8 @@ succeed through stored or phone-WASM fallback; ordinary legacy calls retain
 their behavior. Health reads have a five-second bound/cancellation and never wake
 a service. Remote terminal/error paths release their own controller.
 43 focused transport/report/capability cases, types and five-file lint0 pass.
-This is source/fixture proof; live service delivery and the final controls remain
-pending. Device metadata alone does not establish resource application support.
+This is source/fixture proof; live gateway/phone delivery remains pending. Device
+metadata alone does not establish resource application support.
 Use the remote PC capability snapshot for PC CPU/hash recommendations. Preserve
 existing saved/fixed presets and LCZero GPU controls; phone WASM has separate
 supported limits. Three editable resource layouts are in

@@ -140,7 +140,34 @@ selection keep their legacy behavior. Health reads are bounded/cancelable and
 never wake a service; terminal remote requests release their own controller.
 43 focused transport/report/capability checks, types and five-file lint0 pass.
 
-Phone UI/preferences integration and live gateway/phone delivery remain pending.
+The phone Live form now uses inline A with the independent versioned preference
+`en-croissant-phone-cpu-resources-v1`. New CPU choices verify saved bytes before
+entering a request, retain failed edits across navigation and support retry or
+resource-only restoration. Selecting an equal-number CPU preset can explicitly
+enter the new policy. Use fixed preset returns to the untouched older selection.
+Existing legacy/GPU/network/OnOff preferences retain their original scope.
+
+Genuine first-use Balanced requires confirmed absence of both stores, no manual
+intent or failed legacy edit, valid PC metadata and known Ready service state.
+It never enables analysis. Late replies after a manual edit or service Off are
+discarded. Unreadable CPU data blocks fallback to a different fixed search and is
+preserved for retry. Older high/custom values stay visible; new field edits use
+the remote PC budget and preserve other older fields. Explicit Pause remains
+immediate even when its legacy preference cannot be saved.
+
+The existing legacy transient/remount retry contract is preserved. Its hook now
+avoids writing fallback defaults after failed reads, skips stale-render writes
+and retains unknown fields when saving. Actual prior source overwrites unreadable
+bytes in the new regression; current source preserves them and exposes retry.
+147 focused cases in11 files, full types, nine-file lint0 and ten-file format
+pass. WebApp has exactly25 unchanged baseline lint diagnostics; affected functions
+were formatted locally. DOM help/focus/touch checks are distinct from rendered
+narrow-layout or physical proof, which remain unavailable.
+
+Live currently supplies the new CPU selection. Actual Plans/report job-launch
+scope and phone completed search-limit controls remain in the parity audit;
+transport API support alone does not wire those callers. Whole-profile backup
+work must include the new preference key. Live gateway/phone delivery is pending.
 Device metadata alone is not application support. Managed phone single-thread/WASM
 and LCZero GPU controls retain their own contracts. Do not run the installer or
 retune live configs incidentally. The full history and target audit remains active.

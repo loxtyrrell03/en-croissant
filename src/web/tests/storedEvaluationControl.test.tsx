@@ -23,6 +23,19 @@ const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let host: HTMLDivElement, root: ReturnType<typeof createRoot>;
 beforeEach(() => {
   localStorage.clear();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            resourceProtocolVersion: 1,
+            device: { logicalThreads: 20, totalMemoryMb: 32768, availableMemoryMb: 24000 },
+            cpuResources: { threads: { min: 1, max: 64 }, hashMb: { min: 16, max: 8192 } },
+          }),
+        ),
+    ),
+  );
   fixture.analyze.mockReset().mockResolvedValue([]);
   fixture.release.mockReset().mockResolvedValue(undefined);
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);

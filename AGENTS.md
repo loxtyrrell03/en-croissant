@@ -1,3 +1,25 @@
+## 2026-10-26 phone inline CPU controls and saved-byte recovery source
+
+- Approved A reaches the actual phone Live form using independent versioned
+  en-croissant-phone-cpu-resources-v1. CPU-only edits verify saved bytes before
+  requests, preserve failed drafts across navigation and offer retry/restoration.
+  Equal-number presets can explicitly enter the new policy; returning to fixed
+  presets retains older choices. Remote-PC budgets bound new edits without
+  clamping older fields. Direct store subscription prevents stale form actions.
+- First-use Balanced requires confirmed absence of both preference stores, valid
+  PC metadata, known Ready owner service state and no manual/failed legacy edit.
+  It retains analysis Off and ignores late invalidated replies. Unreadable CPU
+  data stays intact and blocks a different fixed fallback. Legacy transient/
+  remount retry and immediate Pause remain; the hook now avoids failed-read
+  fallback writes, stale renders and unknown-field loss. Prior actual source
+  fails the saved-byte regression; current source passes.
+- 147 focused cases11 files, fulltypes,9-file lint0 and10-file format pass. WebApp
+  retains25 exact baseline lint diagnostics; affected functions formatted locally.
+  Source/DOM proof, including actual forms/storage/transport/first-use/Off/help.
+  Native artifact78c77926 and live phonec412 remain separate. Gateway/phone live
+  delivery, rendered/physical proof, Plans/report launch scope, phone search-limit
+  controls and broader audit remain. Full goal active; no owner data changed.
+
 ## 2026-10-26 verified phone CPU transport source
 
 - Phone client snapshots the new CPU selection through live/PC-only/stored-
