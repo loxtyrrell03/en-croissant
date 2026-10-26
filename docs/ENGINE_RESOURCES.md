@@ -140,3 +140,19 @@ and CPU-only restoration. No owner data or hosted service was changed. Native
 packaging must be rebuilt separately; actual rendered widths/native-window and
 physical-device evidence remain unavailable. First-use initialization, remaining
 lines/search draft behavior and PC/phone resource integration remain open.
+
+The native live-tab slice is packaged from product `95303cf5`:18 exact current
+assets, normal IPC, complete About notices and102 bundled engine/source files
+match the48,958,976-byte executable (SHA-256
+`f772d135c809245b5af6cff8894957029561f3d3b90794a085e60ef411ba6ccf`).
+Clean158 tests and independent primary51 tests/types pass. The immediately
+previous3705b39e package is retained as rollback. This remains package/DOM proof,
+with no app launch, installed update, phone runtime or physical verification.
+
+One remaining range-boundary detail must be reconciled before the complete
+resource family is accepted: a saved value above today's recommendation remains
+readable, but new edits should obey the current device budget. The current
+editor expands its maximum to preserve the old value; Novelty instead displays
+the old out-of-range value separately from the smaller valid input range. Cover
+that behavior alongside first-use and remaining search-control work. The phone
+protocol and interface still require their own implementation and delivery.

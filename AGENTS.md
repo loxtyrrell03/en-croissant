@@ -1,3 +1,23 @@
+## 2026-10-26 live-tab resource package
+
+- Product95303cf5 packages native defaults and live-tab inline A controls with
+  resource-only saved/local scopes, current-state stop ownership and native
+  failure retry/restoration. Executable48,958,976B SHA256
+  f772d135c809245b5af6cff8894957029561f3d3b90794a085e60ef411ba6ccf verifies18 exact
+  current assets, normal IPC, complete About notices and102engine/source resources.
+- Clean158 cases16 files and primary51 cases5 files/types pass;12-file lint0.
+  Frontend 20.42s/native105s with22 existing warnings. Generated content matches
+  HEAD after line-ending refresh. Immediately previous3705b39e/88f5b2ca artifact
+  is now rollback; superseded b4c9288c/fd6a3d2a compiled rollback was replaced only
+  after package verification. No app launch/installation or hosted service change.
+- First-use initialization, lines/search draft parity and phone/gateway resource
+  support/delivery remain. Also reconcile retained out-of-recommendation values
+  with bounds for a new explicit edit: current controls preserve saved values by
+  expanding their editable maximum, while Novelty keeps the displayed old value
+  and limits new edits to the current device budget. Add that boundary coverage
+  before calling the resource family complete. Rendered/physical proof and full
+  historical audit remain open. Existing owner data/source remainder preserved.
+
 ## 2026-10-26 native live-tab resource controls source
 
 - Approved inline A now reaches actual BestMoves/EngineSettingsForm local analysis.
