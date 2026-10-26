@@ -7,7 +7,11 @@ Leaving Board retains explicit choices; removing a source prunes them. Keep
 this out of durable file preferences, report evidence, workspace writes and
 personal sync. Old-owner callbacks check the current session snapshot. The
 existing mounted report-job lifecycle and engine On/Off choice remain separate.
-See ../../docs/REPORT_VIEW_LIFETIME.md for source checks and delivery boundaries.
+Canonical phone c4120833 is package/API/runtime verified with saved data, private
+sync and standby preserved. Rendered/physical proof remains. See
+../../docs/REPORT_VIEW_LIFETIME.md for checks and boundaries. Novelty a717698b
+consolidates a different custom toolbar/popover; preserve these selected phone
+annotation/import controls (../../docs/BOARD_ACTIONS_TARGET_REVIEW.md).
 
 # Phone PGN export safety
 

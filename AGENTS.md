@@ -1,20 +1,27 @@
-## 2026-10-26 session-owned report visibility source
+## 2026-10-26 report visibility delivery and toolbar target review
 
-- Novelty33069e28/d86b2aff report-minimized family now has an explicit native/phone
-  target decision. Native already uses per-tab in-memory Engines/Report/Logs,
-  default Engines; two new Jotai-store cases verify fresh sessions/new tabs. No
-  desktop production/binary change or duplicate collapse control is needed.
-- Phone Analysis A previously leaked Report into a different loaded file and lost
-  its view on leaving Board. The actual old WebApp fails the new regression.
-  App-root ephemeral views now belong to loaded source/Prep/blank-board owners;
-  new sources/sessions start Live, removal prunes choices and late actions recheck
-  ownership. Persistent orientation/source preferences, saved reports/jobs/limits,
-  live-engine On/Off and compact navigation retain their own contracts.
-- Complete phone plus selected native/report suites pass481 checks/69 files, full
-  types and five-file lint (exact25 unchanged WebApp warnings, no new/errors).
-  Source verified; primary mirror/phone delivery remain. No native app, owner
-  data or service changed. See docs/REPORT_VIEW_LIFETIME.md/current delivery JSON.
-  Browser control remains unavailable; rendered/physical proof remains. Goal active.
+- Novelty33069e28/d86b2aff report-minimized family is delivered through En's own
+  selectors. Native already starts Engines per tab/session (two new real-atom
+  checks); no native production change or duplicate collapse control is needed.
+- Actual old phone WebApp leaked Report into a different file. App-root temporary
+  views now follow loaded source/Prep/blank-board owners: fresh sources/sessions
+  start Live, returning restores explicit choices, removal prunes and queued
+  actions recheck ownership. Report jobs/limits/evidence, persistent preferences,
+  engine On/Off and selected compact navigation retain their own contracts.
+- Clean passes481 phone/selected native checks69 files/types; primary19 focused
+  cases5 files/types. Exact25 existing WebApp lint warnings remain, no new/errors.
+  Product c4120833 is pushed on both branches and live on canonical phone with10
+  exact HTTPS files, real saved-data/tournament/sync reads and15 installed runtime
+  modules plus actual helper/notices verified. Seven owner files, pinned sync,
+  Serve routes and gateway PID/cold workers are preserved; owned tasks removed.
+  The verified native b4c9288c artifact remains; no desktop executable delta.
+- a717698b changes Novelty's four-button toolbar and custom popovers. En active
+  BoardAnalysis mounts its own BoardControls/notation; selected phone controls
+  have no matching row/editor. Preserve those surfaces; other clipboard-action
+  parity is not certified by this presentation decision. Six new source rows/
+  six families remain pending. See REPORT_VIEW_LIFETIME.md and
+  BOARD_ACTIONS_TARGET_REVIEW.md/current delivery JSON. Browser control unavailable;
+  rendered/physical proof and the full audit remain open. Goal active.
 
 ## 2026-10-25 shared evaluation discovery and effective-default delivery
 
@@ -59,7 +66,7 @@
  32 version-only releases and14 integration nodes; do not call these60 missing
   features. Earlier comparison hashes/En history remain explicitly historical.
 - New native keyboard family is packaged; private Dev sync/repair maintenance
-  stays in its owning product/runtime. Seven new source rows across seven families
+  stays in its owning product/runtime. Six new source rows across six families
   remain target-review candidates, including presets, layout, selected engine,
   combined monthly openings and strength labels. Pending-source hash deltas65
   changed/31 new include research and already mirrored work; no automatic port.

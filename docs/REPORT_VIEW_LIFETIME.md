@@ -42,5 +42,17 @@ game/route navigation and report-save/Plans actions, plus stale queued choices,
 removed/reopened sources, Prep/blank-board isolation, fresh sessions and failed
 storage. Full TypeScript passes. Five-file lint has no errors or new warnings;
 the exact25 existing WebApp warning messages match its committed baseline.
-The phone build and publication, primary mirror and rendered/physical evidence
-remain separate follow-ups. See the current delivery JSON for their status.
+Primary independently passes19 checks in five focused files and full types,
+preserving its existing owner source remainder. Product commit c4120833 is pushed
+on both source branches. The canonical phone build completes, and the normal
+guarded publisher returns successfully. Ten exact HTTPS shell/WebApp/Stockfish
+JS/WASM/manifest/service-worker files match the build. Saved workspace/catalog
+content, PGN/database-position reads, tournament settings and healthy private
+sync match before/after publication. The actual unpackaged runtime verifies15
+modules, matching collector/core binaries, the fresh helper child, both immutable
+notice sidecars and complete no-data CLI notices. Seven owner files, pinned sync
+helpers/task, gateway PID/standby and all Serve routes are preserved; temporary
+publisher/verifier tasks are removed. There is no native production change, so
+the prior verified b4c9288c desktop artifact remains. Browser control is unavailable;
+rendered/native-window and physical-phone evidence remain unverified. The full
+parity audit remains open; see the current delivery JSON.

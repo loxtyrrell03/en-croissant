@@ -23372,10 +23372,16 @@
         "d86b2aff"
       ],
       "native": "Existing per-tab/session selector verified; no duplicate collapse UI",
-      "phone": "Implemented session-only per-loaded-workspace views; publication pending",
+      "phone": "Delivered canonical c4120833 with exact assets, saved data/sync/runtime checks; rendered proof remains",
       "evidence": "REPORT_VIEW_LIFETIME.md",
-      "unreviewedRecentSourceRows": 7,
-      "unreviewedRecentFamilies": 7
+      "unreviewedRecentSourceRows": 6,
+      "unreviewedRecentFamilies": 6
+    },
+    "boardActionsTargetReview20261026": {
+      "noveltyCommit": "a717698b",
+      "status": "Novelty-specific toolbar/popover presentation; preserve En native/selected phone surfaces",
+      "evidence": "BOARD_ACTIONS_TARGET_REVIEW.md",
+      "otherClipboardActionsCertified": false
     }
   }
 }

@@ -3,11 +3,11 @@
   "status": "source-parity-progress-with-rendered-and-runtime-delivery-pending",
   "goalComplete": false,
   "phone": {
-    "checkedAt": "2026-10-25T23:59:51.610Z",
+    "checkedAt": "2026-10-26T00:21:26.100Z",
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
-    "appShellSha256": "0ea82179971b9135158af630f336294796e600451a0b9d34d1a3ebe4ae7e4701",
-    "homePid": 36144,
+    "sourceCommit": "c4120833906aeb523d2164c0ed5e27738932aca5",
+    "appShellSha256": "58e65f4d6ac1fda4e78b06a031eab196ca87dda0b7ba1fabdc2c53761db0f834",
+    "homePid": 10112,
     "files": 3342,
     "databases": 105,
     "savedPgnRead": true,
@@ -28,7 +28,7 @@
       {
         "path": "index.html",
         "bytes": 1052,
-        "sha256": "e923ae7985d771817026baa7cc29d4d95c7b4c51c2a61250e111b2813de80f69"
+        "sha256": "c196128d737f3d14b974812eeffa78d7fa6b132371d65ab63a910f9b4df374f9"
       },
       {
         "path": "manifest.webmanifest",
@@ -38,7 +38,7 @@
       {
         "path": "web-sw.js",
         "bytes": 3462,
-        "sha256": "d7039a05765d22948f3d1894f2a47b5a1c1e6910294627e09040e3fb91c69335"
+        "sha256": "bfd5cd7a09c9a51072759a50cf2829aa6ca782163fb656760d67dd62796120f5"
       },
       {
         "path": "assets/index-B35kf7dc.js",
@@ -51,14 +51,14 @@
         "sha256": "e865374a7487aa1cc4b031683e410bafabcd574c52a3233f533ffd276e993853"
       },
       {
-        "path": "assets/index-D-g97tKi.js",
+        "path": "assets/index-mGAbSiRc.js",
         "bytes": 295301,
-        "sha256": "b3a28edacf7ad8f8f194075b0bcac3e2e8a4080fdac4a94757006c5afb5ffb01"
+        "sha256": "093881c50997faf26e08e27f08b65ff242ee88f5c3f9fecb20f3d4cd9789a83e"
       },
       {
-        "path": "assets/WebApp-BDQ66AB1.js",
-        "bytes": 442391,
-        "sha256": "c1db764e57cec8aec6e1378afa84745be6298e18b284ce2db96430e6ef73d454"
+        "path": "assets/WebApp-9PstY6CH.js",
+        "bytes": 443913,
+        "sha256": "31a6ab87a0f7759010e80dbae6f85e92b9d05b59bb54271d05363aa73609422d"
       },
       {
         "path": "assets/WebApp-IB4YSzk0.css",
@@ -78,16 +78,16 @@
     ],
     "ownerDataAndEnginePreserved": true,
     "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "b4c9288c20f8-0ea82179971b",
-    "homeOwnLocalEvalsAvailable": true,
-    "homeOwnLocalEvalsError": null,
-    "homeOwnLocalEvalsPositions": 401283893,
+    "releaseId": "c4120833906a-58e65f4d6ac1",
     "publisherReturned": true,
     "preservedOwnerFiles": 7,
     "privateSyncTaskAndPinnedHelpersPreserved": true,
     "serveRoutesPreserved": true,
     "ownerWorkspaceAndCatalogHashesMatch": true,
-    "temporaryTasksRemoved": true
+    "temporaryTasksRemoved": true,
+    "homeOwnLocalEvalsAvailable": true,
+    "homeOwnLocalEvalsError": null,
+    "homeOwnLocalEvalsPositions": 401283893
   },
   "desktop": {
     "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
@@ -6167,8 +6167,8 @@
     "nativeNewStateCases": 2,
     "oldActualWebAppFailureReproduced": true,
     "phoneSourceImplemented": true,
-    "phonePublished": false,
-    "sourceOnly": true,
+    "phonePublished": true,
+    "sourceOnly": false,
     "completePhoneAndSelectedNativeTestsPassed": 481,
     "testFiles": 69,
     "types": true,
@@ -6182,6 +6182,205 @@
     "sourceRemovalPrunesChoices": true,
     "staleOwnerActionsRejected": true,
     "browserRendered": false,
-    "physicalPhoneVerified": false
+    "physicalPhoneVerified": false,
+    "sourceCommit": "c4120833906aeb523d2164c0ed5e27738932aca5",
+    "primaryMirrored": true,
+    "primaryFocusedChecksPassed": 19,
+    "primaryFocusedFiles": 5,
+    "primaryTypes": true,
+    "primaryOwnerGuidanceRemainder": [
+      104,
+      2
+    ],
+    "primaryOwnerBindingsRemainder": [
+      25,
+      1
+    ],
+    "nativeExecutableChangeRequired": false,
+    "nativePackageRetainedSource": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+    "phoneBuild": {
+      "sourceCommit": "c4120833906aeb523d2164c0ed5e27738932aca5",
+      "phoneBuild": true,
+      "canonicalOrigin": true,
+      "generatedOutputsMatchCommittedSource": true,
+      "timings": [
+        {
+          "command": "node",
+          "args": [
+            "node_modules/vite/bin/vite.js",
+            "build",
+            "--config",
+            "vite.otb-prep.config.ts"
+          ],
+          "seconds": 0.26684680000000005
+        },
+        {
+          "command": "node",
+          "args": [
+            "node_modules/vite/bin/vite.js",
+            "build",
+            "--config",
+            "vite.review-worker.config.ts"
+          ],
+          "seconds": 0.45396710000000007
+        },
+        {
+          "command": "node",
+          "args": [
+            "node_modules/@typescript/native-preview/bin/tsgo.js",
+            "--noEmit",
+            "-p",
+            "tsconfig.review-worker.json"
+          ],
+          "seconds": 3.4942815
+        },
+        {
+          "command": "node",
+          "args": [
+            "node_modules/vite/bin/vite.js",
+            "build"
+          ],
+          "seconds": 27.423410500000003
+        },
+        {
+          "command": "cargo.exe",
+          "args": [
+            "build",
+            "--release",
+            "--manifest-path",
+            "src-tauri/Cargo.toml",
+            "--bin",
+            "collect_otb_games",
+            "--features",
+            "headless-otb"
+          ],
+          "seconds": 7.852633699999998
+        },
+        {
+          "command": "cargo.exe",
+          "args": [
+            "build",
+            "--release",
+            "--locked",
+            "--manifest-path",
+            "src-tauri/tournament-core/Cargo.toml",
+            "--target-dir",
+            "src-tauri/target"
+          ],
+          "seconds": 2.5099893000000013
+        }
+      ]
+    },
+    "canonicalHttpsAssetsVerified": 10,
+    "normalPublisherReturned": true,
+    "kernelBackedInstalledModules": 15,
+    "installedHelperAndCollectorMatchBuild": true,
+    "actualHelperChildVerified": true,
+    "completeNoticeSidecarsAndCliVerified": true,
+    "ownerFilesPreserved": 7,
+    "privateSyncAndPinnedHelpersPreserved": true,
+    "workspaceAndCatalogContentPreserved": true,
+    "serveRoutesPreserved": true,
+    "engineGatewayPidPreserved": true,
+    "engineWorkersCold": true,
+    "temporaryTasksRemoved": true
+  },
+  "reportViewPhoneDelivery20261026": {
+    "checkedAt": "2026-10-26T00:21:26.100Z",
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "c4120833906aeb523d2164c0ed5e27738932aca5",
+    "appShellSha256": "58e65f4d6ac1fda4e78b06a031eab196ca87dda0b7ba1fabdc2c53761db0f834",
+    "homePid": 10112,
+    "files": 3342,
+    "databases": 105,
+    "savedPgnRead": true,
+    "databaseManifestRead": true,
+    "databasePositionRead": true,
+    "tournamentSettingsRead": true,
+    "personalSyncPhase": "synced",
+    "personalSyncErrors": 0,
+    "personalSyncConflicts": 0,
+    "servicesEnabled": true,
+    "enginePid": 60200,
+    "engineWorkerReady": false,
+    "storedEvaluationDepth": 65,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "assets": [
+      {
+        "path": "index.html",
+        "bytes": 1052,
+        "sha256": "c196128d737f3d14b974812eeffa78d7fa6b132371d65ab63a910f9b4df374f9"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "bytes": 401,
+        "sha256": "7d6dcbb884c92ff36b8c5449c61982ae4afa2855b765e52a9c79b8c7745b353b"
+      },
+      {
+        "path": "web-sw.js",
+        "bytes": 3462,
+        "sha256": "bfd5cd7a09c9a51072759a50cf2829aa6ca782163fb656760d67dd62796120f5"
+      },
+      {
+        "path": "assets/index-B35kf7dc.js",
+        "bytes": 116,
+        "sha256": "58a0d867a9221127a238d9ff3986a3c4e2262e200a0f57cc1bc84796ec38fa9d"
+      },
+      {
+        "path": "assets/index-C5fIn7uC.js",
+        "bytes": 10667,
+        "sha256": "e865374a7487aa1cc4b031683e410bafabcd574c52a3233f533ffd276e993853"
+      },
+      {
+        "path": "assets/index-mGAbSiRc.js",
+        "bytes": 295301,
+        "sha256": "093881c50997faf26e08e27f08b65ff242ee88f5c3f9fecb20f3d4cd9789a83e"
+      },
+      {
+        "path": "assets/WebApp-9PstY6CH.js",
+        "bytes": 443913,
+        "sha256": "31a6ab87a0f7759010e80dbae6f85e92b9d05b59bb54271d05363aa73609422d"
+      },
+      {
+        "path": "assets/WebApp-IB4YSzk0.css",
+        "bytes": 62631,
+        "sha256": "7e3419d9a828d652f67e9d47b8463e2143f501e8d0017394620627d8d30b1b2f"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      }
+    ],
+    "ownerDataAndEnginePreserved": true,
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "c4120833906a-58e65f4d6ac1",
+    "publisherReturned": true,
+    "preservedOwnerFiles": 7,
+    "privateSyncTaskAndPinnedHelpersPreserved": true,
+    "serveRoutesPreserved": true,
+    "ownerWorkspaceAndCatalogHashesMatch": true,
+    "temporaryTasksRemoved": true,
+    "homeOwnLocalEvalsAvailable": true,
+    "homeOwnLocalEvalsError": null,
+    "homeOwnLocalEvalsPositions": 401283893
+  },
+  "recentBoardActionsTargetReview20261026": {
+    "noveltyCommit": "a717698b",
+    "classification": "Novelty-specific toolbar grouping and custom popover geometry",
+    "native": "En active BoardAnalysis mounts its existing BoardControls rail/notation actions, without the four-button Novelty action row",
+    "phone": "Preserve selected Analysis/compact navigation and direct annotation controls; Import remains its own workspace",
+    "customPopupComponentsAbsent": true,
+    "otherClipboardActionParityClaimed": false,
+    "browserRendered": false,
+    "remainingRecentSourceRows": 6,
+    "remainingRecentFamilies": 6
   }
 }
