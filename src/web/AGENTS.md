@@ -1,3 +1,14 @@
+# Phone analysis view lifetime
+
+Live/Game report/Plans selection is temporary app-root state, scoped to loaded
+database IDs, Prep IDs or the current blank-board owner. Games in one loaded
+source share the choice; new sources and fresh app sessions start on Live.
+Leaving Board retains explicit choices; removing a source prunes them. Keep
+this out of durable file preferences, report evidence, workspace writes and
+personal sync. Old-owner callbacks check the current session snapshot. The
+existing mounted report-job lifecycle and engine On/Off choice remain separate.
+See ../../docs/REPORT_VIEW_LIFETIME.md for source checks and delivery boundaries.
+
 # Phone PGN export safety
 
 The annotation toolbar snapshots the complete immutable current PGN, including

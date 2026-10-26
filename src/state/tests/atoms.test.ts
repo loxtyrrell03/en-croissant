@@ -5,6 +5,7 @@ import {
     activeTabAtom,
     currentShowCommentsAtom,
     currentShowMoveAnnotationsAtom,
+    currentAnalysisTabAtom,
     currentTabAtom,
     tabsAtom,
 } from "@/state/atoms";
@@ -54,4 +55,34 @@ test("current tab falls back to the first workspace tab when active tab is stale
     store.set(activeTabAtom, "missing-tab");
 
     expect(store.get(currentTabAtom)?.value).toBe("tab-a");
+});
+
+test("analysis reports open only by an explicit choice in each native tab", () => {
+    const store = createStore();
+    store.set(tabsAtom, [analysisTab("report-a"), analysisTab("report-b")]);
+    store.set(activeTabAtom, "report-a");
+    expect(store.get(currentAnalysisTabAtom)).toBe("engines");
+    store.set(currentAnalysisTabAtom, "report");
+    store.set(activeTabAtom, "report-b");
+    expect(store.get(currentAnalysisTabAtom)).toBe("engines");
+    store.set(currentAnalysisTabAtom, "logs");
+    store.set(activeTabAtom, "report-a");
+    expect(store.get(currentAnalysisTabAtom)).toBe("report");
+    store.set(currentAnalysisTabAtom, "engines");
+    store.set(activeTabAtom, "report-b");
+    expect(store.get(currentAnalysisTabAtom)).toBe("logs");
+});
+
+test("a fresh native session and a newly opened tab keep earlier reports closed", () => {
+    const old = createStore();
+    old.set(tabsAtom, [analysisTab("previous-report")]);
+    old.set(activeTabAtom, "previous-report");
+    old.set(currentAnalysisTabAtom, "report");
+    const fresh = createStore();
+    fresh.set(tabsAtom, [analysisTab("previous-report")]);
+    fresh.set(activeTabAtom, "previous-report");
+    expect(fresh.get(currentAnalysisTabAtom)).toBe("engines");
+    old.set(tabsAtom, [analysisTab("new-report-tab")]);
+    old.set(activeTabAtom, "new-report-tab");
+    expect(old.get(currentAnalysisTabAtom)).toBe("engines");
 });

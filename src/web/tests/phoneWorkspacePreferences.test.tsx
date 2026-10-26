@@ -53,6 +53,7 @@ async function withPhoneWorkspace(check: (fixture: PhoneWorkspaceFixture) => Pro
     vi.fn(async () => new Response("{}", { status: 404 })),
   );
   Element.prototype.scrollIntoView = vi.fn();
+  window.scrollTo = vi.fn();
   const parsed = parsePgnDatabase("Invented file preference", "1. e4 e5 *\n\n1. d4 d5 *", 1);
   parsed.database.hostedFilePath = "C:/Lessons/Fixture.pgn";
   const other = parsePgnDatabase("Other invented file", "1. c4 e5 *", 2);
@@ -140,6 +141,83 @@ it("persists actual phone Flip through games in one file and root remount", asyn
       expect(host.querySelector(".orientation-black")).not.toBeNull();
     });
     expect(webStateSession.getSnapshot().state.board.line).toEqual(webGameToLine(parsed.games[1]));
+  });
+});
+
+it("opens new phone workspaces on Live and remembers explicit analysis views only for the current session", async () => {
+  await withPhoneWorkspace(async ({ host, parsed, other, settle, remount }) => {
+    const showAnalysis = async () => {
+      await act(async () =>
+        host.querySelector<HTMLButtonElement>('[role="tab"][aria-label="Analysis"]')!.click(),
+      );
+    };
+    const choose = async (value: string) => {
+      await act(async () =>
+        host
+          .querySelector<HTMLInputElement>(`[aria-label="Analysis view"] input[value="${value}"]`)!
+          .click(),
+      );
+    };
+    const expectView = (value: string) =>
+      expect(
+        host.querySelector<HTMLInputElement>(`[aria-label="Analysis view"] input[value="${value}"]`)
+          ?.checked,
+      ).toBe(true);
+    const first = webStateSession.getSnapshot().state.board;
+    await showAnalysis();
+    expectView("live");
+    await choose("report");
+    await act(async () =>
+      webStateSession.setState((state) => ({
+        ...state,
+        board: {
+          ...state.board,
+          annotationOwnerId: "same-file-next-game",
+          sourceGameId: parsed.games[1].id,
+          line: webGameToLine(parsed.games[1]),
+        },
+      })),
+    );
+    await settle();
+    expectView("report");
+    await act(async () =>
+      webStateSession.setState((state) => ({
+        ...state,
+        board: {
+          ...state.board,
+          annotationOwnerId: "other-file",
+          sourceDatabaseId: other.database.id,
+          sourceGameId: other.games[0].id,
+          line: webGameToLine(other.games[0]),
+        },
+      })),
+    );
+    await settle();
+    expectView("live");
+    await choose("plans");
+    await act(async () => webStateSession.setState((state) => ({ ...state, board: first })));
+    await settle();
+    expectView("report");
+    await choose("live");
+    await choose("report");
+    const before = JSON.stringify(webStateSession.getSnapshot().state);
+    await act(async () =>
+      host
+        .querySelector<HTMLButtonElement>('nav[aria-label="Workspace"] [data-view="files"]')!
+        .click(),
+    );
+    await act(async () =>
+      host
+        .querySelector<HTMLButtonElement>('nav[aria-label="Workspace"] [data-view="board"]')!
+        .click(),
+    );
+    await showAnalysis();
+    expectView("report");
+    expect(JSON.stringify(webStateSession.getSnapshot().state)).toBe(before);
+    await remount();
+    await showAnalysis();
+    expectView("live");
+    expect(JSON.stringify(webStateSession.getSnapshot().state)).toBe(before);
   });
 });
 

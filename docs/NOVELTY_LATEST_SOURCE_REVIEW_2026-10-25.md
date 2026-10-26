@@ -13,7 +13,7 @@ their historical snapshots; new metadata makes this boundary explicit.
 | `6f303827` | Add a private checked writer for personal Dev synchronization | Novelty-owned checked helper remains a separate process. Existing pinned sync helpers and service are preserved; En codec/phone integration is retained in the converged source. |
 | `b186d2d7` | Add device-balanced engine presets and sliders | Device-balanced presets/sliders: compare native engine options and phone remote/device resource selection; preserve custom/default ownership. |
 | `39015b80` | Let menu triggers handle their own arrow keys | Native BoardAnalysis event ownership fixed,37 cases/types both checkouts, exact package0987379c. No matching phone global move-arrow listener. See BOARD_SHORTCUT_OWNERSHIP.md. |
-| `33069e28` | Keep game analysis minimized by default per session and tab | Per-session/per-tab minimized report layout: compare En native Analysis tab and approved phone beneath-board view without changing report ownership. |
+| `33069e28` | Keep game analysis minimized by default per session and tab | Native already starts Engines per tab/session. Phone source now keeps Live/Game report/Plans choices in app-root temporary state per loaded source/Prep/blank board; new sources/sessions start Live. Actual old cross-file failure reproduced;481 related checks/69 files/types and unchanged lint baseline pass. Phone delivery/rendered proof remain. See REPORT_VIEW_LIFETIME.md. |
 | `a717698b` | Condense under-board game actions into one menu | Condensed under-board actions: evaluate equivalent En controls/menus and retained actions in its native layout. |
 | `963644ba` | Preserve visible Dev settings when repairing metadata indexes | Dev-only meta-table repair. En uses its own db3 schema and settings, not this damaged Novelty meta index. Do not replay the repair or import it as an En data migration. |
 | `7d1c3fe4` | Add engine selection to the under-board Database panel | Under-board Database engine choice and selected-evidence ownership require comparison with En native/phone consumers. |
@@ -21,7 +21,7 @@ their historical snapshots; new metadata makes this boundary explicit.
 | `eae54700` | Add draggable height control above the bottom panel | Bottom-panel draggable height: compare existing En resizers and stored layout; keyboard ownership is separately fixed. |
 | `10c1de9f` | Align Plan Explorer controls with Prep and Database | Plan Explorer control alignment: compare current native/phone controls and action wiring, not a wholesale foreign layout copy. |
 | `645273bf` | Combine downloaded Lichess sources without counting overlapping months twice | Combined local Lichess source selection, month overlap and aggregation remain an explicit downloaded-opening-data feature audit. Existing OTB import coverage is not proof of this feature. |
-| `d86b2aff` | Start game analysis minimized by default | Earlier default-layout member of33069e28 family; evaluate current final behavior rather than two independent ports. |
+| `d86b2aff` | Start game analysis minimized by default | Same implemented session/workspace family as33069e28, with native existing behavior verified and phone source fixed. See REPORT_VIEW_LIFETIME.md; this is one behavior port. |
 | `efb13607` | Name Prep strength labels after the selected preset | Preset-specific Prep strength labels require tracing En actual strength/preset semantics; do not blindly rename its independent blended metric. |
 
 The pending-source refresh compares exact hashes with the original snapshot:

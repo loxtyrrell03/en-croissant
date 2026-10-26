@@ -336,6 +336,7 @@ import {
   restorePhonePrepSource,
 } from "./workspacePreferences";
 import { usePhoneDatabasePreference } from "./useWorkspacePreferences";
+import { usePhoneAnalysisView, type PhoneAnalysisView } from "./usePhoneAnalysisView";
 import { PhoneArchiveFilter, PhoneSavedImports } from "./PhoneSourceArchives";
 import {
   phoneDatabaseArchive,
@@ -586,6 +587,7 @@ function WebAppContent() {
   const setState = webStateSession.setState;
   const [view, setView] = useState<ViewMode>("board");
   const [boardPanelMode, setBoardPanelMode] = useState<BoardPanelMode>("moves");
+  const [analysisView, setAnalysisView] = usePhoneAnalysisView(state);
   const [importing, setImporting] = useState(false);
   useEffect(() => {
     if (!loaded || readWebOtbPrepLink(window.location.search)) return;
@@ -1521,6 +1523,8 @@ function WebAppContent() {
                 lichessToken={lichessToken}
                 panelMode={boardPanelMode}
                 setPanelMode={setBoardPanelMode}
+                analysisView={analysisView}
+                setAnalysisView={setAnalysisView}
               />
             ) : view === "stats" ? (
               <StatsWorkspace />
@@ -1552,6 +1556,8 @@ function BoardWorkspace({
   lichessToken,
   panelMode,
   setPanelMode,
+  analysisView,
+  setAnalysisView,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
@@ -1565,10 +1571,11 @@ function BoardWorkspace({
   lichessToken: string;
   panelMode: BoardPanelMode;
   setPanelMode: Dispatch<SetStateAction<BoardPanelMode>>;
+  analysisView: PhoneAnalysisView;
+  setAnalysisView: (value: string) => void;
 }) {
   const [onlineAnalysisRequestId, setOnlineAnalysisRequestId] = useState(0);
   const [coachReviewRunning, setCoachReviewRunning] = useState(false);
-  const [analysisView, setAnalysisView] = useState("live");
   const [gameReportRunning, setGameReportRunning] = useState(false);
   const [planAnalysisRunning, setPlanAnalysisRunning] = useState(false);
   const [engineArrowAnalysis, setEngineArrowAnalysis] = useState<{
@@ -1633,9 +1640,13 @@ function BoardWorkspace({
     () => ({ startFen, line: activeLine, white: sourceGame?.white, black: sourceGame?.black }),
     [startFen, activeLine, sourceGame?.white, sourceGame?.black],
   );
+  const lastOnlineAnalysisRequest = useRef(0);
   useEffect(() => {
-    if (onlineAnalysisRequestId) setAnalysisView("live");
-  }, [onlineAnalysisRequestId]);
+    if (onlineAnalysisRequestId && onlineAnalysisRequestId !== lastOnlineAnalysisRequest.current) {
+      lastOnlineAnalysisRequest.current = onlineAnalysisRequestId;
+      setAnalysisView("live");
+    }
+  }, [onlineAnalysisRequestId, setAnalysisView]);
   const liveReplayStep = useMemo(
     () =>
       getWebLiveReplayStep({

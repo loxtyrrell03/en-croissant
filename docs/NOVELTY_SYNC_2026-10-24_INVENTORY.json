@@ -23365,6 +23365,17 @@
       "newPaths": 31,
       "limitation": "Many pending paths are research/tests or already mirrored features. These are hash changes requiring review, not confirmed missing improvements."
     },
-    "goalComplete": false
+    "goalComplete": false,
+    "reportViewFamily20261026": {
+      "noveltyCommits": [
+        "33069e28",
+        "d86b2aff"
+      ],
+      "native": "Existing per-tab/session selector verified; no duplicate collapse UI",
+      "phone": "Implemented session-only per-loaded-workspace views; publication pending",
+      "evidence": "REPORT_VIEW_LIFETIME.md",
+      "unreviewedRecentSourceRows": 7,
+      "unreviewedRecentFamilies": 7
+    }
   }
 }

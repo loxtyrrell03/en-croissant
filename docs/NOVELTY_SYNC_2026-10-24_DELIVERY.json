@@ -6155,5 +6155,33 @@
       "owner enabled choice"
     ],
     "phoneUiPublished": false
+  },
+  "reportViewLifetime20261026": {
+    "sourceBaseline": "0d26c2b70ab733e1b309bf35264b21f5922f733c",
+    "noveltyCommits": [
+      "33069e28",
+      "d86b2aff"
+    ],
+    "nativeProductionChanged": false,
+    "nativePerTabSessionBehaviorVerified": true,
+    "nativeNewStateCases": 2,
+    "oldActualWebAppFailureReproduced": true,
+    "phoneSourceImplemented": true,
+    "phonePublished": false,
+    "sourceOnly": true,
+    "completePhoneAndSelectedNativeTestsPassed": 481,
+    "testFiles": 69,
+    "types": true,
+    "lintFiles": 5,
+    "lintNewWarnings": 0,
+    "lintErrors": 0,
+    "exactExistingWebAppWarnings": 25,
+    "savedWorkspaceUnchangedByViewSelection": true,
+    "viewsWrittenToStorage": false,
+    "reportJobOwnershipRetained": true,
+    "sourceRemovalPrunesChoices": true,
+    "staleOwnerActionsRejected": true,
+    "browserRendered": false,
+    "physicalPhoneVerified": false
   }
 }

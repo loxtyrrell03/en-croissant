@@ -101,8 +101,8 @@ game reports and Plans keep fresh evidence. See `STORED_EVALUATIONS.md`; source
 checks are separate from hosted publication and rendered narrow/touch proof.
 
 
-Current live source is `41f60e91`, including the plan-arrow and stored-evaluation
-controls, shell SHA-256
+The historical `41f60e91` delivery included the plan-arrow and stored-evaluation
+controls, with shell SHA-256
 `a0917a23e5df33c1c63646d8b6a001b2ae43f7905d99a650c30f5de3a463642c`.
 HTTPS version/asset/data reads and an actual bounded Stockfish 19 report pass;
 saved workspace/tournament settings, service enabled choice and Serve routes
@@ -110,3 +110,13 @@ match preflight. Rendered narrow/touch and physical-phone proof remain absent.
 The output wrapper was stopped alone after independent live verification; the
 same server survived, and no normal publisher-exit receipt is claimed. See the
 current delivery JSON and `STORED_EVALUATIONS.md` for exact verification scope.
+
+
+Report visibility now follows the session and loaded workspace, within the same
+approved Analysis A controls. Fresh workspaces/sessions start on Live; an explicit
+Report/Plans choice remains local to its loaded source or Prep and survives
+leaving Board. It is never saved with the games, reports or persistent file
+preferences. Native already has the equivalent per-tab/session selector. See
+REPORT_VIEW_LIFETIME.md for actual old failure, source verification and separate
+phone publication/rendered boundaries. Later delivery snapshots are authoritative
+in NOVELTY_SYNC_2026-10-24_DELIVERY.json; earlier hashes above are historical.
