@@ -80,6 +80,10 @@ export function createEnginePreferenceStore(io: IO) {
     };
     const save = (target: NonNullable<typeof pending>): Promise<void> => {
         const operation = queue.then(async () => {
+            // Local and shared Retry can observe the same failed snapshot.
+            // A second queued retry must not republish an error after the first
+            // has a verified receipt and the caller has published its new model.
+            if (expected === target.text && pending !== target) return;
             publish({ saving: true });
             try {
                 if (expected === undefined)

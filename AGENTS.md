@@ -13,7 +13,9 @@
 - Verified-only staged preference edits retain previous runtime values until
   exact disk readback. Retry retains original ownership; Restore previous only
   writes over exact owned uncertain bytes. External/newer edits are preserved.
-  The shared retry notice reflects its receipt in the inline controls. Profile
+  The shared retry notice reflects its receipt in the inline controls. Duplicate
+  local/shared retries coalesce after the first receipt; the old queued retry
+  fails its actual regression case, and61 focused cases pass with the correction. Profile
   details are keyed by identity/path; setters target that identity, not list index,
   and UCI edits clone settings instead of mutating a saved snapshot.
 - 126 interaction/storage/engine checks across13 files and full types pass; one unchanged

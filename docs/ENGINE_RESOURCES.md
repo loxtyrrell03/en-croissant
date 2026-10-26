@@ -68,6 +68,9 @@ A new verified-only preference edit stages an immutable snapshot without
 publishing it to running engines or returning it to loading readers. After exact
 disk readback, the intended profile receives resource-only changes. Retry keeps
 its original model/byte ownership guard, including the shared retry notice.
+Queued local/shared retries coalesce after the first exact receipt, avoiding a
+late false error once the caller publishes the saved model. The old implementation
+fails the actual new concurrency case;61 focused cases pass with the correction.
 Restore previous discards an unwritten failed edit without a write, or restores
 only its own exact uncertain successful bytes. External/newer settings are never
 overwritten. A switch to another profile does not redirect the captured edit;

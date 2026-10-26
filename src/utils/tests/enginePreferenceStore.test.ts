@@ -116,6 +116,20 @@ it("does not retry or restore a superseded resource edit", async () => {
     await expect(edit.restore()).rejects.toThrow("newer");
     expect(JSON.parse(h.disk()!)[0].id).toBe("newer");
 });
+it("coalesces queued local/shared retries after the first verified receipt changes ownership", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    let owns = true;
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => owns);
+    h.io.write.mockImplementationOnce(async (text) => {
+        h.replace(text);
+        owns = false;
+    });
+    await Promise.all([edit.save(), h.store.retry()]);
+    expect(h.io.write).toHaveBeenCalledTimes(1);
+    expect(h.store.isSavedValue(edit.value)).toBe(true);
+    expect(h.store.getSnapshot().error).toBeNull();
+});
 it.each(['{"broken":', '[{"type":"unknown","path":"keep-me"}]'])(
     "preserves unreadable settings without a normalization write: %s",
     async (text) => {
