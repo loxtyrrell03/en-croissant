@@ -1,3 +1,23 @@
+## 2026-10-26 native profile resource package
+
+- Product source3705b39e builds and verifies the selected native Engines defaults
+  controls/capability in the shared current artifact:48,954,880 bytes, SHA256
+  88f5b2ca9e0b045f470538c642dad99377cdb278abd4d43e6906c3e5a64ccaab.
+  Seventeen exact current assets, normal resource IPC, complete About notices and
+  102 engine/source resources match. Existing recovery/export/evaluation/Study/
+  tracker controls remain present. Native release103s with22 existing warnings.
+- Clean126 focused cases passed before retry refinement;61 including the actual
+  queued-retry regression pass afterwards, independently mirrored in primary.
+  Types/format pass; one exact pre-existing EnginesPage lint warning remains.
+  Generated content matches committed source; only line endings were restored.
+- The immediately previous verified b4c9288c artifact, SHA fd6a3d2a990227e5a60ab4fe8ddeb092dc022748facb8000d4e3e41fc98e8c81,
+  is now the rollback. Its superseded0987379c compiled rollback was replaced only
+  after new package verification. Existing checkout/cache/engine resources were
+  reused; no dataset copy, installed launch/update, phone service or route change.
+- Current-tab resource controls, first-use initialization, lines/search draft
+  parity and phone/gateway protocol/UI/delivery remain. This package is not
+  rendered native-window or physical-device evidence. Full audit/goal is active.
+
 ## 2026-10-26 native engine defaults resource controls source
 
 - Selected inline A now works in native Engines profile defaults for engines

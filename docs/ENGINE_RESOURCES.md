@@ -90,3 +90,14 @@ legacy fixed choices. The future gateway must explicitly advertise support for
 resource requests before the phone submits them; a device snapshot alone is not
 proof that resource settings will be applied. Profile/tab/sync save and engine
 restart ownership require actual integration checks through En's own architecture.
+
+The native profile slice is packaged from product source `3705b39e`:17 exact
+current assets, native resource IPC, complete About notice literal and102 bundled
+engine/source files match the48,954,880-byte executable (SHA-256
+`88f5b2ca9e0b045f470538c642dad99377cdb278abd4d43e6906c3e5a64ccaab`).
+The existing build folder/cache was reused. Native release compilation takes103s
+with22 existing warnings. The immediately previous verified b4c9288c package is
+the retained rollback. No app was launched, installed or updated; no PC-hosted
+phone/gateway runtime, data or hosting route changed. Current-tab and PC/phone
+resource integration, first-use/remaining search-control behavior and rendered/
+physical verification remain open.
