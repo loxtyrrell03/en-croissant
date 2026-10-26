@@ -252,3 +252,14 @@ profile files were preserved. See `NATIVE_STOCKFISH_19.md` and the current JSON
 receipt for hashes, the Windows resource-path correction, publication-wrapper
 cleanup and remaining manual catalog/rendered/full-audit work. The overall goal
 is still active.
+
+
+## Phone CPU resource milestone
+
+Approved inline CPU controls are live in phone product f6271cdf. 444 manifest
+files/11 HTTPS assets, 15 home/eight gateway modules, helpers and notices verify.
+Real custom/default searches return legal moves and natural standby. Saved data,
+seven owner files, private sync/tasks and all Serve routes are preserved. The
+native78c77926 artifact remains. Rendered/physical proof, Plans/report job-launch
+resource scope, phone search limits, native remote review and the full audit
+remain open. See [ENGINE_RESOURCES.md](ENGINE_RESOURCES.md) and the delivery JSON.

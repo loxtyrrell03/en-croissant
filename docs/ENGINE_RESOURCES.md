@@ -129,7 +129,8 @@ request without the field returns to configured defaults. No selection is writte
 to the PC service config.38 Node checks include isolated real Stockfish19 searches,
 queue cancellation, report bounds, cold standby and exact config preservation.
 The installer stages tiny policy/protocol dependencies before the gateway; it was
-parsed, not executed. This protocol is source/isolated-service proof only.
+parsed, not executed. Initial checks were source/isolated-service proof; the live
+delivery is recorded below.
 
 Phone transport now snapshots the separate selection across live, PC-only,
 stored-preferred, Plans and bounded-report calls. Before searching it checks the
@@ -167,7 +168,31 @@ narrow-layout or physical proof, which remain unavailable.
 Live currently supplies the new CPU selection. Actual Plans/report job-launch
 scope and phone completed search-limit controls remain in the parity audit;
 transport API support alone does not wire those callers. Whole-profile backup
-work must include the new preference key. Live gateway/phone delivery is pending.
+work must include the new preference key. Live gateway/phone delivery is verified
+below.
 Device metadata alone is not application support. Managed phone single-thread/WASM
 and LCZero GPU controls retain their own contracts. Do not run the installer or
 retune live configs incidentally. The full history and target audit remains active.
+
+
+## Verified phone resource delivery
+
+Phone product f6271cdf is now published through the existing guarded workflow.
+The full 444-file build manifest and 11 exact HTTPS shell/WebApp/policy/Stockfish
+JS/WASM files match. Saved workspace/catalog content, PGN/database-position and
+tournament reads, seven owner files, private sync/pinned helpers/tasks and all
+Serve routes are preserved. Actual unpackaged runtime checks verify 15 home and
+eight gateway modules, matching collector/core, the fresh helper child, both
+immutable notices and full no-data CLI notices. Canonical real Stockfish19
+searches acknowledge exact custom CPU values and retain legacy server defaults;
+both moves are legal and the worker returns naturally to cold standby.
+
+The controlled gateway updater stopped on its old-process shutdown guard; the
+existing supervisor recovered the new gateway. It was not replayed. Independent
+source/process/listener/task/config/data/HTTPS checks confirmed the new identity.
+Keep this supervisor ownership when updating helpers; never repeat an uncertain
+restart or run the installer as a casual gateway update. Five completed owned
+brokers were removed. No owner settings, service choice or corpus was replaced.
+The separate native78c77926 artifact remains. Rendered layouts/native-window and
+physical-phone proof remain unverified. Plans/report launch resource scope,
+phone search-limit controls and the broader parity audit remain open.

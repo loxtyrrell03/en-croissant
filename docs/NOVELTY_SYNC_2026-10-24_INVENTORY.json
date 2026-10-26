@@ -23382,6 +23382,21 @@
       "status": "Novelty-specific toolbar/popover presentation; preserve En native/selected phone surfaces",
       "evidence": "BOARD_ACTIONS_TARGET_REVIEW.md",
       "otherClipboardActionsCertified": false
+    },
+    "phoneCpuResourceDelivery20261026": {
+      "noveltyCommit": "b186d2d7",
+      "sourceCommit": "f6271cdff5385c154a07c42723bfde83c8d48165",
+      "selectedDesign": "A-inline",
+      "status": "native artifact and canonical phone Live controls verified; family audit open",
+      "evidence": "ENGINE_RESOURCES.md",
+      "remaining": [
+        "Plans/report launch resource applicability",
+        "phone search-limit controls",
+        "native remote controls review",
+        "rendered and physical proof",
+        "full history audit"
+      ],
+      "goalComplete": false
     }
   }
 }

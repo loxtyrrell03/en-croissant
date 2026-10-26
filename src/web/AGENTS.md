@@ -1,3 +1,18 @@
+# Verified phone CPU resource delivery
+
+Canonical phone f6271cdf has 444 manifest files/11 exact HTTPS assets verified.
+Actual normal-user runtime verifies 15 home/eight gateway modules, matching
+helpers, the fresh helper child and complete notice sidecars/CLI. Real canonical
+Stockfish19 searches acknowledge exact requested CPU resources and keep legacy
+server defaults; both moves are legal and natural cold standby returns. Saved
+workspace/catalog/games, seven owner files, private sync/pinned task/helpers,
+service choice and all Serve routes are preserved. Five owned brokers removed.
+The supervisor recovered the new gateway after the updater stopped on its old
+shutdown guard; no update replay or installer run was needed. Verify authoritative
+state before retrying any uncertain delivery. Native78c77926 artifact retained.
+Rendered/physical proof, Plans/report launch scope, phone search-limit controls
+and the wider parity audit remain open. See ../../docs/ENGINE_RESOURCES.md.
+
 # Phone PC resource controls and transport
 
 Approved inline A now reaches the actual Live PC engine form. The versioned
@@ -22,7 +37,8 @@ are preserved. The actual prior source fails the unreadable-byte regression.
 pass. WebApp retains exactly its25 baseline lint diagnostics; edited functions
 were formatted locally. Fixtures exercise actual phone/native forms, storage,
 transport, compiler-driven subscriptions, first use, Off and focus/touch help.
-Rendered narrow layouts, installed delivery and physical proof remain separate.
+Phone f6271cdf is now package/API/runtime verified as recorded above. Rendered
+narrow layouts and physical proof remain separate.
 Live supplies the new policy; Plans/report job-launch scope and phone search-limit
 controls remain in the family audit. The transport already supports explicit
 policy for those jobs, but capability support alone does not wire their callers.
@@ -37,7 +53,7 @@ succeed through stored or phone-WASM fallback; ordinary legacy calls retain
 their behavior. Health reads have a five-second bound/cancellation and never wake
 a service. Remote terminal/error paths release their own controller.
 43 focused transport/report/capability cases, types and five-file lint0 pass.
-This is source/fixture proof; live gateway/phone delivery remains pending. Device
+This source/fixture behavior also passes the live gateway/phone checks above. Device
 metadata alone does not establish resource application support.
 Use the remote PC capability snapshot for PC CPU/hash recommendations. Preserve
 existing saved/fixed presets and LCZero GPU controls; phone WASM has separate

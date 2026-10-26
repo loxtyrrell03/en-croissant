@@ -1,3 +1,21 @@
+## 2026-10-26 phone CPU resource delivery
+
+- Approved inline A is live at canonical phone product f6271cdf.444 build manifest
+  files/11 exact HTTPS assets and15 home/eight gateway runtime modules verify.
+  Actual helper/collector/fresh child, immutable sidecars and full no-data CLI
+  notices match. Real Stockfish19 searches acknowledge custom CPU values, retain
+  legacy defaults, return legal moves and naturally release to cold standby.
+- Seven owner files, saved workspace/catalog/games, private sync and pinned
+  helpers/task, owner On/Off and all Serve routes remain intact. Five completed
+  owned brokers removed; no corpus copy or installer run. A shutdown guard stopped
+  the updater; existing supervision recovered the new gateway. No replay: exact
+  source/process/listener/task/config/data/HTTPS state was independently verified.
+- Source147 checks11 files/types; primary58 checks6 files/types pass.25 unchanged
+  WebApp diagnostics remain. Native78c77926 artifact is retained. Rendered and
+  physical proof, Plans/report launch resource scope, phone search limits, native
+  remote target review and the full history audit remain. See ENGINE_RESOURCES.md
+  and NOVELTY_SYNC_2026-10-24_DELIVERY.json under docs; the goal remains active.
+
 ## 2026-10-26 phone inline CPU controls and saved-byte recovery source
 
 - Approved A reaches the actual phone Live form using independent versioned
@@ -16,9 +34,9 @@
 - 147 focused cases11 files, fulltypes,9-file lint0 and10-file format pass. WebApp
   retains25 exact baseline lint diagnostics; affected functions formatted locally.
   Source/DOM proof, including actual forms/storage/transport/first-use/Off/help.
-  Native artifact78c77926 and live phonec412 remain separate. Gateway/phone live
-  delivery, rendered/physical proof, Plans/report launch scope, phone search-limit
-  controls and broader audit remain. Full goal active; no owner data changed.
+  Phone f6271cdf delivery is verified above; native78c77926 artifact remains.
+  Rendered/physical proof, Plans/report launch scope, phone search-limit controls
+  and broader audit remain. Full goal active; no owner data changed.
 
 ## 2026-10-26 verified phone CPU transport source
 
@@ -30,9 +48,9 @@
   existing behavior. Bounded health reads never wake services; terminal remote
   requests abort their owned controller, including metadata rejection.
 - 43 focused client/report/capability checks, fulltypes and5-file lint0 pass.
-  Native product78c77926 and live phonec412 remain separate. Phone preferences/
-  inline controls and actual gateway/phone delivery still pending; no hosting or
-  owner data changes. Existing legacy/GPU choices retained. Full goal active.
+  The later f6271cdf milestone delivers phone preferences/inline controls and
+  the gateway while retaining native78c77926 and existing legacy/GPU choices.
+  Owner data remains intact; rendered/physical and wider scope remain open.
 
 ## 2026-10-26 opt-in PC CPU resource protocol source
 

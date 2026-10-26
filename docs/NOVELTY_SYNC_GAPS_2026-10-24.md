@@ -229,3 +229,14 @@ An earlier transient Library404 recovered before publishing; its cause remains
 unproven, not attributed as a fix. See COMPRESSION_NOTICES.md/current delivery
 JSON. The native artifact staysabf029e6. Remaining20 source rows, recovery and
 rendered/native-window/physical checks remain open.
+
+
+## Phone CPU delivery and remaining resource scope
+
+Approved inline CPU controls are live in phone product f6271cdf. 444 manifest
+files/11 HTTPS assets, 15 home/eight gateway modules, helpers and notices verify.
+Real custom/default searches return legal moves and natural standby. Saved data,
+seven owner files, private sync/tasks and all Serve routes are preserved. The
+native78c77926 artifact remains. Rendered/physical proof, Plans/report job-launch
+resource scope, phone search limits, native remote review and the full audit
+remain open. See [ENGINE_RESOURCES.md](ENGINE_RESOURCES.md) and the delivery JSON.
