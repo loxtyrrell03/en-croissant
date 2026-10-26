@@ -267,6 +267,9 @@ async removeAiCoachSidecarRecord(path: string, recordKey: string) : Promise<Resu
 async memorySize() : Promise<number> {
     return await TAURI_INVOKE("memory_size");
 },
+async engineDeviceInfo() : Promise<EngineDeviceInfo> {
+    return await TAURI_INVOKE("engine_device_info");
+},
 async getPuzzle(file: string, minRating: number, maxRating: number, theme: string | null) : Promise<Result<Puzzle, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_puzzle", { file, minRating, maxRating, theme }) };
@@ -1003,6 +1006,7 @@ export type DatabaseProgress = { id: string; progress: number }
 export type DrawReason = "stalemate" | "insufficientMaterial" | "threefoldRepetition" | "fiftyMoveRule" | "agreement"
 export type DuplicateGameCleanupReport = { deletedGames: number; enrichedGames: number }
 export type EngineConfig = { name: string; options: UciOptionConfig[] }
+export type EngineDeviceInfo = { logicalThreads: number; totalMemoryMb: number | null; availableMemoryMb: number | null }
 export type EngineLog = { type: "gui"; value: string } | { type: "engine"; value: string }
 export type EngineMoveDelay = { minMs: number; maxMs: number; fideElo?: number | null; strengthElo?: number | null; initialTimeMs?: number | null; incrementMs?: number | null; useAsMoveTime?: boolean }
 export type EngineOption = { name: string; value: string }

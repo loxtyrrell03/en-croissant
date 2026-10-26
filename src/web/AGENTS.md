@@ -1,5 +1,7 @@
 # Phone PC resource controls under design
 
+The PC gateway health.device capability shape is source-verified with cold
+workers; live service delivery and the final controls remain pending.
 Use the remote PC capability snapshot for PC CPU/hash recommendations. Preserve
 existing saved/fixed presets and LCZero GPU controls; phone WASM has separate
 supported limits. Three editable resource layouts are in

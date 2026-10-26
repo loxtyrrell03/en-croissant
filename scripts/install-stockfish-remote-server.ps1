@@ -24,6 +24,7 @@ $serverScript = Join-Path $serverRoot "stockfish-remote-server.mjs"
 $localEvalReader = Join-Path $serverRoot "lichess-local-eval-reader.mjs"
 $lc0NetworkRouting = Join-Path $serverRoot "lc0-network-routing.mjs"
 $enginePerformancePresets = Join-Path $serverRoot "engine-performance-presets.mjs"
+$engineDeviceInfo = Join-Path $serverRoot "engine-device-info.mjs"
 $reportSearch = Join-Path $serverRoot "uci-report-search.mjs"
 $configPath = Join-Path $installRoot "config.json"
 $logPath = Join-Path $installRoot "stockfish-remote-server.log"
@@ -103,6 +104,7 @@ New-Item -ItemType Directory -Force -Path $serverRoot | Out-Null
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\lichess-local-eval-reader.mjs") -Destination $localEvalReader -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\lc0-network-routing.mjs") -Destination $lc0NetworkRouting -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-performance-presets.mjs") -Destination $enginePerformancePresets -Force
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-device-info.mjs") -Destination $engineDeviceInfo -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\uci-report-search.mjs") -Destination $reportSearch -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\stockfish-remote-server.mjs") -Destination $serverScript -Force
 

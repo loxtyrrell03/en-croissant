@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,6 +41,11 @@ for (const idle of [0, 1000]) test(`engine service idle timeout ${idle} preserve
     assert.equal(health.engines.stockfish.name, null);
     assert.equal(health.engines.lc0.name, null);
     assert.equal(health.engines.lc0.ready, false);
+    assert.ok(Number.isSafeInteger(health.device.logicalThreads) && health.device.logicalThreads >= 1);
+    assert.ok(Number.isSafeInteger(health.device.totalMemoryMb) && health.device.totalMemoryMb > 0);
+    assert.ok(Number.isSafeInteger(health.device.availableMemoryMb) && health.device.availableMemoryMb >= 0);
+    assert.ok(health.device.availableMemoryMb <= health.device.totalMemoryMb);
+    assert.deepEqual(JSON.parse(await readFile(join(root, "config.json"), "utf8")), { enginePath: process.execPath, backendIdleMs: idle });
     await delay(1800);
     if (idle === 0) {
       assert.equal(child.exitCode, null, output);

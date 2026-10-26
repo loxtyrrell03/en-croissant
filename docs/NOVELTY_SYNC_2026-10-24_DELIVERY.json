@@ -6403,5 +6403,30 @@
     "ownerDataWritten": false,
     "actualApplicationRendered": false,
     "stateMap": "docs/design/engine-resources/STATE_MAP.md"
+  },
+  "engineResourceCapabilities20261026": {
+    "status": "source-capabilities-verified-preset-and-ui-pending",
+    "nativeLibraryPassed": 131,
+    "nativeLibraryIgnoredOptIn": 3,
+    "newNativeCases": 4,
+    "pureSpectaWireVerified": true,
+    "nativeRegistryCheck": true,
+    "nativeExistingWarnings": 22,
+    "nodePassed": 11,
+    "nodeExistingOptionalSkipped": 1,
+    "actualIsolatedHttpHealthChecked": true,
+    "workerColdAndConfigPreserved": true,
+    "types": true,
+    "lintFiles": 4,
+    "lintWarnings": 0,
+    "lintErrors": 0,
+    "installerSyntaxAndDependencyOrderChecked": true,
+    "installerExecuted": false,
+    "existingFixedPresetsChanged": false,
+    "newControlsImplemented": false,
+    "runtimePublished": false,
+    "ownerProfileWritten": false,
+    "corpusCopied": false,
+    "phoneDeviceUsedForPcBudget": false
   }
 }

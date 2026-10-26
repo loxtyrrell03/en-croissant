@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { createDefaultLocalLichessEvalStore, sharedLocalEvaluationPath } from "./lichess-local-eval-reader.mjs";
 import { LC0_PROFILE_OPTIONS, selectLc0Network } from "./lc0-network-routing.mjs";
 import { runBoundedUciReport, validReportSearchLimits } from "./uci-report-search.mjs";
+import { readEngineDeviceInfo } from "./engine-device-info.mjs";
 import {
   ENGINE_PERFORMANCE_PRESETS,
   enginePerformanceSettings,
@@ -241,6 +242,7 @@ async function handleHttpRequest(request, response) {
       engineIdleMs,
       backendIdleMs,
       performancePresets: ENGINE_PERFORMANCE_PRESETS,
+      device: readEngineDeviceInfo(),
       http: { host: httpHost, port: httpPort },
       uci: { host: uciHost, port: uciPort },
       startedAt,

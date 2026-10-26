@@ -1,3 +1,20 @@
+## 2026-10-26 read-only engine resource capabilities source
+
+- Native engine_device_info and PC gateway health.device expose the same typed
+  logical-thread/whole-MiB snapshot. Unknown is null; known available zero remains
+  zero. Reads start no worker/benchmark and write no preferences. Existing memory
+  command, fixed presets, configs and On/Off choices retain their contracts.
+- Four new native pure/actual-host/wire cases and the whole library pass; normal
+  command registry compiles with22 existing warnings.11 Node checks/one existing
+  opt-in skip, fulltypes and four-file lint0 pass. Isolated HTTP health reports
+  capabilities with both engines cold and original config unchanged. New installer
+  dependency is staged before its entry point; syntax checked, installer not run.
+  CI includes the metadata/standby/preset checks.
+- Capability source only: owner resource layout choice, allocation/preset/slider
+  lifecycle and save/apply ownership, packaging and live service delivery remain.
+  No manual app/service restart, owner profile/corpus change or physical proof.
+  See docs/ENGINE_RESOURCES.md and editable designs. Full goal remains active.
+
 ## 2026-10-26 device-balanced engine resources design
 
 - Novelty b186d2d7 adds device budgets/presets/sliders and owned application/save

@@ -217,6 +217,7 @@ fn main() {
             upsert_ai_coach_sidecar_record,
             remove_ai_coach_sidecar_record,
             memory_size,
+            engine_device_info,
             get_puzzle,
             get_puzzle_progress,
             get_blindfold_puzzle_progress,
@@ -439,6 +440,12 @@ fn is_bmi2_compatible() -> bool {
 fn memory_size() -> u32 {
     let total_bytes = sysinfo::System::new_all().total_memory();
     (total_bytes / 1024 / 1024) as u32
+}
+
+#[tauri::command]
+#[specta::specta]
+fn engine_device_info() -> en_croissant_fork::engine_device::EngineDeviceInfo {
+    en_croissant_fork::engine_device::snapshot()
 }
 
 #[tauri::command]
