@@ -1,3 +1,16 @@
+## 2026-10-26 native search-controls package
+
+- Product78c77926 packages completed lines/search edits and verified application
+  alongside resource bounds/first-use/live-tab controls. Executable48,963,072B
+  SHA256785640d8e8d9b0a57024823785c5ff62c3b88cce97056fe84bd1794c115500a2 verifies
+  19 exact current embedded assets, normal IPC, full About notices and102engine/
+  source resources. Frontend22.36s/native86s with22 existing native warnings.
+- Clean201 cases19 files and primary83 cases6 files/types pass. Generated source
+  matches HEAD. Prior07773f1b/35831743 artifact is rollback, promoted after exact
+  package checks with no active En executable. No app launch/installation, owner
+  data writes or hosted service change. Phone resource protocol/UI/delivery,
+  rendered/physical verification and broader history audit remain; goal active.
+
 ## 2026-10-26 native lines and search completion source
 
 - Approved inline A now includes native live-tab and local-profile lines/search

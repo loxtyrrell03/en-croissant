@@ -98,14 +98,13 @@ IO/engine responses. Boundary tests cover older high values, new invalid edits,
 changed counts, cancellation, keyboard selection and accessible descriptions.
 No owner data, evaluation corpus, installed app or phone service was changed.
 
-The current native package is product `07773f1b`,48,963,072 bytes, SHA-256
-`35831743680b31c60302dc9bcb89110c7ce7d32a61cf96a418b65a6898b1185e`.
-It verifies19 exact embedded assets, normal IPC, full About notices and102
-engine/source files, including shared policy code through its separate import.
-Native release took118 seconds with22 existing warnings. Primary independently
-passes61 focused cases and full types. Generated source content matches HEAD.
-It predates the newest search-control source. The immediately prior95303cf5
-package is rollback. No app was launched/installed
+The current native package is product `78c77926`,48,963,072 bytes, SHA-256
+`785640d8e8d9b0a57024823785c5ff62c3b88cce97056fe84bd1794c115500a2`.
+It verifies19 exact embedded assets, including actual completed-search controls,
+normal IPC, full About notices and102 engine/source files. Frontend took22.36s
+and native release86s with22 existing warnings. Primary independently passes83
+focused cases in6 files and full types. Generated source content matches HEAD.
+The immediately prior07773f1b package is rollback. No app was launched/installed
 and the hosted phone/service is unchanged. Source/DOM/package proof is separate
 from native-window, rendered narrow-layout and physical-device verification;
 those remain unavailable.
