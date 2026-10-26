@@ -11,6 +11,13 @@ import { LC0_PROFILE_OPTIONS, selectLc0Network } from "./lc0-network-routing.mjs
 import { runBoundedUciReport, validReportSearchLimits } from "./uci-report-search.mjs";
 import { readEngineDeviceInfo } from "./engine-device-info.mjs";
 import {
+  CPU_RESOURCE_PROTOCOL_VERSION,
+  CPU_RESOURCE_CAPABILITY,
+  parseCpuResourceRequest,
+  cpuResourceSpinOption,
+  validateCpuResourceOptions,
+} from "./engine-resource-protocol.mjs";
+import {
   ENGINE_PERFORMANCE_PRESETS,
   enginePerformanceSettings,
   normalizeEnginePerformancePreset,
@@ -235,6 +242,8 @@ async function handleHttpRequest(request, response) {
       // reads never start a worker just to discover an engine's version.
       version: stockfishVersion(httpEngine.name),
       reportProtocolVersion: 1,
+      resourceProtocolVersion: CPU_RESOURCE_PROTOCOL_VERSION,
+      cpuResources: CPU_RESOURCE_CAPABILITY,
       build: null,
       enginePath,
       threads,
@@ -362,15 +371,24 @@ async function handleHttpRequest(request, response) {
     });
   }
 
-  const performanceSettings = performancePreset
-    ? enginePerformanceSettings(engineKind, performancePreset)
-    : engineKind === "lc0"
-      ? {
-          threads: lc0Tuning.threads,
-          minibatchSize: lc0Tuning.minibatchSize,
-          nnCacheSize: lc0Tuning.nnCacheSize,
-        }
-      : { threads, hashMb };
+  let cpuResources;
+  try {
+    cpuResources = parseCpuResourceRequest(body, engineKind);
+  } catch (error) {
+    return writeJson(response, 400, { error: error.message });
+  }
+
+  const performanceSettings = cpuResources ?? (
+    performancePreset
+      ? enginePerformanceSettings(engineKind, performancePreset)
+      : engineKind === "lc0"
+        ? {
+            threads: lc0Tuning.threads,
+            minibatchSize: lc0Tuning.minibatchSize,
+            nnCacheSize: lc0Tuning.nnCacheSize,
+          }
+        : { threads, hashMb }
+  );
 
   const controller = new AbortController();
   const abort = () => controller.abort();
@@ -478,8 +496,10 @@ async function handleHttpRequest(request, response) {
       engine: selectedEngine.name || (engineKind === "lc0" ? "LCZero" : "Stockfish"),
       engineKind,
       build: engineKind === "lc0" ? lc0Tuning.backend : null,
-      performancePreset: performancePreset || "server",
-      performanceLabel: performancePreset
+      resourceProtocolVersion: cpuResources ? CPU_RESOURCE_PROTOCOL_VERSION : undefined,
+      cpuResources: cpuResources ?? undefined,
+      performancePreset: cpuResources ? null : performancePreset || "server",
+      performanceLabel: cpuResources ? "Custom CPU resources" : performancePreset
         ? ENGINE_PERFORMANCE_PRESETS[performancePreset].label
         : "Server default",
       threads: performanceSettings.threads,
@@ -497,7 +517,7 @@ async function handleHttpRequest(request, response) {
 
   try {
     const bestmove = await selectedEngine.analyze(
-      { fen, multipv, depth, infinite, reportLimits },
+      { fen, multipv, depth, infinite, reportLimits, cpuResources },
       (line) => {
         if (!response.destroyed) response.write(`${JSON.stringify({ type: "uci", line })}\n`);
       },
@@ -581,6 +601,7 @@ class PersistentUciEngine {
     this.name = null;
     this.queued = 0;
     this.supportedOptions = new Set();
+    this.cpuResourceOptions = new Map();
     this.optionValues = new Map();
     this.requiredOptions = requiredOptions;
     this.idleCloseMs = idleCloseMs;
@@ -602,7 +623,9 @@ class PersistentUciEngine {
     try {
       await waitForUciTurn(previous, signal);
       if (signal?.aborted) throw abortError();
-      await this.start();
+      await this.start(params.cpuResources);
+      if (params.cpuResources)
+        validateCpuResourceOptions(params.cpuResources, this.cpuResourceOptions);
       this.setOptionIfChanged("MultiPV", params.multipv);
       for (const [name, value] of Object.entries(dynamicOptions)) {
         this.setOptionIfChanged(name, value);
@@ -630,9 +653,9 @@ class PersistentUciEngine {
     }
   }
 
-  async start() {
+  async start(cpuResources) {
     if (!this.child || this.child.killed) this.startPromise = null;
-    this.startPromise ||= this.startProcess();
+    this.startPromise ||= this.startProcess(cpuResources);
     try {
       await this.startPromise;
     } catch (error) {
@@ -641,9 +664,10 @@ class PersistentUciEngine {
     }
   }
 
-  async startProcess() {
+  async startProcess(cpuResources) {
     this.name = null;
     this.supportedOptions.clear();
+    this.cpuResourceOptions.clear();
     const child = spawn(this.path, this.args, {
       cwd: dirname(this.path),
       windowsHide: true,
@@ -669,7 +693,20 @@ class PersistentUciEngine {
         `${this.label} is missing required UCI options: ${missingOptions.join(", ")}`,
       );
     }
-    for (const [name, value] of Object.entries(this.initialOptions)) {
+    if (cpuResources) {
+      try {
+        validateCpuResourceOptions(cpuResources, this.cpuResourceOptions);
+      } catch (error) {
+        this.close();
+        throw error;
+      }
+    }
+    const initialOptions = cpuResources ? {
+      ...this.initialOptions,
+      Threads: cpuResources.threads,
+      Hash: cpuResources.hashMb,
+    } : this.initialOptions;
+    for (const [name, value] of Object.entries(initialOptions)) {
       this.setOptionIfChanged(name, value);
     }
     await this.sendAndWaitReady();
@@ -742,6 +779,8 @@ class PersistentUciEngine {
     if (line.startsWith("id name ")) this.name = line.slice(8).trim() || null;
     const optionMatch = line.match(/^option name (.+?) type /);
     if (optionMatch) this.supportedOptions.add(optionMatch[1]);
+    const cpuOption = cpuResourceSpinOption(line);
+    if (cpuOption) this.cpuResourceOptions.set(cpuOption.name, cpuOption);
     for (const waiter of [...this.waiters]) {
       if (!waiter.predicate(line)) continue;
       clearTimeout(waiter.timeoutId);

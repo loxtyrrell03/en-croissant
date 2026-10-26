@@ -111,10 +111,27 @@ those remain unavailable.
 
 Phone PC resources require a separate new policy field: legacy fixed max/good/balanced/eco
 IDs and saved budgets remain authoritative. The new CPU balanced name must never
-reinterpret an old fixed balanced choice. The gateway must advertise an explicit
-resource protocol, validate requests, capture queue/stop ownership and report
-effective settings before any phone control uses them. Device metadata alone is
-not application support. Managed phone single-thread/WASM and LCZero GPU controls
-retain their own contracts. Build/stage tiny new service modules dependency-first;
-do not run the installer or retune live configs incidentally. The full history
-and target audit remains active.
+reinterpret an old fixed balanced choice. Gateway source now advertises
+`resourceProtocolVersion: 1` with separate `cpuResources` bounds and policy labels.
+An opt-in request sends `{version:1, threads, hashMb}` with the numbers resolved
+once from the remote PC snapshot. New board positions keep that explicit choice
+instead of retuning it when available memory changes. Firm protocol bounds are
+1–64 threads and16–8192MiB; the client still restricts new edits to the current PC
+recommendation. Missing policy retains configuration/environment or legacy preset
+behavior; combining both or sending CPU settings to LCZero fails visibly.
+
+Request parsing captures immutable values before joining the existing queue.
+Custom settings are checked against actual UCI spin bounds before application,
+and metadata reports them only after readiness. A cold worker starts with the
+chosen resources directly, without allocating the configured larger hash first.
+Canceled queued requests cannot change the active/successor settings. A following
+request without the field returns to configured defaults. No selection is written
+to the PC service config.38 Node checks include isolated real Stockfish19 searches,
+queue cancellation, report bounds, cold standby and exact config preservation.
+The installer stages tiny policy/protocol dependencies before the gateway; it was
+parsed, not executed. This protocol is source/isolated-service proof only.
+
+Phone UI/transport integration and live gateway/phone delivery remain pending.
+Device metadata alone is not application support. Managed phone single-thread/WASM
+and LCZero GPU controls retain their own contracts. Do not run the installer or
+retune live configs incidentally. The full history and target audit remains active.

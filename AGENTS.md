@@ -1,3 +1,23 @@
+## 2026-10-26 opt-in PC CPU resource protocol source
+
+- Gateway source advertises resourceProtocolVersion1 plus CPU bounds/policy
+  labels. Separate cpuResources{version:1,threads,hashMb} requests are immutable
+  snapshots resolved by the client's PC policy; no automatic per-position retune.
+  Firm bounds1-64threads/16-8192MiB and actual worker UCI spin bounds are validated.
+  Ambiguous fixed-preset plus CPU choices and LCZero requests fail explicitly.
+- Existing requests retain their configuration/environment/fixed max/good/balanced/
+  eco behavior and budgets. Custom CPU values reach metadata only after readiness.
+  Cold workers start with selected resources directly; queued cancellation retains
+  active/successor ownership, and later absent-policy requests restore configured
+  values. No service preference writes, worker startup from health or LCZero tune.
+- 38 Node checks pass, including isolated real Stockfish19 resource/report searches,
+  queue cancellation, legal output, cold standby and exact config preservation.
+  Node syntax,4-file lint0 and installer read-only parser pass. Installer source
+  stages transitive policy/protocol modules before gateway; it was not executed.
+  Native artifact remains product78c77926/785640d8. Phone transport/UI and actual
+  gateway/phone delivery remain pending; live routes/config/tasks/OnOff/data were
+  untouched. Full historical/target audit and rendered/physical proof remain.
+
 ## 2026-10-26 native search-controls package
 
 - Product78c77926 packages completed lines/search edits and verified application
