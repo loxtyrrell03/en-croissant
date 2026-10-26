@@ -1,3 +1,18 @@
+## 2026-10-26 bounds and first-use native package
+
+- Product07773f1b is packaged with native completed resource edits, exact saved-
+  value boundaries and confirmed missing-store Balanced initialization. Executable
+  48,963,072B SHA256
+  35831743680b31c60302dc9bcb89110c7ce7d32a61cf96a418b65a6898b1185e verifies19 exact
+  current embedded assets, normal IPC, full About notices and102engine/source files.
+  Shared policy code is verified through its separate imported bundle. Native
+  release118s/22 existing warnings; clean174 and primary61 focused checks/types
+  pass. Generated source content matches HEAD; no app launch or service changes.
+- Immediately previous95303cf5/f772d135 artifact is rollback, promoted only after
+  exact package/source checks. No owner data removed. Search/lines completed edits
+  and verified runtime application, phone resource protocol/UI/delivery, rendered
+  and physical proof and broader historical audit remain. Full goal active.
+
 ## 2026-10-26 resource edit bounds and genuine first use source
 
 - Saved CPU values above the current per-engine recommendation remain exact and

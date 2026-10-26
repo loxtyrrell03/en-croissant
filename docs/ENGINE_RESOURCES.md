@@ -76,13 +76,16 @@ IO/engine responses. Boundary tests cover older high values, new invalid edits,
 changed counts, cancellation, keyboard selection and accessible descriptions.
 No owner data, evaluation corpus, installed app or phone service was changed.
 
-The last native package is product `95303cf5`,48,958,976 bytes, SHA-256
-`f772d135c809245b5af6cff8894957029561f3d3b90794a085e60ef411ba6ccf`.
-It verifies18 exact embedded assets, normal IPC, complete About notices and102
-engine/source files. It predates the newest bounds/first-use source and must be
-rebuilt. The immediately prior3705b39e package is rollback. Source/DOM/package
-proof is separate from native-window, rendered narrow-layout and physical-device
-verification; those remain unavailable.
+The current native package is product `07773f1b`,48,963,072 bytes, SHA-256
+`35831743680b31c60302dc9bcb89110c7ce7d32a61cf96a418b65a6898b1185e`.
+It verifies19 exact embedded assets, normal IPC, full About notices and102
+engine/source files, including shared policy code through its separate import.
+Native release took118 seconds with22 existing warnings. Primary independently
+passes61 focused cases and full types. Generated source content matches HEAD.
+The immediately prior95303cf5 package is rollback. No app was launched/installed
+and the hosted phone/service is unchanged. Source/DOM/package proof is separate
+from native-window, rendered narrow-layout and physical-device verification;
+those remain unavailable.
 
 Remaining work includes lines/search completed-edit and verified-application
 integration, preserving En's Nodes/PlayersTime/time-unit semantics. Their native
