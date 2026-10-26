@@ -1,3 +1,24 @@
+## 2026-10-26 verified phone search controls source
+
+- Approved inline A reaches Live with depth/time/nodes/until-stopped and lines.
+  Independent en-croissant-phone-search-v1 verifies save/readback before requests;
+  null overrides retain exact older settings (including depth70). Pending edits
+  survive navigation; retry/owned restore preserve newer choices. Off/Starting,
+  unreadable data and late first-use CPU replies retain ownership. Old services
+  keep line editing while unsupported search limits expose a read-only retry.
+- Progress uses engine depth/time/nodes, excludes stored scores, clears for a new
+  position and stays below100 until confirmed completion. Unknown/unlimited work
+  has no invented percentage. Legacy go infinite now also has no three-minute
+  gateway cutoff; actual prior gateway fails the accelerated isolated real-engine
+  regression. Finite legacy/report deadlines and independent CPU/Plans scopes stay.
+- 102 focused cases/10 files/types,39 Node checks/eight files,61 exact CI checks/
+  eight files and11-file lint0/format pass. WebApp retains25 exact baseline lint
+  diagnostics; the Stockfish test retains its one prior diagnostic/format state.
+  DOM tests exercise actual forms, focus/touch help and report/Plans. Rendered
+  320/390 and physical proof remain unavailable. Hosted64fa62b5/gateway9856/native
+  78c77926 are not updated by this source milestone. No corpus/owner-data write.
+  Both source branches must receive the slice; full parity goal stays active.
+
 ## 2026-10-26 explicit phone search transport source
 
 - Phone captures explicit search limits before awaiting and preserves them through

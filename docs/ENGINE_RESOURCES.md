@@ -277,8 +277,8 @@ then acknowledges the exact limit and UCI command before publishing analysis.
 Explicit time searches have a ten-second completion allowance. Explicit depth,
 nodes and until-stopped searches no longer inherit the old three-minute service
 deadline; cancellation still owns only its active/queued job and keeps the next
-request safe. No-policy callers and independent report budgets keep their prior
-deadlines. Health reads remain cold; config/presets and data are unchanged.
+request safe. Legacy finite callers and independent report budgets keep their prior
+deadlines. The later UI milestone below also corrects legacy infinite requests. Health reads remain cold; config/presets and data are unchanged.
 
 31 Node cases/eight files pass without skips, including isolated real Stockfish19
 time/node/depth searches, captured long-time command cancellation, queued-request
@@ -329,3 +329,44 @@ The Worker fixtures are distinct from real engine/service tests in the prior
 milestone, rendered layouts or physical-phone proof. New verified preferences,
 inline controls/progress labels and live publication remain. Hosted64fa62b5,
 gateway9856 and native78c77926 artifact are unchanged by this source milestone.
+
+
+## Verified inline phone search controls source
+
+Approved inline A replaces the old phone depth/line steppers with the existing
+native Lines & search limits form. It supports depth, exact milliseconds with
+seconds/minutes/hours display, node counts and Until stopped. Native defaults
+remain unchanged. New depth edits use1-60 within the reported service bounds;
+older depth70 remains visible and exact until edited. Capability checks are
+bounded/read-only and run with settings open while services are available.
+Unsupported services retain line editing and expose a retry for new limit modes.
+
+`en-croissant-phone-search-v1` stores optional limit/line overrides independently
+from old engine settings, CPU resources, network, stored-evaluation preferences
+and Live On/Off. Null means use the exact original setting. Reads never write
+defaults. Completed edits verify saved bytes before a request; failed edits remain
+visible and retry across navigation. Restore owns its captured fields and cannot
+replace newer choices. Unreadable bytes block a different fallback. Off/Starting
+keeps controls unavailable; Pause stays immediate even after a failed save.
+Existing or pending search preferences and manual search intent prevent late
+first-use Balanced CPU setup. Plans and game reports keep their own search limits.
+
+Progress uses actual UCI depth, nodes or time in milliseconds, excluding stored
+scores and queue/wake time. Unknown or unlimited progress has a status without an
+invented percentage. A new position discards old counters; stale updates cannot
+repopulate them. Finite progress stays below100 until completion. Original legacy
+Until stopped now also runs without the old three-minute gateway deadline. An
+isolated real Stockfish19 child accelerates only that deadline for regression;
+the actual prior gateway fails and current source passes. No production test flag
+or live runtime modification is involved; finite/report deadlines are preserved.
+
+102 focused cases/10 files and full types pass, including actual phone forms,
+existing CPU/Plans/report paths, save failures, navigation, owned restoration,
+service Off, stale-position updates and focus/touch help.39 Node cases/eight files
+pass without skips, with real retained Stockfish19 and separate CPU/protocol/report
+checks;61 exact CI Node cases/eight files pass.11-file lint0/format pass; WebApp
+retains25 exact baseline diagnostics and the existing Stockfish test keeps its
+one prior diagnostic/format state. DOM/service fixtures do not establish rendered
+320/390 layouts or physical-device proof. Hosted64fa62b5/gateway9856 and the
+native78c77926 artifact remain unchanged. Live publication, whole-profile export
+key coverage, native remote applicability and the wider audit remain.

@@ -659,7 +659,7 @@ class PersistentUciEngine {
           : params.infinite ? "go infinite" : `go depth ${params.depth}`,
         onInfo,
         signal,
-        params.searchLimit ? engineSearchTimeout(params.searchLimit) : undefined,
+        params.searchLimit ? engineSearchTimeout(params.searchLimit) : params.infinite ? null : undefined,
       );
     } finally {
       this.queued -= 1;

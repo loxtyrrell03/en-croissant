@@ -1187,6 +1187,7 @@ function parseStockfishInfoLine(
         depth: readNumericInfoToken(tokens, "depth") ?? 0,
         seldepth: readNumericInfoToken(tokens, "seldepth"),
         nodes: readNumericInfoToken(tokens, "nodes"),
+        timeMs: readNumericInfoToken(tokens, "time"),
         nps: readNumericInfoToken(tokens, "nps"),
         score: normalizeWebEngineScoreForWhite(score, position.turn),
         uciMoves,

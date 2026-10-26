@@ -192,6 +192,7 @@ export type WebEngineLine = {
     depth: number;
     seldepth?: number | null;
     nodes?: number | null;
+    timeMs?: number | null;
     nps?: number | null;
     score: WebEngineScore;
     uciMoves: string[];

@@ -198,7 +198,7 @@ describe("Stockfish phone line updates", () => {
                 streamingAnalyzeResponse(
                     {
                         type: "uci",
-                        line: "info depth 14 seldepth 18 multipv 1 score cp 23 nodes 120000 nps 4000000 pv e2e4 e7e5",
+                        line: "info depth 14 seldepth 18 multipv 1 score cp 23 nodes 120000 time 333 nps 4000000 pv e2e4 e7e5",
                     },
                     { type: "done", bestmove: "e2e4" },
                 ),
@@ -231,6 +231,7 @@ describe("Stockfish phone line updates", () => {
                 line.uciMoves[0],
             ]),
         ).toEqual([["stockfish", "gaming-pc", 14, "e2e4"]]);
+        expect(lines[0].timeMs).toBe(333);
         expect(liveUpdates.at(-1)).toEqual(lines);
     });
 

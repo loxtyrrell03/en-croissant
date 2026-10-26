@@ -138,6 +138,9 @@ import PhonePcServices from "./PhonePcServices";
 import { PhoneCpuResourceControls, usePhonePcCpuCapability, useFirstUsePhoneCpu, type PhoneCpuStore } from "./PhoneCpuResourceControls";
 import { PHONE_CPU_RESOURCES_KEY, DEFAULT_PHONE_CPU_PREFERENCES, normalizePhoneCpuPreferences } from "./phoneCpuPreferences";
 import { useVerifiedJsonPreference } from "./useVerifiedJsonPreference";
+import { PhoneSearchControls, usePhoneSearchCapability } from "./PhoneSearchControls";
+import { PHONE_SEARCH_PREFERENCES_KEY, DEFAULT_PHONE_SEARCH_PREFERENCES, normalizePhoneSearchPreferences, phoneSearchGo } from "./phoneSearchPreferences";
+import { phoneSearchProgress } from "./phoneSearchProgress";
 import { PHONE_ENGINE_SETTINGS_KEY, DEFAULT_PHONE_ENGINE_SETTINGS, normalizePhoneEngineSettings, type PhoneEngineSettings } from "./phoneEngineSettings";
 import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
@@ -4670,70 +4673,6 @@ function DatabaseUnderBoardPanel({
 
 type WebEnginePanelStatus = "idle" | "loading" | "running" | "complete" | "error";
 
-function EngineNumberStepper({
-  label,
-  value,
-  min,
-  max,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  disabled?: boolean;
-  onChange: (value: number) => void;
-}) {
-  const safeValue = clampWholeNumber(value, min, max, value);
-  const updateValue = (delta: number) => {
-    onChange(clampWholeNumber(safeValue + delta, min, max, safeValue));
-  };
-
-  return (
-    <Box className={classes.engineStepControl}>
-      <Text size="xs" c="dimmed" className={classes.engineStepLabel}>
-        {label}
-      </Text>
-      <Box
-        className={classes.engineStepShell}
-        aria-label={`${label} ${safeValue}`}
-        aria-disabled={disabled || undefined}
-      >
-        <Text className={classes.engineStepValue} aria-live="polite">
-          {safeValue}
-        </Text>
-        <Box className={classes.engineStepButtons}>
-          <ActionIcon
-            aria-label={`Increase ${label.toLowerCase()}`}
-            className={classes.engineStepButton}
-            disabled={disabled || safeValue >= max}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => updateValue(1)}
-            radius={0}
-            size="xs"
-            variant="subtle"
-          >
-            <IconChevronUp size={12} />
-          </ActionIcon>
-          <ActionIcon
-            aria-label={`Decrease ${label.toLowerCase()}`}
-            className={classes.engineStepButton}
-            disabled={disabled || safeValue <= min}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => updateValue(-1)}
-            radius={0}
-            size="xs"
-            variant="subtle"
-          >
-            <IconChevronDown size={12} />
-          </ActionIcon>
-        </Box>
-      </Box>
-    </Box>
-  );
-}
-
 export function EngineUnderBoardPanel({
   analysisRequestId,
   compact = false,
@@ -4768,25 +4707,57 @@ export function EngineUnderBoardPanel({
       normalizePhoneCpuPreferences,
       suppliedCpuPreferenceStore,
     );
+  const [
+    searchPreferences,
+    ,
+    searchPreferenceError,
+    retrySearchSaving,
+    searchPreferenceStore,
+    searchSnapshot,
+  ] = useVerifiedJsonPreference(
+    PHONE_SEARCH_PREFERENCES_KEY,
+    DEFAULT_PHONE_SEARCH_PREFERENCES,
+    normalizePhoneSearchPreferences,
+  );
+  const searchGo = useMemo(
+    () =>
+      phoneSearchGo(
+        { limit: searchPreferences.limit, lines: null },
+        { depth: settings.depth, infinite: settings.infinite },
+      ),
+    [searchPreferences.limit, settings.depth, settings.infinite],
+  );
+  const selectedSearchLimit = searchPreferences.limit;
+  const selectedLines = searchPreferences.lines ?? settings.multipv;
+  const firstUseSearchGuard = useMemo(
+    () => ({
+      isFirstUse: () =>
+        firstUsePreferences.isFirstUse() &&
+        searchPreferenceStore.getSnapshot().firstUseEligible &&
+        !searchPreferenceStore.getSnapshot().pending,
+    }),
+    [firstUsePreferences, searchPreferenceStore],
+  );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pcServices = usePcServicesAvailability();
   const pcUnavailable = pcServices === "off" || pcServices === "starting";
+  const searchCapability = usePhoneSearchCapability(settingsOpen && !pcUnavailable);
   const pcCpuCapability = usePhonePcCpuCapability(
     settings.engineKind === "stockfish" &&
       !pcUnavailable &&
       (settingsOpen ||
         (pcServices === "ready" &&
-          firstUsePreferences.isFirstUse() &&
+          firstUseSearchGuard.isFirstUse() &&
           cpuSnapshot.firstUseEligible)),
   );
   useFirstUsePhoneCpu(
     cpuPreferenceStore,
     pcCpuCapability.capability,
     pcServices === "ready" && settings.engineKind === "stockfish",
-    firstUsePreferences,
+    firstUseSearchGuard,
   );
   const selectedCpuResources =
     settings.engineKind === "stockfish" ? cpuPreferences.cpuResources : null;
@@ -4815,14 +4786,17 @@ export function EngineUnderBoardPanel({
       suspended ||
       pcServices === "off" ||
       pcServices === "starting" ||
+      searchSnapshot.phase === "unreadable" ||
       (settings.engineKind === "stockfish" && cpuSnapshot.phase === "unreadable")
     ) {
       if (!suspended) void releaseWebPcEngine(settings.engineKind);
       setStatus("idle");
       setError(
-        cpuSnapshot.phase === "unreadable"
-          ? "Could not read saved PC resources. Retry the settings check."
-          : null,
+        searchSnapshot.phase === "unreadable"
+          ? "Could not read search settings. Retry the settings check."
+          : cpuSnapshot.phase === "unreadable"
+            ? "Could not read saved PC resources. Retry the settings check."
+            : null,
       );
       setStockfishLines([]);
       return;
@@ -4836,12 +4810,13 @@ export function EngineUnderBoardPanel({
 
     void analyzeWithWebStockfish18({
       fen: currentFen,
-      multipv: settings.multipv,
+      multipv: selectedLines,
       depth: settings.depth,
       infinite: settings.infinite,
       engineKind: settings.engineKind,
       performancePreset,
       cpuResources: selectedCpuResources ?? undefined,
+      searchLimit: selectedSearchLimit ?? undefined,
       lc0AutoNetwork: settings.lc0AutoNetwork,
       lc0Network: settings.lc0Network,
       useStoredEvaluations: settings.useCloud,
@@ -4877,7 +4852,9 @@ export function EngineUnderBoardPanel({
     settings.infinite,
     settings.lc0AutoNetwork,
     settings.lc0Network,
-    settings.multipv,
+    selectedLines,
+    selectedSearchLimit,
+    searchSnapshot.phase,
     settings.useCloud,
     performancePreset,
     selectedCpuResources,
@@ -4916,12 +4893,12 @@ export function EngineUnderBoardPanel({
 
   const topLine = displayLines[0] ?? null;
   const analysisEnabled = settings.enabled && !suspended;
-  const progress = getWebEngineProgress({
-    enabled: analysisEnabled,
+  const progress = phoneSearchProgress(
+    analysisEnabled && !pcUnavailable,
     status,
-    lines: displayLines,
-    targetDepth: settings.infinite ? 70 : settings.depth,
-  });
+    displayLines,
+    searchGo,
+  );
   const headerStatus = getWebEngineHeaderStatus({
     enabled: analysisEnabled,
     status,
@@ -4968,6 +4945,16 @@ export function EngineUnderBoardPanel({
       </Button>
     </Group>
   ) : null;
+  const searchPreferenceNotice = searchPreferenceError ? (
+    <Group gap="xs" align="start">
+      <Text size="xs" c="red" role="alert" style={{ flex: 1 }}>
+        Search settings: {searchPreferenceError}
+      </Text>
+      <Button size="compact-xs" variant="default" onClick={retrySearchSaving}>
+        Retry search settings
+      </Button>
+    </Group>
+  ) : null;
 
   if (compact) {
     return (
@@ -5007,6 +4994,7 @@ export function EngineUnderBoardPanel({
 
         {enginePreferenceNotice}
         {cpuPreferenceNotice}
+        {searchPreferenceNotice}
         {settings.enabled ? (
           suspended ? (
             <Text className={classes.compactEngineMessage} size="xs" c="dimmed" lineClamp={1}>
@@ -5155,6 +5143,7 @@ export function EngineUnderBoardPanel({
 
       {enginePreferenceNotice}
       {cpuPreferenceNotice}
+      {searchPreferenceNotice}
       <Collapse in={settingsOpen}>
         <Box className={classes.enginePanelSettings}>
           <Stack gap="xs" mb="xs">
@@ -5248,48 +5237,45 @@ export function EngineUnderBoardPanel({
               </>
             ) : null}
           </Stack>
-          <Group gap="xs" grow className={classes.engineSettingsRow}>
-            <EngineNumberStepper
-              label="Lines"
-              value={settings.multipv}
-              min={1}
-              max={8}
-              disabled={!settings.enabled}
-              onChange={(multipv) => updateSettings({ multipv })}
-            />
-            <EngineNumberStepper
-              label="Depth"
-              value={settings.depth}
-              min={6}
-              max={70}
-              disabled={!settings.enabled || settings.infinite}
-              onChange={(depth) => updateSettings({ depth })}
-            />
-            <Box className={classes.engineStepControl}>
-              <Text size="xs" c="dimmed" className={classes.engineStepLabel}>
-                Search
-              </Text>
-              <Button
-                aria-label="Toggle infinite-depth analysis"
-                aria-pressed={settings.infinite}
-                disabled={!settings.enabled}
-                onClick={() => updateSettings({ infinite: !settings.infinite })}
-                size="compact-sm"
-                variant={settings.infinite ? "filled" : "light"}
-              >
-                {settings.infinite ? "Infinite on" : "Infinite depth"}
-              </Button>
-            </Box>
-          </Group>
+          <PhoneSearchControls
+            store={searchPreferenceStore}
+            legacy={settings}
+            state={searchCapability}
+            unavailable={pcUnavailable}
+            starting={pcServices === "starting"}
+            onIntent={firstUsePreferences.markIntent}
+            requestError={error}
+          />
         </Box>
       </Collapse>
 
-      <Progress value={progress} radius={0} size={3} color={status === "error" ? "red" : "blue"} />
+      <Text size="xs" c="dimmed" role="status">
+        {pcUnavailable
+          ? pcServices === "starting"
+            ? "PC services are starting"
+            : "PC services are off"
+          : progress.label}
+      </Text>
+      {progress.value !== null && (
+        <Progress.Root radius={0} size={3}>
+          <Progress.Section
+            value={progress.value}
+            color={status === "error" ? "red" : "blue"}
+            withAria={false}
+            role="progressbar"
+            aria-label="Live search progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress.value}
+            aria-valuetext={progress.label}
+          />
+        </Progress.Root>
+      )}
       <EngineLineTable
         enabled={settings.enabled}
         error={error}
         lines={displayLines}
-        settings={settings}
+        settings={{ ...settings, multipv: selectedLines }}
         onPlayMove={onPlayMove}
       />
     </Box>
@@ -8500,24 +8486,6 @@ function formatWdlPointLoss(value: number) {
   return (value * 100).toFixed(value >= 0.1 ? 0 : 1).replace(/\.0$/, "");
 }
 
-function getWebEngineProgress({
-  enabled,
-  status,
-  lines,
-  targetDepth,
-}: {
-  enabled: boolean;
-  status: WebEnginePanelStatus;
-  lines: WebEngineLine[];
-  targetDepth: number;
-}) {
-  if (!enabled || status === "idle" || status === "error") return 0;
-  if (status === "complete") return 100;
-  const reachedDepth = Math.max(0, ...lines.map((line) => line.depth ?? 0));
-  if (reachedDepth <= 0) return status === "loading" ? 22 : 35;
-  return Math.min(99, Math.max(35, Math.round((reachedDepth / Math.max(1, targetDepth)) * 100)));
-}
-
 function getWebEngineHeaderStatus({
   enabled,
   status,
@@ -10251,12 +10219,6 @@ function readStoredWebPrepUserColor(): WebColor {
   }
 }
 
-function clampWholeNumber(value: unknown, min: number, max: number, fallback: number) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return fallback;
-  return Math.min(max, Math.max(min, Math.round(numeric)));
-}
-
 function isAbortError(error: unknown) {
   return (
     (error instanceof DOMException && error.name === "AbortError") ||
@@ -10387,6 +10349,9 @@ function usePersistentJson<T>(
 
   const firstUse = useMemo(
     () => ({
+      markIntent: () => {
+        jsonPreferenceIntents.set(key, (jsonPreferenceIntents.get(key) ?? 0) + 1);
+      },
       isFirstUse: () => {
         if (
           !lifecycle.current.readable ||

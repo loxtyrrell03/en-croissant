@@ -5,7 +5,7 @@ import { createServer } from "node:net";
 import { mkdtemp, readFile, writeFile, rm, rmdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 const delay = (ms) => new Promise((done) => setTimeout(done, ms));
 async function port() {
   const server = createServer();
@@ -33,9 +33,22 @@ test(
       maxDepth: 70,
     });
     await writeFile(config, original);
+    // Accelerate only the former three-minute deadline in this isolated child.
+    // Real UCI search/cancellation still runs; no production test switch is used.
+    const clock = join(root, "deadline-clock.mjs");
+    await writeFile(
+      clock,
+      `const original = globalThis.setTimeout;
+globalThis.setTimeout = (callback, ms, ...args) => original(callback, ms === 180000 ? 150 : ms, ...args);
+`,
+    );
     const child = spawn(
       process.execPath,
-      [fileURLToPath(new URL("../stockfish-remote-server.mjs", import.meta.url))],
+      [
+        "--import",
+        pathToFileURL(clock).href,
+        fileURLToPath(new URL("../stockfish-remote-server.mjs", import.meta.url)),
+      ],
       {
         windowsHide: true,
         stdio: ["ignore", "pipe", "pipe"],
@@ -89,6 +102,7 @@ test(
     };
     const active = new AbortController(),
       cancelled = new AbortController(),
+      cancelLegacyInfinite = new AbortController(),
       cancelLongTime = new AbortController();
     try {
       let initial;
@@ -206,6 +220,23 @@ test(
       cancelLongTime.abort();
       await longReader.cancel().catch(() => {});
       for (let i = 0; i < 100 && (await health()).queuedAnalyses !== 0; i++) await delay(10);
+      const inherited = await request({ infinite: true }, cancelLegacyInfinite.signal);
+      const inheritedReader = inherited.body.getReader();
+      let inheritedText = "";
+      while (!inheritedText.includes('"type":"uci"')) {
+        const item = await inheritedReader.read();
+        assert.equal(item.done, false);
+        inheritedText += new TextDecoder().decode(item.value);
+      }
+      await delay(400);
+      assert.equal(
+        (await health()).queuedAnalyses,
+        1,
+        "Legacy Until stopped must remain active past its former deadline",
+      );
+      cancelLegacyInfinite.abort();
+      await inheritedReader.cancel().catch(() => {});
+      for (let i = 0; i < 100 && (await health()).queuedAnalyses !== 0; i++) await delay(10);
       const legacy = await messages(await request({ depth: 4 }));
       finished(legacy);
       assert.equal(legacy[0].searchLimit, undefined);
@@ -226,6 +257,7 @@ test(
     } finally {
       active.abort();
       cancelled.abort();
+      cancelLegacyInfinite.abort();
       cancelLongTime.abort();
       if (child.exitCode === null) {
         const exited = new Promise((done) => child.once("exit", done));
@@ -242,6 +274,7 @@ test(
         await exited;
       }
       await rm(config, { force: true });
+      await rm(clock, { force: true });
       await rm(join(root, "stockfish-remote-server.log"), { force: true });
       await rmdir(root);
     }

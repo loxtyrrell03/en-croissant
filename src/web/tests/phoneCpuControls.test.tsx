@@ -286,13 +286,14 @@ it("preserves old out-of-recommendation values while limiting only a new field e
     PHONE_CPU_RESOURCES_KEY,
     JSON.stringify({ cpuResources: { version: 1, threads: 10, hashMb: 3000 } }),
   );
-  fetchMock.mockResolvedValue(
-    new Response(
-      JSON.stringify({
-        ...health,
-        device: { logicalThreads: 4, totalMemoryMb: 4096, availableMemoryMb: 2048 },
-      }),
-    ),
+  fetchMock.mockImplementation(
+    () =>
+      new Response(
+        JSON.stringify({
+          ...health,
+          device: { logicalThreads: 4, totalMemoryMb: 4096, availableMemoryMb: 2048 },
+        }),
+      ),
   );
   await render();
   await open();
@@ -383,13 +384,14 @@ it("keeps a failed first-use save visible without looping, then retries while an
 });
 it("keeps existing choices available when the PC lacks apply support and retries only its read-only check", async () => {
   const before = legacy();
-  fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ device: health.device })));
+  fetchMock.mockImplementation(async () => new Response(JSON.stringify({ device: health.device })));
   await render();
   await click("Engine settings");
   await vi.waitFor(() => expect(button("Retry PC resource check")).toBeTruthy());
   expect(button("Balanced")).toBeUndefined();
   expect(resources()).toBeNull();
   expect(legacy()).toBe(before);
+  fetchMock.mockImplementation(async () => new Response(JSON.stringify(health)));
   await click("Retry PC resource check");
   await vi.waitFor(() => expect(button("Balanced")).toBeTruthy());
   expect(resources()).toBeNull();

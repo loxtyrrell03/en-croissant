@@ -12,8 +12,8 @@ import {
   type AnalysisTimeUnit,
 } from "@/utils/nativeAnalysisSettings";
 
-/** Native analysis only. Game clocks and independent remote controls retain
- * their existing interfaces. A field draft never changes an engine request. */
+/** Verified analysis edits. Defaults retain native behavior; a phone adapter
+ * supplies supported bounds. A field draft never changes an engine request. */
 export function AnalysisSearchControls({
   go,
   lines,
@@ -23,6 +23,9 @@ export function AnalysisSearchControls({
   successLabel,
   requestError,
   previous,
+  disabled = false,
+  limitsAvailable = true,
+  limitBounds,
 }: {
   go: GoMode;
   lines?: number;
@@ -32,6 +35,13 @@ export function AnalysisSearchControls({
   successLabel: string;
   requestError?: string | null;
   previous?: NativeAnalysisPatch | null;
+  disabled?: boolean;
+  limitsAvailable?: boolean;
+  limitBounds?: {
+    depth: { min: number; max: number };
+    timeMs: { min: number; max: number };
+    nodes: { min: number; max: number };
+  };
 }) {
   const [state, setState] = useState({
     busy: false,
@@ -96,7 +106,14 @@ export function AnalysisSearchControls({
         });
     }
   }
-  const locked = state.busy || Boolean(state.error);
+  const locked = disabled || state.busy || Boolean(state.error);
+  const limitLocked = locked || !limitsAvailable;
+  const modeValue = (mode: "Depth" | "Time" | "Nodes") => {
+    const bounds = limitBounds?.[mode === "Depth" ? "depth" : mode === "Time" ? "timeMs" : "nodes"];
+    return bounds
+      ? Math.max(bounds.min, Math.min(bounds.max, last.current[mode]))
+      : last.current[mode];
+  };
   function apply(patch: NativeAnalysisPatch) {
     if (locked || edit.current) return;
     try {
@@ -149,16 +166,16 @@ export function AnalysisSearchControls({
         data={modes}
         allowDeselect={false}
         value={go.t}
-        disabled={locked}
+        disabled={limitLocked}
         onChange={(mode) => {
           if (!mode || mode === go.t) return;
           const next: GoMode =
             mode === "Depth"
-              ? { t: "Depth", c: last.current.Depth }
+              ? { t: "Depth", c: modeValue("Depth") }
               : mode === "Time"
-                ? { t: "Time", c: last.current.Time }
+                ? { t: "Time", c: modeValue("Time") }
                 : mode === "Nodes"
-                  ? { t: "Nodes", c: last.current.Nodes }
+                  ? { t: "Nodes", c: modeValue("Nodes") }
                   : mode === "PlayersTime" && last.current.PlayersTime
                     ? last.current.PlayersTime
                     : { t: "Infinite" };
@@ -170,8 +187,8 @@ export function AnalysisSearchControls({
           key={`depth-${version}`}
           label="Depth"
           value={go.c}
-          bounds={{ min: 1, max: 60 }}
-          disabled={locked}
+          bounds={limitBounds?.depth ?? { min: 1, max: 60 }}
+          disabled={limitLocked}
           help="Depth is a search level, not a fixed number of moves ahead. Analysis stops when this depth is reached."
           onCommit={(value) => apply({ go: { t: "Depth", c: value } })}
         />
@@ -181,8 +198,8 @@ export function AnalysisSearchControls({
           key={`nodes-${version}`}
           label="Nodes per position"
           value={go.c}
-          bounds={{ min: 1, max: U32_MAX }}
-          disabled={locked}
+          bounds={limitBounds?.nodes ?? { min: 1, max: U32_MAX }}
+          disabled={limitLocked}
           stops={[1, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, U32_MAX]}
           help="Nodes are positions examined during the search. The limit applies separately to each board position."
           onCommit={(value) => apply({ go: { t: "Nodes", c: value } })}
@@ -200,7 +217,7 @@ export function AnalysisSearchControls({
               { value: "h", label: "Hours" },
             ]}
             value={timeUnit}
-            disabled={locked}
+            disabled={limitLocked}
             allowDeselect={false}
             onChange={(unit) => {
               if (unit && unit in ANALYSIS_TIME_UNITS) setTimeUnit(unit as AnalysisTimeUnit);
@@ -210,11 +227,14 @@ export function AnalysisSearchControls({
             key={`time-${timeUnit}-${version}`}
             label="Time per position"
             value={go.c / factor}
-            bounds={{ min: 50 / factor, max: 3600000 / factor }}
+            bounds={{
+              min: (limitBounds?.timeMs.min ?? 50) / factor,
+              max: (limitBounds?.timeMs.max ?? 3600000) / factor,
+            }}
             step={1 / factor}
             unit={timeUnit}
             stops={ANALYSIS_TIME_STOPS.map((ms) => ms / factor)}
-            disabled={locked}
+            disabled={limitLocked}
             help="Time allowed for each position. Fractions are supported down to one millisecond. Changing the board starts a new search."
             onCommit={(value) => apply({ go: { t: "Time", c: Math.round(value * factor) } })}
           />
