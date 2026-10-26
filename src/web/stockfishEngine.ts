@@ -19,10 +19,22 @@ import {
     PHONE_PC_ENGINE_URL,
     PcResourceProtocolError,
     capturePcCpuResources,
-    loadPcCpuCapability,
+    parsePcCpuCapability,
     assertPcCpuReceipt,
 } from "./pcCpuResources";
 import type { CpuResourceSelection } from "../../scripts/engine-resource-protocol.mjs";
+import { loadPcEngineHealth, PcEngineCapabilityError } from "./pcEngineHealth";
+import {
+    capturePcSearchLimit,
+    assertPcSearchCapability,
+    assertPcSearchReceipt,
+    PcSearchProtocolError,
+} from "./pcSearchLimits";
+import {
+    engineSearchCommand,
+    engineSearchTimeout,
+    type EngineSearchLimit,
+} from "../../scripts/engine-search-protocol.mjs";
 import { coalescedUpdates } from "@/utils/coalescedUpdates";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
@@ -44,6 +56,8 @@ let localEngineName: string | undefined;
 let readyPromise: Promise<void> | null = null;
 let activeSearchId = 0;
 let activeRemoteController: AbortController | null = null;
+let activeLocalController: AbortController | null = null;
+let localQueueTail = Promise.resolve();
 let remoteEngineWakePromise: Promise<void> | null = null;
 let storedCloudOrigin: string | null = null;
 const listeners = new Set<StockfishLineListener>();
@@ -73,6 +87,7 @@ export type WebStockfishAnalyzeRequest = {
     engineKind?: PcEngineKind;
     performancePreset?: EnginePerformancePreset;
     cpuResources?: CpuResourceSelection;
+    searchLimit?: EngineSearchLimit;
     lc0AutoNetwork?: boolean;
     lc0Network?: Lc0NetworkProfile;
     onUpdate?: (lines: WebEngineLine[]) => void;
@@ -93,6 +108,7 @@ export async function analyzeWithWebStockfish18({
     engineKind = "stockfish",
     performancePreset = "good",
     cpuResources: requestedCpuResources,
+    searchLimit: requestedSearchLimit,
     lc0AutoNetwork = true,
     lc0Network = "none",
     onUpdate,
@@ -101,6 +117,12 @@ export async function analyzeWithWebStockfish18({
         requestedCpuResources === undefined
             ? undefined
             : capturePcCpuResources(requestedCpuResources);
+    const searchLimit =
+        requestedSearchLimit === undefined ? undefined : capturePcSearchLimit(requestedSearchLimit);
+    if (searchLimit && (reportLimits !== undefined || planSearch))
+        throw new PcSearchProtocolError(
+            "Live search limits cannot replace independent report or Plans limits.",
+        );
     if (cpuResources && engineKind !== "stockfish")
         throw new PcResourceProtocolError("CPU resources require PC Stockfish.");
     if (reportLimits !== undefined) {
@@ -115,6 +137,7 @@ export async function analyzeWithWebStockfish18({
             throw new Error("Choose valid Stockfish report limits (depth 2–30, time 50–5000 ms).");
         const selectedLimits = { ...reportLimits };
         throwIfAborted(signal);
+        activeLocalController?.abort();
         const searchId = ++activeSearchId;
         activeRemoteController?.abort();
         postStockfish("stop");
@@ -180,6 +203,7 @@ export async function analyzeWithWebStockfish18({
             signal,
             onUpdate,
             planSearch,
+            searchLimit,
         });
     }
 
@@ -194,6 +218,7 @@ export async function analyzeWithWebStockfish18({
             engineKind,
             performancePreset,
             cpuResources,
+            searchLimit,
         });
 
     if (engineKind === "lc0") {
@@ -206,6 +231,7 @@ export async function analyzeWithWebStockfish18({
             engineKind,
             performancePreset,
             cpuResources,
+            searchLimit,
             lc0AutoNetwork,
             lc0Network,
             onUpdate,
@@ -222,6 +248,7 @@ export async function analyzeWithWebStockfish18({
             engineKind,
             performancePreset,
             cpuResources,
+            searchLimit,
             onUpdate,
         });
     }
@@ -232,6 +259,7 @@ export async function analyzeWithWebStockfish18({
             throwIfAborted(signal);
             if (
                 !cpuResources &&
+                !searchLimit &&
                 storedLines.length > 0 &&
                 storedLines[0].depth >= minimumStoredDepth
             ) {
@@ -253,6 +281,7 @@ export async function analyzeWithWebStockfish18({
             engineKind,
             performancePreset,
             cpuResources,
+            searchLimit,
             onUpdate,
         });
     }
@@ -292,6 +321,7 @@ export async function analyzeWithWebStockfish18({
             engineKind,
             performancePreset,
             cpuResources,
+            searchLimit,
             onUpdate: (lines) => {
                 publishedLines = true;
                 deepestLiveDepth = Math.max(deepestLiveDepth, maxLineDepth(lines));
@@ -299,7 +329,7 @@ export async function analyzeWithWebStockfish18({
             },
         });
     } catch (error) {
-        if (isAbortError(error) || signal?.aborted || cpuResources) throw error;
+        if (isAbortError(error) || signal?.aborted || cpuResources || searchLimit) throw error;
 
         // The PC engine is busy or unreachable: keep the position answered with the
         // saved evaluation instead of failing, unless the dead search already got deeper.
@@ -326,13 +356,18 @@ async function analyzeWithRemoteStockfish18WithRetry(
 
         try {
             await ensureRemoteEngineService(request.signal);
-            if (request.cpuResources) await loadPcCpuCapability(request.signal);
+            if (request.cpuResources || request.searchLimit) {
+                const health = await loadPcEngineHealth(request.signal);
+                throwIfAborted(request.signal);
+                if (request.cpuResources) parsePcCpuCapability(health);
+                if (request.searchLimit) assertPcSearchCapability(health, request.searchLimit);
+            }
             return await analyzeWithRemoteStockfish18(request);
         } catch (error) {
             if (
                 isAbortError(error) ||
                 request.signal?.aborted ||
-                error instanceof PcResourceProtocolError
+                error instanceof PcEngineCapabilityError
             )
                 throw error;
             lastError = error;
@@ -535,11 +570,13 @@ async function analyzeWithRemoteStockfish18({
     engineKind = "stockfish",
     performancePreset = "good",
     cpuResources,
+    searchLimit,
     lc0AutoNetwork = true,
     lc0Network = "none",
     onUpdate,
     planSearch = false,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
+    activeLocalController?.abort();
     const searchId = ++activeSearchId;
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
     const requestedDepth = Math.max(1, Math.min(STOCKFISH_MAX_DEPTH, Math.round(depth)));
@@ -591,8 +628,9 @@ async function analyzeWithRemoteStockfish18({
             body: JSON.stringify({
                 fen,
                 multipv: requestedMultipv,
-                depth: requestedDepth,
-                infinite: infinite === true,
+                depth: searchLimit ? undefined : requestedDepth,
+                infinite: searchLimit ? undefined : infinite === true,
+                searchLimit,
                 engineKind,
                 performancePreset: cpuResources ? undefined : performancePreset,
                 cpuResources,
@@ -613,6 +651,7 @@ async function analyzeWithRemoteStockfish18({
         let remoteError: Error | null = null;
         let completed = false;
         let resourcesAcknowledged = !cpuResources;
+        let searchAcknowledged = !searchLimit;
         let remoteMeta: {
             engine?: string;
             engineKind?: PcEngineKind;
@@ -635,9 +674,14 @@ async function analyzeWithRemoteStockfish18({
             };
             if (message.type === "error") {
                 remoteError = new Error(message.message || "Gaming PC Stockfish failed.");
+                completed = true;
                 return;
             }
             if (message.type === "done") {
+                if (!searchAcknowledged && !remoteError)
+                    throw new PcSearchProtocolError(
+                        "The PC did not acknowledge the selected search limit.",
+                    );
                 if (!resourcesAcknowledged && !remoteError)
                     throw new PcResourceProtocolError(
                         "The PC did not acknowledge the selected CPU resources.",
@@ -647,6 +691,10 @@ async function analyzeWithRemoteStockfish18({
                 return;
             }
             if (message.type === "meta") {
+                if (searchLimit) {
+                    assertPcSearchReceipt(message, searchLimit, engineKind);
+                    searchAcknowledged = true;
+                }
                 if (cpuResources) {
                     assertPcCpuReceipt(message, cpuResources);
                     resourcesAcknowledged = true;
@@ -655,6 +703,10 @@ async function analyzeWithRemoteStockfish18({
                 return;
             }
             if (message.type !== "uci" || !message.line) return;
+            if (!searchAcknowledged)
+                throw new PcSearchProtocolError(
+                    "The PC did not acknowledge the selected search limit.",
+                );
             if (!resourcesAcknowledged)
                 throw new PcResourceProtocolError(
                     "The PC did not acknowledge the selected CPU resources.",
@@ -671,6 +723,7 @@ async function analyzeWithRemoteStockfish18({
             );
             if (!parsed || parsed.multipv > requestedMultipv) return;
             if (planSearch && parsed.depth > requestedDepth) return;
+            if (searchLimit?.mode === "depth" && parsed.depth > searchLimit.value) return;
             markAnalysisStarted();
             refreshStallGuard();
             linesByPv.set(parsed.multipv, parsed);
@@ -696,8 +749,12 @@ async function analyzeWithRemoteStockfish18({
         }
 
         if (remoteError) throw remoteError;
-        if (planSearch && !completed)
-            throw new Error("The plan search ended before completion. Try again.");
+        if ((planSearch || searchLimit) && !completed)
+            throw new Error(
+                planSearch
+                    ? "The plan search ended before completion. Try again."
+                    : "The engine search ended before confirming completion. Try again.",
+            );
         if (linesByPv.size === 0) {
             throw new Error("Gaming PC engine returned no analysis lines.");
         }
@@ -744,107 +801,177 @@ async function analyzeWithLocalStockfish18({
     signal,
     onUpdate,
     planSearch = false,
+    searchLimit,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
+    throwIfAborted(signal);
+    activeLocalController?.abort();
+    const controller = new AbortController();
+    activeLocalController = controller;
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
     const searchId = ++activeSearchId;
+    const previous = localQueueTail;
+    let release!: () => void;
+    const slot = new Promise<void>((resolve) => {
+        release = resolve;
+    });
+    // A cancelled queued request releases its slot, while successors still
+    // wait for the earlier worker search to acknowledge stop.
+    localQueueTail = previous.then(() => slot);
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
     const requestedDepth = Math.max(1, Math.min(STOCKFISH_MAX_DEPTH, Math.round(depth)));
     const linesByPv = new Map<number, WebEngineLine>();
 
-    await ensureStockfishReady();
-    throwIfAborted(signal);
+    const owns = () => {
+        controller.signal.throwIfAborted();
+        if (activeSearchId !== searchId)
+            throw new DOMException("Stockfish analysis was replaced.", "AbortError");
+    };
+    try {
+        await waitForSharedRequest(previous, controller.signal);
+        await waitForSharedRequest(ensureStockfishReady(), controller.signal);
+        owns();
 
-    postStockfish("stop");
-    await setStockfishOption("MultiPV", String(requestedMultipv));
-    throwIfAborted(signal);
-
-    return await new Promise<WebEngineLine[]>((resolve, reject) => {
-        let settled = false;
-        const output = coalescedUpdates<WebEngineLine[]>(
-            (lines) => onUpdate?.(lines),
-            () => !settled && activeSearchId === searchId && !signal?.aborted,
-            STOCKFISH_MIN_UPDATE_INTERVAL_MS,
+        postStockfish("stop");
+        await waitForSharedRequest(
+            setStockfishOption("MultiPV", String(requestedMultipv)),
+            controller.signal,
         );
-        const cleanup = () => {
-            output.cancel();
-            settled = true;
-            removeStockfishListener(onLine);
-            signal?.removeEventListener("abort", onAbort);
-            if (timeoutId !== null) window.clearTimeout(timeoutId);
-        };
+        owns();
 
-        const finish = () => {
-            if (settled) return;
-            cleanup();
-            resolve(sortEngineLines(linesByPv));
-        };
-
-        const fail = (error: unknown) => {
-            if (settled) return;
-            cleanup();
-            reject(error);
-        };
-
-        const publish = (force = false) => {
-            if (!onUpdate) return;
-            const lines = sortEngineLines(linesByPv);
-            if (force) output.finish(lines);
-            else output.push(lines);
-        };
-
-        const onAbort = () => {
-            if (activeSearchId === searchId) activeSearchId += 1;
-            postStockfish("stop");
-            fail(new DOMException("Stockfish analysis was cancelled.", "AbortError"));
-        };
-
-        const onLine = (line: string) => {
-            if (activeSearchId !== searchId) return;
-            if (line.startsWith("info string CRITICAL ERROR")) {
-                fail(new Error("The phone engine stopped. Run analysis again."));
-                return;
-            }
-            if (line.startsWith("bestmove")) {
-                publish(true);
-                finish();
-                return;
-            }
-
-            const parsed = parseStockfishInfoLine(
-                line,
-                fen,
-                "phone",
-                { engine: localEngineName },
-                planSearch,
+        return await new Promise<WebEngineLine[]>((resolve, reject) => {
+            let settled = false;
+            let stopReason: Error | null = null;
+            let stopGuard: ReturnType<typeof setTimeout> | null = null;
+            const ownedWorker = worker;
+            const output = coalescedUpdates<WebEngineLine[]>(
+                (lines) => onUpdate?.(lines),
+                () => !settled && activeSearchId === searchId && !controller.signal.aborted,
+                STOCKFISH_MIN_UPDATE_INTERVAL_MS,
             );
-            if (!parsed || parsed.multipv > requestedMultipv) return;
-            if (planSearch && parsed.depth > requestedDepth) return;
-            linesByPv.set(parsed.multipv, parsed);
-            publish();
-        };
+            const cleanup = () => {
+                output.cancel();
+                settled = true;
+                removeStockfishListener(onLine);
+                controller.signal.removeEventListener("abort", onAbort);
+                if (timeoutId !== null) window.clearTimeout(timeoutId);
+                if (stopGuard !== null) clearTimeout(stopGuard);
+            };
 
-        const timeoutId = infinite
-            ? null
-            : window.setTimeout(() => {
-                  postStockfish("stop");
-                  fail(new Error("Stockfish took too long to finish this search."));
-              }, STOCKFISH_SEARCH_TIMEOUT_MS);
+            const finish = () => {
+                if (settled) return;
+                cleanup();
+                resolve(sortEngineLines(linesByPv));
+            };
 
-        if (signal?.aborted) {
-            onAbort();
-            return;
-        }
+            const fail = (error: unknown) => {
+                if (settled) return;
+                cleanup();
+                reject(error);
+            };
 
-        signal?.addEventListener("abort", onAbort, { once: true });
-        addStockfishListener(onLine);
-        postStockfish(`position fen ${fen}`);
-        postStockfish(infinite ? "go infinite" : `go depth ${requestedDepth}`);
-    });
+            const publish = (force = false) => {
+                if (!onUpdate) return;
+                const lines = sortEngineLines(linesByPv);
+                if (force) output.finish(lines);
+                else output.push(lines);
+            };
+
+            const onAbort = () => {
+                if (activeSearchId === searchId) {
+                    activeSearchId += 1;
+                }
+                stop(new DOMException("Stockfish analysis was cancelled.", "AbortError"));
+            };
+            const stop = (reason: Error) => {
+                if (settled || stopReason) return;
+                stopReason = reason;
+                if (worker === ownedWorker) postStockfish("stop");
+                stopGuard = setTimeout(() => {
+                    if (settled) return;
+                    if (ownedWorker) resetLocalWorker(ownedWorker);
+                    fail(reason);
+                }, 1000);
+            };
+
+            const onLine = (line: string) => {
+                if (settled) return;
+                if (line.startsWith("info string CRITICAL ERROR")) {
+                    fail(stopReason ?? new Error("The phone engine stopped. Run analysis again."));
+                    return;
+                }
+                if (line.startsWith("bestmove")) {
+                    if (stopReason) {
+                        fail(stopReason);
+                        return;
+                    }
+                    if (searchLimit && linesByPv.size === 0) {
+                        fail(
+                            new Error("The phone engine returned no lines for this search limit."),
+                        );
+                        return;
+                    }
+                    publish(true);
+                    finish();
+                    return;
+                }
+                if (stopReason || activeSearchId !== searchId || controller.signal.aborted) return;
+
+                const parsed = parseStockfishInfoLine(
+                    line,
+                    fen,
+                    "phone",
+                    { engine: localEngineName },
+                    planSearch,
+                );
+                if (!parsed || parsed.multipv > requestedMultipv) return;
+                if (planSearch && parsed.depth > requestedDepth) return;
+                if (searchLimit?.mode === "depth" && parsed.depth > searchLimit.value) return;
+                linesByPv.set(parsed.multipv, parsed);
+                publish();
+            };
+
+            const timeoutMs = searchLimit
+                ? engineSearchTimeout(searchLimit)
+                : infinite
+                  ? null
+                  : STOCKFISH_SEARCH_TIMEOUT_MS;
+            const timeoutId =
+                timeoutMs === null
+                    ? null
+                    : window.setTimeout(() => {
+                          stop(new Error("Stockfish took too long to finish this search."));
+                      }, timeoutMs);
+
+            if (controller.signal.aborted) {
+                onAbort();
+                return;
+            }
+
+            controller.signal.addEventListener("abort", onAbort, { once: true });
+            addStockfishListener(onLine);
+            postStockfish(`position fen ${fen}`);
+            postStockfish(
+                searchLimit
+                    ? engineSearchCommand(searchLimit)
+                    : infinite
+                      ? "go infinite"
+                      : `go depth ${requestedDepth}`,
+            );
+        });
+    } finally {
+        release();
+        signal?.removeEventListener("abort", abort);
+        if (activeLocalController === controller) activeLocalController = null;
+        controller.abort();
+    }
 }
 
 export function stopWebStockfish18Search() {
     activeSearchId += 1;
     activeRemoteController?.abort();
     activeRemoteController = null;
+    activeLocalController?.abort();
     postStockfish("stop");
 }
 

@@ -1,3 +1,23 @@
+# Explicit search-limit transport and managed-worker ownership
+
+Capture searchLimit before any await; preserve it through intended remote Live/
+PC-only/stored-preferred/LCZero calls and retries. Omit legacy depth/infinite only
+for the explicit policy. Reports/Plans own separate limits. Search capability
+requires its own version/ranges; one bounded read-only health read can validate
+both CPU and search. Require exact engine/protocol/selection/command before PC
+lines and explicit completion; failed explicit requests cannot succeed by stored
+or WASM fallback. Errors are terminal, and above-cap depth lines are excluded.
+
+Managed-worker replacements queue until the old search acknowledges bestmove.
+A cancelled queued slot cannot bypass its predecessor; stale handshakes/aborts
+cannot submit or stop a new search. An owned unresponsive stop replaces only that
+worker after one second. Exact commands/time allowances retain selected long
+searches; original Worker errors/retry and legacy requests remain supported.
+The actual prior source fails the new ordering regression.118 cases/13 files,
+types, seven-file lint0/format and existing CPU/report/Plans/OnOff flows pass.
+Visible verified search controls/progress and live delivery remain pending. The
+hosted64fa62b5 service/UI is unchanged; do not claim this transport is deployed.
+
 # Shared Plans CPU phone delivery
 
 Canonical phone64fa62b5 verifies444 manifest files/11 exact HTTPS assets,15 home

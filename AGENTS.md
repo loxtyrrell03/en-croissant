@@ -1,3 +1,19 @@
+## 2026-10-26 explicit phone search transport source
+
+- Phone captures explicit search limits before awaiting and preserves them through
+  intended remote branches/retries. One bounded read-only health reader validates
+  CPU/search independently. Exact engine/protocol/mode/value/command receipts and
+  completion are required; failed explicit requests cannot become stored fallback
+  success. Legacy requests and separate Plans/report limits retain their scope.
+- Managed-worker successors now wait for old bestmove acknowledgement. Queued
+  cancellation, stale aborts and replaced handshakes preserve search ownership;
+  one-second owned stop guard recovers an unresponsive worker. Actual old source
+  fails the ordering regression. Long explicit searches retain selected limits.
+-118 focused cases13 files/types/seven-file lint0/format pass, including existing
+  CPU forms and actual saved-report-to-Plans flow. New inline controls/progress,
+  verified preferences and live delivery remain; hosted64fa62b5/gateway9856/native
+ 78c77926 were not updated. No owner data/corpus change. Full audit remains active.
+
 ## 2026-10-26 explicit search-limit service protocol source
 
 - Independent searchProtocolVersion1 and strict searchLimit selections support

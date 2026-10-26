@@ -4,14 +4,9 @@ import {
     type CpuResourceSelection,
 } from "../../scripts/engine-resource-protocol.mjs";
 import { parseEngineDevice, type EngineDevice } from "@/utils/engineResources";
-import { resolvePrivateServiceUrl } from "./serverUrl";
-
-export const PHONE_PC_ENGINE_URL = resolvePrivateServiceUrl(
-    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://lox-pc.tail89d19b.ts.net",
-)
-    .trim()
-    .replace(/\/+$/, "");
-export class PcResourceProtocolError extends Error {}
+import { PHONE_PC_ENGINE_URL, PcEngineCapabilityError, loadPcEngineHealth } from "./pcEngineHealth";
+export { PHONE_PC_ENGINE_URL } from "./pcEngineHealth";
+export class PcResourceProtocolError extends PcEngineCapabilityError {}
 export type PcCpuCapability = {
     device: EngineDevice;
     bounds: { threads: { min: number; max: number }; hashMb: { min: number; max: number } };
@@ -62,49 +57,11 @@ export async function loadPcCpuCapability(
     signal?: AbortSignal,
     base = PHONE_PC_ENGINE_URL,
 ): Promise<PcCpuCapability> {
+    const health = await loadPcEngineHealth(signal, base);
     signal?.throwIfAborted();
-    if (!base)
-        throw new PcResourceProtocolError("PC resource controls require the PC engine service.");
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined,
-        rejectAbort: ((error: unknown) => void) | undefined;
-    const abort = () => {
-        controller.abort();
-        rejectAbort?.(new DOMException("PC resource check cancelled", "AbortError"));
-    };
-    const interrupted = new Promise<never>((_, reject) => {
-        rejectAbort = reject;
-        signal?.addEventListener("abort", abort, { once: true });
-        timer = setTimeout(() => {
-            controller.abort();
-            reject(
-                new PcResourceProtocolError("The PC resource check timed out. Retry the check."),
-            );
-        }, 5000);
-    });
-    try {
-        return await Promise.race([
-            interrupted,
-            (async () => {
-                const response = await fetch(`${base}/v1/health`, {
-                    signal: controller.signal,
-                    cache: "no-store",
-                });
-                if (!response.ok)
-                    throw new PcResourceProtocolError(
-                        "PC resource details are unavailable. Check the PC connection and retry.",
-                    );
-                const result = parsePcCpuCapability(await response.json());
-                controller.signal.throwIfAborted();
-                return result;
-            })(),
-        ]);
-    } finally {
-        clearTimeout(timer);
-        signal?.removeEventListener("abort", abort);
-        controller.abort();
-    }
+    return parsePcCpuCapability(health);
 }
+
 export function assertPcCpuReceipt(message: unknown, selected: CpuResourceSelection): void {
     const value = message as {
         engineKind?: unknown;

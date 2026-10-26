@@ -293,3 +293,39 @@ This is source/service-fixture evidence. Phone capability/receipt checks,
 immutable transport, managed-WASM limits, verified preferences/inline controls,
 and actual gateway/phone publication remain. The current hosted phone64fa62b5,
 engine9856 and native78c77926 artifact were not updated by this source milestone.
+
+
+## Explicit search-limit client and managed-worker source
+
+The phone client now captures explicit limits before awaiting any service or
+stored lookup. It carries them through intended Live/PC-only/stored-preferred
+and LCZero branches, omits conflicting legacy wire fields and keeps the snapshot
+through retries. Separate Plans/report jobs reject a Live limit rather than
+having their own budgets replaced. Legacy calls retain their previous behavior.
+
+Search capability is independently versioned: CPU/device metadata alone does
+not establish support. One shared five-second, cancellable read-only health
+reader serves CPU/search checks, with one read for a request using both policies.
+Before accepting PC lines the client requires the expected engine, protocol,
+exact mode/value and UCI command. It requires completion, rejects above-limit
+depth lines and treats streamed errors as terminal. A failed or unsupported
+explicit request cannot appear successful through saved results or WASM fallback;
+allowed initial stored display and independent preferences remain intact.
+
+Managed phone Stockfish supports the same exact UCI commands and time allowance.
+Its old ownership race is repaired: replacement waits for the preceding search’s
+bestmove acknowledgement, cancelling a queued slot preserves ordering, stale
+aborts cannot stop a successor, and an unresponsive owned worker is replaced after
+a one-second stop guard. Replaced handshakes cannot submit stale positions. Worker
+errors still permit a fresh retry; new depth/node/until-stopped choices retain
+their actual limit rather than the old ninety-second deadline. The actual prior
+source starts its successor before the old worker acknowledges stop and fails
+the new regression; current source passes.
+
+118 focused cases/13 files, full types, seven-file lint0 and format pass. These
+include actual CPU forms, shared Plans ownership and the full saved-report-to-
+Plans phone flow, plus remote request and controlled Worker lifecycle checks.
+The Worker fixtures are distinct from real engine/service tests in the prior
+milestone, rendered layouts or physical-phone proof. New verified preferences,
+inline controls/progress labels and live publication remain. Hosted64fa62b5,
+gateway9856 and native78c77926 artifact are unchanged by this source milestone.
