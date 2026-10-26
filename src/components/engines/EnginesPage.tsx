@@ -67,6 +67,7 @@ import { EngineLogo } from "./EngineLogo";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
 import { StockfishUpgradeNotice } from "./StockfishUpgradeNotice";
 import { StoredEvaluationSwitch } from "./StoredEvaluationSwitch";
+import { NativeProfileResources, nativeProfileResourceFields } from "./NativeProfileResources";
 
 export default function EnginesPage() {
   const { t } = useTranslation();
@@ -225,7 +226,11 @@ export default function EnginesPage() {
         ) : (
           <Paper withBorder style={{ borderWidth: 2 }} p="md" h="100%">
             {selectedEngine.type === "local" ? (
-              <EngineSettings selected={selected} setSelected={setSelected} />
+              <EngineSettings
+                key={`${selectedEngine.id}:${selectedEngine.path}`}
+                selected={selected}
+                setSelected={setSelected}
+              />
             ) : (
               <Stack>
                 <Divider variant="dashed" label={t("Common.GeneralSettings")} />
@@ -384,9 +389,11 @@ function EngineSettings({
 
   function setEngine(newEngine: LocalEngine) {
     setEngines(async (prev) => {
-      const copy = [...(await prev)];
-      copy[selected] = newEngine;
-      return copy;
+      return (await prev).map((item) =>
+        item.id === engine.id && item.type === "local" && item.path === engine.path
+          ? newEngine
+          : item,
+      );
     });
   }
 
@@ -426,6 +433,7 @@ function EngineSettings({
           },
         };
       }) || [];
+  const hasResources = options && nativeProfileResourceFields(engine, options) !== null;
 
   function changeImage() {
     open({
@@ -442,7 +450,7 @@ function EngineSettings({
     value: string | number | boolean | null,
     def: string | number | boolean | null,
   ) {
-    const newSettings = engine.settings || [];
+    const newSettings = (engine.settings || []).map((setting) => ({ ...setting }));
     const setting = newSettings.find((setting) => setting.name === name);
     if (setting) {
       setting.value = value;
@@ -535,8 +543,10 @@ function EngineSettings({
         />
 
         <Divider variant="dashed" label={t("Engines.Settings.AdvancedSettings")} />
+        {hasResources && options && <NativeProfileResources engine={engine} config={options} />}
         <SimpleGrid cols={2}>
           {completeOptions
+            .filter((option) => !hasResources || !["Threads", "Hash"].includes(option.value.name))
             .filter((option: { type: string }) => option.type !== "check")
             .map((option: any) => {
               return match(option)

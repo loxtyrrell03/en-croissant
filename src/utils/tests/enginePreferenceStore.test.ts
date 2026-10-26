@@ -27,6 +27,95 @@ function fixture(initial: string | null) {
         },
     };
 }
+it("stages verified edits without exposing pending resource values to readers", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    const next = [{ ...previous[0], settings: [{ name: "Threads", value: 10 }] }];
+    const edit = h.store.prepareVerifiedUpdate(next, () => true);
+    expect(h.store.getSnapshot().value).toEqual(previous);
+    expect(await h.store.storage.getItem("engines", [])).toEqual(previous);
+    expect(h.io.write).not.toHaveBeenCalled();
+    await edit.save();
+    expect(h.store.isSavedValue(edit.value)).toBe(true);
+    expect(h.io.write).toHaveBeenCalledTimes(1);
+    await edit.save();
+    expect(h.io.write).toHaveBeenCalledTimes(1);
+});
+it("keeps a verified failed edit separate, retries once and returns a disk receipt", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => true);
+    h.io.write.mockRejectedValueOnce(new Error("Disk unavailable"));
+    await expect(edit.save()).rejects.toThrow("Disk unavailable");
+    expect(h.store.getSnapshot().value).toEqual(previous);
+    expect(await h.store.storage.getItem("engines", [])).toEqual(previous);
+    await edit.save();
+    expect(h.store.isSavedValue(edit.value)).toBe(true);
+    expect(JSON.parse(h.disk()!)[0].name).toBe("Changed");
+});
+it("restores an unwritten failed edit without rewriting the exact original bytes", async () => {
+    const original = JSON.stringify([engine("original")]);
+    const h = fixture(original);
+    const previous = await h.store.reload();
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => true);
+    h.io.write.mockRejectedValueOnce(new Error("Unavailable"));
+    await expect(edit.save()).rejects.toThrow("Unavailable");
+    await edit.restore();
+    expect(h.io.write).toHaveBeenCalledTimes(1);
+    expect(h.disk()).toBe(original);
+    expect(h.store.isSavedValue(previous)).toBe(true);
+});
+it("restores only its own uncertain successful write, preserving exact previous bytes", async () => {
+    const original = JSON.stringify([engine("original")]);
+    const h = fixture(original);
+    const previous = await h.store.reload();
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => true);
+    h.io.write.mockImplementationOnce(async (text) => {
+        h.replace(text);
+        throw new Error("Lost receipt");
+    });
+    await expect(edit.save()).rejects.toThrow("Lost receipt");
+    await edit.restore();
+    expect(h.disk()).toBe(original);
+    expect(h.store.getSnapshot().value).toEqual(previous);
+    expect(h.store.getSnapshot().pending).toBe(false);
+});
+it("refuses to restore over another application's settings", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => true);
+    h.io.write.mockRejectedValueOnce(new Error("Unavailable"));
+    await expect(edit.save()).rejects.toThrow("Unavailable");
+    const external = JSON.stringify([engine("external")]);
+    h.replace(external);
+    await expect(edit.restore()).rejects.toThrow("another app");
+    expect(h.disk()).toBe(external);
+});
+it("checks ownership after the asynchronous disk read and retains it on global retry", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    let owns = true;
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => owns);
+    h.io.read.mockImplementationOnce(async () => {
+        owns = false;
+        return h.disk();
+    });
+    await expect(edit.save()).rejects.toThrow("changed during");
+    expect(h.io.write).not.toHaveBeenCalled();
+    await expect(h.store.retry()).rejects.toThrow("changed during");
+    expect(h.io.write).not.toHaveBeenCalled();
+});
+it("does not retry or restore a superseded resource edit", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => true);
+    h.io.write.mockRejectedValueOnce(new Error("Unavailable"));
+    await expect(edit.save()).rejects.toThrow("Unavailable");
+    await h.store.storage.setItem("engines", [engine("newer")]);
+    await expect(edit.save()).rejects.toThrow("newer");
+    await expect(edit.restore()).rejects.toThrow("newer");
+    expect(JSON.parse(h.disk()!)[0].id).toBe("newer");
+});
 it.each(['{"broken":', '[{"type":"unknown","path":"keep-me"}]'])(
     "preserves unreadable settings without a normalization write: %s",
     async (text) => {

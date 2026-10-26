@@ -1,3 +1,28 @@
+## 2026-10-26 native engine defaults resource controls source
+
+- Selected inline A now works in native Engines profile defaults for engines
+  advertising valid Threads/Hash spin options. Device Quiet/Balanced/Faster,
+  integer threads, bounded hash stops and exact MiB fields preserve custom values,
+  other UCI settings, search limits and enabled flags. Unsupported CPU/LCZero
+  options retain the existing editor. Profile defaults describe one CPU engine;
+  current-tab included-engine budgets remain a separate pending surface.
+- Completed gestures/Enter/field blur commit once; Escape, pointer cancellation,
+  lost capture and window blur discard drafts. Five-second read-only device
+  checks/retry never retune a saved or default-looking choice. Known zero available
+  memory disables recommendations. Existing help supports focus/tap/dismissal.
+- Verified-only staged preference edits retain previous runtime values until
+  exact disk readback. Retry retains original ownership; Restore previous only
+  writes over exact owned uncertain bytes. External/newer edits are preserved.
+  The shared retry notice reflects its receipt in the inline controls. Profile
+  details are keyed by identity/path; setters target that identity, not list index,
+  and UCI edits clone settings instead of mutating a saved snapshot.
+- 126 interaction/storage/engine checks across13 files and full types pass; one unchanged
+  EnginesPage effect-dependency lint warning remains. Static/source/DOM proof is
+  distinct from rendered native, packaging and physical-device verification.
+  Current-tab controls, first-use initialization, lines/search draft parity and
+  PC service/phone resource protocol/UI/delivery remain. No owner data, engine
+  worker, installed package or hosting route was changed. Full goal stays active.
+
 ## 2026-10-26 approved inline resources and pure CPU budget policy
 
 - Owner selected A inline controls. Shared pure CPU policy and typed frontend

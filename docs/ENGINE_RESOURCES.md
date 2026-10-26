@@ -46,14 +46,40 @@ minimum resources cannot fit, rather than claiming that the minimum floor is a
 safe budget. The selected controls must show this state without changing current
 choices. Full types, three-file lint0 and four-file formatting pass.
 
-This remains source groundwork, not the completed preset feature. First-use
-ownership, slider/exact-field lifecycle, failed-save retry/restoration, the approved
-inline controls, native packaging and PC/phone runtime reconciliation
-remain to implement and verify. Existing explicit/default-looking saved choices
-must not be silently retuned. Phone PC requests must use PC capabilities, while
-LCZero GPU and managed single-thread phone settings retain their own limits.
-No owner profile, corpus or PC-hosting route was changed by these checks. No
-manual native launch, installed-service update or physical-device proof is claimed.
+The next source slice implements the selected inline controls in native Engines
+profile defaults when the engine advertises valid Threads/Hash integer options.
+It preserves exact custom resources, all other UCI options, search limits and
+engine enabled flags. Recommendations describe one CPU engine for these defaults;
+the current-tab included-engine budget remains a separate pending surface.
+Existing unsupported CPU and LCZero options keep their original editor. The
+native profile setter now targets engine identity/path rather than a captured
+list index, and option edits clone the settings instead of mutating saved values.
+
+Pointer/key gestures draft locally; release, completed key edit, Enter or exact
+field blur commits once. Escape, pointer cancellation, lost capture and window
+blur discard unfinished edits. Threads accept every valid whole number; memory
+slider stops retain a saved non-power-of-two value and stay stable during a drag.
+Exact fields validate whole numbers and show MiB explicitly. Five-second device
+reads and retry only refresh recommendations, including a visible insufficient
+budget state for known zero available memory. They never infer first use from
+saved values matching a default. Reused help supports focus, touch and dismissal.
+
+A new verified-only preference edit stages an immutable snapshot without
+publishing it to running engines or returning it to loading readers. After exact
+disk readback, the intended profile receives resource-only changes. Retry keeps
+its original model/byte ownership guard, including the shared retry notice.
+Restore previous discards an unwritten failed edit without a write, or restores
+only its own exact uncertain successful bytes. External/newer settings are never
+overwritten. A switch to another profile does not redirect the captured edit;
+a newer edit invalidates it. Errors keep current and pending resources distinct.
+
+The native profile controls, bounded hook, storage and existing engine/request
+checks pass:126 cases across13 files, with full TypeScript and one unchanged EnginesPage effect-dependency
+lint warning. This is source and DOM-fixture evidence. Current-tab controls,
+first-use Balanced initialization, lines/search draft parity, native packaging
+and PC/phone resource reconciliation remain. No owner profile, corpus or hosting
+route was changed. No manual native launch, installed-service update or rendered/
+physical-device verification is claimed.
 
 Do not confuse the new CPU policy's balanced name with the phone's existing
 fixed balanced preset ID. A separate resource policy/config field must preserve
