@@ -1,3 +1,18 @@
+## 2026-10-26 device-balanced engine resources design
+
+- Novelty b186d2d7 adds device budgets/presets/sliders and owned application/save
+  behavior. En has native thread/hash controls and phone fixed PC presets; new
+  resource controls must use the analysis host, preserve explicit/legacy settings,
+  per-engine/tab/default scope, search limits and existing LCZero GPU/WASM behavior.
+- Three editable native/phone/narrow workflows are presented in
+  docs/design/engine-resources: A inline, B compact presets plus Adjust dialog,
+  C dedicated Performance editor. All14 groups per sheet parse, Times/Segoe widths
+  are measured and offline raster previews were visually reviewed. Example data
+  is invented; no browser/native-app rendering or runtime/data change occurred.
+- Owner layout question is pending. Continue independent read-only device and pure
+  resource behavior; do not assume a final UI direction. Prior evaluation SettingsA
+  and phone AnalysisA/compact navigation remain approved separately. Goal active.
+
 ## 2026-10-26 report visibility delivery and toolbar target review
 
 - Novelty33069e28/d86b2aff report-minimized family is delivered through En's own

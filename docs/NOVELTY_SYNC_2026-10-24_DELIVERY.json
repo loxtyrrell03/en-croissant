@@ -6382,5 +6382,26 @@
     "browserRendered": false,
     "remainingRecentSourceRows": 6,
     "remainingRecentFamilies": 6
+  },
+  "engineResourceDesign20261026": {
+    "noveltyCommit": "b186d2d7",
+    "status": "three-options-presented-owner-choice-pending",
+    "options": [
+      "A-inline",
+      "B-presets-dialog",
+      "C-performance-editor"
+    ],
+    "editableWorkflows": 3,
+    "xmlStateGroupsPerWorkflow": 14,
+    "nativeTheme": "existing serif/cyan",
+    "phoneTheme": "existing sans-serif/blue",
+    "exampleDataInvented": true,
+    "textWidthsMeasured": true,
+    "offlineRasterVisualReview": true,
+    "runtimeImplemented": false,
+    "runtimeChanged": false,
+    "ownerDataWritten": false,
+    "actualApplicationRendered": false,
+    "stateMap": "docs/design/engine-resources/STATE_MAP.md"
   }
 }

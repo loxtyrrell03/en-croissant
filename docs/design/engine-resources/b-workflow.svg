@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2050" viewBox="0 0 1500 2050" role="img"><title>B: Quick presets + Adjust dialog</title><desc>Editable En Croissant resource-control design. Static prototype, invented example data, not running application evidence.</desc>
+<rect x="0" y="0" width="1500" height="2050" rx="5" fill="#1a1b1e" stroke="none"/>
+<text x="24" y="38" font-family="Times New Roman,serif" font-size="30" fill="#c1c2c5" font-weight="700">B  Quick presets + Adjust dialog</text>
+<text x="24" y="69" font-family="Times New Roman,serif" font-size="20" fill="#909296" font-weight="400">Keep one compact resource row; open a bounded dialog or phone sheet for exact controls.</text>
+<text x="24" y="98" font-family="Times New Roman,serif" font-size="15" fill="#339af0" font-weight="400">EDITABLE DESIGN · INVENTED 20-THREAD / 32-GiB COMPUTER · CPU ENGINE, NOT A STRENGTH SETTING</text>
+<g id="B-desktop">
+<rect x="24" y="122" width="980" height="664" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="40" y="153" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Desktop · existing cyan / serif engine settings</text>
+<path d="M24,169H1004" stroke="#373a40"/>
+<text x="44" y="218" font-family="Times New Roman,serif" font-size="23" fill="#c1c2c5" font-weight="700">Stockfish 19 · analysis settings</text>
+<rect x="44.0" y="246" width="192.0" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="54.0" y="270" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Quiet</text>
+<rect x="243.0" y="246" width="192.0" height="36" rx="5" fill="#15aabf" stroke="#373a40"/>
+<text x="253.0" y="270" font-family="Times New Roman,serif" font-size="16" fill="#fff" font-weight="700">Balanced</text>
+<rect x="442.0" y="246" width="192.0" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="452.0" y="270" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Faster</text>
+<text x="44" y="315" font-family="Times New Roman,serif" font-size="19" fill="#909296" font-weight="400">10 threads · 1024 MiB · this tab</text>
+<rect x="660" y="246" width="310" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="670" y="270" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Adjust resources…</text>
+<rect x="216" y="348" width="650" height="414" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="238" y="382" font-family="Times New Roman,serif" font-size="23" fill="#c1c2c5" font-weight="700">Adjust resources · Stockfish 19</text>
+<text x="238" y="411" font-family="Times New Roman,serif" font-size="17" fill="#909296" font-weight="400">This tab · current values preserved until Apply</text>
+<text x="238" y="456" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="700">CPU threads</text>
+<circle cx="752" cy="451" r="9" stroke="#909296" fill="none"/>
+<text x="749" y="456" font-family="Times New Roman,serif" font-size="14" fill="#909296" font-weight="400">?</text>
+<rect x="768" y="432" width="76" height="31" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="779" y="453" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">10</text>
+<path d="M238,483H844" stroke="#373a40" stroke-width="5"/><path d="M238,483H534.94" stroke="#15aabf" stroke-width="5"/><circle cx="534.94" cy="483" r="8" fill="#15aabf"/>
+<text x="238" y="514" font-family="Times New Roman,serif" font-size="14" fill="#909296" font-weight="400">1 to 20 threads</text>
+<text x="238" y="548" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="700">Memory (hash)</text>
+<circle cx="752" cy="543" r="9" stroke="#909296" fill="none"/>
+<text x="749" y="548" font-family="Times New Roman,serif" font-size="14" fill="#909296" font-weight="400">?</text>
+<rect x="768" y="524" width="76" height="31" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="779" y="545" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">1024</text>
+<path d="M238,575H844" stroke="#373a40" stroke-width="5"/><path d="M238,575H534.94" stroke="#15aabf" stroke-width="5"/><circle cx="534.94" cy="575" r="8" fill="#15aabf"/>
+<text x="238" y="606" font-family="Times New Roman,serif" font-size="14" fill="#909296" font-weight="400">16 to 8192 MiB · per engine</text>
+<rect x="238" y="687" width="190" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="248" y="711" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Cancel</text>
+<rect x="444" y="687" width="400" height="36" rx="5" fill="#15aabf" stroke="#373a40"/>
+<text x="454" y="711" font-family="Times New Roman,serif" font-size="16" fill="#fff" font-weight="700">Apply resources</text>
+</g>
+<g id="B-phone">
+<rect x="1028" y="122" width="448" height="664" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1044" y="153" font-family="Segoe UI,Arial,sans-serif" font-size="21" fill="#c1c2c5" font-weight="700">Phone · PC engine settings</text>
+<path d="M1028,169H1476" stroke="#373a40"/>
+<text x="1044" y="201" font-family="Segoe UI,Arial,sans-serif" font-size="19" fill="#c1c2c5" font-weight="700">Stockfish · PC</text>
+<text x="1044" y="230" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#909296" font-weight="400">Live / Game report / Plans</text>
+<rect x="1044.0" y="254" width="134.0" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1054.0" y="278" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">Quiet</text>
+<rect x="1185.0" y="254" width="134.0" height="36" rx="5" fill="#339af0" stroke="#373a40"/>
+<text x="1195.0" y="278" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#fff" font-weight="700">Balanced</text>
+<rect x="1326.0" y="254" width="134.0" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1336.0" y="278" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">Faster</text>
+<rect x="1044" y="303" width="416" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1054" y="327" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">Adjust resources…</text>
+<rect x="1044" y="362" width="416" height="399" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="1060" y="396" font-family="Segoe UI,Arial,sans-serif" font-size="20" fill="#c1c2c5" font-weight="700">Adjust PC resources</text>
+<text x="1060" y="444" font-family="Segoe UI,Arial,sans-serif" font-size="17" fill="#c1c2c5" font-weight="700">CPU threads</text>
+<circle cx="1352" cy="439" r="9" stroke="#909296" fill="none"/>
+<text x="1349" y="444" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">?</text>
+<rect x="1368" y="420" width="76" height="31" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="1379" y="441" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">10</text>
+<path d="M1060,471H1444" stroke="#373a40" stroke-width="5"/><path d="M1060,471H1248.16" stroke="#339af0" stroke-width="5"/><circle cx="1248.16" cy="471" r="8" fill="#339af0"/>
+<text x="1060" y="502" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">1 to 20 threads</text>
+<text x="1060" y="539" font-family="Segoe UI,Arial,sans-serif" font-size="17" fill="#c1c2c5" font-weight="700">Memory (hash)</text>
+<circle cx="1352" cy="534" r="9" stroke="#909296" fill="none"/>
+<text x="1349" y="539" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">?</text>
+<rect x="1368" y="515" width="76" height="31" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="1379" y="536" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">1024</text>
+<path d="M1060,566H1444" stroke="#373a40" stroke-width="5"/><path d="M1060,566H1248.16" stroke="#339af0" stroke-width="5"/><circle cx="1248.16" cy="566" r="8" fill="#339af0"/>
+<text x="1060" y="597" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">16 to 8192 MiB</text>
+<rect x="1060" y="675" width="118" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1070" y="699" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">Cancel</text>
+<rect x="1187" y="675" width="257" height="36" rx="5" fill="#339af0" stroke="#373a40"/>
+<text x="1197" y="699" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#fff" font-weight="700">Apply</text>
+</g>
+<g id="B-state-1">
+<rect x="24" y="810" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="40" y="841" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">First use / existing settings</text>
+<path d="M24,857H492" stroke="#373a40"/>
+<text x="40" y="888" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">New CPU engine: recommend Balanced after device check.</text>
+<text x="40" y="920" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Existing saved or custom values stay selected. Choosing a</text>
+<text x="40" y="944" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">preset changes only CPU and hash.</text>
+</g>
+<g id="B-state-2">
+<rect x="516" y="810" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="532" y="841" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Loading / unavailable device</text>
+<path d="M516,857H984" stroke="#373a40"/>
+<text x="532" y="888" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Checking computer… Controls keep current values.</text>
+<text x="532" y="920" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Device details unavailable: show conservative values and</text>
+<text x="532" y="944" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Retry; never call unknown memory zero.</text>
+</g>
+<g id="B-state-3">
+<rect x="1008" y="810" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1024" y="841" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Apply / background search</text>
+<path d="M1008,857H1476" stroke="#373a40"/>
+<text x="1024" y="888" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Applying… The selected engine and current position stay</text>
+<text x="1024" y="912" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">owned.</text>
+<text x="1024" y="944" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Stop then apply once; no restart if Off, stopped, removed,</text>
+<text x="1024" y="968" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">focus-paused or replaced meanwhile.</text>
+</g>
+<g id="B-state-4">
+<rect x="24" y="1076" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="40" y="1107" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Save failed / retry / undo</text>
+<path d="M24,1123H492" stroke="#373a40"/>
+<text x="40" y="1154" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Could not save resources. Current and previous values</text>
+<text x="40" y="1178" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">remain visible.</text>
+<text x="40" y="1210" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Retry save or Restore previous. Do not silently persist a</text>
+<text x="40" y="1234" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">different engine or new default.</text>
+</g>
+<g id="B-state-5">
+<rect x="516" y="1076" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="532" y="1107" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Gesture / exact input / cancel</text>
+<path d="M516,1123H984" stroke="#373a40"/>
+<text x="532" y="1154" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Slider draft commits on release or keyboard completion.</text>
+<text x="532" y="1186" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Escape, pointer cancel or window blur discards the draft.</text>
+<text x="532" y="1210" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Exact input validates whole numbers and engine bounds.</text>
+</g>
+<g id="B-state-6">
+<rect x="1008" y="1076" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1024" y="1107" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Scope / another local engine</text>
+<path d="M1008,1123H1476" stroke="#373a40"/>
+<text x="1024" y="1154" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">This tab and engine default remain distinct choices.</text>
+<text x="1024" y="1186" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Another included engine changes the recommendation, not</text>
+<text x="1024" y="1210" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">existing values. Lines, limits, enabled state and GPU options</text>
+<text x="1024" y="1234" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">stay owned.</text>
+</g>
+<g id="B-state-7">
+<rect x="24" y="1342" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="40" y="1373" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Phone / PC unavailable</text>
+<path d="M24,1389H492" stroke="#373a40"/>
+<text x="40" y="1420" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">PC services Off stays authoritative; show Turn on services</text>
+<text x="40" y="1444" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">nearby.</text>
+<text x="40" y="1476" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Offline: keep the saved choice and allow retry when</text>
+<text x="40" y="1500" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">connected. Never use phone RAM to budget a PC search.</text>
+</g>
+<g id="B-state-8">
+<rect x="516" y="1342" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="532" y="1373" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Help / keyboard / touch</text>
+<path d="M516,1389H984" stroke="#373a40"/>
+<text x="532" y="1420" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Adjacent ? opens by hover, focus or tap; Escape and outside</text>
+<text x="532" y="1444" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">tap dismiss it.</text>
+<text x="532" y="1476" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Explain threads, MiB per engine and recommendation</text>
+<text x="532" y="1500" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">briefly; keep errors and apply consequences visible.</text>
+</g>
+<g id="B-state-9">
+<rect x="1008" y="1342" width="468" height="246" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1024" y="1373" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Engine-specific / advanced</text>
+<path d="M1008,1389H1476" stroke="#373a40"/>
+<text x="1024" y="1420" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">Presets require supported CPU Threads/Hash options. Other</text>
+<text x="1024" y="1444" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">UCI options remain.</text>
+<text x="1024" y="1476" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">LCZero keeps its separate GPU controls; the single-thread</text>
+<text x="1024" y="1500" font-family="Times New Roman,serif" font-size="17" fill="#c1c2c5" font-weight="400">phone engine keeps its supported resource limits.</text>
+</g>
+<g id="B-narrow">
+<rect x="24" y="1613" width="468" height="410" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="40" y="1644" font-family="Segoe UI,Arial,sans-serif" font-size="21" fill="#c1c2c5" font-weight="700">Narrow controls · 320px</text>
+<path d="M24,1660H492" stroke="#373a40"/>
+<rect x="42.0" y="1680" width="92.0" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="52.0" y="1704" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">Quiet</text>
+<rect x="141.0" y="1680" width="92.0" height="36" rx="5" fill="#339af0" stroke="#373a40"/>
+<text x="151.0" y="1704" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#fff" font-weight="700">Balanced</text>
+<rect x="240.0" y="1680" width="92.0" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="250.0" y="1704" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">Faster</text>
+<text x="42" y="1771" font-family="Segoe UI,Arial,sans-serif" font-size="17" fill="#c1c2c5" font-weight="700">CPU threads</text>
+<circle cx="240" cy="1766" r="9" stroke="#909296" fill="none"/>
+<text x="237" y="1771" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">?</text>
+<rect x="256" y="1747" width="76" height="31" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="267" y="1768" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">10</text>
+<path d="M42,1798H332" stroke="#373a40" stroke-width="5"/><path d="M42,1798H184.1" stroke="#339af0" stroke-width="5"/><circle cx="184.1" cy="1798" r="8" fill="#339af0"/>
+<text x="42" y="1829" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">1 to 20 threads</text>
+<text x="42" y="1870" font-family="Segoe UI,Arial,sans-serif" font-size="17" fill="#c1c2c5" font-weight="700">Memory (hash)</text>
+<circle cx="240" cy="1865" r="9" stroke="#909296" fill="none"/>
+<text x="237" y="1870" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">?</text>
+<rect x="256" y="1846" width="76" height="31" rx="5" fill="#1a1b1e" stroke="#373a40"/>
+<text x="267" y="1867" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#c1c2c5" font-weight="400">1024</text>
+<path d="M42,1897H332" stroke="#373a40" stroke-width="5"/><path d="M42,1897H184.1" stroke="#339af0" stroke-width="5"/><circle cx="184.1" cy="1897" r="8" fill="#339af0"/>
+<text x="42" y="1928" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#909296" font-weight="400">16 to 8192 MiB</text>
+</g>
+<g id="B-legacy">
+<rect x="516" y="1613" width="468" height="410" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="532" y="1644" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Saved legacy / custom values</text>
+<path d="M516,1660H984" stroke="#373a40"/>
+<text x="534" y="1690" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">Saved performance: Good performance. 16</text>
+<text x="534" y="1719" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">threads · 2048 MiB. This existing choice is</text>
+<text x="534" y="1748" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">preserved.</text>
+<rect x="534" y="1790" width="432" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="544" y="1814" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Choose device-balanced resources…</text>
+<text x="534" y="1870" font-family="Times New Roman,serif" font-size="20" fill="#909296" font-weight="400">Custom: 12 threads · 1536 MiB. Exact saved</text>
+<text x="534" y="1897" font-family="Times New Roman,serif" font-size="20" fill="#909296" font-weight="400">numbers remain visible, including values beyond a</text>
+<text x="534" y="1924" font-family="Times New Roman,serif" font-size="20" fill="#909296" font-weight="400">new recommendation.</text>
+</g>
+<g id="B-confirmation">
+<rect x="1008" y="1613" width="468" height="410" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1024" y="1644" font-family="Times New Roman,serif" font-size="21" fill="#c1c2c5" font-weight="700">Confirmation / changed engine</text>
+<path d="M1008,1660H1476" stroke="#373a40"/>
+<text x="1026" y="1690" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">Apply to Stockfish 19 in this tab: 10 threads and</text>
+<text x="1026" y="1719" font-family="Times New Roman,serif" font-size="22" fill="#c1c2c5" font-weight="400">1024 MiB per engine.</text>
+<text x="1026" y="1790" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">If a save fails or the selected profile changes, keep</text>
+<text x="1026" y="1818" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">its old values and show retry. Do not warm an</text>
+<text x="1026" y="1846" font-family="Times New Roman,serif" font-size="21" fill="#909296" font-weight="400">engine that is Off.</text>
+<rect x="1026" y="1910" width="140" height="36" rx="5" fill="#25262b" stroke="#373a40"/>
+<text x="1036" y="1934" font-family="Times New Roman,serif" font-size="16" fill="#c1c2c5" font-weight="400">Cancel</text>
+<rect x="1176" y="1910" width="280" height="36" rx="5" fill="#15aabf" stroke="#373a40"/>
+<text x="1186" y="1934" font-family="Times New Roman,serif" font-size="16" fill="#fff" font-weight="700">Apply resources</text>
+</g>
+</svg>
