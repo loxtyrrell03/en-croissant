@@ -3,11 +3,11 @@
   "status": "source-parity-progress-with-rendered-and-runtime-delivery-pending",
   "goalComplete": false,
   "phone": {
-    "checkedAt": "2026-10-26T05:23:51.363Z",
+    "checkedAt": "2026-10-26T05:47:01.541Z",
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "f6271cdff5385c154a07c42723bfde83c8d48165",
-    "appShellSha256": "849ff65d26f3b9ee3007cf401f90aa4a9db3a71985d2ac596d6b69024891d45b",
-    "homePid": 62904,
+    "sourceCommit": "64fa62b54e0439df3ea0773125fdf7c7548f32b7",
+    "appShellSha256": "4dce41bceb66b98b778363678c7457a59a008dd734877a0857d04a124d641a0a",
+    "homePid": 9340,
     "files": 3342,
     "databases": 105,
     "savedPgnRead": true,
@@ -28,7 +28,7 @@
       {
         "path": "index.html",
         "bytes": 1052,
-        "sha256": "84734f58265e1b063390592fb4153cdc89f498fec36283b152f31366a4ae8b00"
+        "sha256": "1a084cd57ffd95b9c9aadc0ced16e1ecf60692b16b35027f2b411d0e569fd8c9"
       },
       {
         "path": "manifest.webmanifest",
@@ -38,7 +38,7 @@
       {
         "path": "web-sw.js",
         "bytes": 3462,
-        "sha256": "1e89ed9a244e5b37053a7f9b235d38a354ab77988560acab34426bc17605dc2a"
+        "sha256": "79ed81a4ca43a8ca9935a44db29e1a1559e3d32e34ee62b9d6d6290edac0e791"
       },
       {
         "path": "assets/index-B35kf7dc.js",
@@ -51,14 +51,14 @@
         "sha256": "e865374a7487aa1cc4b031683e410bafabcd574c52a3233f533ffd276e993853"
       },
       {
-        "path": "assets/index-CXxXD0vr.js",
+        "path": "assets/index-vdHr-w9Y.js",
         "bytes": 295528,
-        "sha256": "c4126d9397f89c895eeb8671ba09af1af2a14c907783050c2cf956509557e630"
+        "sha256": "ad4caa93b50dcbfd0b65b35c2d3467c101cb58586c7524b2c12faa0db7700372"
       },
       {
-        "path": "assets/WebApp-CIIC_0O5.js",
-        "bytes": 460798,
-        "sha256": "ac7e0b8c2f78644b960b43e42d46d9fadcc75b3721442fdeb2edde635293d450"
+        "path": "assets/WebApp-0UMTSkrI.js",
+        "bytes": 462459,
+        "sha256": "fede62dea68adaafdb1f15a2a25902c8c106c0a7eb57d666641b23daa66a5b79"
       },
       {
         "path": "assets/WebApp-IB4YSzk0.css",
@@ -82,8 +82,6 @@
       }
     ],
     "ownerDataAndEnginePreserved": true,
-    "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "f6271cdff538-849ff65d26f3",
     "publisherReturned": true,
     "preservedOwnerFiles": 7,
     "privateSyncTaskAndPinnedHelpersPreserved": true,
@@ -6841,7 +6839,7 @@
     "evidence": "ENGINE_RESOURCES.md"
   },
   "phonePlansCpuSource20261026": {
-    "status": "source-verified-delivery-pending",
+    "status": "phone-live-verified-native-contracts-retained-audit-open",
     "noveltyCommit": "b186d2d7",
     "baseline": "d674d2e5f36751344db5f8346b890073fee3a814",
     "tests": 102,
@@ -6858,15 +6856,229 @@
     "realPriorSourceFailureReproduced": true,
     "reportsRetainIndependentResources": true,
     "nativeArtifactChangeRequired": false,
-    "phonePublished": false,
+    "phonePublished": true,
     "browserRendered": false,
     "physicalPhoneVerified": false,
     "ownerDataWritten": false,
     "remaining": [
-      "phone delivery",
-      "native Plans and PC remote target review",
+      "native PC remote target review",
       "phone search limits",
+      "rendered and physical proof",
       "full historical audit"
+    ],
+    "sourceCommit": "64fa62b54e0439df3ea0773125fdf7c7548f32b7",
+    "primaryTests": 49,
+    "primaryTestFiles": 4,
+    "primaryTypes": true,
+    "primaryMirrored": true,
+    "fullManifestFiles": 444,
+    "exactHttpsAssets": 11,
+    "installedHomeModules": 15,
+    "installedGatewayModules": 8,
+    "helperCollectorActualChildAndNoticesVerified": true,
+    "protectedOwnerFilesPreserved": 7,
+    "workspaceCatalogSyncAndServePreserved": true,
+    "engineGatewayPidAndColdStandbyPreserved": true,
+    "newGatewayRestartRequired": false,
+    "temporaryOwnedTasksRemoved": 2,
+    "nativePlansUsesSelectedProfileResources": true
+  },
+  "previousPhoneCpuTopLevel": {
+    "checkedAt": "2026-10-26T05:23:51.363Z",
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "f6271cdff5385c154a07c42723bfde83c8d48165",
+    "appShellSha256": "849ff65d26f3b9ee3007cf401f90aa4a9db3a71985d2ac596d6b69024891d45b",
+    "homePid": 62904,
+    "files": 3342,
+    "databases": 105,
+    "savedPgnRead": true,
+    "databaseManifestRead": true,
+    "databasePositionRead": true,
+    "tournamentSettingsRead": true,
+    "personalSyncPhase": "synced",
+    "personalSyncErrors": 0,
+    "personalSyncConflicts": 0,
+    "servicesEnabled": true,
+    "enginePid": 9856,
+    "engineWorkerReady": false,
+    "storedEvaluationDepth": 65,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "assets": [
+      {
+        "path": "index.html",
+        "bytes": 1052,
+        "sha256": "84734f58265e1b063390592fb4153cdc89f498fec36283b152f31366a4ae8b00"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "bytes": 401,
+        "sha256": "7d6dcbb884c92ff36b8c5449c61982ae4afa2855b765e52a9c79b8c7745b353b"
+      },
+      {
+        "path": "web-sw.js",
+        "bytes": 3462,
+        "sha256": "1e89ed9a244e5b37053a7f9b235d38a354ab77988560acab34426bc17605dc2a"
+      },
+      {
+        "path": "assets/index-B35kf7dc.js",
+        "bytes": 116,
+        "sha256": "58a0d867a9221127a238d9ff3986a3c4e2262e200a0f57cc1bc84796ec38fa9d"
+      },
+      {
+        "path": "assets/index-C5fIn7uC.js",
+        "bytes": 10667,
+        "sha256": "e865374a7487aa1cc4b031683e410bafabcd574c52a3233f533ffd276e993853"
+      },
+      {
+        "path": "assets/index-CXxXD0vr.js",
+        "bytes": 295528,
+        "sha256": "c4126d9397f89c895eeb8671ba09af1af2a14c907783050c2cf956509557e630"
+      },
+      {
+        "path": "assets/WebApp-CIIC_0O5.js",
+        "bytes": 460798,
+        "sha256": "ac7e0b8c2f78644b960b43e42d46d9fadcc75b3721442fdeb2edde635293d450"
+      },
+      {
+        "path": "assets/WebApp-IB4YSzk0.css",
+        "bytes": 62631,
+        "sha256": "7e3419d9a828d652f67e9d47b8463e2143f501e8d0017394620627d8d30b1b2f"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/engineResources-Cfc_mPMI.js",
+        "bytes": 1638,
+        "sha256": "dddea89052db83d5f428b685fb82f826f3de6401948303284ab3e271c66f84b5"
+      }
+    ],
+    "ownerDataAndEnginePreserved": true,
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "f6271cdff538-849ff65d26f3",
+    "publisherReturned": true,
+    "preservedOwnerFiles": 7,
+    "privateSyncTaskAndPinnedHelpersPreserved": true,
+    "serveRoutesPreserved": true,
+    "ownerWorkspaceAndCatalogHashesMatch": true,
+    "temporaryTasksRemoved": true,
+    "homeOwnLocalEvalsAvailable": true,
+    "homeOwnLocalEvalsError": null,
+    "homeOwnLocalEvalsPositions": 401283893
+  },
+  "phonePlansCpuDelivery20261026": {
+    "checkedAt": "2026-10-26T05:47:01.541Z",
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "64fa62b54e0439df3ea0773125fdf7c7548f32b7",
+    "appShellSha256": "4dce41bceb66b98b778363678c7457a59a008dd734877a0857d04a124d641a0a",
+    "homePid": 9340,
+    "files": 3342,
+    "databases": 105,
+    "savedPgnRead": true,
+    "databaseManifestRead": true,
+    "databasePositionRead": true,
+    "tournamentSettingsRead": true,
+    "personalSyncPhase": "synced",
+    "personalSyncErrors": 0,
+    "personalSyncConflicts": 0,
+    "servicesEnabled": true,
+    "enginePid": 9856,
+    "engineWorkerReady": false,
+    "storedEvaluationDepth": 65,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "assets": [
+      {
+        "path": "index.html",
+        "bytes": 1052,
+        "sha256": "1a084cd57ffd95b9c9aadc0ced16e1ecf60692b16b35027f2b411d0e569fd8c9"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "bytes": 401,
+        "sha256": "7d6dcbb884c92ff36b8c5449c61982ae4afa2855b765e52a9c79b8c7745b353b"
+      },
+      {
+        "path": "web-sw.js",
+        "bytes": 3462,
+        "sha256": "79ed81a4ca43a8ca9935a44db29e1a1559e3d32e34ee62b9d6d6290edac0e791"
+      },
+      {
+        "path": "assets/index-B35kf7dc.js",
+        "bytes": 116,
+        "sha256": "58a0d867a9221127a238d9ff3986a3c4e2262e200a0f57cc1bc84796ec38fa9d"
+      },
+      {
+        "path": "assets/index-C5fIn7uC.js",
+        "bytes": 10667,
+        "sha256": "e865374a7487aa1cc4b031683e410bafabcd574c52a3233f533ffd276e993853"
+      },
+      {
+        "path": "assets/index-vdHr-w9Y.js",
+        "bytes": 295528,
+        "sha256": "ad4caa93b50dcbfd0b65b35c2d3467c101cb58586c7524b2c12faa0db7700372"
+      },
+      {
+        "path": "assets/WebApp-0UMTSkrI.js",
+        "bytes": 462459,
+        "sha256": "fede62dea68adaafdb1f15a2a25902c8c106c0a7eb57d666641b23daa66a5b79"
+      },
+      {
+        "path": "assets/WebApp-IB4YSzk0.css",
+        "bytes": 62631,
+        "sha256": "7e3419d9a828d652f67e9d47b8463e2143f501e8d0017394620627d8d30b1b2f"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/engineResources-Cfc_mPMI.js",
+        "bytes": 1638,
+        "sha256": "dddea89052db83d5f428b685fb82f826f3de6401948303284ab3e271c66f84b5"
+      }
+    ],
+    "ownerDataAndEnginePreserved": true,
+    "publisherReturned": true,
+    "preservedOwnerFiles": 7,
+    "privateSyncTaskAndPinnedHelpersPreserved": true,
+    "serveRoutesPreserved": true,
+    "ownerWorkspaceAndCatalogHashesMatch": true,
+    "temporaryTasksRemoved": true,
+    "homeOwnLocalEvalsAvailable": true,
+    "homeOwnLocalEvalsError": null,
+    "homeOwnLocalEvalsPositions": 401283893
+  },
+  "nativePlansCpuTargetReview20261026": {
+    "status": "existing-profile-resource-behavior-retained",
+    "novelty": "Global live/Plans CPU allocation",
+    "enNative": "Selected local profile settings are captured through buildEngineOptions and getLocalBestMoves; only MultiPV is replaced",
+    "nativeProfileResourceEditsApplyToPlans": true,
+    "unsyncedLiveTabEditsRemainTabOwned": true,
+    "reportResources": "Native report captures its selected profile options; phone bounded report stays independent of the shared Live/Plans key",
+    "pcRemote": "The configured factory provisions LCZero; generic Stockfish type/client capability remains separate for further target review",
+    "browserRendered": false,
+    "physicalDeviceVerified": false,
+    "sourceEvidence": [
+      "src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx",
+      "src/components/panels/analysis/ReportModal.tsx",
+      "src/utils/engines.ts"
     ]
   }
 }

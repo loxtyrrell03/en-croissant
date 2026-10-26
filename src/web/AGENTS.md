@@ -1,3 +1,13 @@
+# Shared Plans CPU phone delivery
+
+Canonical phone64fa62b5 verifies444 manifest files/11 exact HTTPS assets,15 home
+modules/eight unchanged gateway modules, helper/collector/fresh child and complete
+notices/CLI. Seven owner files, saved workspace/catalog/games, private sync/pinned
+helpers/task, all Serve routes and gateway identity/cold standby are retained.
+Two owned brokers removed. Primary49 cases/four files/types pass. Native78c77926
+artifact retained. Rendered/physical proof, phone search limits, generic native
+remote target review and full history audit remain. See ENGINE_RESOURCES.md.
+
 # Shared CPU ownership in Live and Engine Plans
 
 The actual board workspace supplies one verified CPU preference store to both
@@ -9,7 +19,8 @@ overwrite a later edit in the other form. Fixed per-view choices, LCZero, report
 jobs and Live On/Off remain independent. Settings checks never start a worker.
 102 focused cases11 files/types/seven-file lint0 and format pass; actual old
 Plans source fails the saved CPU regression. Real board Report-to-Plans flow
-verifies wiring and retained Live Off. New phone delivery/rendered proof remain;
+verifies wiring and retained Live Off. Phone64fa62b5 delivery is verified above;
+rendered/physical proof remains;
 see ../../docs/ENGINE_RESOURCES.md. Broader resource/history audit remains active.
 
 # Verified phone CPU resource delivery

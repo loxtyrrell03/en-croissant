@@ -1,3 +1,18 @@
+## 2026-10-26 shared Plans CPU phone delivery
+
+- Phone64fa62b5 is live with444 manifest files/11 exact HTTPS assets,15 home/eight
+  preserved gateway modules, matching helper/collector/fresh child and full
+  notice sidecars/CLI verified. Seven owner files, saved data, private sync/pinned
+  task/helpers, all Serve routes and gateway identity/cold standby remain intact.
+  Two owned brokers removed; no gateway restart, corpus copy or native install.
+- Primary49 focused cases/four files/types pass; source102 cases11 files/types,
+  scoped lint0 and exact25 unchanged WebApp diagnostics. Both source branches
+  pushed. Native78c77926 artifact retained; rendered/physical proof remains.
+- Native Plans already passes the selected local profile's CPU options and
+  replaces only MultiPV; profile defaults apply, unsynced Live tab edits retain
+  their own scope. Phone reports keep an independent budget. Generic native
+  remote controls, phone search limits and wider audit remain; see ENGINE_RESOURCES.
+
 ## 2026-10-26 shared phone CPU ownership in Plans
 
 - Board workspace now supplies one verified CPU store to actual Live/Plans forms.

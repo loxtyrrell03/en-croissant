@@ -229,5 +229,28 @@ The real Board Analysis flow saves a report with independent limits/resources,
 changes the shared CPU choice, and submits it to Plans while Live stays Off.
 The actual prior Plans source fails the saved CPU/depth/lines request regression;
 current source passes. WebApp retains its exact25 baseline lint diagnostics.
-New phone package/live delivery and rendered/physical evidence remain separate.
+Phone package/live delivery is verified below; rendered/physical evidence remains
+separate.
 Phone search-limit controls and the full historical parity audit remain open.
+
+
+## Plans CPU delivery and native target review
+
+Product64fa62b5 is now live on the canonical phone URL. The444-file manifest
+and11 exact HTTPS shell/WebApp/policy/Stockfish assets match the prepared build.
+Normal-user runtime checks verify15 home/eight preserved gateway modules, matching
+collector/core, fresh helper child, immutable notices and complete no-data CLI.
+Saved workspace/catalog/PGN/database-position/tournament data, seven owner files,
+private sync/pinned helpers/task, engine gateway identity/cold standby and every
+Serve route are preserved. Two completed owned brokers were removed. No engine
+restart, corpus copy, native app installation or owner setting write was needed.
+Primary independently passes49 cases/four files and full types; source is pushed
+on both branches. Rendered and physical-device proof remains unverified.
+
+Native Plans already forwards the selected local profile’s settings to its search
+and replaces only MultiPV. The native profile resource editor therefore applies
+to Plans; unsynced Live tab edits intentionally stay with that tab. Native reports
+capture their selected profile options, while phone bounded reports keep their
+independent allocation. The generic native PC client and phone search limits
+remain in the broader audit. The shipped default PC connection is LCZero, whose
+GPU controls must remain separate from Stockfish CPU resources.

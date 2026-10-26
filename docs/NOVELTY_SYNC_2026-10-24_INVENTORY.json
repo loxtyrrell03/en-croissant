@@ -23397,6 +23397,15 @@
         "full history audit"
       ],
       "goalComplete": false
+    },
+    "phonePlansCpu20261026": {
+      "noveltyCommit": "b186d2d7",
+      "phoneSourceCommit": "64fa62b54e0439df3ea0773125fdf7c7548f32b7",
+      "status": "shared phone Live/Plans CPU controls delivered; native Plans already uses selected profile options",
+      "reportsRetainIndependentResources": true,
+      "nativeArtifactRetainedSource": "78c77926691d9cbf3e4caab50a72c6e307a91fb7",
+      "browserRendered": false,
+      "goalComplete": false
     }
   }
 }
