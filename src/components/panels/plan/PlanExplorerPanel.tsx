@@ -1168,7 +1168,7 @@ function AutoArrowControls({
   return (
     <Group gap="xs" wrap="nowrap">
       <Switch
-        label="Auto arrows"
+        label="Show arrows"
         size="sm"
         checked={checked}
         onChange={(event) => onChange(event.currentTarget.checked)}

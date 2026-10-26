@@ -55,7 +55,8 @@ export function getTopPlanLines(data: PlanExplorerData | null, limit = 3) {
 
 function lineSignificanceFloor(data: PlanExplorerData) {
     const sampleSize = data.sampled_games || data.total_games || 0;
-    return Math.max(3, Math.floor(sampleSize * AUTO_PLAN_MIN_SHARE));
+    // A small sample must not hide every observed route behind a fixed floor.
+    return Math.max(1, Math.floor(sampleSize * AUTO_PLAN_MIN_SHARE));
 }
 
 function isCentralOrAdvancedPawnLine(line: PlanExplorerLine, color: string) {

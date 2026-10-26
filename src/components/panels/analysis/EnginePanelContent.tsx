@@ -126,7 +126,7 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
             </Tooltip>
             {planArrowsActive && (
               <PerformanceHelp label="About engine arrow priority">
-                Turn off Auto arrows in the plan panel to show engine arrows. Your engine-arrow
+                Turn off Show arrows in the plan panel to show engine arrows. Your engine-arrow
                 setting is kept.
               </PerformanceHelp>
             )}

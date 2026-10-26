@@ -572,12 +572,27 @@ describe("Engine Plan Explorer", () => {
         );
         const data = engineReportToPlanExplorerData(report);
 
-        expect(getAutoPlanLines(data, 4)).toHaveLength(0);
+        expect(getAutoPlanLines(data, 4)).toHaveLength(2);
         expect(getAutoPlanLines(data, 4, { minGames: 1 }).map((line) => line.squares)).toEqual([
             ["b1", "c3"],
             ["g1", "f3"],
         ]);
     });
+
+    test.each([[1, 1], [2, 1], [2, 2], [30, 30], [500, 1], [2, 0]])(
+        "draws observed routes from %i source games and %i sampled games",
+        (total, sampled) => {
+            const data: PlanExplorerData = {
+                fen: INITIAL_FEN, total_games: total, sampled_games: sampled, max_plies: 8, setups: [],
+                pieces: [
+                    planPiece("black", "bishop", "e6", 1, ["e6", "d7"]),
+                    planPiece("black", "bishop", "f8", 1, ["f8", "d6"]),
+                ],
+            };
+            expect(planLinesToShapes(getAutoPlanLines(data, 8), 8)).toHaveLength(2);
+            expect(getAutoPlanLines({ ...data, total_games: 1000, sampled_games: 1000 }, 8)).toEqual([]);
+        },
+    );
 
     test("balances rendered auto arrows even when one plan has multiple arrows", () => {
         const data: PlanExplorerData = {

@@ -276,7 +276,7 @@ export default function PhoneEnginePlansPanel({
       </Group>
       <Group gap="xs" align="end">
         <Switch
-          label="Auto arrows"
+          label="Show arrows"
           aria-label="Auto plan arrows"
           checked={settings.autoArrows}
           onChange={(event) => update({ ...settings, autoArrows: event.currentTarget.checked })}

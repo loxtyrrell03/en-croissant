@@ -1,3 +1,8 @@
+## Sparse-position plan arrows (2026-10-26)
+
+- Plan Explorer uses a sample-relative one-game minimum instead of the fixed three-game floor that silently hid every route in small late-position samples. The existing proportional large-sample significance filter remains. Desktop Plan Explorer/Engine Plans and phone Engine Plans now say Show arrows; saved preferences and overlay ownership remain unchanged. The phone engine-derived plan flow does not use the database sample floor.
+- Type checking and 53 focused desktop helper/arrow-hook/phone ownership tests pass, including one/two-game source samples, a large source with one sampled game, unknown sampled count and rare outlier filtering. Novelty independently passes its real BoardSurface/browser regressions. No native application, hosted phone assets, gateway, owner data or service was changed; this is verified source only.
+
 ## 2026-10-26 verified phone search controls source
 
 - Approved inline A reaches Live with depth/time/nodes/until-stopped and lines.

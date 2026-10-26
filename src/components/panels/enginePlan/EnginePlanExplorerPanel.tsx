@@ -875,7 +875,7 @@ function EnginePlanExplorerPanel() {
             />
             {view === "plans" && <EnginePlanHorizonControl value={horizon} onChange={setHorizon} />}
             <Switch
-              label="Auto arrows"
+              label="Show arrows"
               size="sm"
               checked={showPlanArrows}
               onChange={(event) => setShowPlanArrows(event.currentTarget.checked)}
