@@ -131,7 +131,16 @@ queue cancellation, report bounds, cold standby and exact config preservation.
 The installer stages tiny policy/protocol dependencies before the gateway; it was
 parsed, not executed. This protocol is source/isolated-service proof only.
 
-Phone UI/transport integration and live gateway/phone delivery remain pending.
+Phone transport now snapshots the separate selection across live, PC-only,
+stored-preferred, Plans and bounded-report calls. Before searching it checks the
+PC's explicit protocol, then requires matching Stockfish resource metadata before
+publishing PC evidence. Unsupported/mismatched resources cannot appear successful
+through a stored-result or phone-WASM fallback. Existing callers without the
+selection keep their legacy behavior. Health reads are bounded/cancelable and
+never wake a service; terminal remote requests release their own controller.
+43 focused transport/report/capability checks, types and five-file lint0 pass.
+
+Phone UI/preferences integration and live gateway/phone delivery remain pending.
 Device metadata alone is not application support. Managed phone single-thread/WASM
 and LCZero GPU controls retain their own contracts. Do not run the installer or
 retune live configs incidentally. The full history and target audit remains active.

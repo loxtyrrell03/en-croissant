@@ -1,3 +1,17 @@
+## 2026-10-26 verified phone CPU transport source
+
+- Phone client snapshots the new CPU selection through live/PC-only/stored-
+  preferred/Plans/report requests, omitting only the conflicting legacy wire
+  preset. It checks resourceProtocolVersion before searching and matching
+  Stockfish effective values before PC evidence. Missing/mismatched application
+  cannot succeed through stored or WASM fallback. No-policy callers retain their
+  existing behavior. Bounded health reads never wake services; terminal remote
+  requests abort their owned controller, including metadata rejection.
+- 43 focused client/report/capability checks, fulltypes and5-file lint0 pass.
+  Native product78c77926 and live phonec412 remain separate. Phone preferences/
+  inline controls and actual gateway/phone delivery still pending; no hosting or
+  owner data changes. Existing legacy/GPU choices retained. Full goal active.
+
 ## 2026-10-26 opt-in PC CPU resource protocol source
 
 - Gateway source advertises resourceProtocolVersion1 plus CPU bounds/policy

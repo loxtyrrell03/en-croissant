@@ -1,7 +1,15 @@
-# Phone PC resource controls under design
+# Phone PC resource transport
 
-The PC gateway health.device capability shape is source-verified with cold
-workers; live service delivery and the final controls remain pending.
+Phone transport now snapshots separate cpuResources requests across live,
+PC-only, stored-preferred, Plans and bounded reports. It checks explicit protocol
+support before searching and exact Stockfish effective-value acknowledgement
+before publishing PC evidence. Unsupported/mismatched resources cannot silently
+succeed through stored or phone-WASM fallback; ordinary legacy calls retain
+their behavior. Health reads have a five-second bound/cancellation and never wake
+a service. Remote terminal/error paths release their own controller.
+43 focused transport/report/capability cases, types and five-file lint0 pass.
+This is source/fixture proof; live service delivery and the final controls remain
+pending. Device metadata alone does not establish resource application support.
 Use the remote PC capability snapshot for PC CPU/hash recommendations. Preserve
 existing saved/fixed presets and LCZero GPU controls; phone WASM has separate
 supported limits. Three editable resource layouts are in

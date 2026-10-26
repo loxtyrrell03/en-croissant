@@ -3,27 +3,41 @@ import wasmUrl from "stockfish/bin/stockfish-19-lite-single.wasm?url";
 import { runBoundedUciReport, type ReportSearchLimits } from "../../scripts/uci-report-search.mjs";
 import { createReportEngineEvidence } from "./reportEngineEvidence";
 import type { WebEngineLine } from "./model";
+import type { CpuResourceSelection } from "../../scripts/engine-resource-protocol.mjs";
+import {
+    assertPcCpuReceipt,
+    capturePcCpuResources,
+    parsePcCpuCapability,
+    PcResourceProtocolError,
+} from "./pcCpuResources";
 
 export type BoundedWebReportRequest = {
     fen: string;
     multipv: number;
     reportLimits: ReportSearchLimits;
+    cpuResources?: CpuResourceSelection;
     signal: AbortSignal;
     onUpdate?: (lines: WebEngineLine[]) => void;
 };
 
 export async function analyzeBoundedWebReport(remoteUrl: string, request: BoundedWebReportRequest) {
     const { fen, multipv, reportLimits, signal, onUpdate } = request;
+    const cpuResources =
+        request.cpuResources === undefined
+            ? undefined
+            : capturePcCpuResources(request.cpuResources);
     const evidence = createReportEngineEvidence(fen, reportLimits, multipv);
     let bestmove: string;
     if (remoteUrl) {
         // Fail before searching against an older service that would ignore the
         // combined limits. A report never retries or falls back to a cached score.
         const health = await fetch(`${remoteUrl}/v1/health`, { signal, cache: "no-store" });
-        if (!health.ok || (await health.json()).reportProtocolVersion !== 1)
+        const capability = health.ok ? await health.json() : null;
+        if (capability?.reportProtocolVersion !== 1)
             throw new Error(
                 "The PC engine needs its bounded-report update before this analysis can run.",
             );
+        if (cpuResources) parsePcCpuCapability(capability);
         const response = await fetch(`${remoteUrl}/v1/analyze`, {
             method: "POST",
             signal,
@@ -34,7 +48,8 @@ export async function analyzeBoundedWebReport(remoteUrl: string, request: Bounde
                 depth: reportLimits.depth,
                 reportLimits,
                 engineKind: "stockfish",
-                performancePreset: "good",
+                performancePreset: cpuResources ? undefined : "good",
+                cpuResources,
             }),
         });
         if (!response.ok || !response.body)
@@ -51,6 +66,7 @@ export async function analyzeBoundedWebReport(remoteUrl: string, request: Bounde
             if (message.type === "error")
                 throw new Error(message.message || "The report engine failed.");
             if (message.type === "meta") {
+                if (cpuResources) assertPcCpuReceipt(message, cpuResources);
                 acknowledged =
                     message.reportLimits?.depth === reportLimits.depth &&
                     message.reportLimits?.timeMs === reportLimits.timeMs;
@@ -83,6 +99,10 @@ export async function analyzeBoundedWebReport(remoteUrl: string, request: Bounde
             throw new Error("The report search ended without a completed selected move.");
         bestmove = completed;
     } else {
+        if (cpuResources)
+            throw new PcResourceProtocolError(
+                "PC resource controls require the PC engine service.",
+            );
         bestmove = await localReportSearch(request, (line, engineName) =>
             evidence.add(line, "phone", engineName),
         );
@@ -93,7 +113,10 @@ export async function analyzeBoundedWebReport(remoteUrl: string, request: Bounde
     return result;
 }
 
-async function localReportSearch(request: BoundedWebReportRequest, onInfo: (line: string, engineName?: string) => void) {
+async function localReportSearch(
+    request: BoundedWebReportRequest,
+    onInfo: (line: string, engineName?: string) => void,
+) {
     const { fen, multipv, reportLimits, signal } = request;
     signal.throwIfAborted();
     // Report ownership includes the worker; late bestmove from an interactive
@@ -149,9 +172,13 @@ async function localReportSearch(request: BoundedWebReportRequest, onInfo: (line
         });
     try {
         let engineName: string | undefined;
-        await exchange("uci", (line) => line === "uciok", (line) => {
-            if (line.startsWith("id name ")) engineName = line.slice(8).trim() || undefined;
-        });
+        await exchange(
+            "uci",
+            (line) => line === "uciok",
+            (line) => {
+                if (line.startsWith("id name ")) engineName = line.slice(8).trim() || undefined;
+            },
+        );
         worker.postMessage(`setoption name MultiPV value ${multipv}`);
         await exchange("isready", (line) => line === "readyok");
         worker.postMessage(`position fen ${fen}`);
