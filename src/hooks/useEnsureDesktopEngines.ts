@@ -3,8 +3,14 @@ import { useAtom, useAtomValue, useStore } from "jotai";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { desktopEngineSessionsBusyAtom, enginesAtom } from "@/state/atoms";
 import { enginePreferences } from "@/utils/enginePreferences";
+import { loadNativeEngineDevice } from "@/utils/nativeEngineDevice";
+import { firstUseEngineResources } from "@/utils/firstUseEngineResources";
 import { planStockfishDefaultUpgrade, stockfish19Profile } from "@/utils/stockfishDefaultUpgrade";
-import { savedEngineDigest, stockfishUpgradeNative, stockfishUpgradeState } from "@/utils/stockfishUpgrade";
+import {
+    savedEngineDigest,
+    stockfishUpgradeNative,
+    stockfishUpgradeState,
+} from "@/utils/stockfishUpgrade";
 import {
     createGamingPcLc0Engine,
     discoverInstalledDesktopEngines,
@@ -20,7 +26,10 @@ export function useEnsureDesktopEngines() {
         enginePreferences.getSnapshot,
     );
     const started = useRef(false);
-    const upgrade = useSyncExternalStore(stockfishUpgradeState.subscribe, stockfishUpgradeState.getSnapshot);
+    const upgrade = useSyncExternalStore(
+        stockfishUpgradeState.subscribe,
+        stockfishUpgradeState.getSnapshot,
+    );
     const retryRevision = useRef(upgrade.revision);
     const mounted = useRef(true);
     useEffect(() => {
@@ -47,8 +56,14 @@ export function useEnsureDesktopEngines() {
 
     useEffect(() => {
         if (upgrade.error)
-            notifications.show({ id: "stockfish-upgrade-error", color: "red", autoClose: false,
-                title: "Stockfish default needs attention", message: "Engine choices are kept in this app. Keep it open and use Engines to retry the upgrade." });
+            notifications.show({
+                id: "stockfish-upgrade-error",
+                color: "red",
+                autoClose: false,
+                title: "Stockfish default needs attention",
+                message:
+                    "Engine choices are kept in this app. Keep it open and use Engines to retry the upgrade.",
+            });
         else notifications.hide("stockfish-upgrade-error");
     }, [upgrade.error]);
 
@@ -72,8 +87,12 @@ export function useEnsureDesktopEngines() {
         started.current = true;
         const token = stockfishUpgradeState.begin();
         const mutation = enginePreferences.getMutationRevision();
-        const owns = () => mounted.current && stockfishUpgradeState.owns(token) && atoms.get(enginesAtom) === engines &&
-            enginePreferences.getMutationRevision() === mutation && !enginePreferences.getSnapshot().error;
+        const owns = () =>
+            mounted.current &&
+            stockfishUpgradeState.owns(token) &&
+            atoms.get(enginesAtom) === engines &&
+            enginePreferences.getMutationRevision() === mutation &&
+            !enginePreferences.getSnapshot().error;
         const availableToChange = () => {
             if (!owns()) {
                 if (mounted.current) {
@@ -82,9 +101,15 @@ export function useEnsureDesktopEngines() {
                     // Retry load may replace a normalized array with an equal
                     // saved snapshot. Re-evaluate that handoff, but never retry
                     // over an owner's real edit, including edit-then-revert.
-                    if (stockfishUpgradeState.owns(token) && enginePreferences.getMutationRevision() === mutation &&
-                        (current === undefined || saved.phase === "loading" || saved.phase === "error" ||
-                        (enginePreferences.isSavedValue(current) && JSON.stringify(current) === JSON.stringify(engines))))
+                    if (
+                        stockfishUpgradeState.owns(token) &&
+                        enginePreferences.getMutationRevision() === mutation &&
+                        (current === undefined ||
+                            saved.phase === "loading" ||
+                            saved.phase === "error" ||
+                            (enginePreferences.isSavedValue(current) &&
+                                JSON.stringify(current) === JSON.stringify(engines)))
+                    )
                         started.current = false;
                     stockfishUpgradeState.waiting(token);
                 }
@@ -103,7 +128,9 @@ export function useEnsureDesktopEngines() {
             stockfishUpgradeState.enter(directory, token);
             const loadedDirectory = enginePreferences.getLoadedContext();
             if (loadedDirectory !== undefined && loadedDirectory !== directory)
-                throw new Error("The engine folder changed. Retry after loading its saved engine profiles.");
+                throw new Error(
+                    "The engine folder changed. Retry after loading its saved engine profiles.",
+                );
             const completed = await stockfishUpgradeNative.completed(directory);
             if (!availableToChange()) return;
             // Existing [] is an explicit choice. Acknowledge it without asset
@@ -111,33 +138,77 @@ export function useEnsureDesktopEngines() {
             const explicitEmpty = preferences.phase === "ready" && engines.length === 0;
             const acknowledgementOnly = !completed && stockfishUpgradeState.decided(directory);
             const preserveList = explicitEmpty || acknowledgementOnly;
-            const installed = preserveList ? [] : await discoverInstalledDesktopEngines().catch(() => []);
+            const installed = preserveList
+                ? []
+                : await discoverInstalledDesktopEngines().catch(() => []);
             if (!availableToChange()) return;
-            const withPcLc0 = preserveList || engines.some((engine) => engine.id === "gaming-pc-lc0")
-                ? engines : [...engines, createGamingPcLc0Engine()];
-            const baseline = preserveList ? engines : mergeInstalledDesktopEngines(withPcLc0, installed);
-            let planned = completed || stockfishUpgradeState.decided(directory)
-                ? { engines: baseline, complete: true }
-                : planStockfishDefaultUpgrade(baseline, preferences.phase === "missing", null);
+            const withPcLc0 =
+                preserveList || engines.some((engine) => engine.id === "gaming-pc-lc0")
+                    ? engines
+                    : [...engines, createGamingPcLc0Engine()];
+            const baseline = preserveList
+                ? engines
+                : mergeInstalledDesktopEngines(withPcLc0, installed);
+            let planned =
+                completed || stockfishUpgradeState.decided(directory)
+                    ? { engines: baseline, complete: true }
+                    : planStockfishDefaultUpgrade(baseline, preferences.phase === "missing", null);
             if (!planned.complete) {
                 const available = await stockfishUpgradeNative.available(directory, baseline);
                 if (!availableToChange()) return;
-                planned = planStockfishDefaultUpgrade(baseline, preferences.phase === "missing", available ? stockfish19Profile(available) : null);
+                planned = planStockfishDefaultUpgrade(
+                    baseline,
+                    preferences.phase === "missing",
+                    available ? stockfish19Profile(available) : null,
+                );
             }
             if (!availableToChange()) return;
-            if (await stockfishUpgradeNative.directory() !== directory)
-                throw new Error("The engine folder changed. Retry after loading its saved engine profiles.");
+            if (
+                preferences.phase === "missing" &&
+                planned.engines.some(
+                    (engine) =>
+                        engine.type === "local" &&
+                        ["Threads", "Hash"].every((name) =>
+                            engine.settings?.some((setting) => setting.name === name),
+                        ),
+                )
+            ) {
+                // Absence was confirmed by the preference reader. Do not infer
+                // first use from any existing/default-looking settings file.
+                stockfishUpgradeState.checkingResources(token, true);
+                const device = await loadNativeEngineDevice().catch((error) => {
+                    if (!availableToChange()) return null;
+                    throw error;
+                });
+                if (!availableToChange()) return;
+                if (!device) return;
+                stockfishUpgradeState.checkingResources(token, false);
+                planned = { ...planned, engines: firstUseEngineResources(planned.engines, device) };
+            }
+            if ((await stockfishUpgradeNative.directory()) !== directory)
+                throw new Error(
+                    "The engine folder changed. Retry after loading its saved engine profiles.",
+                );
             if (!availableToChange()) return;
-            if (JSON.stringify(planned.engines) !== JSON.stringify(engines)) setEngines(planned.engines);
+            if (JSON.stringify(planned.engines) !== JSON.stringify(engines))
+                setEngines(planned.engines);
             if (planned.complete) stockfishUpgradeState.rememberDecision(token);
             await enginePreferences.flush();
             if (!mounted.current || !stockfishUpgradeState.owns(token)) return;
-            if (!planned.complete) { stockfishUpgradeState.waiting(token); return; }
+            if (!planned.complete) {
+                stockfishUpgradeState.waiting(token);
+                return;
+            }
             if (!completed) {
-                if (await stockfishUpgradeNative.directory() !== directory) {
-                    throw new Error("The engine folder changed. Retry after loading its saved engine profiles.");
+                if ((await stockfishUpgradeNative.directory()) !== directory) {
+                    throw new Error(
+                        "The engine folder changed. Retry after loading its saved engine profiles.",
+                    );
                 }
-                await stockfishUpgradeNative.complete(directory, await savedEngineDigest(enginePreferences.getSavedText()));
+                await stockfishUpgradeNative.complete(
+                    directory,
+                    await savedEngineDigest(enginePreferences.getSavedText()),
+                );
             }
             stockfishUpgradeState.complete(token);
         })().catch((error) => {

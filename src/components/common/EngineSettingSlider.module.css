@@ -1,0 +1,40 @@
+.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6.5rem;
+  column-gap: var(--mantine-spacing-sm);
+  align-items: center;
+}
+.field > label {
+  grid-column: 1 / -1;
+  font-size: var(--mantine-font-size-sm);
+}
+.range {
+  width: 100%;
+  min-width: 0;
+  height: 2rem;
+  margin: 0;
+  accent-color: var(--mantine-primary-color-filled);
+  cursor: pointer;
+}
+.range:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 3px;
+}
+.exact {
+  min-width: 0;
+}
+@media (max-width: 360px) {
+  .field {
+    grid-template-columns: minmax(0, 1fr) 5.5rem;
+  }
+}
+
+.hint {
+  grid-column: 1 / -1;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  overflow-wrap: anywhere;
+}
+.error {
+  color: var(--mantine-color-error);
+}

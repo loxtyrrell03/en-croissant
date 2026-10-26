@@ -27,6 +27,18 @@ function fixture(initial: string | null) {
         },
     };
 }
+it("does not create an empty settings file for exact missing-store readback, but saves an explicit empty edit", async () => {
+    const h = fixture(null);
+    const readback = await h.store.reload();
+    await h.store.storage.setItem("engines", readback);
+    expect(h.disk()).toBeNull();
+    expect(h.io.write).not.toHaveBeenCalled();
+    expect(h.store.getSnapshot().phase).toBe("missing");
+    await h.store.storage.setItem("engines", []);
+    expect(h.disk()).toBe("[]");
+    expect(h.store.getSnapshot().phase).toBe("ready");
+    expect(h.io.write).toHaveBeenCalledTimes(1);
+});
 it("stages verified edits without exposing pending resource values to readers", async () => {
     const h = fixture(JSON.stringify([engine("original")]));
     const previous = await h.store.reload();

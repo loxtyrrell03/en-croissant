@@ -1,3 +1,33 @@
+## 2026-10-26 resource edit bounds and genuine first use source
+
+- Saved CPU values above the current per-engine recommendation remain exact and
+  visibly described; new edits use the current budget/UCI bounds instead of
+  expanding to the old value. One-field edits keep other older choices. Included-
+  engine range changes cancel unfinished slider gestures; exact drafts are retained
+  and validated at completion. Errors/descriptions span the field and are associated
+  with the actual native input. Existing explicit choices are never auto-clamped.
+- Shared EngineSettingSlider retains completed pointer/key/blur edits, Escape/
+  cancellation/window-blur ownership, stable memory stops and exact values. It is
+  currently wired to CPU controls; lines/search integration remains separate work.
+- Automatic first-use Balanced applies only during successfully confirmed missing-
+  store bootstrap, after bounded owned device read. Visible CPU profiles share the
+  budget; hidden fresh CPU profiles receive the same initial options. Go/lines,
+  GPU/remote options and enabled flags remain unchanged. Failed/malformed or
+  infeasible reads write no profile file and expose retry/status. New edits, play/
+  paused activity, directory changes and unmount invalidate late replies/failures.
+  Existing files (including [] and default-looking values) and later explicit
+  registrations retain their own per-profile choices; this is not a global retune.
+- Exact loaded/readback array identity now avoids creating [] for a missing file.
+  A newly submitted empty array still records an explicit empty choice. This fixes
+  actual Retry upgrade/load turning first use into an empty-list acknowledgement;
+  the prior store fails the new missing-readback regression. Existing bytes stay
+  authoritative, including errors/pending snapshots.
+- 174 focused cases18 files, fulltypes,13-file lint0 and15-file format pass. Source/
+  DOM fixtures only; current native package95303cf5 predates this source milestone
+  until separately rebuilt. Native/phone services, owner data and Novelty source
+  untouched. Search/lines draft+save parity, PC/phone resources and broader historical
+  audit remain. See docs/ENGINE_RESOURCES.md. Full goal active.
+
 ## 2026-10-26 live-tab resource package
 
 - Product95303cf5 packages native defaults and live-tab inline A controls with

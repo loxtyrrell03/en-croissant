@@ -1,5 +1,5 @@
-import { Button, Group, Stack, Text, TextInput } from "@mantine/core";
-import { useEffect, useId, useRef, useState } from "react";
+import { Button, Group, Stack, Text } from "@mantine/core";
+import { useEffect, useRef, useState } from "react";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import {
   CPU_RESOURCE_PRESETS,
@@ -9,6 +9,7 @@ import {
   type EngineResourceValues,
 } from "@/utils/engineResources";
 import classes from "./CpuResourceControls.module.css";
+import { EngineSettingSlider } from "@/components/common/EngineSettingSlider";
 
 export type ResourceBounds = { min: number; max: number };
 export type ResourceEdit = {
@@ -17,144 +18,6 @@ export type ResourceEdit = {
   owns?: () => boolean;
   isApplied?: () => boolean;
 };
-
-/** A completed edit applies once. Pointer/key drafts never reach an engine. */
-function ResourceNumber({
-  label,
-  value,
-  bounds,
-  disabled,
-  commit,
-  memory = false,
-}: {
-  label: string;
-  value: number;
-  bounds: ResourceBounds;
-  disabled: boolean;
-  commit: (value: number) => void;
-  memory?: boolean;
-}) {
-  const id = useId();
-  const [draft, setDraft] = useState(String(value));
-  const [error, setError] = useState<string | null>(null);
-  const latest = useRef({ draft: String(value), active: false });
-  const current = useRef(value);
-  current.current = value;
-  function change(text: string, active = latest.current.active) {
-    latest.current = { draft: text, active };
-    setDraft(text);
-    setError(null);
-  }
-  function cancel() {
-    change(String(current.current), false);
-  }
-  function finish() {
-    const text = latest.current.draft;
-    latest.current.active = false;
-    const number = Number(text);
-    if (
-      !/^\d+$/.test(text) ||
-      !Number.isSafeInteger(number) ||
-      number < bounds.min ||
-      number > bounds.max
-    ) {
-      setError(`Choose a whole number from ${bounds.min} to ${bounds.max}.`);
-      return;
-    }
-    if (number !== current.current) {
-      // Suppress the Enter-then-blur duplicate before the parent renders.
-      current.current = number;
-      commit(number);
-    }
-  }
-  useEffect(() => {
-    change(String(value), false);
-  }, [value]);
-  useEffect(() => {
-    const blur = () => cancel();
-    window.addEventListener("blur", blur);
-    return () => window.removeEventListener("blur", blur);
-  }, []);
-  const keys = [
-    "ArrowLeft",
-    "ArrowRight",
-    "ArrowUp",
-    "ArrowDown",
-    "Home",
-    "End",
-    "PageUp",
-    "PageDown",
-  ];
-  const stops = memory ? memoryStops(bounds.min, bounds.max, value) : null;
-  return (
-    <div className={classes.field}>
-      <label htmlFor={id}>{label}</label>
-      <input
-        className={classes.range}
-        type="range"
-        aria-label={`${label} slider`}
-        min={stops ? 0 : bounds.min}
-        max={stops ? stops.length - 1 : bounds.max}
-        step={1}
-        value={stops ? Math.max(0, stops.indexOf(Number(draft))) : Number(draft) || bounds.min}
-        aria-valuetext={`${draft}${memory ? " MiB" : " threads"}`}
-        disabled={disabled}
-        onPointerDown={(event) => {
-          change(draft, true);
-          event.currentTarget.setPointerCapture?.(event.pointerId);
-        }}
-        onChange={(event) =>
-          change(
-            stops ? String(stops[Number(event.currentTarget.value)]) : event.currentTarget.value,
-          )
-        }
-        onPointerUp={() => {
-          if (latest.current.active) finish();
-        }}
-        onPointerCancel={cancel}
-        onLostPointerCapture={() => {
-          if (latest.current.active) cancel();
-        }}
-        onBlur={cancel}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            event.stopPropagation();
-            cancel();
-          } else if (keys.includes(event.key)) latest.current.active = true;
-        }}
-        onKeyUp={(event) => {
-          if (keys.includes(event.key) && latest.current.active) finish();
-        }}
-      />
-      <TextInput
-        id={id}
-        className={classes.exact}
-        aria-label={label}
-        inputMode="numeric"
-        value={draft}
-        disabled={disabled}
-        error={error}
-        onChange={(event) => change(event.currentTarget.value, true)}
-        onBlur={() => {
-          if (latest.current.active) finish();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            event.stopPropagation();
-            cancel();
-          }
-          if (event.key === "Enter") {
-            event.preventDefault();
-            event.stopPropagation();
-            finish();
-          }
-        }}
-      />
-    </div>
-  );
-}
 
 export function CpuResourceControls({
   values,
@@ -251,14 +114,11 @@ export function CpuResourceControls({
   const editBounds = {
     threads: {
       min: bounds.threads.min,
-      max: Math.min(
-        bounds.threads.max,
-        Math.max(bounds.threads.min, plan.maxThreads, values.threads),
-      ),
+      max: Math.min(bounds.threads.max, Math.max(bounds.threads.min, plan.maxThreads)),
     },
     hashMb: {
       min: bounds.hashMb.min,
-      max: Math.min(bounds.hashMb.max, Math.max(bounds.hashMb.min, plan.maxHashMb, values.hashMb)),
+      max: Math.min(bounds.hashMb.max, Math.max(bounds.hashMb.min, plan.maxHashMb)),
     },
   };
   function apply(next: EngineResourceValues) {
@@ -344,22 +204,24 @@ export function CpuResourceControls({
           values.
         </Text>
       )}
-      <ResourceNumber
+      <EngineSettingSlider
         key={`threads-${fieldVersion}`}
         label="Threads"
         value={values.threads}
         bounds={editBounds.threads}
         disabled={locked}
-        commit={(threads) => apply({ ...values, threads })}
+        unit="threads"
+        onCommit={(threads) => apply({ ...values, threads })}
       />
-      <ResourceNumber
+      <EngineSettingSlider
         key={`hash-${fieldVersion}`}
         label="Hash memory (MiB)"
         value={values.hashMb}
         bounds={editBounds.hashMb}
         disabled={locked}
-        memory
-        commit={(hashMb) => apply({ ...values, hashMb })}
+        unit="MiB"
+        stops={memoryStops(editBounds.hashMb.min, editBounds.hashMb.max, values.hashMb)}
+        onCommit={(hashMb) => apply({ ...values, hashMb })}
       />
       <Text size="xs" c="dimmed">
         {scope}

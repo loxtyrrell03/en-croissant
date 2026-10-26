@@ -145,6 +145,10 @@ export function createEnginePreferenceStore(io: IO) {
         async setItem(_key, value) {
             if (expected === undefined) await load();
             const text = JSON.stringify(value, null, 4);
+            // Publishing an exact successful load/readback is not an edit.
+            // In particular, a missing file must not become an explicit [] on
+            // Retry load/upgrade. A newly created [] still records that choice.
+            if (!pending && value === status.value && canonical === text) return;
             if (expected !== null && !pending && canonical === text) return;
             mutationRevision++;
             const target = { text, value: parse(text) };
