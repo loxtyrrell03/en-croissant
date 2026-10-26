@@ -59,8 +59,8 @@ Fifty-one frontend checks in nine files, full TypeScript and eight-file lint0 pa
 All routine data is tiny/disposable. Primary independently passes29 focused native source checks plus the pure transport
 case, the same43 Node/four installer cases and51 frontend/full types. Its owner
 104/2 guidance and25/1 binding remainders survive the mirrored source.
-Native package and actual service delivery remain separate follow-ups.
-No owner profile, pinned sync helper, hosted route, running app or service was changed.
+These initial source checks preceded the delivered milestone below.
+No owner profile, pinned sync helper, hosted route or corpus was changed.
 The broader managed rated/broadcast catalogue and other history items remain open.
 
 
@@ -94,4 +94,37 @@ sample bytes and timestamps. The prior saved reset remains authoritative until
 a new action is explicitly confirmed. Thirty focused native source checks and
 52 frontend/nine-file checks pass after this refinement, alongside full types
 and scoped lint0. The0cda777a package is a verified historical snapshot preceding
-this refinement; the latest native package must be rebuilt before delivery.
+this refinement; the current package and service delivery are recorded below.
+
+
+Delivery from b4c9288c is verified. The Windows package is48,962,048 bytes,
+SHA256 fd6a3d2a990227e5a60ab4fe8ddeb092dc022748facb8000d4e3e41fc98e8c81.
+Its14 exact embedded assets, source-selection/download/export contracts,
+Windows IPC shim, complete About/standalone notices and102 engine/source
+resources match. The normal native build completed with22 existing warnings.
+Generated worker content matches committed source; only clean-checkout line
+endings were restored. Primary also passes30 focused native source checks and
+the15-case actual Settings component after the Reset refinement. The previous
+verified4d5126dc package remains the one rollback. No desktop app was launched,
+restarted or installed by this delivery.
+
+The canonical hosted phone runs the same b4c9288c source, built explicitly for
+the home target. HTTPS verifies10 exact shell/WebApp/Stockfish JS/WASM/manifest/
+service-worker assets, saved workspace and catalog content, PGN/database-position
+reads, tournament settings and healthy personal-library sync. Its own health
+exposes available local evaluations with no error, and a stored depth65 reply
+matches the prior gateway reader. This is API/package evidence, not a rendered
+or physical-phone check. Browser control remains unavailable.
+
+Only the PC gateway reader and its constructor module changed. Their reviewed
+installed predecessors are preserved as small source backups. Configured engine
+and data paths, three peer modules, seven owner files, task definitions, private
+sync helpers and all Serve routes are preserved. The intended gateway restarted
+once after cold-worker/client/owner-state checks; final stored-response and
+source/config verification is read-only. The home publisher waited for an
+existing periodic library refresh to complete and retained its immediate guard.
+Initial guarded attempts left the prior phone runtime intact; a transient sync
+status was retried without resetting sync. Normal publication returned, final
+HTTPS checks pass and all task-owned scheduled probes/publishers were removed.
+Both engines remain on standby. Broader managed downloaded-opening catalogues,
+whole-profile recovery and the remaining history audit are still open.

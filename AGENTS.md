@@ -1,58 +1,38 @@
-## 2026-10-25 effective-default reset ownership
+## 2026-10-25 shared evaluation discovery and effective-default delivery
 
-- New Reset previews the same effective default as an untouched profile: retain
-  existing legacy data, otherwise recognize shared data after confirmed absence/
-  emptiness. Older saved reset/custom paths stay pinned until a new explicit Use.
-  A confirmed reset pins the exact reviewed canonical path; default-path changes
-  cannot take over even when sample bytes/timestamps match. Invalid default data
-  refuses Reset while keeping the current choice and visible retry.
-- Thirty focused native source and52 frontend/nine-file checks, full types and
-  scoped lint0 pass. The new tiny equal-content/different-default-path regression
-  verifies actual filesystem/review/use ownership. Phone code is unchanged.
-- Historical0cda777a package49MB/d3868f4e has14 exact assets/IPC/notices/102 engine
-  resources, but predates this refinement. A fresh native package and hosted
-  reader/service delivery remain; do not label the historical package current.
-  See docs/SHARED_EVALUATION_DISCOVERY.md/current delivery JSON. Goal active.
-
-## 2026-10-25 retained shared-default acceptance
-
-- Primary mirrors b9e7e061 with exact owner104/2 guidance and25/1 binding
-  remainders. It independently passes29 native source checks plus the transport
-  case,43 Node/one optional skip,51 frontend, full types and four installer cases.
-- An unpackaged kernel-backed read-only check recognizes the retained corpus
-  through both default resolvers from an absent disposable profile and returns
-  stored depth65. Manifest401,283,893 positions;1,024 populated/2,048 buckets.
-  This checks metadata, one bounded sample and lookup, not every position.
-  Native debug recognition4705ms/100 cached reads50ms; Node483ms/100 cached69ms
-  and lookup142ms after native OS-cache warming. No release/UI timing claim.
-  No preferences/corpus write/copy, live runtime or service change; owned probe
-  tasks removed. Existing pinned sync helpers/config/task remain untouched.
-- Home health exposes its own localEvals status/error for delivery verification;
-  four isolated HTTP cases and scoped lint0 pass with existing fallback retained.
-  Native packaging and actual reader/service publication remain pending. See
-  docs/SHARED_EVALUATION_DISCOVERY.md/current delivery JSON. Full audit active.
-
-## 2026-10-25 shared evaluation discovery source
-
-- Unconfigured native and phone/PC service defaults recognize shared immutable
-  evaluations after confirmed absent/empty legacy data. Existing nonempty legacy
-  data and saved/configured choices (including explicit Reset) remain authoritative.
-  No preference/corpus write, copy, download or On/Off change occurs on discovery.
-- Root aliases, sparse metadata and bounded samples reuse native validation;
-  Node checks both record versions without allocating every PV string.1 MiB
-  manifests/64 MiB decoded samples (Node80 MiB compressed). Successful checks
-  coalesce/revalidate30s; failed checks retry after repair. Automatic source
-  identity participates in stale-read/revision guards; invalid data remains
-  visible and permits a checked manual replacement. New service installs leave
-  defaults unpinned and preserve existing explicit evaluation config paths.
-- Source126 native library checks/three opt-in ignored, normal registry22 old
-  warnings,43 Node/one existing optional skipped,51 frontend/nine files, fulltypes,
-  eight-file lint0 and four non-installing production config-expression cases pass.
-  Pure Specta validates optional discoveryError; command arguments are unchanged.
-- Clean source only so far; primary mirror, retained-store timing, native package
-  and runtime delivery remain. Broader managed rated/broadcast catalogues stay
-  open. No owner state/service/pinned sync helper changed. See
-  docs/SHARED_EVALUATION_DISCOVERY.md/current delivery JSON. Goal remains active.
+- Unconfigured native/home/PC defaults recognize shared immutable evaluations
+  after confirmed absent/empty legacy data. Existing nonempty legacy data and
+  saved/configured choices win, including older explicit Reset choices. No
+  preference/corpus copy/write/download or On/Off change occurs on discovery.
+- New Reset previews that effective default and pins its reviewed canonical
+  path. Equal-content default-path changes cannot take over a reviewed reset;
+  invalid defaults retain the current choice and visible retry. Bounded native/
+  Node sample validation,30-second successful rechecks, immediate failed retry,
+  source epochs and in-transaction stale revisions guard automatic sources.
+- Before Reset refinement:126 native library/three opt-in ignored,43 Node/one
+  optional skip,51 frontend/nine files, fulltypes, lint0 and four non-installing
+  config-expression cases pass. Afterwards clean30 focused native/52 frontend
+  and types pass; primary30 native/15 actual Settings cases pass, retaining its
+  owner104/2 guidance and25/1 binding remainders. Pure Specta wire check passes.
+- Kernel-backed read-only retained-corpus recognition and depth65 lookup pass
+  in both default resolvers:401,283,893 manifest positions,1,024 populated/2,048
+  buckets. One bounded sample is verified, not every position. Native debug
+  recognition4705ms/cached100 reads50ms; Node483ms/cached69ms/lookup142ms after
+  native OS-cache warming. This does not certify release/UI responsiveness.
+- Native b4c9288c package48,962,048 bytes SHA256 fd6a3d2a990227e5a60ab4fe8ddeb092dc022748facb8000d4e3e41fc98e8c81
+  verifies14 exact assets, IPC/full notices/102 engine resources;22 old warnings.
+  The known-good4d5126dc rollback remains. Desktop installation/window interaction
+  was not performed. Only clean generated line endings were restored.
+- Canonical phone b4c9288c is live with10 exact HTTPS assets, real saved data/
+  database/tournament reads, own localEvals status and healthy private sync. Only
+  the PC gateway reader/constructor changed; it restarted once idle and remains
+  cold. Old-reader/current-HTTP stored replies match. Seven owner files, three
+  peer modules, tasks/pinned sync helpers and Serve routes are preserved.
+  Busy refreshes delayed ordinary guarded publication; final follow-up reads
+  needed no second engine restart. All owned temporary tasks are removed.
+- See SHARED_EVALUATION_DISCOVERY.md/current delivery JSON. No rendered/native-
+  window/physical-phone proof; browser control unavailable. Broader managed
+  rated/broadcast catalogues and the full history audit remain open. Goal active.
 
 ## 2026-10-25 history inventory refresh
 
@@ -67,7 +47,8 @@
   changed/31 new include research and already mirrored work; no automatic port.
 - Four older download UI/CSS rows now have scoped target decisions through En's
   approved reviewed-build controls and native themes. Full managed catalogues,
-  discovery/defaults, opening recovery and whole-profile snapshots remain open.
+  opening recovery and whole-profile snapshots remain open; evaluation discovery
+  is covered by the delivered milestone above.
   See docs/NOVELTY_LATEST_SOURCE_REVIEW_2026-10-25.md/current inventory. Goal active.
 
 ## 2026-10-25 board shortcut native package

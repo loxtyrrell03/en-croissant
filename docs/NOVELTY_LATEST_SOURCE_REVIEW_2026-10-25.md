@@ -48,6 +48,7 @@ Older data-control candidates now have explicit target decisions:
   Phone uses separate service/engine controls, not the absent download switch.
 
 These source decisions do not claim a new rendered browser check. The broad
-audit, retained-store discovery/defaults, combined opening packs, whole-profile
-recovery ZIP and other pending rows remain open. Native source/package0987379c
-and hosted phonef1dab735 have distinct recorded delivery evidence.
+audit, combined opening packs, whole-profile recovery ZIP and other pending
+rows remain open. Retained evaluation discovery/defaults and Reset now have
+b4c9288c native/phone/service delivery evidence in SHARED_EVALUATION_DISCOVERY.md;
+broader managed rated/broadcast catalogue recognition remains separate.

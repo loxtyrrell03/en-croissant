@@ -17,8 +17,8 @@ native/phone architecture and retain its own product/data/hosting boundaries.
 | `7bbe5984` | Smooth panel mouse-wheel scrolling across the app | settings-and-shell | One wheel family now source-implemented through the actual native/phone root lifetime, latest bounded/subpixel/contained motion and En board/editor exclusions. Two actual-entry failures reproduced;25 new checks and500 maintained related checks/69 files/types/lint/style guards pass. Clean cbbff3b8 native package and canonical HTTPS phone are verified with exact assets/resources/data/routes and actual bounded Stockfish19; rendered proof remains. See PANEL_SCROLLING.md |
 | `d9acb4d0` | Remove requested migration header comment | local-data-and-recovery | Comment-only/provenance edit; actual diff changes no decoder behavior. Preserve En source/provenance rather than copy a Novelty header deletion |
 | `76c93459` | Default downloads to Full and add compact cloud evaluations | settings-and-shell | Target evaluation required |
-| `df7bd865` | Recognize existing downloaded Lichess stores | settings-and-shell | Evaluation-store recognition/defaults are now source-implemented through native preferences and both phone/PC service constructors: existing data/saved choices win, only absent/empty defaults discover shared immutable data, bounded compatibility/errors/retry and stale-read/save guards are verified.126 native,43 Node/one optional skip,51 frontend/types/lint0 and four installer-expression cases pass. Runtime/package reconciliation and broader managed rated/broadcast catalogue recognition remain open; this does not close all pack families. See SHARED_EVALUATION_DISCOVERY.md |
-| `676f8206` | Recognize existing downloaded Lichess stores | settings-and-shell | Evaluation-store recognition/defaults are now source-implemented through native preferences and both phone/PC service constructors: existing data/saved choices win, only absent/empty defaults discover shared immutable data, bounded compatibility/errors/retry and stale-read/save guards are verified.126 native,43 Node/one optional skip,51 frontend/types/lint0 and four installer-expression cases pass. Runtime/package reconciliation and broader managed rated/broadcast catalogue recognition remain open; this does not close all pack families. See SHARED_EVALUATION_DISCOVERY.md |
+| `df7bd865` | Recognize existing downloaded Lichess stores | settings-and-shell | Evaluation-store discovery/defaults and reviewed Reset are implemented and delivered through En architecture: saved choices/existing legacy data win, bounded recognition and stale ownership remain. Source fixtures and a read-only retained-store lookup pass; b4c9288c native package, canonical phone assets/data APIs and updated PC reader are verified, preserving private sync/settings/routes. Broader managed rated/broadcast catalogue recognition remains open; this does not close all pack families. Rendered/physical proof remains. See SHARED_EVALUATION_DISCOVERY.md |
+| `676f8206` | Recognize existing downloaded Lichess stores | settings-and-shell | Evaluation-store discovery/defaults and reviewed Reset are implemented and delivered through En architecture: saved choices/existing legacy data win, bounded recognition and stale ownership remain. Source fixtures and a read-only retained-store lookup pass; b4c9288c native package, canonical phone assets/data APIs and updated PC reader are verified, preserving private sync/settings/routes. Broader managed rated/broadcast catalogue recognition remains open; this does not close all pack families. Rendered/physical proof remains. See SHARED_EVALUATION_DISCOVERY.md |
 | `86374523` | Clarify downloaded data states and repair local source activation | local-data-and-recovery, settings-and-shell | Target evaluation required |
 | `2815afb4` | Harden metadata bounds and Windows release integration checks | local-data-and-recovery | Active pack-manifest gap reproduced and source-fixed: header-only oversized reply previously returned a body decode error; now rejects above the existing2 MiB limit before reading. Streamed limit and pinned identity remain. Three new HTTP cases join83 passing core checks/three existing ignored, independently on primary/clean;15 transfer cases are included. Clean33670fec native package and hosted helper are now verified: exact assets/resources, installed binary backing/hash/actual child, normal stored lookup, unchanged data/routes and normal publisher return. Novelty Windows publisher assertions remain product-specific. See PACK_MANIFEST_LIMITS.md |
 | `a0c3d55d` | Fix native database download review task | other-native-and-app-review | Already addressed through En architecture: native tournament_request delegates to core Service.request, whose local/download review work is inside spawn_blocking. Phone invokes the same core through its separate child process. Source call-chain inspection; no new owner download launched. |
@@ -63,14 +63,13 @@ ownership and immediate runtime updates replace broad clears/reload. See
 APPEARANCE_RESET.md for keys, states and verification; clean cfc2a7f3 native package is verified; rendered delivery
 remains separate. No owner storage was reset. Other rows remain active candidates.
 
-En's evaluation reader uses default_store_dir and has no matching Settings
-folder chooser. Further inspection found an important limit to its status error
-field: read_manifest and shard lookup use exists(), which can hide filesystem
-access-check errors as absence/misses. The earlier status-only assessment was
-too broad. Actual native and shared-phone reader failures are now reproduced
-and source-fixed; see LOCAL_EVAL_READINESS.md for target delivery boundaries.
-Builder/transfer/recovery, metadata completeness and any future folder selection
-still require separate target evaluation.
+The earlier absence-versus-unavailable reader gap is delivered through native
+and hosted services; see LOCAL_EVAL_READINESS.md. The approved native Settings A
+now includes a validated chooser, reviewed effective-default Reset and shared
+immutable-store recognition, with b4c9288c package/service evidence in
+SHARED_EVALUATION_DISCOVERY.md. Existing saved paths and Stored evals On/Off stay
+authoritative. Broader managed source catalogues, combined opening data and
+whole-profile recovery still need their separate target evaluation.
 
 ## Next shell behavior checks
 

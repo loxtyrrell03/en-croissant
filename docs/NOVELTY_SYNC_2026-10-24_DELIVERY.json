@@ -3,154 +3,246 @@
   "status": "source-parity-progress-with-rendered-and-runtime-delivery-pending",
   "goalComplete": false,
   "phone": {
+    "checkedAt": "2026-10-25T23:59:51.610Z",
     "url": "https://lox-pc.tail89d19b.ts.net/",
-    "sourceCommit": "0ac83353e9efbcf0fc142b6a072c6cda0b0b0fd6",
-    "sourceBranch": "codex/phone-prep-picker-20261018",
-    "releaseId": "0ac83353e9ef-6008627c0999",
-    "appShellSha256": "6008627c0999581c5e1eda248c3c13573012f06469ee8cbd16bbfcce0a63fd04",
-    "checkedAt": "2026-10-25T16:47:48.768Z",
-    "verified": [
-      "canonical HTTPS metadata and exact shell/entry/plan/Stockfish19 JS/WASM hashes",
-      "unchanged saved workspace, normalized library content and tournament settings",
-      "stable repeated library reads (25 files and70 databases)",
-      "unchanged full Serve configuration, owner enabled choice and PC engine PID8536",
-      "unpackaged installed helper backing/hash and actual matching child after publication",
-      "both target-specific immutable notice sidecars and exact installed CLI output",
-      "normal uncaptured publisher return and both temporary tasks removed"
-    ],
+    "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+    "appShellSha256": "0ea82179971b9135158af630f336294796e600451a0b9d34d1a3ebe4ae7e4701",
+    "homePid": 36144,
+    "files": 3342,
+    "databases": 105,
+    "savedPgnRead": true,
+    "databaseManifestRead": true,
+    "databasePositionRead": true,
+    "tournamentSettingsRead": true,
+    "personalSyncPhase": "synced",
+    "personalSyncErrors": 0,
+    "personalSyncConflicts": 0,
+    "servicesEnabled": true,
+    "enginePid": 60200,
+    "engineWorkerReady": false,
+    "storedEvaluationDepth": 65,
     "browserRendered": false,
     "physicalPhoneVerified": false,
-    "publisherNormalExitObserved": true,
-    "publisherCleanup": {
-      "temporaryTaskRemoved": true,
-      "normalPublisherExitObserved": true,
-      "immediateIdleGuardPassed": true,
-      "bothEngineFamiliesColdBeforePublish": true,
-      "noUciClientsBeforePublish": true
-    },
-    "libraryBeforeAfterContentCompared": true,
-    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots.",
-    "phonePid": 40080,
+    "ownerDataWritten": false,
     "assets": [
       {
-        "path": "assets/index-dU5SAf6m.js",
+        "path": "index.html",
+        "bytes": 1052,
+        "sha256": "e923ae7985d771817026baa7cc29d4d95c7b4c51c2a61250e111b2813de80f69"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "bytes": 401,
+        "sha256": "7d6dcbb884c92ff36b8c5449c61982ae4afa2855b765e52a9c79b8c7745b353b"
+      },
+      {
+        "path": "web-sw.js",
+        "bytes": 3462,
+        "sha256": "d7039a05765d22948f3d1894f2a47b5a1c1e6910294627e09040e3fb91c69335"
+      },
+      {
+        "path": "assets/index-B35kf7dc.js",
+        "bytes": 116,
+        "sha256": "58a0d867a9221127a238d9ff3986a3c4e2262e200a0f57cc1bc84796ec38fa9d"
+      },
+      {
+        "path": "assets/index-C5fIn7uC.js",
+        "bytes": 10667,
+        "sha256": "e865374a7487aa1cc4b031683e410bafabcd574c52a3233f533ffd276e993853"
+      },
+      {
+        "path": "assets/index-D-g97tKi.js",
         "bytes": 295301,
-        "sha256": "5537d4c58a230b84c3731860639a73d2e26fa59ae8c6b2d74998fcb009e8025e"
+        "sha256": "b3a28edacf7ad8f8f194075b0bcac3e2e8a4080fdac4a94757006c5afb5ffb01"
       },
       {
-        "path": "assets/WebApp-DTjvJocc.js",
-        "bytes": 433745,
-        "sha256": "6b2e5181a9a7391cd4edc89a0f421730e6b6a908adaf6179896b591020f566e2"
+        "path": "assets/WebApp-BDQ66AB1.js",
+        "bytes": 442391,
+        "sha256": "c1db764e57cec8aec6e1378afa84745be6298e18b284ce2db96430e6ef73d454"
       },
       {
-        "path": "assets/usePlanArrows-Cw5n9kVy.js",
-        "bytes": 8390,
-        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
-      },
-      {
-        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
-        "bytes": 28230,
-        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+        "path": "assets/WebApp-IB4YSzk0.css",
+        "bytes": 62631,
+        "sha256": "7e3419d9a828d652f67e9d47b8463e2143f501e8d0017394620627d8d30b1b2f"
       },
       {
         "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
         "bytes": 1845971,
         "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
       }
     ],
-    "workspaceSha256": "e325f5f56463bbebf0f2f8e05999181aaba8fcb4c0175b2aa045856c674fba2b",
-    "librarySha256": "088c8feb837605cb4e31517d44e94b1de146c07fc7993a5be070c3e0f0514117",
-    "libraryContentSha256": "e8dfbcad5f7a14a5226f30fccfc298cf8dd6cd964aa44b95f207d026ca29b951",
-    "tournamentSettingsSha256": "ec60b2deb22f7143bfc32b9f194bfbfec634b92251c151b9b8945ceec52f8b0e",
-    "servicesEnabled": true,
-    "enginePid": 8536,
-    "engineReady": false,
-    "reviewRunning": false,
-    "activeWork": {
-      "library": false,
-      "explorer": 0,
-      "imports": 0,
-      "tournaments": 0
-    },
-    "serveSha256": "f25ac5a18efda388d5c9459aed3eec76066a507c84ba940c051e3c06de79a771",
-    "ownerDataWritten": false,
-    "libraryRead": {
-      "files": 25,
-      "databases": 70,
-      "stableAcrossRepeatedReads": true,
-      "beforeAfterContentCompared": true,
-      "volatileGeneratedAtExcluded": true
-    },
-    "ownerStateAndRoutesPreserved": true
+    "ownerDataAndEnginePreserved": true,
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "b4c9288c20f8-0ea82179971b",
+    "homeOwnLocalEvalsAvailable": true,
+    "homeOwnLocalEvalsError": null,
+    "homeOwnLocalEvalsPositions": 401283893,
+    "publisherReturned": true,
+    "preservedOwnerFiles": 7,
+    "privateSyncTaskAndPinnedHelpersPreserved": true,
+    "serveRoutesPreserved": true,
+    "ownerWorkspaceAndCatalogHashesMatch": true,
+    "temporaryTasksRemoved": true
   },
   "desktop": {
-    "exeBytes": 47958016,
-    "exeSha256": "adc1ff307c51326697a872a30c827a18ab644d72c008337d91dcc7194e1ccad4",
+    "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+    "exeBytes": 48962048,
+    "exeSha256": "fd6a3d2a990227e5a60ab4fe8ddeb092dc022748facb8000d4e3e41fc98e8c81",
     "assets": [
       {
-        "name": "index-DjzhDy4S.js",
+        "name": "BoardAnalysis-B4aycYhO.js",
+        "bytes": 26499,
+        "sha256": "24a8a1fac724a87067572bda2fff14392d3c1fb59181849328bfa847000028b4",
+        "encoding": "brotli",
+        "compressedBytes": 8719,
+        "compressedSha256": "e5cd2dbbce456392f68a908efc1495d779e3db008574a52d9a0774817ce1e779",
+        "embedded": true
+      },
+      {
+        "name": "index-DS7jKrQA.js",
         "bytes": 292437,
-        "sha256": "2a411b86ec67b873fa8b71619263403eb45d5519637b146dcc99d68d01986d49",
+        "sha256": "25e58ba9292d98c52e987fac5d38eaa6889c62295a17ae12ad54d3ddff5432b5",
         "encoding": "brotli",
-        "compressedBytes": 89579,
-        "compressedSha256": "d1f8ee49122268cd0a9801dbfe44bfbccb125ea57e70bebe5da732ec0cee8647",
+        "compressedBytes": 89586,
+        "compressedSha256": "ef6c6e8dbe59b8f3f7b9c3b700553be38d48fff68f8ed6d4b03f614a652dabfb",
         "embedded": true
       },
       {
-        "name": "App-DIZUHExG.js",
-        "bytes": 196770,
-        "sha256": "23d392fa2173ef68c367a0cbea63e07375c76803b5090bd2862e31592cea20cb",
+        "name": "App-XE5qEUWU.js",
+        "bytes": 197630,
+        "sha256": "526bc9eb52c4cfabb6b8b16eb375cd5123ac145c133621fe1bea98ed92f5d1fa",
         "encoding": "brotli",
-        "compressedBytes": 56654,
-        "compressedSha256": "cd173351e5b44fc8dc3d9cc9353a4697eced96f9b49b36e230b27a48c96ed7c4",
+        "compressedBytes": 56810,
+        "compressedSha256": "7dd08132d536314369503979585d84814c82cc2090f41b546ccca47ba2e52044",
         "embedded": true
       },
       {
-        "name": "bindings-BdZ-uijJ.js",
-        "bytes": 20422,
-        "sha256": "7b07b38badd45610f8405935099314f9312daf37feaeb044c2eb9b2813edc9da",
+        "name": "SettingsPage-Wy6YIO2s.js",
+        "bytes": 74511,
+        "sha256": "c06fea2bd1ecada600a77283d8ba11d9b69efb17d8682e3d9797427a6243ba7e",
         "encoding": "brotli",
-        "compressedBytes": 2949,
-        "compressedSha256": "0ca7588086c227259d51f8729ec74788d110583168b62c005b1d983c1713dcd5",
+        "compressedBytes": 21322,
+        "compressedSha256": "8e28d23d8924d5916a49a0b37aea881748f847170fe273fddb1afc51da873c04",
+        "embedded": true
+      },
+      {
+        "name": "bindings-B9iyyBPa.js",
+        "bytes": 21768,
+        "sha256": "a7d1c1746cd4a4cbb9a5ef67635a6c4f7cd0c8bd52fbbdb181c7ce335a438839",
+        "encoding": "brotli",
+        "compressedBytes": 3105,
+        "compressedSha256": "026db541d97fdb012a25b7273006cb152bf132865a85a93ed99f1f9efc7316dd",
+        "embedded": true
+      },
+      {
+        "name": "api-DaKfTQe9.js",
+        "bytes": 9642,
+        "sha256": "78f3dda708c21a1fe5297602a072be66d8678f57659a900f6c683c9b8f50016f",
+        "encoding": "brotli",
+        "compressedBytes": 3710,
+        "compressedSha256": "909a04a2eb5f2595ead3e3abd1d852afcdec807cad12b8cce81cc9a6d8055d87",
+        "embedded": true
+      },
+      {
+        "name": "EvalListener-yh2NqGj0.js",
+        "bytes": 85598,
+        "sha256": "684911586ea68711dc2f13e705cc94b7d0f7686c00ff8f326aa2dfe6c2296056",
+        "encoding": "brotli",
+        "compressedBytes": 29462,
+        "compressedSha256": "7ca775485719dfd530662c03640b4c8587cf8ee475b55969775f7e3ff4a0799e",
+        "embedded": true
+      },
+      {
+        "name": "BestMoves-DxFuY2or.js",
+        "bytes": 17614,
+        "sha256": "7f2cdac9750ea5757173da4957c40fb5cc657aeed3d8d7e714255ba45933d56b",
+        "encoding": "brotli",
+        "compressedBytes": 6716,
+        "compressedSha256": "6a2949e4d2b79edb7fd24b4150ff774d48b089c6fc6ee9d8dfc165a6fc580f1d",
+        "embedded": true
+      },
+      {
+        "name": "EnginePanelContent-BpsnVkQo.js",
+        "bytes": 15371,
+        "sha256": "ca044b569fc23d013f13d1864f3ee2643d240f6ecfcade759381e88f055b934f",
+        "encoding": "brotli",
+        "compressedBytes": 6199,
+        "compressedSha256": "20a86241008e239c0f48d99b5bf958a4ff0de7a62f7bc93962bb1d86eee06214",
+        "embedded": true
+      },
+      {
+        "name": "DatabasesPage-dbRgDj-Q.js",
+        "bytes": 70286,
+        "sha256": "2ba637a02d2af5ac868197af48f3c791cbcbbbb8fd3da3e4693c3e55648c3edc",
+        "encoding": "brotli",
+        "compressedBytes": 21398,
+        "compressedSha256": "384dbc990863f3e1e76a002e168db3e5885e00db7d737ac934b720c89676dbf9",
+        "embedded": true
+      },
+      {
+        "name": "NewTabHome-Bcb9LpuI.js",
+        "bytes": 175550,
+        "sha256": "b92572b6764612f0ead1027cbf6ac528426007afc704cb9c599137a2f2e13fb7",
+        "encoding": "brotli",
+        "compressedBytes": 50212,
+        "compressedSha256": "011b3e0a199e1c4763d347747bdacc6540dab458bdf400fc04cadbdfb14b6d72",
+        "embedded": true
+      },
+      {
+        "name": "TournamentWorkspace-rusk8_H9.js",
+        "bytes": 158504,
+        "sha256": "efe6cbaf6d7044e206e527d42e55e6b21cb3e542f33afec00b133d8a2cd4d50c",
+        "encoding": "brotli",
+        "compressedBytes": 46974,
+        "compressedSha256": "fd735f2fbfe266533691e342eeb5ac3c166825fe0f380e81087c5ede4d8258c5",
+        "embedded": true
+      },
+      {
+        "name": "App-C6tpCyFQ.css",
+        "bytes": 78146,
+        "sha256": "aad62e69ab184d0d54ba4726e5ad6707a52bf31ed4f00eea9dc1e019be4bd285",
+        "encoding": "brotli",
+        "compressedBytes": 9357,
+        "compressedSha256": "777d6c4a1dd5461421568ad01fed7251a3d4890101280319c9bb5e49a16e24a4",
+        "embedded": true
+      },
+      {
+        "name": "SettingsPage-BImvOGMM.css",
+        "bytes": 1645,
+        "sha256": "65ca92776ded0031a04ca6e6009360482d8fea993473f1aad489fc6dcf254fff",
+        "encoding": "brotli",
+        "compressedBytes": 473,
+        "compressedSha256": "61d6ef7cf72da61f4c381ce0210d225d7700067075b2607641fc22836aceec84",
         "embedded": true
       }
     ],
-    "sourceCommit": "abf029e6279d743754f39094ade4c04763c61c1c",
-    "primaryCommit": "844beb1c423c07acc861ba0d636e0f4f1c11c535",
-    "nativeBuild": true,
-    "existingNativeWarnings": 22,
-    "nativeCargoSeconds": 114.0,
-    "viteSeconds": 24.21,
-    "buildGuardRan": true,
+    "nativeSelectionAndDownloadContractsEmbedded": true,
     "exactWindowsIpcShimEmbedded": true,
-    "standaloneNoticeBytes": 2931,
-    "standaloneNoticeSha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a",
-    "completeAboutNoticeLiteralVerified": true,
     "bundledFiles": 102,
     "bundledBytes": 104581828,
-    "matchingProductTestAndNoticeFiles": 10,
-    "nodeChecks": 5,
-    "aboutComponentChecks": 1,
-    "independentPrimaryAndClean": true,
-    "types": true,
-    "restoredGeneratedOutputs": [
-      "scripts/generated/otb-prep-database.js",
-      "scripts/generated/shared-review-service.js"
-    ],
-    "cleanCheckout": true,
+    "exactNoticeResource": true,
+    "noticeSha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a",
     "nativeWindowVerified": false,
-    "physicalPhoneVerified": false,
-    "explicitDevRestart": false,
-    "existingDevWatcherRelaunched": true,
-    "phoneProductionChanged": false,
-    "hostedHelperNoticeAuditPending": true,
+    "browserRendered": false,
+    "phoneRuntimeChanged": false,
     "ownerDataWritten": false,
     "corpusCopied": false,
     "artifact": "src-tauri/target/release/en-croissant-fork.exe",
-    "activeDevSessionPreserved": false,
-    "devShortcutChanged": false,
-    "rollback": "task-owned original rollback retained",
-    "devWatcherProcessAfterConfigChange": 59432
+    "nativeBuild": true,
+    "nativeCargoSeconds": 111,
+    "existingNativeWarnings": 22,
+    "completeAboutNoticeLiteralVerified": true,
+    "cleanCheckoutAtBuild": true,
+    "generatedOutputsMatchCommittedSource": true,
+    "explicitDevRestart": false,
+    "ownerSessionPreserved": true,
+    "installedDesktopUpdated": false,
+    "rollbackSha256": "4d5126dcc4131965c44722a601afc42469e5a325e9ce2f2885cbd4a682c7ee74"
   },
   "checks": {
     "combinedFrontend": {
@@ -238,43 +330,46 @@
   "controllerPid": 24080,
   "ownerServicesEnabled": true,
   "sharedEngine": {
-    "sourceCommit": "ff5f271ca4abcda656d6a61ef64b0983dfaeab49",
+    "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
     "reportProtocolVersion": 1,
-    "serverSha256": "b88a5bf67b319a93eafb9e84c6ad2520956a634a303e89cc0695b5704c317e5d",
-    "helperSha256": "076da61e1dd247716bdc8eba2c7efd7118e61e948466f3caf7ee323821292c7e",
-    "checkedAt": "2026-10-24T18:33:48.267Z",
-    "verification": {
-      "canonicalHttps": true,
-      "bounded": {
-        "reportLimits": {
-          "depth": 8,
-          "timeMs": 50
-        },
-        "engine": "Stockfish 18",
-        "bestmove": "e2e4",
-        "selectedDepth": 8,
-        "legalPvMoves": 9,
-        "elapsedMs": 939,
-        "completed": true
+    "updatedModules": [
+      {
+        "name": "stockfish-remote-server.mjs",
+        "installedSha256": "11158697745835fd8dd9da48b039b587afe2d97050ef7ecc96c33bb424d402bd",
+        "sourceSha256": "b2401241529f6442f457dcd0bd164f66a4c1527302466f50742feeb8c4b25454"
       },
-      "legacyFinite": {
-        "reportLimits": null,
-        "engine": "Stockfish 18",
-        "bestmove": "e2e4",
-        "selectedDepth": 2,
-        "legalPvMoves": 2,
-        "elapsedMs": 6,
-        "completed": true
+      {
+        "name": "lichess-local-eval-reader.mjs",
+        "installedSha256": "6dfb9b0e2222c830522de677749df281b6cba5fb5584065b3756e8497f394b2e",
+        "sourceSha256": "827466324101ef9e1d744fdc195ee6353c18a7470510a71938068b563fa48486"
       },
-      "queuedAnalyses": 0
-    },
-    "preserved": [
-      "config",
-      "scheduled task XML",
-      "Tailscale Serve routes",
-      "owner enabled choice"
+      {
+        "name": "lc0-network-routing.mjs",
+        "installedSha256": "7316152157b4773176e6cb035c1a350ef240f5b2546ea4d948a8f2759a012627",
+        "sourceSha256": "7316152157b4773176e6cb035c1a350ef240f5b2546ea4d948a8f2759a012627"
+      },
+      {
+        "name": "engine-performance-presets.mjs",
+        "installedSha256": "4c9fd077c404f9bdc4e32521f3e33aab7f8f0e474be16546773f9f2e75ed52e0",
+        "sourceSha256": "4c9fd077c404f9bdc4e32521f3e33aab7f8f0e474be16546773f9f2e75ed52e0"
+      },
+      {
+        "name": "uci-report-search.mjs",
+        "installedSha256": "076da61e1dd247716bdc8eba2c7efd7118e61e948466f3caf7ee323821292c7e",
+        "sourceSha256": "076da61e1dd247716bdc8eba2c7efd7118e61e948466f3caf7ee323821292c7e"
+      }
     ],
-    "phoneUiPublished": false
+    "processId": 60200,
+    "localEvalsAvailable": true,
+    "storedStartingPositionDepth": 65,
+    "oldReaderMatchesNewHttp": true,
+    "queuedAnalyses": 0,
+    "workersCold": true,
+    "configAndTaskPreserved": true,
+    "servePreserved": true,
+    "ownerServicesEnabled": true,
+    "privateSyncPreserved": true,
+    "ownerDataWritten": false
   },
   "pendingPhoneAnalysis": {
     "sourceCommit": "ff5f271ca4abcda656d6a61ef64b0983dfaeab49",
@@ -5426,7 +5521,7 @@
     "generatedOutputsMatchCommittedSource": true
   },
   "sharedEvaluationDiscovery20261025": {
-    "sourceOnly": true,
+    "sourceOnly": false,
     "nativeLibraryPassed": 126,
     "nativeLibraryIgnoredOptIn": 3,
     "newNativeChecks": 14,
@@ -5451,8 +5546,8 @@
     "preferencesWrittenByDiscovery": false,
     "corpusCopied": false,
     "pinnedSyncHelpersChanged": false,
-    "runtimePublished": false,
-    "nativePackageVerified": false,
+    "runtimePublished": true,
+    "nativePackageVerified": true,
     "retainedCorpusAcceptance": {
       "readOnly": true,
       "backingResolvedThroughKernel": true,
@@ -5475,7 +5570,7 @@
     "broaderCatalogueRecognition": "open",
     "browserRendered": false,
     "physicalPhoneVerified": false,
-    "primaryMirroredSource": "b9e7e061bb7fa28c6a904bc76db446f3769b16e5",
+    "primaryMirroredSource": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
     "primaryFocusedNativeSourcePassed": 29,
     "primaryTransportCasePassed": 1,
     "primaryFrontendPassed": 51,
@@ -5512,6 +5607,553 @@
       "engineResources": 102,
       "noticesAndIpcVerified": true,
       "latestResetRefinementIncluded": false
-    }
+    },
+    "primaryLatestFocusedNativeSourcePassed": 30,
+    "primaryLatestSettingsComponentPassed": 15,
+    "nativeSourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+    "nativePackage": {
+      "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+      "exeBytes": 48962048,
+      "exeSha256": "fd6a3d2a990227e5a60ab4fe8ddeb092dc022748facb8000d4e3e41fc98e8c81",
+      "assets": [
+        {
+          "name": "BoardAnalysis-B4aycYhO.js",
+          "bytes": 26499,
+          "sha256": "24a8a1fac724a87067572bda2fff14392d3c1fb59181849328bfa847000028b4",
+          "encoding": "brotli",
+          "compressedBytes": 8719,
+          "compressedSha256": "e5cd2dbbce456392f68a908efc1495d779e3db008574a52d9a0774817ce1e779",
+          "embedded": true
+        },
+        {
+          "name": "index-DS7jKrQA.js",
+          "bytes": 292437,
+          "sha256": "25e58ba9292d98c52e987fac5d38eaa6889c62295a17ae12ad54d3ddff5432b5",
+          "encoding": "brotli",
+          "compressedBytes": 89586,
+          "compressedSha256": "ef6c6e8dbe59b8f3f7b9c3b700553be38d48fff68f8ed6d4b03f614a652dabfb",
+          "embedded": true
+        },
+        {
+          "name": "App-XE5qEUWU.js",
+          "bytes": 197630,
+          "sha256": "526bc9eb52c4cfabb6b8b16eb375cd5123ac145c133621fe1bea98ed92f5d1fa",
+          "encoding": "brotli",
+          "compressedBytes": 56810,
+          "compressedSha256": "7dd08132d536314369503979585d84814c82cc2090f41b546ccca47ba2e52044",
+          "embedded": true
+        },
+        {
+          "name": "SettingsPage-Wy6YIO2s.js",
+          "bytes": 74511,
+          "sha256": "c06fea2bd1ecada600a77283d8ba11d9b69efb17d8682e3d9797427a6243ba7e",
+          "encoding": "brotli",
+          "compressedBytes": 21322,
+          "compressedSha256": "8e28d23d8924d5916a49a0b37aea881748f847170fe273fddb1afc51da873c04",
+          "embedded": true
+        },
+        {
+          "name": "bindings-B9iyyBPa.js",
+          "bytes": 21768,
+          "sha256": "a7d1c1746cd4a4cbb9a5ef67635a6c4f7cd0c8bd52fbbdb181c7ce335a438839",
+          "encoding": "brotli",
+          "compressedBytes": 3105,
+          "compressedSha256": "026db541d97fdb012a25b7273006cb152bf132865a85a93ed99f1f9efc7316dd",
+          "embedded": true
+        },
+        {
+          "name": "api-DaKfTQe9.js",
+          "bytes": 9642,
+          "sha256": "78f3dda708c21a1fe5297602a072be66d8678f57659a900f6c683c9b8f50016f",
+          "encoding": "brotli",
+          "compressedBytes": 3710,
+          "compressedSha256": "909a04a2eb5f2595ead3e3abd1d852afcdec807cad12b8cce81cc9a6d8055d87",
+          "embedded": true
+        },
+        {
+          "name": "EvalListener-yh2NqGj0.js",
+          "bytes": 85598,
+          "sha256": "684911586ea68711dc2f13e705cc94b7d0f7686c00ff8f326aa2dfe6c2296056",
+          "encoding": "brotli",
+          "compressedBytes": 29462,
+          "compressedSha256": "7ca775485719dfd530662c03640b4c8587cf8ee475b55969775f7e3ff4a0799e",
+          "embedded": true
+        },
+        {
+          "name": "BestMoves-DxFuY2or.js",
+          "bytes": 17614,
+          "sha256": "7f2cdac9750ea5757173da4957c40fb5cc657aeed3d8d7e714255ba45933d56b",
+          "encoding": "brotli",
+          "compressedBytes": 6716,
+          "compressedSha256": "6a2949e4d2b79edb7fd24b4150ff774d48b089c6fc6ee9d8dfc165a6fc580f1d",
+          "embedded": true
+        },
+        {
+          "name": "EnginePanelContent-BpsnVkQo.js",
+          "bytes": 15371,
+          "sha256": "ca044b569fc23d013f13d1864f3ee2643d240f6ecfcade759381e88f055b934f",
+          "encoding": "brotli",
+          "compressedBytes": 6199,
+          "compressedSha256": "20a86241008e239c0f48d99b5bf958a4ff0de7a62f7bc93962bb1d86eee06214",
+          "embedded": true
+        },
+        {
+          "name": "DatabasesPage-dbRgDj-Q.js",
+          "bytes": 70286,
+          "sha256": "2ba637a02d2af5ac868197af48f3c791cbcbbbb8fd3da3e4693c3e55648c3edc",
+          "encoding": "brotli",
+          "compressedBytes": 21398,
+          "compressedSha256": "384dbc990863f3e1e76a002e168db3e5885e00db7d737ac934b720c89676dbf9",
+          "embedded": true
+        },
+        {
+          "name": "NewTabHome-Bcb9LpuI.js",
+          "bytes": 175550,
+          "sha256": "b92572b6764612f0ead1027cbf6ac528426007afc704cb9c599137a2f2e13fb7",
+          "encoding": "brotli",
+          "compressedBytes": 50212,
+          "compressedSha256": "011b3e0a199e1c4763d347747bdacc6540dab458bdf400fc04cadbdfb14b6d72",
+          "embedded": true
+        },
+        {
+          "name": "TournamentWorkspace-rusk8_H9.js",
+          "bytes": 158504,
+          "sha256": "efe6cbaf6d7044e206e527d42e55e6b21cb3e542f33afec00b133d8a2cd4d50c",
+          "encoding": "brotli",
+          "compressedBytes": 46974,
+          "compressedSha256": "fd735f2fbfe266533691e342eeb5ac3c166825fe0f380e81087c5ede4d8258c5",
+          "embedded": true
+        },
+        {
+          "name": "App-C6tpCyFQ.css",
+          "bytes": 78146,
+          "sha256": "aad62e69ab184d0d54ba4726e5ad6707a52bf31ed4f00eea9dc1e019be4bd285",
+          "encoding": "brotli",
+          "compressedBytes": 9357,
+          "compressedSha256": "777d6c4a1dd5461421568ad01fed7251a3d4890101280319c9bb5e49a16e24a4",
+          "embedded": true
+        },
+        {
+          "name": "SettingsPage-BImvOGMM.css",
+          "bytes": 1645,
+          "sha256": "65ca92776ded0031a04ca6e6009360482d8fea993473f1aad489fc6dcf254fff",
+          "encoding": "brotli",
+          "compressedBytes": 473,
+          "compressedSha256": "61d6ef7cf72da61f4c381ce0210d225d7700067075b2607641fc22836aceec84",
+          "embedded": true
+        }
+      ],
+      "nativeSelectionAndDownloadContractsEmbedded": true,
+      "exactWindowsIpcShimEmbedded": true,
+      "bundledFiles": 102,
+      "bundledBytes": 104581828,
+      "exactNoticeResource": true,
+      "noticeSha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a",
+      "nativeWindowVerified": false,
+      "browserRendered": false,
+      "phoneRuntimeChanged": false,
+      "ownerDataWritten": false,
+      "corpusCopied": false
+    },
+    "nativeBuildSeconds": 111,
+    "completeAboutNoticeLiteralVerified": true,
+    "generatedOutputsMatchCommittedSource": true,
+    "phoneBuild": {
+      "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+      "phoneBuild": true,
+      "canonicalOrigin": true,
+      "generatedOutputsMatchCommittedSource": true,
+      "timings": [
+        {
+          "command": "node",
+          "args": [
+            "node_modules/vite/bin/vite.js",
+            "build",
+            "--config",
+            "vite.otb-prep.config.ts"
+          ],
+          "seconds": 0.3134796
+        },
+        {
+          "command": "node",
+          "args": [
+            "node_modules/vite/bin/vite.js",
+            "build",
+            "--config",
+            "vite.review-worker.config.ts"
+          ],
+          "seconds": 0.46211519999999995
+        },
+        {
+          "command": "node",
+          "args": [
+            "node_modules/@typescript/native-preview/bin/tsgo.js",
+            "--noEmit",
+            "-p",
+            "tsconfig.review-worker.json"
+          ],
+          "seconds": 3.2633986
+        },
+        {
+          "command": "node",
+          "args": [
+            "node_modules/vite/bin/vite.js",
+            "build"
+          ],
+          "seconds": 22.7709168
+        },
+        {
+          "command": "cargo.exe",
+          "args": [
+            "build",
+            "--release",
+            "--manifest-path",
+            "src-tauri/Cargo.toml",
+            "--bin",
+            "collect_otb_games",
+            "--features",
+            "headless-otb"
+          ],
+          "seconds": 16.7412956
+        },
+        {
+          "command": "cargo.exe",
+          "args": [
+            "build",
+            "--release",
+            "--locked",
+            "--manifest-path",
+            "src-tauri/tournament-core/Cargo.toml",
+            "--target-dir",
+            "src-tauri/target"
+          ],
+          "seconds": 4.671570300000007
+        }
+      ]
+    },
+    "phonePublishedSource": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+    "phoneHttpsAssetsVerified": 10,
+    "homeOwnLocalEvaluationsAvailable": true,
+    "gatewayUpdatedModules": [
+      "lichess-local-eval-reader.mjs",
+      "stockfish-remote-server.mjs"
+    ],
+    "gatewayOldReaderMatchesNewHttp": true,
+    "gatewayRestartedOnce": true,
+    "subsequentVerificationReadOnly": true,
+    "pinnedSyncHelpersAndTaskPreserved": true,
+    "ownerFilesPreserved": 7,
+    "serveRoutesPreserved": true,
+    "temporaryTasksRemoved": true,
+    "nativeWindowVerified": false,
+    "engineModuleHashes": [
+      {
+        "name": "stockfish-remote-server.mjs",
+        "installedSha256": "11158697745835fd8dd9da48b039b587afe2d97050ef7ecc96c33bb424d402bd",
+        "sourceSha256": "b2401241529f6442f457dcd0bd164f66a4c1527302466f50742feeb8c4b25454"
+      },
+      {
+        "name": "lichess-local-eval-reader.mjs",
+        "installedSha256": "6dfb9b0e2222c830522de677749df281b6cba5fb5584065b3756e8497f394b2e",
+        "sourceSha256": "827466324101ef9e1d744fdc195ee6353c18a7470510a71938068b563fa48486"
+      },
+      {
+        "name": "lc0-network-routing.mjs",
+        "installedSha256": "7316152157b4773176e6cb035c1a350ef240f5b2546ea4d948a8f2759a012627",
+        "sourceSha256": "7316152157b4773176e6cb035c1a350ef240f5b2546ea4d948a8f2759a012627"
+      },
+      {
+        "name": "engine-performance-presets.mjs",
+        "installedSha256": "4c9fd077c404f9bdc4e32521f3e33aab7f8f0e474be16546773f9f2e75ed52e0",
+        "sourceSha256": "4c9fd077c404f9bdc4e32521f3e33aab7f8f0e474be16546773f9f2e75ed52e0"
+      },
+      {
+        "name": "uci-report-search.mjs",
+        "installedSha256": "076da61e1dd247716bdc8eba2c7efd7118e61e948466f3caf7ee323821292c7e",
+        "sourceSha256": "076da61e1dd247716bdc8eba2c7efd7118e61e948466f3caf7ee323821292c7e"
+      }
+    ],
+    "gatewayBeforeAfterStoredDepth": 65,
+    "installedPhoneRuntimeModulesVerified": 15,
+    "installedPhoneHelperAndCollectorMatchBuild": true,
+    "actualPhoneHelperChildVerified": true,
+    "installedPhoneNoticesVerified": true,
+    "deliveryNote": "Busy library refreshes delayed publication; the normal publisher guard stayed enabled. A post-gateway refresh and transient syncing response were verified read-only without a second engine restart."
+  },
+  "previousCompressionNoticePhoneTopLevel": {
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "0ac83353e9efbcf0fc142b6a072c6cda0b0b0fd6",
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "0ac83353e9ef-6008627c0999",
+    "appShellSha256": "6008627c0999581c5e1eda248c3c13573012f06469ee8cbd16bbfcce0a63fd04",
+    "checkedAt": "2026-10-25T16:47:48.768Z",
+    "verified": [
+      "canonical HTTPS metadata and exact shell/entry/plan/Stockfish19 JS/WASM hashes",
+      "unchanged saved workspace, normalized library content and tournament settings",
+      "stable repeated library reads (25 files and70 databases)",
+      "unchanged full Serve configuration, owner enabled choice and PC engine PID8536",
+      "unpackaged installed helper backing/hash and actual matching child after publication",
+      "both target-specific immutable notice sidecars and exact installed CLI output",
+      "normal uncaptured publisher return and both temporary tasks removed"
+    ],
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "publisherNormalExitObserved": true,
+    "publisherCleanup": {
+      "temporaryTaskRemoved": true,
+      "normalPublisherExitObserved": true,
+      "immediateIdleGuardPassed": true,
+      "bothEngineFamiliesColdBeforePublish": true,
+      "noUciClientsBeforePublish": true
+    },
+    "libraryBeforeAfterContentCompared": true,
+    "libraryComparisonNote": "Before/after normalized library content matches; volatile generatedAt excluded before both snapshots.",
+    "phonePid": 40080,
+    "assets": [
+      {
+        "path": "assets/index-dU5SAf6m.js",
+        "bytes": 295301,
+        "sha256": "5537d4c58a230b84c3731860639a73d2e26fa59ae8c6b2d74998fcb009e8025e"
+      },
+      {
+        "path": "assets/WebApp-DTjvJocc.js",
+        "bytes": 433745,
+        "sha256": "6b2e5181a9a7391cd4edc89a0f421730e6b6a908adaf6179896b591020f566e2"
+      },
+      {
+        "path": "assets/usePlanArrows-Cw5n9kVy.js",
+        "bytes": 8390,
+        "sha256": "6512c7b0efae2ee3d6ebcdef8afce7642476a193807bae5c31d3428d0d88afe1"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      }
+    ],
+    "workspaceSha256": "e325f5f56463bbebf0f2f8e05999181aaba8fcb4c0175b2aa045856c674fba2b",
+    "librarySha256": "088c8feb837605cb4e31517d44e94b1de146c07fc7993a5be070c3e0f0514117",
+    "libraryContentSha256": "e8dfbcad5f7a14a5226f30fccfc298cf8dd6cd964aa44b95f207d026ca29b951",
+    "tournamentSettingsSha256": "ec60b2deb22f7143bfc32b9f194bfbfec634b92251c151b9b8945ceec52f8b0e",
+    "servicesEnabled": true,
+    "enginePid": 8536,
+    "engineReady": false,
+    "reviewRunning": false,
+    "activeWork": {
+      "library": false,
+      "explorer": 0,
+      "imports": 0,
+      "tournaments": 0
+    },
+    "serveSha256": "f25ac5a18efda388d5c9459aed3eec76066a507c84ba940c051e3c06de79a771",
+    "ownerDataWritten": false,
+    "libraryRead": {
+      "files": 25,
+      "databases": 70,
+      "stableAcrossRepeatedReads": true,
+      "beforeAfterContentCompared": true,
+      "volatileGeneratedAtExcluded": true
+    },
+    "ownerStateAndRoutesPreserved": true
+  },
+  "sharedEvaluationDiscoveryPhoneDelivery20261025": {
+    "checkedAt": "2026-10-25T23:59:51.610Z",
+    "url": "https://lox-pc.tail89d19b.ts.net/",
+    "sourceCommit": "b4c9288c20f82e8083ad4b56af1d33f05b2dfcae",
+    "appShellSha256": "0ea82179971b9135158af630f336294796e600451a0b9d34d1a3ebe4ae7e4701",
+    "homePid": 36144,
+    "files": 3342,
+    "databases": 105,
+    "savedPgnRead": true,
+    "databaseManifestRead": true,
+    "databasePositionRead": true,
+    "tournamentSettingsRead": true,
+    "personalSyncPhase": "synced",
+    "personalSyncErrors": 0,
+    "personalSyncConflicts": 0,
+    "servicesEnabled": true,
+    "enginePid": 60200,
+    "engineWorkerReady": false,
+    "storedEvaluationDepth": 65,
+    "browserRendered": false,
+    "physicalPhoneVerified": false,
+    "ownerDataWritten": false,
+    "assets": [
+      {
+        "path": "index.html",
+        "bytes": 1052,
+        "sha256": "e923ae7985d771817026baa7cc29d4d95c7b4c51c2a61250e111b2813de80f69"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "bytes": 401,
+        "sha256": "7d6dcbb884c92ff36b8c5449c61982ae4afa2855b765e52a9c79b8c7745b353b"
+      },
+      {
+        "path": "web-sw.js",
+        "bytes": 3462,
+        "sha256": "d7039a05765d22948f3d1894f2a47b5a1c1e6910294627e09040e3fb91c69335"
+      },
+      {
+        "path": "assets/index-B35kf7dc.js",
+        "bytes": 116,
+        "sha256": "58a0d867a9221127a238d9ff3986a3c4e2262e200a0f57cc1bc84796ec38fa9d"
+      },
+      {
+        "path": "assets/index-C5fIn7uC.js",
+        "bytes": 10667,
+        "sha256": "e865374a7487aa1cc4b031683e410bafabcd574c52a3233f533ffd276e993853"
+      },
+      {
+        "path": "assets/index-D-g97tKi.js",
+        "bytes": 295301,
+        "sha256": "b3a28edacf7ad8f8f194075b0bcac3e2e8a4080fdac4a94757006c5afb5ffb01"
+      },
+      {
+        "path": "assets/WebApp-BDQ66AB1.js",
+        "bytes": 442391,
+        "sha256": "c1db764e57cec8aec6e1378afa84745be6298e18b284ce2db96430e6ef73d454"
+      },
+      {
+        "path": "assets/WebApp-IB4YSzk0.css",
+        "bytes": 62631,
+        "sha256": "7e3419d9a828d652f67e9d47b8463e2143f501e8d0017394620627d8d30b1b2f"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-CHXl9cTw.wasm",
+        "bytes": 1845971,
+        "sha256": "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de"
+      },
+      {
+        "path": "assets/stockfish-19-lite-single-Z5sPOhoF.js",
+        "bytes": 28230,
+        "sha256": "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a"
+      }
+    ],
+    "ownerDataAndEnginePreserved": true,
+    "sourceBranch": "codex/phone-prep-picker-20261018",
+    "releaseId": "b4c9288c20f8-0ea82179971b",
+    "homeOwnLocalEvalsAvailable": true,
+    "homeOwnLocalEvalsError": null,
+    "homeOwnLocalEvalsPositions": 401283893,
+    "publisherReturned": true,
+    "preservedOwnerFiles": 7,
+    "privateSyncTaskAndPinnedHelpersPreserved": true,
+    "serveRoutesPreserved": true,
+    "ownerWorkspaceAndCatalogHashesMatch": true,
+    "temporaryTasksRemoved": true
+  },
+  "previousCompressionNoticeDesktopTopLevel": {
+    "exeBytes": 47958016,
+    "exeSha256": "adc1ff307c51326697a872a30c827a18ab644d72c008337d91dcc7194e1ccad4",
+    "assets": [
+      {
+        "name": "index-DjzhDy4S.js",
+        "bytes": 292437,
+        "sha256": "2a411b86ec67b873fa8b71619263403eb45d5519637b146dcc99d68d01986d49",
+        "encoding": "brotli",
+        "compressedBytes": 89579,
+        "compressedSha256": "d1f8ee49122268cd0a9801dbfe44bfbccb125ea57e70bebe5da732ec0cee8647",
+        "embedded": true
+      },
+      {
+        "name": "App-DIZUHExG.js",
+        "bytes": 196770,
+        "sha256": "23d392fa2173ef68c367a0cbea63e07375c76803b5090bd2862e31592cea20cb",
+        "encoding": "brotli",
+        "compressedBytes": 56654,
+        "compressedSha256": "cd173351e5b44fc8dc3d9cc9353a4697eced96f9b49b36e230b27a48c96ed7c4",
+        "embedded": true
+      },
+      {
+        "name": "bindings-BdZ-uijJ.js",
+        "bytes": 20422,
+        "sha256": "7b07b38badd45610f8405935099314f9312daf37feaeb044c2eb9b2813edc9da",
+        "encoding": "brotli",
+        "compressedBytes": 2949,
+        "compressedSha256": "0ca7588086c227259d51f8729ec74788d110583168b62c005b1d983c1713dcd5",
+        "embedded": true
+      }
+    ],
+    "sourceCommit": "abf029e6279d743754f39094ade4c04763c61c1c",
+    "primaryCommit": "844beb1c423c07acc861ba0d636e0f4f1c11c535",
+    "nativeBuild": true,
+    "existingNativeWarnings": 22,
+    "nativeCargoSeconds": 114.0,
+    "viteSeconds": 24.21,
+    "buildGuardRan": true,
+    "exactWindowsIpcShimEmbedded": true,
+    "standaloneNoticeBytes": 2931,
+    "standaloneNoticeSha256": "ee7e052f5730ae06fd117412056d5337675a06e18e84d858a9065ad7e6c4db2a",
+    "completeAboutNoticeLiteralVerified": true,
+    "bundledFiles": 102,
+    "bundledBytes": 104581828,
+    "matchingProductTestAndNoticeFiles": 10,
+    "nodeChecks": 5,
+    "aboutComponentChecks": 1,
+    "independentPrimaryAndClean": true,
+    "types": true,
+    "restoredGeneratedOutputs": [
+      "scripts/generated/otb-prep-database.js",
+      "scripts/generated/shared-review-service.js"
+    ],
+    "cleanCheckout": true,
+    "nativeWindowVerified": false,
+    "physicalPhoneVerified": false,
+    "explicitDevRestart": false,
+    "existingDevWatcherRelaunched": true,
+    "phoneProductionChanged": false,
+    "hostedHelperNoticeAuditPending": true,
+    "ownerDataWritten": false,
+    "corpusCopied": false,
+    "artifact": "src-tauri/target/release/en-croissant-fork.exe",
+    "activeDevSessionPreserved": false,
+    "devShortcutChanged": false,
+    "rollback": "task-owned original rollback retained",
+    "devWatcherProcessAfterConfigChange": 59432
+  },
+  "historicalReportProtocolEngineTopLevel": {
+    "sourceCommit": "ff5f271ca4abcda656d6a61ef64b0983dfaeab49",
+    "reportProtocolVersion": 1,
+    "serverSha256": "b88a5bf67b319a93eafb9e84c6ad2520956a634a303e89cc0695b5704c317e5d",
+    "helperSha256": "076da61e1dd247716bdc8eba2c7efd7118e61e948466f3caf7ee323821292c7e",
+    "checkedAt": "2026-10-24T18:33:48.267Z",
+    "verification": {
+      "canonicalHttps": true,
+      "bounded": {
+        "reportLimits": {
+          "depth": 8,
+          "timeMs": 50
+        },
+        "engine": "Stockfish 18",
+        "bestmove": "e2e4",
+        "selectedDepth": 8,
+        "legalPvMoves": 9,
+        "elapsedMs": 939,
+        "completed": true
+      },
+      "legacyFinite": {
+        "reportLimits": null,
+        "engine": "Stockfish 18",
+        "bestmove": "e2e4",
+        "selectedDepth": 2,
+        "legalPvMoves": 2,
+        "elapsedMs": 6,
+        "completed": true
+      },
+      "queuedAnalyses": 0
+    },
+    "preserved": [
+      "config",
+      "scheduled task XML",
+      "Tailscale Serve routes",
+      "owner enabled choice"
+    ],
+    "phoneUiPublished": false
   }
 }
