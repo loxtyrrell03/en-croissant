@@ -254,3 +254,42 @@ capture their selected profile options, while phone bounded reports keep their
 independent allocation. The generic native PC client and phone search limits
 remain in the broader audit. The shipped default PC connection is LCZero, whose
 GPU controls must remain separate from Stockfish CPU resources.
+
+
+## Explicit search limits: service protocol source
+
+Novelty b186d2d7 provides depth, time and until-stopped controls. The phone still
+uses its older depth/infinite fields. A separate opt-in search protocol now makes
+the missing time behavior available to a future phone consumer; node limits also
+preserve En’s existing native advanced search option. The protocol is version1
+and independent of CPU resources and bounded game reports.
+
+`searchLimit` contains `{version:1, mode, value}` for depth/time/nodes, or only
+`{version:1, mode:"infinite"}`. Time is whole milliseconds. Supported values are
+depth1–70 (also bounded by the configured service cap), time50–3600000 ms and
+nodes1–4294967295. New UI edits should keep the existing native depth1–60 policy;
+older depth70 phone values remain valid. Malformed/unknown versions, extra fields
+and requests combining the new selection with legacy depth/infinite or report
+limits are rejected before starting a worker. Absence preserves legacy behavior.
+
+The service captures an immutable selection before entering the engine queue,
+then acknowledges the exact limit and UCI command before publishing analysis.
+Explicit time searches have a ten-second completion allowance. Explicit depth,
+nodes and until-stopped searches no longer inherit the old three-minute service
+deadline; cancellation still owns only its active/queued job and keeps the next
+request safe. No-policy callers and independent report budgets keep their prior
+deadlines. Health reads remain cold; config/presets and data are unchanged.
+
+31 Node cases/eight files pass without skips, including isolated real Stockfish19
+time/node/depth searches, captured long-time command cancellation, queued-request
+ownership, exact legacy defaults and bounded reports. The long-time request is
+acknowledged and cancelled; a full hour run was not performed.61 exact CI cases/
+eight files, types, four-file lint0 and four-file format pass. The installer stages
+the new pure dependency before the gateway; it was parsed, not executed. Runtime
+source graph now has nine modules. LCZero uses the same UCI path, without a new
+physical GPU run in this milestone.
+
+This is source/service-fixture evidence. Phone capability/receipt checks,
+immutable transport, managed-WASM limits, verified preferences/inline controls,
+and actual gateway/phone publication remain. The current hosted phone64fa62b5,
+engine9856 and native78c77926 artifact were not updated by this source milestone.

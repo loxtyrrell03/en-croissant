@@ -27,6 +27,7 @@ $enginePerformancePresets = Join-Path $serverRoot "engine-performance-presets.mj
 $engineDeviceInfo = Join-Path $serverRoot "engine-device-info.mjs"
 $engineResourcePresets = Join-Path $serverRoot "engine-resource-presets.mjs"
 $engineResourceProtocol = Join-Path $serverRoot "engine-resource-protocol.mjs"
+$engineSearchProtocol = Join-Path $serverRoot "engine-search-protocol.mjs"
 $reportSearch = Join-Path $serverRoot "uci-report-search.mjs"
 $configPath = Join-Path $installRoot "config.json"
 $logPath = Join-Path $installRoot "stockfish-remote-server.log"
@@ -109,6 +110,7 @@ Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-performance-presets.
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-device-info.mjs") -Destination $engineDeviceInfo -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-resource-presets.mjs") -Destination $engineResourcePresets -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-resource-protocol.mjs") -Destination $engineResourceProtocol -Force
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-search-protocol.mjs") -Destination $engineSearchProtocol -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\uci-report-search.mjs") -Destination $reportSearch -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\stockfish-remote-server.mjs") -Destination $serverScript -Force
 

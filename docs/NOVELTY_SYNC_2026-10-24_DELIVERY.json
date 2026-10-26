@@ -7080,5 +7080,76 @@
       "src/components/panels/analysis/ReportModal.tsx",
       "src/utils/engines.ts"
     ]
+  },
+  "searchLimitProtocolSource20261026": {
+    "status": "source-verified-phone-consumers-and-live-delivery-pending",
+    "baseline": "4ff2d71c531e6e0625fdd9ac98e139dcc1217844",
+    "searchProtocolVersion": 1,
+    "requestField": "searchLimit",
+    "modes": [
+      "depth",
+      "time",
+      "nodes",
+      "infinite"
+    ],
+    "timeUnit": "whole milliseconds",
+    "depthRange": [
+      1,
+      70
+    ],
+    "newUiDepthPolicy": [
+      1,
+      60
+    ],
+    "timeRangeMs": [
+      50,
+      3600000
+    ],
+    "nodesRange": [
+      1,
+      4294967295
+    ],
+    "strictImmutableSelection": true,
+    "rejectsConflictingLegacyAndReportFields": true,
+    "metadataAcknowledgesLimitAndCommand": true,
+    "explicitTimeHasCompletionAllowanceMs": 10000,
+    "explicitUntilStoppedDepthNodesHaveNoLegacyDeadline": true,
+    "legacyDeadlineAndWirePreserved": true,
+    "nodeChecksPassed": 31,
+    "nodeFiles": 8,
+    "exactCiChecksPassed": 61,
+    "exactCiFiles": 8,
+    "testsSkipped": 0,
+    "realStockfishFixtureSearchesPassed": true,
+    "queueCancellationAndNextOwnerPassed": true,
+    "realLongTimeCommandAcknowledgedAndCancelled": true,
+    "fullHourRuntimeTested": false,
+    "legacyCpuAndBoundedReportRegressionsPassed": true,
+    "configBytesPreserved": true,
+    "types": true,
+    "lintFiles": 4,
+    "lintErrors": 0,
+    "lintWarnings": 0,
+    "formattedNewFiles": 4,
+    "installerParsed": true,
+    "installerExecuted": false,
+    "sourceRuntimeModules": 9,
+    "actualLc0GpuSearchTested": false,
+    "clientTransportImplemented": false,
+    "phoneUiImplemented": false,
+    "gatewayPublished": false,
+    "nativeArtifactChanged": false,
+    "ownerDataWritten": false,
+    "corpusCopied": false,
+    "remaining": [
+      "phone capability and exact-limit receipt validation",
+      "transport snapshots across all intended live branches",
+      "supported local-WASM commands and timing",
+      "verified phone search preferences and inline controls",
+      "source/job/scope/cancel/Off/restore regression coverage",
+      "live gateway/phone delivery",
+      "rendered and physical verification",
+      "full historical parity audit"
+    ]
   }
 }

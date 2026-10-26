@@ -11,6 +11,13 @@ import { LC0_PROFILE_OPTIONS, selectLc0Network } from "./lc0-network-routing.mjs
 import { runBoundedUciReport, validReportSearchLimits } from "./uci-report-search.mjs";
 import { readEngineDeviceInfo } from "./engine-device-info.mjs";
 import {
+  ENGINE_SEARCH_PROTOCOL_VERSION,
+  engineSearchCapability,
+  parseEngineSearchRequest,
+  engineSearchCommand,
+  engineSearchTimeout,
+} from "./engine-search-protocol.mjs";
+import {
   CPU_RESOURCE_PROTOCOL_VERSION,
   CPU_RESOURCE_CAPABILITY,
   parseCpuResourceRequest,
@@ -242,6 +249,8 @@ async function handleHttpRequest(request, response) {
       // reads never start a worker just to discover an engine's version.
       version: stockfishVersion(httpEngine.name),
       reportProtocolVersion: 1,
+      searchProtocolVersion: ENGINE_SEARCH_PROTOCOL_VERSION,
+      searchLimits: engineSearchCapability(maxDepth),
       resourceProtocolVersion: CPU_RESOURCE_PROTOCOL_VERSION,
       cpuResources: CPU_RESOURCE_CAPABILITY,
       build: null,
@@ -371,9 +380,10 @@ async function handleHttpRequest(request, response) {
     });
   }
 
-  let cpuResources;
+  let cpuResources, searchLimit;
   try {
     cpuResources = parseCpuResourceRequest(body, engineKind);
+    searchLimit = parseEngineSearchRequest(body, maxDepth);
   } catch (error) {
     return writeJson(response, 400, { error: error.message });
   }
@@ -493,6 +503,9 @@ async function handleHttpRequest(request, response) {
     `${JSON.stringify({
       type: "meta",
       reportLimits,
+      searchProtocolVersion: searchLimit ? ENGINE_SEARCH_PROTOCOL_VERSION : undefined,
+      searchLimit: searchLimit ?? undefined,
+      searchCommand: searchLimit ? engineSearchCommand(searchLimit) : undefined,
       engine: selectedEngine.name || (engineKind === "lc0" ? "LCZero" : "Stockfish"),
       engineKind,
       build: engineKind === "lc0" ? lc0Tuning.backend : null,
@@ -517,7 +530,7 @@ async function handleHttpRequest(request, response) {
 
   try {
     const bestmove = await selectedEngine.analyze(
-      { fen, multipv, depth, infinite, reportLimits, cpuResources },
+      { fen, multipv, depth, infinite, reportLimits, cpuResources, searchLimit },
       (line) => {
         if (!response.destroyed) response.write(`${JSON.stringify({ type: "uci", line })}\n`);
       },
@@ -642,9 +655,11 @@ class PersistentUciEngine {
         });
       }
       return await this.runSearch(
-        params.infinite ? "go infinite" : `go depth ${params.depth}`,
+        params.searchLimit ? engineSearchCommand(params.searchLimit)
+          : params.infinite ? "go infinite" : `go depth ${params.depth}`,
         onInfo,
         signal,
+        params.searchLimit ? engineSearchTimeout(params.searchLimit) : undefined,
       );
     } finally {
       this.queued -= 1;
@@ -739,10 +754,10 @@ class PersistentUciEngine {
         }, 1000);
         stopGuard.unref();
       };
-      const timeoutId = setTimeout(() => {
+      const timeoutId = timeoutMs === null ? null : setTimeout(() => {
         stop(new Error(`${this.label} analysis timed out.`));
       }, timeoutMs);
-      timeoutId.unref();
+      timeoutId?.unref();
 
       const onAbort = () => {
         stop(abortError());

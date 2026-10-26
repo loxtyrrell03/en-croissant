@@ -1,3 +1,21 @@
+## 2026-10-26 explicit search-limit service protocol source
+
+- Independent searchProtocolVersion1 and strict searchLimit selections support
+  depth/time/nodes/until-stopped. Time uses whole milliseconds. New and legacy/
+  report limits cannot be mixed. Capture before queueing; metadata acknowledges
+  exact selection/command. Old fields/config/presets/report budgets stay intact.
+- Explicit time has a completion allowance; explicit depth/nodes/infinite jobs
+  retain their chosen limit/cancellation rather than an unrelated three-minute
+  deadline. Existing cancellation/queue ownership and cold health are preserved.
+-31 Node cases8 files include isolated real Stockfish19 searches/queued cancels/
+  long-time command acknowledgement and legacy/report checks.61 exact CI cases,
+  types,4-file lint0/format pass; no skips. Installer parsed, never run. New pure
+  dependency staged before gateway; source runtime graph9 modules.
+- Phone capability/receipt/transport, local WASM, verified inline settings and
+  live delivery remain. Hosted64fa62b5, gateway9856 and native78c77926 unchanged;
+  no owner data/corpus changes. No actual GPU/hour-long run claimed. Full audit
+  active; see docs/ENGINE_RESOURCES.md and the delivery JSON.
+
 ## 2026-10-26 shared Plans CPU phone delivery
 
 - Phone64fa62b5 is live with444 manifest files/11 exact HTTPS assets,15 home/eight
