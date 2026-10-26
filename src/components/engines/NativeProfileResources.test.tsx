@@ -9,6 +9,7 @@ import { enginePreferences } from "@/utils/enginePreferences";
 import type { LocalEngine } from "@/utils/engines";
 import { NativeProfileResources } from "./NativeProfileResources";
 import { EnginePreferencesNotice } from "./EnginePreferencesNotice";
+import { NativeProfileSearchControls } from "./NativeProfileSearchControls";
 
 const io = vi.hoisted(() => ({ disk: "[]", write: vi.fn(), device: vi.fn() }));
 vi.mock("@/bindings", async (original) => {
@@ -30,6 +31,10 @@ vi.mock("@/utils/enginePreferences", async () => {
 const config: EngineConfig = {
   name: "Invented CPU engine",
   options: [
+    {
+      type: "spin",
+      value: { name: "MultiPV", default: BigInt(1), min: BigInt(1), max: BigInt(256) },
+    },
     {
       type: "spin",
       value: { name: "Threads", min: BigInt(1), max: BigInt(64), default: BigInt(1) },
@@ -66,7 +71,18 @@ function Probe() {
   const engines = useAtomValue(enginesAtom);
   const engine = engines?.find((item) => item.id === selected);
   return engine?.type === "local" ? (
-    <NativeProfileResources key={`${engine.id}:${engine.path}`} engine={engine} config={config} />
+    <>
+      <NativeProfileSearchControls
+        key={`search:${engine.id}:${engine.path}`}
+        engine={engine}
+        config={config}
+      />
+      <NativeProfileResources
+        key={`cpu:${engine.id}:${engine.path}`}
+        engine={engine}
+        config={config}
+      />
+    </>
   ) : null;
 }
 const render = () =>
@@ -389,4 +405,100 @@ it("reflects a verified retry from the shared preference notice", async () => {
   expect(values(atoms.get(enginesAtom)![0] as LocalEngine)).toEqual([10, 1024]);
   expect(host.querySelector('[role="alert"]')).toBeNull();
   expect(host.textContent).toContain("Resources saved.");
+});
+
+it("saves a completed profile line edit after readback, preserving its independent resources and go", async () => {
+  let finish!: () => void;
+  io.write.mockReturnValueOnce(
+    new Promise<void>((done) => {
+      finish = done;
+    }),
+  );
+  await change(input("Lines"), "7");
+  expect(io.write).not.toHaveBeenCalled();
+  await key(input("Lines"), "Enter");
+  expect(atoms.get(enginesAtom)![0].settings?.find((s) => s.name === "MultiPV")?.value).toBe(4);
+  await act(async () => finish());
+  const engine = atoms.get(enginesAtom)![0] as LocalEngine;
+  expect(engine.settings?.find((s) => s.name === "MultiPV")?.value).toBe(7);
+  expect(engine.go).toEqual(profile.go);
+  expect(values(engine)).toEqual([3, 768]);
+  expect(engine.enabled).toBe(false);
+  expect(io.write).toHaveBeenCalledTimes(1);
+});
+it("retains an absent default go field when only lines are changed", async () => {
+  await act(async () => atoms.set(enginesAtom, [{ ...profile, go: undefined }]));
+  await enginePreferences.flush();
+  io.write.mockClear();
+  await change(input("Lines"), "6");
+  await key(input("Lines"), "Enter");
+  expect(atoms.get(enginesAtom)![0].go).toBeUndefined();
+  expect(JSON.parse(io.disk)[0].go).toBeUndefined();
+  expect(io.write).toHaveBeenCalledTimes(1);
+});
+it("keeps failed profile search values separate and retries the same original edit", async () => {
+  io.write.mockRejectedValueOnce(new Error("Invented search write failure"));
+  await change(input("Nodes per position"), "250007");
+  await key(input("Nodes per position"), "Enter");
+  expect(atoms.get(enginesAtom)![0].go).toEqual(profile.go);
+  const retry = button("Retry search save");
+  await act(async () => retry.click());
+  expect(atoms.get(enginesAtom)![0].go).toEqual({ t: "Nodes", c: 250007 });
+  expect(io.write).toHaveBeenCalledTimes(2);
+});
+it("finishes only the original profile when its search view is switched during saving", async () => {
+  const other = { ...profile, id: "search-other", path: "C:/Fixture/search-other.exe" };
+  await act(async () => atoms.set(enginesAtom, [...atoms.get(enginesAtom)!, other]));
+  await enginePreferences.flush();
+  io.write.mockClear();
+  let finish!: () => void;
+  io.write.mockReturnValueOnce(
+    new Promise<void>((done) => {
+      finish = done;
+    }),
+  );
+  await change(input("Nodes per position"), "250007");
+  await key(input("Nodes per position"), "Enter");
+  selected = other.id;
+  await render();
+  await act(async () => finish());
+  expect(atoms.get(enginesAtom)![0].go).toEqual({ t: "Nodes", c: 250007 });
+  expect(atoms.get(enginesAtom)![1].go).toEqual(profile.go);
+  expect(input("Nodes per position").value).toBe("170003");
+  expect(io.write).toHaveBeenCalledTimes(1);
+});
+it("preserves player clock and increment payloads through a verified profile update and reload", async () => {
+  const clocks = {
+    t: "PlayersTime" as const,
+    c: { white: 120003, black: 90005, winc: 2000, binc: 3000 },
+  };
+  await act(async () => atoms.set(enginesAtom, [{ ...profile, go: clocks }]));
+  await enginePreferences.flush();
+  io.write.mockClear();
+  await change(input("Lines"), "7");
+  await key(input("Lines"), "Enter");
+  expect(atoms.get(enginesAtom)![0].go).toEqual(clocks);
+  const loaded = await enginePreferences.reload();
+  expect(loaded[0].go).toEqual(clocks);
+  expect(loaded[0].settings?.find((s) => s.name === "MultiPV")?.value).toBe(7);
+});
+
+it("reflects a verified search retry from the shared notice without retaining a stale field error", async () => {
+  io.write.mockRejectedValueOnce(new Error("Invented disk failure"));
+  await change(input("Nodes per position"), "250007");
+  await key(input("Nodes per position"), "Enter");
+  await act(async () =>
+    root.render(
+      <MantineProvider env="test">
+        <Provider store={atoms}>
+          <Probe />
+          <EnginePreferencesNotice />
+        </Provider>
+      </MantineProvider>,
+    ),
+  );
+  await click("Retry save");
+  expect(atoms.get(enginesAtom)![0].go).toEqual({ t: "Nodes", c: 250007 });
+  expect(host.querySelector('[role="alert"]')).toBeNull();
+  expect(host.textContent).toContain("Search settings saved.");
 });

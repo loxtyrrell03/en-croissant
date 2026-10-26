@@ -1,3 +1,30 @@
+## 2026-10-26 native lines and search completion source
+
+- Approved inline A now includes native live-tab and local-profile lines/search
+  controls. Pointer/key/Enter/blur complete one edit; canceled/incomplete drafts
+  do not reach preferences or analysis. Lines1-8 respect advertised UCI bounds;
+  unsupported ranges retain a labelled saved count. Depth1-60, time50ms-1hour and
+  exact millisecond fractions are supported. En Nodes retains its native u32
+  maximum; ms/s/m/h and exact PlayersTime clocks/increments are preserved.
+- Only committed limits enter mode memory. Existing older values stay visible
+  without automatic clamping. Local profile/synced changes publish after verified
+  disk readback; unsynced edits stay transient. Failed saves expose retry/restore,
+  shared-notice retry clears stale errors, and rejected native searches can restore
+  prior go/lines without undoing newer CPU resources. No direct process start.
+- CPU/search use one owned native tab transaction and path-cached UCI inspection.
+  Its apply payload selects go/settings explicitly, preserving current enabled
+  after Pause during a save. Tab/game/engine/path/sync changes invalidate old
+  drafts and callbacks. Genuine missing default-go fields remain absent on a lines
+  edit. Game setup and remote/GPU interfaces retain their independent behavior.
+- 201 focused cases19 files and fulltypes pass.15-file lint has0 errors and one
+  unchanged EnginesPage initialization-effect dependency warning;15-file format
+  passes. Tests exercise actual forms/store/IO/listener, including late save, Off,
+  retry, UCI bounds, same-value new-game drafts and narrow search restoration.
+  Source/DOM proof; native package07773f1b predates this source until rebuilt.
+  Hosted phone/services, owner data and Novelty source remain unchanged. Phone
+  resource protocol/UI/delivery, rendered/physical proof and historical audit
+  remain; full goal active. See docs/ENGINE_RESOURCES.md.
+
 ## 2026-10-26 bounds and first-use native package
 
 - Product07773f1b is packaged with native completed resource edits, exact saved-

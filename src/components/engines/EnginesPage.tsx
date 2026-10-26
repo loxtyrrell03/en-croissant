@@ -55,10 +55,11 @@ import {
   readEngineSetting,
   replaceEngineSetting,
 } from "@/utils/lc0Networks";
-import { unwrap } from "@/utils/unwrap";
 import ConfirmModal from "../common/ConfirmModal";
 import GenericCard from "../common/GenericCard";
-import GoModeInput from "../common/GoModeInput";
+import { useNativeEngineConfig } from "@/hooks/useNativeEngineConfig";
+import { analysisLines } from "@/utils/nativeAnalysisSettings";
+import { NativeProfileSearchControls } from "./NativeProfileSearchControls";
 import LocalImage from "../common/LocalImage";
 import OpenFolderButton from "../common/OpenFolderButton";
 import LinesSlider from "../panels/analysis/LinesSlider";
@@ -383,9 +384,11 @@ function EngineSettings({
 
   const [engines, setEngines] = useAtom(enginesAtom);
   const engine = engines![selected] as LocalEngine;
-  const { data: options } = useSWRImmutable(["engine-config", engine.path], async ([, path]) => {
-    return unwrap(await commands.getEngineConfig(path));
-  });
+  const {
+    data: options,
+    error: configError,
+    mutate: retryConfig,
+  } = useNativeEngineConfig(engine.path);
 
   function setEngine(newEngine: LocalEngine) {
     setEngines(async (prev) => {
@@ -537,15 +540,38 @@ function EngineSettings({
           </Center>
         </Group>
         <Divider variant="dashed" label={t("Engines.Settings.SearchSettings")} />
-        <GoModeInput
-          goMode={engine.go || null}
-          setGoMode={(v) => setEngine({ ...engine, go: v })}
-        />
+        {options ? (
+          <NativeProfileSearchControls
+            key={`${engine.id}:${engine.path}`}
+            engine={engine}
+            config={options}
+          />
+        ) : (
+          <Stack gap="xs">
+            <Text size="xs" role={configError ? "alert" : "status"}>
+              {configError ? "Could not read this engine's options." : "Reading engine options…"}
+            </Text>
+            {configError && (
+              <Button
+                size="xs"
+                variant="default"
+                onClick={() => void retryConfig().catch(() => {})}
+              >
+                Retry engine options
+              </Button>
+            )}
+          </Stack>
+        )}
 
         <Divider variant="dashed" label={t("Engines.Settings.AdvancedSettings")} />
         {hasResources && options && <NativeProfileResources engine={engine} config={options} />}
         <SimpleGrid cols={2}>
           {completeOptions
+            .filter(
+              (option) =>
+                option.value.name !== "MultiPV" ||
+                analysisLines(engine.settings ?? []) === undefined,
+            )
             .filter((option) => !hasResources || !["Threads", "Hash"].includes(option.value.name))
             .filter((option: { type: string }) => option.type !== "check")
             .map((option: any) => {

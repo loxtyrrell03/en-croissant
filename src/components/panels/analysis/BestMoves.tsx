@@ -54,6 +54,7 @@ import { getBestMoveSourceLabel } from "@/utils/analysisSource";
 import { chessopsError, positionFromFen, swapMove } from "@/utils/chessops";
 import type { Engine } from "@/utils/engines";
 import { analysisResourceScope, sameAnalysisEngine } from "@/utils/nativeEngineResources";
+import { NativeTabSearchControls } from "@/components/engines/NativeTabSearchControls";
 import { NativeTabResources } from "@/components/engines/NativeTabResources";
 import { formatNodes } from "@/utils/format";
 import { formatScore } from "@/utils/score";
@@ -339,6 +340,15 @@ function BestMovesComponent({
             setSettings={setSettings}
             color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
             remote={engine.type !== "local"}
+            searchControls={
+              engine.type === "local" && activeTab ? (
+                <NativeTabSearchControls
+                  key={`search:${activeTab}:${engine.id}:${engine.path}:${ownerScope}`}
+                  engine={engine}
+                  tab={activeTab}
+                />
+              ) : undefined
+            }
             resourceControls={
               engine.type === "local" && activeTab
                 ? (fallback) => (

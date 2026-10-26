@@ -3,7 +3,7 @@ import { createStore, Provider, useAtomValue } from "jotai";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { SWRConfig } from "swr";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   activeTabAtom,
   enginesAtom,
@@ -85,6 +85,10 @@ const config: EngineConfig = {
   options: [
     {
       type: "spin",
+      value: { name: "MultiPV", default: BigInt(1), min: BigInt(1), max: BigInt(256) },
+    },
+    {
+      type: "spin",
       value: { name: "Threads", default: BigInt(1), min: BigInt(1), max: BigInt(64) },
     },
     {
@@ -101,6 +105,14 @@ const tab = (value: string): Tab => ({
 });
 const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const noMoves: string[] = [];
+const scrollDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
+Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value() {} });
+afterAll(async () => {
+  await new Promise((done) => setTimeout(done, 0));
+  if (scrollDescriptor)
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", scrollDescriptor);
+  else delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView;
+});
 const settingsAtom = (id = "resource-a") =>
   tabEngineSettingsFamily({
     tab: id,
@@ -169,6 +181,27 @@ const button = (label: string) =>
   host.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`) ??
   Array.from(host.querySelectorAll("button")).find((button) => button.textContent === label)!;
 const click = (label: string) => act(async () => button(label).click());
+const field = (label: string) =>
+  host.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!;
+const changeSearch = (input: HTMLInputElement, value: string) =>
+  act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+const completeSearch = async (label: string, value: string) => {
+  await changeSearch(field(label), value);
+  await act(async () =>
+    field(label).dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })),
+  );
+};
+async function searchMode(text: string) {
+  await act(async () => field("Stop analysis").click());
+  const option = Array.from(document.querySelectorAll<HTMLElement>('[role="option"]')).find(
+    (option) => option.textContent === text,
+  )!;
+  await act(async () => option.click());
+}
 const current = (id?: string) => atoms.get(settingsAtom(id));
 const open = async () => {
   await click("Engine settings");
@@ -532,4 +565,169 @@ it("uses profile identity for synchronization when another engine has the same d
   await open();
   await act(async () => sync().click());
   expect(resources(current().settings)).toEqual([3, 768]);
+});
+
+it("keeps a search draft out of native analysis, then saves before one exact MultiPV restart", async () => {
+  let finish!: () => void;
+  io.write.mockReturnValueOnce(
+    new Promise<void>((done) => {
+      finish = done;
+    }),
+  );
+  await open();
+  await changeSearch(field("Lines"), "7");
+  expect(io.write).not.toHaveBeenCalled();
+  expect(io.native).toHaveBeenCalledTimes(1);
+  await completeSearch("Lines", "7");
+  expect(current().settings.find((s) => s.name === "MultiPV")?.value).toBe(4);
+  expect(io.native).toHaveBeenCalledTimes(1);
+  await act(async () => finish());
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(2));
+  expect(io.native.mock.lastCall![3].extraOptions).toContainEqual({ name: "MultiPV", value: "7" });
+  expect(io.native.mock.lastCall![2]).toEqual(profile.go);
+  expect(resources(current().settings)).toEqual([3, 768]);
+  expect(io.write).toHaveBeenCalledTimes(1);
+});
+it("keeps a local fractional-time limit in its original tab without saving defaults", async () => {
+  await act(async () =>
+    atoms.set(settingsAtom(), (s) => ({ ...s, synced: false, go: { t: "Time", c: 250 } })),
+  );
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(2));
+  await open();
+  await completeSearch("Time per position", "1.249");
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(3));
+  expect(current().go).toEqual({ t: "Time", c: 1249 });
+  expect(io.native.mock.lastCall![2]).toEqual(current().go);
+  expect(atoms.get(enginesAtom)![0].go).toEqual(profile.go);
+  expect(io.write).not.toHaveBeenCalled();
+});
+it("retains Off when a search save finishes after Pause, and uses that limit on explicit resume", async () => {
+  let finish!: () => void;
+  io.write.mockReturnValueOnce(
+    new Promise<void>((done) => {
+      finish = done;
+    }),
+  );
+  await open();
+  await completeSearch("Nodes per position", "250007");
+  await click("Pause engine analysis");
+  await act(async () => finish());
+  expect(current().enabled).toBe(false);
+  expect(current().go).toEqual({ t: "Nodes", c: 250007 });
+  expect(io.native).toHaveBeenCalledTimes(1);
+  await click("Start engine analysis");
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(2));
+  expect(io.native.mock.lastCall![2]).toEqual(current().go);
+});
+it("leaves failed synced search settings unapplied, then retries one original save", async () => {
+  io.write.mockRejectedValueOnce(new Error("Invented search disk failure"));
+  await open();
+  await searchMode("At a depth");
+  expect(current().go).toEqual(profile.go);
+  expect(io.native).toHaveBeenCalledTimes(1);
+  await click("Retry search save");
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(2));
+  expect(current().go).toEqual({ t: "Depth", c: 24 });
+  expect(io.write).toHaveBeenCalledTimes(2);
+});
+it("cancels an unwritten search save when sync is disabled and releases pending ownership", async () => {
+  let finish!: (value: string) => void;
+  io.read.mockImplementationOnce(
+    () =>
+      new Promise<string>((done) => {
+        finish = done;
+      }),
+  );
+  await open();
+  await completeSearch("Nodes per position", "250007");
+  await act(async () => sync().click());
+  await act(async () => finish(io.disk));
+  expect(current().go).toEqual(profile.go);
+  expect(io.write).not.toHaveBeenCalled();
+  expect(enginePreferences.getSnapshot().pending).toBe(false);
+  await completeSearch("Nodes per position", "350009");
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(2));
+  expect(current().go).toEqual({ t: "Nodes", c: 350009 });
+  expect(io.write).not.toHaveBeenCalled();
+});
+it("bounds new line edits by supported UCI MultiPV without clamping the older saved value", async () => {
+  io.config.mockResolvedValueOnce({
+    status: "ok",
+    data: {
+      ...config,
+      options: [
+        ...config.options.filter((option) => option.value.name !== "MultiPV"),
+        {
+          type: "spin",
+          value: { name: "MultiPV", default: BigInt(1), min: BigInt(1), max: BigInt(3) },
+        },
+      ],
+    },
+  });
+  await open();
+  expect(field("Lines").value).toBe("4");
+  expect(field("Lines slider").max).toBe("3");
+  await completeSearch("Lines", "5");
+  expect(io.write).not.toHaveBeenCalled();
+  await completeSearch("Lines", "3");
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(2));
+  expect(io.native.mock.lastCall![3].extraOptions).toContainEqual({ name: "MultiPV", value: "3" });
+});
+it("drops a same-value search draft when the selected game changes within its tab", async () => {
+  await open();
+  await changeSearch(field("Lines"), "7");
+  await act(async () =>
+    atoms.set(tabsAtom, (tabs) =>
+      tabs.map((item) =>
+        item.value === "resource-a"
+          ? {
+              ...item,
+              gameOrigin: { kind: "database", database: "C:/Fixture/games.db3", gameId: 12 },
+            }
+          : item,
+      ),
+    ),
+  );
+  expect(field("Lines").value).toBe("4");
+  await completeSearch("Lines", "4");
+  expect(io.write).not.toHaveBeenCalled();
+  expect(io.native).toHaveBeenCalledTimes(1);
+});
+
+it("retains a saved line count when the engine does not advertise a supported MultiPV range", async () => {
+  io.config.mockResolvedValueOnce({
+    status: "ok",
+    data: {
+      ...config,
+      options: config.options.filter((option) => option.value.name !== "MultiPV"),
+    },
+  });
+  await open();
+  expect(field("Lines")).toBeNull();
+  expect(host.textContent).toContain("4 saved lines");
+  expect(field("Nodes per position").value).toBe("170003");
+  expect(io.write).not.toHaveBeenCalled();
+});
+it("restores a rejected search without undoing newer CPU resources", async () => {
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  io.native.mockImplementation(async (_engine, _tab, go) => {
+    if (go.t === "Depth") throw new Error("Invented depth rejection");
+    return [100, [line(20)]];
+  });
+  await open();
+  await searchMode("At a depth");
+  await vi.waitFor(() => expect(button("Restore previous search settings")).toBeTruthy());
+  await click("Balanced");
+  await vi.waitFor(() =>
+    expect(atoms.get(engineSearchErrorFamily({ engine: profile.id, tab: "resource-a" }))).toBe(
+      "Invented depth rejection",
+    ),
+  );
+  const calls = io.native.mock.calls.length;
+  await click("Restore previous search settings");
+  await vi.waitFor(() => expect(io.native).toHaveBeenCalledTimes(calls + 1));
+  expect(current().go).toEqual(profile.go);
+  expect(resources(current().settings)).toEqual([10, 1024]);
+  expect(current().enabled).toBe(true);
+  expect(io.write).toHaveBeenCalledTimes(3);
 });

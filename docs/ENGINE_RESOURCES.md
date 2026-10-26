@@ -52,6 +52,26 @@ cases; current behavior passes. Exhausted native request failures remain visible
 beside Retry analysis, with CPU-only previous-resource restoration in the open
 form. A saved preference receipt stays distinct from native search success.
 
+Native live tabs and local profile defaults now also use completed-edit lines and
+search controls. Lines allow1–8 within the engine's advertised MultiPV range;
+unsupported/malformed ranges retain a labelled saved count. Depth allows1–60,
+time50ms–1hour with exact millisecond fractions, and Nodes retains En's full native
+u32 range. Seconds, milliseconds, minutes and hours remain selectable display
+units without writing preferences. Saved older limits remain visible; only new
+field edits are range-checked. Mode switches remember committed limits, discard
+canceled drafts and retain En's exact player clocks/increments when present.
+The profile parser now accepts that existing native PlayersTime payload as well.
+
+Synced search edits and local profile edits verify saved bytes before publishing
+go/MultiPV. Tab-only edits remain transient. Search failures offer Retry save or
+restore of the unapplied edit; a native request rejection can restore the last
+search settings without undoing newer CPU resources. Shared readback recovery
+also clears a stale local error. Tab/game/engine/sync ownership and current Off
+are preserved, with no manual restart or direct process start. CPU and search
+edits now share that native tab transaction. Its update payload explicitly picks
+go/settings, so a captured enabled flag cannot overwrite a newer Pause choice.
+Game setup and remote/GPU controls retain their independent interfaces.
+
 Automatic first-use Balanced is scoped to successful missing-store bootstrap.
 Only a confirmed absent engine-settings file qualifies; existing files, explicit
 empty lists and default-looking saved values do not. The existing setup actor
@@ -69,8 +89,10 @@ Submitting a new empty array still saves an intentional empty choice. The old
 store reproduces the missing-readback failure; the corrected store and real setup
 retry pass. This preserves genuine first use across failed reads and retries.
 
-Current source verification:174 focused cases across18 files, full TypeScript,
-13-file lint0 and15-file formatting. Fixtures exercise actual native form, Jotai
+Current source verification:201 focused cases across19 files and full TypeScript.
+15-file lint has no errors and one existing EnginesPage options-initialization
+dependency warning; the unchanged effect already has that warning in the base.
+15-file formatting passes. Fixtures exercise actual native form, Jotai
 store, setup actor, bounded device hook and EngineListener with tiny synthetic
 IO/engine responses. Boundary tests cover older high values, new invalid edits,
 changed counts, cancellation, keyboard selection and accessible descriptions.
@@ -82,15 +104,13 @@ It verifies19 exact embedded assets, normal IPC, full About notices and102
 engine/source files, including shared policy code through its separate import.
 Native release took118 seconds with22 existing warnings. Primary independently
 passes61 focused cases and full types. Generated source content matches HEAD.
-The immediately prior95303cf5 package is rollback. No app was launched/installed
+It predates the newest search-control source. The immediately prior95303cf5
+package is rollback. No app was launched/installed
 and the hosted phone/service is unchanged. Source/DOM/package proof is separate
 from native-window, rendered narrow-layout and physical-device verification;
 those remain unavailable.
 
-Remaining work includes lines/search completed-edit and verified-application
-integration, preserving En's Nodes/PlayersTime/time-unit semantics. Their native
-wire payloads are u32 (not JavaScript's larger safe integer range). Phone PC
-resources require a separate new policy field: legacy fixed max/good/balanced/eco
+Phone PC resources require a separate new policy field: legacy fixed max/good/balanced/eco
 IDs and saved budgets remain authoritative. The new CPU balanced name must never
 reinterpret an old fixed balanced choice. The gateway must advertise an explicit
 resource protocol, validate requests, capture queue/stop ownership and report

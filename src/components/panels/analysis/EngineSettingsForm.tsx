@@ -44,6 +44,7 @@ interface EngineSettingsProps {
   remote: boolean;
   gameMode?: boolean;
   resourceControls?: (fallback: ReactNode) => ReactNode;
+  searchControls?: ReactNode;
 }
 
 function EngineSettingsForm({
@@ -55,6 +56,7 @@ function EngineSettingsForm({
   remote,
   gameMode,
   resourceControls,
+  searchControls,
 }: EngineSettingsProps) {
   const { t } = useTranslation();
 
@@ -80,30 +82,34 @@ function EngineSettingsForm({
 
   return (
     <Stack>
-      {!remote && !minimal && (
-        <GoModeInput gameMode={gameMode} goMode={settings.go} setGoMode={setGoMode} />
-      )}
+      {searchControls ?? (
+        <>
+          {!remote && !minimal && (
+            <GoModeInput gameMode={gameMode} goMode={settings.go} setGoMode={setGoMode} />
+          )}
 
-      {!minimal && multipv && (
-        <Group grow>
-          <Text size="sm" fw="bold">
-            {t("Engines.Settings.NumOfLines")}
-          </Text>
-          <LinesSlider
-            value={Number(multipv.value || 1)}
-            setValue={(v) =>
-              setSettings((prev) => {
-                return {
-                  ...prev,
-                  settings: prev.settings.map((o) =>
-                    o.name === "MultiPV" ? { ...o, value: v || 1 } : o,
-                  ),
-                };
-              })
-            }
-            color={color}
-          />
-        </Group>
+          {!minimal && multipv && (
+            <Group grow>
+              <Text size="sm" fw="bold">
+                {t("Engines.Settings.NumOfLines")}
+              </Text>
+              <LinesSlider
+                value={Number(multipv.value || 1)}
+                setValue={(v) =>
+                  setSettings((prev) => {
+                    return {
+                      ...prev,
+                      settings: prev.settings.map((o) =>
+                        o.name === "MultiPV" ? { ...o, value: v || 1 } : o,
+                      ),
+                    };
+                  })
+                }
+                color={color}
+              />
+            </Group>
+          )}
+        </>
       )}
 
       {!minimal && isPcLc0 && (

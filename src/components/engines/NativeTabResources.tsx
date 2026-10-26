@@ -1,8 +1,9 @@
 import { Button, Stack, Text } from "@mantine/core";
-import { atom, useAtomValue, useStore } from "jotai";
-import { useMemo, useRef, useState, type ReactNode } from "react";
-import useSWRImmutable from "swr/immutable";
-import { commands, type EngineConfig } from "@/bindings";
+import { atom, useAtomValue } from "jotai";
+import { useRef, useState, type ReactNode } from "react";
+import { type EngineConfig } from "@/bindings";
+import { useNativeEngineConfig } from "@/hooks/useNativeEngineConfig";
+import { useNativeTabSettings } from "@/hooks/useNativeTabSettings";
 import { useEngineDeviceSnapshot } from "@/hooks/useEngineDeviceSnapshot";
 import {
   activeTabAtom,
@@ -11,9 +12,8 @@ import {
   tabsAtom,
   engineSearchErrorFamily,
 } from "@/state/atoms";
-import { enginePreferences } from "@/utils/enginePreferences";
 import type { LocalEngine } from "@/utils/engines";
-import { analysisResourceScope, withCpuResources } from "@/utils/nativeEngineResources";
+import { withCpuResources } from "@/utils/nativeEngineResources";
 import type { EngineResourceValues } from "@/utils/engineResources";
 import { CpuResourceControls, type ResourceEdit } from "./CpuResourceControls";
 import { nativeProfileResourceFields } from "./NativeProfileResources";
@@ -60,19 +60,7 @@ export function NativeTabResources({
   tab: string;
   fallback: ReactNode;
 }) {
-  const {
-    data: config,
-    error,
-    mutate,
-  } = useSWRImmutable(
-    ["engine-config", engine.path],
-    async ([, path]) => {
-      const result = await commands.getEngineConfig(path);
-      if (result.status === "error") throw new Error(result.error);
-      return result.data;
-    },
-    { shouldRetryOnError: false },
-  );
+  const { data: config, error, mutate } = useNativeEngineConfig(engine.path);
   if (!config)
     return (
       <Stack gap="xs">
@@ -100,19 +88,7 @@ function NativeTabResourceEditor({
   config: EngineConfig;
   fallback: ReactNode;
 }) {
-  const atoms = useStore();
-  const tabSettings = useMemo(
-    () =>
-      tabEngineSettingsFamily({
-        tab,
-        engineId: engine.id,
-        defaultSettings: engine.settings ?? undefined,
-        defaultGo: engine.go ?? undefined,
-      }),
-    [tab, engine.id, engine.settings, engine.go],
-  );
-  const settings = useAtomValue(tabSettings);
-  const scope = analysisResourceScope(useAtomValue(tabsAtom).find((item) => item.value === tab));
+  const { settings, scope, prepare } = useNativeTabSettings(engine, tab);
   const previous = useRef<EngineResourceValues | null>(null);
   const [restoring, setRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState<string | null>(null);
@@ -130,83 +106,15 @@ function NativeTabResourceEditor({
       </>
     );
   function prepareResource(values: EngineResourceValues): ResourceEdit {
-    const profiles = atoms.get(enginesAtom);
-    const before = atoms.get(tabSettings);
-    const profile = profiles?.find((item) => item.id === engine.id);
-    const ownsProfile = () => atoms.get(enginesAtom) === profiles;
-    const ownsScope = () => {
-      const current = atoms.get(tabSettings);
-      return (
-        scope !== null &&
-        analysisResourceScope(atoms.get(tabsAtom).find((item) => item.value === tab)) === scope &&
-        current.settings === before.settings &&
-        current.go === before.go &&
-        current.synced === before.synced
-      );
-    };
-    if (
-      atoms.get(activeTabAtom) !== tab ||
-      !ownsScope() ||
-      profile?.type !== "local" ||
-      profile.path !== engine.path
-    )
-      throw new Error("This tab or engine changed. Open its current settings again.");
-    const previousValues = {
-      threads: Number(before.settings.find((setting) => setting.name === "Threads")?.value),
-      hashMb: Number(before.settings.find((setting) => setting.name === "Hash")?.value),
-    };
-    const nextSettings = withCpuResources(before.settings, values);
-    if (!before.synced)
-      return {
-        owns: ownsScope,
-        async save() {
-          if (!ownsScope() || atoms.get(activeTabAtom) !== tab)
-            throw new Error("This tab changed. Its settings were preserved.");
-          previous.current = previousValues;
-          atoms.set(tabSettings, (current) => ({ ...current, settings: nextSettings }));
-        },
-        async restore() {},
-      };
-    if (!profiles || !enginePreferences.isSavedValue(profiles))
-      throw new Error("Finish saving engine defaults before changing resources.");
-    const target = profiles.map((item) =>
-      item === profile
-        ? { ...item, settings: withCpuResources(item.settings ?? [], values) }
-        : item,
-    );
-    const edit = enginePreferences.prepareVerifiedUpdate(
-      target,
-      () => ownsProfile() && ownsScope(),
-    );
-    return {
-      owns: () => ownsProfile() && ownsScope(),
-      isApplied: () =>
-        enginePreferences.isSavedValue(atoms.get(enginesAtom)) &&
-        JSON.stringify(atoms.get(enginesAtom)) === JSON.stringify(edit.value),
-      async save() {
-        try {
-          await edit.save();
-        } catch (error) {
-          if (!ownsScope()) {
-            const settled = await edit.settleCanceled();
-            if (settled && ownsProfile() && enginePreferences.isSavedValue(settled))
-              atoms.set(enginesAtom, settled);
-          }
-          throw error;
-        }
-        if (!ownsProfile() || !enginePreferences.isSavedValue(edit.value))
-          throw new Error(
-            "A newer engine edit replaced this resource change. Current settings were preserved.",
-          );
-        const tabStillOwned = ownsScope();
-        atoms.set(enginesAtom, edit.value);
-        if (tabStillOwned) {
-          previous.current = previousValues;
-          atoms.set(tabSettings, (current) => ({ ...current, settings: nextSettings }));
-        }
+    return prepare(
+      (before) => ({ ...before, settings: withCpuResources(before.settings, values) }),
+      (before) => {
+        previous.current = {
+          threads: Number(before.settings.find((setting) => setting.name === "Threads")?.value),
+          hashMb: Number(before.settings.find((setting) => setting.name === "Hash")?.value),
+        };
       },
-      restore: edit.restore,
-    };
+    );
   }
   return (
     <Stack gap="xs">

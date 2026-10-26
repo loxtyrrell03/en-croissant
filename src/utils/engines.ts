@@ -25,6 +25,15 @@ const goModeSchema: z.ZodSchema<GoMode> = z.union([
     z.object({
         t: z.literal("Infinite"),
     }),
+    z.object({
+        t: z.literal("PlayersTime"),
+        c: z.object({
+            white: z.number().int().min(0).max(4_294_967_295),
+            black: z.number().int().min(0).max(4_294_967_295),
+            winc: z.number().int().min(0).max(4_294_967_295),
+            binc: z.number().int().min(0).max(4_294_967_295),
+        }),
+    }),
 ]);
 
 export const engineSettingsSchema = z.array(
