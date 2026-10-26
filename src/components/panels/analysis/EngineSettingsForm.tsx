@@ -12,7 +12,7 @@ import {
 import { IconPlayerStopFilled, IconSettings } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { GoMode } from "@/bindings";
 import GoModeInput from "@/components/common/GoModeInput";
@@ -43,6 +43,7 @@ interface EngineSettingsProps {
   minimal?: boolean;
   remote: boolean;
   gameMode?: boolean;
+  resourceControls?: (fallback: ReactNode) => ReactNode;
 }
 
 function EngineSettingsForm({
@@ -53,6 +54,7 @@ function EngineSettingsForm({
   minimal,
   remote,
   gameMode,
+  resourceControls,
 }: EngineSettingsProps) {
   const { t } = useTranslation();
 
@@ -158,68 +160,72 @@ function EngineSettingsForm({
         </Stack>
       )}
 
-      {!remote && threads && (
-        <>
-          <Group grow>
-            <Text size="sm" fw="bold">
-              {t("Engines.Settings.NumOfCores")}
-            </Text>
-            <CoresSlider
-              value={Number(threads.value || 1)}
-              setValue={(v) =>
-                setSettings((prev) => ({
-                  ...prev,
-                  settings: prev.settings.map((o) =>
-                    o.name === "Threads" ? { ...o, value: v || 1 } : o,
-                  ),
-                }))
-              }
-              color={color}
-            />
-          </Group>
-
-          {hash && (
+      {!remote &&
+        threads &&
+        (resourceControls ?? ((value) => value))(
+          <>
             <Group grow>
               <Text size="sm" fw="bold">
-                {t("Engines.Settings.SizeOfHash")}
+                {t("Engines.Settings.NumOfCores")}
               </Text>
-              <HashSlider
-                value={Number(hash.value || 1)}
+              <CoresSlider
+                value={Number(threads.value || 1)}
                 setValue={(v) =>
                   setSettings((prev) => ({
                     ...prev,
                     settings: prev.settings.map((o) =>
-                      o.name === "Hash" ? { ...o, value: v || 1 } : o,
+                      o.name === "Threads" ? { ...o, value: v || 1 } : o,
                     ),
                   }))
                 }
                 color={color}
               />
             </Group>
-          )}
-        </>
-      )}
+
+            {hash && (
+              <Group grow>
+                <Text size="sm" fw="bold">
+                  {t("Engines.Settings.SizeOfHash")}
+                </Text>
+                <HashSlider
+                  value={Number(hash.value || 1)}
+                  setValue={(v) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      settings: prev.settings.map((o) =>
+                        o.name === "Hash" ? { ...o, value: v || 1 } : o,
+                      ),
+                    }))
+                  }
+                  color={color}
+                />
+              </Group>
+            )}
+          </>,
+        )}
       {!minimal && (
         <Group>
-          <SyncSettings settings={settings} engine={engine.name} setSettings={setSettings} />
+          <SyncSettings settings={settings} engine={engine.id} setSettings={setSettings} />
           <ActionIcon.Group>
             {engine.type === "local" && (
               <Tooltip label="Kill engine">
                 <ActionIcon
                   variant="default"
                   onClick={() => {
-                    killEngine(engine, activeTab!);
-                    setSettings((prev) => ({
-                      ...prev,
-                      enabled: false,
-                    }));
+                    setSettings((prev) => {
+                      void killEngine(engine, activeTab!);
+                      return {
+                        ...prev,
+                        enabled: false,
+                      };
+                    });
                   }}
                 >
                   <IconPlayerStopFilled size="1rem" />
                 </ActionIcon>
               </Tooltip>
             )}
-            <AdvancedSettings engineName={engine.name} />
+            <AdvancedSettings engineId={engine.id} />
           </ActionIcon.Group>
         </Group>
       )}
@@ -240,7 +246,7 @@ function SyncSettings({
 
   const engines = useAtomValue(enginesAtom);
   const engineDefault = useMemo(
-    () => (engines ?? []).find((o) => o.name === engine)!,
+    () => (engines ?? []).find((o) => o.id === engine),
     [engines, engine],
   );
 
@@ -248,8 +254,9 @@ function SyncSettings({
     <Checkbox
       label={t("Board.Analysis.SyncGlobally")}
       checked={settings.synced}
+      disabled={!engineDefault}
       onChange={(e) => {
-        if (e.currentTarget.checked) {
+        if (e.currentTarget.checked && engineDefault) {
           setSettings((prev) => ({
             ...prev,
             go: engineDefault.go || prev.go,
@@ -267,7 +274,7 @@ function SyncSettings({
   );
 }
 
-function AdvancedSettings({ engineName }: { engineName: string }) {
+function AdvancedSettings({ engineId }: { engineId: string }) {
   const { t } = useTranslation();
 
   const navigate = useNavigate();
@@ -281,7 +288,7 @@ function AdvancedSettings({ engineName }: { engineName: string }) {
           navigate({
             to: "/engines",
             search: {
-              selected: (engines ?? []).findIndex((o) => o.name === engineName),
+              selected: (engines ?? []).findIndex((o) => o.id === engineId),
             },
           })
         }

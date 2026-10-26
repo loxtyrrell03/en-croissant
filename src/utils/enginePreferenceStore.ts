@@ -183,6 +183,31 @@ export function createEnginePreferenceStore(io: IO) {
             publish({ pending: true });
             return {
                 value: target.value,
+                /** A canceled scope can release only these exact owned bytes.
+                 * This is readback, never a rollback over a newer/external file. */
+                async settleCanceled() {
+                    const operation = queue.then(async () => {
+                        if (pending !== target) return undefined;
+                        const current = await io.read();
+                        if (pending !== target) return undefined;
+                        if (current !== previous.text && current !== target.text)
+                            throw new Error(
+                                "Engine settings changed in another app. The saved file was preserved.",
+                            );
+                        const written = current === target.text;
+                        expected = current;
+                        canonical = written ? target.text : previous.canonical;
+                        pending = null;
+                        const value = written ? target.value : previous.value;
+                        publish({ phase: "ready", value, pending: false, error: null });
+                        return value;
+                    });
+                    queue = operation.then(
+                        () => {},
+                        () => {},
+                    );
+                    return operation;
+                },
                 async save() {
                     if (expected === target.text && !pending && !status.error) return;
                     if (pending !== target || !target.owns())

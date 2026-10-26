@@ -18,7 +18,10 @@ function spin(config: EngineConfig, name: string): ResourceBounds | null {
     : null;
 }
 
-export function nativeProfileResourceFields(engine: LocalEngine, config: EngineConfig) {
+export function nativeProfileResourceFields(
+  engine: Pick<LocalEngine, "settings">,
+  config: EngineConfig,
+) {
   const threads = spin(config, "Threads"),
     hashMb = spin(config, "Hash");
   const values = {

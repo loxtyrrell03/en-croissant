@@ -101,3 +101,42 @@ the retained rollback. No app was launched, installed or updated; no PC-hosted
 phone/gateway runtime, data or hosting route changed. Current-tab and PC/phone
 resource integration, first-use/remaining search-control behavior and rendered/
 physical verification remain open.
+
+Native live-tab controls now use the selected inline design through the actual
+BestMoves form. Opening it shares the existing UCI-options inspection, cached by
+engine path and bounded by its native15-second timeout. It inspects UCI metadata
+without a search; closed forms mount neither option nor device checks. The OS
+snapshot remains independent and starts no engine. Existing per-engine CPU
+settings, supported UCI ranges and a budget covering visible CPU engines plus
+other enabled tab instances determine recommendations. Paused sessions count;
+existing values never move when this count or the device snapshot changes.
+
+Unsynced edits remain transient to their tab. Synced CPU-only defaults save and
+verify before reaching the runtime atom. Tab/game scope and engine identity
+own late callbacks. Pausing during a save preserves Off; a suspended listener
+waits for its normal reactivation. Removing a tab or disabling synchronization
+before the write cancels it and settles exact owned bytes through readback,
+without overwriting an external/newer file or leaving a stuck pending edit. A
+global write already in progress can finish for its original profile, while a
+replacement tab's unsynced settings remain untouched.
+
+Native requests now retain their own identity across default-only snapshots.
+Two actual cases previously restarted an unchanged unsynced request; they pass
+after this correction. Functional settings edits read current atom state;
+pause-only actions no longer save unchanged defaults. Synchronization and profile
+navigation use engine ids, preserving distinct engines with identical names.
+
+If the native engine still rejects a request after its existing bounded retry,
+the engine row shows the error with Retry analysis. It uses the normal enabled/
+listener lifecycle and does not rewrite preferences. The open resource form can
+restore previous CPU settings while retaining lines, limits and other options.
+A save receipt is distinct from a successful native search.
+
+Verification:158 focused checks across16 files, full TypeScript and12-file lint0.
+The integrated fixtures exercise actual BestMoves, EngineListener, tab atoms and
+serialized synthetic persistence, including stopped/suspended engines, mid-save
+tab/sync changes, cancellation/readback, duplicate names, request rejection/retry
+and CPU-only restoration. No owner data or hosted service was changed. Native
+packaging must be rebuilt separately; actual rendered widths/native-window and
+physical-device evidence remain unavailable. First-use initialization, remaining
+lines/search draft behavior and PC/phone resource integration remain open.

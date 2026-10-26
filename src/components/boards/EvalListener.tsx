@@ -15,6 +15,8 @@ import {
   engineCloudEvalStatusFamily,
   engineMovesFamily,
   engineProgressFamily,
+  engineSearchErrorFamily,
+  engineSearchRetryFamily,
   enginesAtom,
   firstEngineWithLinesFamily,
   tabEngineSettingsFamily,
@@ -194,7 +196,7 @@ function useEngineWakeRevision(active: boolean) {
 }
 
 export function EngineListener({
-  engine,
+  engine: profile,
   engineWakeRevision,
   firstEngineWithLines,
   isGameOver,
@@ -216,12 +218,30 @@ export function EngineListener({
   moves: string[];
   threat: boolean;
 }) {
+  // Profile default snapshots can change independently of an unsynced tab.
+  // Native requests use id/path plus the tab's explicit go/options below, so
+  // changing saved defaults must not stop/restart an unchanged tab search.
+  const local = profile.type === "local" ? profile : null;
+  const remote = profile.type === "local" ? null : profile;
+  const id = profile.id,
+    name = profile.name;
+  const path = local?.path ?? "",
+    version = local?.version ?? "",
+    loaded = local?.loaded;
+  const engine = useMemo<Engine>(
+    () => remote ?? { type: "local", id, name, path, version, loaded },
+    [remote, id, name, path, version, loaded],
+  );
   const activeTab = useAtomValue(activeTabAtom);
   const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
   const sourceEpoch = useAtomValue(evaluationSourceEpochAtom);
   const storedPolicy = engine.type === "local" ? storedEnabled : true;
   const storedSourceEpoch = engine.type === "pc" || !storedPolicy ? 0 : sourceEpoch;
   const [, setLiveEval] = useAtom(currentLiveEvalAtom);
+  const [, setSearchError] = useAtom(
+    engineSearchErrorFamily({ engine: engine.id, tab: activeTab! }),
+  );
+  const searchRetry = useAtomValue(engineSearchRetryFamily({ engine: engine.id, tab: activeTab! }));
 
   const [, setProgress] = useAtom(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
   const [, setCloudEvalStatus] = useAtom(
@@ -370,6 +390,7 @@ export function EngineListener({
 
   useEffect(() => {
     if (!activeTab) return;
+    setSearchError(null);
 
     const tab = activeTab;
     const requestId = ++requestSequenceRef.current;
@@ -609,6 +630,7 @@ export function EngineListener({
               }
               // Out of restart attempts — settle on "no analysis" instead of
               // leaving the panel stuck on loading skeletons.
+              setSearchError(error instanceof Error ? error.message : String(error));
               setEngineVariation((prev) => {
                 const existing = prev.get(searchKey);
                 if (existing && existing.length > 0) return prev;
@@ -680,6 +702,8 @@ export function EngineListener({
     settings.enabled,
     settings.go,
     settingsOptionsKey,
+    searchRetry,
+    setSearchError,
     storedPolicy,
     storedSourceEpoch,
   ]);

@@ -130,6 +130,58 @@ it("coalesces queued local/shared retries after the first verified receipt chang
     expect(h.store.isSavedValue(edit.value)).toBe(true);
     expect(h.store.getSnapshot().error).toBeNull();
 });
+it("settles an unwritten canceled scope by readback and releases its pending snapshot", async () => {
+    const original = JSON.stringify([engine("original")]);
+    const h = fixture(original);
+    const previous = await h.store.reload();
+    let owns = true;
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => owns);
+    owns = false;
+    await expect(edit.save()).rejects.toThrow("replaced");
+    expect(await edit.settleCanceled()).toEqual(previous);
+    expect(h.store.isSavedValue(previous)).toBe(true);
+    expect(h.io.write).not.toHaveBeenCalled();
+});
+it("settles only its exact uncertain written snapshot after scope cancellation without another write", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    let owns = true;
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => owns);
+    h.io.write.mockImplementationOnce(async (text) => {
+        h.replace(text);
+        owns = false;
+        throw new Error("Lost receipt");
+    });
+    await expect(edit.save()).rejects.toThrow("Lost receipt");
+    const settled = await edit.settleCanceled();
+    expect(settled).toEqual(edit.value);
+    expect(h.store.isSavedValue(settled)).toBe(true);
+    expect(h.io.write).toHaveBeenCalledTimes(1);
+});
+it("does not settle cancellation over external bytes", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    let owns = true;
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => owns);
+    owns = false;
+    const external = JSON.stringify([engine("external")]);
+    h.replace(external);
+    await expect(edit.settleCanceled()).rejects.toThrow("another app");
+    expect(h.disk()).toBe(external);
+    expect(h.io.write).not.toHaveBeenCalled();
+});
+it("does not discard a newer pending snapshot when a prior scope is canceled", async () => {
+    const h = fixture(JSON.stringify([engine("original")]));
+    const previous = await h.store.reload();
+    const edit = h.store.prepareVerifiedUpdate([{ ...previous[0], name: "Changed" }], () => true);
+    const next = [engine("newer")];
+    const save = h.store.storage.setItem("engines", next);
+    const settle = edit.settleCanceled();
+    await save;
+    expect(await settle).toBeUndefined();
+    expect(h.store.isSavedValue(next)).toBe(true);
+    expect(JSON.parse(h.disk()!)[0].id).toBe("newer");
+});
 it.each(['{"broken":', '[{"type":"unknown","path":"keep-me"}]'])(
     "preserves unreadable settings without a normalization write: %s",
     async (text) => {

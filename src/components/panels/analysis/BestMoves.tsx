@@ -2,6 +2,7 @@ import {
   Accordion,
   ActionIcon,
   Box,
+  Button,
   Code,
   Collapse,
   Group,
@@ -27,7 +28,7 @@ import {
 import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import equal from "fast-deep-equal";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useStore } from "jotai";
 import { memo, startTransition, useCallback, useDeferredValue, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
@@ -42,13 +43,18 @@ import {
   engineMovesFamily,
   useStoredEvaluationsAtom,
   engineProgressFamily,
+  engineSearchErrorFamily,
+  engineSearchRetryFamily,
   enginesAtom,
   showArrowsAtom,
   tabEngineSettingsFamily,
+  tabsAtom,
 } from "@/state/atoms";
 import { getBestMoveSourceLabel } from "@/utils/analysisSource";
 import { chessopsError, positionFromFen, swapMove } from "@/utils/chessops";
 import type { Engine } from "@/utils/engines";
+import { analysisResourceScope, sameAnalysisEngine } from "@/utils/nativeEngineResources";
+import { NativeTabResources } from "@/components/engines/NativeTabResources";
 import { formatNodes } from "@/utils/format";
 import { formatScore } from "@/utils/score";
 import AnalysisRow from "./AnalysisRow";
@@ -92,39 +98,63 @@ function BestMovesComponent({
   const storedEnabled = useAtomValue(useStoredEvaluationsAtom);
   const sourceEpoch = useAtomValue(evaluationSourceEpochAtom);
   const progress = useAtomValue(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
-  const [, setEngines] = useAtom(enginesAtom);
-  const [settings, setSettings2] = useAtom(
-    tabEngineSettingsFamily({
-      engineId: engine.id,
-      defaultSettings: engine.settings ?? undefined,
-      defaultGo: engine.go ?? undefined,
-      tab: activeTab!,
-    }),
+  const searchError = useAtomValue(engineSearchErrorFamily({ engine: engine.id, tab: activeTab! }));
+  const atoms = useStore();
+  const ownerScope = analysisResourceScope(
+    useAtomValue(tabsAtom).find((tab) => tab.value === activeTab),
   );
+  const settingsAtom = tabEngineSettingsFamily({
+    engineId: engine.id,
+    defaultSettings: engine.settings ?? undefined,
+    defaultGo: engine.go ?? undefined,
+    tab: activeTab!,
+  });
+  const [settings, setSettings2] = useAtom(settingsAtom);
 
   useEffect(() => {
     if (settings.synced) {
-      setSettings2((prev) => ({
-        ...prev,
-        go: engine.go || prev.go,
-        settings: engine.settings || prev.settings,
-      }));
+      setSettings2((prev) => {
+        if (!prev.synced) return prev;
+        const go = engine.go || prev.go;
+        const next = engine.settings || prev.settings;
+        const sameGo = equal(prev.go, go),
+          sameSettings = equal(prev.settings, next);
+        return sameGo && sameSettings
+          ? prev
+          : { ...prev, go: sameGo ? prev.go : go, settings: sameSettings ? prev.settings : next };
+      });
     }
   }, [engine.settings, engine.go, settings.synced, setSettings2]);
 
   const setSettings = useCallback(
     (fn: (prev: Settings) => Settings) => {
-      const newSettings = fn(settings);
+      if (
+        !activeTab ||
+        atoms.get(activeTabAtom) !== activeTab ||
+        ownerScope === null ||
+        analysisResourceScope(atoms.get(tabsAtom).find((tab) => tab.value === activeTab)) !==
+          ownerScope
+      )
+        return;
+      const currentEngine = atoms.get(enginesAtom)?.find((item) => item.id === engine.id);
+      if (!currentEngine || !sameAnalysisEngine(currentEngine, engine)) return;
+      const newSettings = fn(atoms.get(settingsAtom));
       setSettings2(newSettings);
-      if (newSettings.synced) {
-        setEngines(async (prev) =>
+      if (
+        newSettings.synced &&
+        (!equal(newSettings.settings, currentEngine.settings ?? []) ||
+          !equal(newSettings.go, currentEngine.go ?? { t: "Infinite" }))
+      ) {
+        atoms.set(enginesAtom, async (prev) =>
           (await prev).map((o) =>
-            o.id === engine.id ? { ...o, settings: newSettings.settings, go: newSettings.go } : o,
+            sameAnalysisEngine(o, engine)
+              ? { ...o, settings: newSettings.settings, go: newSettings.go }
+              : o,
           ),
         );
       }
     },
-    [engine, settings, setSettings2, setEngines],
+    [engine, activeTab, ownerScope, atoms, settingsAtom, setSettings2],
   );
 
   const [settingsOn, toggleSettingsOn] = useToggle();
@@ -197,6 +227,7 @@ function BestMovesComponent({
           <ActionIcon
             size={compact ? "sm" : "md"}
             variant={settings.enabled ? "filled" : "transparent"}
+            aria-label={settings.enabled ? "Pause engine analysis" : "Start engine analysis"}
             color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
             onClick={() => {
               setSettings((prev) => ({ ...prev, enabled: !prev.enabled }));
@@ -278,6 +309,7 @@ function BestMovesComponent({
             </PerformanceHelp>
           )}
           <ActionIcon
+            aria-label="Engine settings"
             size={compact ? "sm" : "lg"}
             onClick={() => toggleSettingsOn()}
             mt="auto"
@@ -300,14 +332,60 @@ function BestMovesComponent({
         </ActionIcon.Group>
       </Box>
       <Collapse in={settingsOn} px={compact ? 10 : 30} pb={compact ? 6 : 15}>
-        <EngineSettingsForm
-          engine={engine}
-          settings={settings}
-          setSettings={setSettings}
-          color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
-          remote={engine.type !== "local"}
-        />
+        {settingsOn && (
+          <EngineSettingsForm
+            engine={engine}
+            settings={settings}
+            setSettings={setSettings}
+            color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
+            remote={engine.type !== "local"}
+            resourceControls={
+              engine.type === "local" && activeTab
+                ? (fallback) => (
+                    <NativeTabResources
+                      key={`${activeTab}:${engine.id}:${engine.path}:${ownerScope}`}
+                      engine={engine}
+                      tab={activeTab}
+                      fallback={fallback}
+                    />
+                  )
+                : undefined
+            }
+          />
+        )}
       </Collapse>
+      {searchError && (
+        <Stack gap="xs" px={compact ? 10 : 30} pb="xs">
+          <Text size="sm" c="red" role="alert">
+            Analysis could not start: {searchError}
+          </Text>
+          <Button
+            size="compact-xs"
+            variant="default"
+            disabled={!settings.enabled}
+            onClick={() => {
+              if (
+                activeTab &&
+                atoms.get(activeTabAtom) === activeTab &&
+                sameAnalysisEngine(
+                  atoms.get(enginesAtom)?.find((item) => item.id === engine.id),
+                  engine,
+                ) &&
+                atoms.get(settingsAtom).enabled &&
+                analysisResourceScope(
+                  atoms.get(tabsAtom).find((tab) => tab.value === activeTab),
+                ) === ownerScope
+              )
+                atoms.set(
+                  engineSearchRetryFamily({ engine: engine.id, tab: activeTab }),
+                  (value) => value + 1,
+                );
+            }}
+          >
+            Retry analysis
+          </Button>
+        </Stack>
+      )}
 
       <Progress
         value={isGameOver ? 0 : progress}

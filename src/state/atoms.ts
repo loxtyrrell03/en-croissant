@@ -998,8 +998,12 @@ const rawLiveEvalAtom = tabValue(liveEvalFamily);
 export const currentLiveEvalAtom = atom(
     (get) => {
         const value = get(rawLiveEvalAtom);
-        if (value && (value.evaluationSourceEpoch !== undefined || value.storedForLocal)
-            && (value.evaluationSourceEpoch ?? 0) !== get(evaluationSourceEpochAtom)) return null;
+        if (
+            value &&
+            (value.evaluationSourceEpoch !== undefined || value.storedForLocal) &&
+            (value.evaluationSourceEpoch ?? 0) !== get(evaluationSourceEpochAtom)
+        )
+            return null;
         return !get(useStoredEvaluationsAtom) && value?.storedForLocal ? null : value;
     },
     (
@@ -1559,6 +1563,15 @@ export const engineProgressFamily = atomFamily(
     (a, b) => a.tab === b.tab && a.engine === b.engine,
 );
 
+export const engineSearchErrorFamily = atomFamily(
+    (_: { engine: string; tab: string }) => atom<string | null>(null),
+    (a, b) => a.engine === b.engine && a.tab === b.tab,
+);
+export const engineSearchRetryFamily = atomFamily(
+    (_: { engine: string; tab: string }) => atom(0),
+    (a, b) => a.engine === b.engine && a.tab === b.tab,
+);
+
 export type EngineCloudEvalStatus = {
     phase: "checking" | "available" | "missing" | "error" | "disabled";
     message: string;
@@ -1852,6 +1865,8 @@ export function cleanupClosedTabAtomState(
     for (const engine of engines ?? []) {
         engineMovesFamily.remove({ tab, engine: engine.id });
         engineProgressFamily.remove({ tab, engine: engine.id });
+        engineSearchErrorFamily.remove({ tab, engine: engine.id });
+        engineSearchRetryFamily.remove({ tab, engine: engine.id });
         tabEngineSettingsFamily.remove({
             tab,
             engineId: engine.id,

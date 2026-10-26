@@ -165,6 +165,7 @@ export function CpuResourceControls({
   bounds,
   includedEngines = 1,
   scope,
+  successLabel = "Resources saved.",
   prepare,
   disabled = false,
 }: {
@@ -176,6 +177,7 @@ export function CpuResourceControls({
   bounds: { threads: ResourceBounds; hashMb: ResourceBounds };
   includedEngines?: number;
   scope: string;
+  successLabel?: string;
   prepare: (values: EngineResourceValues) => ResourceEdit;
   disabled?: boolean;
 }) {
@@ -193,9 +195,9 @@ export function CpuResourceControls({
     if (state.error && !state.busy && edit.current?.isApplied?.()) {
       edit.current = null;
       setFieldVersion((value) => value + 1);
-      setState({ busy: false, error: null, notice: "Resources saved." });
+      setState({ busy: false, error: null, notice: successLabel });
     }
-  }, [values.threads, values.hashMb, state.error, state.busy]);
+  }, [values.threads, values.hashMb, state.error, state.busy, successLabel]);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -234,7 +236,7 @@ export function CpuResourceControls({
         setState({
           busy: false,
           error: null,
-          notice: restore ? "Previous settings restored." : "Resources saved.",
+          notice: restore ? "Previous settings restored." : successLabel,
         });
     } catch (error) {
       if (edit.current?.owns?.() === false) edit.current = null;

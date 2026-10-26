@@ -1,3 +1,34 @@
+## 2026-10-26 native live-tab resource controls source
+
+- Approved inline A now reaches actual BestMoves/EngineSettingsForm local analysis.
+  Opening the form shares existing path-cached UCI inspection (native15s bound,
+  no analysis search); closed forms mount no metadata controls. OS device reads
+  stay read-only. Resource budgets include displayed CPU engines and other enabled
+  tab instances, including paused sessions, without retuning their current values.
+- Unsynced edits update only the intended tab. Synced CPU-only edits reach runtime
+  after exact preference readback. Stop flags are always read/preserved at apply;
+  no direct process restart or enable is issued. Original tab/game scope and
+  engine id/path own callbacks. Changed/unwritten scopes settle only exact owned
+  bytes by readback, releasing pending state without an extra write. An already
+  written global default remains global; newer unsynced tab choices stay intact.
+- Functional settings edits use current atom state; pause-only changes avoid
+  preference writes. Sync/default navigation uses engine ids, including duplicate
+  names. Equal defaults retain tab go/options references. Native request identity
+  excludes default snapshots, fixing unnecessary restarts of unsynced tabs. Two
+  actual integration cases fail against the unchanged prior listener and pass now.
+- Exhausted native request failures stay visible beside Retry analysis. Retry
+  respects enabled/owner state and normal listener lifecycle; previous CPU values
+  can be restored without changing lines/go/other UCI options. Saved is separate
+  from native request success. Stopped and suspended listeners are never revived.
+- 158 focused checks16 files, fulltypes and12-file lint0 pass. New integrated
+  cases exercise actual BestMoves, atoms, persistence and EngineListener with tiny
+  synthetic engine/IO fixtures. This is source/DOM proof, not rendered/native-window
+  or physical-device proof. Package still3705b39e until separately rebuilt.
+- First-use Balanced initialization, lines/search draft parity and phone/gateway
+  protocol/UI/delivery remain. LCZero/GPU, remote and game-setup controls retain
+  their independent architecture. Owner data/runtime services are untouched.
+  See docs/ENGINE_RESOURCES.md. Full historical audit/goal remains active.
+
 ## 2026-10-26 native profile resource package
 
 - Product source3705b39e builds and verifies the selected native Engines defaults
