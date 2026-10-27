@@ -1,3 +1,16 @@
+## 2026-10-27 cached phone startup recovery
+
+- The permanent HTTPS controller recovers missing exact hashed JS/CSS/font/image/
+  WASM assets from retained immutable app releases. A cached or suspended phone
+  document can finish loading after publication instead of failing before the
+  app's update/save UI exists. Current upstream responses remain authoritative;
+  HTML, API/data, unversioned files, traversal and symlinks cannot use this fallback.
+- The previous live release entry returned404 although its file was retained.
+  Both new HTTP regressions fail against the prior controller and pass after the
+  fix, including deliberately Off services.12 controller/cache tests and launcher
+  safeguards pass. This source milestone does not claim physical-phone recovery;
+  apply only the verified controller script through its existing hidden task.
+
 ## Sparse-position plan arrows (2026-10-26)
 
 - Plan Explorer uses a sample-relative one-game minimum instead of the fixed three-game floor that silently hid every route in small late-position samples. The existing proportional large-sample significance filter remains. Desktop Plan Explorer/Engine Plans and phone Engine Plans now say Show arrows; saved preferences and overlay ownership remain unchanged. The phone engine-derived plan flow does not use the database sample floor.

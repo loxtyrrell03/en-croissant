@@ -17,8 +17,14 @@ async function fixture(t, initial = true, fail = false) {
   );
   let alive = false;
   const actions = [];
+  const assets = new Map();
   const servers = ["en-croissant-home-server", "stockfish-18-remote"].map((service) =>
     createServer((req, res) => {
+      if (req.url.startsWith("/assets/")) {
+        res.writeHead(assets.has(req.url) ? 200 : 404, { "content-type": "text/javascript" });
+        res.end(assets.get(req.url) ?? "missing asset");
+        return;
+      }
       res.writeHead(alive ? 200 : 503, { "content-type": "application/json" });
       res.end(JSON.stringify({ ok: alive, service }));
     }),
@@ -56,6 +62,7 @@ async function fixture(t, initial = true, fail = false) {
   return {
     root,
     actions,
+    assets,
     options,
     base,
     get controller() {
@@ -156,6 +163,54 @@ test("the installed app stays loadable with home server down and cannot expose p
   assert.equal((await fetch(f.base() + "/phone-services.json")).status, 404);
   assert.equal((await fetch(f.base() + "/..%2f..%2fphone-services.json")).status, 403);
   assert.equal((await fetch(f.base() + "/api/pc-services")).status, 200);
+});
+
+async function previousRelease(f) {
+  const directory = join(f.root, "app-releases", "0123456789ab-0123456789ab");
+  await mkdir(join(directory, "assets"), { recursive: true });
+  await writeFile(join(directory, "assets", "index-old12345.js"), "import './WebApp-old67890.js';");
+  await writeFile(join(directory, "assets", "WebApp-old67890.js"), "export default 'retained application';");
+  await writeFile(join(directory, "assets", "WebApp-old67890.css"), ".board { display: grid; }");
+  await writeFile(join(directory, "assets", "settings.json"), "private fixture");
+  await writeFile(join(directory, "index.html"), "obsolete document");
+}
+
+test("cached release entry, lazy chunks and CSS remain loadable after a publish", async (t) => {
+  const f = await fixture(t);
+  await previousRelease(f);
+  for (const [name, body, type] of [
+    ["index-old12345.js", "import './WebApp-old67890.js';", "text/javascript"],
+    ["WebApp-old67890.js", "export default 'retained application';", "text/javascript"],
+    ["WebApp-old67890.css", ".board { display: grid; }", "text/css"],
+  ]) {
+    const response = await fetch(`${f.base()}/assets/${name}`);
+    assert.equal(response.status, 200, name);
+    assert.equal(response.headers.get("content-type"), type);
+    assert.match(response.headers.get("cache-control"), /immutable/);
+    assert.equal(await response.text(), body);
+  }
+  const head = await fetch(`${f.base()}/assets/index-old12345.js`, { method: "HEAD" });
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), "");
+  assert.equal(Number(head.headers.get("content-length")), 30);
+  f.assets.set("/assets/index-old12345.js", "current upstream response");
+  assert.equal(await (await fetch(`${f.base()}/assets/index-old12345.js`)).text(), "current upstream response");
+  assert.equal((await fetch(`${f.base()}/assets/absent-12345678.js`)).status, 404);
+  assert.equal((await fetch(`${f.base()}/assets/settings.json`)).status, 404);
+});
+
+test("retained assets also load while services are deliberately off without exposing old data", async (t) => {
+  const f = await fixture(t, false);
+  await previousRelease(f);
+  await f.stopHome();
+  assert.equal((await fetch(`${f.base()}/assets/index-old12345.js`)).status, 200);
+  assert.match(await (await fetch(f.base() + "/")).text(), /Phone services switch/);
+  for (const path of ["/assets/settings.json", "/assets/absent-12345678.js", "/index-old12345.js", "/app-version.json"]) {
+    assert.equal((await fetch(f.base() + path)).status, 404, path);
+  }
+  assert.equal((await fetch(f.base() + "/assets/..%2f..%2fphone-services.json")).status, 403);
+  assert.equal((await fetch(f.base() + "/api/health")).status, 503);
+  assert.deepEqual(f.actions, []);
 });
 
 test("concurrent opposite requests settle in order and leave the latest choice persisted", async (t) => {
