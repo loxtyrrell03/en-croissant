@@ -57,3 +57,12 @@ test('bounded parallel reads keep complete, stable file catalogues across scans'
  const first=await scan(f.leftRoot),second=await scan(f.leftRoot);assert.equal(first.size,40);assert.deepEqual([...first.keys()],[...second.keys()]);assert.deepEqual([...first.keys()],[...first.keys()].sort((a,b)=>a.localeCompare(b)));
  await syncFiles({...f,initialize:true});assert.deepEqual([...await scan(f.rightRoot)].map(([p,v])=>[p,v.hash]),[...first].map(([p,v])=>[p,v.hash]));
 });
+
+test('atomic review staging is never mirrored or mistaken for content deletion',async t=>{
+ const f=await fixture(t);const transient='My online games.mistake-review.json.9340.next';
+ await fs.writeFile(path.join(f.leftRoot,'My online games.mistake-review.json'),'saved');await fs.writeFile(path.join(f.leftRoot,transient),'in flight');
+ await fs.writeFile(path.join(f.leftRoot,'ordinary.next'),'personal');await fs.writeFile(path.join(f.leftRoot,'notes.json.9340.next'),'personal json');
+ await syncFiles({...f,initialize:true});assert.equal((await scan(f.rightRoot)).size,3);assert.equal(await fs.readFile(path.join(f.rightRoot,'ordinary.next'),'utf8'),'personal');
+ const state=JSON.parse(await fs.readFile(f.statePath,'utf8'));state.entries[transient]={left:{kind:'file',hash:'stale'},right:{kind:'file',hash:'stale'}};await fs.writeFile(f.statePath,JSON.stringify(state));
+ await fs.writeFile(path.join(f.rightRoot,transient),'old staging');const report=await syncFiles(f);assert.equal(report.changed.length,0);assert.equal(await fs.readFile(path.join(f.rightRoot,transient),'utf8'),'old staging');
+});

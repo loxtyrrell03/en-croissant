@@ -59,7 +59,7 @@ export async function startRunner(c){
       const supplied=Buffer.from(String(req.headers['x-personal-sync-key']??'')),expected=Buffer.from(c.secret);
       if(supplied.length!==expected.length||!timingSafeEqual(supplied,expected))return json(res,403,{error:'Private sync access required'});
       const url=new URL(req.url,'http://127.0.0.1'),pathname=decodeURIComponent(url.pathname);
-      if(req.method==='GET'&&pathname==='/api/personal-sync/status')return json(res,200,status);
+      if(req.method==='GET'&&pathname==='/api/personal-sync/status')return json(res,200,{...status,archives:library.archives()});
       if(req.method==='POST'&&pathname==='/api/personal-sync/retry'){void tick();return json(res,202,{ok:true});}
       if(req.method==='GET'&&pathname==='/web-library/manifest.json')return json(res,200,library.manifest(url));
       if(['GET','HEAD'].includes(req.method)&&pathname.startsWith('/web-library/files/')){const result=await library.raw(pathname.slice('/web-library/files/'.length));res.writeHead(200,{'content-type':result.type,'content-length':result.bytes.length,'cache-control':'no-store'});return res.end(req.method==='HEAD'?undefined:result.bytes);}
@@ -69,11 +69,11 @@ export async function startRunner(c){
       }
       if(req.method==='GET'&&pathname==='/api/database-position')return json(res,200,library.position(url.searchParams.get('hostedPath'),String(url.searchParams.get('fen')??'').trim().split(/\s+/).slice(0,4).join(' ')));
       if(req.method==='GET'&&pathname==='/api/personal-sync/game')return json(res,200,await library.game(url.searchParams.get('ref')));
-      if(req.method==='PUT'&&['/api/personal-sync/game','/api/personal-sync/import'].includes(pathname)){
+      if(req.method==='PUT'&&['/api/personal-sync/game','/api/personal-sync/import','/api/personal-sync/archive'].includes(pathname)){
         if(!String(req.headers['content-type']).startsWith('application/json'))return json(res,415,{error:'JSON is required'});
         let bytes=0,chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>64*1024*1024)return json(res,413,{error:'Phone import exceeds 64 MB; split it into smaller PGN files'});chunks.push(chunk);}
         const body=JSON.parse(Buffer.concat(chunks).toString('utf8'));
-        return phoneWrite(async()=>{const saved=pathname.endsWith('/import')?await library.importDatabase(body):await library.save(body);json(res,200,saved);});
+        return phoneWrite(async()=>{const saved=pathname.endsWith('/archive')?library.setArchive(body):pathname.endsWith('/import')?await library.importDatabase(body):await library.save(body);json(res,200,saved);});
       }
       return json(res,404,{error:'Unknown personal sync route'});
     })().catch(e=>{if(!res.headersSent)json(res,e.status??400,{error:e.message});else res.destroy();});

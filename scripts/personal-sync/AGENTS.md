@@ -1,5 +1,27 @@
 # Personal chess library synchronization
 
+## 2026-10-27 shared archive labels and transient review writes
+
+- Shared archive snapshots now read Novelty Dev's `files.state` and
+  `outpost.library.archivedCollectionIds`, mapping stable collection IDs to the
+  current catalogue. Phone commands check the target's last-read label inside a
+  SQLite transaction, retain metadata recovery and verify readback. File parent
+  restoration retains separately archived children; database group actions
+  explicitly affect that group's members, matching Novelty's group controls.
+- Archive labels do not copy or modify games. Unknown fields, pins, kinds,
+  unrelated collection IDs and local phone imports remain intact. Corrupt labels
+  fail closed. Downloaded reference databases are not archive-write targets.
+- The file scanner excludes the shared review writer's PID-owned
+  `*.mistake-review.json.<pid>.next` staging files as well as its own staging
+  files; ordinary `.next` files remain personal content. Old staging ledger
+  records are not interpreted as content deletions.
+- Source verification: 20 focused Node cases, including actual native synthetic
+  catalogue/write fixtures, pass. A read-only unpackaged live audit checked all
+  105 personal databases / 174,167 source PGNs and native row fingerprints and
+  3,408 file/directory records against both peers; all matched. Archive mapping
+  covered all 76 archived collections and both archived file roots. Runtime
+  delivery is separate; do not infer a live upgrade from this source note.
+
 This is an opt-in local bridge for Novelty Dev, En Croissant desktop and its
 private phone companion. Customer Novelty is categorically excluded. The owner
 selected personal content synchronization and read-only downloaded references.

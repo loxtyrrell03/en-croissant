@@ -4,6 +4,7 @@ import {parsePgn,makePgn} from 'chessops/pgn';
 import {digest,scan,readItem,applyItem} from './files.mjs';
 import {buildHostedLibraryIndex,listHostedLibraryDirectory,getHostedLibraryScope} from '../home-library-index.mjs';
 import {transaction} from './en-database.mjs';
+import {archiveSnapshot,buildArchiveTargets,writeArchive} from './archives.mjs';
 
 const tagPrefix='PersonalSync';
 export function portablePgn(pgn){
@@ -62,10 +63,15 @@ export class PersonalLibrary {
       if(!siblings.some(e=>e.path===relative))siblings.push({type:'directory',path:relative,name:path.posix.basename(relative),lastModified:0,sizeBytes:0,pgnFileCount:0,directPgnFileCount:0});
       siblings.sort((a,b)=>a.type===b.type?a.name.localeCompare(b.name):a.type==='directory'?-1:1);index.listings.set(parent,siblings);
     }
-    this.catalog={manifest,index,byVirtual,byCollection};this.version=version;
-    this.revision=digest(JSON.stringify({version,collections,files:[...files].map(([p,v])=>[p,v.kind,v.hash])}));
+    this.catalog={manifest,index,byVirtual,byCollection,archiveTargets:buildArchiveTargets(files,byCollection)};this.version=version;
+    this.revision=digest(JSON.stringify({version,collections,archives:this.archives().revision,files:[...files].map(([p,v])=>[p,v.kind,v.hash])}));
     return{collections:collections.length,files:files.size};
   }
+  archives(){
+    if(!this.catalog)return undefined;
+    return archiveSnapshot(this.bridge.source,this.catalog.archiveTargets,this.id);
+  }
+  setArchive(body){return writeArchive({db:this.bridge.source,ledger:this.bridge.ledger,targets:this.catalog?.archiveTargets??new Map(),id:this.id,body});}
   manifest(url){
     if(!this.catalog)throw Error('Shared library is loading');
     const scope=url.searchParams.get('scope'),relative=url.searchParams.get('path')??'';
