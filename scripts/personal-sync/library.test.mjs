@@ -52,6 +52,23 @@ test('rejected phone PGNs retain one local diagnostic and never overwrite the sa
  assert.equal(fs.readFileSync(file,'utf8'),saved);
  assert.equal((await f.phone.game(before.ref)).pgn,before.pgn);
 });
+
+test('live position lookup retains exact collection scope, result totals, dates and fresh updates',async t=>{
+ const f=await fixture(t),db=f.bridge.source;
+ const game=(event,result,date,moves)=>`[Event "${event}"]\n[Date "${date}"]\n[Result "${result}"]\n\n${moves} ${result}`;
+ const one=await f.bridge.native.request({library:f.bridge.library,collection:1,pgn:game('Win','1-0','2026.10.10','1. e4 c5')});
+ await f.bridge.native.request({library:f.bridge.library,collection:1,pgn:game('Draw','1/2-1/2','2026.10.11','1. d4 d5')});
+ const other=Number(db.prepare("INSERT INTO collection(name,folder) VALUES('Other','')").run().lastInsertRowid);
+ await f.bridge.native.request({library:f.bridge.library,collection:other,pgn:game('Excluded','0-1','2026.10.27','1. e4 e5')});
+ const hosted=f.phone.manifest(new URL('http://local')).databases[0].path;
+ const fen='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -';
+ assert.deepEqual(f.phone.position(hosted,fen).find(r=>r.move==='e4'),{move:'e4',white:1,draw:0,black:0,lastPlayed:'2026.10.10',uci:null});
+ assert.deepEqual(f.phone.position(hosted,fen).find(r=>r.move==='d4'),{move:'d4',white:0,draw:1,black:0,lastPlayed:'2026.10.11',uci:null});
+ const current=db.prepare('SELECT pgn FROM game_record WHERE id=?').get(one.id).pgn;
+ await f.bridge.native.request({library:f.bridge.library,id:one.id,expected:current,pgn:game('Win','0-1','2026.10.12','1. e4 c5')});
+ assert.deepEqual(f.phone.position(hosted,fen).find(r=>r.move==='e4'),{move:'e4',white:0,draw:0,black:1,lastPlayed:'2026.10.12',uci:null});
+ assert.deepEqual(f.phone.position(hosted,'8/8/8/8/8/8/8/K6k w - -'),[]);
+});
 test('phone game saves use compare-and-swap and update native search indexes without losing unknown tags',async t=>{
  const f=await fixture(t),ref=`database:1:${f.id}`,before=await f.phone.game(ref);
  const saved=await f.phone.save({ref,revision:before.revision,pgn:before.pgn.replace('original','phone edit')});assert.notEqual(saved.revision,before.revision);
