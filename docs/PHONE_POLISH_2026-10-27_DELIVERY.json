@@ -44,13 +44,21 @@
     "temporaryBrokerTasksRemoved": true
   },
   "noveltyCacheRepair": {
-    "sourceCommit": "37b2929d",
+    "sourceCommit": "37b2929d60fbc197e26714f0c63f471d4a26af9f",
     "branch": "codex/shared-archive-sync-20261027",
     "focusedTestsPassed": 29,
     "fullTypeScriptAndProductionBuildPassed": true,
     "oldSourceFailsLostArchiveRegression": true,
-    "primaryDevSessionUpdated": false,
-    "status": "Ready and pushed; awaiting confirmation that current Novelty Dev work is saved before a possible HMR refresh.",
+    "primaryDevSourceUpdated": true,
+    "status": "Applied after owner confirmation that work was saved. Seven scoped paths match the guarded patch; unrelated primary changes remain intact. All four live Dev modules serve the fix.",
+    "primaryFocusedTestsPassed": 29,
+    "primaryTypeScriptPassed": true,
+    "nativeAndViteProcessesPreserved": true,
+    "nativeRenderedPostRefreshStateVerified": false,
+    "freshSharedSyncErrors": 0,
+    "freshSharedSyncConflicts": 0,
+    "freshArchivedCollectionsMatched": 76,
+    "freshArchivedFileRootsMatched": 2,
     "limitation": "Fresh-read field merges/readback prevent stale cached-map replacement. The existing native get/set IPC is not a cross-process compare-and-set transaction for exactly simultaneous edits."
   },
   "verification": {
@@ -85,6 +93,8 @@
     "tmp/phone-polish/publisher-cleanup.json",
     "tmp/phone-polish/renderer/receipt.json",
     "tmp/phone-sync-20261027/audit.json",
-    "tmp/phone-sync-20261027/live-verification.json"
+    "tmp/phone-sync-20261027/live-verification.json",
+    "tmp/phone-polish/novelty-apply-sync.json",
+    "../.worktrees/novelty-files-audit-20261002/tmp/shared-archive-delivery/primary-verified.json"
   ]
 }

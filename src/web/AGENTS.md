@@ -23,9 +23,12 @@
   use isolated origin storage; physical-phone proof remains separate.
   Novelty's field-merge/refresh repair37b2929d is pushed with29 focused cases,
   full types and a production build; actual old source fails its lost-archive
-  regression. Its primary live session is not yet changed: confirmation that
-  work is saved is pending before a possible HMR refresh. Generic native get/set
-  still lacks cross-process CAS for exactly simultaneous label writes.
+  regression. After owner saved-work/refresh approval, the exact guarded slice
+  was applied to primary while preserving unrelated edits. Primary29 cases/types
+  and allfour served Dev modules verify; native/Vite processes remain unchanged.
+  Fresh HTTPS sync has no errors/conflicts and retains76 archived collections and
+  two file roots. Native rendered post-refresh state was not inspected. Generic
+  native get/set still lacks cross-process CAS for exactly simultaneous writes.
 - Product473455d5 is live at the canonical phone URL:444 manifest files,12 exact
   HTTPS assets,15 home modules,two generated modules andtwo native helpers match.
   Live Chrome at390px shows the direct paste form, healthy shared library and
