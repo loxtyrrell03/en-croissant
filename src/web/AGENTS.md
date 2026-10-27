@@ -14,8 +14,14 @@
 - The new files use existing workspace persistence and personal sync. Tiny-fixture
   preservation and actual app header/Files/remount cases pass. Chrome verified
   named creation, duplicate naming, FEN validation/current-position, cancellation,
-  and bounded bottom sheets at320/390px. This is source/browser proof; live delivery
-  is recorded separately. Never infer physical phone testing from these checks.
+  and bounded bottom sheets at320/390px. Product faa76404 is live with445 manifest
+  files/12 exact HTTPS assets,15 runtime modules/two generated modules/two helpers
+  verified. The combined source passes50 focused tests. Live Chrome confirms the
+  New menu, bounded position sheet and cancellation at390x844; no owner board was
+  replaced for testing. Seven owner files, home/gateway identities, sync task and
+  Serve routes are preserved. The existing phone PGN sync warning remains a
+  separate unresolved issue; PC bridge errors/conflicts are zero. See
+  docs/PHONE_NEW_BOARD_2026-10-27_DELIVERY.json. Physical phone testing is unverified.
   Editable refinement and state coverage: ../../design/phone-new-board-20261027.
 
 # 2026-10-27 Phone board and engine spacing
@@ -43,8 +49,8 @@
   home/gateway identities, private sync and Serve routes are unchanged.
 - Primary merges this slice with the newer New board controls without restoring
   removed reset actions;52 focused tests,23 browser checks and types pass there.
-  Those newer controls are source-only in this receipt; the hosted spacing release
-  remains1e2ecaeb. See docs/PHONE_ENGINE_SPACING_2026-10-27_DELIVERY.json.
+  The original spacing receipt covers1e2ecaeb; the later New board delivery above
+  publishes the combined source. See docs/PHONE_ENGINE_SPACING_2026-10-27_DELIVERY.json.
 
 # 2026-10-27 Archive/reset/update correction
 
@@ -54,9 +60,9 @@
   children arriving before the next label snapshot. Source pickers retain game
   identity for shared collections imported without a hosted path. Folder reads
   filter the requested view; existing explicit Prep/source selections stay intact.
-- Visible Reset position returns to the game/FEN/Prep start. Reset line returns
-  to the mainline at the branch point; both retain moves, variations and notes.
-  Replaced the ambiguous reset icon, including its destructive blank-board path.
+- The original reset correction retained moves, variations and notes. Its two
+  buttons have since been removed by New phone board controls above; First move
+  remains in navigation and Return to main line is in the Board menu.
 - Update checks are independent of service-worker registration, bounded and
   repeated while visible/on resume/focus/online. The actual app shows Update app
   instead of silently reloading active work. It verifies workspace saving and the

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-27",
+  "canonicalUrl": "https://lox-pc.tail89d19b.ts.net/",
+  "sourceCommit": "faa764045776c83c95883d991ad08cd2a816bfed",
+  "featureCommits": ["b6d34201", "edbe5b33"],
+  "publishedAt": "2026-10-27T17:57:56.5438133+00:00",
+  "behavior": {
+    "headerActions": ["New board", "New position", "New file"],
+    "boardMenu": ["Flip board", "Return to main line"],
+    "underBoardResetButtonsRemoved": true,
+    "savedFileLocation": "Files > Saved boards",
+    "newPosition": "Validated FEN or captured current position",
+    "previousWork": "Entire bare-board tree retained as PGN; existing files and Prep retained; local save completes before switch",
+    "failure": "Failed local save preserves current board and offers owned retry; newer moves or sources invalidate a pending switch",
+    "enginePreferencesPreserved": true,
+    "includesMergedCompactBoardLayout": true
+  },
+  "validation": {
+    "focusedTests": 50,
+    "focusedTestFiles": 8,
+    "types": "Pass on combined source",
+    "webAppLint": "25 existing warnings; zero errors",
+    "isolatedBrowser": "Named and untitled creation, duplicate filenames, custom and current FEN, invalid FEN, Files reopening and reload persistence at 320/390px",
+    "liveBrowser": "Canonical connected app: New menu, removed reset row, bounded position sheet and cancellation at 390x844",
+    "physicalPhoneVerified": false,
+    "manifestFiles": 445,
+    "exactHttpsAssets": 12,
+    "runtimeModules": 15,
+    "generatedModules": 2,
+    "nativeHelpersMatched": 2
+  },
+  "preservation": {
+    "ownerFilesHashVerified": 7,
+    "homeProcessPreserved": true,
+    "gatewayProcessPreserved": true,
+    "gatewayColdAfterDelivery": true,
+    "serveRoutesPreserved": true,
+    "personalSyncTaskPreserved": true,
+    "nativeArtifactPreserved": true,
+    "nativeInstalled": false,
+    "evaluationCorpusCopied": false,
+    "ownerBoardReplacedForTesting": false,
+    "pcSyncErrors": 0,
+    "pcSyncConflicts": 0
+  },
+  "separateExistingIssue": "The phone still reports PGN needs review before a lossless sync write; see PHONE_LIBRARY_REPAIR_2026-10-27.json. This delivery does not claim that warning is fixed.",
+  "localEvidence": "tmp/phone-new-board"
+}
