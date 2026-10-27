@@ -20,9 +20,24 @@
 - Source verification includes105 move/tree/storage/engine integration cases,
   focused import/archive tests, full types and44 rendered browser checks. WebApp
   retains its25 existing lint warnings, zero errors. Synthetic browser fixtures
-  use isolated origin storage; physical-phone and live-delivery proof are separate.
-  Novelty's active Files cache requires its coordinated field-merge/refresh repair
-  before claiming durable two-way file-label behaviour in an already-open window.
+  use isolated origin storage; physical-phone proof remains separate.
+  Novelty's field-merge/refresh repair37b2929d is pushed with29 focused cases,
+  full types and a production build; actual old source fails its lost-archive
+  regression. Its primary live session is not yet changed: confirmation that
+  work is saved is pending before a possible HMR refresh. Generic native get/set
+  still lacks cross-process CAS for exactly simultaneous label writes.
+- Product473455d5 is live at the canonical phone URL:444 manifest files,12 exact
+  HTTPS assets,15 home modules,two generated modules andtwo native helpers match.
+  Live Chrome at390px shows the direct paste form, healthy shared library and
+  archived file/database filtering. No real games or archive labels were changed
+  for these UI checks. Seven owner hashes, permanent sync task, gateway identity/
+  cold workers, service choices and all Serve routes remain intact. Native package
+  remains unchanged; this does not claim physical-phone interaction.
+- Guarded publication completed its switch/restart but its redirected nested
+  PowerShell broker did not return. Independent exact asset/runtime/data/route
+  checks proved the live result before stopping only that identified idle broker
+  and removing temporary tasks. No publication replay or service-tree kill. See
+  ../../docs/PHONE_POLISH_2026-10-27_DELIVERY.json and the QA record for evidence.
 
 # Verified phone search controls source
 

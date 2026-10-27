@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-27",
+  "phoneUrl": "https://lox-pc.tail89d19b.ts.net/",
+  "productSource": "473455d534a1995b4cafde5ca541462c60ec5e1f",
+  "syncRuntimeSource": "6d071883fb0f528959a138b3479b0498832c8704",
+  "features": [
+    "Owned move-tree transactions preserve imported mainlines and saved variations",
+    "Stable engine prefetch dependencies and quiet healthy sync polling",
+    "Direct validated PGN/FEN paste on Import with retained drafts",
+    "Reviewed editable SVG direction A applied across phone controls",
+    "Shared file and collection archives with durable checked phone commands"
+  ],
+  "build": {
+    "manifestFiles": 444,
+    "appShellSha256": "ff276a2c3a600f5f4f236a513508c45007330e3bfe4b166457160e03d236aed5",
+    "exactHttpsAssetsVerified": 12,
+    "homeRuntimeModulesMatched": 15,
+    "generatedModulesMatched": 2,
+    "nativeHelpersMatched": 2,
+    "nativeArtifactPreserved": true,
+    "newCorpusCopies": 0
+  },
+  "readOnlySharedDataAudit": {
+    "personalCollections": 105,
+    "games": 174167,
+    "sourcePgnMatches": 174167,
+    "enNativeFingerprintsMatch": 174167,
+    "matchingFileAndDirectoryRecords": 3408,
+    "archivedCollectionsMatched": 76,
+    "archivedFileRootsMatched": 2,
+    "archiveTargets": 3637,
+    "archiveProtocol": 1,
+    "syncErrors": 0,
+    "syncConflicts": 0,
+    "ownerArchiveLabelsChangedForTesting": false
+  },
+  "preservation": {
+    "ownerFileHashesUnchanged": 7,
+    "tailscaleServeRoutesUnchanged": true,
+    "permanentSyncTaskPreserved": true,
+    "gatewayProcessUnchanged": true,
+    "gatewayWorkersCold": true,
+    "serviceOnOffChoicesPreserved": true,
+    "temporaryBrokerTasksRemoved": true
+  },
+  "noveltyCacheRepair": {
+    "sourceCommit": "37b2929d",
+    "branch": "codex/shared-archive-sync-20261027",
+    "focusedTestsPassed": 29,
+    "fullTypeScriptAndProductionBuildPassed": true,
+    "oldSourceFailsLostArchiveRegression": true,
+    "primaryDevSessionUpdated": false,
+    "status": "Ready and pushed; awaiting confirmation that current Novelty Dev work is saved before a possible HMR refresh.",
+    "limitation": "Fresh-read field merges/readback prevent stale cached-map replacement. The existing native get/set IPC is not a cross-process compare-and-set transaction for exactly simultaneous edits."
+  },
+  "verification": {
+    "moveTreeStorageEngineCases": 105,
+    "manualImportAndArchiveIntegrationCases": 25,
+    "backendSyncCases": 20,
+    "cleanDeliveryFrontendCases": 80,
+    "fullTypeScriptPassed": true,
+    "renderedBrowserChecks": 44,
+    "browserPageErrors": 0,
+    "browserUnexpectedExternalRequests": 0,
+    "viewportsCssPx": [320, 390, 760],
+    "enlargedTextPercent": 200,
+    "liveChromeNarrowLayoutVerified": true,
+    "liveImportFormAndArchiveFilteringVerified": true,
+    "physicalPhoneVerified": false,
+    "nativeWindowInteractionPerformed": false,
+    "note": "Test groups overlap; counts must not be summed as unique cases."
+  },
+  "publicationRecovery": {
+    "publisherReturnedSuccess": false,
+    "reason": "The owned publisher remained idle in a redirected nested PowerShell invocation after the intended source switch and home restart completed.",
+    "resolution": "Independently verified exact HTTPS assets, runtime modules, helpers, process identities, owner hashes, routes and sync; stopped only the identified idle publisher broker and removed its temporary tasks.",
+    "publicationReplayed": false,
+    "liveServicesStoppedForCleanup": false
+  },
+  "evidence": [
+    "docs/PHONE_POLISH_2026-10-27_QA.md",
+    "design/phone-polish-20261027/STATE_MAP.md",
+    "tmp/phone-polish/https-verification.json",
+    "tmp/phone-polish/verified-runtime.json",
+    "tmp/phone-polish/publisher-cleanup.json",
+    "tmp/phone-polish/renderer/receipt.json",
+    "tmp/phone-sync-20261027/audit.json",
+    "tmp/phone-sync-20261027/live-verification.json"
+  ]
+}
