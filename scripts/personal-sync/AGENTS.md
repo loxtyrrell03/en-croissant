@@ -110,3 +110,5 @@ Final live checks after restart reported no conflicts/errors. Unchanged checks
 completed in about two to three seconds on this PC; full audits can take longer.
 The temporary fixture content and temporary broker tasks were removed. Retain the
 permanent sync task, dedicated checkout, pinned helpers and recovery ledger.
+
+Runner delivery acceptance fixtures now mirror the primary checkout's ephemeral proxy transport. Keep production at8788; fixture transport alone substitutes a random listener. Native fixture commands use absolute test paths with primary en-croissant cwd so their existing debug helper resolves; no pinned helper is rebuilt or replaced.

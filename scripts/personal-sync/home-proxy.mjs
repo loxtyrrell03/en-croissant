@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import {request as httpRequest} from 'node:http';
 
 // The private key remains between local processes; the browser never receives it.
-export function createPersonalSyncProxy({configPath,origins}){
+export function createPersonalSyncProxy({configPath,origins,requestTransport=httpRequest}){
   let config=null,loadedAt=0;
   return async function maybeHandle(request,response){
     const pathname=new URL(request.url,'http://127.0.0.1').pathname;
@@ -19,7 +19,7 @@ export function createPersonalSyncProxy({configPath,origins}){
     // No unmatched personal/production request is allowed through this branch.
     if(request.method==='GET'&&['/api/database-manifest','/api/database-position'].includes(pathname)&&(config.referenceDatabases??[]).some(r=>r.path===new URL(request.url,'http://127.0.0.1').searchParams.get('hostedPath')))return false;
     if(!['GET','HEAD'].includes(request.method)&&!String(request.headers['content-type']).startsWith('application/json')){json(415,{error:'JSON is required'});return true;}
-    const upstream=httpRequest({hostname:'127.0.0.1',port:8788,path:request.url,method:request.method,headers:{'x-personal-sync-key':config.secret,'content-type':request.headers['content-type']??'application/json'}},incoming=>{
+    const upstream=requestTransport({hostname:'127.0.0.1',port:8788,path:request.url,method:request.method,headers:{'x-personal-sync-key':config.secret,'content-type':request.headers['content-type']??'application/json'}},incoming=>{
       response.writeHead(incoming.statusCode??502,{'content-type':incoming.headers['content-type']??'application/json','cache-control':'no-store'});incoming.pipe(response);
     });
     upstream.setTimeout(60_000,()=>upstream.destroy(Error('Personal sync timed out')));
