@@ -177,6 +177,9 @@ export class PersonalLibrary {
   }
   position(hostedPath,fen){
     const collection=this.catalog?.byCollection.get(hostedPath);if(!collection)throw Error('Shared database was removed');
-    return this.bridge.source.prepare(`SELECT ph.next_san move,SUM(ph.result='1-0') white,SUM(ph.result='1/2-1/2') draw,SUM(ph.result='0-1') black,MAX(g.game_date) lastPlayed FROM position_hit ph JOIN game_record g ON g.id=ph.game_id WHERE ph.position_key=? AND g.collection_id=? AND ph.next_san IS NOT NULL GROUP BY ph.next_san ORDER BY COUNT(*) DESC LIMIT 100`).all(fen,collection.id).map(r=>({...r,uci:null}));
+    // Materialize only this collection's lightweight metadata. Otherwise a common
+    // position makes SQLite fetch PGN-bearing rows across the entire library,
+    // exceeding the phone's position deadline before filtering the collection.
+    return this.bridge.source.prepare(`WITH selected AS MATERIALIZED (SELECT id,game_date FROM game_record WHERE collection_id=?) SELECT ph.next_san move,SUM(ph.result='1-0') white,SUM(ph.result='1/2-1/2') draw,SUM(ph.result='0-1') black,MAX(g.game_date) lastPlayed FROM position_hit ph JOIN selected g ON g.id=ph.game_id WHERE ph.position_key=? AND ph.next_san IS NOT NULL GROUP BY ph.next_san ORDER BY COUNT(*) DESC LIMIT 100`).all(collection.id,fen).map(r=>({...r,uci:null}));
   }
 }

@@ -13,6 +13,12 @@
 - Eight native-backed small-fixture library cases pass, including exact existing
   phone URLs, absent indexes and rejected-save preservation. Runtime delivery and
   the reported b1 rejection investigation remain separate pending steps.
+- Common-position queries materialize only selected collection IDs/dates before
+  joining the covering position index, avoiding random PGN-row reads across the
+  full library. An unpackaged read-only comparison returned exactly the same ten
+  opening moves/652 results in 26 ms versus 10.9 seconds with the previous SQL;
+  nine library fixtures verify collection isolation, dates and fresh edits. No
+  index, source schema or game data is changed by this query optimization.
 
 ## 2026-10-27 shared archive labels and transient review writes
 
