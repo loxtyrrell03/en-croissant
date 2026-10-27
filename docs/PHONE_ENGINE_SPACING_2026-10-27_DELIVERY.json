@@ -1,0 +1,57 @@
+{
+  "source": "1e2ecaebb54ea21f75ce1ffd94086a681a7a1111",
+  "url": "https://lox-pc.tail89d19b.ts.net/",
+  "publishedAt": "2026-10-27T17:50:03.1847903+00:00",
+  "manifestFiles": 444,
+  "exactHttpsAssets": 12,
+  "browserChecks": 23,
+  "browserPageErrors": 0,
+  "focusedTests": 45,
+  "primaryFocusedTests": 52,
+  "typesPassed": true,
+  "existingWebAppLintWarnings": 25,
+  "realPcSearch": {
+    "depth": 6,
+    "lines": 3,
+    "viewport": [
+      390,
+      844
+    ],
+    "engineBottom": 827.09375,
+    "boardWidth": 280
+  },
+  "phoneViewports": [
+    [
+      375,
+      667
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      320,
+      740
+    ],
+    [
+      430,
+      932
+    ]
+  ],
+  "shortViewportFallback": "320x568 retains a usable board and document scrolling; expanded settings and enlarged text also remain scrollable.",
+  "homeProcessPreserved": true,
+  "gatewayProcessPreserved": true,
+  "servePreserved": true,
+  "syncTaskPreserved": true,
+  "ownerFilesPreserved": 7,
+  "runtimeModules": 15,
+  "generatedModules": 2,
+  "nativeHelpersMatched": 2,
+  "nativeArtifactPreserved": true,
+  "physicalPhoneVerified": false,
+  "newCorpusCopies": 0,
+  "primaryIntegration": "New board controls retained; removed reset actions were not reintroduced. New board controls are source-only in this spacing receipt.",
+  "screenshots": [
+    "tmp/phone-engine-spacing/live-390.png"
+  ]
+}

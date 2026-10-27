@@ -1,5 +1,6 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
 import PhonePersonalSync from "./PhonePersonalSync";
+import { usePhoneBoardFit } from "./usePhoneBoardFit";
 import PhoneAppUpdate from "./PhoneAppUpdate";
 import PhoneNewBoardActions from "./PhoneNewBoardActions";
 import { PERSONAL_LIBRARY_CHANGED } from "./personalSync";
@@ -1972,6 +1973,9 @@ function BoardWorkspace({
     setLiveReplay(true);
   };
 
+  const boardFitRef = usePhoneBoardFit(
+    panelMode === "moves" || (panelMode === "engine" && analysisView === "live"),
+  );
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
   const orientation = phoneBoardOrientation(state);
   const phoneFile = state.databases.find((database) => database.id === board.sourceDatabaseId)?.phoneCreated;
@@ -1981,7 +1985,12 @@ function BoardWorkspace({
   };
 
   return (
-    <Box className={classes.phoneBoard} data-panel={panelMode}>
+    <Box
+      ref={boardFitRef}
+      className={classes.phoneBoard}
+      data-panel={panelMode}
+      data-analysis-view={analysisView}
+    >
       <Box className={classes.boardHeader}>
         {!boardPlayers ? (
           <Box className={classes.boardHeaderTitle}>
@@ -1990,6 +1999,7 @@ function BoardWorkspace({
             </Title>
           </Box>
         ) : null}
+
         <Group className={classes.boardHeaderActions} gap={6} wrap="nowrap">
           <Badge
             aria-label={`${turnColor === "white" ? "White" : "Black"} to move`}
@@ -2061,8 +2071,7 @@ function BoardWorkspace({
         <Box className={classes.underBoardContent}>
           {panelMode === "engine" && (
             <SegmentedControl
-              m="sm"
-              style={{ width: "auto" }}
+              className={classes.analysisViewTabs}
               aria-label="Analysis view"
               fullWidth
               value={analysisView}
@@ -2076,7 +2085,7 @@ function BoardWorkspace({
           )}
           {/* Keep one engine instance mounted across every panel so changing
               tabs cannot abort an active PC search. */}
-          <Box hidden={panelMode === "engine" && analysisView !== "live"}>
+          <Box data-live-engine-panel hidden={panelMode === "engine" && analysisView !== "live"}>
             <EngineUnderBoardPanel
               cpuPreferenceStore={sharedCpuPreferenceStore}
               analysisRequestId={onlineAnalysisRequestId}
@@ -4948,7 +4957,7 @@ export function EngineUnderBoardPanel({
         <Box className={classes.enginePanelTitleArea}>
           <Group gap={6} wrap="nowrap" miw={0}>
             <Text fw={700} size="sm" truncate>
-              {engineLabel}
+              {topLine?.source === "lichess-cloud" ? "Stored evaluation" : engineLabel}
             </Text>
             <Code className={classes.enginePanelCode} title="PC engine performance level">
               {settings.engineKind === "stockfish" && cpuSnapshot.phase === "unreadable"
@@ -4973,38 +4982,9 @@ export function EngineUnderBoardPanel({
         </Box>
 
         <Group className={classes.enginePanelHeaderRight} gap={8} wrap="nowrap">
-          <Box className={classes.enginePanelMetric}>
-            <Text size="xs" c="dimmed">
-              Eval
-            </Text>
-            <Text size="sm" fw={800}>
-              {topLine ? formatWebEngineScore(topLine.score) : "--"}
-            </Text>
-          </Box>
-          <Box className={classes.enginePanelMetric}>
-            <Text size="xs" c="dimmed">
-              Depth
-            </Text>
-            <Text size="sm" fw={800}>
-              {topLine?.depth ? topLine.depth : "--"}
-            </Text>
-          </Box>
-          <Box className={classes.enginePanelMetric}>
-            <Text size="xs" c="dimmed">
-              Nodes
-            </Text>
-            <Text size="sm" fw={800} title={topLine?.nodes?.toLocaleString()}>
-              {nodeCount ?? "--"}
-            </Text>
-          </Box>
-          <Box className={classes.enginePanelMetric}>
-            <Text size="xs" c="dimmed">
-              NPS
-            </Text>
-            <Text size="sm" fw={800}>
-              {liveLineSpeed ? liveLineSpeed.replace(" NPS", "") : "--"}
-            </Text>
-          </Box>
+          <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+            Depth {topLine?.depth || "—"}
+          </Text>
           <ActionIcon.Group>
             <Tooltip label="Engine settings">
               <ActionIcon
@@ -5024,6 +5004,40 @@ export function EngineUnderBoardPanel({
       {searchPreferenceNotice}
       <Collapse in={settingsOpen}>
         <Box className={classes.enginePanelSettings}>
+          <Group gap="sm" mb="xs">
+            <Box className={classes.enginePanelMetric}>
+              <Text size="xs" c="dimmed">
+                Eval
+              </Text>
+              <Text size="sm" fw={800}>
+                {topLine ? formatWebEngineScore(topLine.score) : "--"}
+              </Text>
+            </Box>
+            <Box className={classes.enginePanelMetric}>
+              <Text size="xs" c="dimmed">
+                Depth
+              </Text>
+              <Text size="sm" fw={800}>
+                {topLine?.depth ? topLine.depth : "--"}
+              </Text>
+            </Box>
+            <Box className={classes.enginePanelMetric}>
+              <Text size="xs" c="dimmed">
+                Nodes
+              </Text>
+              <Text size="sm" fw={800} title={topLine?.nodes?.toLocaleString()}>
+                {nodeCount ?? "--"}
+              </Text>
+            </Box>
+            <Box className={classes.enginePanelMetric}>
+              <Text size="xs" c="dimmed">
+                NPS
+              </Text>
+              <Text size="sm" fw={800}>
+                {liveLineSpeed ? liveLineSpeed.replace(" NPS", "") : "--"}
+              </Text>
+            </Box>
+          </Group>
           <Stack gap="xs" mb="xs">
             <Select
               label="PC engine"
@@ -5212,11 +5226,9 @@ function EngineLineTable({
               <Table.Tr key={`engine-skeleton-${index}`}>
                 <Table.Td className={classes.engineAnalysisScoreCell}>
                   <Skeleton height={15} width={44} radius="sm" />
-                  <Skeleton height={10} width={24} mt={6} radius="sm" />
                 </Table.Td>
                 <Table.Td>
                   <Skeleton height={14} width={`${75 - index * 10}%`} radius="sm" />
-                  <Skeleton height={10} width="36%" mt={7} radius="sm" />
                 </Table.Td>
               </Table.Tr>
             ))}
@@ -5236,16 +5248,11 @@ function EngineLineTable({
           {lines.map((line) => {
             const firstMove = line.uciMoves[0] ?? null;
             const pv = line.sanMoves.length > 0 ? line.sanMoves.join(" ") : line.uciMoves.join(" ");
-            const speed = formatWebEngineNodeSpeed(line.nps);
-            const nodes = formatWebEngineNodeCount(line.nodes);
             return (
               <Table.Tr key={`${line.source}-${line.multipv}`}>
                 <Table.Td className={classes.engineAnalysisScoreCell}>
                   <Text size="sm" fw={800} className={classes.engineAnalysisScore}>
                     {formatWebEngineScore(line.score)}
-                  </Text>
-                  <Text size="xs" c="dimmed" className={classes.engineAnalysisRank}>
-                    #{line.multipv}
                   </Text>
                 </Table.Td>
                 <Table.Td className={classes.engineAnalysisLineCell}>
@@ -5255,25 +5262,10 @@ function EngineLineTable({
                     disabled={!firstMove}
                     onClick={() => firstMove && onPlayMove(firstMove)}
                     aria-label={`Play engine line ${line.multipv}`}
+                    title={`${pv} · ${getWebEngineSourceLabel(line)} · Depth ${line.depth || "?"}`}
                   >
                     {pv || "-"}
                   </button>
-                  <Group gap={5} wrap="nowrap" className={classes.engineAnalysisMeta}>
-                    <Code className={classes.enginePanelCode}>{getWebEngineSourceLabel(line)}</Code>
-                    <Text size="xs" c="dimmed">
-                      d{line.depth || "?"}
-                    </Text>
-                    {nodes ? (
-                      <Text size="xs" c="dimmed" truncate title={line.nodes?.toLocaleString()}>
-                        {nodes} nodes
-                      </Text>
-                    ) : null}
-                    {speed ? (
-                      <Text size="xs" c="dimmed" truncate>
-                        {speed}
-                      </Text>
-                    ) : null}
-                  </Group>
                 </Table.Td>
               </Table.Tr>
             );
@@ -9388,6 +9380,7 @@ export function WebChessboard({
   return (
     <Box
       className={classes.boardArea}
+      data-board-area
       style={showEvaluation ? undefined : { gridTemplateColumns: "minmax(0, 1fr)" }}
     >
       {showEvaluation && <WebBoardEvalBar score={engineScore} orientation={orientation} />}
