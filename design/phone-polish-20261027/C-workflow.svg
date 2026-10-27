@@ -1,0 +1,416 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1264" height="2610" viewBox="0 0 1264 2610" role="img" aria-label="C · Summary plus editor">
+<title>C · Summary plus editor</title>
+<rect width="1264" height="2610" fill="#0b0d0f"/>
+<g font-family="Segoe UI, sans-serif">
+<text x="24" y="36" font-size="26" fill="#f1f3f5" font-weight="700" text-anchor="start">C · Summary plus editor</text>
+<text x="24" y="65" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Short task summary with a focused editor sheet. Apply and Cancel own the draft. All content is illustrative.</text>
+<text x="24.0" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Prep · 390px</text>
+<g transform="translate(24.0 114)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="42.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<text x="286.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="87" font-size="22" fill="#f1f3f5" font-weight="700" text-anchor="start">Prep</text>
+<text x="368" y="84" font-size="16" fill="#74c0fc" font-weight="400" text-anchor="end">?</text>
+<rect x="12" y="107" width="366" height="210" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="138" font-size="18" fill="#f1f3f5" font-weight="600" text-anchor="start">Ready to practise</text>
+<text x="24" y="170" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Jordan Vale · You play White</text>
+<text x="24" y="191" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Pasted games · 12 games</text>
+<text x="24" y="212" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">All dates · Any result</text>
+<rect x="24" y="250" width="167.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="107.5" y="277.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Edit setup</text>
+<rect x="199.0" y="250" width="167.0" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="282.5" y="277.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Start prep</text>
+<rect x="4" y="352" width="382" height="410" rx="16" fill="#25272d" stroke="#34383f"/>
+<text x="20" y="382" font-size="18" fill="#f1f3f5" font-weight="600" text-anchor="start">Edit prep setup</text>
+<text x="20" y="415" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Games</text>
+<rect x="20" y="424" width="350" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="452" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Pasted games                  ▾</text>
+<text x="20" y="491" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Player</text>
+<rect x="20" y="500" width="350" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="528" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Jordan Vale</text>
+<rect x="20" y="563" width="350" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="24.0" y="567" width="167.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="107.5" y="591" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">I&#x27;m White</text>
+<text x="282.5" y="591" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">I&#x27;m Black</text>
+<text x="20" y="640" font-size="14" fill="#74c0fc" font-weight="400" text-anchor="start">Dates and strength  ›</text>
+<rect x="20" y="687" width="171.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="105.5" y="714.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Cancel</text>
+<rect x="199.0" y="687" width="171.0" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="284.5" y="714.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Apply</text>
+</g>
+<text x="473.0" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Prep · 320px</text>
+<g transform="translate(473.0 114)">
+<rect x="0" y="0" width="320" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="296" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="16" width="41.333333333333336" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="36.66666666666667" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Board</text>
+<text x="86.0" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="135.33333333333334" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="184.66666666666669" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<text x="234.0" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<text x="283.33333333333337" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="87" font-size="22" fill="#f1f3f5" font-weight="700" text-anchor="start">Prep</text>
+<text x="298" y="84" font-size="16" fill="#74c0fc" font-weight="400" text-anchor="end">?</text>
+<rect x="12" y="107" width="296" height="210" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="138" font-size="18" fill="#f1f3f5" font-weight="600" text-anchor="start">Ready to practise</text>
+<text x="24" y="170" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Jordan Vale · You play White</text>
+<text x="24" y="191" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Pasted games · 12 games</text>
+<text x="24" y="212" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">All dates · Any result</text>
+<rect x="24" y="250" width="132.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="90.0" y="277.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Edit setup</text>
+<rect x="164.0" y="250" width="132.0" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="230.0" y="277.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Start prep</text>
+<rect x="4" y="352" width="312" height="410" rx="16" fill="#25272d" stroke="#34383f"/>
+<text x="20" y="382" font-size="18" fill="#f1f3f5" font-weight="600" text-anchor="start">Edit prep setup</text>
+<text x="20" y="415" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Games</text>
+<rect x="20" y="424" width="280" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="452" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Pasted games                  ▾</text>
+<text x="20" y="491" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Player</text>
+<rect x="20" y="500" width="280" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="528" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Jordan Vale</text>
+<rect x="20" y="563" width="280" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="24.0" y="567" width="132.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="90.0" y="591" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">I&#x27;m White</text>
+<text x="230.0" y="591" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">I&#x27;m Black</text>
+<text x="20" y="640" font-size="14" fill="#74c0fc" font-weight="400" text-anchor="start">Dates and strength  ›</text>
+<rect x="20" y="687" width="136.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="88.0" y="714.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Cancel</text>
+<rect x="164.0" y="687" width="136.0" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="232.0" y="714.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Apply</text>
+</g>
+<text x="852.0" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Import · 390px</text>
+<g transform="translate(852.0 114)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<rect x="138.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="164.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<text x="286.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="88" font-size="22" fill="#f1f3f5" font-weight="700" text-anchor="start">Import games</text>
+<text x="12" y="116" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Paste a PGN game or a FEN position.</text>
+<rect x="12" y="137" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="141" width="175.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="103.5" y="165" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Paste PGN / FEN</text>
+<text x="286.5" y="165" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Choose file</text>
+<text x="12" y="212" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">PGN or FEN</text>
+<rect x="12" y="225" width="366" height="208" rx="8" fill="#25272d" stroke="#34383f"/>
+<text x="24" y="252" font-size="15" fill="#f1f3f5" font-weight="400" text-anchor="start">[Event &quot;Example game&quot;]</text>
+<text x="24" y="273" font-size="15" fill="#f1f3f5" font-weight="400" text-anchor="start">[White &quot;Jordan Vale&quot;]</text>
+<text x="24" y="294" font-size="15" fill="#f1f3f5" font-weight="400" text-anchor="start">[Black &quot;Sam Rivera&quot;]</text>
+<text x="24" y="315" font-size="15" fill="#f1f3f5" font-weight="400" text-anchor="start"></text>
+<text x="24" y="336" font-size="15" fill="#f1f3f5" font-weight="400" text-anchor="start">1. e4 e5 2. Nf3 Nc6</text>
+<text x="24" y="357" font-size="15" fill="#f1f3f5" font-weight="400" text-anchor="start">3. Bb5 a6 *</text>
+<rect x="12" y="445" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="101.5" y="472.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Paste</text>
+<rect x="199.0" y="445" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="288.5" y="472.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Clear</text>
+<text x="12" y="524" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Save as</text>
+<rect x="12" y="533" width="366" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="24" y="561" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Pasted games</text>
+<text x="12" y="603" font-size="14" fill="#8ce99a" font-weight="400" text-anchor="start">1 game ready to import</text>
+<rect x="12" y="622" width="366" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="195.0" y="649.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Import &amp; open</text>
+<path d="M12 690h366" stroke="#34383f"/>
+<text x="12" y="721" font-size="14" fill="#74c0fc" font-weight="400" text-anchor="start">Online accounts and more sources  ›</text>
+<text x="12" y="754" font-size="12" fill="#a7acb4" font-weight="400" text-anchor="start">Same editor opens from Board and Files.</text>
+</g>
+<text x="24.0" y="930" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Files · 390px</text>
+<g transform="translate(24.0 942)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<rect x="260.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="286.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="88" font-size="22" fill="#f1f3f5" font-weight="700" text-anchor="start">Files</text>
+<rect x="278" y="70" width="100" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="328.0" y="97.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Import</text>
+<rect x="12" y="132" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="136" width="175.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="103.5" y="160" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Active</text>
+<text x="286.5" y="160" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Archived</text>
+<text x="12" y="205" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Find a file or database</text>
+<rect x="12" y="214" width="366" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="24" y="242" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Search files…</text>
+<rect x="12" y="275" width="366" height="68" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="301" font-size="14" fill="#8ce99a" font-weight="600" text-anchor="start">Library synced</text>
+<text x="24" y="325" font-size="12" fill="#a7acb4" font-weight="400" text-anchor="start">Novelty dev · Checked just now</text>
+<path d="M12 357h366" stroke="#34383f"/>
+<text x="12" y="380" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">My classical games</text>
+<text x="12" y="403" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">84 games</text>
+<rect x="12" y="414" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="101.5" y="441.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Open</text>
+<rect x="199.0" y="414" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="288.5" y="441.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Archive</text>
+<path d="M12 459h366" stroke="#34383f"/>
+<text x="12" y="482" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Opening study</text>
+<text x="12" y="505" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">25 games</text>
+<rect x="12" y="516" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="101.5" y="543.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Open</text>
+<rect x="199.0" y="516" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="288.5" y="543.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Archive</text>
+<path d="M12 561h366" stroke="#34383f"/>
+<text x="12" y="584" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Weekend tournament</text>
+<text x="12" y="607" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">9 games</text>
+<rect x="12" y="618" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="101.5" y="645.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Open</text>
+<rect x="199.0" y="618" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="288.5" y="645.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Archive</text>
+<text x="12" y="722" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Archive hides an item from active lists.</text>
+<text x="12" y="743" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Games stay saved.</text>
+</g>
+<text x="438.0" y="930" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Board · 390px</text>
+<g transform="translate(438.0 942)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="42.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<text x="286.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="88" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Vale – Rivera</text>
+<rect x="12" y="105" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="101.5" y="132.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Paste PGN / FEN</text>
+<rect x="199.0" y="105" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="288.5" y="132.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Game actions</text>
+<rect x="75.0" y="161" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="105.0" y="161" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="135.0" y="161" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="165.0" y="161" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="195.0" y="161" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="225.0" y="161" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="255.0" y="161" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="285.0" y="161" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="75.0" y="191" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="105.0" y="191" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="135.0" y="191" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="165.0" y="191" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="195.0" y="191" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="225.0" y="191" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="255.0" y="191" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="285.0" y="191" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="75.0" y="221" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="105.0" y="221" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="135.0" y="221" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="165.0" y="221" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="195.0" y="221" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="225.0" y="221" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="255.0" y="221" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="285.0" y="221" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="75.0" y="251" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="105.0" y="251" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="135.0" y="251" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="165.0" y="251" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="195.0" y="251" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="225.0" y="251" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="255.0" y="251" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="285.0" y="251" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="75.0" y="281" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="105.0" y="281" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="135.0" y="281" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="165.0" y="281" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="195.0" y="281" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="225.0" y="281" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="255.0" y="281" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="285.0" y="281" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="75.0" y="311" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="105.0" y="311" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="135.0" y="311" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="165.0" y="311" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="195.0" y="311" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="225.0" y="311" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="255.0" y="311" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="285.0" y="311" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="75.0" y="341" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="105.0" y="341" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="135.0" y="341" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="165.0" y="341" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="195.0" y="341" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="225.0" y="341" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="255.0" y="341" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="285.0" y="341" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="75.0" y="371" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="105.0" y="371" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="135.0" y="371" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="165.0" y="371" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="195.0" y="371" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="225.0" y="371" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<rect x="255.0" y="371" width="30" height="30" rx="0" fill="#769656" stroke="none"/>
+<rect x="285.0" y="371" width="30" height="30" rx="0" fill="#eeeed2" stroke="none"/>
+<text x="170.0" y="296" font-size="31" fill="#111315" font-weight="400" text-anchor="start">♞</text>
+<text x="201.0" y="326" font-size="31" fill="#f7f7f0" font-weight="400" text-anchor="start">♙</text>
+<rect x="12" y="417" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="445" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">⏮</text>
+<text x="103.5" y="445" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">‹</text>
+<text x="164.5" y="445" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">▶</text>
+<rect x="199.0" y="421" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="225.5" y="445" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">23 / 48</text>
+<text x="286.5" y="445" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">›</text>
+<text x="347.5" y="445" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">⏭</text>
+<rect x="12" y="473" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="477" width="114.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="73.0" y="501" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Moves</text>
+<text x="195.0" y="501" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Database</text>
+<text x="317.0" y="501" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Prep</text>
+<rect x="12" y="521" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="103.5" y="549" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Analysis</text>
+<text x="286.5" y="549" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Coach</text>
+<text x="12" y="599" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Mainline</text>
+<text x="12" y="628" font-size="17" fill="#f1f3f5" font-weight="400" text-anchor="start">12. Re1  b5  13. Bb3  d6</text>
+<rect x="12" y="644" width="366" height="72" rx="8" fill="#16222d" stroke="#34383f"/>
+<text x="24" y="672" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="start">Variation from 12. Re1</text>
+<text x="24" y="698" font-size="17" fill="#f1f3f5" font-weight="400" text-anchor="start">12… Bb7  13. d3</text>
+<rect x="12" y="727" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195.0" y="754.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Return to mainline</text>
+</g>
+<text x="852.0" y="930" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Events · 390px</text>
+<g transform="translate(852.0 942)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<rect x="77.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="103.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<text x="286.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="88" font-size="22" fill="#f1f3f5" font-weight="700" text-anchor="start">Events</text>
+<text x="12" y="122" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Find a tournament</text>
+<rect x="12" y="131" width="366" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="24" y="159" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Search events…</text>
+<rect x="12" y="197" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="201" width="175.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="103.5" y="225" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Following</text>
+<text x="286.5" y="225" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Discover</text>
+<text x="12" y="284" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Autumn Open</text>
+<text x="12" y="312" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Round 5 · Pairings ready</text>
+<rect x="12" y="335" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="101.5" y="362.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Refresh</text>
+<rect x="199.0" y="335" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="288.5" y="362.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Stop following</text>
+<rect x="12" y="400" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="404" width="114.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="73.0" y="428" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Next round</text>
+<text x="195.0" y="428" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Players</text>
+<text x="317.0" y="428" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Standings</text>
+<rect x="12" y="448" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="103.5" y="476" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Results</text>
+<text x="286.5" y="476" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Tracking</text>
+<rect x="12" y="519" width="366" height="185" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="549" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Your next game</text>
+<text x="24" y="582" font-size="20" fill="#f1f3f5" font-weight="600" text-anchor="start">Sam Rivera · 2018</text>
+<text x="24" y="613" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">You play White · Board 8</text>
+<rect x="24" y="642" width="342" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="195.0" y="669.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Open Prep</text>
+</g>
+<text x="24.0" y="1758" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Review · 390px</text>
+<g transform="translate(24.0 1770)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<rect x="199.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="225.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Review</text>
+<text x="286.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="88" font-size="22" fill="#f1f3f5" font-weight="700" text-anchor="start">Review</text>
+<text x="12" y="128" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">3 of 5 positions completed</text>
+<rect x="12" y="145" width="366" height="6" rx="3" fill="#25272d" stroke="none"/>
+<rect x="12" y="145" width="219.6" height="6" rx="3" fill="#1971c2" stroke="none"/>
+<rect x="12" y="178" width="366" height="265" rx="8" fill="#192029" stroke="#34383f"/>
+<text x="195.0" y="306" font-size="16" fill="#a7acb4" font-weight="400" text-anchor="middle">Chessboard / review position</text>
+<text x="12" y="478" font-size="18" fill="#f1f3f5" font-weight="600" text-anchor="start">Find the best continuation</text>
+<rect x="12" y="505" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="101.5" y="532.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Show hint</text>
+<rect x="199.0" y="505" width="179.0" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="288.5" y="532.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Skip</text>
+<path d="M12 577h366" stroke="#34383f"/>
+<text x="12" y="608" font-size="14" fill="#74c0fc" font-weight="400" text-anchor="start">Review settings  ›</text>
+<text x="12" y="649" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Keep the current position visible.</text>
+<text x="12" y="670" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Feedback stays beside the next action.</text>
+<rect x="12" y="715" width="366" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="195.0" y="742.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Next position</text>
+</g>
+<text x="438.0" y="1758" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Stats · 390px</text>
+<g transform="translate(438.0 1770)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<text x="286.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<rect x="321.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="347.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Stats</text>
+<text x="12" y="88" font-size="22" fill="#f1f3f5" font-weight="700" text-anchor="start">Stats</text>
+<rect x="12" y="108" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="112" width="175.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="103.5" y="136" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Online</text>
+<text x="286.5" y="136" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Over the board</text>
+<text x="12" y="182" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Period</text>
+<rect x="12" y="191" width="366" height="44" rx="6" fill="#25272d" stroke="#34383f"/>
+<text x="24" y="219" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">Last 30 days                     ▾</text>
+<text x="12" y="266" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">JordanVale · Rapid</text>
+<text x="12" y="298" font-size="26" fill="#f1f3f5" font-weight="700" text-anchor="start">42 games</text>
+<rect x="12" y="323" width="366" height="31" rx="8" fill="#25272d" stroke="#34383f"/>
+<rect x="12" y="323" width="190.32" height="31" rx="8" fill="#2b8a3e" stroke="none"/>
+<rect x="202.32" y="323" width="51.24" height="31" rx="8" fill="#5c636e" stroke="none"/>
+<rect x="253.56" y="323" width="124.44000000000001" height="31" rx="8" fill="#c92a2a" stroke="none"/>
+<text x="12" y="388" font-size="14" fill="#f1f3f5" font-weight="400" text-anchor="start">Wins 52%   Draws 14%   Losses 34%</text>
+<rect x="12" y="418" width="366" height="180" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="450" font-size="15" fill="#f1f3f5" font-weight="600" text-anchor="start">Rating</text>
+<path d="M24 561 l36 -14 36 8 36 -40 36 5 36 -23 36 8 36 -30" stroke="#74c0fc" fill="none" stroke-width="3"/>
+<path d="M12 631h366" stroke="#34383f"/>
+<text x="12" y="665" font-size="14" fill="#74c0fc" font-weight="400" text-anchor="start">Account, speed and date filters  ›</text>
+<text x="12" y="710" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Missing ratings show “Unavailable”.</text>
+</g>
+<text x="852.0" y="1758" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">States &amp; help · 390px</text>
+<g transform="translate(852.0 1770)">
+<rect x="0" y="0" width="390" height="790" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<rect x="260.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="286.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="12" y="88" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Clear status &amp; recovery</text>
+<rect x="12" y="109" width="366" height="147" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="136" font-size="15" fill="#f1f3f5" font-weight="600" text-anchor="start">Loading your files…</text>
+<text x="24" y="163" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Existing games stay open.</text>
+<rect x="24" y="193" width="342" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195.0" y="220.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Cancel</text>
+<rect x="12" y="272" width="366" height="166" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="299" font-size="15" fill="#ffa8a8" font-weight="600" text-anchor="start">Library sync needs attention</text>
+<text x="24" y="327" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Could not reach the PC library.</text>
+<text x="24" y="348" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Your phone changes are saved locally.</text>
+<rect x="24" y="373" width="342" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195.0" y="400.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Retry sync</text>
+<rect x="12" y="454" width="366" height="150" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="24" y="483" font-size="15" fill="#ffa8a8" font-weight="600" text-anchor="start">Import could not be read</text>
+<text x="24" y="513" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Check move 14, then retry.</text>
+<rect x="24" y="540" width="342" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195.0" y="567.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Retry import</text>
+<text x="12" y="651" font-size="14" fill="#74c0fc" font-weight="400" text-anchor="start">Adjacent ? help</text>
+<text x="12" y="680" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Hover, keyboard focus or tap.</text>
+<text x="12" y="701" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Dismiss with Escape or outside tap.</text>
+<text x="12" y="722" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Errors and required choices stay visible.</text>
+</g>
+</g>
+</svg>

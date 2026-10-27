@@ -22,7 +22,7 @@ vi.mock("../stockfishEngine", () => ({
   stopWebStockfish18Search: vi.fn(),
   releaseWebPcEngine: vi.fn(async () => {}),
 }));
-test("the real phone Board Analysis path saves a report, selects its mistake and plays a Plans line without changing the source game", async () => {
+test("the real phone Board Analysis path saves a report, selects its mistake and retains a Plans variation beside the source mainline", async () => {
   localStorage.setItem(
     PHONE_CPU_RESOURCES_KEY,
     JSON.stringify({ cpuResources: { version: 1, threads: 3, hashMb: 333 } }),
@@ -87,8 +87,8 @@ test("the real phone Board Analysis path saves a report, selects its mistake and
             multipv: 1,
             depth: 17,
             score: { type: "cp", value: 20 },
-            uciMoves: ["e7e5", "g1f3", "b8c6"],
-            sanMoves: ["e5", "Nf3", "Nc6"],
+            uciMoves: ["c7c5", "g1f3", "d7d6"],
+            sanMoves: ["c5", "Nf3", "d6"],
           },
         ]
       : [
@@ -185,11 +185,14 @@ test("the real phone Board Analysis path saves a report, selects its mistake and
     );
     await click(plans, "Play this line");
     const saved = webStateSession.getSnapshot().state;
-    expect(saved.board.line.map((move) => move.san)).toEqual(["e4", "e5", "Nf3", "Nc6"]);
+    expect(saved.board.line.map((move) => move.san)).toEqual(["e4", "c5", "Nf3", "d6"]);
     expect(saved.gamesByDatabase[game.databaseId][0].moves.map((move) => move.san)).toEqual([
       "e4",
       "e5",
     ]);
+    expect(
+      saved.gamesByDatabase[game.databaseId][0].moves[0].variations?.[0].map((move) => move.san),
+    ).toEqual(["c5", "Nf3", "d6"]);
     expect(Object.keys(saved.gameReports!)).toHaveLength(1);
     expect(host.textContent).not.toContain("This view could not open");
     expect(

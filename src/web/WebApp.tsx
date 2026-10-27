@@ -146,6 +146,7 @@ import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
 import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
+import PhoneManualImport from "./PhoneManualImport";
 import WebGameReportPanel from "./WebGameReportPanel";
 import PhoneEnginePlansPanel from "./PhoneEnginePlansPanel";
 import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
@@ -259,6 +260,7 @@ import type {
   WebPrepWorkspace,
 } from "./model";
 import { getWebMovePanelBranchLine, getWebMovePanelDisplayLines } from "./movePanel";
+import { choosePhoneMoveLine, playPhoneMoves } from "./phoneMoveTree";
 import {
   fetchWebOnlineGames,
   getWebOnlineImportTitle,
@@ -1403,6 +1405,21 @@ function WebAppContent() {
               />
             ) : view === "import" ? (
               <Stack className={classes.reviewWorkspace}>
+                <PhoneManualImport
+                  value={pastedPgn}
+                  onChange={setPastedPgn}
+                  importing={importing}
+                  onFiles={importFiles}
+                  onImport={async (input) => {
+                    const result = await importPgnText({
+                      name: input.name,
+                      pgn: input.pgn,
+                      notificationTitle: input.kind === "fen" ? "Position opened" : "PGN imported",
+                    });
+                    setBoardPanelMode("moves");
+                    return result;
+                  }}
+                />
                 <OnlineGameAnalysisPanel
                   onAnalyzeGame={async (game) => {
                     await importOnlineGameForAnalysis(game);
@@ -1413,54 +1430,6 @@ function WebAppContent() {
                     setBoardPanelMode("moves");
                   }}
                 />
-                <details className={classes.taskDetails} open={pastedPgn.trim() ? true : undefined}>
-                  <summary>PGN files or pasted games</summary>
-                  <Stack gap="sm" mt="sm">
-                <Button component="label" variant="light">
-                  Open PGN files
-                  <input
-                    hidden
-                    multiple
-                    type="file"
-                    accept=".pgn,text/plain"
-                    onChange={(e) => {
-                      void importFiles(e.currentTarget.files);
-                      e.currentTarget.value = "";
-                    }}
-                  />
-                </Button>
-                <Textarea
-                  label="Or paste PGN"
-                  placeholder="Paste one game or a collection…"
-                  minRows={2}
-                  maxRows={5}
-                  autosize
-                  value={pastedPgn}
-                  onChange={(e) => setPastedPgn(e.currentTarget.value)}
-                />
-                <Button
-                  variant="light"
-                  disabled={!pastedPgn.trim()}
-                  onClick={() => {
-                    void importPgnText({
-                      name: "Pasted games",
-                      pgn: pastedPgn,
-                      notificationTitle: "PGN imported",
-                    })
-                      .then(() => setPastedPgn(""))
-                      .catch((error) =>
-                        notifications.show({
-                          color: "red",
-                          title: "Could not read PGN",
-                          message: String(error),
-                        }),
-                      );
-                  }}
-                >
-                  Import pasted games
-                </Button>
-                  </Stack>
-                </details>
                 <Button variant="subtle" onClick={() => setView("review")}>
                   Review mistakes across my games
                 </Button>
@@ -1745,8 +1714,12 @@ function BoardWorkspace({
   );
   const persistedCoachReview = sourceGame?.coachReview ?? board.coachReview ?? null;
   const sourceRootLines = useMemo(
-    () => (sourceGame ? webGameToRootLines(sourceGame) : []),
-    [sourceGame],
+    () =>
+      sourceGame
+        ? webGameToRootLines(sourceGame)
+        : ((activePrep ? activePrep.moveTree : board.moveTree) ??
+          (activeLine.length ? [activeLine] : [])),
+    [sourceGame, activePrep, board.moveTree, activeLine],
   );
   const prepRootPly = activePrep ? clampCursor(activePrep.rootPly ?? 0, activeLine.length) : 0;
   const prepRootFen = fenAtCursor(activeLine, prepRootPly, startFen);
@@ -1932,40 +1905,9 @@ function BoardWorkspace({
     if (canGoToNextMove) setCursor(cursor + 1);
   };
 
-  const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
-    if (!activePrep) return;
-    setState((current) => ({
-      ...current,
-      prepWorkspaces: current.prepWorkspaces.map((prep) =>
-        prep.id === activePrep.id ? updater(prep) : prep,
-      ),
-    }));
-  };
-
   const chooseMovePanelLine = (nextLine: WebPrepLineMove[], nextCursor = nextLine.length) => {
-    const cursor = clampCursor(nextCursor, nextLine.length);
-
-    if (activePrep) {
-      updateActivePrep((prep) => ({
-        ...prep,
-        line: nextLine,
-        rootPly: Math.min(prep.rootPly ?? 0, nextLine.length),
-        updatedAt: Date.now(),
-      }));
-      updateBoard({
-        cursor,
-        sourceTitle: prepBoardTitle(activePrep),
-        sourceDatabaseId: null,
-        sourceGameId: null,
-      });
-      return;
-    }
-
-    updateBoard({
-      line: nextLine,
-      cursor,
-      sourceTitle: board.sourceTitle ?? "Analysis board",
-    });
+    stopLiveReplay();
+    setState((current) => choosePhoneMoveLine(current, annotationSeat, nextLine, nextCursor));
   };
 
   const appendMoveAtCursor = (
@@ -1974,40 +1916,12 @@ function BoardWorkspace({
     fenAfter: string,
     sourceCursor = cursor,
   ) => {
-    const fenBefore = fenAtCursor(activeLine, sourceCursor, startFen);
-    const actor =
-      activePrep && getFenColor(fenBefore) === activePrep.userColor ? "user" : "opponent";
-    const move: WebPrepLineMove = {
-      fenBefore,
-      fenAfter,
-      san,
-      uci,
-      actor,
-    };
-
-    if (activePrep) {
-      const nextLine = [...activeLine.slice(0, sourceCursor), move];
-      updateActivePrep((prep) => ({
-        ...prep,
-        line: nextLine,
-        rootPly: Math.min(prep.rootPly ?? 0, nextLine.length),
-        updatedAt: Date.now(),
-      }));
-      updateBoard({
-        cursor: nextLine.length,
-        sourceTitle: prepBoardTitle(activePrep),
-        sourceDatabaseId: null,
-        sourceGameId: null,
-      });
-      return;
-    }
-
-    const nextLine = [...activeLine.slice(0, sourceCursor), move];
-    updateBoard({
-      line: nextLine,
-      cursor: nextLine.length,
-      sourceTitle: board.sourceTitle ?? "Analysis board",
-    });
+    const played = uci
+      ? playUciMove(fenAtCursor(activeLine, sourceCursor, startFen), uci)
+      : playSanMove(fenAtCursor(activeLine, sourceCursor, startFen), san);
+    if (!played?.uci || played.san !== san || played.fenAfter !== fenAfter) return;
+    const moveUci = played.uci;
+    setState((current) => playPhoneMoves(current, annotationSeat, [moveUci], sourceCursor));
   };
 
   const appendMove = (san: string, uci: string | null, fenAfter: string) => {
@@ -2027,21 +1941,7 @@ function BoardWorkspace({
   };
   const playPlanLine = (sourceFen: string, moves: string[]) => {
     if (sourceFen !== currentFen) return;
-    const nextLine = activeLine.slice(0, cursor);
-    let fen = sourceFen;
-    for (const uci of moves) {
-      const played = playUciMove(fen, uci);
-      if (!played) return;
-      nextLine.push({
-        fenBefore: fen,
-        fenAfter: played.fenAfter,
-        san: played.san,
-        uci: played.uci,
-        actor: activePrep && getFenColor(fen) === activePrep.userColor ? "user" : "opponent",
-      });
-      fen = played.fenAfter;
-    }
-    chooseMovePanelLine(nextLine);
+    setState((current) => playPhoneMoves(current, annotationSeat, moves, cursor));
   };
 
   const analyzeOnlineGame = async (onlineGame: WebOnlineImportedGame) => {
@@ -2205,6 +2105,7 @@ function BoardWorkspace({
           {panelMode === "engine" && (
             <SegmentedControl
               m="sm"
+              style={{ width: "auto" }}
               aria-label="Analysis view"
               fullWidth
               value={analysisView}
@@ -3646,6 +3547,22 @@ function MovesUnderBoardPanel({
 
   return (
     <Stack gap="xs">
+      {primaryLine.length > 0 && (
+        <Group justify="space-between" gap="xs">
+          <Text size="xs" fw={600}>
+            Mainline
+          </Text>
+          {!webLineStartsWith(primaryLine, line) && (
+            <Button
+              size="compact-xs"
+              variant="subtle"
+              onClick={() => onChooseLine(primaryLine, Math.min(cursor, primaryLine.length))}
+            >
+              Return to mainline
+            </Button>
+          )}
+        </Group>
+      )}
       {sourceComments.length > 0 && (
         <Box className={classes.moveRootComments}>
           {sourceComments.map((comment, index) => (
@@ -4532,7 +4449,7 @@ function DatabaseUnderBoardPanel({
                   loading={Boolean(loadingLocalSource)}
                   loadingLabel={loadingLocalSource ? `Loading ${loadingLocalSource}` : undefined}
                   flex="1 1 11rem"
-                  minWidth="11rem"
+                  minWidth={0}
                 />
                 {selectedLocalId && !isSelectedLocalLazy ? (
                   <WebDatabasePerspectiveControls
@@ -4692,6 +4609,10 @@ export function EngineUnderBoardPanel({
   suspended?: boolean;
   cpuPreferenceStore?: PhoneCpuStore;
 }) {
+  // Future positions are prefetch hints, not the identity of the running search.
+  // Library refreshes and annotations may rebuild that list without moving the board.
+  const upcomingFensRef = useRef(upcomingFens);
+  upcomingFensRef.current = upcomingFens;
   const [settings, setSettings, preferenceError, retrySaving, firstUsePreferences] =
     usePersistentJson(
       WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
@@ -4820,7 +4741,7 @@ export function EngineUnderBoardPanel({
       lc0AutoNetwork: settings.lc0AutoNetwork,
       lc0Network: settings.lc0Network,
       useStoredEvaluations: settings.useCloud,
-      prefetchFens: upcomingFens,
+      prefetchFens: upcomingFensRef.current,
       signal: controller.signal,
       onUpdate: (lines) => {
         if (!active) return;
@@ -4860,7 +4781,6 @@ export function EngineUnderBoardPanel({
     selectedCpuResources,
     cpuSnapshot.phase,
     suspended,
-    upcomingFens,
     pcServices,
   ]);
 
@@ -6847,20 +6767,6 @@ function PrepUnderBoardPanel({
             ) : null}
           </Group>
           <Group gap={4} wrap="wrap" justify="flex-end">
-            <Button
-              size="xs"
-              leftSection={<IconPlayerPlay size={14} />}
-              disabled={!configReady}
-              onClick={() => {
-                if (activePrep) {
-                  updateActivePrepSettings({ panelStage: "train" });
-                } else {
-                  createPrep();
-                }
-              }}
-            >
-              Start prep
-            </Button>
             {activePrep ? (
               <>
                 <Tooltip label="Use the current board position as the prep start">
@@ -6905,7 +6811,7 @@ function PrepUnderBoardPanel({
 
       {showSetupStage ? (
         <>
-          <Group align="flex-end" gap="xs" wrap="wrap">
+          <Group align="flex-end" gap="xs" wrap="wrap" className={classes.prepSetupGrid}>
             <SegmentedControl
               aria-label="Prep target"
               data={[
@@ -6924,8 +6830,9 @@ function PrepUnderBoardPanel({
               placeholder="Prep source"
               size="xs"
               label="Prep source"
-              flex="1 1 14rem"
-              minWidth="14rem"
+              width="100%"
+              flex="1 1 auto"
+              minWidth={0}
               allowDeselect={false}
               loading={Boolean(loadingPrepSource)}
               loadingLabel={loadingPrepSource ? `Loading ${loadingPrepSource}` : undefined}
@@ -7042,7 +6949,7 @@ function PrepUnderBoardPanel({
                   </Text>
                 </Group>
               ) : null}
-              <Group gap="xs" wrap="wrap" align="flex-end">
+              <Group gap="xs" wrap="wrap" align="flex-end" className={classes.prepFilterGrid}>
                 {selectedPrepMode === "player" ? (
                   <WebDatabasePerspectiveControls
                     playerName={selectedOpponentName}
@@ -7076,7 +6983,6 @@ function PrepUnderBoardPanel({
                   max={999}
                   step={1}
                   size="xs"
-                  w={100}
                   aria-label="Minimum games"
                 />
                 <NumberInput
@@ -7087,7 +6993,6 @@ function PrepUnderBoardPanel({
                   max={20}
                   step={1}
                   size="xs"
-                  w={100}
                   aria-label="Top opponent moves to show"
                 />
               </Group>
@@ -7276,6 +7181,24 @@ function PrepUnderBoardPanel({
           </Text>
         )}
       </Box>
+      {showSetupStage ? (
+        <div className={classes.prepStartAction}>
+            <Button
+              size="xs"
+              leftSection={<IconPlayerPlay size={14} />}
+              disabled={!configReady}
+              onClick={() => {
+                if (activePrep) {
+                  updateActivePrepSettings({ panelStage: "train" });
+                } else {
+                  createPrep();
+                }
+              }}
+            >
+              Start prep
+            </Button>
+        </div>
+      ) : null}
       {showTrainingStage && activePrep ? (
         <Stack gap="xs">
           {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
@@ -7663,7 +7586,7 @@ function WebLocalFiltersControls({
   const hasFilters = result !== "any";
 
   return (
-    <Group gap="xs" wrap="wrap" align="flex-end">
+    <Group gap="xs" wrap="wrap" align="flex-end" className={classes.resultFilter}>
       <Select
         label="Result"
         size="xs"
@@ -7676,7 +7599,7 @@ function WebLocalFiltersControls({
           { value: "blackwon", label: "Black won" },
         ]}
         allowDeselect={false}
-        w={132}
+        style={{ flex: "1 1 10rem" }}
       />
       <Button
         size="compact-xs"
@@ -7743,11 +7666,11 @@ function WebDatabasePerspectiveControls({
           ];
 
   return (
-    <Group gap={4} wrap="nowrap" style={{ flex: "1 1 auto", minWidth: 0 }}>
+    <Group gap={8} wrap="wrap" className={classes.playerPerspective} style={{ flex: "1 1 auto", minWidth: 0 }}>
       <Tooltip label="Filter this database to one player's games">
         <div style={{ flex: playerFlex, minWidth: 0 }}>
           <Autocomplete
-            label="Username"
+            label="Player"
             value={playerName}
             data={playerData}
             onChange={onPlayerNameChange}
@@ -9126,6 +9049,7 @@ function HostedFilesPanel({
           <Button
             size="compact-xs"
             variant="light"
+            loading={state.sourceArchives?.shared?.pending.some(change => change.path === archivedFolder) ?? false}
             onClick={() =>
               setState((current) => setPhoneHostedArchived(current, archivedFolder, false))
             }
@@ -9194,6 +9118,7 @@ function HostedFilesPanel({
             {visibleEntries.map((entry) => {
               const archived = phoneHostedArchiveAncestor(state, entry.path);
               const inherited = archived && archived !== entry.path;
+              const archivePending = state.sourceArchives?.shared?.pending.some(change => change.path === entry.path) ?? false;
               const archiveAction = inherited
                 ? `Archived by folder ${archived}`
                 : `${archived ? "Unarchive" : "Archive"} ${entry.name}`;
@@ -9281,7 +9206,8 @@ function HostedFilesPanel({
                     <span>
                       <ActionIcon
                         aria-label={archiveAction}
-                        disabled={Boolean(inherited)}
+                        disabled={Boolean(inherited) || archivePending}
+                        loading={archivePending}
                         variant="subtle"
                         size="lg"
                         style={{ minWidth: 40, minHeight: 40 }}

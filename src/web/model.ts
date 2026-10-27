@@ -146,6 +146,7 @@ export type WebPrepWorkspace = {
     startFen: string;
     rootPly?: number;
     line: WebPrepLineMove[];
+    moveTree?: WebPrepLineMove[][];
     notesByFen: Record<string, string>;
     preparedMoves: Record<string, number>;
     skippedMoves?: Record<string, number>;
@@ -161,6 +162,7 @@ export type WebBoardState = {
     orientation: WebColor;
     startFen: string;
     line: WebPrepLineMove[];
+    moveTree?: WebPrepLineMove[][];
     cursor: number;
     sourceTitle: string | null;
     sourceDatabaseId: string | null;

@@ -206,6 +206,41 @@ it("draws by square taps and native Chessground gestures, keeps imported marks, 
     expect(source.rootShapes).toEqual([{ orig: "d4", brush: "yellow" }]);
     expect(source.moves[0].shapes).toEqual([{ orig: "e2", dest: "e4", brush: "green" }]);
     expect(persistence.save).toHaveBeenLastCalledWith(durable);
+    // The real Chessground move handler must retain the imported continuation,
+    // show the new branch, and navigate back without discarding either line.
+    await tap("c7");
+    await tap("c5");
+    const edited = webStateSession.getSnapshot().state;
+    expect(edited.board.line.map((move) => move.san)).toEqual(["e4", "c5"]);
+    expect(edited.gamesByDatabase[source.databaseId][0].moves.map((move) => move.san)).toEqual([
+      "e4",
+      "e5",
+    ]);
+    expect(
+      edited.gamesByDatabase[source.databaseId][0].moves[0].variations?.[0].map((move) => move.san),
+    ).toEqual(["c5"]);
+    const mainline = Array.from(host.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Return to mainline",
+    )!;
+    expect(mainline).toBeTruthy();
+    await act(async () => mainline.click());
+    expect(webStateSession.getSnapshot().state.board.line.map((move) => move.san)).toEqual([
+      "e4",
+      "e5",
+    ]);
+    const branch = Array.from(host.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "1... c5",
+    )!;
+    expect(branch).toBeTruthy();
+    await act(async () => branch.click());
+    expect(webStateSession.getSnapshot().state.board.line.map((move) => move.san)).toEqual([
+      "e4",
+      "c5",
+    ]);
+    await webStateSession.flush();
+    expect(
+      webStateSession.getSnapshot().savedState!.gamesByDatabase[source.databaseId][0].pgn,
+    ).toContain("c5");
   } finally {
     await act(async () => root.unmount());
     host.remove();

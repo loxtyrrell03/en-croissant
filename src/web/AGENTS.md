@@ -1,3 +1,29 @@
+# 2026-10-27 phone variations, import, spacing and shared archives
+
+- Board, engine, Database and Plans moves now use one owned immutable move-tree
+  transaction. Alternative moves append PGN variations; existing first children
+  remain mainline. Replaying an existing move retains its continuation. Blank and
+  Prep trees persist alongside notes/drawings; malformed stored trees fail closed.
+  Returning to mainline retains a pre-upgrade unsaved branch. Prefetch hint identity
+  no longer aborts/restarts an unchanged active engine search.
+- Manual PGN/FEN paste is directly visible first on Import, validates before state
+  changes, retains invalid drafts and opens Moves. Editable three-direction SVGs
+  in ../../design/phone-polish-20261027 were reviewed; A refines the approved
+  compact navigation with whole labels, aligned rows and responsive tool grids.
+  Six pages and all five board panels fit320/390/760px and200% root text.
+- Shared archive snapshots follow Novelty Dev file/collection metadata; device-only
+  imports retain local labels. Durable per-target commands check revisions and
+  acknowledge exact requests without overwriting newer choices. Pending actions
+  show progress; conflicts offer explicit phone/PC resolution. Background status
+  polls no longer alternate healthy Connected/Syncing text. See backend guidance
+  for read-only audit, metadata transactions and atomic staging-file exclusions.
+- Source verification includes105 move/tree/storage/engine integration cases,
+  focused import/archive tests, full types and44 rendered browser checks. WebApp
+  retains its25 existing lint warnings, zero errors. Synthetic browser fixtures
+  use isolated origin storage; physical-phone and live-delivery proof are separate.
+  Novelty's active Files cache requires its coordinated field-merge/refresh repair
+  before claiming durable two-way file-label behaviour in an already-open window.
+
 # Verified phone search controls source
 
 - Approved inline A reaches Live with depth/time/nodes/until-stopped and lines.

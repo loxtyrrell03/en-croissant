@@ -11,6 +11,39 @@ import {
 export type PhoneAnnotation = Pick<WebPrepLineMove, "annotations" | "comments">;
 const glyphs = ["!", "?", "!!", "??", "!?", "?!"];
 
+function patchWorkspaceTree(
+    roots: WebPrepLineMove[][] | undefined,
+    prefix: WebPrepLineMove[],
+    patch: Partial<WebPrepLineMove>,
+): WebPrepLineMove[][] | undefined {
+    if (!roots || !prefix.length) return roots;
+    return roots.map((line) => {
+        let shared = 0;
+        while (
+            shared < prefix.length &&
+            line[shared]?.san === prefix[shared].san &&
+            line[shared]?.fenBefore === prefix[shared].fenBefore &&
+            line[shared]?.fenAfter === prefix[shared].fenAfter
+        )
+            shared++;
+        if (!shared) return line;
+        return line.map((move, index) =>
+            index !== shared - 1
+                ? move
+                : shared === prefix.length
+                  ? { ...move, ...patch }
+                  : {
+                        ...move,
+                        variations: patchWorkspaceTree(
+                            move.variations,
+                            prefix.slice(shared),
+                            patch,
+                        ),
+                    },
+        );
+    });
+}
+
 /** Resolve the exact legal root/history in portable PGN, including side lines. */
 function portableNode(
     game: WebGame,
@@ -92,6 +125,19 @@ function replacePortableGame(
     };
 }
 
+/** Add a legal played branch to portable PGN without promoting or replacing siblings. */
+export function retainPhoneGameLine(
+    state: WebCompanionState,
+    line: WebPrepLineMove[],
+): WebCompanionState | null {
+    const game = sourceGame(state);
+    if (!game) return state;
+    const startFen = state.board.startFen;
+    if (portableNode(game, line, line.length, startFen, false)) return state;
+    const portable = portableNode(game, line, line.length, startFen, true);
+    return portable ? replacePortableGame(state, game, makePgn(portable.parsed)) : null;
+}
+
 export function annotatePhoneMove(
     state: WebCompanionState,
     cursor: number,
@@ -107,10 +153,24 @@ export function annotatePhoneMove(
         return {
             ...state,
             prepWorkspaces: state.prepWorkspaces.map((p) =>
-                p.id === prep.id ? { ...p, line: nextLine, updatedAt: Date.now() } : p,
+                p.id === prep.id
+                    ? {
+                          ...p,
+                          line: nextLine,
+                          moveTree: patchWorkspaceTree(p.moveTree, line.slice(0, cursor), patch),
+                          updatedAt: Date.now(),
+                      }
+                    : p,
             ),
         };
-    const next = { ...state, board: { ...state.board, line: nextLine } };
+    const next = {
+        ...state,
+        board: {
+            ...state.board,
+            line: nextLine,
+            moveTree: patchWorkspaceTree(state.board.moveTree, line.slice(0, cursor), patch),
+        },
+    };
     const game = sourceGame(state);
     if (!game) return next;
     const portable = portableNode(game, line, cursor, seat.startFen, true);
@@ -172,6 +232,9 @@ export function annotatePhoneDrawings(
     const workspace = seat.prep ?? state.board;
     const patch = {
         drawings: { ...workspace.drawings, [seat.node]: normalized },
+        moveTree: patchWorkspaceTree(workspace.moveTree, seat.line.slice(0, seat.cursor), {
+            shapes: normalized,
+        }),
         ...(seat.cursor > 0
             ? {
                   line: seat.line.map((move, index) =>

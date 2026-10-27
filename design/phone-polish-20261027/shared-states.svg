@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1264" height="1030" viewBox="0 0 1264 1030" role="img" aria-label="Shared states · all three directions">
+<title>Shared states · all three directions</title>
+<rect width="1264" height="1030" fill="#0b0d0f"/>
+<g font-family="Segoe UI, sans-serif">
+<text x="24" y="36" font-size="26" fill="#f1f3f5" font-weight="700" text-anchor="start">Shared states · all three directions</text>
+<text x="24" y="65" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Illustrative examples. Preserve the game and user choices while work is in progress.</text>
+<text x="24" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Loading / cancellation</text>
+<rect x="24" y="114" width="390" height="388" rx="16" fill="#111315" stroke="#34383f"/>
+<text x="40" y="153" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Importing games</text>
+<text x="40" y="194" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">8 of 12 games read</text>
+<text x="40" y="215" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Keep the draft available.</text>
+<rect x="40" y="272" width="358" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="219.0" y="299.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Cancel import</text>
+<path d="M40 348h358" stroke="#34383f"/>
+<text x="40" y="381" font-size="14" fill="#74c0fc" font-weight="600" text-anchor="start">Narrow layout / 320px</text>
+<text x="40" y="414" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Use the same order and full-width actions.</text>
+<text x="40" y="435" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Wrap whole labels; retain 44px tap targets.</text>
+<text x="40" y="456" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Status changes do not remount the board.</text>
+<text x="438" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Saved / archived</text>
+<rect x="438" y="114" width="390" height="388" rx="16" fill="#111315" stroke="#34383f"/>
+<text x="454" y="153" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Opening study archived</text>
+<text x="454" y="194" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Hidden in active phone and Novelty dev lists.</text>
+<text x="454" y="215" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">25 games remain saved.</text>
+<rect x="454" y="272" width="358" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="633.0" y="299.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Unarchive</text>
+<path d="M454 348h358" stroke="#34383f"/>
+<text x="454" y="381" font-size="14" fill="#74c0fc" font-weight="600" text-anchor="start">Narrow layout / 320px</text>
+<text x="454" y="414" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Use the same order and full-width actions.</text>
+<text x="454" y="435" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Wrap whole labels; retain 44px tap targets.</text>
+<text x="454" y="456" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Status changes do not remount the board.</text>
+<text x="852" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Empty / first use</text>
+<rect x="852" y="114" width="390" height="388" rx="16" fill="#111315" stroke="#34383f"/>
+<text x="868" y="153" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">No games here yet</text>
+<text x="868" y="194" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Import a PGN or FEN to get started.</text>
+<text x="868" y="215" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Choose a file or paste directly.</text>
+<rect x="868" y="272" width="358" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="1047.0" y="299.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Import games</text>
+<path d="M868 348h358" stroke="#34383f"/>
+<text x="868" y="381" font-size="14" fill="#74c0fc" font-weight="600" text-anchor="start">Narrow layout / 320px</text>
+<text x="868" y="414" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Use the same order and full-width actions.</text>
+<text x="868" y="435" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Wrap whole labels; retain 44px tap targets.</text>
+<text x="868" y="456" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Status changes do not remount the board.</text>
+<text x="24" y="542" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Conflict / required choice</text>
+<rect x="24" y="554" width="390" height="388" rx="16" fill="#111315" stroke="#34383f"/>
+<text x="40" y="593" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Two versions need review</text>
+<text x="40" y="634" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Keep both versions until a choice is saved.</text>
+<text x="40" y="655" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Never replace a newer edit in the background.</text>
+<rect x="40" y="712" width="358" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="219.0" y="739.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Review versions</text>
+<path d="M40 788h358" stroke="#34383f"/>
+<text x="40" y="821" font-size="14" fill="#74c0fc" font-weight="600" text-anchor="start">Narrow layout / 320px</text>
+<text x="40" y="854" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Use the same order and full-width actions.</text>
+<text x="40" y="875" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Wrap whole labels; retain 44px tap targets.</text>
+<text x="40" y="896" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Status changes do not remount the board.</text>
+<text x="438" y="542" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Offline / retry</text>
+<rect x="438" y="554" width="390" height="388" rx="16" fill="#111315" stroke="#34383f"/>
+<text x="454" y="593" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Cannot reach Novelty dev</text>
+<text x="454" y="634" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Keep your edits saved on this phone.</text>
+<text x="454" y="655" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Show the specific failure next to retry.</text>
+<rect x="454" y="712" width="358" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="633.0" y="739.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Retry sync</text>
+<path d="M454 788h358" stroke="#34383f"/>
+<text x="454" y="821" font-size="14" fill="#74c0fc" font-weight="600" text-anchor="start">Narrow layout / 320px</text>
+<text x="454" y="854" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Use the same order and full-width actions.</text>
+<text x="454" y="875" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Wrap whole labels; retain 44px tap targets.</text>
+<text x="454" y="896" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Status changes do not remount the board.</text>
+<text x="852" y="542" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Removal confirmation</text>
+<rect x="852" y="554" width="390" height="388" rx="16" fill="#111315" stroke="#34383f"/>
+<text x="868" y="593" font-size="20" fill="#f1f3f5" font-weight="700" text-anchor="start">Remove this local source?</text>
+<text x="868" y="634" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">This differs from Archive.</text>
+<text x="868" y="655" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Keep the existing consequence and Cancel.</text>
+<rect x="868" y="712" width="358" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="1047.0" y="739.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Cancel</text>
+<path d="M868 788h358" stroke="#34383f"/>
+<text x="868" y="821" font-size="14" fill="#74c0fc" font-weight="600" text-anchor="start">Narrow layout / 320px</text>
+<text x="868" y="854" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Use the same order and full-width actions.</text>
+<text x="868" y="875" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Wrap whole labels; retain 44px tap targets.</text>
+<text x="868" y="896" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Status changes do not remount the board.</text>
+</g>
+</svg>

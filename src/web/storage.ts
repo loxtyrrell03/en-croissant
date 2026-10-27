@@ -3,6 +3,7 @@ import type { WebCompanionState } from "./model";
 import { validPhoneWorkspacePreferences } from "./workspacePreferences";
 import { validPhoneGameDateRanges } from "./gameDates";
 import { validPhoneSourceArchives } from "./sourceArchives";
+import { validPhoneMoveTree } from "./movePanel";
 
 const DB_NAME = "en-croissant-web-companion";
 const DB_VERSION = 1;
@@ -204,6 +205,7 @@ function isValidState(value: unknown): value is WebCompanionState {
                 prep &&
                 typeof prep.id === "string" &&
                 validPhoneGameDateRanges(prep.dateRanges) &&
+                validPhoneMoveTree(prep.moveTree) &&
                 Array.isArray(prep.sourceIds) &&
                 Array.isArray(prep.line),
         ) &&
@@ -217,7 +219,8 @@ function isValidState(value: unknown): value is WebCompanionState {
                         typeof receipt.databaseId === "string" &&
                         typeof receipt.prepId === "string",
                 ))) &&
-        (!candidate.board || Array.isArray(candidate.board.line))
+        (!candidate.board ||
+            (Array.isArray(candidate.board.line) && validPhoneMoveTree(candidate.board.moveTree)))
     );
 }
 

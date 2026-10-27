@@ -4,6 +4,7 @@ import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import type { WebCompanionState, WebDatabase } from "./model";
 import {
   phoneDatabaseArchive,
+  phoneDatabaseArchivePath,
   setPhoneDatabaseArchived,
   setPhoneHostedArchived,
 } from "./sourceArchives";
@@ -26,8 +27,8 @@ export function PhoneArchiveFilter({
         styles={{ body: { alignItems: "center", minHeight: 40 } }}
       />
       <TournamentHelp label="Archived sources">
-        Archive hides an item on this device. Files, games and existing Prep stay saved; Show
-        archived lets you restore it.
+        Shared file and database archive labels sync with Novelty Dev. Device-only imports stay
+        local. Games and existing Prep stay saved; Show archived lets you restore them.
       </TournamentHelp>
     </Group>
   );
@@ -64,8 +65,11 @@ export function PhoneSavedImports({
       )}
       {databases.map((database) => {
         const archived = phoneDatabaseArchive(state, database);
-        const parentArchived =
-          archived?.path && archived.path !== (database.hostedFilePath ?? database.hostedPath);
+        const archivePath = phoneDatabaseArchivePath(state, database);
+        const pending = state.sourceArchives?.shared?.pending.some(
+          (change) => change.path === (archived?.path ?? archivePath),
+        );
+        const parentArchived = archived?.path && archived.path !== archivePath;
         return (
           <Group
             key={database.id}
@@ -104,6 +108,7 @@ export function PhoneSavedImports({
                 size="xs"
                 variant="subtle"
                 style={{ minHeight: 40 }}
+                loading={pending}
                 aria-label={`${archived ? "Unarchive" : "Archive"} ${database.name}`}
                 onClick={() =>
                   setState((current) =>

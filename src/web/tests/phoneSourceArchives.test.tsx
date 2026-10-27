@@ -167,7 +167,7 @@ it("archives and restores through real Files/import controls, preserves active P
     await act(async () =>
       host.querySelector<HTMLButtonElement>('[aria-label="Help: Archived sources"]')!.focus(),
     );
-    expect(document.querySelector('[role="tooltip"]')?.textContent).toContain("this device");
+    expect(document.querySelector('[role="tooltip"]')?.textContent).toContain("sync with Novelty Dev");
     await act(async () =>
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })),
     );

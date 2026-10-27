@@ -174,3 +174,26 @@ it("loads optional board/source preferences and rejects malformed maps without r
     expect((await rejectedArchives).message).toContain("preserved");
     expect(fixture.transactions[2].request.result).toBe(invalidArchives);
 });
+
+it("rejects malformed optional variation trees while retaining the original saved workspace", async () => {
+    const fixture = storageFixture();
+    const { loadWebState, createEmptyWebState } = await import("../storage");
+    const original = createEmptyWebState();
+    const values = [
+        { ...original, board: { ...original.board, moveTree: [null] } },
+        {
+            ...original,
+            prepWorkspaces: [{ id: "invented-prep", sourceIds: [], line: [], moveTree: {} }],
+        },
+    ];
+    for (const [index, value] of values.entries()) {
+        const rejected = loadWebState().catch((error) => error);
+        if (index === 0) fixture.opens[0].onsuccess!();
+        await Promise.resolve();
+        fixture.transactions[index].request.result = value;
+        fixture.transactions[index].request.onsuccess!();
+        fixture.transactions[index].oncomplete!();
+        expect((await rejected).message).toContain("preserved");
+        expect(fixture.transactions[index].request.result).toBe(value);
+    }
+});

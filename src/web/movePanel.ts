@@ -1,5 +1,40 @@
 import type { WebPrepLineMove } from "./model";
 
+/** Optional persisted tree. Reject malformed/cyclic additions without rewriting storage. */
+export function validPhoneMoveTree(value: unknown): boolean {
+    if (value === undefined) return true;
+    if (!Array.isArray(value)) return false;
+    const pending: { lines: unknown; exit?: boolean }[] = [{ lines: value }];
+    const ancestors = new Set<unknown>();
+    while (pending.length) {
+        const item = pending.pop()!;
+        if (item.exit) {
+            ancestors.delete(item.lines);
+            continue;
+        }
+        if (!Array.isArray(item.lines) || ancestors.has(item.lines)) return false;
+        ancestors.add(item.lines);
+        pending.push({ lines: item.lines, exit: true });
+        for (const line of item.lines) {
+            if (!Array.isArray(line)) return false;
+            for (const move of line) {
+                if (
+                    !move ||
+                    typeof move !== "object" ||
+                    typeof move.fenBefore !== "string" ||
+                    typeof move.fenAfter !== "string" ||
+                    typeof move.san !== "string" ||
+                    (move.uci !== null && typeof move.uci !== "string") ||
+                    (move.actor !== "user" && move.actor !== "opponent")
+                )
+                    return false;
+                if (move.variations !== undefined) pending.push({ lines: move.variations });
+            }
+        }
+    }
+    return true;
+}
+
 export function getWebMovePanelDisplayLines(
     activeLine: WebPrepLineMove[],
     sourceRootLines: WebPrepLineMove[][],
