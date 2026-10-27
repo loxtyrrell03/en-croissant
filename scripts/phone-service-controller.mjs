@@ -1,5 +1,5 @@
 import { createServer, request as httpRequest } from "node:http";
-import { readFile, writeFile, rename, stat, mkdir } from "node:fs/promises";
+import { readFile, writeFile, rename, stat, mkdir, readdir, lstat } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { dirname, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -113,6 +113,39 @@ export async function createPhoneServiceController({
     response.writeHead(status, { "content-type": "application/json", "cache-control": "no-store" });
     response.end(JSON.stringify(value));
   };
+  const retainedAsset = async (request, response, pathname) => {
+    // Suspended/cached phone documents still name their original hashed chunks.
+    // A publish must not strand them before the app can offer its safe update.
+    // Only exact immutable asset names may fall back, never HTML, APIs or data.
+    if (!["GET", "HEAD"].includes(request.method) ||
+        !/^\/assets\/[A-Za-z0-9_.-]+-[A-Za-z0-9_-]{6,}\.(?:js|css|woff2?|ttf|svg|png|jpe?g|webp|wasm)$/.test(pathname))
+      return false;
+    const releasesRoot = join(root, "app-releases");
+    const releases = await readdir(releasesRoot, { withFileTypes: true });
+    for (const release of releases) {
+      if (!release.isDirectory() || !/^[a-f0-9]{12}-[a-f0-9]{12}$/.test(release.name)) continue;
+      const assetsRoot = join(releasesRoot, release.name, "assets");
+      if (!(await lstat(assetsRoot).catch(() => null))?.isDirectory()) continue;
+      const path = join(assetsRoot, pathname.slice("/assets/".length));
+      const info = await lstat(path).catch(() => null);
+      if (!info?.isFile()) continue;
+      response.writeHead(200, {
+        "content-type": mime[extname(path)] || "application/octet-stream",
+        "content-length": info.size,
+        "cache-control": "public, max-age=31536000, immutable",
+        "x-content-type-options": "nosniff",
+      });
+      if (request.method === "HEAD") response.end();
+      else {
+        const stream = createReadStream(path);
+        stream.on("error", () => response.destroy());
+        response.on("close", () => stream.destroy());
+        stream.pipe(response);
+      }
+      return true;
+    }
+    return false;
+  };
   const fallbackApp = async (request, response, pathname) => {
     if (
       !["GET", "HEAD"].includes(request.method) ||
@@ -131,7 +164,10 @@ export async function createPhoneServiceController({
     const path = resolve(appRoot, relative || "index.html");
     if (!path.startsWith(appRoot + sep)) return json(response, 403, { error: "Forbidden." });
     const info = await stat(path).catch(() => null);
-    if (!info?.isFile()) return json(response, 404, { error: "Not found." });
+    if (!info?.isFile()) {
+      if (await retainedAsset(request, response, pathname)) return;
+      return json(response, 404, { error: "Not found." });
+    }
     response.writeHead(200, {
       "content-type": mime[extname(path)] || "application/octet-stream",
       "content-length": info.size,
@@ -154,9 +190,19 @@ export async function createPhoneServiceController({
         headers: request.headers,
       },
       (incoming) => {
-        response.writeHead(incoming.statusCode, incoming.headers);
         incoming.on("error", () => response.destroy());
-        incoming.pipe(response);
+        void (async () => {
+          if (incoming.statusCode === 404 && await retainedAsset(request, response, pathname)) {
+            incoming.resume();
+            return;
+          }
+          response.writeHead(incoming.statusCode, incoming.headers);
+          incoming.pipe(response);
+        })().catch(() => {
+          if (response.headersSent) return response.destroy();
+          response.writeHead(incoming.statusCode, incoming.headers);
+          incoming.pipe(response);
+        });
       },
     );
     upstream.on("error", () => {
