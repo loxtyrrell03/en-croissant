@@ -1,6 +1,7 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
 import PhonePersonalSync from "./PhonePersonalSync";
 import PhoneAppUpdate from "./PhoneAppUpdate";
+import PhoneNewBoardActions from "./PhoneNewBoardActions";
 import { PERSONAL_LIBRARY_CHANGED } from "./personalSync";
 import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
 import { useCalendarDay } from "@/hooks/useCalendarDay";
@@ -87,7 +88,6 @@ import {
   IconSearch,
   IconSettings,
   IconSparkles,
-  IconSwitchVertical,
   IconTarget,
   IconUpload,
   IconX,
@@ -261,7 +261,7 @@ import type {
   WebPrepWorkspace,
 } from "./model";
 import { getWebMovePanelBranchLine, getWebMovePanelDisplayLines } from "./movePanel";
-import { choosePhoneMoveLine, playPhoneMoves, resetPhonePosition, resetPhoneLine } from "./phoneMoveTree";
+import { choosePhoneMoveLine, playPhoneMoves, resetPhoneLine } from "./phoneMoveTree";
 import {
   fetchWebOnlineGames,
   getWebOnlineImportTitle,
@@ -1467,6 +1467,8 @@ function WebAppContent() {
               <FilesWorkspace
                 state={state}
                 setState={setState}
+                onOpenGame={(game) => { loadGameOnBoard(game); setBoardPanelMode("moves"); }}
+                onNewBoard={() => { setView("board"); setBoardPanelMode("moves"); }}
                 importHostedPgn={importHostedPgn}
                 importHostedFolder={importHostedFolder}
               />
@@ -1972,13 +1974,10 @@ function BoardWorkspace({
 
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
   const orientation = phoneBoardOrientation(state);
-  const boardPlayers = sourceGame ? getWebBoardPlayerLabels(sourceGame, orientation) : null;
+  const phoneFile = state.databases.find((database) => database.id === board.sourceDatabaseId)?.phoneCreated;
+  const boardPlayers = sourceGame && !phoneFile ? getWebBoardPlayerLabels(sourceGame, orientation) : null;
   const flipBoard = () => {
     setState((current) => flipPhoneBoard(current, workspaceOwner));
-  };
-  const resetBoard = () => {
-    stopLiveReplay();
-    setState((current) => resetPhonePosition(current, phoneDrawingSeat(state).owner));
   };
 
   return (
@@ -2002,19 +2001,15 @@ function BoardWorkspace({
             {turnColor === "white" ? "White" : "Black"}
             <span className={classes.turnSuffix}> to move</span>
           </Badge>
-          <Tooltip label="Flip board">
-            <ActionIcon
-              aria-label="Flip board"
-              className={classes.boardHeaderAction}
-              color="gray"
-              onClick={flipBoard}
-              radius="md"
-              size="md"
-              variant="subtle"
-            >
-              <IconSwitchVertical size={17} />
-            </ActionIcon>
-          </Tooltip>
+          <PhoneNewBoardActions
+            onBeforeCreate={stopLiveReplay}
+            onCreated={() => { setPanelMode("moves"); setDrawing(false); }}
+            onFlip={flipBoard}
+            onMainline={() => {
+              stopLiveReplay();
+              setState((current) => resetPhoneLine(current, annotationSeat));
+            }}
+          />
         </Group>
       </Box>
 
@@ -2059,23 +2054,6 @@ function BoardWorkspace({
         canStartLiveReplay={canStartLiveReplay}
         onToggleLiveReplay={toggleLiveReplay}
       />
-
-      <Group className={classes.boardResetActions} gap="xs" wrap="wrap">
-        <Button size="xs" variant="light" onClick={resetBoard} leftSection={<IconRefresh size={16} />}>
-          Reset position
-        </Button>
-        <Button size="xs" variant="light" leftSection={<IconArrowBackUp size={16} />}
-          onClick={() => {
-            stopLiveReplay();
-            setState((current) => resetPhoneLine(current, phoneDrawingSeat(state).owner));
-          }}>
-          Reset line
-        </Button>
-        <TournamentHelp label="Reset position and line">
-          Reset position returns to this game or Prep's starting position. Reset line returns to
-          the mainline where you branched off; your moves and variations stay saved.
-        </TournamentHelp>
-      </Group>
 
       <BoardStartActions activeMode={panelMode} onChooseMode={setPanelMode} />
 
@@ -2152,6 +2130,7 @@ function BoardWorkspace({
                       onClear: () => updateDrawings([]),
                     }}
                     game={sourceGame}
+                    filename={phoneFile ? sourceGame?.databaseName : undefined}
                   />
                   <MovesUnderBoardPanel
                     line={activeLine}
@@ -8862,15 +8841,34 @@ function FilesWorkspace({
   setState,
   importHostedPgn,
   importHostedFolder,
+  onOpenGame,
+  onNewBoard,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
+  onOpenGame: (game: WebGame) => void;
+  onNewBoard: () => void;
 }) {
   return (
     <Box className={classes.filesWorkspace}>
-      <HostedFilesPanel state={state} setState={setState} importHostedPgn={importHostedPgn} importHostedFolder={importHostedFolder} />
+      <Group justify="space-between">
+        <Title order={2}>Files</Title>
+        <PhoneNewBoardActions onCreated={onNewBoard} />
+      </Group>
+      {state.databases.some((database) => database.phoneCreated) && (
+        <PhoneSavedImports
+          title="Saved boards"
+          state={{ ...state, databases: state.databases.filter((database) => database.phoneCreated) }}
+          setState={setState}
+          onOpen={(database) => {
+            const game = state.gamesByDatabase[database.id]?.[0];
+            if (game) onOpenGame(game);
+          }}
+        />
+      )}
+      <HostedFilesPanel state={state} setState={setState} importHostedPgn={importHostedPgn} importHostedFolder={importHostedFolder} rootTitle="Shared files" />
     </Box>
   );
 }
@@ -8882,6 +8880,7 @@ function HostedFilesPanel({
   importHostedFolder,
   preferFolderImport = false,
   embedded = false,
+  rootTitle = "Files",
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
@@ -8889,6 +8888,7 @@ function HostedFilesPanel({
   importHostedFolder?: WebHostedFolderImportHandler;
   preferFolderImport?: boolean;
   embedded?: boolean;
+  rootTitle?: string;
 }) {
   const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
   const [listing, setListing] = useState<WebHostedFileListResponse | null>(null);
@@ -8987,7 +8987,7 @@ function HostedFilesPanel({
           )}
           <Box miw={0}>
             <Title order={embedded ? 3 : 2} className={embedded ? undefined : classes.filesTitle}>
-              {showArchived ? "Archive" : (embedded ? "Hosted files" : currentFolderName)}
+              {showArchived ? "Archive" : (embedded ? "Hosted files" : path ? currentFolderName : rootTitle)}
             </Title>
             <Text
               className={embedded ? undefined : classes.filesSubtitle}

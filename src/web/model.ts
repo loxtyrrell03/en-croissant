@@ -71,6 +71,7 @@ export type WebGame = {
 export type WebDatabase = {
     id: string;
     name: string;
+    phoneCreated?: boolean;
     sourceKind?: "source" | "opened-file";
     hostedPath?: string;
     hostedFilePath?: string;

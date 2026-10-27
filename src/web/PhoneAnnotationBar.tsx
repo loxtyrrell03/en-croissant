@@ -8,11 +8,13 @@ export default function PhoneAnnotationBar({
   move,
   onChange,
   game,
+  filename,
   drawing,
 }: {
   move?: WebPrepLineMove;
   onChange: (patch: PhoneAnnotation) => void;
   game: WebGame | null;
+  filename?: string;
   drawing?: {
     enabled: boolean;
     brush: WebDrawingBrush;
@@ -35,7 +37,7 @@ export default function PhoneAnnotationBar({
       url = URL.createObjectURL(new Blob([game.pgn], { type: "application/x-chess-pgn" }));
       anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `${game.white}-${game.black}.pgn`;
+      anchor.download = filename ?? `${game.white}-${game.black}.pgn`;
       anchor.hidden = true;
       document.body.appendChild(anchor);
       anchor.click();

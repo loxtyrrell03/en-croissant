@@ -84,7 +84,7 @@ async function withPhoneWorkspace(check: (fixture: PhoneWorkspaceFixture) => Pro
     await act(async () => root.render(<WebApp />));
     await vi.waitFor(async () => {
       await settle();
-      expect(host.querySelector('[aria-label="Flip board"]')).not.toBeNull();
+      expect(host.querySelector('[aria-label="Board menu"]')).not.toBeNull();
     });
     await check({
       host,
@@ -108,10 +108,60 @@ async function withPhoneWorkspace(check: (fixture: PhoneWorkspaceFixture) => Pro
   }
 }
 
+it("starts a new saved board from the real header and reopens it from Files after remount", async () => {
+  await withPhoneWorkspace(async ({ host, parsed, settle, remount }) => {
+    const oldPgn = webStateSession.getSnapshot().state.gamesByDatabase[parsed.database.id][0].pgn;
+    expect(host.textContent).not.toContain("Reset position");
+    expect(host.textContent).not.toContain("Reset line");
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>('[aria-label="New board, position or file"]')!.click(),
+    );
+    await settle();
+    const newBoard = [...document.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')].find(
+      (el) => el.textContent === "New board",
+    )!;
+    await act(async () => newBoard.click());
+    await settle();
+    await act(async () => {
+      await webStateSession.flush();
+    });
+    const state = webStateSession.getSnapshot().state;
+    expect(state.board.line).toEqual([]);
+    expect(state.board.sourceTitle).toBe("Untitled.pgn");
+    expect(state.gamesByDatabase[parsed.database.id][0].pgn).toBe(oldPgn);
+    expect(
+      host.querySelector('[role="tab"][aria-label="Moves"]')?.getAttribute("aria-selected"),
+    ).toBe("true");
+    await remount();
+    await settle();
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>('button[data-view="files"]')!.click(),
+    );
+    await settle();
+    expect(host.textContent).toContain("Saved boards");
+    expect(host.textContent).toContain("Untitled.pgn");
+    const row = host.querySelector(`[data-import-id="${state.board.sourceDatabaseId}"]`)!;
+    await act(async () =>
+      [...row.querySelectorAll<HTMLButtonElement>("button")]
+        .find((el) => el.textContent === "Open")!
+        .click(),
+    );
+    await settle();
+    expect(host.querySelector("h2")?.textContent).toBe("Untitled.pgn");
+    expect(webStateSession.getSnapshot().state.board.sourceGameId).toBe(state.board.sourceGameId);
+  });
+});
+
 it("persists actual phone Flip through games in one file and root remount", async () => {
   await withPhoneWorkspace(async ({ host, parsed, settle, remount }) => {
     await act(async () =>
-      host.querySelector<HTMLButtonElement>('[aria-label="Flip board"]')!.click(),
+      host.querySelector<HTMLButtonElement>('[aria-label="Board menu"]')!.click(),
+    );
+    await settle();
+    await act(async () =>
+      document
+        .querySelector<HTMLButtonElement>('[role="menuitem"][aria-label="Flip board"]')!
+        .click(),
     );
     await act(async () => {
       await webStateSession.flush();

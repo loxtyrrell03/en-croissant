@@ -1,0 +1,44 @@
+.newButton {
+  min-height: 44px;
+  padding-inline: 8px;
+  flex-shrink: 0;
+}
+.menu {
+  max-width: calc(100vw - 24px);
+}
+.menuItem {
+  min-height: 48px;
+  white-space: normal;
+}
+.sheet {
+  max-height: 85dvh;
+  border-radius: 16px 16px 0 0;
+  overflow-y: auto;
+}
+.sheetHeader,
+.sheetBody {
+  max-width: 520px;
+  width: 100%;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+.sheetBody {
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+.sheetBody input,
+.sheetBody textarea {
+  font-size: 16px;
+}
+.sheetBody :global(.mantine-Button-root) {
+  min-height: 44px;
+  height: auto;
+}
+.sheetBody :global(.tournamentHelp) {
+  min-width: 24px;
+}
+.sheetBody :global(.mantine-Button-label) {
+  white-space: normal;
+}
+.sheetBody [role="alert"] {
+  overflow-wrap: anywhere;
+}

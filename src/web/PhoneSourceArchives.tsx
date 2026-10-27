@@ -44,11 +44,13 @@ export function PhoneSavedImports({
   setState,
   onOpen,
   onPrep,
+  title = "Saved games",
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
   onOpen: (database: WebDatabase) => void;
-  onPrep: (database: WebDatabase) => void;
+  onPrep?: (database: WebDatabase) => void;
+  title?: string;
 }) {
   const [showArchived, setShowArchived] = useState(false);
   if (!state.databases.length) return null;
@@ -59,7 +61,7 @@ export function PhoneSavedImports({
     <Stack gap="xs">
       <Group justify="space-between" gap="xs">
         <Text size="sm" fw={600}>
-          {showArchived ? "Archived saved games" : "Saved games"}
+          {showArchived ? `Archived ${title.toLowerCase()}` : title}
         </Text>
         <PhoneArchiveFilter checked={showArchived} onChange={setShowArchived} />
       </Group>
@@ -87,7 +89,7 @@ export function PhoneSavedImports({
           >
             <Stack gap={2} style={{ minWidth: 0, flex: "1 1 10rem" }}>
               <Text size="sm" style={{ overflowWrap: "anywhere" }}>
-                {database.name} · {database.gameCount} games
+                {database.name} · {database.gameCount} {database.gameCount === 1 ? "game" : "games"}
               </Text>
               {archived && (
                 <Group gap={4}>
@@ -106,11 +108,12 @@ export function PhoneSavedImports({
               <Button size="xs" variant="light" onClick={() => onOpen(database)}>
                 Open
               </Button>
-              {state.prepWorkspaces.some((prep) => prep.sourceIds.includes(database.id)) && (
-                <Button size="xs" variant="subtle" onClick={() => onPrep(database)}>
-                  Prep
-                </Button>
-              )}
+              {onPrep &&
+                state.prepWorkspaces.some((prep) => prep.sourceIds.includes(database.id)) && (
+                  <Button size="xs" variant="subtle" onClick={() => onPrep(database)}>
+                    Prep
+                  </Button>
+                )}
               <Button
                 size="xs"
                 variant="subtle"

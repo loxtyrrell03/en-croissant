@@ -1,3 +1,22 @@
+# 2026-10-27 New phone board controls
+
+- The board header and Files expose New board, New position and New file. Position
+  uses a validated FEN or the captured current position; named and untitled PGNs
+  appear under Files > Saved boards and use their chosen filename on download.
+  New sources open Moves; existing engine On/Off preferences stay unchanged.
+- Removed the two under-board reset buttons. First-move navigation remains in the
+  move strip; Flip board and Return to main line are in the header's Board menu.
+  This refines the approved compact navigation, not a separate app redesign.
+- Leaving a bare analysis board first retains its entire tree as a PGN, including
+  root/branch comments, NAGs, drawings and clocks. The previous workspace must
+  finish saving before switching. Failed storage preserves the current board and
+  offers an owned retry; a later move/source invalidates a pending switch.
+- The new files use existing workspace persistence and personal sync. Tiny-fixture
+  preservation and actual app header/Files/remount cases pass. Chrome verified
+  named creation, duplicate naming, FEN validation/current-position, cancellation,
+  and bounded bottom sheets at320/390px. This is source/browser proof; live delivery
+  is recorded separately. Never infer physical phone testing from these checks.
+
 # 2026-10-27 Archive/reset/update correction
 
 - Archive is an exclusive view in Files, embedded pickers and saved imports;
