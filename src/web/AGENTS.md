@@ -16,6 +16,7 @@
   named creation, duplicate naming, FEN validation/current-position, cancellation,
   and bounded bottom sheets at320/390px. This is source/browser proof; live delivery
   is recorded separately. Never infer physical phone testing from these checks.
+  Editable refinement and state coverage: ../../design/phone-new-board-20261027.
 
 # 2026-10-27 Archive/reset/update correction
 

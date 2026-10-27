@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1210" height="790" viewBox="0 0 1210 790">
+  <title>Phone New controls: refinement of the approved compact layout</title>
+  <defs><pattern id="board" width="84" height="84" patternUnits="userSpaceOnUse"><rect width="84" height="84" fill="#ececcc"/><path d="M0 0h42v42H0zM42 42h42v42H42z" fill="#799556"/></pattern></defs>
+  <rect width="1210" height="790" fill="#0b0d0f"/>
+  <g font-family="Segoe UI, sans-serif" fill="#f1f3f5" font-size="14">
+    <text x="24" y="34" font-size="24">New board, position and file</text><text x="24" y="62" fill="#a7acb4">Editable refinement · invented example data · existing phone palette and navigation</text>
+    <g transform="translate(24 94)">
+      <rect width="370" height="670" rx="16" fill="#111315" stroke="#34383f"/>
+      <text x="16" y="32">Board   Events   Import   Review   Files</text><text x="16" y="76">PC services</text><text x="288" y="76" fill="#8ce99a">Ready</text>
+      <text x="16" y="116" font-size="17">Example study.pgn</text><text x="258" y="116" fill="#74c0fc">+ New    ···</text>
+      <rect x="16" y="136" width="336" height="336" fill="url(#board)"/>
+      <text x="34" y="510" font-size="18">|‹       ‹       Start       ›       ›|</text><text x="16" y="556">Moves   Database   Prep   Analysis   Coach</text>
+      <rect x="142" y="128" width="210" height="162" rx="8" fill="#25272d" stroke="#34383f"/>
+      <text x="160" y="165" font-size="16">New board</text><text x="160" y="213" font-size="16">New position</text><text x="160" y="261" font-size="16">New file</text>
+      <text x="16" y="609" fill="#a7acb4">Move navigation stays below the board.</text><text x="16" y="636" fill="#a7acb4">Flip and main line move into the ··· menu.</text>
+    </g>
+    <g transform="translate(420 94)">
+      <rect width="370" height="670" rx="16" fill="#111315" stroke="#34383f"/><text x="16" y="32">New position · bottom sheet</text>
+      <rect x="16" y="60" width="336" height="336" fill="url(#board)" opacity=".25"/>
+      <rect y="270" width="370" height="400" rx="16" fill="#1b1d20" stroke="#34383f"/>
+      <text x="16" y="310" font-size="19">New position</text><text x="335" y="310">×</text><text x="16" y="351">Starting position   ?</text><text x="16" y="387">FEN</text>
+      <rect x="16" y="400" width="338" height="78" rx="6" fill="#25272d" stroke="#34383f"/><text x="28" y="430" fill="#a7acb4">Paste a FEN position</text>
+      <rect x="16" y="494" width="338" height="44" rx="6" fill="#183348"/><text x="99" y="522" fill="#74c0fc">Use current position</text>
+      <text x="16" y="572" fill="#a7acb4">Your current work stays saved.</text>
+      <rect x="16" y="598" width="160" height="44" rx="6" fill="#25272d"/><text x="72" y="626">Cancel</text>
+      <rect x="194" y="598" width="160" height="44" rx="6" fill="#1971c2"/><text x="230" y="626">Open position</text>
+    </g>
+    <g transform="translate(816 94)">
+      <rect width="370" height="670" rx="16" fill="#111315" stroke="#34383f"/><text x="16" y="32">Board   Events   Import   Review   Files</text>
+      <text x="16" y="94" font-size="24">Files</text><text x="287" y="94" fill="#74c0fc">+ New</text>
+      <text x="16" y="146" font-size="17">Saved boards</text><text x="16" y="190">Example study.pgn · 1 game</text>
+      <rect x="16" y="208" width="160" height="44" rx="6" fill="#183348"/><text x="76" y="236" fill="#74c0fc">Open</text><text x="253" y="236" fill="#74c0fc">Archive</text>
+      <text x="16" y="300">Position.pgn · 1 game</text><rect x="16" y="318" width="160" height="44" rx="6" fill="#183348"/><text x="76" y="346" fill="#74c0fc">Open</text><text x="253" y="346" fill="#74c0fc">Archive</text>
+      <rect x="16" y="402" width="338" height="180" rx="8" fill="#1b1d20" stroke="#34383f"/><text x="32" y="441" font-size="21">Shared files</text><text x="32" y="489">Opening repertoire</text><text x="32" y="539">Endgame notes</text>
+      <text x="16" y="626" fill="#a7acb4">Reopen your boards; export a named PGN.</text>
+    </g>
+  </g>
+</svg>
