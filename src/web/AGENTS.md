@@ -1,3 +1,23 @@
+# 2026-10-27 Phone board and engine spacing
+
+- Moves and Live analysis fit the board to the available visual viewport using
+  measured controls/engine height. Notes below Moves are outside that budget.
+  The board remains at least176px; very short screens, enlarged text and expanded
+  settings retain ordinary scrolling rather than clipping actions or errors.
+- Engine variations are32px single rows with ellipsis; tapping still plays only
+  the first move. Three rows are visible together; additional selected lines scroll
+  within the result list. Detailed evaluation/depth/nodes/NPS remain in Engine
+  settings. Stored results keep a visible Stored evaluation heading.
+- Reset actions share the board header, board tabs use one row when labels fit,
+  and Live/report/Plans spacing is reduced. Search/CPU preferences, analysis
+  ownership, saved games and server routes are unchanged. The observer also
+  handles service/status height changes and leaves pinch zoom alone.
+-23 isolated built-browser checks pass for Moves/Live, first-move actions,
+  settings/statistics, Off/loading/error and200% text, including375x667,390x844,
+  320x740,430x932 and760x1000.320x568 intentionally retains accessible scrolling.
+  Types and45 focused existing tests pass;25 pre-existing WebApp lint warnings
+  remain. This is browser/source evidence; physical-phone proof is separate.
+
 # 2026-10-27 Archive/reset/update correction
 
 - Archive is an exclusive view in Files, embedded pickers and saved imports;

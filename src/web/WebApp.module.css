@@ -164,23 +164,6 @@
   margin-inline-start: auto;
 }
 
-.boardResetActions {
-  padding: 0 0.5rem 0.5rem;
-}
-
-.boardResetActions > button:not(:last-child) {
-  flex: 1 1 8rem;
-  min-width: min(100%, 8rem);
-  min-height: 40px;
-  height: auto;
-  padding: 0.5rem;
-}
-
-.boardResetActions :global(.mantine-Button-label) {
-  white-space: normal;
-  line-height: 1.25;
-}
-
 .boardHeaderAction {
   color: var(--mantine-color-gray-4);
 }
@@ -1284,8 +1267,9 @@
 }
 
 .engineAnalysisTable td {
-  padding: 0.5rem 0.62rem;
-  vertical-align: top;
+  padding: 0 0.5rem;
+  height: 2rem;
+  vertical-align: middle;
   border-top: 1px solid rgba(255, 255, 255, 0.055);
 }
 
@@ -1321,7 +1305,10 @@
   color: inherit;
   text-align: left;
   font: inherit;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-height: 2rem;
   line-height: 1.25;
 }
 
@@ -1337,6 +1324,16 @@
 .engineAnalysisMeta {
   min-width: 0;
   margin-top: 0.22rem;
+}
+
+.analysisViewTabs {
+  margin: 0;
+}
+
+.phoneBoard[data-panel="moves"] .enginePanelBody,
+.phoneBoard[data-panel="engine"][data-analysis-view="live"] .enginePanelBody {
+  max-height: 6rem;
+  overflow-y: auto;
 }
 
 @media (max-width: 32rem) {
@@ -2307,9 +2304,125 @@
 }
 
 @media (max-width: 600px) {
-  .enginePanelHeader { grid-template-columns: auto minmax(0, 1fr); }
-  .enginePanelTitleArea > :global(.mantine-Group-root) { flex-wrap: wrap; }
-  .enginePanelTitleArea :global(.mantine-Text-root) { flex-shrink: 0; white-space: normal; }
-  .enginePanelTitleArea .enginePanelCode { max-width: 100%; white-space: normal; overflow: visible; }
-  .enginePanelHeaderRight { grid-column: 1 / -1; justify-content: space-between; width: 100%; }
+  .enginePanelHeader {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .enginePanelTitleArea > :global(.mantine-Group-root) {
+    flex-wrap: wrap;
+  }
+  .enginePanelTitleArea :global(.mantine-Text-root) {
+    flex-shrink: 0;
+    white-space: normal;
+  }
+  .enginePanelTitleArea .enginePanelCode {
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+  }
+  .enginePanelHeaderRight {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+/* Keep the board and ordinary Live results together; expanded tools retain
+   natural document scrolling and enlarged text can still wrap. */
+.phoneBoard[data-panel="moves"] .boardPlayerStack,
+.phoneBoard[data-panel="engine"][data-analysis-view="live"] .boardPlayerStack {
+  width: min(100%, var(--phone-board-fit, 100%));
+  margin-inline: auto;
+}
+
+@media (max-width: 860px) {
+  .phoneBoard {
+    gap: 4px;
+  }
+  .boardHeader {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .boardHeaderTitle {
+    flex-basis: 100%;
+  }
+  .boardResetActions {
+    gap: 4px;
+    flex: 1;
+    flex-wrap: nowrap;
+  }
+  .boardResetActions :global(.mantine-Button-root) {
+    padding-inline: 6px;
+  }
+  .boardResetActions :global(.mantine-Button-section) {
+    display: none;
+  }
+  .boardStartActions {
+    gap: 2px;
+  }
+  .boardStartActions :global(.mantine-Button-root) {
+    flex: 1 1 auto;
+    min-width: min-content;
+    min-height: 44px;
+    padding: 4px;
+  }
+  .boardStartActions :global(.mantine-Button-section) {
+    display: none;
+  }
+  .underBoardContent {
+    gap: 4px;
+    min-height: 0;
+  }
+  .enginePanelHeader {
+    gap: 4px;
+    padding: 4px 8px;
+  }
+  .enginePanelMetric {
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+    min-width: 0;
+  }
+  .enginePanelMessage {
+    min-height: 0;
+    padding: 8px;
+    gap: 2px;
+  }
+  .enginePanelMessage > svg {
+    display: none;
+  }
+  .enginePanelHeader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .enginePanelHeaderRight {
+    grid-column: auto;
+    width: auto;
+    flex-wrap: nowrap;
+  }
+  .enginePanelTitleArea .enginePanelCode {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) and (max-height: 750px) {
+  .headerNav button {
+    min-height: 32px;
+  }
+  .boardHeader :global(.mantine-Button-root),
+  .boardHeader :global(.mantine-ActionIcon-root) {
+    min-height: 32px;
+    height: 32px;
+  }
+  .boardMoveButton,
+  .boardReplayButton {
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+    min-height: 32px !important;
+  }
+  .boardStartActions :global(.mantine-Button-root) {
+    min-height: 32px;
+  }
+  .analysisViewTabs :global(.mantine-SegmentedControl-label) {
+    min-height: 32px;
+  }
 }
