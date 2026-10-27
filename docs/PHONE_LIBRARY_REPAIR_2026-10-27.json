@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-27",
+  "scope": "Shared phone database opening and pending phone-save diagnosis",
+  "sourceCommits": ["745ca8f2", "26d06670"],
+  "runningSyncCodeCommit": "009924a1cc35f0109899e5b7447251f5e6d577a8",
+  "canonicalUrl": "https://lox-pc.tail89d19b.ts.net/",
+  "databaseOpening": {
+    "fixed": true,
+    "previousManifestHttpStatus": 400,
+    "currentManifestHttpStatus": 200,
+    "verifiedGameCount": 652,
+    "verifiedOpeningMoves": 10,
+    "previousReadOnlySqlMs": 10907,
+    "correctedReadOnlySqlMs": 26,
+    "sqlResultsExactlyEqual": true,
+    "correctedHttpsMs": 563,
+    "phoneDeadlineMs": 2500,
+    "connectedChrome": "Actual Prep source picker loaded the collection; Database Start rendered opening statistics",
+    "physicalPhoneVerified": false
+  },
+  "syncWarning": {
+    "fixed": false,
+    "reportedError": "Cannot faithfully encode b1: illegal san",
+    "pcBridgePhase": "synced",
+    "pcBridgeErrors": 0,
+    "pcBridgeConflicts": 0,
+    "diagnostic": "One bounded local rejected-PGN receipt, deduplicated by content hash",
+    "nextStep": "Owner reopen/retry to capture phone-only failing save; validate and repair cause without dropping edits"
+  },
+  "validation": {
+    "focusedNodeTestsPassed": 37,
+    "syntheticFixturesOnly": true,
+    "ownerComparison": "Unpackaged read-only SQL comparison; no index or schema change",
+    "preserved": ["private config", "pinned native helpers", "permanent sync task", "phone service On/Off", "unrelated listener identities", "Tailscale Serve routes"],
+    "phoneShellBuiltByThisTask": false,
+    "nativeAppInstalled": false,
+    "evaluationCorpusCopied": false
+  },
+  "localReceipts": "tmp/phone-library-repair-20261027"
+}

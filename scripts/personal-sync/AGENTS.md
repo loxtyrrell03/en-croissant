@@ -10,15 +10,30 @@
   `recovery/phone-files/last-rejected-pgn.json`; identical retries do not rewrite
   it. Never commit its private content. Validation still precedes every game
   write and acknowledgement. Diagnostic failure preserves the original error.
-- Eight native-backed small-fixture library cases pass, including exact existing
-  phone URLs, absent indexes and rejected-save preservation. Runtime delivery and
-  the reported b1 rejection investigation remain separate pending steps.
+- All 37 focused Node cases pass, including native-backed small-fixture library
+  tests for existing phone URLs, absent indexes and rejected-save preservation.
 - Common-position queries materialize only selected collection IDs/dates before
   joining the covering position index, avoiding random PGN-row reads across the
   full library. An unpackaged read-only comparison returned exactly the same ten
   opening moves/652 results in 26 ms versus 10.9 seconds with the previous SQL;
   nine library fixtures verify collection isolation, dates and fresh edits. No
   index, source schema or game data is changed by this query optimization.
+- Runtime code `009924a1` is live through the existing private sync task. Canonical
+  HTTPS manifest returns 652 games; opening-position lookup returns ten moves/
+  652 results in 563 ms. Connected Chrome exercised the original Prep picker
+  action and rendered the selected database and opening statistics. This does
+  not prove physical-phone behavior. No phone-shell build was required.
+- Config, pinned helpers, permanent task, service choices, unrelated listeners
+  and all Serve routes verified unchanged during the guarded sync-only restart.
+  See `docs/PHONE_LIBRARY_REPAIR_2026-10-27.json` and the task-owned tmp receipts.
+- The phone-specific `Cannot faithfully encode b1` save remains unresolved: the
+  PC bridge reports no errors, and no rejected phone payload arrived after local
+  tracing was enabled. Owner was asked to reopen the phone app and Retry sync.
+  Do not replace the saved game, discard phone drafts or mark that issue fixed
+  without the failing payload and a verified successful save. A separate cached
+  Chrome import reports native validation failure; it is not proof of the phone
+  cause. AppData inspection must use an unpackaged broker; direct packaged Node
+  read the redirected Library despite an identical apparent path.
 
 ## 2026-10-27 shared archive labels and transient review writes
 
