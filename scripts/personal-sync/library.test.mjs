@@ -27,6 +27,31 @@ test('the phone catalogue exposes Dev content and empty folders, with stable dat
  const listing=f.phone.manifest(new URL('http://local/web-library/manifest.json?scope=directory'));assert(listing.entries.some(e=>e.path==='Empty'));
  const exported=await f.phone.raw(manifest.databases[0].path+'/games.pgn');assert.match(exported.bytes.toString(),/PersonalSyncRef "database:1:1"/);
 });
+
+test('existing phone static manifest URLs resolve the same live collection as the API',async t=>{
+ const f=await fixture(t),manifest=f.phone.manifest(new URL('http://local/web-library/manifest.json'));
+ const hosted=manifest.databases[0].path;
+ for(const prefix of ['',`__personal/${f.phone.id}/`]){
+  const raw=await f.phone.raw(prefix+hosted+'/position-index/index.json');
+  assert.match(raw.type,/application\/json/);assert.deepEqual(JSON.parse(raw.bytes),f.phone.databaseManifest(hosted));
+  assert.equal(JSON.parse(raw.bytes).gameCount,1);
+ }
+ await assert.rejects(f.phone.raw('Empty/position-index/index.json'),{status:404});
+ await assert.rejects(f.phone.raw(hosted+'/position-index/shards/00.json'),{status:404});
+ await assert.rejects(f.phone.raw('Databases/Desktop/Unknown/position-index/index.json'),{status:404});
+ assert.equal(f.bridge.source.prepare('SELECT count(*) n FROM game_record').get().n,1);
+});
+
+test('rejected phone PGNs retain one local diagnostic and never overwrite the saved game',async t=>{
+ const f=await fixture(t),before=await f.phone.game(`database:1:${f.id}`);
+ const rejected=before.pgn.replace('1. e4','1. b1');
+ await assert.rejects(f.phone.save({...before,pgn:rejected}),/Cannot faithfully encode b1/);
+ const file=path.join(f.root,'recovery','last-rejected-pgn.json'),saved=fs.readFileSync(file,'utf8');
+ assert.equal(JSON.parse(saved).ref,before.ref);assert.equal(JSON.parse(saved).pgn,portablePgn(rejected));
+ await assert.rejects(f.phone.save({...before,pgn:rejected}),/Cannot faithfully encode b1/);
+ assert.equal(fs.readFileSync(file,'utf8'),saved);
+ assert.equal((await f.phone.game(before.ref)).pgn,before.pgn);
+});
 test('phone game saves use compare-and-swap and update native search indexes without losing unknown tags',async t=>{
  const f=await fixture(t),ref=`database:1:${f.id}`,before=await f.phone.game(ref);
  const saved=await f.phone.save({ref,revision:before.revision,pgn:before.pgn.replace('original','phone edit')});assert.notEqual(saved.revision,before.revision);

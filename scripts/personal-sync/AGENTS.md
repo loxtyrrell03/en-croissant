@@ -1,5 +1,19 @@
 # Personal chess library synchronization
 
+## 2026-10-27 shared database opening compatibility
+
+- Existing phone releases discover a database at its `position-index/index.json`
+  file URL. PersonalLibrary serves that URL (including personal-prefixed paths)
+  from the same live collection manifest as the API. Missing optional indexes
+  return 404 so ordinary PGN folders can use their established import path.
+- Failed phone PGN validation keeps at most one 8 MiB local diagnostic at
+  `recovery/phone-files/last-rejected-pgn.json`; identical retries do not rewrite
+  it. Never commit its private content. Validation still precedes every game
+  write and acknowledgement. Diagnostic failure preserves the original error.
+- Eight native-backed small-fixture library cases pass, including exact existing
+  phone URLs, absent indexes and rejected-save preservation. Runtime delivery and
+  the reported b1 rejection investigation remain separate pending steps.
+
 ## 2026-10-27 shared archive labels and transient review writes
 
 - Shared archive snapshots now read Novelty Dev's `files.state` and
