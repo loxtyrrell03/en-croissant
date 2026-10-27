@@ -8,8 +8,11 @@
 - The previous live release entry returned404 although its file was retained.
   Both new HTTP regressions fail against the prior controller and pass after the
   fix, including deliberately Off services.12 controller/cache tests and launcher
-  safeguards pass. This source milestone does not claim physical-phone recovery;
-  apply only the verified controller script through its existing hidden task.
+  safeguards pass. The controller is deployed through its unchanged hidden task;
+  six old-release assets match exact HTTPS bytes and Chrome renders Ready. Home/
+  engine PIDs, service choice, release pointer, metadata and Serve routes remain
+  unchanged. Physical-phone confirmation is pending. See
+  docs/PHONE_STARTUP_RECOVERY_2026-10-27.json. The existing PGN sync warning remains.
 
 ## Sparse-position plan arrows (2026-10-26)
 

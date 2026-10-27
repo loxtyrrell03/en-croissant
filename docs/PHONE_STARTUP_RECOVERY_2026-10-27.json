@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-27",
+  "url": "https://lox-pc.tail89d19b.ts.net/",
+  "sourceCommit": "bb8b7855",
+  "primaryCommit": "b0fdc736",
+  "problem": "A previous immutable release entry returned HTTP 404 after publication although its original bytes were retained. A cached document could fail before application startup or its safe update UI.",
+  "repair": "The existing HTTPS controller serves missing exact hashed application assets from retained releases, after the current home-server response takes priority. Its existing backend-down fallback uses the same lookup.",
+  "boundaries": "GET/HEAD only; no old HTML, API, owner data, unversioned file or symlink fallback. No data or release copies created.",
+  "verification": {
+    "previousController": "Both new HTTP regressions fail with 404 instead of 200",
+    "currentController": "12 controller/service-worker tests pass; launcher safeguards pass",
+    "previousRelease": "1e2ecaebb54e-550fc17d17b5",
+    "httpsExactAssetMatches": 6,
+    "httpsIncludes": ["entry", "shared chunks", "WebApp lazy module", "WebApp CSS"],
+    "workspaceApi": "200, saved state response present",
+    "hostedLibraryManifest": "200, files and databases present",
+    "liveChrome": "Board renders after reload, PC services Ready, no captured startup console errors",
+    "physicalPhone": "Awaiting owner confirmation after repair"
+  },
+  "deployment": {
+    "method": "Unpackaged hidden PowerShell broker verified the actual installed root, acquired the existing publish mutex, waited for idle work, atomically replaced only the controller script and restarted its exact Node process through the unchanged task",
+    "controllerBefore": 24080,
+    "controllerAfter": 43448,
+    "controllerSha256": "DB5F1C12DBF8423BABFE3A6FE6C2372A02C4F009CBFAD156B9A45452D847A3A4",
+    "homePidUnchanged": 37552,
+    "enginePidUnchanged": 9856,
+    "frontendUnchanged": "faa764045776c83c95883d991ad08cd2a816bfed",
+    "routesPreserved": true,
+    "scheduledTaskPreserved": true,
+    "serviceChoicePreserved": true,
+    "releasePointerAndRuntimeMetadataPreserved": true,
+    "temporaryBrokerTaskRemoved": true
+  },
+  "separateIssue": "The existing lossless PGN library-sync warning remains unrelated and is not claimed fixed.",
+  "evidence": "Source checks: tmp/phone-startup-recovery; unpackaged probe/deployment receipts and rollback script: the 2026-10-27 phone-not-loading task workspace"
+}
