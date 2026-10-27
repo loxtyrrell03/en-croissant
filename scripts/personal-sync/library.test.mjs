@@ -51,3 +51,11 @@ test('phone database imports are validated first and repeated requests recover t
  await assert.rejects(f.phone.importDatabase({clientId:'dupe',name:'Duplicates',pgn:pgn('one')+'\n\n'+pgn('two')}),/repeated game identities/);
  assert.equal(f.bridge.source.prepare('SELECT count(*) n FROM collection').get().n,before);
 });
+
+test('actual personal catalogue carries desktop archive labels and writes only checked metadata',async t=>{
+ const f=await fixture(t),before=f.phone.revision;f.bridge.source.prepare('INSERT OR REPLACE INTO meta VALUES(?,?)').run('files.state',JSON.stringify({Empty:{archived:true,pinned:true}}));
+ await f.phone.refresh();assert.notEqual(f.phone.revision,before);const snapshot=f.phone.archives();assert(snapshot.hostedPaths.includes('Empty'));
+ const collection=f.phone.manifest(new URL('http://local')).databases[0];const saved=f.phone.setArchive({libraryId:f.phone.id,path:collection.path,archived:true,expected:snapshot.targets[collection.path]});
+ assert(saved.hostedPaths.includes(collection.path));assert.equal(saved.collectionPaths['1'],collection.path);assert.equal(f.bridge.source.prepare('SELECT count(*) n FROM game_record').get().n,1);
+ f.phone.setArchive({libraryId:f.phone.id,path:'Empty',archived:false,expected:saved.targets.Empty});assert.equal(JSON.parse(f.bridge.source.prepare("SELECT value FROM meta WHERE key='files.state'").get().value).Empty.pinned,true);
+});

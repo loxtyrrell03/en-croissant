@@ -5,6 +5,10 @@ import { createHash, randomUUID } from 'node:crypto';
 
 export const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const absent = { kind: 'absent', hash: null };
+// SharedReviewService publishes this deck with a PID-owned atomic rename.
+// Only its precise staging name is excluded; ordinary .next files remain content.
+export const transientSyncFile = relative => /^\.personal-sync-[a-f0-9-]+\.pending$/.test(path.posix.basename(relative))
+  || /^.+\.mistake-review\.json\.[1-9]\d*\.next$/.test(path.posix.basename(relative));
 export const same = (a, b) => (a ?? absent).kind === (b ?? absent).kind && (a ?? absent).hash === (b ?? absent).hash;
 export const summary = item => item ? { kind: item.kind, hash: item.hash } : absent;
 
@@ -51,7 +55,7 @@ export async function scan(root) {
     for(let offset=0;offset<entries.length;offset+=16){
       const directories=await Promise.all(entries.slice(offset,offset+16).map(async entry=>{
       // Own staging files are not user content. Never ignore ordinary dotfiles.
-      if (/^\.personal-sync-[a-f0-9-]+\.pending$/.test(entry.name)) return null;
+      if (transientSyncFile(entry.name)) return null;
       const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
       const item = await readItem(root, relative);
       if (!item) throw Error(`Directory changed during scan: ${relative}`);
@@ -191,7 +195,7 @@ export async function syncFiles({ leftRoot, rightRoot, statePath, recovery, init
   if(!dryRun) await recoverInterrupted(recovery);
   const current = state ?? { version: 1, roots, entries: {}, initialized:false };
   const [left, right] = await Promise.all(roots.map(scan));
-  const names = [...new Set([...left.keys(), ...right.keys(), ...Object.keys(current.entries)])];
+  const names = [...new Set([...left.keys(), ...right.keys(), ...Object.keys(current.entries)])].filter(name=>!transientSyncFile(name));
   if(!current.initialized && !current.initial) {
     current.initial=Object.fromEntries(names.map(n=>[n,{left:summary(left.get(n)),right:summary(right.get(n))}]));
     if(!dryRun) await atomicJson(statePath,current);
