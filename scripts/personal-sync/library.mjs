@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {parsePgn,makePgn} from 'chessops/pgn';
-import {digest,scan,readItem,applyItem} from './files.mjs';
+import {digest,scan,readItem,applyItem,atomicJson} from './files.mjs';
 import {buildHostedLibraryIndex,listHostedLibraryDirectory,getHostedLibraryScope} from '../home-library-index.mjs';
 import {transaction} from './en-database.mjs';
 import {archiveSnapshot,buildArchiveTargets,writeArchive} from './archives.mjs';
@@ -81,7 +81,11 @@ export class PersonalLibrary {
   }
   async raw(relative){
     if(relative.startsWith(`__personal/${this.id}/`))relative=relative.slice(`__personal/${this.id}/`.length);
-    const entry=this.catalog?.byVirtual.get(relative);if(!entry)throw Error('Shared file was moved or removed');
+    // Existing phone clients discover lazy databases through this static-looking
+    // URL. Shared collections use the live SQL index, not generated shards.
+    const suffix='/position-index/index.json';
+    if(relative.endsWith(suffix))return{type:'application/json; charset=utf-8',bytes:Buffer.from(JSON.stringify(this.databaseManifest(relative.slice(0,-suffix.length))))};
+    const entry=this.catalog?.byVirtual.get(relative);if(!entry)throw Object.assign(Error('Shared file was moved or removed'),{status:404});
     if(entry.kind==='database'){
       const games=this.bridge.source.prepare('SELECT id,pgn FROM game_record WHERE collection_id=? ORDER BY id').all(entry.collection);
       return{type:'application/x-chess-pgn; charset=utf-8',bytes:Buffer.from(games.map(g=>stampPgn(g.pgn,`database:${entry.collection}:${g.id}`,digest(g.pgn))).join('\n\n'))};
@@ -106,7 +110,7 @@ export class PersonalLibrary {
     if(typeof revision!=='string'||!/^[a-f0-9]{64}$/.test(revision))throw Error('Original game revision is required');
     const parsed=readReference(ref),clean=portablePgn(pgn);
     // Validate with the native format before publishing anything.
-    await this.bridge.codec.request({pgn:clean});
+    await this.validatePgn(clean,{ref});
     if(parsed.kind==='database'){
       const current=this.bridge.source.prepare('SELECT pgn FROM game_record WHERE collection_id=? AND id=?').get(parsed.collection,parsed.game);
       if(!current||digest(current.pgn)!==revision){const e=Error('This game changed on the PC. Your phone edits are preserved.');e.status=409;throw e;}
@@ -128,7 +132,7 @@ export class PersonalLibrary {
     const games=parsePgn(pgn);if(!games.length)throw Error('This database contains no saved games');
     const checked=[],identities=new Set();
     for(const game of games){
-      const raw=portablePgn(makePgn(game));await this.bridge.codec.request({pgn:raw});
+      const raw=portablePgn(makePgn(game));await this.validatePgn(raw,{clientId,name});
       const validated=await this.bridge.native.request({library:this.bridge.library,pgn:raw,validate:true});
       if(identities.has(validated.fingerprint))throw Error('This import contains repeated game identities. Keep the phone copy and remove duplicates before syncing it.');
       identities.add(validated.fingerprint);checked.push(validated.pgn);
@@ -147,6 +151,29 @@ export class PersonalLibrary {
     const imported=[];
     for(const game of checked){const result=await this.bridge.native.request({library:this.bridge.library,collection:receipt.id,pgn:game});imported.push(await this.game(`database:${receipt.id}:${result.id}`));}
     await this.refresh();return{collection:receipt.id,name:receipt.name,games:imported};
+  }
+  async validatePgn(pgn,identity){
+    try{return await this.bridge.codec.request({pgn});}
+    catch(error){
+      // Keep one bounded local diagnostic, never an ever-growing copy per retry.
+      // Failed validation still publishes no game or acknowledgement.
+      if(Buffer.byteLength(pgn)<=8*1024*1024){
+        const signature=digest(pgn);
+        if(signature!==this.lastRejectedPgn){
+          try{
+            await fs.mkdir(this.recoveryRoot,{recursive:true});
+            await atomicJson(path.join(this.recoveryRoot,'last-rejected-pgn.json'),{...identity,at:new Date().toISOString(),error:error.message,signature,pgn});
+            this.lastRejectedPgn=signature;
+          }catch{} // Diagnostics must not replace the original validation error.
+        }
+      }
+      throw error;
+    }
+  }
+  databaseManifest(hostedPath){
+    const collection=this.catalog?.byCollection.get(hostedPath);
+    if(!collection)throw Object.assign(Error('Shared database was removed'),{status:404});
+    return{version:1,maxPly:1000,gameCount:collection.gameCount,positionCount:0,latestDate:null,shards:[]};
   }
   position(hostedPath,fen){
     const collection=this.catalog?.byCollection.get(hostedPath);if(!collection)throw Error('Shared database was removed');

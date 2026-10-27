@@ -64,8 +64,7 @@ export async function startRunner(c){
       if(req.method==='GET'&&pathname==='/web-library/manifest.json')return json(res,200,library.manifest(url));
       if(['GET','HEAD'].includes(req.method)&&pathname.startsWith('/web-library/files/')){const result=await library.raw(pathname.slice('/web-library/files/'.length));res.writeHead(200,{'content-type':result.type,'content-length':result.bytes.length,'cache-control':'no-store'});return res.end(req.method==='HEAD'?undefined:result.bytes);}
       if(req.method==='GET'&&pathname==='/api/database-manifest'){
-        const collection=library.catalog?.byCollection.get(url.searchParams.get('hostedPath'));if(!collection)return json(res,404,{error:'Shared database was removed'});
-        return json(res,200,{version:1,maxPly:1000,gameCount:collection.gameCount,positionCount:0,latestDate:null,shards:[]});
+        return json(res,200,library.databaseManifest(url.searchParams.get('hostedPath')));
       }
       if(req.method==='GET'&&pathname==='/api/database-position')return json(res,200,library.position(url.searchParams.get('hostedPath'),String(url.searchParams.get('fen')??'').trim().split(/\s+/).slice(0,4).join(' ')));
       if(req.method==='GET'&&pathname==='/api/personal-sync/game')return json(res,200,await library.game(url.searchParams.get('ref')));
