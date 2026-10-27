@@ -15,12 +15,19 @@
   `*.mistake-review.json.<pid>.next` staging files as well as its own staging
   files; ordinary `.next` files remain personal content. Old staging ledger
   records are not interpreted as content deletions.
-- Source verification: 20 focused Node cases, including actual native synthetic
-  catalogue/write fixtures, pass. A read-only unpackaged live audit checked all
-  105 personal databases / 174,167 source PGNs and native row fingerprints and
-  3,408 file/directory records against both peers; all matched. Archive mapping
-  covered all 76 archived collections and both archived file roots. Runtime
-  delivery is separate; do not infer a live upgrade from this source note.
+- Runner source `6d071883` is live. Canonical HTTPS reports archive protocol 1
+  with no sync errors or conflicts and exposes all 76 archived collections and
+  both archived file roots. Read-only unpackaged audits before and after delivery
+  matched all 105 personal databases, 174,167 source PGNs/native fingerprints and
+  3,408 file/directory records. No owner archive labels or games were changed for
+  testing. All 20 focused Node cases, including native synthetic writes, pass.
+- Delivery preserved the private configuration, pinned native helpers, permanent
+  task definition, owner service choices, unrelated listeners and every Serve
+  route. Five temporary broker tasks were removed. Stopping the sync task can
+  leave its Node child alive: recheck the exact listener/process and idle state
+  before stopping that owned child, then start the existing task once. Never
+  replay an uncertain restart or create a duplicate runner. Compact receipts are
+  under `tmp/phone-sync-20261027`; physical-phone interaction remains separate.
 
 This is an opt-in local bridge for Novelty Dev, En Croissant desktop and its
 private phone companion. Customer Novelty is categorically excluded. The owner
