@@ -1504,6 +1504,20 @@
   line-height: 1.2 !important;
 }
 
+.hostedArchiveBadge {
+  flex: 0 1 auto;
+  height: auto;
+  max-width: 100%;
+  padding-block: 0.15rem;
+}
+
+.hostedArchiveBadge :global(.mantine-Badge-label) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  text-overflow: clip;
+}
+
 .hostedFolderChevron {
   flex: 0 0 auto;
   margin-inline-start: auto;

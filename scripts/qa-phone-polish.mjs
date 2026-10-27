@@ -31,7 +31,7 @@ async function setup(){
  await new Promise((resolve,reject)=>{const request=indexedDB.open('en-croissant-web-companion',1);request.onupgradeneeded=()=>request.result.createObjectStore('state');request.onsuccess=()=>{const db=request.result,tx=db.transaction('state','readwrite'),store=tx.objectStore('state'),read=store.get('main');read.onsuccess=()=>{if(!read.result)store.put(state,'main')};tx.oncomplete=()=>{db.close();resolve()};tx.onabort=()=>reject(tx.error)}});
  const realFetch=window.fetch;
  const files=[{type:'file',name:'Example study',filename:'Example study.pgn',extension:'pgn',path:'Example study.pgn',url:'/web-library/files/example.pgn',lastModified:1234,sizeBytes:pgn.length},{type:'file',name:'Long example opening repertoire and endgame notes',filename:'Long example opening repertoire and endgame notes.pgn',extension:'pgn',path:'Long example opening repertoire and endgame notes.pgn',url:'/web-library/files/long.pgn',lastModified:1234,sizeBytes:pgn.length}];
- for(const name of ['old','current'])files.push({type:'file',name,filename:name+'.pgn',extension:'pgn',path:'Archive examples/'+name+'.pgn',url:'/web-library/files/'+name+'.pgn',lastModified:1234,sizeBytes:pgn.length});
+ for(const name of ['old','current'])files.push({type:'file',name:name==='old'?'Long archived example repertoire and annotated practice games':name,filename:name+'.pgn',extension:'pgn',path:'Archive examples/'+name+'.pgn',url:'/web-library/files/'+name+'.pgn',lastModified:1234,sizeBytes:pgn.length});
  window.fetch=async(url,options={})=>{const u=new URL(typeof url==='string'?url:url.url,location.href),p=u.pathname;fx.calls.push({path:p,method:options.method||'GET'});
   if(p==='/api/pc-services')return Response.json({ok:true,service:'en-croissant-service-controller',enabled:true,busy:false,home:true,engine:true,error:null});
   if(p==='/api/personal-sync/status')return Response.json({enabled:false});
@@ -133,7 +133,7 @@ async function measurements(page) {
       })
       .filter((r) => r.x < -1 || r.x + r.width > width + 1);
     const clipped = [
-      ...document.querySelectorAll(".mantine-Button-label,.mantine-SegmentedControl-label"),
+      ...document.querySelectorAll(".mantine-Button-label,.mantine-SegmentedControl-label,[data-hosted-path] .mantine-Badge-label"),
     ]
       .filter(visible)
       .flatMap((el) => {
@@ -361,6 +361,12 @@ try {
     }
     await page.locator('button[data-view="files"]').click();
     await page.getByRole("button", { name: "Open archive", exact: true }).click();
+    const archiveRootLayout = await measurements(page);
+    checks.push({
+      name: `archive-routing-label-${width}-${scale}`,
+      pass: archiveRootLayout.overflow.length === 0 && archiveRootLayout.clipped.length === 0,
+      ...archiveRootLayout,
+    });
     await page.locator('[data-hosted-path="Archive examples"] > button').click();
     await page.locator('[data-hosted-path="Archive examples/old.pgn"]').waitFor();
     assert.equal(

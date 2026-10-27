@@ -40,3 +40,17 @@ failure evidence: `tmp/phone-archive-correction/old-upgrade-regression.log`.
 Live delivery is recorded separately after publication. No physical-phone result
 is established by these browser fixtures. No owner file/database/archive label was
 changed for testing.
+
+Product115ad758 was published and read back over canonical HTTPS:12 exact assets
+from the444-file manifest,15 runtime modules, two generated modules and two native
+helpers match. All seven guarded owner files, Serve routes and the personal sync
+task remain unchanged. Home and gateway process identities stayed37552/9856.
+Sync reports no errors/conflicts. Connected Chrome at390px shows the two shared
+archived file roots and routes into archived database groups, excluding active
+entries. This establishes live browser delivery, not the physical phone version.
+
+That live review exposed archive badges squeezed by long real folder names. The
+refinement places metadata/status below the name and permits labels to wrap.
+The expanded58-check browser matrix includes long archived names and routing
+labels at200% text; all pass with zero page errors. Types pass and the same25
+WebApp lint warnings remain. Final refinement delivery has a separate receipt.

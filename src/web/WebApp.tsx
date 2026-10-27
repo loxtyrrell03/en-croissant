@@ -9154,27 +9154,30 @@ function HostedFilesPanel({
                         >
                           {entry.name}
                         </Text>
-                        <Text
-                          className={embedded ? undefined : classes.hostedFileMeta}
-                          size={embedded ? "0.66rem" : undefined}
-                          c="dimmed"
-                          truncate
-                        >
-                          {entry.type === "directory"
-                            ? entry.pgnFileCount > 0
-                              ? pluralWeb(entry.pgnFileCount, "PGN")
-                              : "Folder"
-                            : `${entry.extension.toUpperCase()} · ${formatBytes(entry.sizeBytes)}`}
-                        </Text>
+                        <Group gap={4} wrap="wrap">
+                          <Text
+                            className={embedded ? undefined : classes.hostedFileMeta}
+                            size={embedded ? "0.66rem" : undefined}
+                            c="dimmed"
+                          >
+                            {entry.type === "directory"
+                              ? entry.pgnFileCount > 0
+                                ? pluralWeb(entry.pgnFileCount, "PGN")
+                                : "Folder"
+                              : `${entry.extension.toUpperCase()} · ${formatBytes(entry.sizeBytes)}`}
+                          </Text>
+                          {archived && (
+                            <Badge size="xs" color="gray" className={classes.hostedArchiveBadge}>
+                              Archived
+                            </Badge>
+                          )}
+                          {showArchived && !archived && entry.type === "directory" && (
+                            <Badge size="xs" color="gray" variant="outline" className={classes.hostedArchiveBadge}>
+                              Contains archives
+                            </Badge>
+                          )}
+                        </Group>
                       </Box>
-                      {archived && (
-                        <Badge size="xs" color="gray">
-                          Archived
-                        </Badge>
-                      )}
-                      {showArchived && !archived && entry.type === "directory" && (
-                        <Badge size="xs" color="gray" variant="outline">Contains archives</Badge>
-                      )}
                       {entry.type === "directory" && !embedded && (
                         <IconChevronRight className={classes.hostedFolderChevron} size={20} />
                       )}

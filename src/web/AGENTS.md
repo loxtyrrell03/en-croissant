@@ -20,6 +20,14 @@
   its25 existing lint warnings. Editable correction SVG and rendered QA are in
   design/phone-polish-20261027 and tmp/phone-archive-correction. Physical phone
   version remains unverified; do not infer it from the served release alone.
+- Product115ad758 was verified live with12 exact HTTPS assets,15 runtime modules,
+  two generated modules/two helpers, seven unchanged owner-file hashes and
+  unchanged home/gateway processes and Serve routes. Connected Chrome at390px
+  confirmed exclusive real shared archives, including nested database groups.
+  Real long names exposed squeezed badges; labels now wrap below the name.
+  Expanded58 browser checks include long archive names/routing badges at200%
+  text and pass with zero page errors. Final product delivery is recorded in
+  docs/PHONE_ARCHIVE_CORRECTION_2026-10-27_DELIVERY.json; no physical-phone proof.
 
 # 2026-10-27 phone variations, import, spacing and shared archives
 
