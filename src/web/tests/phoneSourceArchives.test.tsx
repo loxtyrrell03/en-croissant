@@ -160,10 +160,11 @@ it("archives and restores through real Files/import controls, preserves active P
     expect(io.save).toHaveBeenLastCalledWith(
       expect.objectContaining({ sourceArchives: expect.any(Object) }),
     );
-    await click('[aria-label="Show archived sources"]');
+    await click('[aria-label="Open archive"]');
     expect(host.querySelector('[data-hosted-path="Databases/Class/Alpha"]')?.textContent).toContain(
       "Archived",
     );
+    expect(host.querySelector('[data-hosted-path="Databases/Class/Beta"]')).toBeNull();
     await act(async () =>
       host.querySelector<HTMLButtonElement>('[aria-label="Help: Archived sources"]')!.focus(),
     );
@@ -214,11 +215,15 @@ it("archives and restores through real Files/import controls, preserves active P
     await click('button[data-view="import"]');
     expect(host.querySelector(`[data-import-id="${alpha.database.id}"]`)).toBeNull();
     expect(host.querySelector(`[data-import-id="${beta.database.id}"]`)).not.toBeNull();
-    await click('[aria-label="Show archived sources"]');
+    await click('[aria-label="Open archive"]');
     expect(host.querySelector(`[data-import-id="${alpha.database.id}"]`)?.textContent).toContain(
       "Archived",
     );
+    expect(host.querySelector(`[data-import-id="${beta.database.id}"]`)).toBeNull();
     await click('[aria-label="Unarchive Alpha"]');
+    expect(host.querySelector(`[data-import-id="${alpha.database.id}"]`)).toBeNull();
+    await click('[aria-label="Back to active sources"]');
+    expect(host.querySelector(`[data-import-id="${alpha.database.id}"]`)).not.toBeNull();
     expect(webStateSession.getSnapshot().state.sourceArchives?.hostedPaths).toEqual([]);
     await act(async () => {
       await webStateSession.flush();

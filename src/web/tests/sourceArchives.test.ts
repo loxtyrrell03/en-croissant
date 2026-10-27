@@ -6,6 +6,7 @@ import {
     phoneDatabaseArchive,
     phoneHostedArchiveAncestor,
     phoneHostedEntries,
+    phoneHostedLibraryForView,
     phoneVisibleDatabases,
     phoneVisibleHostedFolders,
     setPhoneDatabaseArchived,
@@ -17,6 +18,49 @@ import {
     phoneWorkspaceKey,
     phoneWorkspaceOwner,
 } from "../workspacePreferences";
+
+it("Archive excludes active siblings but retains routes to nested archived files", () => {
+    let { state } = fixture();
+    state = setPhoneHostedArchived(state, "Lessons/old/game.pgn", true);
+    const directory = (path: string) => ({
+        type: "directory" as const,
+        path,
+        name: path,
+        pgnFileCount: 1,
+        directPgnFileCount: 0,
+        lastModified: 1,
+        sizeBytes: 10,
+    });
+    const file = (path: string) => ({
+        type: "file" as const,
+        path,
+        name: path,
+        filename: path,
+        extension: "pgn" as const,
+        url: path,
+        lastModified: 1,
+        sizeBytes: 10,
+    });
+    const active = file("Lessons/new.pgn"),
+        archived = file("Lessons/old/game.pgn");
+    expect(phoneHostedEntries(state, [directory("Lessons"), directory("Active")], true)).toEqual([
+        directory("Lessons"),
+    ]);
+    expect(phoneHostedEntries(state, [active, archived], true)).toEqual([archived]);
+    expect(phoneHostedEntries(state, [active, archived], false)).toEqual([active]);
+    const library = {
+        available: true,
+        manifest: {
+            version: 1 as const,
+            generatedAt: "now",
+            sourceName: "Fixture",
+            files: [active, archived],
+        },
+    };
+    expect(phoneHostedLibraryForView(state, library).manifest?.files).toEqual([active]);
+    expect(phoneHostedLibraryForView(state, library, true).manifest?.files).toEqual([archived]);
+    expect(library.manifest.files).toEqual([active, archived]);
+});
 
 function fixture() {
     const first = parsePgnDatabase("Invented Alpha", "1. e4 e5 *", 1);

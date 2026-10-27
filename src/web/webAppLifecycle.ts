@@ -7,6 +7,12 @@ type AppVersion = {
     sourceCommit?: unknown;
 };
 
+export type WebAppUpdateStatus = {
+    current: string | null;
+    latest: string | null;
+    available: boolean;
+};
+
 export function getEmbeddedWebBuildId(documentRoot: Document = document) {
     const value = documentRoot
         .querySelector<HTMLMetaElement>(`meta[name="${BUILD_META_NAME}"]`)
@@ -24,6 +30,7 @@ async function fetchDeployedWebBuildId(baseUrl: string) {
     const response = await fetch(versionUrl, {
         cache: "no-store",
         credentials: "same-origin",
+        signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return null;
     const version = (await response.json()) as AppVersion;
@@ -35,13 +42,26 @@ async function fetchDeployedWebBuildId(baseUrl: string) {
  * healthy active session. A suspended iOS window is reloaded only when its
  * stamped document is older than the release currently served by the PC.
  */
-export function installWebAppLifecycle(baseUrl: string, canReload: () => boolean = () => true) {
-    if (!("serviceWorker" in navigator)) return () => {};
-
+export function installWebAppLifecycle(
+    baseUrl: string,
+    canReload: () => boolean = () => true,
+    options: { autoReload?: boolean; onUpdate?: (status: WebAppUpdateStatus) => void } = {},
+) {
     const embeddedBuildId = getEmbeddedWebBuildId();
     let disposed = false;
     let checkInFlight: Promise<void> | null = null;
     let lastResumeCheckAt = 0;
+    let latestBuildId: string | null = null;
+    const apply = (explicit = false) => {
+        if (disposed || !canReload() || !webBuildIsStale(embeddedBuildId, latestBuildId))
+            return false;
+        const attempt = `${embeddedBuildId}->${latestBuildId}`;
+        if (!explicit && window.sessionStorage.getItem(RELOAD_ATTEMPT_KEY) === attempt)
+            return false;
+        window.sessionStorage.setItem(RELOAD_ATTEMPT_KEY, attempt);
+        window.location.reload();
+        return true;
+    };
 
     const checkForStaleBuild = (force = false) => {
         if (disposed || document.visibilityState === "hidden" || !embeddedBuildId) {
@@ -56,6 +76,13 @@ export function installWebAppLifecycle(baseUrl: string, canReload: () => boolean
         checkInFlight = (async () => {
             try {
                 const deployedBuildId = await fetchDeployedWebBuildId(baseUrl);
+                if (disposed) return;
+                latestBuildId = deployedBuildId;
+                options.onUpdate?.({
+                    current: embeddedBuildId,
+                    latest: deployedBuildId,
+                    available: webBuildIsStale(embeddedBuildId, deployedBuildId),
+                });
                 if (!webBuildIsStale(embeddedBuildId, deployedBuildId)) {
                     if (deployedBuildId === embeddedBuildId) {
                         window.sessionStorage.removeItem(RELOAD_ATTEMPT_KEY);
@@ -63,12 +90,9 @@ export function installWebAppLifecycle(baseUrl: string, canReload: () => boolean
                     return;
                 }
 
-                const reloadAttempt = `${embeddedBuildId}->${deployedBuildId}`;
-                // Never discard a pending or failed workspace save to adopt a build.
-                if (disposed || !canReload()) return;
-                if (window.sessionStorage.getItem(RELOAD_ATTEMPT_KEY) === reloadAttempt) return;
-                window.sessionStorage.setItem(RELOAD_ATTEMPT_KEY, reloadAttempt);
-                window.location.reload();
+                // The actual app offers an update action; old callers retain their
+                // guarded resume behavior. Never reload a pending/failed save.
+                if (options.autoReload !== false) apply();
             } catch (error) {
                 console.warn("Could not check the active phone app version", error);
             }
@@ -79,13 +103,15 @@ export function installWebAppLifecycle(baseUrl: string, canReload: () => boolean
     };
 
     const refreshRegistration = async (forceVersionCheck = false) => {
+        // A stuck iOS worker update must not prevent the version check.
+        void checkForStaleBuild(forceVersionCheck);
+        if (!("serviceWorker" in navigator)) return;
         try {
             const registration = await navigator.serviceWorker.register(`${baseUrl}web-sw.js`);
             await registration.update();
         } catch (error) {
             console.warn("Web companion service worker registration failed", error);
         }
-        await checkForStaleBuild(forceVersionCheck);
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
@@ -103,15 +129,23 @@ export function installWebAppLifecycle(baseUrl: string, canReload: () => boolean
 
     window.addEventListener("pageshow", handlePageShow);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    navigator.serviceWorker.addEventListener("controllerchange", handleWorkerChange);
-    navigator.serviceWorker.addEventListener("message", handleWorkerMessage);
+    navigator.serviceWorker?.addEventListener("controllerchange", handleWorkerChange);
+    navigator.serviceWorker?.addEventListener("message", handleWorkerMessage);
+    const check = () => void checkForStaleBuild(true);
+    window.addEventListener("online", check);
+    window.addEventListener("focus", check);
+    const timer = setInterval(() => void checkForStaleBuild(), 30_000);
     void refreshRegistration(true);
 
-    return () => {
+    const cleanup = () => {
         disposed = true;
+        clearInterval(timer);
         window.removeEventListener("pageshow", handlePageShow);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
-        navigator.serviceWorker.removeEventListener("controllerchange", handleWorkerChange);
-        navigator.serviceWorker.removeEventListener("message", handleWorkerMessage);
+        navigator.serviceWorker?.removeEventListener("controllerchange", handleWorkerChange);
+        navigator.serviceWorker?.removeEventListener("message", handleWorkerMessage);
+        window.removeEventListener("online", check);
+        window.removeEventListener("focus", check);
     };
+    return Object.assign(cleanup, { apply, check: () => checkForStaleBuild(true) });
 }

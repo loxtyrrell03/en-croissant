@@ -7,6 +7,8 @@ import {
     findPhoneMoveLine,
     phoneMoveRootLines,
     playPhoneMoves,
+    resetPhonePosition,
+    resetPhoneLine,
 } from "../phoneMoveTree";
 import { parsePgnDatabase, webGameToLine, webGameToRootLines } from "../pgn";
 import { createEmptyWebState } from "../storage";
@@ -47,6 +49,31 @@ const select = (
 const sans = (line: { san: string }[]) => line.map((move) => move.san);
 
 describe("phone played mainlines and variations", () => {
+    it("resets position and explored line separately without deleting mainline or variations", () => {
+        const branch = play(fixture(), "c7c5", "g1f3");
+        const owner = phoneDrawingSeat(branch).owner;
+        const position = resetPhonePosition(branch, owner);
+        expect(position.board.cursor).toBe(0);
+        expect(sans(position.board.line)).toEqual(["e4", "c5", "Nf3"]);
+        expect(game(position).pgn).toBe(game(branch).pgn);
+        const main = resetPhoneLine(branch, owner);
+        expect(sans(main.board.line)).toEqual(["e4", "e5", "Nf3", "Nc6"]);
+        expect(main.board.cursor).toBe(1);
+        expect(game(main).pgn).toBe(game(branch).pgn);
+        expect(resetPhoneLine(branch, "old-owner")).toBe(branch);
+        expect(resetPhonePosition(branch, "old-owner")).toBe(branch);
+    });
+
+    it("preserves a custom starting position and blank-board moves during reset", () => {
+        const state = createEmptyWebState();
+        state.board.startFen = "7k/6pp/8/8/8/8/6PP/KR6 b - - 0 20";
+        const played = play(state, "h7h6");
+        const next = resetPhonePosition(played, phoneDrawingSeat(played).owner);
+        expect(next.board.startFen).toBe(state.board.startFen);
+        expect(next.board.cursor).toBe(0);
+        expect(next.board.line[0].san).toBe("h6");
+        expect(next.board.moveTree).toEqual(played.board.moveTree);
+    });
     it("retains the imported mainline, comments and sync identity while saving a tried continuation", () => {
         const original = fixture();
         const before = JSON.stringify(original);

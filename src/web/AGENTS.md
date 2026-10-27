@@ -1,3 +1,26 @@
+# 2026-10-27 Archive/reset/update correction
+
+- Archive is an exclusive view in Files, embedded pickers and saved imports;
+  Back to active restores the active view. Only routing folders with archived
+  descendants accompany archived entries. Shared archived parents also cover new
+  children arriving before the next label snapshot. Source pickers retain game
+  identity for shared collections imported without a hosted path. Folder reads
+  filter the requested view; existing explicit Prep/source selections stay intact.
+- Visible Reset position returns to the game/FEN/Prep start. Reset line returns
+  to the mainline at the branch point; both retain moves, variations and notes.
+  Replaced the ambiguous reset icon, including its destructive blank-board path.
+- Update checks are independent of service-worker registration, bounded and
+  repeated while visible/on resume/focus/online. The actual app shows Update app
+  instead of silently reloading active work. It verifies workspace saving and the
+  persisted paste draft before reload; failed saves retain the current page.
+  Actual prior lifecycle fails both stalled-worker and open-window polling cases.
+- 43 focused cases/eight files/types and54 isolated built-browser checks pass,
+  including nested exclusive Archive, reset/reselect, update/reload retaining the
+  real IndexedDB workspace and PGN draft,320/390/760px and200% text. WebApp retains
+  its25 existing lint warnings. Editable correction SVG and rendered QA are in
+  design/phone-polish-20261027 and tmp/phone-archive-correction. Physical phone
+  version remains unverified; do not infer it from the served release alone.
+
 # 2026-10-27 phone variations, import, spacing and shared archives
 
 - Board, engine, Database and Plans moves now use one owned immutable move-tree

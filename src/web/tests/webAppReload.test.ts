@@ -35,6 +35,53 @@ const settle = async () => {
     for (let index = 0; index < 20; index++) await Promise.resolve();
 };
 describe("phone update reload", () => {
+    it("detects an update even when worker registration never completes, without reloading an active app", async () => {
+        const fixture = browserFixture();
+        Object.assign(fixture.worker, { register: () => new Promise(() => {}) });
+        const onUpdate = vi.fn();
+        let saved = false;
+        const controller = installWebAppLifecycle("/", () => saved, {
+            autoReload: false,
+            onUpdate,
+        });
+        try {
+            await settle();
+            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(onUpdate).toHaveBeenLastCalledWith({
+                current: "old-build",
+                latest: "new-build",
+                available: true,
+            });
+            expect(fixture.reload).not.toHaveBeenCalled();
+            expect(controller.apply(true)).toBe(false);
+            saved = true;
+            expect(controller.apply(true)).toBe(true);
+            expect(fixture.reload).toHaveBeenCalledTimes(1);
+        } finally {
+            controller();
+        }
+    });
+
+    it("checks a newly published build while an installed window stays open", async () => {
+        vi.useFakeTimers();
+        const fixture = browserFixture();
+        const read = vi.fn(async () => Response.json({ sourceCommit: "old-build" }));
+        vi.stubGlobal("fetch", read);
+        const onUpdate = vi.fn();
+        const controller = installWebAppLifecycle("/", () => true, { autoReload: false, onUpdate });
+        try {
+            await settle();
+            expect(read).toHaveBeenCalledTimes(1);
+            read.mockImplementation(async () => Response.json({ sourceCommit: "new-build" }));
+            await vi.advanceTimersByTimeAsync(30_000);
+            expect(read).toHaveBeenCalledTimes(2);
+            expect(onUpdate.mock.lastCall?.[0].available).toBe(true);
+            expect(fixture.reload).not.toHaveBeenCalled();
+        } finally {
+            controller();
+            vi.useRealTimers();
+        }
+    });
     it("defers a new build through loading, pending and failed saves; allows reload after retry", async () => {
         const fixture = browserFixture();
         let fail = true;

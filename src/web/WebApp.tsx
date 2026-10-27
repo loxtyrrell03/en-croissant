@@ -1,5 +1,6 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
 import PhonePersonalSync from "./PhonePersonalSync";
+import PhoneAppUpdate from "./PhoneAppUpdate";
 import { PERSONAL_LIBRARY_CHANGED } from "./personalSync";
 import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
 import { useCalendarDay } from "@/hooks/useCalendarDay";
@@ -260,7 +261,7 @@ import type {
   WebPrepWorkspace,
 } from "./model";
 import { getWebMovePanelBranchLine, getWebMovePanelDisplayLines } from "./movePanel";
-import { choosePhoneMoveLine, playPhoneMoves } from "./phoneMoveTree";
+import { choosePhoneMoveLine, playPhoneMoves, resetPhonePosition, resetPhoneLine } from "./phoneMoveTree";
 import {
   fetchWebOnlineGames,
   getWebOnlineImportTitle,
@@ -348,6 +349,7 @@ import {
   phoneDatabaseArchive,
   phoneHostedArchiveAncestor,
   phoneHostedEntries,
+  phoneHostedLibraryForView,
   phoneVisibleDatabases,
   phoneVisibleHostedFolders,
   setPhoneHostedArchived,
@@ -369,7 +371,6 @@ import {
 import { watchWebOtbImportJob, type WebOtbImportedGame, type WebOtbImportJob } from "./otbImport";
 import { applyWebOtbPrepCompletion } from "./otbPrep";
 import { getWebOtbStartSnapshot, subscribeWebOtbStart } from "./otbStartSession";
-import { installWebAppLifecycle } from "./webAppLifecycle";
 import { installWebStatePageLifecycle, webStateSession } from "./webStateSession";
 
 type ViewMode = "board" | "stats" | "files" | "review" | "import" | "tournaments";
@@ -382,6 +383,7 @@ type WebHostedFolderImportHandler = (
 ) => Promise<WebImportResult | null>;
 type WebHostedFolderImportOptions = {
   openFirstGame?: boolean;
+  archiveView?: boolean;
   onProgress?: (progress: WebHostedFolderReadProgress | null) => void;
 };
 type WebOnlineImportHandler = (request: {
@@ -638,7 +640,7 @@ function WebAppContent() {
     })();
     return () => controller.abort();
   }, [loaded, setState]);
-  const [pastedPgn, setPastedPgn] = useState("");
+  const [pastedPgn, setPastedPgn] = usePersistentString("en-croissant-phone-paste-draft-v1", "");
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [lichessToken, setLichessToken] = usePersistentString(WEB_LICHESS_TOKEN_STORAGE_KEY, "");
@@ -684,11 +686,6 @@ function WebAppContent() {
       }
     })();
   }, [loaded, state]);
-
-  useEffect(() => {
-    if (!import.meta.env.PROD) return;
-    return installWebAppLifecycle(import.meta.env.BASE_URL, webStateSession.canReload);
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -764,20 +761,6 @@ function WebAppContent() {
     },
     [setState],
   );
-
-  const openEmptyBoard = useCallback(() => {
-    setState((current) => ({
-      ...current,
-      activePrepId: null,
-      board: {
-        ...createEmptyWebBoardState(),
-        annotationOwnerId: newPhoneAnnotationOwner(),
-        sourceTitle: "Analysis board",
-      },
-    }));
-    setSelectedGameId(null);
-    setView("board");
-  }, [setState]);
 
   const addImportedDatabases = useCallback(
     (imported: WebImportResult[]) => {
@@ -1029,6 +1012,7 @@ function WebAppContent() {
     async (library: WebHostedLibrary, path: string, options: WebHostedFolderImportOptions = {}) => {
       setImporting(true);
       try {
+        library = phoneHostedLibraryForView(webStateSession.getSnapshot().state, library, options.archiveView);
         const hostedFiles = getHostedPgnFilesInPath(library, path);
         if (hostedFiles.length === 0) {
           throw new Error("This hosted folder does not contain PGN files.");
@@ -1302,6 +1286,7 @@ function WebAppContent() {
         </Box>
 
         <PhonePcServices />
+        <PhoneAppUpdate pasteDraft={pastedPgn} />
         <PhonePersonalSync />
         <main className={classes.main}>
           {workspace.saveError && (
@@ -1470,7 +1455,6 @@ function WebAppContent() {
                 importOtbGameForAnalysis={importOtbGameForAnalysis}
                 importOnlineGames={importOnlineGames}
                 loadGameOnBoard={loadGameOnBoard}
-                onStartBlankBoard={openEmptyBoard}
                 lichessToken={lichessToken}
                 panelMode={boardPanelMode}
                 setPanelMode={setBoardPanelMode}
@@ -1503,7 +1487,6 @@ function BoardWorkspace({
   importOtbGameForAnalysis,
   importOnlineGames,
   loadGameOnBoard,
-  onStartBlankBoard,
   lichessToken,
   panelMode,
   setPanelMode,
@@ -1518,7 +1501,6 @@ function BoardWorkspace({
   importOtbGameForAnalysis: WebOtbAnalysisHandler;
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
-  onStartBlankBoard: () => void;
   lichessToken: string;
   panelMode: BoardPanelMode;
   setPanelMode: Dispatch<SetStateAction<BoardPanelMode>>;
@@ -1990,20 +1972,13 @@ function BoardWorkspace({
 
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
   const orientation = phoneBoardOrientation(state);
-  const isViewingFile = !activePrep && Boolean(board.sourceDatabaseId || board.sourceGameId);
   const boardPlayers = sourceGame ? getWebBoardPlayerLabels(sourceGame, orientation) : null;
   const flipBoard = () => {
     setState((current) => flipPhoneBoard(current, workspaceOwner));
   };
   const resetBoard = () => {
-    if (activePrep) {
-      setState((current) => alignPhoneBoard(current, workspaceOwner, activePrep.userColor));
-      setCursor(prepRootPly);
-    } else if (isViewingFile) {
-      setCursor(0);
-    } else {
-      onStartBlankBoard();
-    }
+    stopLiveReplay();
+    setState((current) => resetPhonePosition(current, phoneDrawingSeat(state).owner));
   };
 
   return (
@@ -2027,19 +2002,6 @@ function BoardWorkspace({
             {turnColor === "white" ? "White" : "Black"}
             <span className={classes.turnSuffix}> to move</span>
           </Badge>
-          <Tooltip label="Reset board">
-            <ActionIcon
-              aria-label="Reset board"
-              className={classes.boardHeaderAction}
-              color="gray"
-              onClick={resetBoard}
-              radius="md"
-              size="md"
-              variant="subtle"
-            >
-              <IconRefresh size={17} />
-            </ActionIcon>
-          </Tooltip>
           <Tooltip label="Flip board">
             <ActionIcon
               aria-label="Flip board"
@@ -2097,6 +2059,23 @@ function BoardWorkspace({
         canStartLiveReplay={canStartLiveReplay}
         onToggleLiveReplay={toggleLiveReplay}
       />
+
+      <Group className={classes.boardResetActions} gap="xs" wrap="wrap">
+        <Button size="xs" variant="light" onClick={resetBoard} leftSection={<IconRefresh size={16} />}>
+          Reset position
+        </Button>
+        <Button size="xs" variant="light" leftSection={<IconArrowBackUp size={16} />}
+          onClick={() => {
+            stopLiveReplay();
+            setState((current) => resetPhoneLine(current, phoneDrawingSeat(state).owner));
+          }}>
+          Reset line
+        </Button>
+        <TournamentHelp label="Reset position and line">
+          Reset position returns to this game or Prep's starting position. Reset line returns to
+          the mainline where you branched off; your moves and variations stay saved.
+        </TournamentHelp>
+      </Group>
 
       <BoardStartActions activeMode={panelMode} onChooseMode={setPanelMode} />
 
@@ -3773,10 +3752,10 @@ function DatabaseUnderBoardPanel({
   const visibleDatabases = useMemo(
     () =>
       phoneVisibleDatabases(
-        { databases, sourceArchives },
+        { databases, sourceArchives, gamesByDatabase: state.gamesByDatabase },
         rememberedLocalId ? [rememberedLocalId] : [],
       ),
-    [databases, sourceArchives, rememberedLocalId],
+    [databases, sourceArchives, state.gamesByDatabase, rememberedLocalId],
   );
   const retainedHostedPath = databases.find(
     (database) => database.id === rememberedLocalId,
@@ -5464,10 +5443,10 @@ function PrepUnderBoardPanel({
   const visibleDatabases = useMemo(
     () =>
       phoneVisibleDatabases(
-        { databases: state.databases, sourceArchives },
+        { databases: state.databases, sourceArchives, gamesByDatabase: state.gamesByDatabase },
         activeSourceIds ?? (rememberedPrepSourceId ? [rememberedPrepSourceId] : []),
       ),
-    [state.databases, sourceArchives, activeSourceIds, rememberedPrepSourceId],
+    [state.databases, sourceArchives, state.gamesByDatabase, activeSourceIds, rememberedPrepSourceId],
   );
   const sourceFolders = useMemo(
     () =>
@@ -8919,13 +8898,9 @@ function HostedFilesPanel({
   const archivedFolder = phoneHostedArchiveAncestor(state, path);
   const hostedLoadGeneration = useRef(0);
   const visibleEntries = listing ? phoneHostedEntries(state, listing.entries, showArchived) : [];
-  const directPgnFilesInPath = useMemo(
-    () =>
-      listing?.entries.filter(
+  const directPgnFilesInPath = visibleEntries.filter(
         (entry): entry is WebHostedFileEntry => entry.type === "file" && entry.extension === "pgn",
-      ) ?? [],
-    [listing],
-  );
+      );
 
   const load = useCallback(
     async (nextPath = path, forceRefresh = false) => {
@@ -8961,7 +8936,7 @@ function HostedFilesPanel({
       setLoading(true);
       try {
         const scopedLibrary = await getHostedWebLibraryScope(nextPath);
-        await importHostedFolder(scopedLibrary, nextPath, { openFirstGame });
+        await importHostedFolder(scopedLibrary, nextPath, { openFirstGame, archiveView: showArchived });
       } catch (error) {
         console.error(error);
         notifications.show({
@@ -8973,7 +8948,7 @@ function HostedFilesPanel({
         setLoading(false);
       }
     },
-    [importHostedFolder],
+    [importHostedFolder, showArchived],
   );
 
   useEffect(() => {
@@ -9012,7 +8987,7 @@ function HostedFilesPanel({
           )}
           <Box miw={0}>
             <Title order={embedded ? 3 : 2} className={embedded ? undefined : classes.filesTitle}>
-              {embedded ? "Hosted files" : currentFolderName}
+              {showArchived ? "Archive" : (embedded ? "Hosted files" : currentFolderName)}
             </Title>
             <Text
               className={embedded ? undefined : classes.filesSubtitle}
@@ -9110,8 +9085,8 @@ function HostedFilesPanel({
           <Box className={`${classes.itemList} ${embedded ? "" : classes.hostedFileList}`}>
             {!visibleEntries.length && (
               <Text size="sm" c="dimmed">
-                {listing.entries.length
-                  ? "Turn on Show archived to restore hidden items."
+                {showArchived ? "No archived items in this folder." : listing.entries.length
+                  ? "No active items here. Open Archive to restore archived items."
                   : "This folder is empty."}
               </Text>
             )}
@@ -9196,6 +9171,9 @@ function HostedFilesPanel({
                         <Badge size="xs" color="gray">
                           Archived
                         </Badge>
+                      )}
+                      {showArchived && !archived && entry.type === "directory" && (
+                        <Badge size="xs" color="gray" variant="outline">Contains archives</Badge>
                       )}
                       {entry.type === "directory" && !embedded && (
                         <IconChevronRight className={classes.hostedFolderChevron} size={20} />

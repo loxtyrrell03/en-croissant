@@ -103,6 +103,22 @@ export function choosePhoneMoveLine(
     return { ...next, board: { ...board, line, moveTree } };
 }
 
+/** Reset is navigation, never deletion of a saved mainline or tried variation. */
+export function resetPhonePosition(state: WebCompanionState, expectedOwner: string) {
+    const seat = phoneDrawingSeat(state);
+    const start = seat.prep?.rootPly ?? 0;
+    return choosePhoneMoveLine(state, expectedOwner, seat.line, start);
+}
+
+export function resetPhoneLine(state: WebCompanionState, expectedOwner: string) {
+    const seat = phoneDrawingSeat(state);
+    const mainline = phoneMoveRootLines(state)[0] ?? [];
+    let shared = 0;
+    while (shared < seat.line.length && sameMove(seat.line[shared], mainline[shared])) shared++;
+    const cursor = shared < seat.line.length ? shared : (seat.prep?.rootPly ?? 0);
+    return choosePhoneMoveLine(state, expectedOwner, mainline, cursor);
+}
+
 /** Atomic, owned move transaction used by board, engine, database and plan moves. */
 export function playPhoneMoves(
     state: WebCompanionState,

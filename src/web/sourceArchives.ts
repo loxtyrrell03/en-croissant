@@ -1,5 +1,5 @@
 import type { WebCompanionState, WebDatabase } from "./model";
-import type { WebHostedDatabaseFolder, WebHostedEntry } from "./hostedFiles";
+import type { WebHostedDatabaseFolder, WebHostedEntry, WebHostedLibrary } from "./hostedFiles";
 
 export type SharedArchiveSnapshot = {
     version: 1;
@@ -116,12 +116,14 @@ export function phoneHostedArchiveAncestor(
 ): string | null {
     const key = pathKey(path);
     const shared = state.sourceArchives?.shared;
-    if (shared && Object.hasOwn(shared.targets, key)) {
-        return (
-            shared.hostedPaths
-                .filter((ancestor) => inside(key, pathKey(ancestor)))
-                .sort((a, b) => b.length - a.length)[0] ?? null
-        );
+    if (shared) {
+        const ancestor = shared.hostedPaths
+            .filter((ancestor) => inside(key, pathKey(ancestor)))
+            .sort((a, b) => b.length - a.length)[0];
+        // Newly listed children can arrive before the next archive snapshot.
+        // Their known archived parent still owns visibility.
+        if (ancestor) return ancestor;
+        if (Object.hasOwn(shared.targets, key)) return null;
     }
     return (
         state.sourceArchives?.hostedPaths.find((ancestor) => inside(key, pathKey(ancestor))) ?? null
@@ -206,7 +208,8 @@ export function setPhoneDatabaseArchived(
 }
 
 export function phoneVisibleDatabases(
-    state: Pick<WebCompanionState, "databases" | "sourceArchives">,
+    state: Pick<WebCompanionState, "databases" | "sourceArchives"> &
+        Partial<Pick<WebCompanionState, "gamesByDatabase">>,
     keepIds: readonly string[] = [],
 ) {
     return state.databases.filter(
@@ -226,13 +229,44 @@ export function phoneVisibleHostedFolders(
     );
 }
 
-/** Keep ancestor directories navigable when showing archived descendants. */
+/** Archive is an exclusive view. Only routing folders containing an archived
+ * descendant remain alongside archived items, so nested archives stay reachable. */
 export function phoneHostedEntries(
     state: WebCompanionState,
     entries: WebHostedEntry[],
-    showArchived: boolean,
+    archivedOnly: boolean,
 ) {
-    return showArchived
-        ? entries
-        : entries.filter((entry) => !phoneHostedArchiveAncestor(state, entry.path));
+    const shared = state.sourceArchives?.shared;
+    const archivePaths = [
+        ...(shared?.hostedPaths ?? []),
+        ...(state.sourceArchives?.hostedPaths ?? []).filter(
+            (path) => !shared || !Object.hasOwn(shared.targets, pathKey(path)),
+        ),
+    ];
+    return entries.filter((entry) => {
+        const archived = Boolean(phoneHostedArchiveAncestor(state, entry.path));
+        if (!archivedOnly) return !archived;
+        return (
+            archived ||
+            (entry.type === "directory" &&
+                archivePaths.some((path) => inside(pathKey(path), pathKey(entry.path))))
+        );
+    });
+}
+
+export function phoneHostedLibraryForView(
+    state: WebCompanionState,
+    library: WebHostedLibrary,
+    archivedOnly = false,
+): WebHostedLibrary {
+    if (!library.manifest) return library;
+    return {
+        ...library,
+        manifest: {
+            ...library.manifest,
+            files: library.manifest.files.filter(
+                (entry) => Boolean(phoneHostedArchiveAncestor(state, entry.path)) === archivedOnly,
+            ),
+        },
+    };
 }

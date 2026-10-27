@@ -104,6 +104,12 @@ test("desktop labels own shared paths while legacy phone and reference archives 
     expect(validPhoneSourceArchives(current.sourceArchives)).toBe(true);
 });
 
+test("a newly listed child inherits its shared archived folder before the next snapshot", () => {
+    const current = receiveSharedArchives(state(), snapshot(true));
+    expect(phoneHostedArchiveAncestor(current, "Folder/new/sub/game.pgn")).toBe("Folder");
+    expect(phoneHostedArchiveAncestor(current, "Folders/new.pgn")).toBeNull();
+});
+
 test("shared changes are durable requests and acknowledgements cannot erase a newer edit", () => {
     let current = setPhoneHostedArchived(state(), "Folder", true);
     const first = current.sourceArchives!.shared!.pending[0];

@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1264" height="842" viewBox="0 0 1264 842" role="img" aria-label="Phone correction: Archive and reset controls">
+<title>Phone correction: Archive and reset controls</title>
+<rect width="1264" height="842" fill="#0b0d0f"/>
+<g font-family="Segoe UI, sans-serif">
+<text x="24" y="36" font-size="26" fill="#f1f3f5" font-weight="700" text-anchor="start">Phone correction: Archive and reset controls</text>
+<text x="24" y="65" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Existing compact A layout. Invented examples. Archive is an exclusive view.</text>
+<text x="24" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Files: active</text>
+<g transform="translate(24 114)">
+<rect x="0" y="0" width="390" height="700" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<rect x="260.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="286.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="16" y="90" font-size="23" fill="#f1f3f5" font-weight="700" text-anchor="start">Files</text>
+<rect x="16" y="110" width="168" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="100.0" y="137.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Archive</text>
+<text x="354" y="139" font-size="16" fill="#74c0fc" font-weight="400" text-anchor="start">?</text>
+<rect x="16" y="176" width="358" height="76" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="30" y="205" font-size="17" fill="#f1f3f5" font-weight="600" text-anchor="start">Current games</text>
+<text x="30" y="231" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">24 PGNs</text>
+<text x="352" y="218" font-size="18" fill="#74c0fc" font-weight="400" text-anchor="start">&gt;</text>
+<rect x="16" y="264" width="358" height="76" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="30" y="293" font-size="17" fill="#f1f3f5" font-weight="600" text-anchor="start">Opening notes</text>
+<text x="30" y="319" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">8 PGNs</text>
+<text x="352" y="306" font-size="18" fill="#74c0fc" font-weight="400" text-anchor="start">&gt;</text>
+<text x="16" y="410" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Archived files stay out of the active list.</text>
+<text x="16" y="431" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Folder imports use the selected view.</text>
+<rect x="16" y="500" width="358" height="124" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="28" y="528" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">An app update is ready.</text>
+<rect x="28" y="545" width="150" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="103.0" y="572.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Update app</text>
+<text x="28" y="608" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Saves the workspace before reloading.</text>
+</g>
+<text x="438" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Files: Archive</text>
+<g transform="translate(438 114)">
+<rect x="0" y="0" width="390" height="700" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="42.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<rect x="260.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="286.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<text x="16" y="90" font-size="23" fill="#f1f3f5" font-weight="700" text-anchor="start">Archive</text>
+<rect x="16" y="110" width="168" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="100.0" y="137.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Back to active</text>
+<text x="354" y="139" font-size="16" fill="#74c0fc" font-weight="400" text-anchor="start">?</text>
+<rect x="16" y="176" width="358" height="76" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="30" y="205" font-size="17" fill="#f1f3f5" font-weight="600" text-anchor="start">Opening notes</text>
+<text x="30" y="231" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Contains archives</text>
+<text x="352" y="218" font-size="18" fill="#74c0fc" font-weight="400" text-anchor="start">&gt;</text>
+<rect x="16" y="264" width="358" height="76" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="30" y="293" font-size="17" fill="#f1f3f5" font-weight="600" text-anchor="start">Old tournament</text>
+<text x="30" y="319" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Archived</text>
+<text x="352" y="306" font-size="18" fill="#74c0fc" font-weight="400" text-anchor="start">&gt;</text>
+<text x="16" y="410" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Archive contains archived items only.</text>
+<text x="16" y="431" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Folders provide a route to nested archives.</text>
+<rect x="16" y="500" width="358" height="124" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="28" y="528" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">An app update is ready.</text>
+<rect x="28" y="545" width="150" height="44" rx="7" fill="#1971c2" stroke="#34383f"/>
+<text x="103.0" y="572.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Update app</text>
+<text x="28" y="608" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="start">Saves the workspace before reloading.</text>
+</g>
+<text x="852" y="102" font-size="16" fill="#f1f3f5" font-weight="600" text-anchor="start">Board: easy resets</text>
+<g transform="translate(852 114)">
+<rect x="0" y="0" width="390" height="700" rx="16" fill="#111315" stroke="#34383f"/>
+<rect x="12" y="12" width="366" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="16.0" y="16" width="53.0" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="42.5" y="40" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Board</text>
+<text x="103.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Events</text>
+<text x="164.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Import</text>
+<text x="225.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Review</text>
+<text x="286.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Files</text>
+<text x="347.5" y="40" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Stats</text>
+<rect x="16" y="80" width="358" height="200" rx="8" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="180" font-size="18" fill="#f1f3f5" font-weight="400" text-anchor="middle">Current chess position</text>
+<rect x="16" y="300" width="168" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="100.0" y="327.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Reset position</text>
+<rect x="192" y="300" width="168" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="276.0" y="327.0" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="middle">Reset line</text>
+<text x="370" y="327" font-size="16" fill="#74c0fc" font-weight="400" text-anchor="start">?</text>
+<rect x="16" y="360" width="358" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<rect x="20.0" y="364" width="111.33333333333333" height="36" rx="5" fill="#3a3d43" stroke="none"/>
+<text x="75.66666666666666" y="388" font-size="13" fill="#74c0fc" font-weight="600" text-anchor="middle">Moves</text>
+<text x="195.0" y="388" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Database</text>
+<text x="314.3333333333333" y="388" font-size="13" fill="#a7acb4" font-weight="400" text-anchor="middle">Prep</text>
+<rect x="16" y="426" width="358" height="130" rx="8" fill="#1b1d20" stroke="#34383f"/>
+<text x="28" y="455" font-size="14" fill="#f1f3f5" font-weight="600" text-anchor="start">Mainline</text>
+<text x="28" y="484" font-size="16" fill="#f1f3f5" font-weight="400" text-anchor="start">1. e4 e5  2. Nf3 Nc6</text>
+<text x="42" y="524" font-size="15" fill="#74c0fc" font-weight="400" text-anchor="start">Variation: 1... c5  2. Nf3</text>
+<text x="16" y="598" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Reset position: back to the starting position.</text>
+<text x="16" y="619" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">Reset line: back to the mainline.</text>
+<text x="16" y="640" font-size="14" fill="#a7acb4" font-weight="400" text-anchor="start">All moves and variations stay saved.</text>
+</g>
+</g>
+</svg>

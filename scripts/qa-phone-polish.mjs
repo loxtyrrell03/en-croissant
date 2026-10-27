@@ -26,12 +26,16 @@ const fx=window.fx={session:webStateSession,calls:[],pgn};
 async function setup(){
  localStorage.setItem(PHONE_ENGINE_SETTINGS_KEY,JSON.stringify({...DEFAULT_PHONE_ENGINE_SETTINGS,enabled:false}));
  const state=createEmptyWebState();state.databases=[imported.database];state.gamesByDatabase[imported.database.id]=imported.games;
- await new Promise((resolve,reject)=>{const request=indexedDB.open('en-croissant-web-companion',1);request.onupgradeneeded=()=>request.result.createObjectStore('state');request.onsuccess=()=>{const db=request.result,tx=db.transaction('state','readwrite');tx.objectStore('state').put(state,'main');tx.oncomplete=()=>{db.close();resolve()};tx.onabort=()=>reject(tx.error)}});
+ state.sourceArchives={databaseIds:[],hostedPaths:['Archive examples/old.pgn']};
+ const build=document.createElement('meta');build.name='en-croissant-build';build.content=sessionStorage.getItem('fixture-latest-build')||'fixture-old';document.head.append(build);
+ await new Promise((resolve,reject)=>{const request=indexedDB.open('en-croissant-web-companion',1);request.onupgradeneeded=()=>request.result.createObjectStore('state');request.onsuccess=()=>{const db=request.result,tx=db.transaction('state','readwrite'),store=tx.objectStore('state'),read=store.get('main');read.onsuccess=()=>{if(!read.result)store.put(state,'main')};tx.oncomplete=()=>{db.close();resolve()};tx.onabort=()=>reject(tx.error)}});
  const realFetch=window.fetch;
  const files=[{type:'file',name:'Example study',filename:'Example study.pgn',extension:'pgn',path:'Example study.pgn',url:'/web-library/files/example.pgn',lastModified:1234,sizeBytes:pgn.length},{type:'file',name:'Long example opening repertoire and endgame notes',filename:'Long example opening repertoire and endgame notes.pgn',extension:'pgn',path:'Long example opening repertoire and endgame notes.pgn',url:'/web-library/files/long.pgn',lastModified:1234,sizeBytes:pgn.length}];
+ for(const name of ['old','current'])files.push({type:'file',name,filename:name+'.pgn',extension:'pgn',path:'Archive examples/'+name+'.pgn',url:'/web-library/files/'+name+'.pgn',lastModified:1234,sizeBytes:pgn.length});
  window.fetch=async(url,options={})=>{const u=new URL(typeof url==='string'?url:url.url,location.href),p=u.pathname;fx.calls.push({path:p,method:options.method||'GET'});
   if(p==='/api/pc-services')return Response.json({ok:true,service:'en-croissant-service-controller',enabled:true,busy:false,home:true,engine:true,error:null});
   if(p==='/api/personal-sync/status')return Response.json({enabled:false});
+  if(p==='/app-version.json')return Response.json({sourceCommit:sessionStorage.getItem('fixture-latest-build')||'fixture-old'});
   if(p==='/api/tournaments'){const body=JSON.parse(options.body||'{}');return Response.json({result:body.method==='settingsGet'?null:body.method==='discoverTournaments'?{events:[],sourceCount:0,sourceLimitReached:false,fetchedAt:new Date().toISOString()}:[]});}
   if(p==='/api/web-state')return Response.json({state:{}});
   if(p.endsWith('/web-library/manifest.json'))return Response.json({version:1,generatedAt:'2026-10-27T09:00:00Z',sourceName:'Invented QA library',files});
@@ -275,7 +279,22 @@ try {
         game.moves[0].variations[0].map((move) => move.san),
         ["c5"],
       );
-      await page.getByRole("button", { name: "Return to mainline", exact: true }).click();
+      await page.getByRole("button", { name: "Reset position", exact: true }).click();
+      assert.equal(
+        await page.evaluate(() => window.fx.session.getSnapshot().state.board.cursor),
+        0,
+      );
+      assert.deepEqual(
+        await page.evaluate(() =>
+          window.fx.session.getSnapshot().state.board.line.map((m) => m.san),
+        ),
+        ["e4", "c5"],
+      );
+      await page.getByRole("button", { name: "Reset line", exact: true }).click();
+      assert.equal(
+        await page.evaluate(() => window.fx.session.getSnapshot().state.board.cursor),
+        1,
+      );
       assert.deepEqual(
         await page.evaluate(() =>
           window.fx.session.getSnapshot().state.board.line.map((move) => move.san),
@@ -307,6 +326,7 @@ try {
         fullPage: true,
       });
       checks.push({ name: "touch-variation-preserves-mainline-and-reselects", pass: true });
+      checks.push({ name: "visible-position-and-line-resets-retain-variation", pass: true });
       await page.locator('button[data-view="import"]').click();
       await paste.fill("invalid example input");
       await page.getByRole("button", { name: "Import pasted games", exact: true }).click();
@@ -338,6 +358,55 @@ try {
       await page.locator('button[data-view="import"]').click();
       assert.equal(await paste.inputValue(), "draft retained across navigation");
       checks.push({ name: "manual-import-draft-navigation", pass: true });
+    }
+    await page.locator('button[data-view="files"]').click();
+    await page.getByRole("button", { name: "Open archive", exact: true }).click();
+    await page.locator('[data-hosted-path="Archive examples"] > button').click();
+    await page.locator('[data-hosted-path="Archive examples/old.pgn"]').waitFor();
+    assert.equal(
+      await page.locator('[data-hosted-path="Archive examples/current.pgn"]').count(),
+      0,
+    );
+    const archiveLayout = await measurements(page);
+    await page.screenshot({
+      path: path.join(output, `archive-only-${width}-${scale}.png`),
+      fullPage: true,
+    });
+    checks.push({
+      name: `archive-only-nested-${width}-${scale}`,
+      pass: archiveLayout.overflow.length === 0 && archiveLayout.clipped.length === 0,
+      ...archiveLayout,
+    });
+    await page.getByRole("button", { name: "Back to active sources", exact: true }).click();
+    assert.equal(await page.locator('[data-hosted-path="Archive examples/old.pgn"]').count(), 0);
+    await page.locator('[data-hosted-path="Archive examples/current.pgn"]').waitFor();
+    await page.evaluate(() => {
+      sessionStorage.setItem("fixture-latest-build", "fixture-new");
+      window.dispatchEvent(new Event("focus"));
+    });
+    const update = page.getByRole("button", { name: "Update app", exact: true });
+    await update.waitFor();
+    const updateLayout = await measurements(page);
+    checks.push({
+      name: `update-visible-${width}-${scale}`,
+      pass: updateLayout.overflow.length === 0 && updateLayout.clipped.length === 0,
+      ...updateLayout,
+    });
+    if (width === 390 && scale === 1) {
+      await page.locator('button[data-view="import"]').click();
+      await paste.fill("Keep this unfinished PGN draft across update");
+      const countBefore = await page.evaluate(
+        () => window.fx.session.getSnapshot().state.databases.length,
+      );
+      await Promise.all([page.waitForEvent("load"), update.click()]);
+      await page.locator('button[data-view="import"]').click();
+      assert.equal(await paste.inputValue(), "Keep this unfinished PGN draft across update");
+      assert.equal(
+        await page.evaluate(() => window.fx.session.getSnapshot().state.databases.length),
+        countBefore,
+      );
+      assert.equal(await page.getByRole("button", { name: "Update app", exact: true }).count(), 0);
+      checks.push({ name: "update-reloads-new-build-and-retains-workspace-and-paste", pass: true });
     }
     await context.close();
   }

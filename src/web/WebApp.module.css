@@ -164,6 +164,23 @@
   margin-inline-start: auto;
 }
 
+.boardResetActions {
+  padding: 0 0.5rem 0.5rem;
+}
+
+.boardResetActions > button:not(:last-child) {
+  flex: 1 1 8rem;
+  min-width: min(100%, 8rem);
+  min-height: 40px;
+  height: auto;
+  padding: 0.5rem;
+}
+
+.boardResetActions :global(.mantine-Button-label) {
+  white-space: normal;
+  line-height: 1.25;
+}
+
 .boardHeaderAction {
   color: var(--mantine-color-gray-4);
 }

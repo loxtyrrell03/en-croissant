@@ -1,4 +1,5 @@
-import { Badge, Button, Checkbox, Group, Stack, Text } from "@mantine/core";
+import { Badge, Button, Group, Stack, Text } from "@mantine/core";
+import { IconArchive, IconArrowBackUp } from "@tabler/icons-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import type { WebCompanionState, WebDatabase } from "./model";
@@ -18,17 +19,21 @@ export function PhoneArchiveFilter({
 }) {
   return (
     <Group gap={5} wrap="nowrap">
-      <Checkbox
-        label="Show archived"
-        aria-label="Show archived sources"
-        checked={checked}
-        onChange={(event) => onChange(event.currentTarget.checked)}
+      <Button
+        aria-label={checked ? "Back to active sources" : "Open archive"}
+        aria-pressed={checked}
+        variant={checked ? "filled" : "light"}
+        onClick={() => onChange(!checked)}
+        leftSection={checked ? <IconArrowBackUp size={16} /> : <IconArchive size={16} />}
         size="xs"
-        styles={{ body: { alignItems: "center", minHeight: 40 } }}
-      />
+        mih={40}
+      >
+        {checked ? "Back to active" : "Archive"}
+      </Button>
       <TournamentHelp label="Archived sources">
         Shared file and database archive labels sync with Novelty Dev. Device-only imports stay
-        local. Games and existing Prep stay saved; Show archived lets you restore them.
+        local. Archive shows only archived items, with folders leading to them; Back to active
+        returns to your current files. Games and Prep stay saved.
       </TournamentHelp>
     </Group>
   );
@@ -48,19 +53,21 @@ export function PhoneSavedImports({
   const [showArchived, setShowArchived] = useState(false);
   if (!state.databases.length) return null;
   const databases = state.databases.filter(
-    (database) => showArchived || !phoneDatabaseArchive(state, database),
+    (database) => Boolean(phoneDatabaseArchive(state, database)) === showArchived,
   );
   return (
     <Stack gap="xs">
       <Group justify="space-between" gap="xs">
         <Text size="sm" fw={600}>
-          Saved games
+          {showArchived ? "Archived saved games" : "Saved games"}
         </Text>
         <PhoneArchiveFilter checked={showArchived} onChange={setShowArchived} />
       </Group>
       {!databases.length && (
         <Text size="sm" c="dimmed">
-          All saved imports are archived.
+          {showArchived
+            ? "No archived saved games."
+            : "No active saved games. Open Archive to restore archived imports."}
         </Text>
       )}
       {databases.map((database) => {
