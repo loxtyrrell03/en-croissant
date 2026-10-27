@@ -1,0 +1,37 @@
+{
+  "source": "3ef605c7669a435a940592f916443a627101dad6",
+  "url": "https://lox-pc.tail89d19b.ts.net/",
+  "publishedAt": "2026-10-27T14:35:59.2500683+00:00",
+  "manifestFiles": 444,
+  "exactHttpsAssets": 12,
+  "focusedTests": 43,
+  "browserChecks": 58,
+  "browserPageErrors": 0,
+  "typesPassed": true,
+  "existingWebAppLintWarnings": 25,
+  "syncErrors": 0,
+  "syncConflicts": 0,
+  "archiveProtocol": 1,
+  "homeProcessPreserved": true,
+  "gatewayProcessPreserved": true,
+  "servePreserved": true,
+  "syncTaskPreserved": true,
+  "ownerFilesPreserved": 7,
+  "runtimeModules": 15,
+  "generatedModules": 2,
+  "nativeHelpersMatched": 2,
+  "nativeArtifactPreserved": true,
+  "liveChromeAt390": [
+    "Active view excludes archived roots and database groups",
+    "Archive separates shared roots and routes to archived database groups",
+    "Reset position and Reset line controls visible",
+    "Open app detects new publication and updates from115ad758 to3ef605c7 retaining current Prep position"
+  ],
+  "physicalPhoneVerified": false,
+  "ownerArchiveLabelsChanged": false,
+  "newCorpusCopies": 0,
+  "screenshots": [
+    "tmp/phone-archive-correction/live-archive-final.png",
+    "tmp/phone-archive-correction/live-files-active.png"
+  ]
+}

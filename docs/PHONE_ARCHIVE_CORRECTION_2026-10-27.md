@@ -54,3 +54,12 @@ refinement places metadata/status below the name and permits labels to wrap.
 The expanded58-check browser matrix includes long archived names and routing
 labels at200% text; all pass with zero page errors. Types pass and the same25
 WebApp lint warnings remain. Final refinement delivery has a separate receipt.
+
+Final product3ef605c7 is live and pushed on both source/delivery branches. The
+same12 exact HTTPS assets/444-file manifest and runtime/owner-file checks pass.
+An open115ad758 Chrome page detected publication, displayed Update app, saved
+and reloaded3ef605c7, retaining its current Prep position. A fresh390px screenshot
+shows complete archive labels and the exclusive shared Archive. Temporary
+publication tasks are removed after successful verification. See
+PHONE_ARCHIVE_CORRECTION_2026-10-27_DELIVERY.json for the compact receipt. The
+physical phone's loaded version remains unverified.

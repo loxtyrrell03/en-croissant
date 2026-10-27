@@ -26,7 +26,9 @@
   confirmed exclusive real shared archives, including nested database groups.
   Real long names exposed squeezed badges; labels now wrap below the name.
   Expanded58 browser checks include long archive names/routing badges at200%
-  text and pass with zero page errors. Final product delivery is recorded in
+  text and pass with zero page errors. Final3ef605c7 is live with the same complete
+  asset/runtime/owner-file checks; its live Update app action upgraded an open
+  115ad758 Chrome page while retaining the current Prep position. Delivery is in
   docs/PHONE_ARCHIVE_CORRECTION_2026-10-27_DELIVERY.json; no physical-phone proof.
 
 # 2026-10-27 phone variations, import, spacing and shared archives
