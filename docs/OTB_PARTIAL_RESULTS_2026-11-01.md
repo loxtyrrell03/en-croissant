@@ -39,10 +39,12 @@ completed versus partial from the saved report rather than assuming completeness
 
 ## Delivery and limits
 
-This source milestone does not publish, restart services or modify owner jobs.
-Combined delivery must include both phone assets and the changed home-server/OTB
-service modules. No native rebuild is required. Existing HTTP route, service roots,
-owner On/Off state and data remain unchanged. Physical-phone proof is outstanding.
+The combined phone assets and changed home-server/OTB modules are now published
+from clean e568afae, with an actual home-backend restart. A fresh exact-source
+import returns51 playable prepared games as explicit partial; the original failed
+jobs and PGNs retain their hashes. No native rebuild was needed. Existing routes,
+service roots, owner On/Off state, saved workspace and shared data are preserved.
+See `PHONE_FIXES_2026-11-01_DELIVERY.json`. Physical-phone proof is outstanding.
 
 Lichess's403 restriction itself remains; no security challenge was bypassed or
 source silently disabled. Its official FIDE metadata API does not provide an

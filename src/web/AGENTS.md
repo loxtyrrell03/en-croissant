@@ -1,3 +1,22 @@
+## 2026-11-01 combined phone fixes delivered
+
+- Phone assets and the changed home/OTB runtime are live at the canonical private
+  URL from clean e568afae (primary source32e4ebaf). The home backend was actually
+  restarted; metadata alone is not proof that new service code is loaded.
+- The updated hosted app retains a328px board at390x844 with engine settings
+  closed/open; the previous app shrank to176px. The actual followed tournament's
+  Import & prep reaches its missing-FIDE profile picker without changing the entry.
+  A fresh exact-source import returns51 playable games as explicit partial rather
+  than discarding them. Browser proof is not physical-phone proof.
+- 446 manifest files/12 exact HTTPS assets,15 runtime modules/two generated modules/
+  two helpers verify. Seven owner-file hashes, both retained failed-job/PGN pairs,
+  gateway identity/cold state, sync task, service choice and all Serve routes remain
+  intact. Native binaries are unchanged; no corpus copy or new worktree.
+- The publisher wrapper stalled after a successful switch/restart. Independent
+  verification proved the live result before stopping only that idle owned wrapper;
+  never replay uncertain publication or kill its live descendants. See
+  ../../docs/PHONE_FIXES_2026-11-01_DELIVERY.json and ignored local evidence.
+
 ## 2026-11-01 usable partial OTB results
 
 - `partial` is a terminal job with a saved game/prep artifact. Keep it distinct
