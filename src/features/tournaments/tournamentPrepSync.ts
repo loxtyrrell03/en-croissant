@@ -14,6 +14,7 @@ import {
   removeTournamentPrep,
   saveTournamentPreps,
   tournamentPrepDatabaseIds,
+  tournamentPlayerKey,
   type TournamentOpponentDatabase,
   type TournamentPrepRecord,
 } from "./tournamentPrepStore";
@@ -103,12 +104,16 @@ async function syncOpponentDatabase(
   collections: CollectionRow[],
   controller: RunController,
 ): Promise<TournamentOpponentDatabase> {
-  if (!opponent.fideId || !/^[1-9]\d*$/.test(opponent.fideId)) throw new Error("No exact FIDE profile is listed for this opponent.");
+  const fideId = opponent.fideId ?? opponent.importIdentity?.fideId;
+  if (!fideId || !/^[1-9]\d*$/.test(fideId)) throw new Error("Choose this opponent’s exact FIDE profile before importing.");
+  if (opponent.fideId && opponent.importIdentity && opponent.fideId !== opponent.importIdentity.fideId)
+    throw new Error("The published FIDE profile differs from the saved import. Check this opponent’s identity before importing.");
+  const requestKey = opponent.fideId ? `tournament-${record.id}-fide-${opponent.fideId}` : `tournament-${record.id}-entry-${encodeURIComponent(tournamentPlayerKey(opponent))}`;
   let collectionId = opponent.collectionId;
   let collection = collections.find((item) => item.id === collectionId);
   if (!collection) {
     const collectionName = uniqueCollectionName(opponent.name, collections);
-    collectionId = await desktopApi.collectionCreate(collectionName, `tournament-${record.id}-fide-${opponent.fideId}`);
+    collectionId = await desktopApi.collectionCreate(collectionName, requestKey);
     await desktopApi.collectionSetFolder(collectionId, record.folder);
     collection = { id: collectionId, name: collectionName, folder: record.folder, game_count: 0 };
     collections.push(collection);
@@ -123,7 +128,7 @@ async function syncOpponentDatabase(
   opponent.gameCount = collection.game_count;
 
   if (controller.cancelled) throw new Error("Opponent import stopped.");
-  const imported = await importOpponent({playerName:opponent.name,fideId:opponent.fideId,fromYear:record.fromYear,collectionId:collection.id,requestKey:`tournament-${record.id}-fide-${opponent.fideId}`,refresh:true}, id=>{controller.jobId=id;});
+  const imported = await importOpponent({playerName:opponent.importIdentity?.playerName ?? opponent.name,fideId,fromYear:record.fromYear,collectionId:collection.id,requestKey,refresh:true}, id=>{controller.jobId=id;});
   controller.jobId=null;
   if(imported.cancelled)controller.cancelled=true;
   return {...opponent,collectionId:imported.collectionId,status:imported.cancelled?"queued":imported.gameCount>0?"ready":"no-games",lastSyncAt:new Date().toISOString(),gameCount:imported.gameCount,importFromYear:imported.fromYear,error:imported.warning ?? null};

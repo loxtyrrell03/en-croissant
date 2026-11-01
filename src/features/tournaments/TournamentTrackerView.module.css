@@ -56,7 +56,8 @@
 .actions button { white-space: nowrap; }
 .actions[data-compact] { flex-direction: column; align-items: flex-start; gap: 4px; }
 .actions[data-compact] > small { font-size: var(--op-fs-xs); color: var(--op-text-faint); }
-.actions[data-compact] button { min-width: 126px; }
+.prepAction { display: inline-flex; align-items: center; gap: 6px; }
+.actions[data-compact] .prepAction > button:not([aria-label^="Help:"]) { min-width: 126px; }
 .other { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--op-border); padding: 12px 0; font-size: var(--op-fs-xs); color: var(--op-text-faint); }
 .other strong { font-size: var(--op-fs-sm); font-weight: 500; color: var(--op-text-dim); }
 .progress { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--op-border); margin-bottom: 12px; font-size: var(--op-fs-sm); }

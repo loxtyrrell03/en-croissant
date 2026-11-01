@@ -61,7 +61,7 @@ export function PhoneTournaments({
   return (
     <TournamentWorkspace
       onClose={onClose}
-      onOpenPrep={(handoff) => void prep(handoff).catch(fail)}
+      onOpenPrep={prep}
       onOpenDatabase={(id) =>
         void ready(id)
           .then(({ databaseId }) => onDatabase(databaseId))

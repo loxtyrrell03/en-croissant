@@ -153,14 +153,14 @@ export function TournamentTrackerView(props: Props) {
   }
   function actions(item: TournamentOpponentDatabase, colour = props.projectedSideFor(item.startNumber), compact = false, showStatus = true) {
     const ready = opponentReady(item);
-    const hasProfile = /^[1-9]\d*$/.test(players.get(item.startNumber)?.fideId ?? "");
-    if (!ready && !hasProfile) return <span className={styles.unavailableAction}>Import unavailable<HelpTip label={`Import unavailable for ${item.name}`}>No FIDE ID/profile is listed for this player. An exact tournament import is unavailable.</HelpTip></span>;
+    const hasProfile = /^[1-9]\d*$/.test(players.get(item.startNumber)?.fideId ?? item.importIdentity?.fideId ?? "");
     const empty = item.status === "no-games" || (item.status === "ready" && item.gameCount === 0);
     const importing = item.status === "searching" || prepBusy === item.startNumber;
-    const actionLabel = importing ? "Importing…" : item.status === "queued" ? "Queued" : ready ? "Open Prep" : empty ? "Search again" : item.status === "error" ? "Retry & prep" : "Import & prep";
+    const actionLabel = prepBusy === item.startNumber ? "Opening Prep…" : importing ? "Importing…" : item.status === "queued" ? "Queued" : ready ? "Open Prep" : empty ? "Search again" : item.status === "error" ? "Retry & prep" : "Import & prep";
     return <div className={styles.actions} data-compact={compact || undefined} aria-label={`Actions for ${item.name}`} role="group">
       {!compact && <button type="button" disabled={prepDisabled || importing} onClick={() => ready ? props.onOpenDatabase(item.collectionId!) : void props.onOpponent(item, colour, "import")}>{ready ? "View games" : item.status === "error" ? "Retry import" : "Import games"}</button>}
-      <button type="button" className={ready ? styles.openPrep : undefined} data-database-ready={ready || undefined} disabled={prepDisabled || importing || item.status === "queued"} onClick={() => void props.onOpponent(item, colour, "prep")}>{actionLabel}</button>
+      <span className={styles.prepAction}><button type="button" className={ready ? styles.openPrep : styles.primary} data-database-ready={ready || undefined} disabled={prepDisabled || importing || item.status === "queued"} onClick={() => void props.onOpponent(item, colour, "prep")}>{actionLabel}</button>
+      {!ready && !hasProfile && <HelpTip label={`Choose FIDE profile for ${item.name}`}>The organiser has not listed a FIDE ID. Choose this opponent’s exact FIDE profile before importing.</HelpTip>}</span>
       {compact && showStatus && (ready || empty || item.status === "error") && <small>{item.status === "error" && item.error ? importErrorHelp(item.error) : opponentGameLabel(item)}</small>}
     </div>;
   }
@@ -223,7 +223,8 @@ export function TournamentTrackerView(props: Props) {
     </div>}
     {snapshot.format==="team"&&<p className={styles.warning}>Team-board preparation is unavailable.</p>}
     {settingBusy && <div className={styles.progress} role="status">Saving changes…</div>}
-    {(running || prepBusy !== null) && <div className={styles.progress} role="status"><span>{currentSyncEvent?.message ?? "Checking tournament…"}</span><button type="button" disabled={currentSyncEvent?.phase === "stopping"} onClick={() => void props.onStop()}>{currentSyncEvent?.phase === "stopping" ? "Stopping…" : "Stop current update"}</button></div>}
+    {prepBusy !== null && <div className={styles.progress} role="status">Opening saved opponent Prep…</div>}
+    {running && <div className={styles.progress} role="status"><span>{currentSyncEvent?.message ?? "Checking tournament…"}</span><button type="button" disabled={currentSyncEvent?.phase === "stopping"} onClick={() => void props.onStop()}>{currentSyncEvent?.phase === "stopping" ? "Stopping…" : "Stop current update"}</button></div>}
     {checkError && <div className={styles.error} role="alert"><p>Tournament check failed: {checkError}</p><button type="button" disabled={busy || settingBusy} onClick={() => void props.onCheck()}>Retry check</button></div>}
     {error && error !== checkError && <p className={styles.error} role="alert">{error}</p>}
         <TournamentPredictionSummary record={record} visible={tab === "next"} forecast={forecast} calculating={calculating} onHistory={() => {
@@ -266,8 +267,8 @@ export function TournamentTrackerView(props: Props) {
         <aside className={styles.playerRoster} aria-label="Tournament players">{search}<nav>{visible.map(player => <button key={player.startNumber} type="button" aria-current={selected.startNumber === player.startNumber ? "true" : undefined} onClick={() => inspect(player)}>{player.name}{player.startNumber === record.userStartNumber ? " · You" : ""}</button>)}</nav>{!visible.length && <p>No matching players.</p>}</aside>
         <div className={styles.playerContent}>
         <div className={styles.sectionHeader}><div><h3>{selected.name}{selected.startNumber === record.userStartNumber ? " · You" : ""}</h3><p>{[selected.title, selected.rating === null ? "Rating not listed" : `${selected.rating} rating`, selected.federation].filter(Boolean).join(" · ")}</p></div>{selected.fideId ? <TournamentWebsiteLink url={`https://ratings.fide.com/profile/${selected.fideId}`}>FIDE {selected.fideId} ↗</TournamentWebsiteLink> : <span>No FIDE ID/profile listed for this player.</span>}</div>
-        <PlayerPredictions key={`${selected.startNumber}:${selected.fideId}:${predictionView}`} record={record} player={selected} initialView={predictionView} onPlayer={inspect}/>
         {opponent ? <div className={styles.preparation}><div><h3>Opponent games</h3><p>{opponentGameLabel(opponent)} · Since {opponent.importFromYear ?? record.fromYear}</p></div><div className={styles.sidePicker} role="group" aria-label="Your preparation colour"><span>Prepare as</span>{(["white", "black"] as const).map(value => <button key={value} type="button" aria-pressed={side === value} onClick={() => setSide(value)}>{value === "white" ? "White" : "Black"}</button>)}</div>{actions(opponent, side)}{opponent.error && <p className={styles.error}>{opponent.error}</p>}</div> : null}
+        <PlayerPredictions key={`${selected.startNumber}:${selected.fideId}:${predictionView}`} record={record} player={selected} initialView={predictionView} onPlayer={inspect}/>
         <details className={styles.playerDetails}><summary>Player details &amp; games</summary>{!beforePlay && roundControl}
         {snapshot.completedRound > 0&&<><dl className={styles.playerMetrics}><div><dt>{selectedStanding?.rankSource === "published" ? "Rank" : "Order"}<HelpTip label="Player rank">{selectedStanding?.rankSource === "published" ? help.rank : help.order}</HelpTip></dt><dd>{selectedStanding?.rank ?? "—"}</dd></div><div><dt>Points<HelpTip label="Player points">{help.points}</HelpTip></dt><dd>{selectedStanding?.scoreKnown ? selectedStanding.points : "—"}</dd></div><div><dt>Performance<HelpTip label="Performance rating">{"An estimated rating based on results against rated opponents. Winning or losing every game gives only a rough estimate."}</HelpTip></dt><dd>{stats.performanceRating ?? "—"}</dd></div><div><dt>Average opponent<HelpTip label="Average opponent rating">{"Average rating of opponents already played. Opponents without a rating are left out."}</HelpTip></dt><dd>{stats.averageOpponent ?? "—"}</dd></div></dl><p className={styles.playerSummary}>{stats.wins} wins · {stats.draws} draws · {stats.losses} losses <span>{stats.whiteGames} games as White · {stats.blackGames} as Black</span></p></>}
 

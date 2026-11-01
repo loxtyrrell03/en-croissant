@@ -49,6 +49,7 @@ export function PlayerGameImportModal({
     collectionId?: number | null;
     lockIdentity?: boolean;
     requestKey?: string;
+    tournamentPlayerName?: string;
   };
   onClose: () => void;
   onDone: (id: number, message: string, result?: OtbPlayerImportResult) => void | Promise<void>;
@@ -147,6 +148,9 @@ export function PlayerGameImportModal({
         <Button variant="subtle" onClick={onClose} style={{ alignSelf: "flex-start" }}>
           Back to tournament
         </Button>
+        {initialOtb?.tournamentPlayerName && !initialOtb.lockIdentity && (
+          <Text size="sm">Choose the FIDE profile for <strong>{initialOtb.tournamentPlayerName}</strong>. The organiser has not listed their FIDE ID.</Text>
+        )}
         {initialOtb?.lockIdentity ? (
           <Stack gap="xs">
             <TextInput label="Player" value={playerName} readOnly />
@@ -174,7 +178,7 @@ export function PlayerGameImportModal({
               setSelected(player);
               setPlayerName(player.name);
               setFideId(String(player.id));
-              if (!yearEdited.current)
+              if (!yearEdited.current && !initialOtb)
                 setFromYear(getFideImportStartYear(player, new Date().getFullYear()));
             }}
           />

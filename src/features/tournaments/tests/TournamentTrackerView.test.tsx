@@ -30,6 +30,17 @@ describe("tournament quick list", () => {
     expect(markup).not.toContain("~100%");
     expect(markup).not.toContain("Pairing chance");
   });
+
+  test("keeps Import & prep available for a published opponent without a FIDE ID", () => {
+    const fixture=trackerFixture();
+    const player=fixture.record.snapshot.players[2]; player.fideId=null;
+    fixture.record.opponents["3"].fideId=null;
+    fixture.forecast={...fixture.forecast,kind:"confirmed",candidates:[{...fixture.forecast.candidates[1],player,color:"black"}]};
+    const markup=renderToStaticMarkup(<TournamentTrackerView {...fixture} {...callbacks} calculating={false} running={false} prepBusy={null} removeBusy={false} settingBusy={false} syncEvent={null} error={null}/>);
+    expect(markup).toContain("Import &amp; prep");
+    expect(markup).toContain("Choose FIDE profile for Sam Rivera");
+    expect(markup).not.toContain("Import unavailable");
+  });
   test("only a nonempty saved database is ready for Prep", () => {
     const { record } = trackerFixture();
     expect(opponentReady(record.opponents["2"])).toBe(true);

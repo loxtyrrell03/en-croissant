@@ -17,6 +17,8 @@ export interface TournamentOpponentDatabase {
   startNumber: number;
   name: string;
   fideId: string | null;
+  /** User-selected import profile when the organiser omits a FIDE ID. */
+  importIdentity?: { fideId: string; playerName: string };
   collectionId: number | null;
   status: OpponentDatabaseStatus;
   lastSyncAt: string | null;
@@ -87,6 +89,9 @@ function parseOpponent(value: unknown): TournamentOpponentDatabase | null {
         ? value.fideId
         : null,
     collectionId: validId(value.collectionId),
+    ...(isObject(value.importIdentity) && typeof value.importIdentity.fideId === "string" && /^[1-9]\d*$/.test(value.importIdentity.fideId)
+      && typeof value.importIdentity.playerName === "string" && value.importIdentity.playerName.trim()
+      ? { importIdentity: { fideId: value.importIdentity.fideId, playerName: value.importIdentity.playerName.trim().slice(0, 200) } } : {}),
     status: validStatus(value.status),
     lastSyncAt: validIso(value.lastSyncAt),
     gameCount:
