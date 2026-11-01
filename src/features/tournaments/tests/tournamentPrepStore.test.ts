@@ -74,6 +74,15 @@ describe("tournament prep persistence", () => {
     expect(parsed["42"].snapshot.section).toBeNull();
   });
 
+  test("persists a chosen import profile without changing published roster identity", () => {
+    const record=createTournamentPrepRecord(SNAPSHOT,1,2022);
+    record.opponents["2"].importIdentity={fideId:"456",playerName:"Baker, Robert"};
+    const parsed=parseTournamentPreps(serializeTournamentPreps({"42":record}))["42"];
+    expect(parsed.opponents["2"].importIdentity).toEqual(record.opponents["2"].importIdentity);
+    expect(parsed.opponents["2"].fideId).toBeNull();
+    expect(parsed.snapshot.players[1].fideId).toBeNull();
+  });
+
   test("preserves a searching state so the sync pass can resume it", () => {
     const record = createTournamentPrepRecord(SNAPSHOT, 1, 2022);
     record.opponents["2"].status = "searching";

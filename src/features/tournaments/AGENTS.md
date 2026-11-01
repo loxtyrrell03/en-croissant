@@ -1,3 +1,29 @@
+## 2026-11-01 phone tournament Import & prep without published FIDE IDs
+
+- Keep Import & prep available beside predicted/published opponents and player
+  entries when the organiser omits FIDE IDs. It opens the existing exact-profile
+  picker prefilled with the roster name; the user must select a FIDE result before
+  collection starts. Preserve the tournament's chosen import year. Known published
+  identities remain locked; never silently match a name-only search result.
+- `TournamentOpponentDatabase.importIdentity` records that explicit selection
+  separately from published roster identity. Persistence and uniquely matched
+  roster refresh retain it; conflicting official IDs, duplicate/withdrawn entries
+  and a different saved import profile cannot attach games. Background updates use
+  the selected profile and existing collection. Do not rewrite source snapshots.
+- Player preparation precedes prediction history. Phone Prep callbacks are awaited:
+  failed durable handoffs retain the import result and inline retry, and existing
+  opponents show opening progress/error. Explicit Open Prep after cancellation may
+  use saved partial games; cancellation never opens it automatically.
+- Source checks: 56 focused tests in nine files, project types, and 11 built Chromium
+  scenarios pass at 320/390/760px, including 200% text/help, selected profile/year,
+  published/estimated Black handoff, real isolated IndexedDB, reopen without fetch,
+  cancellation/partial games, no games and source/save retry. Runner:
+  `scripts/qa-tournament-import-prep.mjs`; set FIDE_QA_DEPENDENCIES to the package.json
+  of an existing Playwright installation. Tiny receipts/images live in ignored
+  `tmp/tournament-import-prep-qa`. Two pre-existing touched-file lint warnings remain.
+  No owner import, service restart or publication was performed by this source
+  milestone; combined phone delivery and physical-phone proof remain separate.
+
 ## 2026-10-25 discoverable stop following
 
 - The shared tracker exposes Stop following before its title and tab strip, so

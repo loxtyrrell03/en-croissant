@@ -13,7 +13,7 @@ export function TournamentWorkspace({
   onOpenDatabase,
   onClose,
 }: {
-  onOpenPrep: (handoff: TournamentPrepHandoff) => void;
+  onOpenPrep: (handoff: TournamentPrepHandoff) => void | Promise<void>;
   onOpenDatabase: (id: number) => void;
   onClose: () => void;
 }) {
@@ -50,9 +50,9 @@ export function TournamentWorkspace({
         ) : page === "import" ? (
           <PlayerGameImportModal
             onClose={() => setPage("tournaments")}
-            onDone={(_id, _message, result) => {
+            onDone={async (_id, _message, result) => {
               if (result?.gameCount)
-                onOpenPrep({
+                await onOpenPrep({
                   collectionId: result.collectionId,
                   playerName: result.playerName,
                   userSide: "white",

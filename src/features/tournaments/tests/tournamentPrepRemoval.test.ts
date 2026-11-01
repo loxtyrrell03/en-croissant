@@ -254,6 +254,25 @@ describe("tracking-only tournament refresh", () => {
     expect(saved?.opponents["2"].collectionId).toBe(17);
     expect(saved?.lastDatabaseSyncAt).toBeNull();
   });
+
+  test.each([false, true])("refresh respects the user-selected profile when a published ID conflicts: %s", async conflict => {
+    const snapshot={...SNAPSHOT,players:SNAPSHOT.players.map(player=>({...player,fideId:player.startNumber===2?null:player.fideId}))};
+    const record=createTournamentPrepRecord(snapshot,1,2022);
+    record.opponents["2"]={...record.opponents["2"],collectionId:17,status:"ready",gameCount:1,importIdentity:{fideId:"77777",playerName:"Baker, Robert"}};
+    vi.mocked(loadTournamentPreps).mockResolvedValue({"42":record});
+    fetchTournamentSnapshot.mockResolvedValue(conflict?{...snapshot,players:snapshot.players.map(p=>({...p,fideId:p.startNumber===2?"99999":p.fideId}))}:snapshot);
+    collectionList.mockResolvedValue([{id:17,name:"Baker, Bob",folder:record.folder,game_count:1}]);
+    importOpponent.mockResolvedValue({collectionId:17,playerName:"Baker, Robert",fideId:"77777",fromYear:2022,cancelled:false,gameCount:2});
+    const result=await runTournamentPrepSync("42","player",2);
+    if(conflict){
+      expect(result.failures).toBe(1);
+      expect(importOpponent).not.toHaveBeenCalled();
+    }else{
+      expect(result.databasesUpdated).toBe(1);
+      expect(importOpponent.mock.calls[0][0]).toMatchObject({playerName:"Baker, Robert",fideId:"77777",collectionId:17});
+      expect(collectionCreate).not.toHaveBeenCalled();
+    }
+  });
 });
 
 

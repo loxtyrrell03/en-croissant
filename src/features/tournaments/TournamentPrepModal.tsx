@@ -55,7 +55,7 @@ interface TournamentPrepModalProps {
   onClose: () => void;
   onChanged: () => void;
   onOpenDatabase: (collectionId: number) => void;
-  onOpenPrep: (handoff: TournamentPrepHandoff) => void;
+  onOpenPrep: (handoff: TournamentPrepHandoff) => void | Promise<void>;
 }
 
 export function TournamentPrepModal({
@@ -86,6 +86,7 @@ export function TournamentPrepModal({
   const viewSequence = useRef(0);
   const [settingBusy, setSettingBusy] = useState(false);
   const [createBusy, setCreateBusy] = useState(false);
+  const [openingPrep, setOpeningPrep] = useState<number | null>(null);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   const refreshRecords = useCallback(async () => {
@@ -253,9 +254,9 @@ export function TournamentPrepModal({
     return projectedSideFromHistory(snapshot, record.userStartNumber);
   }
 
-  function openPreparedOpponent(opponent: TournamentOpponentDatabase, userSide: TournamentSide) {
+  async function openPreparedOpponent(opponent: TournamentOpponentDatabase, userSide: TournamentSide) {
     if (!record || !opponent.collectionId) return;
-    onOpenPrep({
+    await onOpenPrep({
       collectionId: opponent.collectionId,
       playerName: opponent.name,
       userSide,
@@ -264,19 +265,22 @@ export function TournamentPrepModal({
   }
 
   async function startOpponentPrep(opponent: TournamentOpponentDatabase, userSide: TournamentSide, action: OpponentAction = "prep") {
-    if (!record || isTournamentSyncRunning(record.id)) return;
+    if (!record || isTournamentSyncRunning(record.id) || openingPrep !== null) return;
     const player = record.snapshot.players.find(player => player.startNumber === opponent.startNumber);
     if (!player || player.name !== opponent.name || (opponent.fideId && player.fideId !== opponent.fideId)) {
       setError("This opponent’s entry has changed. Check the tournament before importing.");
       return;
     }
     if (opponentReady(opponent)) {
-      if (action === "prep") openPreparedOpponent(opponent, userSide);
-      else onOpenDatabase(opponent.collectionId!);
-      return;
-    }
-    if (!player.fideId || !/^[1-9]\d*$/.test(player.fideId)) {
-      setError(`${player.name}: No FIDE ID/profile is listed for this opponent. An exact FIDE import is unavailable.`);
+      setError(null);
+      setOpeningPrep(opponent.startNumber);
+      try {
+        if (player.fideId && opponent.importIdentity && player.fideId !== opponent.importIdentity.fideId)
+          throw new Error("The published FIDE profile differs from the saved import. Check this opponent’s identity before preparing.");
+        if (action === "prep") await openPreparedOpponent(opponent, userSide);
+        else onOpenDatabase(opponent.collectionId!);
+      } catch (caught) { if (mounted.current) setError(caught instanceof Error ? caught.message : String(caught)); }
+      finally { if (mounted.current) setOpeningPrep(null); }
       return;
     }
     setError(null);
@@ -301,9 +305,12 @@ export function TournamentPrepModal({
     if (!mounted.current) return;
     await refreshRecords();
     if (!mounted.current) return;
-    setPendingImport(null); onChanged();
+    onChanged();
+    // Keep the result/retry visible until the phone confirms the saved Prep handoff.
+    if (pendingImport.action === "prep" && result.gameCount > 0) await openPreparedOpponent(updated, pendingImport.userSide);
+    if (!mounted.current) return;
+    setPendingImport(null);
     pushToast({ tone: result.gameCount > 0 ? "success" : "info", message: result.gameCount > 0 ? "Opponent database ready" : "No public games found", detail: message });
-    if (pendingImport.action === "prep" && !result.cancelled && result.gameCount > 0) openPreparedOpponent(updated, pendingImport.userSide);
   }
 
   async function chooseEntry(player: TournamentPlayer | null) {
@@ -354,8 +361,12 @@ export function TournamentPrepModal({
 
   if (record && pendingImport) {
     return <PlayerGameImportModal
-      initialOtb={{ playerName: pendingImport.opponent.name, fideId: pendingImport.opponent.fideId,
-        requestKey: `tournament-${record.id}-fide-${pendingImport.opponent.fideId}`, fromYear: record.fromYear, databaseName: pendingImport.opponent.name, collectionId: pendingImport.opponent.collectionId, lockIdentity: true }}
+      initialOtb={{ playerName: pendingImport.opponent.importIdentity?.playerName ?? pendingImport.opponent.name,
+        fideId: pendingImport.opponent.fideId ?? pendingImport.opponent.importIdentity?.fideId ?? null,
+        tournamentPlayerName: pendingImport.opponent.name,
+        requestKey: pendingImport.opponent.fideId ? `tournament-${record.id}-fide-${pendingImport.opponent.fideId}` : `tournament-${record.id}-entry-${encodeURIComponent(tournamentPlayerKey(pendingImport.opponent))}`,
+        fromYear: record.fromYear, databaseName: pendingImport.opponent.name, collectionId: pendingImport.opponent.collectionId,
+        lockIdentity: !!(pendingImport.opponent.fideId ?? pendingImport.opponent.importIdentity?.fideId) }}
       onClose={() => setPendingImport(null)} onDone={finishOpponentImport} />;
   }
 
@@ -382,7 +393,7 @@ export function TournamentPrepModal({
     <HomeModal title="Tournament" onClose={onClose} workspace tall>
       <TournamentTrackerView key={record.id} record={record} forecast={forecast}
         calculating={isCalculatingForecast} running={isTournamentSyncRunning(record.id)}
-        prepBusy={null} removeBusy={removeBusy} settingBusy={settingBusy} syncEvent={syncEvent} error={error}
+        prepBusy={openingPrep} removeBusy={removeBusy} settingBusy={settingBusy} syncEvent={syncEvent} error={error}
         projectedSideFor={projectedSideFor} onOpponent={startOpponentPrep} onOpenDatabase={onOpenDatabase}
         onToggleUpdate={toggleAutoUpdate} onCheck={() => startSync("roster")}
         onStop={() => cancelTournamentPrepSync(record.id)} onRemove={stopTracking}

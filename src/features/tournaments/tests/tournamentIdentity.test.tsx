@@ -74,4 +74,35 @@ describe("visible tournament entries and exact imports", () => {
     const stale={...record,opponents:{...record.opponents,3:{...expected,fideId:null}}};
     expect(matchTournamentImportOpponent(stale,expected,{playerName:expected.name,fideId:expected.fideId}).fideId).toBe(expected.fideId);
   });
+
+  test("offers exact profile selection when the organiser omits the ID", () => {
+    const markup=renderToStaticMarkup(<PlayerGameImportModal initialOtb={{playerName:"Sam Rivera",fideId:null,fromYear:2023,databaseName:"Sam Rivera",tournamentPlayerName:"Sam Rivera",lockIdentity:false}} onClose={()=>{}} onDone={()=>{}}/>);
+    expect(markup).toContain('role="combobox"');
+    expect(markup).toContain("Choose the FIDE profile for");
+    expect(markup).not.toContain("An exact import is unavailable");
+  });
+
+  test("keeps a selected import profile separate from a missing published ID", () => {
+    const {record}=trackerFixture();
+    record.snapshot.players[2].fideId=null;
+    const expected=record.opponents["3"]={...record.opponents["3"],fideId:null};
+    const imported={playerName:"Rivera, Samuel",fideId:"77777"};
+    const linked=matchTournamentImportOpponent(record,expected,imported);
+    expect(linked).toMatchObject({name:"Sam Rivera",fideId:null,importIdentity:imported});
+    record.opponents["3"]={...linked,collectionId:19,status:"ready",gameCount:2};
+    const refreshed=mergeTournamentRoster(record,{...record.snapshot,players:record.snapshot.players.map(p=>({...p,startNumber:p.startNumber+10}))}).record;
+    expect(matchTournamentImportOpponent(refreshed,linked,imported)).toMatchObject({startNumber:13,collectionId:19,importIdentity:imported});
+    expect(()=>matchTournamentImportOpponent(refreshed,linked,{...imported,fideId:"99999"})).toThrow("does not match");
+  });
+
+  test("a selected profile never overrides a new conflicting official ID or duplicate name", () => {
+    const {record}=trackerFixture();
+    const expected={...record.opponents["3"],fideId:null};
+    const imported={playerName:"Rivera, Samuel",fideId:"77777"};
+    expect(()=>matchTournamentImportOpponent(record,expected,imported)).toThrow("uniquely identified");
+    record.snapshot.players[2].fideId=null;
+    record.opponents["3"]=expected;
+    record.snapshot.players.push({...record.snapshot.players[2],startNumber:99});
+    expect(()=>matchTournamentImportOpponent(record,expected,imported)).toThrow("uniquely identified");
+  });
 });

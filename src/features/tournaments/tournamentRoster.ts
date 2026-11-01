@@ -80,20 +80,26 @@ export function selectTournamentEntry(record:TournamentPrepRecord, player:Tourna
   return mergeTournamentRoster({...record,userStartNumber:player?.startNumber ?? null,userName:player?.name ?? "",userFideId:player?.fideId ?? null},record.snapshot).record;
 }
 
-/** Attach imports only to the unique current roster identity, never a name-search result. */
+/** A selected FIDE profile is separate from the organiser's roster identity.
+ * Never attach it to an ambiguous, withdrawn or conflicting current entry. */
 export function matchTournamentImportOpponent(
   record: TournamentPrepRecord,
-  expected: Pick<TournamentOpponentDatabase, "name" | "fideId">,
+  expected: Pick<TournamentOpponentDatabase, "name" | "fideId" | "importIdentity">,
   imported: { playerName: string; fideId: string | null },
 ): TournamentOpponentDatabase {
-  if (!expected.fideId || !/^[1-9]\d*$/.test(expected.fideId) || imported.fideId !== expected.fideId || imported.playerName !== expected.name) {
+  const expectedId = expected.fideId ?? expected.importIdentity?.fideId;
+  const expectedName = expected.importIdentity?.playerName ?? expected.name;
+  if (!imported.fideId || !/^[1-9]\d*$/.test(imported.fideId) || !imported.playerName.trim()
+    || (expectedId && imported.fideId !== expectedId) || (expectedId && imported.playerName !== expectedName)) {
     throw new Error("The imported player does not match this tournament opponent. The games remain in your Library.");
   }
-  const players = record.snapshot.players.filter(player => player.fideId === expected.fideId);
-  const player = players.length === 1 ? players[0] : null;
+  const player = matchTournamentIdentity(record.snapshot.players, expected);
   const opponent = player ? record.opponents[String(player.startNumber)] : null;
-  if (!player || !opponent || opponent.name !== player.name || (opponent.fideId && opponent.fideId !== player.fideId)) {
+  if (!player || !opponent || opponent.name !== player.name || (opponent.fideId && opponent.fideId !== player.fideId)
+    || (player.fideId && player.fideId !== imported.fideId)
+    || (opponent.importIdentity && opponent.importIdentity.fideId !== imported.fideId)) {
     throw new Error("This opponent is no longer uniquely identified in the roster. Imported games remain in your Library.");
   }
-  return { ...opponent, name: player.name, fideId: player.fideId };
+  return { ...opponent, name: player.name, fideId: player.fideId,
+    ...(!expected.fideId || expected.importIdentity ? { importIdentity: { fideId: imported.fideId, playerName: imported.playerName } } : {}) };
 }
