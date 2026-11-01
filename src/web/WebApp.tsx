@@ -1,6 +1,5 @@
 import { WdlResultBar } from "@/components/common/WdlResultBar";
 import PhonePersonalSync from "./PhonePersonalSync";
-import { usePhoneBoardFit } from "./usePhoneBoardFit";
 import PhoneAppUpdate from "./PhoneAppUpdate";
 import PhoneNewBoardActions from "./PhoneNewBoardActions";
 import { PERSONAL_LIBRARY_CHANGED } from "./personalSync";
@@ -1973,9 +1972,6 @@ function BoardWorkspace({
     setLiveReplay(true);
   };
 
-  const boardFitRef = usePhoneBoardFit(
-    panelMode === "moves" || (panelMode === "engine" && analysisView === "live"),
-  );
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
   const orientation = phoneBoardOrientation(state);
   const phoneFile = state.databases.find((database) => database.id === board.sourceDatabaseId)?.phoneCreated;
@@ -1986,7 +1982,6 @@ function BoardWorkspace({
 
   return (
     <Box
-      ref={boardFitRef}
       className={classes.phoneBoard}
       data-panel={panelMode}
       data-analysis-view={analysisView}

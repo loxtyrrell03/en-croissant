@@ -96,10 +96,42 @@ const server = await preview({
   preview: { host: "127.0.0.1", port: 0 },
 });
 const origin = server.resolvedUrls.local[0].replace(/\/$/, "");
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  channel: process.env.PHONE_QA_BROWSER_CHANNEL || undefined,
+});
 const checks = [],
   errors = [],
   external = [];
+// Sample actual Chessground pixels over multiple painted frames. A final box
+// alone misses the disappearing/shrinking board while viewport/engine updates
+// settle. Every height-only transition must retain the same square dimensions.
+async function checkStableBoard(page, name, expectedWidth) {
+  const frames = await page.evaluate(async () => {
+    const samples = [];
+    for (let frame = 0; frame < 12; frame += 1) {
+      await new Promise(requestAnimationFrame);
+      const board = document.querySelector("cg-board");
+      const rect = board?.getBoundingClientRect();
+      samples.push({
+        width: rect?.width ?? 0,
+        height: rect?.height ?? 0,
+        pieces: board?.querySelectorAll("piece").length ?? 0,
+      });
+    }
+    return samples;
+  });
+  checks.push({
+    name,
+    pass: frames.every(
+      (frame) =>
+        frame.width === expectedWidth && frame.height === expectedWidth && frame.pieces > 0,
+    ),
+    expectedWidth,
+    widths: [...new Set(frames.map((frame) => frame.width))],
+    minimumPieces: Math.min(...frames.map((frame) => frame.pieces)),
+  });
+}
 try {
   for (const [width, height] of [
     [390, 844],
@@ -131,11 +163,8 @@ try {
     await page.evaluate(
       () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
     );
-    const movesEngine = await page.locator('[class*="enginePanelShell"]').boundingBox();
-    checks.push({
-      name: "moves-engine-" + width + "-" + height,
-      pass: height < 650 || movesEngine.y + movesEngine.height <= height,
-    });
+    const movesBoard = await page.locator("cg-board").boundingBox();
+    await checkStableBoard(page, `moves-stable-${width}-${height}`, movesBoard.width);
     await page.getByRole("tab", { name: "Analysis", exact: true }).click();
     await page.getByRole("button", { name: "Play engine line 3", exact: true }).waitFor();
     await page.evaluate(
@@ -156,6 +185,9 @@ try {
       };
       return {
         board: bounds("cg-board"),
+        available: bounds('[class*="phoneBoard"]'),
+        area: bounds("[data-board-area]"),
+        surface: bounds('[class*="boardSurface"]'),
         engine: bounds('[class*="enginePanelShell"]'),
         overflow: document.documentElement.scrollWidth > innerWidth,
         rows: [...document.querySelectorAll('[class*="engineAnalysisMoveButton"]')].map((el) => ({
@@ -165,14 +197,18 @@ try {
         })),
       };
     });
-    const fits = layout.board.top >= 0 && layout.engine.bottom <= height && !layout.overflow;
     checks.push({
       name: `live-${width}-${height}`,
       pass:
-        (height < 650 ? layout.board.width >= 176 && !layout.overflow : fits) &&
+        layout.board.top >= 0 &&
+        !layout.overflow &&
+        Math.abs(layout.area.width - layout.available.width) < 1 &&
+        layout.surface.width - layout.board.width < 8 &&
+        layout.board.width === layout.board.height &&
         layout.rows.every((r) => r.nowrap),
       ...layout,
     });
+    await checkStableBoard(page, `moves-to-live-stable-${width}-${height}`, movesBoard.width);
     await page.screenshot({
       path: path.join(output, `live-${width}-${height}.png`),
       fullPage: true,
@@ -183,14 +219,45 @@ try {
       "b5a4",
     );
     checks.push({ name: `play-first-move-${width}`, pass: true });
+    await checkStableBoard(page, `move-playback-stable-${width}-${height}`, movesBoard.width);
     if (width === 390) {
+      for (const view of ["Game report", "Plans", "Live"]) {
+        await page.getByLabel("Analysis view").getByText(view, { exact: true }).click();
+        await checkStableBoard(page, `analysis-${view}-stable`, movesBoard.width);
+      }
+      await page.locator('button[data-view="files"]').click();
+      await page.locator('button[data-view="board"]').click();
+      await page.locator("cg-board piece").first().waitFor();
+      await checkStableBoard(page, "board-remount-stable", movesBoard.width);
+      await page.getByRole("tab", { name: "Analysis", exact: true }).click();
+      for (const viewportHeight of [664, 844, 620, 844]) {
+        await page.setViewportSize({ width, height: viewportHeight });
+        await checkStableBoard(page, `viewport-height-${viewportHeight}`, movesBoard.width);
+      }
+      await page.setViewportSize({ width: 430, height });
+      await page.evaluate(
+        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      );
+      const widerBoard = await page.locator("cg-board").boundingBox();
+      checks.push({
+        name: "width-change-resizes-board",
+        pass: widerBoard.width > movesBoard.width + 30,
+      });
+      await checkStableBoard(page, "width-change-settles", widerBoard.width);
+      await page.setViewportSize({ width, height });
+      await page.evaluate(
+        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      );
+      await checkStableBoard(page, "width-restored-stable", movesBoard.width);
       await page.getByRole("button", { name: "Engine settings", exact: true }).click();
       await page.getByText("Nodes", { exact: true }).waitFor();
+      await checkStableBoard(page, "engine-settings-open-stable", movesBoard.width);
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
         false,
       );
       await page.getByRole("button", { name: "Engine settings", exact: true }).click();
+      await checkStableBoard(page, "engine-settings-close-stable", movesBoard.width);
       checks.push({ name: "settings-and-metrics-reachable", pass: true });
       for (const state of ["off", "loading", "error"]) {
         await page.getByRole("button", { name: /^Pause Stockfish/ }).click();
@@ -221,8 +288,22 @@ try {
               ),
             ),
         );
-        const bounds = await page.locator('[class*="enginePanelShell"]').boundingBox();
-        checks.push({ name: state + "-fits", pass: bounds.y + bounds.height <= height });
+        await checkStableBoard(page, `engine-${state}-stable`, movesBoard.width);
+        const message = page.getByText(
+          state === "off"
+            ? "Inactive engine"
+            : state === "loading"
+              ? /Waiting for Stockfish lines/
+              : "Engine unavailable",
+          { exact: state !== "loading" },
+        );
+        await message.scrollIntoViewIfNeeded();
+        const bounds = await message.boundingBox();
+        checks.push({
+          name: state + "-reachable",
+          pass: bounds.y >= 0 && bounds.y + bounds.height <= height,
+        });
+        await checkStableBoard(page, `engine-${state}-scroll-stable`, movesBoard.width);
         await page.screenshot({ path: path.join(output, state + ".png"), fullPage: true });
         if (state === "off") await page.getByRole("button", { name: /^Start Stockfish/ }).click();
       }
@@ -239,7 +320,7 @@ try {
 } finally {
   await fs.writeFile(
     path.join(output, "receipt.json"),
-    JSON.stringify({ checks, errors, external }, null, 2),
+    JSON.stringify({ browser: browser.version(), checks, errors, external }, null, 2),
   );
   await browser.close();
   await new Promise((resolve) => server.httpServer.close(resolve));

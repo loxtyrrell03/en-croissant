@@ -314,6 +314,8 @@
   display: grid;
   gap: 0.38rem;
   min-width: 0;
+  /* Keep a useful, stable board while engine details and browser chrome change. */
+  width: 100%;
 }
 
 .boardPlayerRow {
@@ -1948,10 +1950,6 @@
     flex-wrap: wrap;
     row-gap: 0.5rem;
   }
-  .phoneBoard[data-panel="moves"] .boardPlayerStack {
-    width: min(100%, 43dvh);
-    margin-inline: auto;
-  }
   .phoneBoard[data-panel="moves"] .underBoardPanel {
     min-height: 0;
     overflow: visible;
@@ -1996,9 +1994,6 @@
   .phoneBoard[data-panel="moves"] {
     height: auto;
     grid-template-rows: none;
-  }
-  .phoneBoard[data-panel="moves"] .boardPlayerStack {
-    width: min(100%, 70dvh);
   }
 }
 
@@ -2324,14 +2319,6 @@
     justify-content: space-between;
     width: 100%;
   }
-}
-
-/* Keep the board and ordinary Live results together; expanded tools retain
-   natural document scrolling and enlarged text can still wrap. */
-.phoneBoard[data-panel="moves"] .boardPlayerStack,
-.phoneBoard[data-panel="engine"][data-analysis-view="live"] .boardPlayerStack {
-  width: min(100%, var(--phone-board-fit, 100%));
-  margin-inline: auto;
 }
 
 @media (max-width: 860px) {

@@ -24,21 +24,30 @@
   docs/PHONE_NEW_BOARD_2026-10-27_DELIVERY.json. Physical phone testing is unverified.
   Editable refinement and state coverage: ../../design/phone-new-board-20261027.
 
-# 2026-10-27 Phone board and engine spacing
+# 2026-11-01 Phone board width and engine spacing
 
-- Moves and Live analysis fit the board to the available visual viewport using
-  measured controls/engine height. Notes below Moves are outside that budget.
-  The board remains at least176px; very short screens, enlarged text and expanded
-  settings retain ordinary scrolling rather than clipping actions or errors.
+- The board uses the available content width in every board tab, retaining the
+  evaluation rail and safe-area gutters. Engine results, settings, status and
+  browser viewport-height changes must not shrink it. Short screens and expanded
+  tools use normal document scrolling; do not restore height-based fitting merely
+  to put every engine row above the fold. The prior fit produced a176px board at
+  a375px browser width. The width-based layout renders328px there and336px at390px.
 - Engine variations are32px single rows with ellipsis; tapping still plays only
   the first move. Three rows are visible together; additional selected lines scroll
   within the result list. Detailed evaluation/depth/nodes/NPS remain in Engine
   settings. Stored results keep a visible Stored evaluation heading.
 - The newer New board header replaces the prior reset controls; board tabs use one row when labels fit,
   and Live/report/Plans spacing is reduced. Search/CPU preferences, analysis
-  ownership, saved games and server routes are unchanged. The observer also
-  handles service/status height changes and leaves pinch zoom alone.
--23 isolated built-browser checks pass for Moves/Live, first-move actions,
+  ownership, saved games and server routes are unchanged. Board dimensions follow
+  content width; pinch zoom remains the browser's responsibility.
+- The current source passes54 isolated rendered checks in Chrome156 and Chromium,
+  full types and9 existing
+  workspace/analysis/drawing cases. The same54 checks fail31 against the original
+  built app: engine/status/settings/tab and viewport-height changes had resized
+  the board. Keep width-responsive resizing, normal scroll reachability and200%
+  text checks in `scripts/qa-phone-engine-spacing.mjs`. This correction is source
+  and browser verified; deployment and physical-phone proof remain separate.
+- The earlier spacing release passed23 isolated built-browser checks for Moves/Live, first-move actions,
   settings/statistics, Off/loading/error and200% text, including375x667,390x844,
   320x740,430x932 and760x1000.320x568 intentionally retains accessible scrolling.
   Types and45 focused existing tests pass;25 pre-existing WebApp lint warnings
