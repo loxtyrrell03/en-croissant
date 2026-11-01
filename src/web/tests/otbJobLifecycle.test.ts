@@ -39,22 +39,23 @@ describe("PC OTB job observations", () => {
         await expect(cancelWebOtbImport("job")).rejects.toThrow("invalid OTB search status");
     });
 
-    it("distinguishes a compact completed status from its loaded artifact", async () => {
+    it.each(["completed", "partial"])("loads the durable artifact for compact %s status", async (status) => {
         vi.stubGlobal(
             "fetch",
             vi
                 .fn()
-                .mockResolvedValueOnce(reply(completed("job")))
+                .mockResolvedValueOnce(reply({...completed("job"),status}))
                 .mockResolvedValueOnce(reply(artifact("job"))),
         );
         await expect(loadWebOtbImportJob("job")).resolves.toMatchObject({
+            status,
             artifactLoaded: true,
             gameCount: 1,
         });
     });
 
-    it("does not publish an old running GET after Stop discovers completion", async () => {
-        const id = "stop-completion-race";
+    it.each(["completed", "partial"])("does not publish an old running GET after Stop discovers %s", async (status) => {
+        const id = `stop-completion-race-${status}`;
         let resolveOld!: (response: ReturnType<typeof reply>) => void;
         const oldReply = new Promise<ReturnType<typeof reply>>((resolve) => {
             resolveOld = resolve;
@@ -62,13 +63,13 @@ describe("PC OTB job observations", () => {
         let oldSignal: AbortSignal | undefined;
         let gets = 0;
         const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-            if (init?.method === "DELETE") return Promise.resolve(reply(completed(id)));
+            if (init?.method === "DELETE") return Promise.resolve(reply({...completed(id),status}));
             if (String(url).endsWith("/artifact")) return Promise.resolve(reply(artifact(id)));
             if (gets++ === 0) {
                 oldSignal = init?.signal ?? undefined;
                 return oldReply;
             }
-            return Promise.resolve(reply(completed(id)));
+            return Promise.resolve(reply({...completed(id),status}));
         });
         vi.stubGlobal("fetch", fetchMock);
         const observed: WebOtbImportJob[] = [],
@@ -81,7 +82,7 @@ describe("PC OTB job observations", () => {
         try {
             await cancelWebOtbImport(id);
             await vi.waitFor(() => expect(observed).toHaveLength(1));
-            expect(observed[0]).toMatchObject({ status: "completed", artifactLoaded: true });
+            expect(observed[0]).toMatchObject({ status, artifactLoaded: true });
             expect(oldSignal?.aborted).toBe(true);
             resolveOld(reply({ id, status: "running" }));
             await new Promise((resolve) => setTimeout(resolve, 20));

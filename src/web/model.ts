@@ -1,5 +1,6 @@
 import type { Color } from "chessops";
 import type { PrepBuilderSettings } from "@/utils/opponentPrep";
+import type { OtbCoverage } from "@/utils/otbCoverage";
 
 export type WebColor = Extract<Color, "white" | "black">;
 
@@ -83,6 +84,8 @@ export type WebDatabase = {
     sizeBytes: number;
     latestDate: string | null;
     playerNames: string[];
+    /** Last OTB collection's coverage, retained with the saved source. */
+    otbCoverage?: OtbCoverage;
 };
 
 export type WebPrepLineMove = {

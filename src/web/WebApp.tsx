@@ -2,6 +2,8 @@ import { WdlResultBar } from "@/components/common/WdlResultBar";
 import PhonePersonalSync from "./PhonePersonalSync";
 import PhoneAppUpdate from "./PhoneAppUpdate";
 import PhoneNewBoardActions from "./PhoneNewBoardActions";
+import { getOtbCoverage, otbCoverageWarning } from "@/utils/otbCoverage";
+import { OtbCoverageNotice } from "./OtbCoverageNotice";
 import { PERSONAL_LIBRARY_CHANGED } from "./personalSync";
 import { GameDateRangeControl } from "@/components/common/GameDateRangeControl";
 import { useCalendarDay } from "@/hooks/useCalendarDay";
@@ -154,7 +156,7 @@ import { TournamentHelp } from "@/features/tournaments/TournamentHelp";
 import { usePlanArrowSnapshot } from "@/hooks/usePlanArrows";
 import { engineArrowsAllowed, planOverlayShapes, PLAN_ARROW_BRUSHES } from "@/utils/planArrowLayers";
 import { retainWebEngineAnalysis, visibleWebEngineLines, type LiveEnginePolicy } from "./liveEnginePolicy";
-import { loadWebOtbImportJob } from "./otbImport";
+import { isWebOtbResultStatus, loadWebOtbImportJob } from "./otbImport";
 import { openWebOtbPrepLink, readWebOtbPrepLink } from "./otbPrepLink";
 import { phoneBoardHasUnfiledAnalysis, watchPhonePrepRequests } from "./phonePrepRequest";
 import {
@@ -869,7 +871,7 @@ function WebAppContent() {
     let unsubscribe: (() => void) | null = null;
 
     const handleJob = async (job: WebOtbImportJob) => {
-      if (!active || job.id !== monitoredJobId || job.status !== "completed") return;
+      if (!active || job.id !== monitoredJobId || !isWebOtbResultStatus(job.status)) return;
       const current = webStateSession.getSnapshot().state;
       if (current.completedOtbImports?.[job.id]) return;
       const color =
@@ -891,10 +893,12 @@ function WebAppContent() {
       const savedCount = snapshot.savedState?.gamesByDatabase[databaseId]?.length ?? 0;
       if (!savedCount || !snapshot.state.databases.some((database) => database.id === databaseId))
         return;
+      const coverage = getOtbCoverage(job.report);
+      const coverageWarning = otbCoverageWarning(coverage);
       notifications.show({
-        title: "OTB games imported",
-        message: `${pluralWeb(savedCount, "game")} saved. Open Import to view the games.`,
-        color: "green",
+        title: !coverageWarning ? "OTB games imported" : coverage.status === "stopped" ? "Games from stopped search saved" : coverage.status === "unknown" ? "OTB games saved; coverage unconfirmed" : "OTB games saved with incomplete coverage",
+        message: `${pluralWeb(savedCount, "game")} saved. ${coverageWarning ?? "Open Import to view the games."}`,
+        color: coverageWarning ? "yellow" : "green",
       });
     };
 
@@ -6690,6 +6694,7 @@ function PrepUnderBoardPanel({
 
   return (
     <Stack gap="sm">
+      <OtbCoverageNotice coverage={activePrepSourceDatabase?.otbCoverage} />
       {showSetupStage ? (
         <Group justify="space-between" align="center" gap="xs" wrap="wrap">
           <Group gap="xs" wrap="wrap">

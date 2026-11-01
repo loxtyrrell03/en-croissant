@@ -41,13 +41,13 @@ it("handles a real watcher completion while the OTB import screen is mounted", a
       if (String(url).includes("/api/otb-import/jobs/"))
         return Response.json({
           id: "handoff-test",
-          status: complete ? "completed" : "running",
+          status: complete ? "partial" : "running",
           request: {
             playerName: "Test Player",
             fromYear: 2000,
             sources: DEFAULT_WEB_OTB_IMPORT_SOURCES,
           },
-          report: { playerName: "Test Player", gamesFound: imported.games.length },
+          report: { playerName: "Test Player", gamesFound: imported.games.length,coverageComplete:false,coverageGaps:["Lichess: 403 Forbidden"] },
           prepDatabase: complete ? imported : null,
           games: [],
           createdAt: new Date().toISOString(),
@@ -71,12 +71,15 @@ it("handles a real watcher completion while the OTB import screen is mounted", a
       await new Promise((r) => setTimeout(r, 700));
     });
     expect(div.textContent).toContain(imported.database.name);
+    expect(div.textContent).toContain("Some selected sources did not finish");
+    expect(div.textContent).not.toContain("from the full career");
     expect(div.textContent).not.toContain("This view could not open");
     expect(div.textContent).not.toContain("The app could not display this screen");
     expect(div.querySelector('button[data-view="import"]')).not.toBeNull();
     expect(
       webStateSession.getSnapshot().savedState?.completedOtbImports?.["handoff-test"],
     ).toMatchObject({ databaseId: imported.database.id });
+    expect(webStateSession.getSnapshot().savedState?.databases.find(db=>db.id===imported.database.id)?.otbCoverage?.status).toBe("partial");
   } finally {
     await act(async () => root.unmount());
     div.remove();

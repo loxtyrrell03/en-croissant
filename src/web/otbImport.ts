@@ -53,7 +53,7 @@ export type WebOtbImportProgress = {
 
 export type WebOtbImportJobStatus = {
     id: string;
-    status: "queued" | "running" | "completed" | "failed";
+    status: "queued" | "running" | "completed" | "partial" | "failed";
     request: {
         playerName: string;
         fideId: string | null;
@@ -90,6 +90,11 @@ export type WebOtbImportJob = WebOtbImportJobStatus &
     Omit<WebOtbImportArtifact, "jobId"> & {
         artifactLoaded?: boolean;
     };
+
+/** Partial is intentionally distinct so older cached clients cannot claim full coverage. */
+export function isWebOtbResultStatus(status: unknown): status is "completed" | "partial" {
+    return status === "completed" || status === "partial";
+}
 
 export const DEFAULT_WEB_OTB_IMPORT_SOURCES: WebOtbImportSources = {
     lichessBroadcasts: true,
@@ -149,7 +154,7 @@ export function loadWebOtbImportJobStatus(jobId: string, signal?: AbortSignal) {
 export async function loadWebOtbImportJob(jobId: string, signal?: AbortSignal) {
     const job = await loadWebOtbImportJobStatus(jobId, signal);
     if (
-        job.status !== "completed" ||
+        !isWebOtbResultStatus(job.status) ||
         !job.artifactAvailable ||
         job.prepDatabase ||
         job.games.length > 0
@@ -266,7 +271,7 @@ async function pollWebOtbImportJob(jobId: string, watcher: WebOtbJobWatcher) {
         if (controller.signal.aborted || watcher.controller !== controller) return;
         watcher.job = job;
         watcher.error = null;
-        watcher.terminal = job.status === "completed" || job.status === "failed";
+        watcher.terminal = isWebOtbResultStatus(job.status) || job.status === "failed";
         for (const subscriber of watcher.subscribers) subscriber.onJob(job);
     } catch (error) {
         if (!controller.signal.aborted && watcher.controller === controller) {
@@ -417,8 +422,8 @@ async function requestWebOtbJobStatus(
                 typeof raw.id !== "string" ||
                 !/^[A-Za-z0-9_-]+$/.test(raw.id) ||
                 (expectedId !== undefined && raw.id !== expectedId) ||
-                !["queued", "running", "completed", "failed"].includes(raw.status as string) ||
-                (raw.status === "completed" && !raw.request) ||
+                !["queued", "running", "completed", "partial", "failed"].includes(raw.status as string) ||
+                (isWebOtbResultStatus(raw.status) && !raw.request) ||
                 (raw.request !== undefined &&
                     (!raw.request ||
                         typeof raw.request.playerName !== "string" ||

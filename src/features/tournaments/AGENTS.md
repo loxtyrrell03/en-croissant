@@ -1,3 +1,13 @@
+## 2026-11-01 source coverage in tournament Prep
+
+- A usable phone OTB `partial` result carries its coverage warning through the
+  import result, saved opponent metadata and phone Prep database. Keep the explicit
+  Open Prep action for incomplete/stopped results; do not auto-open on cancellation.
+  Missing historical reports are unknown coverage, never evidence of completeness.
+- The built tournament runner now has12 checks including partial-result warning,
+  explicit Open Prep and saved coverage. Help setup finishes its scroll before
+  focus because help intentionally dismisses on scroll. See the root OTB milestone.
+
 ## 2026-11-01 phone tournament Import & prep without published FIDE IDs
 
 - Keep Import & prep available beside predicted/published opponents and player

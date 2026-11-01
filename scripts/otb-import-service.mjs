@@ -11,6 +11,8 @@ import { buildWebOtbPrepDatabaseParallel } from "./otb-prep-parallel.mjs";
 const CURRENT_YEAR = new Date().getFullYear();
 const MAX_PLAYER_NAME_LENGTH = 120;
 const MAX_ERROR_LENGTH = 12_000;
+const hasReadyOtbResult = (status) => status === "completed" || status === "partial";
+const hasCompleteOtbCoverage = (report) => report?.coverageComplete === true && !report?.coverageGaps?.length && !report?.cancelled;
 
 export class OtbImportService {
   constructor({
@@ -56,14 +58,14 @@ export class OtbImportService {
         if (!persisted?.id) continue;
 
         if (
-          persisted.status === "completed" &&
+          hasReadyOtbResult(persisted.status) &&
           Array.isArray(persisted.games) &&
           !persisted.prepDatabase
         ) {
           this.ensurePrepDatabase(persisted);
         }
         const legacyArtifact =
-          persisted.status === "completed" ? extractOtbImportArtifact(persisted) : null;
+          hasReadyOtbResult(persisted.status) ? extractOtbImportArtifact(persisted) : null;
         const staleCollectorProcess = normalizeCollectorProcess(
           persisted.collectorProcess,
           persisted.id,
@@ -97,7 +99,7 @@ export class OtbImportService {
             }
           }
           if (artifactStat && Number.isInteger(job.gameCount)) {
-            job.status = "completed";
+            job.status = hasCompleteOtbCoverage(job.report) ? "completed" : "partial";
             job.error = null;
             job.completedAt = new Date().toISOString();
           } else {
@@ -108,7 +110,7 @@ export class OtbImportService {
           job.updatedAt = job.completedAt;
         }
 
-        if (job.status === "completed") {
+        if (hasReadyOtbResult(job.status)) {
           if (artifactStat) {
             job.artifactAvailable = true;
             job.artifactBytes = artifactStat.size;
@@ -142,7 +144,7 @@ export class OtbImportService {
 
   async getJobArtifact(id) {
     const job = this.jobs.get(id) ?? null;
-    if (!job || job.status !== "completed" || !job.artifactAvailable) return null;
+    if (!job || !hasReadyOtbResult(job.status) || !job.artifactAvailable) return null;
     const path = this.getArtifactPath(id);
     const artifactStat = await stat(path).catch(() => null);
     return artifactStat ? { path, size: artifactStat.size } : null;
@@ -298,7 +300,8 @@ export class OtbImportService {
       stderr = `${stderr}${chunk}`.slice(-MAX_ERROR_LENGTH);
     });
     child.on("error", (error) => this.finishFailedInBackground(job, error.message));
-    child.on("exit", (code, signal) => {
+    // exit can precede the last buffered RESULT line. close follows stdio drain.
+    child.on("close", (code, signal) => {
       void (async () => {
         this.processes.delete(job.id);
         job.collectorProcess = null;
@@ -315,15 +318,20 @@ export class OtbImportService {
   }
 
   async finishCompleted(job, report, outputPath) {
-    if (job.status === "completed" || job.status === "failed" || job.cancellationRequested) return;
-    if (report?.cancelled !== true && report?.coverageComplete !== true) {
-      job.report = report;
-      await this.finishFailed(job, incompleteOtbCoverageError(report));
-      return;
-    }
+    if (hasReadyOtbResult(job.status) || job.status === "failed" || job.cancellationRequested) return;
+    // Collector success and source coverage are separate. A refused source must
+    // not discard verified games from the sources that did finish.
+    job.report = report;
     const pgn = await readFile(outputPath, "utf8");
     if (job.status === "failed" || job.cancellationRequested) return;
     const games = parseOtbPgnGames(pgn, job.id);
+    const coverageComplete = hasCompleteOtbCoverage(report);
+    if (!games.length && (!coverageComplete || Number(report?.gamesFound) > 0)) {
+      await this.finishFailed(job, report?.cancelled ? "Search stopped." : !coverageComplete
+        ? incompleteOtbCoverageError(report)
+        : "The collector reported games, but its saved PGN contains no readable games.");
+      return;
+    }
     const preparedAt = new Date().toISOString();
     const importedAtCandidate = Date.parse(preparedAt);
     const importedAt = Number.isFinite(importedAtCandidate) ? importedAtCandidate : Date.now();
@@ -342,7 +350,11 @@ export class OtbImportService {
       : null;
     // Worker construction yields to cancellation; never publish an artifact
     // after the user has stopped the import in that interval.
-    if (job.status === "failed") return;
+    if (job.status === "failed" || job.cancellationRequested) return;
+    if (!coverageComplete && !prepDatabase?.games.some((game) => game.moves?.length > 0)) {
+      await this.finishFailed(job, report?.cancelled ? "Search stopped." : incompleteOtbCoverageError(report));
+      return;
+    }
     const artifact = { jobId: job.id, games, prepDatabase };
 
     job.report = report;
@@ -354,29 +366,30 @@ export class OtbImportService {
       current: 1,
       total: 1,
       gamesFound: games.length,
-      message: `${games.length} verified OTB games ready on the PC.`,
+      message: `${games.length} verified OTB games ready on the PC.${report?.cancelled ? " Search stopped before every source finished." : !coverageComplete ? " Source coverage is incomplete or unconfirmed." : ""}`,
     });
     job.updatedAt = preparedAt;
     // Persist the compact finishing state before the artifact. If the service
     // stops between these writes, initialize() can recognize the durable
     // artifact and finish the status instead of discarding the result.
     await this.persist(job);
+    if (job.status === "failed" || job.cancellationRequested) return;
     const artifactBytes = await this.persistArtifact(job.id, artifact);
-    if (job.status === "failed") return;
+    if (job.status === "failed" || job.cancellationRequested) return;
 
     job.artifactAvailable = true;
     job.artifactBytes = artifactBytes;
-    job.status = "completed";
+    job.status = coverageComplete ? "completed" : "partial";
     job.updatedAt = new Date().toISOString();
     // completedAt deliberately begins only after the complete game/prep artifact
     // has been atomically persisted.
     job.completedAt = job.updatedAt;
     await this.persist(job);
-    this.onLog(`OTB import ${job.id} completed with ${games.length} games`);
+    this.onLog(`OTB import ${job.id} completed with ${games.length} games${coverageComplete ? "" : "; source coverage incomplete or unconfirmed"}`);
   }
 
   async finishFailed(job, message) {
-    if (job.status === "completed" || job.status === "failed") return;
+    if (hasReadyOtbResult(job.status) || job.status === "failed") return;
     this.processes.delete(job.id);
     job.collectorProcess = null;
     job.status = "failed";
@@ -435,7 +448,7 @@ export class OtbImportService {
   ensurePrepDatabase(job) {
     if (
       job.prepDatabase ||
-      (job.status !== "completed" && !job.completedAt) ||
+      (!hasReadyOtbResult(job.status) && !job.completedAt) ||
       !Array.isArray(job.games)
     )
       return false;

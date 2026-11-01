@@ -611,7 +611,7 @@ test("completed compact artifacts preserve consecutive Eventless games exactly",
   }
 });
 
-test("refuses incomplete source coverage before reading or persisting an artifact", async () => {
+test("retains verified games with explicit incomplete coverage and recovers the artifact after restart", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-incomplete-coverage-"));
   try {
     const service = new OtbImportService({ root, binaryPath: join(root, "unused") });
@@ -631,37 +631,66 @@ test("refuses incomplete source coverage before reading or persisting an artifac
       error: null,
     };
     service.jobs.set(job.id, job);
-    let artifactWrites = 0;
-    service.persistArtifact = async () => {
-      artifactWrites += 1;
-      return 0;
-    };
+    const outputPath = join(service.outputRoot, "partial.pgn");
+    await writeFile(outputPath, '[Event "Example"]\n[White "Target, Player"]\n[Black "Example Opponent"]\n[Result "1-0"]\n\n1. e4 e5 1-0');
 
     await service.finishCompleted(
       job,
       {
         playerName: "Player, Target",
         cancelled: false,
-        gamesFound: 12,
+        gamesFound: 1,
         coverageComplete: false,
         coverageGaps: ["BritBase: 425 archives not attempted", "ChessBase: unavailable"],
       },
-      join(service.outputRoot, "missing-by-design.pgn"),
+      outputPath,
     );
 
-    assert.equal(job.status, "failed");
-    assert.equal(job.artifactAvailable, false);
-    assert.equal(artifactWrites, 0);
-    assert.match(job.error, /not every selected otb source completed/i);
-    assert.match(job.error, /BritBase: 425 archives not attempted/);
-    assert.match(job.error, /ChessBase: unavailable/);
+    assert.equal(job.status, "partial");
+    assert.equal(job.artifactAvailable, true);
+    assert.equal(job.gameCount, 1);
+    assert.equal(job.error, null);
+    assert.equal(job.report.coverageComplete, false);
+    assert.match(job.progress.message, /coverage is incomplete or unconfirmed/);
     assert.deepEqual(job.report.coverageGaps, [
       "BritBase: 425 archives not attempted",
       "ChessBase: unavailable",
     ]);
+    const artifact=JSON.parse(await readFile((await service.getJobArtifact(job.id)).path,"utf8"));
+    assert.equal(artifact.games.length,1);
+    assert.equal(artifact.prepDatabase.games.length,1);
+    const restarted=new OtbImportService({root,binaryPath:join(root,"unused")});
+    await restarted.initialize();
+    assert.equal(restarted.getJob(job.id).report.coverageComplete,false);
+    assert.equal(restarted.getJob(job.id).status,"partial");
+    assert.ok(await restarted.getJobArtifact(job.id));
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("empty incomplete coverage remains a failure and unknown coverage is never promoted", async () => {
+  const root=await mkdtemp(join(tmpdir(),"en-croissant-otb-unknown-"));
+  try {
+    const service=new OtbImportService({root,binaryPath:join(root,"unused")});await service.initialize();
+    const outputPath=join(service.outputRoot,"empty.pgn");await writeFile(outputPath,"");
+    const job={id:"otb-empty-partial",status:"running",request:{playerName:"Example Player",fromYear:2000}};
+    service.jobs.set(job.id,job);
+    await service.finishCompleted(job,{coverageComplete:false,coverageGaps:["Lichess: unavailable"],gamesFound:0},outputPath);
+    assert.equal(job.status,"failed");assert.match(job.error,/Lichess: unavailable/);assert.equal(await service.getJobArtifact(job.id),null);
+    const unknown={id:"otb-unknown",status:"running",request:{playerName:"Example Player",fromYear:2000}};
+    service.jobs.set(unknown.id,unknown);
+    await writeFile(outputPath,'[White "Example Player"]\n[Black "Example Opponent"]\n\n1. e4 e5 *');
+    await service.finishCompleted(unknown,{gamesFound:1},outputPath);
+    assert.equal(unknown.status,"partial");assert.equal(unknown.report.coverageComplete,undefined);
+    assert.match(unknown.progress.message,/unconfirmed/);
+    for(const [index,pgn] of ['[White "Example Player"]\n[Black "Example Opponent"]\n\n*','[FEN "invalid"]\n[White "Example Player"]\n\n1. e4 *'].entries()){
+      const unusable={id:`otb-unusable-${index}`,status:"running",request:{playerName:"Example Player",fromYear:2000}};
+      service.jobs.set(unusable.id,unusable);await writeFile(outputPath,pgn);
+      await service.finishCompleted(unusable,{gamesFound:1,coverageComplete:false,coverageGaps:["Lichess: unavailable"]},outputPath);
+      assert.equal(unusable.status,"failed");assert.equal(await service.getJobArtifact(unusable.id),null);
+    }
+  }finally{await rm(root,{recursive:true,force:true});}
 });
 
 test("compact polling transfers one artifact instead of repeating the full result", () => {

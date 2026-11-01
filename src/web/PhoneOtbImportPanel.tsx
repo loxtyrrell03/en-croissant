@@ -46,6 +46,7 @@ import {
   watchWebOtbImportJob,
   refreshWebOtbImportJob,
   WebOtbJobNotFoundError,
+  isWebOtbResultStatus,
   type WebOtbImportedGame,
   type WebOtbImportJob,
   type WebOtbImportSources,
@@ -63,6 +64,8 @@ import {
   type SavedOtbSearchDetails,
 } from "./otbStartSession";
 import classes from "./OnlineGameAnalysisPanel.module.css";
+import { getOtbCoverage } from "@/utils/otbCoverage";
+import { OtbCoverageNotice } from "./OtbCoverageNotice";
 
 const WEB_OTB_PLAYER_KEY = "encroissant-web-otb-player";
 
@@ -365,6 +368,21 @@ export default function PhoneOtbImportPanel({
     }
   }
 
+  async function retrySameSources() {
+    if (!job || !isWebOtbResultStatus(job.status) || formDisabled || preflightRef.current) return;
+    preflightRef.current = true;
+    setStarting(true);
+    setError(null);
+    try {
+      await beginWebOtbStart(job.request, job.id, getWebOtbSelectionVersion());
+    } catch (caught) {
+      if (mounted.current) setError(caught instanceof Error ? caught.message : "The source retry could not start.");
+    } finally {
+      preflightRef.current = false;
+      if (mounted.current) setStarting(false);
+    }
+  }
+
   async function stopSearch() {
     if (!job?.id || !running || stopRequest.current) return;
     const request = Symbol();
@@ -378,7 +396,7 @@ export default function PhoneOtbImportPanel({
         return;
       // Completion can win the race with Stop. Retain its ID so the shared
       // watcher and Prep handoff can still fetch the complete PC artifact.
-      setJob((current) => (current?.id === id && current.status === "completed" ? current : next));
+      setJob((current) => (current?.id === id && isWebOtbResultStatus(current.status) ? current : next));
       setJobError(next.status === "failed" ? next.error || "The PC search stopped." : null);
     } catch (stopError) {
       if (!mounted.current || stopRequest.current !== request || currentJobId.current !== id)
@@ -393,6 +411,7 @@ export default function PhoneOtbImportPanel({
   }
 
   const progress = job?.progress;
+  const coverage = job && isWebOtbResultStatus(job.status) ? getOtbCoverage(job.report) : null;
   const progressValue = getWebOtbProgressValue(progress, running);
   const overallFinished = progress?.overallCurrent ?? 0;
   const overallTotal = progress?.overallTotal ?? 0;
@@ -708,20 +727,21 @@ export default function PhoneOtbImportPanel({
           <Progress animated={running} size="xs" value={progressValue} />
         </Stack>
       ) : null}
-      {job?.status === "completed" &&
+      {job && isWebOtbResultStatus(job.status) &&
       job.artifactAvailable &&
       !job.artifactLoaded &&
       games.length === 0 ? (
         <Text role="status" size="sm">
           Loading the saved games from your PC…
         </Text>
-      ) : job?.status === "completed" ? (
-        <Alert color={games.length > 0 ? "green" : "yellow"} variant="light">
+      ) : job && isWebOtbResultStatus(job.status) ? (
+        <Alert color={games.length > 0 && coverage?.status === "complete" ? "green" : "yellow"} variant="light">
           {games.length > 0
-            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready ${job.request.fromYear <= FIDE_IMPORT_FALLBACK_YEAR ? "from the full career" : `since ${job.request.fromYear}`}.`
+            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from the selected sources since ${job.request.fromYear}.`
             : "The PC search completed without any usable OTB games."}
         </Alert>
       ) : null}
+      {coverage && <OtbCoverageNotice coverage={coverage} onRetry={() => void retrySameSources()} busy={starting || startSession.busy} />}
       {error ? (
         <Alert className={classes.importError} color="red" variant="light">
           {error}

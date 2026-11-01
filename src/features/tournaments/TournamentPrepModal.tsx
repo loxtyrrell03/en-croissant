@@ -299,7 +299,7 @@ export function TournamentPrepModal({
     const current = latest[record.id];
     if (!current) throw new Error("This tracker was removed. Imported games are still available in your Library.");
     const matched = matchTournamentImportOpponent(current, pendingImport.opponent, result);
-    const updated = { ...matched, collectionId, status: result.gameCount > 0 ? "ready" as const : "no-games" as const, gameCount: result.gameCount, importFromYear: result.fromYear, lastSyncAt: new Date().toISOString(), error: null };
+    const updated = { ...matched, collectionId, status: result.gameCount > 0 ? "ready" as const : "no-games" as const, gameCount: result.gameCount, importFromYear: result.fromYear, lastSyncAt: new Date().toISOString(), error: result.warning ?? null };
     const next = upsertTournamentPrep(latest, { ...current, opponents: { ...current.opponents, [String(matched.startNumber)]: updated } });
     await saveTournamentPreps(next);
     if (!mounted.current) return;

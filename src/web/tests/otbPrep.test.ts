@@ -63,6 +63,15 @@ function completedJob(): WebOtbImportJob {
 }
 
 describe("OTB completion Prep handoff", () => {
+    it("retains partial and unknown source coverage with the saved database", () => {
+        const job=completedJob();job.status="partial";job.report={...job.report!,coverageComplete:false,coverageGaps:["Lichess: 403 Forbidden"]};
+        const saved=applyWebOtbPrepCompletion(createEmptyWebState(),job,"black")!.state;
+        expect(saved.databases[0].otbCoverage).toMatchObject({status:"partial",gaps:["Lichess: access was refused (403)."]});
+        expect(saved.prepWorkspaces[0].userColor).toBe("black");
+        const legacy=completedJob();
+        expect(applyWebOtbPrepCompletion(createEmptyWebState(),legacy,"white")!.state.databases[0].otbCoverage?.status).toBe("unknown");
+        expect(shouldOpenWebOtbPrep(job,null,null)).toBe(true);
+    });
     it("opens one player Prep using every PC-prepared game", () => {
         const result = applyWebOtbPrepCompletion(createEmptyWebState(), completedJob(), "black");
 

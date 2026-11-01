@@ -1,11 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
+import { getOtbCoverage, otbCoverageWarning } from "@/utils/otbCoverage";
 import {
     desktopApi,
     isNativeDesktop,
     type ImportCheckpoint,
     type OpponentCollection,
     type OtbImportProgress,
-    type OtbImportReport,
 } from "./platform";
 import {
     createOtbImportRequest,
@@ -234,14 +234,12 @@ async function run(
             const { mutate } = await import("swr");
             void mutate("databases");
         }
-        cp.warning =
-            report.coverageComplete === false
-                ? report.coverageGaps?.join(" ") ||
-                  "Some sources did not finish. Saved games are available; check again for missing games."
-                : report.sources.flatMap((source) => source.errors).join(" ") || undefined;
+        const coverage = getOtbCoverage(report);
+        cp.warning = [otbCoverageWarning(coverage), ...coverage.gaps].filter(Boolean).join(" ") ||
+            report.sources.flatMap((source) => source.errors).join(" ") || undefined;
         cp.phase = report.cancelled ? "stopped" : "ready";
     } else {
-        const { startWebOtbImport, watchWebOtbImportJob, refreshWebOtbImportJob } =
+        const { startWebOtbImport, watchWebOtbImportJob, refreshWebOtbImportJob, isWebOtbResultStatus } =
             await import("@/web/otbImport");
         const request = {
             playerName: cp.playerName,
@@ -259,7 +257,7 @@ async function run(
                     cp.jobId,
                     (job) => {
                         if (job.progress) progress(job.progress);
-                        if (job.status === "completed" || job.status === "failed") {
+                        if (isWebOtbResultStatus(job.status) || job.status === "failed") {
                             terminal = true;
                             queueMicrotask(() => stop());
                             resolve(job);
@@ -297,11 +295,8 @@ async function run(
             cp.savedJobIds = [...new Set([...(cp.savedJobIds ?? []), cp.jobId])];
             collection.game_count = saved.gameCount;
         }
-        cp.warning =
-            job.report?.coverageComplete === false
-                ? job.report.coverageGaps?.join(" ") ||
-                  "Some sources did not finish. Saved games are available."
-                : undefined;
+        const coverage = getOtbCoverage(job.report);
+        cp.warning = [otbCoverageWarning(coverage), ...coverage.gaps].filter(Boolean).join(" ") || undefined;
         cp.phase = job.report?.cancelled ? "stopped" : "ready";
     }
     await persist();
