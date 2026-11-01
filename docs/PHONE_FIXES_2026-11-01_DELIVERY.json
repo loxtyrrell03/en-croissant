@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-01",
+  "canonicalUrl": "https://lox-pc.tail89d19b.ts.net/",
+  "sourceCommit": "e568afaef289b55a1cd70b425ee8b7fea79a0eba",
+  "primarySourceCommit": "32e4ebaf",
+  "featureCommits": ["31b279ea", "3802e872", "32e4ebaf"],
+  "appShellSha256": "03388debb0f3a1b547158fde7585b00bf35a4ab44f110d5cf716e776f8701c44",
+  "verification": {
+    "productionBuild": "Passed from clean committed delivery source",
+    "projectTypes": "Passed",
+    "boardRenderedChecks": 54,
+    "tournamentRenderedChecks": 12,
+    "partialImportRenderedChecks": 7,
+    "otbBackendTests": 39,
+    "otbFrontendTests": 35,
+    "manifestFiles": 446,
+    "exactHttpsAssets": 12,
+    "runtimeModules": 15,
+    "generatedModules": 2,
+    "nativeHelpersMatched": 2,
+    "liveBrowser": "Updated the open hosted app using Update app; verified build identity, connected library, stable board with settings open, and followed-tournament Import & prep reaching the correct FIDE picker",
+    "liveBoard": {
+      "viewportWidthPx": 390,
+      "viewportHeightPx": 844,
+      "previousWidthWithSettingsPx": 176,
+      "currentWidthSettingsClosedPx": 328,
+      "currentWidthSettingsOpenPx": 328,
+      "horizontalOverflow": false
+    },
+    "liveImport": {
+      "status": "partial",
+      "games": 51,
+      "playablePreparedGames": 51,
+      "coverageComplete": false,
+      "coverageGaps": 1,
+      "originalSourceSelectionPreserved": true,
+      "artifactIdentityVerified": true,
+      "phoneWorkspaceChangedForImportTest": false
+    },
+    "physicalPhoneVerified": false
+  },
+  "preservation": {
+    "ownerFilesHashVerified": 7,
+    "originalFailedJobAndPgnHashesVerified": 4,
+    "homeBackendRestartedForNewCode": true,
+    "gatewayProcessPreserved": true,
+    "gatewayRemainedCold": true,
+    "ownerServiceChoicePreserved": true,
+    "serveRoutesPreserved": true,
+    "personalSyncTaskPreserved": true,
+    "syncErrors": 0,
+    "syncConflicts": 0,
+    "nativeApplicationUnchanged": true,
+    "evaluationCorpusCopied": false,
+    "newDeliveryWorktrees": 0
+  },
+  "publicationReceipt": "The publisher wrapper did not return after its successful switch/restart. Independent exact asset/module/helper/data/route/process checks and a new real import proved the result. Only the identified idle task-owned wrapper was stopped; the live home process was preserved and publication was not replayed.",
+  "limitations": [
+    "Lichess's upstream 403 remains explicitly identified as missing coverage; no source was disabled.",
+    "Existing pre-upgrade saved Prep metadata is not automatically backfilled.",
+    "Physical-phone interaction remains unverified."
+  ],
+  "localEvidence": "tmp/phone-fixes-20261101"
+}

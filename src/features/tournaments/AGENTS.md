@@ -1,5 +1,9 @@
 ## 2026-11-01 source coverage in tournament Prep
 
+- Combined phone release e568afae is live. The actual followed tournament now
+  exposes Import & prep for an opponent missing a published FIDE ID and opens
+  the correct verified-profile picker. Hosted browser navigation is verified;
+  physical-phone interaction is not. See ../../../docs/PHONE_FIXES_2026-11-01_DELIVERY.json.
 - A usable phone OTB `partial` result carries its coverage warning through the
   import result, saved opponent metadata and phone Prep database. Keep the explicit
   Open Prep action for incomplete/stopped results; do not auto-open on cancellation.
