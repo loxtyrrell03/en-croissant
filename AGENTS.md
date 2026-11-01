@@ -1,3 +1,22 @@
+## 2026-11-01 usable OTB imports with incomplete source coverage
+
+- OTB collection separates available games from source completeness. Verified
+  playable games survive a refused/missing source as terminal `partial`, with
+  unchanged coverage report and a durable artifact; incomplete or unknown output
+  without playable moves remains a failure. Historical completed jobs with no
+  report remain readable but display unknown coverage in updated clients.
+- Keep `partial` distinct from `completed`: older cached phone clients reject the
+  new status instead of falsely claiming full-career coverage. All updated status,
+  artifact, restart, tournament and Prep consumers handle both ready states.
+  Collector finalization waits for stdio `close`; Stop owns every asynchronous
+  publication boundary. Source retries preserve the exact original request.
+- Source verification: 39 backend tests, 35 frontend tests, project types,
+  19 built browser scenarios, and read-only replay of two retained failed PGNs
+  preserved all 51/106 games without changing originals. Lichess's 403 challenge
+  remains a source failure; no source was disabled or security challenge bypassed.
+  See docs/OTB_PARTIAL_RESULTS_2026-11-01.md. This milestone is source-only;
+  combined phone/runtime publication belongs to the delivery owner.
+
 ## 2026-10-27 cached phone startup recovery
 
 - The permanent HTTPS controller recovers missing exact hashed JS/CSS/font/image/

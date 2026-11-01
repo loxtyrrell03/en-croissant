@@ -1,3 +1,19 @@
+## 2026-11-01 usable partial OTB results
+
+- `partial` is a terminal job with a saved game/prep artifact. Keep it distinct
+  from `completed` so cached older clients cannot show a false full-career success.
+  All status loading, Stop races, watchers, restored sessions and handoffs accept
+  both through `isWebOtbResultStatus`; source coverage is a separate explicit value.
+- `WebDatabase.otbCoverage` preserves complete/partial/unknown/stopped provenance
+  through IndexedDB and Open Prep. Phone imports and Prep show visible warnings;
+  missing historical reports mean unknown. Previously imported receipt shortcuts
+  intentionally retain existing state rather than rewriting old source metadata.
+- Retry same sources submits the saved job request, including its selected FIDE
+  profile, year and every source. Cancellation never auto-opens tournament Prep.
+  Partial/unknown/stopped, exact retry and saved-source remount pass the built
+  `scripts/qa-otb-partial-results.mjs` runner at320/390/760px. See the root OTB
+  milestone and docs/OTB_PARTIAL_RESULTS_2026-11-01.md for verification/delivery.
+
 # 2026-10-27 New phone board controls
 
 - The board header and Files expose New board, New position and New file. Position

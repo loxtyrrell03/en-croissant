@@ -1,8 +1,9 @@
 import { INITIAL_FEN } from "chessops/fen";
 import { mergeImportedWebDatabases } from "./databaseSync";
 import type { WebColor, WebCompanionState, WebPrepWorkspace } from "./model";
-import { getWebOtbJobPlayerName, type WebOtbImportJob } from "./otbImport";
+import { getWebOtbJobPlayerName, isWebOtbResultStatus, type WebOtbImportJob } from "./otbImport";
 import { createEmptyWebBoardState } from "./storage";
+import { getOtbCoverage } from "@/utils/otbCoverage";
 
 export type WebOtbPrepCompletion = {
     jobId: string;
@@ -19,7 +20,7 @@ export function shouldOpenWebOtbPrep(
     inFlightJobId: string | null,
 ) {
     return Boolean(
-        job?.status === "completed" &&
+        job && isWebOtbResultStatus(job.status) &&
         job.prepDatabase?.games.length &&
         handledJobId !== job.id &&
         inFlightJobId !== job.id,
@@ -39,7 +40,7 @@ export function applyWebOtbPrepCompletion(
     userColor: WebColor,
 ): { state: WebCompanionState; completion: WebOtbPrepCompletion } | null {
     const imported = job.prepDatabase;
-    if (job.status !== "completed" || !imported || imported.games.length === 0) return null;
+    if (!isWebOtbResultStatus(job.status) || !imported || imported.games.length === 0) return null;
 
     const opponent = getWebOtbJobPlayerName(job);
     if (!opponent) return null;
@@ -84,7 +85,9 @@ export function applyWebOtbPrepCompletion(
         createdAt: timestamp,
         updatedAt: timestamp,
     };
-    const merged = mergeImportedWebDatabases(state, [imported]);
+    const merged = mergeImportedWebDatabases(state, [{ ...imported, database: {
+        ...imported.database, otbCoverage: getOtbCoverage(job.report),
+    } }]);
     const prepWorkspaces = previousPrep
         ? merged.prepWorkspaces
         : [prep, ...merged.prepWorkspaces.filter((candidate) => candidate.id !== prepId)];

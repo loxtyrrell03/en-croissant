@@ -42,8 +42,8 @@ window.fetch=async(url,options={})=>{
  if(options.method==='PUT'){
   const request=JSON.parse(options.body);f.starts.push({id,request});
   const prepDatabase=parsePgnDatabase('fixture.pgn','[Event "Invented test"]\\n[White "Rivera, Samuel"]\\n[Black "Example Opponent"]\\n[Result "1-0"]\\n\\n1. e4 e5 2. Nf3 Nc6 1-0',1234);
-  f.jobs[id]={id,request,status:f.mode==='cancel'?'running':f.mode==='fail'?'failed':'completed',error:f.mode==='fail'?'Example source unavailable':null,
-   progress:{message:'Searching public games…',gamesFound:1,current:1,total:3},report:{cancelled:false},games:[],prepDatabase:f.mode==='empty'?null:prepDatabase};
+  f.jobs[id]={id,request,status:f.mode==='cancel'?'running':f.mode==='fail'?'failed':f.mode==='partial'?'partial':'completed',error:f.mode==='fail'?'Example source unavailable':null,
+   progress:{message:'Searching public games…',gamesFound:1,current:1,total:3},report:{cancelled:false,coverageComplete:f.mode!=='partial',coverageGaps:f.mode==='partial'?['Lichess: returned 403 Forbidden']:[]},games:[],prepDatabase:f.mode==='empty'?null:prepDatabase};
  }
  if(options.method==='DELETE'){f.jobs[id].status='completed';f.jobs[id].report.cancelled=true;}
  return Response.json(f.jobs[id]);
@@ -83,7 +83,10 @@ try{
   if(width===320){
    await page.evaluate(()=>document.documentElement.style.fontSize='200%');
    const trigger=page.getByRole('button',{name:'Help: Choose FIDE profile for Sam Rivera',exact:true});
-   await trigger.scrollIntoViewIfNeeded();await trigger.focus();
+   await trigger.scrollIntoViewIfNeeded();
+   // Help intentionally dismisses on scroll; finish the setup scroll before focus opens it.
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   await trigger.focus();
    await page.getByRole('tooltip').waitFor();
    const help=await page.getByRole('tooltip').boundingBox();
    assert.ok(help&&help.x>=0&&help.x+help.width<=320);
@@ -128,6 +131,15 @@ try{
   assert.equal(await page.evaluate(()=>fx.opened),0);
   await page.getByRole("button",{name:"Open Prep",exact:true}).click();await page.waitForFunction(()=>fx.opened===1);
   check('cancel retains partial games and explicit Open Prep uses them');await context.close();
+ }
+ {
+  const {page,context}=await scenario("mode=partial");await start(page);
+  await page.getByText('Source coverage needs attention',{exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>fx.opened),0);
+  await page.getByRole('button',{name:'Open Prep',exact:true}).click();await page.waitForFunction(()=>fx.opened===1);
+  const saved=await page.evaluate(()=>({source:fx.saved().databases[0],opponent:fx.record.opponents['3']}));
+  assert.equal(saved.source.otbCoverage.status,'partial');assert.match(saved.opponent.error,/Some selected sources/);
+  check('partial coverage keeps usable games with durable phone/tournament warnings and explicit Prep');await context.close();
  }
  {
   const {page,context}=await scenario("mode=empty");await start(page);await page.getByRole("button",{name:"Search again",exact:true}).waitFor();

@@ -21,7 +21,8 @@ vi.mock("../platform", () => ({
         cancelOtbGames: mocks.cancel,
     },
 }));
-vi.mock("@/web/otbImport", () => ({
+vi.mock("@/web/otbImport", async (original) => ({
+    ...(await original<typeof import("@/web/otbImport")>()),
     startWebOtbImport: mocks.start,
     watchWebOtbImportJob: mocks.watch,
     refreshWebOtbImportJob: mocks.refresh,

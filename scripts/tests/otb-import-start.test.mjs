@@ -69,6 +69,47 @@ test("overlapping retries and a lost response recover one collector and durable 
   });
 });
 
+test("waits for stdout drain after exit before reading the final collector report", async () => {
+  await fixture(async ({service,children})=>{
+    const id=newId();await service.createJob(request,id);
+    const child=children[0].child;
+    await writeFile(join(service.outputRoot,`${id}.pgn`),'[White "Player, Example"]\n[Black "Opponent"]\n\n1. e4 e5 *');
+    child.emit("exit",0,null);
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(service.getJob(id).status,"running");
+    child.stdout.end('RESULT\t'+JSON.stringify({playerName:request.playerName,gamesFound:1,coverageComplete:true,cancelled:false}));
+    child.stderr.end();
+    await new Promise(resolve=>setImmediate(resolve));
+    child.emit("close",0,null);
+    const deadline=Date.now()+3000;
+    while(service.getJob(id).status==="running"&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,10));
+    assert.equal(service.getJob(id).status,"completed");
+    assert.equal(service.getJob(id).gameCount,1);
+    assert.ok(await service.getJobArtifact(id));
+  });
+});
+
+test("Stop wins while artifact publication is awaiting a write", async () => {
+  await fixture(async ({service,children})=>{
+    const id=newId();await service.createJob(request,id);
+    const job=service.jobs.get(id), output=join(service.outputRoot,`${id}.pgn`);
+    await writeFile(output,'[White "Player, Example"]\n[Black "Opponent"]\n\n1. e4 e5 *');
+    let releaseArtifact,enteredArtifact;
+    const artifactEntered=new Promise(resolve=>{enteredArtifact=resolve});
+    const persistArtifact=service.persistArtifact.bind(service);
+    service.persistArtifact=async(...args)=>{const bytes=await persistArtifact(...args);enteredArtifact();await new Promise(resolve=>{releaseArtifact=resolve});return bytes;};
+    let releaseStop;
+    service.terminateProcessTree=()=>new Promise(resolve=>{releaseStop=resolve});
+    const finish=service.finishCompleted(job,{coverageComplete:true,cancelled:false,gamesFound:1},output);
+    await artifactEntered;
+    const stop=service.cancelJob(id);
+    assert.equal(job.cancellationRequested,true);releaseArtifact();await finish;
+    assert.equal(job.status,"running");assert.equal(await service.getJobArtifact(id),null);
+    releaseStop();await stop;
+    assert.equal(job.status,"failed");assert.match(job.error,/stopped/);
+  });
+});
+
 test("an ID cannot change player, FIDE ID, start year or source coverage", async () => {
   await fixture(async ({ service, children }) => {
     const id = newId();

@@ -461,7 +461,7 @@ async function handleRequest(request, response) {
     if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
     const job = otbImportService.getJob(otbArtifactMatch[1]);
     if (!job) return writeJson(response, 404, { error: "OTB import job not found." });
-    if (job.status !== "completed") {
+    if (job.status !== "completed" && job.status !== "partial") {
       return writeJson(response, 409, { error: "The OTB import result is not ready yet." });
     }
     const artifact = await otbImportService.getJobArtifact(job.id);

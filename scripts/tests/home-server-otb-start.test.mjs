@@ -57,6 +57,10 @@ test(
       const artifact = JSON.stringify({ jobId: id, games: [], prepDatabase: null });
       await writeFile(join(jobRoot, `${id}.json`), JSON.stringify(saved));
       await writeFile(join(artifactRoot, `${id}.json`), artifact);
+      const partialId=newId();
+      await writeFile(join(jobRoot, `${partialId}.json`),JSON.stringify({...saved,id:partialId,status:"partial",report:{coverageComplete:false,coverageGaps:["Lichess: 403"]}}));
+      const partialArtifact=JSON.stringify({jobId:partialId,games:[],prepDatabase:null});
+      await writeFile(join(artifactRoot, `${partialId}.json`),partialArtifact);
       const upstreamPort = await listen(upstream);
       const reservation = createServer();
       const port = await listen(reservation);
@@ -145,6 +149,10 @@ test(
       assert.equal(artifactReply.status, 200);
       assert.equal(await artifactReply.text(), artifact);
       assert.equal(await readFile(join(artifactRoot, `${id}.json`), "utf8"), artifact);
+      const partialReply=await send(`/api/otb-import/jobs/${partialId}`,"GET");
+      assert.equal((await partialReply.json()).status,"partial");
+      const partialGames=await send(`/api/otb-import/jobs/${partialId}/artifact`,"GET");
+      assert.equal(partialGames.status,200);assert.equal(await partialGames.text(),partialArtifact);
       const unsupported = await send(path, "PATCH", request);
       assert.equal(unsupported.status, 405);
       await unsupported.body.cancel();

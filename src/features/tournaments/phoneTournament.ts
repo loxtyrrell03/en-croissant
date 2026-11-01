@@ -1,8 +1,9 @@
 import { INITIAL_FEN } from "chessops/fen";
 import type { WebCompanionState, WebGame } from "@/web/model";
-import type { WebOtbImportJob } from "@/web/otbImport";
+import { isWebOtbResultStatus, type WebOtbImportJob } from "@/web/otbImport";
 import { webStateSession } from "@/web/webStateSession";
 import type { OpponentCollection } from "./platform";
+import { getOtbCoverage } from "@/utils/otbCoverage";
 
 function identity(game: WebGame) {
     return JSON.stringify([
@@ -22,7 +23,7 @@ export function mergePhoneTournamentImport(
     job: WebOtbImportJob,
     collection: OpponentCollection,
 ): WebCompanionState {
-    if (job.status !== "completed" || !job.prepDatabase)
+    if (!isWebOtbResultStatus(job.status) || !job.prepDatabase)
         throw new Error("The downloaded games are not ready to save.");
     const databaseId = `tournament-opponent-${collection.id}`,
         prepId = `prep-${databaseId}`;
@@ -51,6 +52,7 @@ export function mergePhoneTournamentImport(
         name: collection.name,
         gameCount: games.length,
         updatedAt: Date.now(),
+        otbCoverage: getOtbCoverage(job.report),
     };
     const prep = state.prepWorkspaces.find((value) => value.id === prepId) ?? {
         id: prepId,

@@ -246,7 +246,7 @@ export function PlayerGameImportModal({
           </Alert>
         )}
         {view.result?.warning && (
-          <Alert color="yellow" title="Some sources did not finish">
+          <Alert color="yellow" title="Source coverage needs attention">
             {view.result.warning}
           </Alert>
         )}
