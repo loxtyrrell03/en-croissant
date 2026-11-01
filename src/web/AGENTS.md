@@ -1,5 +1,17 @@
 ## 2026-11-01 phone Live engine connection recovery
 
+- Published frontend41d599a9 (primarya03a749e) includes the preceding board,
+  tournament and OTB fixes. The real hosted old app stayed Unavailable/On after
+  request timeouts and restored networking; the updated app retried automatically
+  and returned three actual PC lines at depth14 without a recovery toggle or click.
+  At390x844 the board stays328px with no horizontal overflow. Browser test rules
+  were removed and its private verification profile restored; physical phone
+  interaction remains unverified. See ../../docs/PHONE_ENGINE_RECOVERY_2026-11-01_DELIVERY.json.
+- Guarded frontend publication completed normally without restarting home33640
+  or gateway9856. All15 runtime modules/two generated modules/two native helpers
+  retain exact bytes;446 manifest files/12 exact HTTPS assets verify. Seven owner
+  files, native application, service choices, sync task and Serve routes remain
+  intact. Do not restart healthy services merely because a worker is in standby.
 - Live owns a position/settings snapshot, aborts and parks work while hidden or
   offline, and resumes unfinished analysis on pageshow/visibility/online. Temporary
   network/timeout/408/429/500/502/503/504 failures retry with capped30-second backoff;
@@ -23,8 +35,9 @@
 
 ## 2026-11-01 combined phone fixes delivered
 
-- Phone assets and the changed home/OTB runtime are live at the canonical private
-  URL from clean e568afae (primary source32e4ebaf). The home backend was actually
+- The initial combined assets and changed home/OTB runtime were published at the
+  canonical private URL from clean e568afae (primary source32e4ebaf), superseded
+  by the engine recovery delivery above. The home backend was actually
   restarted; metadata alone is not proof that new service code is loaded.
 - The updated hosted app retains a328px board at390x844 with engine settings
   closed/open; the previous app shrank to176px. The actual followed tournament's
