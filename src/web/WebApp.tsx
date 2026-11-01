@@ -144,6 +144,7 @@ import { useVerifiedJsonPreference } from "./useVerifiedJsonPreference";
 import { PhoneSearchControls, usePhoneSearchCapability } from "./PhoneSearchControls";
 import { PHONE_SEARCH_PREFERENCES_KEY, DEFAULT_PHONE_SEARCH_PREFERENCES, normalizePhoneSearchPreferences, phoneSearchGo } from "./phoneSearchPreferences";
 import { phoneSearchProgress } from "./phoneSearchProgress";
+import { startPhoneLiveAnalysis, type PhoneLiveAnalysisStatus } from "./phoneLiveAnalysis";
 import { PHONE_ENGINE_SETTINGS_KEY, DEFAULT_PHONE_ENGINE_SETTINGS, normalizePhoneEngineSettings, type PhoneEngineSettings } from "./phoneEngineSettings";
 import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
@@ -4554,7 +4555,7 @@ function DatabaseUnderBoardPanel({
   );
 }
 
-type WebEnginePanelStatus = "idle" | "loading" | "running" | "complete" | "error";
+type WebEnginePanelStatus = "idle" | "loading" | PhoneLiveAnalysisStatus;
 
 export function EngineUnderBoardPanel({
   analysisRequestId,
@@ -4627,6 +4628,7 @@ export function EngineUnderBoardPanel({
   );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
+  const [retryRequest, setRetryRequest] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pcServices = usePcServicesAvailability();
@@ -4689,50 +4691,38 @@ export function EngineUnderBoardPanel({
       return;
     }
 
-    const controller = new AbortController();
-    let active = true;
-    setStatus("running");
-    setError(null);
     setStockfishLines([]);
-
-    void analyzeWithWebStockfish18({
-      fen: currentFen,
-      multipv: selectedLines,
-      depth: settings.depth,
-      infinite: settings.infinite,
-      engineKind: settings.engineKind,
-      performancePreset,
-      cpuResources: selectedCpuResources ?? undefined,
-      searchLimit: selectedSearchLimit ?? undefined,
-      lc0AutoNetwork: settings.lc0AutoNetwork,
-      lc0Network: settings.lc0Network,
-      useStoredEvaluations: settings.useCloud,
-      prefetchFens: upcomingFensRef.current,
-      signal: controller.signal,
-      onUpdate: (lines) => {
-        if (!active) return;
-        setStockfishLines(lines);
-        setStatus("running");
+    return startPhoneLiveAnalysis<WebEngineLine[]>({
+      analyze: (signal, onUpdate) =>
+        analyzeWithWebStockfish18({
+          fen: currentFen,
+          multipv: selectedLines,
+          depth: settings.depth,
+          infinite: settings.infinite,
+          engineKind: settings.engineKind,
+          performancePreset,
+          cpuResources: selectedCpuResources ?? undefined,
+          searchLimit: selectedSearchLimit ?? undefined,
+          lc0AutoNetwork: settings.lc0AutoNetwork,
+          lc0Network: settings.lc0Network,
+          useStoredEvaluations: settings.useCloud,
+          requireLiveResult: true,
+          prefetchFens: upcomingFensRef.current,
+          signal,
+          onUpdate,
+        }),
+      onUpdate: setStockfishLines,
+      onStatus: (nextStatus, message) => {
+        setStatus(nextStatus);
+        setError(message);
       },
-    })
-      .then((lines) => {
-        if (!active) return;
-        setStockfishLines(lines);
-        setStatus("complete");
-      })
-      .catch((engineError) => {
-        if (!active || isAbortError(engineError)) return;
-        setStockfishLines([]);
-        setStatus("error");
-        setError(engineError instanceof Error ? engineError.message : "PC engine failed.");
-      });
-
-    return () => {
-      active = false;
-      controller.abort();
-    };
+      release: () => {
+        void releaseWebPcEngine(settings.engineKind);
+      },
+    });
   }, [
     currentFen,
+    retryRequest,
     settings.depth,
     settings.enabled,
     settings.engineKind,
@@ -4749,17 +4739,6 @@ export function EngineUnderBoardPanel({
     suspended,
     pcServices,
   ]);
-
-  useEffect(() => {
-    const releaseEngine = () => {
-      void releaseWebPcEngine(settings.engineKind);
-    };
-    window.addEventListener("pagehide", releaseEngine);
-    return () => {
-      window.removeEventListener("pagehide", releaseEngine);
-      releaseEngine();
-    };
-  }, [settings.engineKind]);
 
   const displayLines = useMemo(
     () => visibleWebEngineLines(stockfishLines, sourcePolicy),
@@ -4800,14 +4779,37 @@ export function EngineUnderBoardPanel({
   const compactEngineMeta =
     pcServices === "off"
       ? { label: "PC services off", accessibleLabel: "PC services are off" }
-      : status === "error"
-        ? { label: "Unavailable", accessibleLabel: "PC engine is unavailable" }
-        : getWebCompactEngineMeta({
-            enabled: analysisEnabled,
-            topLine,
-            nodeCount,
-            liveLineSpeed,
-          });
+      : status === "reconnecting"
+        ? { label: "Reconnecting", accessibleLabel: "PC engine is reconnecting" }
+        : status === "error"
+          ? { label: "Unavailable", accessibleLabel: "PC engine is unavailable" }
+          : getWebCompactEngineMeta({
+              enabled: analysisEnabled,
+              topLine,
+              nodeCount,
+              liveLineSpeed,
+            });
+
+  const connectionNotice = analysisEnabled && error ? (
+    <Group className={classes.compactEngineMessage} gap="xs" align="center">
+      <Text
+        size="xs"
+        c={status === "error" ? "red" : "dimmed"}
+        role={status === "error" ? "alert" : "status"}
+        style={{ flex: "1 1 12rem", overflowWrap: "anywhere" }}
+      >
+        {error}
+        {displayLines.length > 0 ? " Previous result shown." : ""}
+      </Text>
+      <Button
+        size="compact-xs"
+        variant="default"
+        onClick={() => setRetryRequest((value) => value + 1)}
+      >
+        Retry analysis
+      </Button>
+    </Group>
+  ) : null;
 
   const enginePreferenceNotice = preferenceError ? (
     <Group gap="xs" align="start">
@@ -4881,14 +4883,11 @@ export function EngineUnderBoardPanel({
         {enginePreferenceNotice}
         {cpuPreferenceNotice}
         {searchPreferenceNotice}
+        {connectionNotice}
         {settings.enabled ? (
           suspended ? (
             <Text className={classes.compactEngineMessage} size="xs" c="dimmed" lineClamp={1}>
               Paused while the game is reviewed
-            </Text>
-          ) : error ? (
-            <Text className={classes.compactEngineMessage} size="xs" c="red" lineClamp={1}>
-              {error}
             </Text>
           ) : displayLines.length > 0 ? (
             <Box className={classes.compactEngineLines}>
@@ -4917,7 +4916,7 @@ export function EngineUnderBoardPanel({
                 );
               })}
             </Box>
-          ) : (
+          ) : error ? null : (
             <Group className={classes.compactEngineMessage} gap={6} wrap="nowrap">
               <Loader size={11} />
               <Text size="xs" c="dimmed" truncate>
@@ -5001,6 +5000,7 @@ export function EngineUnderBoardPanel({
       {enginePreferenceNotice}
       {cpuPreferenceNotice}
       {searchPreferenceNotice}
+      {connectionNotice}
       <Collapse in={settingsOpen}>
         <Box className={classes.enginePanelSettings}>
           <Group gap="sm" mb="xs">
@@ -5201,19 +5201,7 @@ function EngineLineTable({
     );
   }
 
-  if (error) {
-    return (
-      <Box className={classes.enginePanelMessage}>
-        <IconCpu size={26} />
-        <Text size="sm" fw={700}>
-          Engine unavailable
-        </Text>
-        <Text size="xs" c="dimmed">
-          {error}
-        </Text>
-      </Box>
-    );
-  }
+  if (error && lines.length === 0) return null;
 
   if (lines.length === 0) {
     const rows = Array.from({ length: Math.max(1, Math.min(settings.multipv, 4)) });
@@ -8370,6 +8358,7 @@ function getWebEngineHeaderStatus({
 }) {
   if (!enabled) return "Off";
   if (status === "error") return "Error";
+  if (status === "reconnecting") return "Reconnecting";
   if (topLine) return getWebEngineSourceLabel(topLine);
   return "PC engine";
 }
@@ -10117,13 +10106,6 @@ function readStoredWebPrepUserColor(): WebColor {
   } catch {
     return "white";
   }
-}
-
-function isAbortError(error: unknown) {
-  return (
-    (error instanceof DOMException && error.name === "AbortError") ||
-    (error instanceof Error && error.name === "AbortError")
-  );
 }
 
 const unsavedJsonPreferences = new Map<string, unknown>();

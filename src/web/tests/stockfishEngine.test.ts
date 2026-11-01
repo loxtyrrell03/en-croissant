@@ -334,7 +334,7 @@ describe("Stockfish phone line updates", () => {
 
         await expect(
             analyzeWithWebStockfish18({ fen: PC_ONLY_FEN, multipv: 3, depth: 70 }),
-        ).rejects.toThrow("phone analysis is disabled");
+        ).rejects.toThrow("connection to Gaming PC Stockfish was interrupted");
         expect(fetchMock).toHaveBeenCalledTimes(5);
         expect(workerConstructor).not.toHaveBeenCalled();
     });

@@ -7,6 +7,8 @@ import { PHONE_ENGINE_SETTINGS_KEY, DEFAULT_PHONE_ENGINE_SETTINGS } from "../pho
 import { PHONE_CPU_RESOURCES_KEY } from "../phoneCpuPreferences";
 import { PHONE_SEARCH_PREFERENCES_KEY } from "../phoneSearchPreferences";
 import type { WebEngineLine } from "../model";
+import { PcEngineConnectionError } from "../pcEngineConnection";
+import { PcEngineCapabilityError } from "../pcEngineHealth";
 const fixture = vi.hoisted(() => ({ analyze: vi.fn(), release: vi.fn(), availability: "ready" }));
 vi.mock("../stockfishEngine", () => ({
   analyzeWithWebStockfish18: fixture.analyze,
@@ -59,13 +61,16 @@ const click = (name: string) =>
     expect(b.disabled).toBe(false);
     b.click();
   });
-const render = (options: { fen?: string; compact?: boolean; upcomingFens?: string[] } = {}) =>
+const render = (
+  options: { fen?: string; compact?: boolean; upcomingFens?: string[]; suspended?: boolean } = {},
+) =>
   act(async () =>
     root.render(
       <MantineProvider env="test">
         <EngineUnderBoardPanel
           currentFen={options.fen ?? fen}
           compact={options.compact}
+          suspended={options.suspended}
           upcomingFens={options.upcomingFens ?? empty}
           onAnalysisLinesChange={noLines}
           onPlayMove={noPlay}
@@ -140,6 +145,7 @@ beforeEach(() => {
   root = createRoot(host);
 });
 afterEach(async () => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   const retry = button("Retry search settings");
   if (retry) await act(async () => retry.click());
@@ -497,4 +503,171 @@ it("keeps reset disabled with services Off and discards old progress when changi
   await click("Engine settings");
   expect(button("Use original search settings").disabled).toBe(true);
   expect(read().limit.value).toBe(1000);
+});
+
+function pendingAnalysis() {
+  const attempts: {
+    request: Parameters<typeof import("../stockfishEngine").analyzeWithWebStockfish18>[0];
+    resolve: (lines: WebEngineLine[]) => void;
+    reject: (error: Error) => void;
+  }[] = [];
+  fixture.analyze.mockImplementation(
+    (request) =>
+      new Promise<WebEngineLine[]>((resolve, reject) => {
+        attempts.push({ request, resolve, reject });
+      }),
+  );
+  return attempts;
+}
+const browserEvent = (name: string) =>
+  act(async () => {
+    window.dispatchEvent(new Event(name));
+  });
+const advance = (time: number) =>
+  act(async () => {
+    await vi.advanceTimersByTimeAsync(time);
+  });
+
+it("recovers a transient failure automatically and retains the same-position result until fresh lines arrive", async () => {
+  const attempts = pendingAnalysis();
+  await render({ compact: true });
+  vi.useFakeTimers();
+  const settings = localStorage.getItem(PHONE_ENGINE_SETTINGS_KEY),
+    cpu = localStorage.getItem(PHONE_CPU_RESOURCES_KEY);
+  await act(async () => {
+    attempts[0].request.onUpdate?.([line]);
+    attempts[0].reject(new PcEngineConnectionError("Invented dropped stream"));
+  });
+  expect(host.textContent).toContain("Retrying in 1 second");
+  expect(host.textContent).toContain("Previous result shown");
+  expect(button("Play compact engine line 1")).toBeDefined();
+  expect(
+    host.querySelector<HTMLInputElement>('[aria-label="Toggle Stockfish analysis"]')?.checked,
+  ).toBe(true);
+  await advance(999);
+  expect(attempts).toHaveLength(1);
+  await advance(1);
+  expect(attempts).toHaveLength(2);
+  expect(attempts[1].request).toMatchObject({
+    fen,
+    depth: 70,
+    cpuResources: { version: 1, threads: 3, hashMb: 333 },
+  });
+  expect(button("Play compact engine line 1")).toBeDefined();
+  await act(async () => attempts[1].resolve([{ ...line, depth: 19 }]));
+  expect(host.textContent).not.toContain("Reconnecting");
+  expect(host.textContent).not.toContain("Previous result shown");
+  expect(localStorage.getItem(PHONE_ENGINE_SETTINGS_KEY)).toBe(settings);
+  expect(localStorage.getItem(PHONE_CPU_RESOURCES_KEY)).toBe(cpu);
+});
+
+it("resumes pending analysis after pagehide/pageshow and ignores late output from the hidden request", async () => {
+  const attempts = pendingAnalysis();
+  await render();
+  await act(async () => attempts[0].request.onUpdate?.([line]));
+  await browserEvent("pagehide");
+  expect(attempts[0].request.signal?.aborted).toBe(true);
+  expect(fixture.release).toHaveBeenCalledTimes(1);
+  await browserEvent("pageshow");
+  expect(attempts).toHaveLength(2);
+  await act(async () => attempts[0].resolve([{ ...line, sanMoves: ["obsolete"] }]));
+  expect(host.textContent).not.toContain("obsolete");
+  await browserEvent("pageshow");
+  await browserEvent("focus");
+  expect(attempts).toHaveLength(2);
+  await act(async () => attempts[1].resolve([line]));
+  await browserEvent("pagehide");
+  await browserEvent("pageshow");
+  await browserEvent("focus");
+  expect(attempts).toHaveLength(2);
+  expect(fixture.release).toHaveBeenCalledTimes(1);
+  expect(host.textContent).toContain("Search complete");
+});
+
+it("parks retries offline and hidden then resumes only the current position", async () => {
+  const attempts = pendingAnalysis();
+  await render();
+  vi.useFakeTimers();
+  await act(async () => attempts[0].reject(new PcEngineConnectionError("Invented loss")));
+  const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+  await browserEvent("offline");
+  await advance(120_000);
+  expect(attempts).toHaveLength(1);
+  const nextFen = "7k/8/8/8/8/8/8/K7 w - - 0 1";
+  await render({ fen: nextFen });
+  online.mockReturnValue(true);
+  const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+  await browserEvent("online");
+  await advance(120_000);
+  expect(attempts).toHaveLength(1);
+  hidden.mockReturnValue(false);
+  await act(async () => document.dispatchEvent(new Event("visibilitychange")));
+  expect(attempts).toHaveLength(2);
+  expect(attempts[1].request.fen).toBe(nextFen);
+});
+
+it.each([
+  ["off", 1],
+  ["suspended", 0],
+  ["services-off", 1],
+  ["unmount", 0],
+] as const)(
+  "cancels an owned retry when %s and cannot release a report search on pagehide",
+  async (reason, expectedReleases) => {
+    const attempts = pendingAnalysis();
+    await render();
+    vi.useFakeTimers();
+    await act(async () => attempts[0].reject(new PcEngineConnectionError("Invented loss")));
+    if (reason === "off") await click("Pause Stockfish");
+    else if (reason === "suspended") await render({ suspended: true });
+    else if (reason === "services-off") {
+      fixture.availability = "off";
+      await render();
+    } else await act(async () => root.render(null));
+    const releases = fixture.release.mock.calls.length;
+    await browserEvent("pagehide");
+    await browserEvent("pageshow");
+    await browserEvent("online");
+    await advance(120_000);
+    expect(attempts).toHaveLength(1);
+    expect(fixture.release).toHaveBeenCalledTimes(releases);
+    expect(releases).toBe(expectedReleases);
+  },
+);
+
+it("keeps permanent capability failures visible without automatic retry and offers an explicit retry", async () => {
+  const attempts = pendingAnalysis();
+  await render({ compact: true });
+  vi.useFakeTimers();
+  await act(async () =>
+    attempts[0].reject(new PcEngineCapabilityError("Selected search limit is unsupported.")),
+  );
+  await advance(120_000);
+  await browserEvent("pagehide");
+  await browserEvent("pageshow");
+  await browserEvent("focus");
+  expect(attempts).toHaveLength(1);
+  expect(host.textContent).toContain("Selected search limit is unsupported.");
+  expect(host.querySelector('[role="alert"]')?.getAttribute("style")).not.toContain("line-clamp");
+  await click("Retry analysis");
+  expect(attempts).toHaveLength(2);
+});
+
+it("backs off recurring connection failures without letting focus events spin the engine", async () => {
+  const attempts = pendingAnalysis();
+  await render();
+  vi.useFakeTimers();
+  for (const delay of [1000, 2000, 4000, 8000, 16000, 30000, 30000]) {
+    const count = attempts.length;
+    await act(async () => {
+      attempts.at(-1)!.request.onUpdate?.([line]);
+      attempts.at(-1)!.reject(new PcEngineConnectionError("Invented recurring loss"));
+    });
+    await browserEvent("focus");
+    await browserEvent("pageshow");
+    await advance(delay - 1);
+    expect(attempts).toHaveLength(count);
+    await advance(1);
+    expect(attempts).toHaveLength(count + 1);
+  }
 });

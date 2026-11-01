@@ -23,7 +23,13 @@ import {
     assertPcCpuReceipt,
 } from "./pcCpuResources";
 import type { CpuResourceSelection } from "../../scripts/engine-resource-protocol.mjs";
-import { loadPcEngineHealth, PcEngineCapabilityError } from "./pcEngineHealth";
+import { loadPcEngineHealth } from "./pcEngineHealth";
+import {
+    PcEngineConnectionError,
+    pcEngineHttpError,
+    fetchPcEngine,
+    pcEngineTransportError,
+} from "./pcEngineConnection";
 import {
     capturePcSearchLimit,
     assertPcSearchCapability,
@@ -84,6 +90,9 @@ export type WebStockfishAnalyzeRequest = {
     minimumStoredDepth?: number;
     /** Interactive opt-out also excludes cached hits, prefetch and failure fallback. */
     useStoredEvaluations?: boolean;
+    /** Live panels may show stored lines while waiting, but must still recover
+     * a failed live connection instead of treating that cache hit as completion. */
+    requireLiveResult?: boolean;
     engineKind?: PcEngineKind;
     performancePreset?: EnginePerformancePreset;
     cpuResources?: CpuResourceSelection;
@@ -105,6 +114,7 @@ export async function analyzeWithWebStockfish18({
     preferStoredEvaluation = false,
     minimumStoredDepth = 0,
     useStoredEvaluations = true,
+    requireLiveResult = false,
     engineKind = "stockfish",
     performancePreset = "good",
     cpuResources: requestedCpuResources,
@@ -329,7 +339,15 @@ export async function analyzeWithWebStockfish18({
             },
         });
     } catch (error) {
-        if (isAbortError(error) || signal?.aborted || cpuResources || searchLimit) throw error;
+        if (
+            isAbortError(error) ||
+            signal?.aborted ||
+            cpuResources ||
+            searchLimit ||
+            infinite ||
+            requireLiveResult
+        )
+            throw error;
 
         // The PC engine is busy or unreachable: keep the position answered with the
         // saved evaluation instead of failing, unless the dead search already got deeper.
@@ -367,7 +385,7 @@ async function analyzeWithRemoteStockfish18WithRetry(
             if (
                 isAbortError(error) ||
                 request.signal?.aborted ||
-                error instanceof PcEngineCapabilityError
+                !(error instanceof PcEngineConnectionError)
             )
                 throw error;
             lastError = error;
@@ -377,8 +395,8 @@ async function analyzeWithRemoteStockfish18WithRetry(
 
     const detail = lastError instanceof Error ? ` ${lastError.message}` : "";
     const engineLabel = request.engineKind === "lc0" ? "LCZero" : "Stockfish";
-    throw new Error(
-        `Gaming PC ${engineLabel} is unavailable; phone analysis is disabled.${detail}`,
+    throw new PcEngineConnectionError(
+        `The connection to Gaming PC ${engineLabel} was interrupted.${detail}`,
     );
 }
 
@@ -622,7 +640,7 @@ async function analyzeWithRemoteStockfish18({
 
     try {
         throwIfAborted(signal);
-        const response = await fetch(`${REMOTE_STOCKFISH_URL}/v1/analyze`, {
+        const response = await fetchPcEngine(`${REMOTE_STOCKFISH_URL}/v1/analyze`, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -641,7 +659,7 @@ async function analyzeWithRemoteStockfish18({
             signal: controller.signal,
         });
         if (!response.ok) {
-            throw new Error(`Gaming PC engine returned HTTP ${response.status}.`);
+            throw pcEngineHttpError(response.status, "Gaming PC engine");
         }
         if (!response.body) throw new Error("Gaming PC engine returned an empty response.");
 
@@ -731,7 +749,9 @@ async function analyzeWithRemoteStockfish18({
         };
 
         while (true) {
-            const { value, done } = await reader.read();
+            const { value, done } = await reader.read().catch((error: unknown) => {
+                throw pcEngineTransportError(error);
+            });
             buffer += decoder.decode(value, { stream: !done });
             const lines = buffer.split(/\r?\n/);
             buffer = done ? "" : (lines.pop() ?? "");
@@ -749,8 +769,8 @@ async function analyzeWithRemoteStockfish18({
         }
 
         if (remoteError) throw remoteError;
-        if ((planSearch || searchLimit) && !completed)
-            throw new Error(
+        if ((planSearch || searchLimit || infinite) && !completed)
+            throw new PcEngineConnectionError(
                 planSearch
                     ? "The plan search ended before completion. Try again."
                     : "The engine search ended before confirming completion. Try again.",
@@ -761,9 +781,10 @@ async function analyzeWithRemoteStockfish18({
         publish(true);
         return sortEngineLines(linesByPv);
     } catch (error) {
-        if (stalled) throw new Error("The PC engine stream stalled. Reconnecting…");
+        if (signal?.aborted) throw new DOMException("Analysis cancelled", "AbortError");
+        if (stalled) throw new PcEngineConnectionError("The PC engine stream stalled.");
         if (firstLineTimedOut) {
-            throw new Error(
+            throw new PcEngineConnectionError(
                 `Gaming PC ${engineKind === "lc0" ? "LCZero" : "Stockfish"} did not begin analysis in time.`,
             );
         }
@@ -1013,7 +1034,7 @@ async function ensureRemoteEngineService(signal?: AbortSignal) {
         const wakeController = new AbortController();
         const timeout = window.setTimeout(() => wakeController.abort(), 20_000);
         try {
-            const response = await fetch(`${REMOTE_STOCKFISH_URL}/api/engine/start`, {
+            const response = await fetchPcEngine(`${REMOTE_STOCKFISH_URL}/api/engine/start`, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: "{}",
@@ -1022,8 +1043,12 @@ async function ensureRemoteEngineService(signal?: AbortSignal) {
             // A direct connection to an already-running engine service has no wake
             // route. Its 404 still proves that the service is available.
             if (!response.ok && response.status !== 404) {
-                throw new Error(`Gaming PC engine wake returned HTTP ${response.status}.`);
+                throw pcEngineHttpError(response.status, "Gaming PC engine wake");
             }
+        } catch (error) {
+            if (wakeController.signal.aborted)
+                throw new PcEngineConnectionError("The PC engine wake request timed out.");
+            throw error;
         } finally {
             window.clearTimeout(timeout);
         }

@@ -1,4 +1,10 @@
 import { resolvePrivateServiceUrl } from "./serverUrl";
+import {
+    PcEngineConnectionError,
+    pcEngineHttpError,
+    fetchPcEngine,
+    pcEngineTransportError,
+} from "./pcEngineConnection";
 
 export const PHONE_PC_ENGINE_URL = resolvePrivateServiceUrl(
     import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://lox-pc.tail89d19b.ts.net",
@@ -27,22 +33,21 @@ export async function loadPcEngineHealth(
         signal?.addEventListener("abort", abort, { once: true });
         timer = setTimeout(() => {
             controller.abort();
-            reject(new PcEngineCapabilityError("The PC check timed out. Retry the check."));
+            reject(new PcEngineConnectionError("The PC check timed out."));
         }, 5000);
     });
     try {
         return await Promise.race([
             interrupted,
             (async () => {
-                const response = await fetch(`${base}/v1/health`, {
+                const response = await fetchPcEngine(`${base}/v1/health`, {
                     signal: controller.signal,
                     cache: "no-store",
                 });
-                if (!response.ok)
-                    throw new PcEngineCapabilityError(
-                        "PC details are unavailable. Check the PC connection and retry.",
-                    );
-                const result: unknown = await response.json();
+                if (!response.ok) throw pcEngineHttpError(response.status, "PC details check");
+                const result: unknown = await response.json().catch((error: unknown) => {
+                    throw pcEngineTransportError(error);
+                });
                 controller.signal.throwIfAborted();
                 return result;
             })(),

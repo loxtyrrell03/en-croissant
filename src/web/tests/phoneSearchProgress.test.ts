@@ -43,6 +43,10 @@ it("distinguishes paused/error/unlimited states and preserves subsecond units", 
         value: 0,
         label: "Analysis unavailable",
     });
+    expect(phoneSearchProgress(true, "reconnecting", [line], { t: "Depth", c: 14 })).toEqual({
+        value: null,
+        label: "Waiting to reconnect",
+    });
     expect(phoneSearchProgress(true, "running", [line], { t: "Infinite" }).value).toBeNull();
     expect(phoneSearchSummary({ t: "Time", c: 51 })).toBe("51 ms per position");
     expect(phoneSearchSummary({ t: "Time", c: 1234 })).toBe("1.234 s per position");

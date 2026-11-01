@@ -1,3 +1,26 @@
+## 2026-11-01 phone Live engine connection recovery
+
+- Live owns a position/settings snapshot, aborts and parks work while hidden or
+  offline, and resumes unfinished analysis on pageshow/visibility/online. Temporary
+  network/timeout/408/429/500/502/503/504 failures retry with capped30-second backoff;
+  protocol, capability and other HTTP failures stay visible for explicit retry.
+  Completed finite searches remain complete when the worker returns to standby.
+- Off, service Off, report/Plans suspension, position/settings changes and unmount
+  cancel owned timers and callbacks. Pagehide releases only an active Live attempt;
+  never release another search from suspended/disposed panels. Saved choices stay
+  exact. Cold-worker readiness is not itself a failed service.
+- Both compact Prep and full Live preserve same-position lines during recovery,
+  label them Previous result shown, and expose Retry analysis without clipping.
+  A stored result can appear immediately but cannot falsely complete Live recovery;
+  batch callers retain their existing stored-fallback contract. Mobile headers can
+  wrap at enlarged text size without changing the board's width-based dimensions.
+- Source verification:134 focused cases/11 files, project types, and12 rendered
+  Chrome156 checks at320/390px and200% text. Two actual-component lifecycle tests
+  fail against prior47c51a63 and pass here. Reuse
+  `scripts/qa-phone-engine-recovery.mjs`; ignored receipts/screenshots are under
+  `tmp/phone-engine-recovery-qa` and `tmp/engine-recovery-review`. Source/browser
+  proof is separate from coordinated delivery and physical-phone verification.
+
 ## 2026-11-01 combined phone fixes delivered
 
 - Phone assets and the changed home/OTB runtime are live at the canonical private
