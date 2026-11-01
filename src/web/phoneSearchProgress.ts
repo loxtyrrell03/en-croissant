@@ -18,6 +18,7 @@ export function phoneSearchProgress(
     go: GoMode,
 ): { value: number | null; label: string } {
     if (!enabled || status === "idle") return { value: 0, label: "Analysis paused" };
+    if (status === "reconnecting") return { value: null, label: "Waiting to reconnect" };
     if (status === "error") return { value: 0, label: "Analysis unavailable" };
     const summary = phoneSearchSummary(go);
     if (status === "complete") return { value: 100, label: `Search complete · ${summary}` };

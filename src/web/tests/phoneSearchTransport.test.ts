@@ -204,7 +204,7 @@ it("keeps the original snapshot through a retry and cancels the terminal request
     fetch.mockImplementation(async (input) => {
         if (String(input).endsWith("/api/engine/start")) return json({ ok: true });
         if (String(input).endsWith("/v1/health")) return json(health);
-        if (++attempt === 1) throw Error("Invented transient stream failure");
+        if (++attempt === 1) throw new TypeError("Invented transient stream failure");
         return stream(meta, info, done);
     });
     const source = { ...selected };
