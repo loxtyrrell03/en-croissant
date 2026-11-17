@@ -1,5 +1,13 @@
 # Personal chess library synchronization
 
+## Windows file spelling conflicts (2026-11-17)
+
+- If the two roots or a retained baseline address one path using different
+  casing, hold that path and its descendants as a file conflict. Keep both
+  copies and the prior baseline available for reconciliation. Continue syncing
+  unrelated files and databases. The Windows regression covers a case-only
+  rename combined with an edit and verifies that an independent file syncs.
+
 ## 2026-10-27 shared database opening compatibility
 
 - Existing phone releases discover a database at its `position-index/index.json`

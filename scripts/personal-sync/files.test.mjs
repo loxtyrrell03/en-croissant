@@ -38,6 +38,25 @@ test('an arriving save cannot be clobbered during staged publication',async t=>{
   assert.equal(await fs.readFile(path.join(f.rightRoot,'g.pgn'),'utf8'),'concurrent');
   assert.equal(await fs.readFile(path.join(f.recovery,(await fs.readdir(f.recovery))[0],'before'),'utf8'),'base');
 });
+
+test('case-only path conflicts preserve both copies and let other files sync', async t => {
+  const f = await fixture(t);
+  const original = path.join(f.leftRoot, 'game.pgn');
+  await fs.writeFile(original, 'base');
+  await syncFiles({...f, initialize:true});
+
+  const temporary = path.join(f.leftRoot, 'renaming.pgn');
+  await fs.rename(original, temporary);
+  await fs.rename(temporary, path.join(f.leftRoot, 'Game.pgn'));
+  await fs.writeFile(path.join(f.leftRoot, 'Game.pgn'), 'Dev annotations');
+  await fs.writeFile(path.join(f.leftRoot, 'new.pgn'), 'new game');
+
+  const report = await syncFiles(f);
+  assert.equal(report.conflicts.length, 1);
+  assert.equal(await fs.readFile(path.join(f.leftRoot, 'Game.pgn'), 'utf8'), 'Dev annotations');
+  assert.equal(await fs.readFile(path.join(f.rightRoot, 'game.pgn'), 'utf8'), 'base');
+  assert.equal(await fs.readFile(path.join(f.rightRoot, 'new.pgn'), 'utf8'), 'new game');
+});
 test('a missing root, unsafe path, changed roots or unreadable baseline never means deletion',async t=>{
   const f=await fixture(t);await syncFiles({...f,initialize:true});await fs.rmdir(f.rightRoot);await assert.rejects(syncFiles(f));
   for(const p of ['../x','a/../x','C:/x','a\\b','a//b'])assert.throws(()=>contained(f.leftRoot,p));

@@ -200,7 +200,25 @@ export async function syncFiles({ leftRoot, rightRoot, statePath, recovery, init
     current.initial=Object.fromEntries(names.map(n=>[n,{left:summary(left.get(n)),right:summary(right.get(n))}]));
     if(!dryRun) await atomicJson(statePath,current);
   }
-  const directions=new Map(names.map(n=>{
+  // On Windows a differently cased path can resolve to the same file. Hold
+  // both versions and their baseline until the user resolves the spelling.
+  const spellings = new Map();
+  const caseConflicts = new Map();
+  for (const name of names) {
+    const folded = name.toLowerCase();
+    if (spellings.has(folded)) caseConflicts.set(folded, spellings.get(folded));
+    else spellings.set(folded, name);
+  }
+  const reconciliationNames = names.filter(name => {
+    let ancestor = name.toLowerCase();
+    while (ancestor) {
+      if (caseConflicts.has(ancestor)) return false;
+      const separator = ancestor.lastIndexOf('/');
+      ancestor = separator < 0 ? '' : ancestor.slice(0, separator);
+    }
+    return true;
+  });
+  const directions=new Map(reconciliationNames.map(n=>{
     const l=left.get(n),r=right.get(n), initial=current.initial?.[n];
     if(!current.initialized && !current.entries[n]) {
       const unchanged=initial && same(l,initial.left) && same(r,initial.right);
@@ -210,14 +228,14 @@ export async function syncFiles({ leftRoot, rightRoot, statePath, recovery, init
   }));
   // Create parents first, remove children first. Files are handled before any
   // removals of their containing directories.
-  names.sort((a,b) => {
+  reconciliationNames.sort((a,b) => {
     const deleting=n=>directions.get(n)==='left'?!left.has(n):directions.get(n)==='right'?!right.has(n):false;
     const aDelete = deleting(a) && (left.get(a)?.kind==='directory'||right.get(a)?.kind==='directory');
     const bDelete = deleting(b) && (left.get(b)?.kind==='directory'||right.get(b)?.kind==='directory');
     return Number(aDelete)-Number(bDelete) || (aDelete ? b.split('/').length-a.split('/').length : a.split('/').length-b.split('/').length) || a.localeCompare(b);
   });
-  const report = { changed: [], conflicts: [], unchanged: 0, dryRun };
-  for (const relative of names) {
+  const report = { changed: [], conflicts: [...caseConflicts.values()], unchanged: 0, dryRun };
+  for (const relative of reconciliationNames) {
     const l=left.get(relative), r=right.get(relative);
     const previous=current.entries[relative];
     const direction=directions.get(relative);
