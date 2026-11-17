@@ -7,6 +7,9 @@
   copies and the prior baseline available for reconciliation. Continue syncing
   unrelated files and databases. The Windows regression covers a case-only
   rename combined with an edit and verifies that an independent file syncs.
+- A Files pass can stop safely on a filesystem error, for example if a
+  directory still contains local files. The runner retains the failure and
+  proceeds with the independent database sync and phone catalogue refresh.
 
 ## 2026-10-27 shared database opening compatibility
 

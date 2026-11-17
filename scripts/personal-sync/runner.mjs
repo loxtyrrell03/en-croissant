@@ -25,6 +25,34 @@ export function validateConfig(c){
   if(marker.id!==c.id)throw Error('Database root identity changed');
 }
 const isEnClosed=()=>process.platform!=='win32'||spawnSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',"if(Get-Process -Name 'en-croissant','encroissant' -ErrorAction SilentlyContinue){exit 1}else{exit 0}"],{windowsHide:true,timeout:10000}).status===0;
+
+export async function syncLibraryPass({runFiles, runDatabases, refreshCatalog, setChecking}) {
+  const started = Date.now();
+  let files;
+  let fileFailure;
+  try {
+    files = await runFiles();
+  } catch (error) {
+    fileFailure = {error: error.message, at: new Date().toISOString()};
+  }
+  const filesDone = Date.now();
+  await setChecking('databases');
+  const databases = await runDatabases();
+  const databasesDone = Date.now();
+  await setChecking('catalog');
+  await refreshCatalog();
+  return {
+    files,
+    fileFailure,
+    databases,
+    timingsMs: {
+      files: filesDone - started,
+      databases: databasesDone - filesDone,
+      catalog: Date.now() - databasesDone,
+    },
+  };
+}
+
 export async function startRunner(c){
   validateConfig(c);
   const lockPath=path.join(c.stateRoot,'runner.lock'),nonce=randomUUID();
@@ -44,12 +72,20 @@ export async function startRunner(c){
     status={...status,phase:'syncing',checking:'files'};await writeStatus();
     try{
       validateConfig(c);
-      const started=Date.now();
-      const files=await syncFiles({leftRoot:c.filesRoot,rightRoot:c.enFilesRoot,statePath:path.join(c.stateRoot,'files.json'),recovery:path.join(c.stateRoot,'recovery','files')});
-      const filesDone=Date.now();status={...status,checking:'databases'};await writeStatus();
-      const databases=await bridge.tick(),databasesDone=Date.now();status={...status,checking:'catalog'};await writeStatus();await library.refresh();
-      const conflicts=[...files.conflicts.map(path=>({path,reason:'Changed in both apps'})),...databases.conflicts];
-      status={...status,revision:library.revision,phase:conflicts.length||databases.errors.length?'attention':'synced',lastSuccess:conflicts.length||databases.errors.length?status.lastSuccess:new Date().toISOString(),conflicts,errors:databases.errors,checkedAt:new Date().toISOString(),changedFiles:files.changed.length,changedGames:databases.changed,timingsMs:{files:filesDone-started,databases:databasesDone-filesDone,catalog:Date.now()-databasesDone}};
+      const {files,fileFailure,databases,timingsMs}=await syncLibraryPass({
+        runFiles:()=>syncFiles({leftRoot:c.filesRoot,rightRoot:c.enFilesRoot,statePath:path.join(c.stateRoot,'files.json'),recovery:path.join(c.stateRoot,'recovery','files')}),
+        runDatabases:()=>bridge.tick(),
+        refreshCatalog:()=>library.refresh(),
+        setChecking:async checking=>{status={...status,checking};await writeStatus();},
+      });
+      const fileConflicts=files
+        ? files.conflicts.map(path=>({path,reason:'Changed in both apps'}))
+        : status.conflicts.filter(conflict=>!conflict.collection && conflict.path);
+      const conflicts=[...fileConflicts,...databases.conflicts];
+      const errors=fileFailure?[{error:fileFailure.error},...databases.errors]:databases.errors;
+      const needsAttention=conflicts.length||errors.length;
+      status={...status,revision:library.revision,phase:needsAttention?'attention':'synced',lastSuccess:needsAttention?status.lastSuccess:new Date().toISOString(),conflicts,errors,checkedAt:new Date().toISOString(),changedFiles:files?.changed.length??null,changedGames:databases.changed,timingsMs};
+      if(fileFailure)status.lastFailure=fileFailure;
     }catch(e){status={...status,phase:'attention',errors:[{error:e.message}],lastFailure:{error:e.message,at:new Date().toISOString()},checkedAt:new Date().toISOString()};}
     await writeStatus();
   }).finally(()=>{pendingTick=null;}));
