@@ -1,0 +1,209 @@
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -61,0 +62 @@
++import { compareShortExchangeMistake } from "./decisionShortExchangeMistake";
+@@ -804 +805,10 @@
+-                        );
++                        ) ??
++                        (corroboratingReply(input.fen, comparedBest, betterProbe)
++                            ? compareShortExchangeMistake(
++                                  input.fen,
++                                  comparedBest,
++                                  playedLine,
++                                  betterProbe!.lines[0],
++                                  opponent,
++                              )
++                            : null);
+diff --git a/src/utils/tacticalMotifs/decisionShortExchangeMistake.ts b/src/utils/tacticalMotifs/decisionShortExchangeMistake.ts
+new file mode 100644
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionShortExchangeMistake.ts
+@@ -0,0 +1,188 @@
++import { makeFen } from "chessops/fen";
++import type { Color, Square } from "chessops/types";
++import { makeSquare } from "chessops/util";
++import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import type { TacticalMistakeEpisode } from "./tacticalMistakeEpisode";
++
++const WINDOW = 13;
++const MIN_COST = 90;
++const UNKNOWN_EXCHANGE = -20_000;
++
++function hypotheticalCaptureGain(step: TacticalReplayStep, square: Square) {
++    if (step.after.isCheck()) return null;
++    const position = step.after.clone();
++    position.turn = step.before.turn;
++    position.epSquare = undefined;
++    const target = { from: step.move.to, to: square };
++    if (!position.isLegal(target)) return 0;
++    const gain = tacticalExchangeGain(position, target);
++    return gain <= UNKNOWN_EXCHANGE ? null : gain;
++}
++
++function captureVictim(step: TacticalReplayStep, square: Square) {
++    return (
++        step.capture &&
++        step.move.to === square &&
++        step.before.board.get(square)?.color !== step.before.turn
++    );
++}
++
++/** Locate the early, concrete material event shared by the paired and
++ * separately searched lines. The better root must change the very same
++ * attack. A similar-looking tactic with the same gain is a negative control. */
++function attackEntry(
++    played: TacticalReplayStep,
++    better: TacticalReplayStep,
++    common: TacticalReplayStep[],
++    allowCheckingSequence: boolean,
++) {
++    const first = common[0];
++    if (!first) return null;
++    const before = better.after;
++    const legal = before.isLegal(first.move);
++    if (first.capture && first.before.board.get(first.move.to) && !first.move.promotion) {
++        const gain = tacticalExchangeGain(first.before, first.move);
++        const alternateGain = legal ? tacticalExchangeGain(before, first.move) : 0;
++        if (gain >= MIN_COST && alternateGain > UNKNOWN_EXCHANGE && alternateGain < MIN_COST) {
++            return {
++                through: 2,
++                description: `${first.san} wins an exchange on ${makeSquare(first.move.to)} that ${better.san} avoids.`,
++            };
++        }
++    }
++    const victim = played.after.board.get(played.move.to);
++    if (!first.after.isCheck() && victim && victim.role !== "king" && victim.role !== "pawn") {
++        const alternateSquare =
++            better.move.from === played.move.from ? better.move.to : played.move.from;
++        const alternateVictim = before.board.get(alternateSquare);
++        if (alternateVictim?.role !== victim.role || alternateVictim.color !== victim.color)
++            return null;
++        // The target has stayed on the played destination until the payoff.
++        const payoff = common
++            .slice(1, 6)
++            .findIndex(
++                (step) => step.move.from === played.move.to || step.move.to === played.move.to,
++            );
++        if (payoff < 0 || !captureVictim(common[payoff + 1], played.move.to)) return null;
++        const gain = hypotheticalCaptureGain(first, played.move.to);
++        if (gain === null || gain < MIN_COST) return null;
++        let control = `${better.san} prevents that reply.`;
++        if (legal) {
++            const next = before.clone();
++            next.play(first.move);
++            const controlGain = hypotheticalCaptureGain(
++                { ...first, before, after: next },
++                alternateSquare,
++            );
++            if (controlGain === null || controlGain >= MIN_COST) return null;
++            control = `${better.san} avoids the same profitable attack.`;
++        } else if (better.capture && better.move.to === first.move.from) {
++            control = `${better.san} removes the attacker.`;
++        }
++        return {
++            through: payoff + 3,
++            description: `${first.san} attacks the ${victim.role} on ${makeSquare(played.move.to)}. ${common
++                .slice(1, payoff + 2)
++                .map((step) => step.san)
++                .join(" ")} follows in both searches. ${control}`,
++        };
++    }
++    if (!allowCheckingSequence || !first.after.isCheck()) return null;
++    if (legal) {
++        const next = before.clone();
++        next.play(first.move);
++        if (next.isCheck()) return null;
++    }
++    for (let ply = 2; ply < Math.min(7, common.length); ply += 2) {
++        const step = common[ply];
++        if (step.capture && tacticalExchangeGain(step.before, step.move) >= MIN_COST)
++            return {
++                through: ply + 2,
++                description: `After ${played.san}, ${common
++                    .slice(0, ply + 1)
++                    .map((item) => item.san)
++                    .join(
++                        " ",
++                    )} wins material in both searches. ${better.san} avoids that checking entry.`,
++            };
++        if (!step.after.isCheck()) break;
++    }
++    return null;
++}
++
++/** Both reply frames are already exact and score-corroborated by the caller.
++ * Compare the most conservative matched material balance after the common
++ * tactic. Changing branches before the exchange has settled proves nothing. */
++export function compareShortExchangeMistake(
++    fen: string,
++    better: DecisionEngineLine,
++    played: DecisionEngineLine,
++    betterReply: DecisionEngineLine,
++    playedReply: DecisionEngineLine,
++    allowCheckingSequence = false,
++): TacticalMistakeEpisode | null {
++    if (
++        better.cp === null ||
++        played.cp === null ||
++        better.depth < 16 ||
++        better.depth !== played.depth ||
++        better.cp - played.cp < 100 ||
++        betterReply.cp === null ||
++        playedReply.cp === null ||
++        playedReply.cp - betterReply.cp < 100 ||
++        played.pvUci[1] !== playedReply.pvUci[0]
++    )
++        return null;
++    const [control] = replayTacticalLine(fen, better.pvUci.slice(0, 1));
++    const [actual] = replayTacticalLine(fen, played.pvUci.slice(0, 1));
++    if (
++        !control ||
++        !actual ||
++        makeFen(control.after.toSetup()) !== betterReply.fen ||
++        makeFen(actual.after.toSetup()) !== playedReply.fen
++    )
++        return null;
++    const shared: TacticalReplayStep[] = [];
++    for (const [index, step] of replayTacticalLine(
++        playedReply.fen,
++        playedReply.pvUci.slice(0, 8),
++    ).entries()) {
++        if (step.uci !== played.pvUci[index + 1]) break;
++        shared.push(step);
++    }
++    const attack = attackEntry(actual, control, shared, allowCheckingSequence);
++    if (!attack) return null;
++    const alternatives = [better, { ...better, pvUci: [control.uci, ...betterReply.pvUci] }];
++    const actuals = [played, { ...played, pvUci: [actual.uci, ...playedReply.pvUci] }];
++    const horizon = Math.min(
++        WINDOW,
++        ...[...alternatives, ...actuals].map((line) => line.pvUci.length),
++    );
++    for (let end = attack.through + 2; end <= horizon; end++) {
++        const measured = [...alternatives, ...actuals].map((line) =>
++            measureDecisionLine(fen, { ...line, pvUci: line.pvUci.slice(0, end) }),
++        );
++        const material = measured.flatMap((line) =>
++            line &&
++            !line.drawnEnding &&
++            line.quietEndingPlies >= 2 &&
++            line.endingMaterialRangeCp[0] === line.endingMaterialRangeCp[1]
++                ? [line.materialChangeCp]
++                : [],
++        );
++        if (material.length !== 4) continue;
++        const worstBetter = Math.min(material[0], material[1]);
++        const bestPlayed = Math.max(material[2], material[3]);
++        if (bestPlayed > -MIN_COST || worstBetter - bestPlayed < MIN_COST) continue;
++        return {
++            kind: "forcing-attack",
++            throughPly: end,
++            betterLineUci: better.pvUci.slice(0, end),
++            playedLineUci: played.pvUci.slice(0, end),
++            mechanisms: [],
++            explanation: `${attack.description} At the matched point after ${end} plies, the played lines retain at least ${((worstBetter - bestPlayed) / 100).toFixed(1)} fewer material points than either better line.`,
++        };
++    }
++    return null;
++}

@@ -1,0 +1,11 @@
+{
+  "snapshots": {
+    "b": "32d2d26fac6eaf69b1c59f8cb178393a59a274e4b4776e873e4f4851b5d878d3",
+    "precision": "41107c8a339f2cad022e8223da4dee743ca3da9793b777bb54572b826c7edd54"
+  },
+  "sample": "993a92c04b9bddfde7989272143a0fb480b443594569ce939932e814b006ab44",
+  "reference": "507a9beb43e044bbcad6ac8d0dd784bd03445ff5b8097d996d309b790db4866d",
+  "commit": "74d28bd5d42550fc81c909f0a57ae17bd8508fdf",
+  "rule": "At least one additional reviewed tactical true positive with no lost true positives or extra reviewed false positives before adopting the experimental exchange detector.",
+  "source": "Pardubice Open A 2026"
+}

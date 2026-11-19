@@ -1,0 +1,283 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "mistake-maia-u2000-276dda756a2c743f-61",
+      "moveUci": "e6e4",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Re4 permits Nf5+ followed by Qf6, with forcing pressure on the exposed king and a repeatable route to winning h6. Nxd4 removes the checking knight."
+    },
+    {
+      "id": "mistake-maia-u2000-276dda756a2c743f-29",
+      "moveUci": "c8f5",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Bf5 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-411faaf897a1edb0-37",
+      "moveUci": "b8g8",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Rbg8 leaves Black without timely queenside counterplay. The b4 line opens c5 and leaves d6 exposed, while Na4 enables ...b5 and ...c4."
+    },
+    {
+      "id": "mistake-maia-u2000-411faaf897a1edb0-48",
+      "moveUci": "g4g5",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "g5 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-d4bea40e3ed32b08-86",
+      "moveUci": "b6c4",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Nc4 concedes the tempo to centralize with ...Ke6 or redirect the knight via ...Nb5. c6 makes the passer immediate and constrains Black's pieces."
+    },
+    {
+      "id": "mistake-maia-u2000-d4bea40e3ed32b08-64",
+      "moveUci": "g2f3",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Kf3 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-97b35ef910b38134-36",
+      "moveUci": "b4d6",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qxd6 allows ...Bd4+ Rf2 and rook swings to b6/g6 while White's rook remains tied to the checking diagonal. The pawn gain comes at a concrete cost in forcing king pressure."
+    },
+    {
+      "id": "mistake-maia-u2000-97b35ef910b38134-26",
+      "moveUci": "c4d5",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "cxd5 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-ec6746ee6b0506ad-42",
+      "moveUci": "g1h1",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Both king moves allow the queen exchange. After Kh1 the ...Bf2 attack on e1 continues with ...Bxe1 and ...Bxe4, while the Kh2 continuation can take e5 before the exchange."
+    },
+    {
+      "id": "mistake-maia-u2000-ec6746ee6b0506ad-38",
+      "moveUci": "f1e1",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rfe1 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-aae2ca7b72a2687f-49",
+      "moveUci": "h7g7",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Rhg7 gives White g4 first, blocking the available ...g4 space gain and delaying Black's planned kingside break."
+    },
+    {
+      "id": "mistake-maia-u2000-aae2ca7b72a2687f-31",
+      "moveUci": "a6c7",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nc7 is within seven centipawns of the alternative and reaches the same ...b6 setup."
+    },
+    {
+      "id": "mistake-maia-u2000-35db654e8edb60ef-41",
+      "moveUci": "g7d4",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Bxd4 permits Qd5+, a check that also attacks the bishop on d4. ...Rf7 Qxd4 wins the bishop."
+    },
+    {
+      "id": "mistake-maia-u2000-35db654e8edb60ef-36",
+      "moveUci": "f3e1",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Ne1 and Nd2 are close, within 12 centipawns in the paired search."
+    },
+    {
+      "id": "mistake-maia-u2000-9408c36d41deef6d-56",
+      "moveUci": "d1d2",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Rd2 omits the active Rd8+ and Rd7 pressure on f7. ...Kf8/...Ra4 or ...e4 gives Black the active rook and central pawn advance."
+    },
+    {
+      "id": "mistake-maia-u2000-9408c36d41deef6d-48",
+      "moveUci": "f1d1",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxd1 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-23a087934b624ffb-37",
+      "moveUci": "c8b7",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Bb7 permits Nxd6 and a queen trade on f3 in which White retains the extra minor piece. The active Rxf7 alternative recovers the knight and leads to a materially different sequence."
+    },
+    {
+      "id": "mistake-maia-u2000-23a087934b624ffb-32",
+      "moveUci": "e5d6",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "exd6 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-2ca23646c305e354-76",
+      "moveUci": "b1b6",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxb6 allows the Qa1+–Qe5+–Qe1+ series. Rf2 and Rxg2+ then take the queen for a rook rather than permitting a safe return to the original arrangement."
+    },
+    {
+      "id": "mistake-maia-u2000-2ca23646c305e354-54",
+      "moveUci": "e2d2",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qd2 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-340edd0419952ba7-73",
+      "moveUci": "d2c2",
+      "scope": "mistake-mechanism",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rc2+ gives White Kd5 and an active king supporting the c-pawn. The ...hxg4 alternative lets Black reach e6 before that king takes over; the precise tactical share of the pawn race is unclear."
+    },
+    {
+      "id": "mistake-maia-u2000-340edd0419952ba7-43",
+      "moveUci": "g8g7",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Kxg7 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-maia-u2000-25ce32894c04a2fc-42",
+      "moveUci": "f6g7",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "fxg7 allows ...Kxg7. Be4 first preserves the f6 passer and h7 pressure. The ...h6 line confirms the fxg7 and gxf8 promotion sequence."
+    },
+    {
+      "id": "mistake-maia-u2000-25ce32894c04a2fc-28",
+      "moveUci": "f4f5",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "f5 and h3 have the same paired score."
+    },
+    {
+      "id": "mistake-maia-u2000-7d880ab744f0df0a-73",
+      "moveUci": "g8a8",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Ra8 leaves the e7 bishop pinned to the king and allows Bc5 followed by Bxe7+ and Rxa6. Ke6 breaks the pin and supplies the separate ...Rd8 ...Bc5+ counterplay."
+    },
+    {
+      "id": "mistake-maia-u2000-7d880ab744f0df0a-46",
+      "moveUci": "a1c2",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nc2 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-23a8566af15bb350-36",
+      "moveUci": "c7e8",
+      "scope": "mistake-mechanism",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Both Nxe8 and Ba3 win an exchange initially. The engine gap survives the paired search, but distinct later king-safety and pawn trades make a single cause uncertain."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-23a8566af15bb350-45",
+      "moveUci": "c4e6",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Be6 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-6673024e6fd0490a-44",
+      "moveUci": "c2a3",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Na3 permits ...Nf3+ and the queen's cleared path from c4 to e4. The independent reply maintains the forcing advantage and pawn gains."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-6673024e6fd0490a-40",
+      "moveUci": "c4c5",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "c5 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-ef1811fa87f48c6c-39",
+      "moveUci": "d5c4",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "dxc4 allows Rxe4. Both searches retain the knight-for-pawn loss after the e-file trade and see lasting pressure; the alternative starts with ...Na5 and avoids that immediate capture."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-ef1811fa87f48c6c-31",
+      "moveUci": "d8d6",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qd6 is the best supplied recorded choice."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-de9c00cb9cfa4d2f-36",
+      "moveUci": "f5d7",
+      "scope": "mistake-mechanism",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qxd7 permits ...Bg3 while f2 is pinned to the e2 king by the queen on g2. ...Rxe3 and ...Qxf2+ maintain the forcing attack after the exchanges."
+    },
+    {
+      "id": "mistake-reykjavik-u2000-de9c00cb9cfa4d2f-27",
+      "moveUci": "d4e5",
+      "scope": "mistake-mechanism",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qe5 is the best supplied recorded choice."
+    }
+  ],
+  "limitations": [
+    "Reviewed from the legal paired principal variations and independently searched replies before opening classifier or model output.",
+    "One engine-assisted reviewer with a finite search horizon. Unclear causes remain unknown.",
+    "The broadcast cp swing was used for sampling only. The review is tied to the actual move and separates tactical or positional evidence.",
+    "The source split groups whole events. Each included game contributes a selected substantial broadcast loss and one near-best control."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "reference": "3d85a85ad2506d94cb53e269bcc86f68dbfdd4a8e698123c90a2e69e8e4697df",
+  "rule": "At least one additional reviewed tactical true positive, no lost true positives and no new reviewed false positives. Keep observed motifs grounded in the exact line and preserve position and move reports.",
+  "sample": "cd533a42e79412271c9905319e1c3b159b75a17d6c061a2aafda7fc6bc5b800a",
+  "b": "32d2d26fac6eaf69b1c59f8cb178393a59a274e4b4776e873e4f4851b5d878d3",
+  "commit": "74d28bd5d42550fc81c909f0a57ae17bd8508fdf",
+  "a": "b1ca2d3baabb6e43192c71df54e7dc60eff9aa66f6940682e1af807776cfa117"
+}

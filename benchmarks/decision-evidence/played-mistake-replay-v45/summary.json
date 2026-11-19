@@ -1,0 +1,2446 @@
+{
+  "protocol": 1,
+  "comparator": "74d28bd5",
+  "experimental": [
+    "a",
+    "b",
+    "c"
+  ],
+  "scope": "Review of the exact played move. A single engine-assisted reviewer supplied the labels. Club-18 is development for the precision change.",
+  "sharedReplyNotes": "The v23 cohort predates shared-reply caches. The other cohorts reuse their recorded shared-reply frames. Position-only optional search is omitted in every arm.",
+  "engineCost": "Same Stockfish 19 frames for compared classifiers, with no added requests. Worker timings exclude engine calls.",
+  "cohorts": {
+    "reviewed-development": {
+      "decisions": 162,
+      "games": 121,
+      "legacy": {
+        "tactical": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 28,
+          "tn": 101,
+          "unknownReference": 25,
+          "precision": {
+            "value": 0.875,
+            "numerator": 7,
+            "denominator": 8,
+            "interval95": [
+              0.5291118177871464,
+              0.9775825085499433
+            ]
+          },
+          "recall": {
+            "value": 0.2,
+            "numerator": 7,
+            "denominator": 35,
+            "interval95": [
+              0.10042446473798625,
+              0.3589161306566562
+            ]
+          },
+          "specificity": {
+            "value": 0.9901960784313726,
+            "numerator": 101,
+            "denominator": 102,
+            "interval95": [
+              0.9465420852342225,
+              0.9982672656025783
+            ]
+          },
+          "agreement": {
+            "value": 0.7883211678832117,
+            "numerator": 108,
+            "denominator": 137,
+            "interval95": [
+              0.7125362408470779,
+              0.8483781423287968
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 31,
+          "tn": 106,
+          "unknownReference": 25,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 31,
+            "interval95": [
+              0.0,
+              0.11025539546043596
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 106,
+            "denominator": 106,
+            "interval95": [
+              0.9650272414265277,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.7737226277372263,
+            "numerator": 106,
+            "denominator": 137,
+            "interval95": [
+              0.6967518351256811,
+              0.8357618197881241
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 8,
+          "tn": 115,
+          "unknownReference": 39,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 8,
+            "interval95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 115,
+            "denominator": 115,
+            "interval95": [
+              0.9676757685506868,
+              0.9999999999999999
+            ]
+          },
+          "agreement": {
+            "value": 0.9349593495934959,
+            "numerator": 115,
+            "denominator": 123,
+            "interval95": [
+              0.8768954003237401,
+              0.966677363619771
+            ]
+          }
+        }
+      },
+      "baseline": {
+        "tactical": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 18,
+          "tn": 102,
+          "unknownReference": 25,
+          "precision": {
+            "value": 1.0,
+            "numerator": 17,
+            "denominator": 17,
+            "interval95": [
+              0.8156818649911483,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4857142857142857,
+            "numerator": 17,
+            "denominator": 35,
+            "interval95": [
+              0.32994236002509725,
+              0.6443119540413141
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 102,
+            "denominator": 102,
+            "interval95": [
+              0.9637055378535367,
+              0.9999999999999999
+            ]
+          },
+          "agreement": {
+            "value": 0.8686131386861314,
+            "numerator": 119,
+            "denominator": 137,
+            "interval95": [
+              0.8018685419891511,
+              0.9152498466281065
+            ]
+          }
+        },
+        "positional": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 27,
+          "tn": 106,
+          "unknownReference": 25,
+          "precision": {
+            "value": 1.0,
+            "numerator": 4,
+            "denominator": 4,
+            "interval95": [
+              0.5101091635454027,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.12903225806451613,
+            "numerator": 4,
+            "denominator": 31,
+            "interval95": [
+              0.051342843746291486,
+              0.28852406256306423
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 106,
+            "denominator": 106,
+            "interval95": [
+              0.9650272414265277,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8029197080291971,
+            "numerator": 110,
+            "denominator": 137,
+            "interval95": [
+              0.7284438211065801,
+              0.8608712903313641
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 6,
+          "tn": 115,
+          "unknownReference": 39,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.25,
+            "numerator": 2,
+            "denominator": 8,
+            "interval95": [
+              0.071479212752109,
+              0.5907245696898311
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 115,
+            "denominator": 115,
+            "interval95": [
+              0.9676757685506868,
+              0.9999999999999999
+            ]
+          },
+          "agreement": {
+            "value": 0.9512195121951219,
+            "numerator": 117,
+            "denominator": 123,
+            "interval95": [
+              0.8976539686245577,
+              0.9774542257467482
+            ]
+          }
+        }
+      },
+      "a": {
+        "after": {
+          "tactical": {
+            "tp": 17,
+            "fp": 0,
+            "fn": 18,
+            "tn": 102,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 17,
+              "denominator": 17,
+              "interval95": [
+                0.8156818649911483,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.4857142857142857,
+              "numerator": 17,
+              "denominator": 35,
+              "interval95": [
+                0.32994236002509725,
+                0.6443119540413141
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 102,
+              "denominator": 102,
+              "interval95": [
+                0.9637055378535367,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.8686131386861314,
+              "numerator": 119,
+              "denominator": 137,
+              "interval95": [
+                0.8018685419891511,
+                0.9152498466281065
+              ]
+            }
+          },
+          "positional": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 27,
+            "tn": 106,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.12903225806451613,
+              "numerator": 4,
+              "denominator": 31,
+              "interval95": [
+                0.051342843746291486,
+                0.28852406256306423
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 106,
+              "denominator": 106,
+              "interval95": [
+                0.9650272414265277,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8029197080291971,
+              "numerator": 110,
+              "denominator": 137,
+              "interval95": [
+                0.7284438211065801,
+                0.8608712903313641
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 6,
+            "tn": 115,
+            "unknownReference": 39,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 2,
+              "denominator": 8,
+              "interval95": [
+                0.071479212752109,
+                0.5907245696898311
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 115,
+              "denominator": 115,
+              "interval95": [
+                0.9676757685506868,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.9512195121951219,
+              "numerator": 117,
+              "denominator": 123,
+              "interval95": [
+                0.8976539686245577,
+                0.9774542257467482
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 66.0309500000003,
+          "after": 67.2282499999992
+        },
+        "changedMistakeReports": []
+      },
+      "b": {
+        "after": {
+          "tactical": {
+            "tp": 18,
+            "fp": 0,
+            "fn": 17,
+            "tn": 102,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 18,
+              "denominator": 18,
+              "interval95": [
+                0.8241207763533425,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.5142857142857142,
+              "numerator": 18,
+              "denominator": 35,
+              "interval95": [
+                0.35568804595868564,
+                0.6700576399749026
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 102,
+              "denominator": 102,
+              "interval95": [
+                0.9637055378535367,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.8759124087591241,
+              "numerator": 120,
+              "denominator": 137,
+              "interval95": [
+                0.810254982792102,
+                0.9210637699561903
+              ]
+            }
+          },
+          "positional": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 27,
+            "tn": 106,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.12903225806451613,
+              "numerator": 4,
+              "denominator": 31,
+              "interval95": [
+                0.051342843746291486,
+                0.28852406256306423
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 106,
+              "denominator": 106,
+              "interval95": [
+                0.9650272414265277,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8029197080291971,
+              "numerator": 110,
+              "denominator": 137,
+              "interval95": [
+                0.7284438211065801,
+                0.8608712903313641
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 6,
+            "tn": 115,
+            "unknownReference": 39,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 2,
+              "denominator": 8,
+              "interval95": [
+                0.071479212752109,
+                0.5907245696898311
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 115,
+              "denominator": 115,
+              "interval95": [
+                0.9676757685506868,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.9512195121951219,
+              "numerator": 117,
+              "denominator": 123,
+              "interval95": [
+                0.8976539686245577,
+                0.9774542257467482
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 66.0309500000003,
+          "after": 64.30199999999968
+        },
+        "changedMistakeReports": [
+          {
+            "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+            "reference": {
+              "tactical": true,
+              "positional": true,
+              "mixed": true
+            },
+            "before": [],
+            "after": [
+              "tactical"
+            ]
+          }
+        ]
+      },
+      "c": {
+        "after": {
+          "tactical": {
+            "tp": 18,
+            "fp": 0,
+            "fn": 17,
+            "tn": 102,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 18,
+              "denominator": 18,
+              "interval95": [
+                0.8241207763533425,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.5142857142857142,
+              "numerator": 18,
+              "denominator": 35,
+              "interval95": [
+                0.35568804595868564,
+                0.6700576399749026
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 102,
+              "denominator": 102,
+              "interval95": [
+                0.9637055378535367,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.8759124087591241,
+              "numerator": 120,
+              "denominator": 137,
+              "interval95": [
+                0.810254982792102,
+                0.9210637699561903
+              ]
+            }
+          },
+          "positional": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 27,
+            "tn": 106,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.12903225806451613,
+              "numerator": 4,
+              "denominator": 31,
+              "interval95": [
+                0.051342843746291486,
+                0.28852406256306423
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 106,
+              "denominator": 106,
+              "interval95": [
+                0.9650272414265277,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8029197080291971,
+              "numerator": 110,
+              "denominator": 137,
+              "interval95": [
+                0.7284438211065801,
+                0.8608712903313641
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 6,
+            "tn": 115,
+            "unknownReference": 39,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 2,
+              "denominator": 8,
+              "interval95": [
+                0.071479212752109,
+                0.5907245696898311
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 115,
+              "denominator": 115,
+              "interval95": [
+                0.9676757685506868,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.9512195121951219,
+              "numerator": 117,
+              "denominator": 123,
+              "interval95": [
+                0.8976539686245577,
+                0.9774542257467482
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 66.0309500000003,
+          "after": 65.5663999999997
+        },
+        "changedMistakeReports": [
+          {
+            "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+            "reference": {
+              "tactical": true,
+              "positional": true,
+              "mixed": true
+            },
+            "before": [],
+            "after": [
+              "tactical"
+            ]
+          }
+        ]
+      },
+      "precision": {
+        "after": {
+          "tactical": {
+            "tp": 17,
+            "fp": 0,
+            "fn": 18,
+            "tn": 102,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 17,
+              "denominator": 17,
+              "interval95": [
+                0.8156818649911483,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.4857142857142857,
+              "numerator": 17,
+              "denominator": 35,
+              "interval95": [
+                0.32994236002509725,
+                0.6443119540413141
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 102,
+              "denominator": 102,
+              "interval95": [
+                0.9637055378535367,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.8686131386861314,
+              "numerator": 119,
+              "denominator": 137,
+              "interval95": [
+                0.8018685419891511,
+                0.9152498466281065
+              ]
+            }
+          },
+          "positional": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 27,
+            "tn": 106,
+            "unknownReference": 25,
+            "precision": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.12903225806451613,
+              "numerator": 4,
+              "denominator": 31,
+              "interval95": [
+                0.051342843746291486,
+                0.28852406256306423
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 106,
+              "denominator": 106,
+              "interval95": [
+                0.9650272414265277,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8029197080291971,
+              "numerator": 110,
+              "denominator": 137,
+              "interval95": [
+                0.7284438211065801,
+                0.8608712903313641
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 6,
+            "tn": 115,
+            "unknownReference": 39,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 2,
+              "denominator": 8,
+              "interval95": [
+                0.071479212752109,
+                0.5907245696898311
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 115,
+              "denominator": 115,
+              "interval95": [
+                0.9676757685506868,
+                0.9999999999999999
+              ]
+            },
+            "agreement": {
+              "value": 0.9512195121951219,
+              "numerator": 117,
+              "denominator": 123,
+              "interval95": [
+                0.8976539686245577,
+                0.9774542257467482
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 66.0309500000003,
+          "after": 64.06079999999974
+        },
+        "changedMistakeReports": [
+          {
+            "id": "mistake-world-amateur-42546b576bc60d23-41",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": [
+              "tactical"
+            ]
+          },
+          {
+            "id": "mistake-world-amateur-c56d044e7e57e80e-75",
+            "reference": {
+              "tactical": true,
+              "positional": true,
+              "mixed": true
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": [
+              "tactical"
+            ]
+          }
+        ]
+      }
+    },
+    "club-18": {
+      "decisions": 18,
+      "games": 9,
+      "legacy": {
+        "tactical": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 3,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 3,
+            "interval95": [
+              5.551115123125783e-17,
+              0.5614970317550454
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.7857142857142857,
+            "numerator": 11,
+            "denominator": 14,
+            "interval95": [
+              0.524107694133997,
+              0.9242861328730683
+            ]
+          }
+        },
+        "positional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 5,
+          "tn": 9,
+          "unknownReference": 3,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.16666666666666666,
+            "numerator": 1,
+            "denominator": 6,
+            "interval95": [
+              0.030053369748306635,
+              0.5635028221864702
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 9,
+            "denominator": 9,
+            "interval95": [
+              0.7008549515804559,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.6666666666666666,
+            "numerator": 10,
+            "denominator": 15,
+            "interval95": [
+              0.41713547738519774,
+              0.8482367556028526
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 12,
+          "unknownReference": 6,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 12,
+            "denominator": 12,
+            "interval95": [
+              0.7575059933447592,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 12,
+            "denominator": 12,
+            "interval95": [
+              0.7575059933447592,
+              1.0
+            ]
+          }
+        }
+      },
+      "baseline": {
+        "tactical": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 3,
+          "tn": 10,
+          "unknownReference": 4,
+          "precision": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1,
+            "interval95": [
+              0.0,
+              0.7934506856227626
+            ]
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 3,
+            "interval95": [
+              5.551115123125783e-17,
+              0.5614970317550454
+            ]
+          },
+          "specificity": {
+            "value": 0.9090909090909091,
+            "numerator": 10,
+            "denominator": 11,
+            "interval95": [
+              0.6226415635484043,
+              0.9837678271141151
+            ]
+          },
+          "agreement": {
+            "value": 0.7142857142857143,
+            "numerator": 10,
+            "denominator": 14,
+            "interval95": [
+              0.4535091567010681,
+              0.8827862135542308
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 6,
+          "tn": 9,
+          "unknownReference": 3,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 6,
+            "interval95": [
+              2.7755575615628914e-17,
+              0.3903342879021653
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 9,
+            "denominator": 9,
+            "interval95": [
+              0.7008549515804559,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.6,
+            "numerator": 9,
+            "denominator": 15,
+            "interval95": [
+              0.357468301206246,
+              0.8017550385865841
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 12,
+          "unknownReference": 6,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 12,
+            "denominator": 12,
+            "interval95": [
+              0.7575059933447592,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 12,
+            "denominator": 12,
+            "interval95": [
+              0.7575059933447592,
+              1.0
+            ]
+          }
+        }
+      },
+      "a": {
+        "after": {
+          "tactical": {
+            "tp": 0,
+            "fp": 1,
+            "fn": 3,
+            "tn": 10,
+            "unknownReference": 4,
+            "precision": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 3,
+              "interval95": [
+                5.551115123125783e-17,
+                0.5614970317550454
+              ]
+            },
+            "specificity": {
+              "value": 0.9090909090909091,
+              "numerator": 10,
+              "denominator": 11,
+              "interval95": [
+                0.6226415635484043,
+                0.9837678271141151
+              ]
+            },
+            "agreement": {
+              "value": 0.7142857142857143,
+              "numerator": 10,
+              "denominator": 14,
+              "interval95": [
+                0.4535091567010681,
+                0.8827862135542308
+              ]
+            }
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 9,
+            "unknownReference": 3,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 6,
+              "interval95": [
+                2.7755575615628914e-17,
+                0.3903342879021653
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 9,
+              "denominator": 9,
+              "interval95": [
+                0.7008549515804559,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6,
+              "numerator": 9,
+              "denominator": 15,
+              "interval95": [
+                0.357468301206246,
+                0.8017550385865841
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 12,
+            "unknownReference": 6,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 99.64124999999967,
+          "after": 96.65174999999999
+        },
+        "changedMistakeReports": []
+      },
+      "b": {
+        "after": {
+          "tactical": {
+            "tp": 0,
+            "fp": 1,
+            "fn": 3,
+            "tn": 10,
+            "unknownReference": 4,
+            "precision": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 3,
+              "interval95": [
+                5.551115123125783e-17,
+                0.5614970317550454
+              ]
+            },
+            "specificity": {
+              "value": 0.9090909090909091,
+              "numerator": 10,
+              "denominator": 11,
+              "interval95": [
+                0.6226415635484043,
+                0.9837678271141151
+              ]
+            },
+            "agreement": {
+              "value": 0.7142857142857143,
+              "numerator": 10,
+              "denominator": 14,
+              "interval95": [
+                0.4535091567010681,
+                0.8827862135542308
+              ]
+            }
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 9,
+            "unknownReference": 3,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 6,
+              "interval95": [
+                2.7755575615628914e-17,
+                0.3903342879021653
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 9,
+              "denominator": 9,
+              "interval95": [
+                0.7008549515804559,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6,
+              "numerator": 9,
+              "denominator": 15,
+              "interval95": [
+                0.357468301206246,
+                0.8017550385865841
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 12,
+            "unknownReference": 6,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 99.64124999999967,
+          "after": 93.64330000000018
+        },
+        "changedMistakeReports": []
+      },
+      "c": {
+        "after": {
+          "tactical": {
+            "tp": 0,
+            "fp": 1,
+            "fn": 3,
+            "tn": 10,
+            "unknownReference": 4,
+            "precision": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 3,
+              "interval95": [
+                5.551115123125783e-17,
+                0.5614970317550454
+              ]
+            },
+            "specificity": {
+              "value": 0.9090909090909091,
+              "numerator": 10,
+              "denominator": 11,
+              "interval95": [
+                0.6226415635484043,
+                0.9837678271141151
+              ]
+            },
+            "agreement": {
+              "value": 0.7142857142857143,
+              "numerator": 10,
+              "denominator": 14,
+              "interval95": [
+                0.4535091567010681,
+                0.8827862135542308
+              ]
+            }
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 9,
+            "unknownReference": 3,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 6,
+              "interval95": [
+                2.7755575615628914e-17,
+                0.3903342879021653
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 9,
+              "denominator": 9,
+              "interval95": [
+                0.7008549515804559,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6,
+              "numerator": 9,
+              "denominator": 15,
+              "interval95": [
+                0.357468301206246,
+                0.8017550385865841
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 12,
+            "unknownReference": 6,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 99.64124999999967,
+          "after": 112.31930000000011
+        },
+        "changedMistakeReports": []
+      },
+      "precision": {
+        "after": {
+          "tactical": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 3,
+            "tn": 11,
+            "unknownReference": 4,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 3,
+              "interval95": [
+                5.551115123125783e-17,
+                0.5614970317550454
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 11,
+              "denominator": 11,
+              "interval95": [
+                0.7411670330319684,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7857142857142857,
+              "numerator": 11,
+              "denominator": 14,
+              "interval95": [
+                0.524107694133997,
+                0.9242861328730683
+              ]
+            }
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 9,
+            "unknownReference": 3,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 6,
+              "interval95": [
+                2.7755575615628914e-17,
+                0.3903342879021653
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 9,
+              "denominator": 9,
+              "interval95": [
+                0.7008549515804559,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6,
+              "numerator": 9,
+              "denominator": 15,
+              "interval95": [
+                0.357468301206246,
+                0.8017550385865841
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 12,
+            "unknownReference": 6,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 12,
+              "denominator": 12,
+              "interval95": [
+                0.7575059933447592,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 99.64124999999967,
+          "after": 116.85400000000027
+        },
+        "changedMistakeReports": [
+          {
+            "id": "mistake-ayr-major-sept-2026-0a44447053c5e2a6-62",
+            "reference": {
+              "tactical": null,
+              "positional": true,
+              "mixed": null
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": []
+          },
+          {
+            "id": "mistake-ayr-major-sept-2026-2010e5a2370a27c4-49",
+            "reference": {
+              "tactical": false,
+              "positional": true,
+              "mixed": false
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": []
+          }
+        ]
+      }
+    },
+    "pardubice-16": {
+      "decisions": 16,
+      "games": 16,
+      "legacy": {
+        "tactical": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 4,
+          "tn": 2,
+          "unknownReference": 9,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.2,
+            "numerator": 1,
+            "denominator": 5,
+            "interval95": [
+              0.03622410863243014,
+              0.6244653702374747
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.42857142857142855,
+            "numerator": 3,
+            "denominator": 7,
+            "interval95": [
+              0.15821985525146975,
+              0.7495416354723428
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 7,
+          "tn": 4,
+          "unknownReference": 5,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 7,
+            "interval95": [
+              5.551115123125783e-17,
+              0.35433043506668743
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 4,
+            "denominator": 4,
+            "interval95": [
+              0.5101091635454027,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.36363636363636365,
+            "numerator": 4,
+            "denominator": 11,
+            "interval95": [
+              0.15166471095367573,
+              0.6461988254921511
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 5,
+          "unknownReference": 11,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 5,
+            "denominator": 5,
+            "interval95": [
+              0.5655175352168251,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 5,
+            "denominator": 5,
+            "interval95": [
+              0.5655175352168251,
+              1.0
+            ]
+          }
+        }
+      },
+      "baseline": {
+        "tactical": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 3,
+          "tn": 2,
+          "unknownReference": 9,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4,
+            "numerator": 2,
+            "denominator": 5,
+            "interval95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.5714285714285714,
+            "numerator": 4,
+            "denominator": 7,
+            "interval95": [
+              0.2504583645276572,
+              0.8417801447485302
+            ]
+          }
+        },
+        "positional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 6,
+          "tn": 4,
+          "unknownReference": 5,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.14285714285714285,
+            "numerator": 1,
+            "denominator": 7,
+            "interval95": [
+              0.02567962434474355,
+              0.5131278292743189
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 4,
+            "denominator": 4,
+            "interval95": [
+              0.5101091635454027,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.45454545454545453,
+            "numerator": 5,
+            "denominator": 11,
+            "interval95": [
+              0.21271271622459764,
+              0.719908462590678
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 5,
+          "unknownReference": 11,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 5,
+            "denominator": 5,
+            "interval95": [
+              0.5655175352168251,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 5,
+            "denominator": 5,
+            "interval95": [
+              0.5655175352168251,
+              1.0
+            ]
+          }
+        }
+      },
+      "a": {
+        "after": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 3,
+            "tn": 2,
+            "unknownReference": 9,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.4,
+              "numerator": 2,
+              "denominator": 5,
+              "interval95": [
+                0.11762077423264783,
+                0.769275718723987
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.5714285714285714,
+              "numerator": 4,
+              "denominator": 7,
+              "interval95": [
+                0.2504583645276572,
+                0.8417801447485302
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 4,
+            "unknownReference": 5,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.14285714285714285,
+              "numerator": 1,
+              "denominator": 7,
+              "interval95": [
+                0.02567962434474355,
+                0.5131278292743189
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.45454545454545453,
+              "numerator": 5,
+              "denominator": 11,
+              "interval95": [
+                0.21271271622459764,
+                0.719908462590678
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 5,
+            "unknownReference": 11,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 112.60919999999987,
+          "after": 108.68944999999985
+        },
+        "changedMistakeReports": []
+      },
+      "b": {
+        "after": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 3,
+            "tn": 2,
+            "unknownReference": 9,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.4,
+              "numerator": 2,
+              "denominator": 5,
+              "interval95": [
+                0.11762077423264783,
+                0.769275718723987
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.5714285714285714,
+              "numerator": 4,
+              "denominator": 7,
+              "interval95": [
+                0.2504583645276572,
+                0.8417801447485302
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 4,
+            "unknownReference": 5,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.14285714285714285,
+              "numerator": 1,
+              "denominator": 7,
+              "interval95": [
+                0.02567962434474355,
+                0.5131278292743189
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.45454545454545453,
+              "numerator": 5,
+              "denominator": 11,
+              "interval95": [
+                0.21271271622459764,
+                0.719908462590678
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 5,
+            "unknownReference": 11,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 112.60919999999987,
+          "after": 104.16105000000016
+        },
+        "changedMistakeReports": []
+      },
+      "c": {
+        "after": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 3,
+            "tn": 2,
+            "unknownReference": 9,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.4,
+              "numerator": 2,
+              "denominator": 5,
+              "interval95": [
+                0.11762077423264783,
+                0.769275718723987
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.5714285714285714,
+              "numerator": 4,
+              "denominator": 7,
+              "interval95": [
+                0.2504583645276572,
+                0.8417801447485302
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 4,
+            "unknownReference": 5,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.14285714285714285,
+              "numerator": 1,
+              "denominator": 7,
+              "interval95": [
+                0.02567962434474355,
+                0.5131278292743189
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.45454545454545453,
+              "numerator": 5,
+              "denominator": 11,
+              "interval95": [
+                0.21271271622459764,
+                0.719908462590678
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 5,
+            "unknownReference": 11,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 112.60919999999987,
+          "after": 107.60445000000027
+        },
+        "changedMistakeReports": []
+      },
+      "precision": {
+        "after": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 3,
+            "tn": 2,
+            "unknownReference": 9,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.4,
+              "numerator": 2,
+              "denominator": 5,
+              "interval95": [
+                0.11762077423264783,
+                0.769275718723987
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.5714285714285714,
+              "numerator": 4,
+              "denominator": 7,
+              "interval95": [
+                0.2504583645276572,
+                0.8417801447485302
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 4,
+            "unknownReference": 5,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.14285714285714285,
+              "numerator": 1,
+              "denominator": 7,
+              "interval95": [
+                0.02567962434474355,
+                0.5131278292743189
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.45454545454545453,
+              "numerator": 5,
+              "denominator": 11,
+              "interval95": [
+                0.21271271622459764,
+                0.719908462590678
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 5,
+            "unknownReference": 11,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 5,
+              "denominator": 5,
+              "interval95": [
+                0.5655175352168251,
+                1.0
+              ]
+            }
+          }
+        },
+        "workerMedianMs": {
+          "before": 112.60919999999987,
+          "after": 105.90299999999979
+        },
+        "changedMistakeReports": []
+      }
+    }
+  }
+}

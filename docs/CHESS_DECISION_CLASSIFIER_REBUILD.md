@@ -2829,3 +2829,91 @@ with the manifest scope set to `mistake-mechanism`, then use
 `decision-evidence-ordinary-replay-score.py --mistakes`. Each research
 patch applies against v43 with `git apply --unidiff-zero`. The
 comparison uses the v43 committed tactical core for both arms.
+
+## Iteration 45 — verify that a shared reply actually contains a tactic
+
+The played-move replay pooled 162 earlier reviewed decisions from 121
+classical games. It used the actual played moves and retained the pairing
+between each game and its control. The earlier classifier and the current
+worker saw the same Stockfish 19 lines. On the tactical axis, the earlier
+classifier found 7 of 35 reviewed positives with one false positive.
+The v44 worker found 17 of 35 with zero false positives against 102
+reviewed negatives. It found 4 of 31 positional positives and 2 of 8
+mixed positives, with zero reviewed false positives in both dimensions.
+The comparison is retrospective development evidence. Seventeen of 18
+missed tactics already had an assessed played-move comparison.
+
+Three experiments required a shared short tactical sequence, a concrete
+change to the same threat after the alternative move, and a material
+payoff in two separately searched lines. The first compared exactly
+matched settlement plies. The second let the better lines settle before
+a different exchange occurred in either better branch. The third also
+tested a short capture sequence entered with check. The last two recover
+`23...Qc2 24.Rc1 Nd4 25.Rxc2 Nxf3+ 26.gxf3` in development.
+The better `23...Rxd1` removes the rook before it can attack the queen.
+Both played continuations trade queens and lose the additional knight.
+The paired and separate better lines complete later minor-piece trades
+at different times. There are zero new labelled positives in either
+fresh sample. [Asian Disabilities Women](https://lichess.org/api/broadcast/rUYNHzDG.pgn)
+
+| Sample | Reviewed tactical positives / negatives / uncertain | v44 TP / FP | A TP / FP | B TP / FP | C TP / FP | Precision repair TP / FP |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 162 earlier decisions | 35 / 102 / 25 | 17 / 0 | 17 / 0 | 18 / 0 | 18 / 0 | 17 / 0 |
+| Ayr and Pall Mall, 18 decisions | 3 / 11 / 4 | 0 / 1 | 0 / 1 | 0 / 1 | 0 / 1 | 0 / 0 |
+| Pardubice, 16 decisions | 5 / 2 / 9 | 2 / 0 | 2 / 0 | 2 / 0 | 2 / 0 | 2 / 0 |
+
+The exchange variants stay experimental. The first new sample contains
+one annotated loss and one control from each of nine games. The second
+contains 16 different games. A shallow 60,000-node preview nominated eight
+short material-loss examples and eight forcing controls from 351 inspected
+positions. Each sample uses independent games from the development pool.
+The preview strata are sampling inputs. One reviewer saved the actual
+mechanism references from the fuller searches before reading the replay
+outputs. The instruction to repair the quiet reply came from inspecting
+the Ayr results, which makes those results development evidence for the
+precision change. Pardubice remained independent for that change. The
+fresh samples have no reviewed mixed positives. All compared arms agree
+on the position and move reports. [Ayr organiser and time control](https://www.congress.org.uk/congress/807/home)
+[Pall Mall organiser's event record](https://s2.chess-results.com/tnr1474366.aspx?lan=20)
+[Pardubice event rules](https://www.czechopen.net/en/chess/a-grandmaster-tournament/regulations-2)
+
+In the Ayr example `25...Ne4 26.Bb4`, the old shared-reply verifier called
+`Bb4` a tactical attack because the hypothetical `25...Nd5 26.Bb4
+27.Nxb4` wins that bishop. After the actual `Ne4`, the bishop's reply
+gives no check, takes nothing and has no immediate enemy target. The
+control explains why White chooses a different move after `Nd5`. It
+cannot establish a tactical consequence of `Bb4` after `Ne4`. The
+verifier now also requires a tactical witness under the played move
+before attributing the difference to the control capture. It accepts a
+check, a materially profitable legal capture, a profitable follow-up
+capture, a common capture of the original target in both variations, or
+a legal immediate mate threat addressed by both searches. The local
+capture and the full scored alternative remain required. The other
+shared-reply episode checks still run. [Ayr Major round 2](https://lichess.org/broadcast/ayr-congress-2026-major/round-2/roVA3W1O)
+
+The repaired report preserves the 1.35-pawn engine loss with an unclear
+mechanism. One other Ayr case with an uncertain tactical reference
+also becomes unclear. Development keeps both supported examples
+`...Bc6 Bb5` and `...h3 Qc7`. They show a capture of the original
+target by the same piece in two played searches. The source change uses
+the existing engine requests. The panel with cached engine inputs
+shows the repaired comparison at 320, 390 and 900 pixels. The installed
+desktop build is unverified.
+
+**Reproduction.** The fixed positions, labels, comparison summary
+and experimental patches are under
+`benchmarks/decision-evidence/played-mistake-replay-v45`. The older
+v43 and v44 development manifests stay in their original benchmark
+directories. Use Stockfish 19 and the ordinary v43 root and reply
+options to regenerate the new root, reply and shared-reply frames.
+The v23 historical development cohort has no shared-reply cache.
+Run `decisionMistakeBreadthReplay.test.ts` with a manifest array
+containing `name`, `path`, `profile`, `sample` and `reference`
+for each source. Supply the manifest and a fresh private output
+location through `DECISION_MISTAKE_MANIFEST` and
+`DECISION_MISTAKE_REPORT`. Score the runs with
+`decision-evidence-ordinary-replay-score.py --mistakes`. The replay
+omits optional position-only searches for all arms to compare the
+played-move evidence. Apply each experimental patch separately against
+v44 using `git apply --unidiff-zero`. Keep the committed tactical core
+fixed when comparing experiments.

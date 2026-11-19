@@ -1,0 +1,134 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "short-exchange-pardubice-open-2026-cdbe4a93f3768f80-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "d3e1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "After Nxe1 both lines allow Bxd8 and the white queen survives the early exchange. Bh4 prepares Bxg3 after the same Bxd8, exchanging queens instead of losing one without the reciprocal capture."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-bf02e66682808381-46",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1f1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After h5 both searches open the h-file and place both rooks there. Rdf1 allows Qg2 and Qxe4 while the rooks lose that coordination. The specific weight of a separate forcing threat is uncertain."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-a75e117b519ab735-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6g5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "g5 permits Bxg5 in both played searches and both preserve the pawn loss. The capture attacks the knight from g5 while the continuations differ in how White uses that attack. Kh8 avoids the concession in the matched window."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-73faf1b15a460e12-59",
+      "scope": "mistake-mechanism",
+      "moveUci": "e6d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "exd5 shifts White's e-pawn to d5 and gives White the central passer already supported by the c-pawn structure. Qc8 maintains pressure on the centre while keeping the rook attack. The stronger searches disagree on the tactical payoff."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-693b66f5999ccad4-95",
+      "scope": "mistake-mechanism",
+      "moveUci": "h3f3",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Rf3 allows Rc5+ in both played searches after which Black's king captures on f4. One board has a much later Bxf3. Both roots start lost and no common immediate consequence of the extra loss is clear."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-7c53743c2b0181bc-51",
+      "scope": "mistake-mechanism",
+      "moveUci": "d8d6",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Rxd6 exposes the rook trade, but Rxd6 and axb4 alternate as the first reply in the searches. The stronger line already faces substantial pawn and rook pressure."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-9626572afb0af5e0-92",
+      "scope": "mistake-mechanism",
+      "moveUci": "e3c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bc5 twice permits Ne4 and occupies the bishop with that knight. bxa5 stabilises the queenside and activates the rook via Rh1 in both stronger lines. The later capture of the bishop is present in only one played search."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-8da64f0164a69e52-60",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4g5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "After Ng5 both searches agree on Rxh4 Rxh4 Qg3+ Qg2 Qxh4. Black takes the rook back with the queen and retains the extra h-pawn in the exchange. The Bf2 choice instead sees Nxf2 and Qxf2."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-9ae58b2bf37e05bb-51",
+      "scope": "mistake-mechanism",
+      "moveUci": "h8h4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The paired scores differ by eight centipawns and the independent comparison reverses them. Rxh4 occurs in both lines and no deterioration is established."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-88a897999c582306-59",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5d3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After Nxd3 both searches put the white rook onto d3 and then double on the d-file with Red1. The Na4 alternatives preserve the knight and different rook activity. The immediate knight trade is balanced."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-8f628a7c6879a907-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8e6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Re6 and Red8 both allow Nxb7 Qxb7. After Re6 both searches give White Be4 with pressure and play against h7, whereas under Red8 the rook remains active on d8 and ...Rac8 remains available. The bishop taking on e6 occurs in only one played line."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-d7719ba0ba21af49-59",
+      "scope": "mistake-mechanism",
+      "moveUci": "f6f5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rf5 twice permits Qe6+ Kh8 Bxh6, then Qxe7 Qxe7 Bxh6. The same checking entry yields the pawn in the forced-looking branch, whereas neither R6f7 comparison enters that sequence. The size of the extra drop differs across the two searches."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-985f5f5e99717d95-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8e4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Both roots allow Qa5+ and hxg5. Rhd1 activates the rook on the d-file beforehand and supports the c3 arrangement and recapture. The checking sequence itself occurs in the better choice too."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-ccdc8dbaa88a73a6-54",
+      "scope": "mistake-mechanism",
+      "moveUci": "a1b1",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Rb1 allows axb4 and Qf7 before the shared Bxe3 Rxe3 Qxh5, but the stronger Qf5 replies differ. A material difference is seen in the stronger searches, and the reason it follows from the root is unclear."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-086c843842195dc9-56",
+      "scope": "mistake-mechanism",
+      "moveUci": "b1a1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Ra1 moves the b1 rook away without neutralising Bxf1. Both searches give Bxf1 Qxf1, losing the rook for a bishop. After Bd3 neither better continuation allows that exchange."
+    },
+    {
+      "id": "short-exchange-pardubice-open-2026-972a1ee09792edf1-71",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5e7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Both roots concede a6. Qf4+ Qxf4 exf4 instead also trades queens and permits ...Rc8 and ...Rc3 activity. Qe7 leaves White's rook and bishop more active against the queenside pawns in both searches. A separate tactical mechanism is unclear."
+    }
+  ]
+}

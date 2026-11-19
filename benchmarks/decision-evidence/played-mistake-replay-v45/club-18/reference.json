@@ -1,0 +1,150 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "mistake-ayr-major-sept-2026-8135f8d39abbdd9e-32",
+      "scope": "mistake-mechanism",
+      "moveUci": "h2h4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "a4 creates queenside play via bxa4 and bxa4 in both searches. After h4, Black claims the centre with Ne5 and d5 in both continuations while the queenside remains undisturbed."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-8135f8d39abbdd9e-40",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxd3 is the top supplied choice. Both searches return the same rescue and liquidation. There is no measured deterioration."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-986c3b63dcad4cf7-64",
+      "scope": "mistake-mechanism",
+      "moveUci": "e3e2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Both roots allow Nh3+ and Kh1. Re2 keeps the d-pawn on the board, enabling d4 and clearing the way for the Nf2+ fork of king and rook after Rxe4. cxd5 removes that pawn, so this sequence is unavailable after the same check."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-986c3b63dcad4cf7-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7f5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The paired search slightly prefers Rh4, but the independent scores are nearly identical. Both use rook activity and give no reliable mistake mechanism for f5."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-f42557fffc65dcda-40",
+      "scope": "mistake-mechanism",
+      "moveUci": "b2d4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "After Bd4 both played searches use Nac3 Bxc3 Nxc3 and then Nxd1 after White's queen takes on b6. Nb3 reaches different tactical exchanges. The lasting positional contribution remains unclear."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-f42557fffc65dcda-33",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8a5",
+      "tactical": false,
+      "positional": null,
+      "rationale": "Both lines regain the a5 pawn and remain playable. The measured extra loss is small, and the searches differ on the later positional activity after bxa5. No corroborated tactical concession."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-0a44447053c5e2a6-62",
+      "scope": "mistake-mechanism",
+      "moveUci": "h3h4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "h4 permits Qg4 and bxc5 in the same sequence twice. c5 first retains a branch that exchanges the queenside pawns and supports rook activity. A later pawn advance or piece exchange differs across the played searches."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-0a44447053c5e2a6-29",
+      "scope": "mistake-mechanism",
+      "moveUci": "h5g3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qc7 and Nxg3 are near equal and both branches reach the same minor-piece exchange. No measured mistake."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-2010e5a2370a27c4-49",
+      "scope": "mistake-mechanism",
+      "moveUci": "f6e4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Nd5 makes White play b3 and permits queenside expansion with b4 in both favourable searches. After Ne4 both lines allow Bb4 and the knight fails to support the same advance. No distinct forcing loss is corroborated."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-2010e5a2370a27c4-54",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1f2",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nf2 and Qd2 are almost equal in the paired frame and in the separate searches. Taking on a2 in one endgame line does not establish a deterioration."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-c532b7aeaac0d425-45",
+      "scope": "mistake-mechanism",
+      "moveUci": "h8g8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "hxg4 opens the h-file and permits d4 in both better searches. Rhg8 permits gxh5, giving up the pawn lever and leaving a materially and structurally different centre. The order of exchanged pieces varies across the played searches."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-c532b7aeaac0d425-33",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8c8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Castling long is the top supplied choice. No measured deterioration."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-1975306761298fa8-70",
+      "scope": "mistake-mechanism",
+      "moveUci": "h2h4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After Qc5 the queen takes c6 in both searches, creating counterplay despite losing g4. h4 permits Qe4 and Qxg4 while the queen can no longer reach c6 in the compared window. The later sequence of checks differs."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-1975306761298fa8-67",
+      "scope": "mistake-mechanism",
+      "moveUci": "f8f1",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxf1+ is the leading choice in both searches. No measured deterioration."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-9ffcfa9d9674d580-57",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5c4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After c4, both Nc7 lines preserve the advanced knight and bring a rook into passive queenside defence. Bh5 gives Black counterplay against g4 or d1 and changes the fate of d6. The different tactical variations leave that dimension uncertain."
+    },
+    {
+      "id": "mistake-ayr-major-sept-2026-9ffcfa9d9674d580-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "e2b5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qb5+ and Qd3 tie in the paired search. Neither line establishes a mistake."
+    },
+    {
+      "id": "mistake-pall-mall-u2000-sept-2026-88775a47af050576-61",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7h4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qh4 permits h3 Re7 Rxd8+ Nxd8 e6+ in both searches, taking the rook with check before the pawn checks the king. Kg7 first imposes a different liquidation. Both roots are losing, with a corroborated further deterioration after Qh4."
+    },
+    {
+      "id": "mistake-pall-mall-u2000-sept-2026-88775a47af050576-38",
+      "scope": "mistake-mechanism",
+      "moveUci": "b3c4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "bxc4 is the leading supplied choice and the independent reply confirms the same immediate structure. No measured deterioration."
+    }
+  ]
+}

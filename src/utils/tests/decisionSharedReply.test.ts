@@ -87,6 +87,21 @@ test("the earlier removal of a knight makes the same queen capture profitable", 
     expect(episode?.explanation).toContain("can recapture with Nxc7");
 });
 
+test("a loose bishop in the control does not turn a quiet reply into a tactical mistake", () => {
+    const input = study(
+        "6k1/5pbp/p1q2np1/1p6/3p4/B4QP1/PP2PPKP/3N4 b - - 3 25",
+        ["f6d5 b2b3 h7h5 a3b2 b5b4 g2g1 c6e6 b2c1 d5c3 d1c3", 172],
+        ["f6e4 a3b4 h7h5 g2g1 c6e6 f3b3 e6b3 a2b3 g7f8 b4f8", 37],
+        ["b2b3 b5b4 a3b2 h7h6 a2a3 a6a5 a3b4 a5b4 b2a1 c6e6", -149],
+        ["a3b4 h7h5 a2a3 g7f6 h2h4 f6g7 b2b3 c6e6 a3a4 e4f6", -36],
+        ["a3b4 d5b4 f3c6 b4c6 f2f4 d4d3 e2e4 g6g5 f4g5 g7d4", -630],
+    );
+    const report = assessChessDecision(input);
+    expect(report?.mistake?.evaluationLossCp).toBe(135);
+    expect(report?.mistake?.tactical.support).toBe("unestablished");
+    expect(report?.mistake?.tacticalEpisode).toBeUndefined();
+});
+
 const enPassant = study(
     "2r5/2r1p3/3p2p1/4p3/Rp2PkP1/1P1R1P2/2P5/2K5 w - - 14 41",
     ["d3d2 c8b8 d2d3 g6g5 c1b2 b8c8 d3d2 f4e3", -299],

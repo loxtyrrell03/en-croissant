@@ -1,0 +1,394 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "mistake-olympiad-open-i-3138c60cb4940266-55",
+      "scope": "mistake-mechanism",
+      "moveUci": "d6b8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qb8 retreats the queen away from the e6 rook and permits Qe2–Qe5 to take over the centre. A much later Ne6+ appears in only one continuation, so its role in the mistake is uncertain."
+    },
+    {
+      "id": "mistake-olympiad-open-i-3138c60cb4940266-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7f5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The paired searches distinguish the two moves by only 15 centipawns."
+    },
+    {
+      "id": "mistake-olympiad-open-i-e684ba588d1b9c2c-71",
+      "scope": "mistake-mechanism",
+      "moveUci": "h7h8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Kh8 allows Qf8+ and a king chase where g4 attacks the exposed queen on h5. The fresh reply search reaches a queen exchange under the same pressure. Re8 gives a different defensive route."
+    },
+    {
+      "id": "mistake-olympiad-open-i-e684ba588d1b9c2c-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "c7c5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-olympiad-open-i-9538c761d8e2bc41-50",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5f8",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Qxf8+ trades the queen for two rooks after Kxf8 and fxe5. The score loss persists, but the two surviving lines produce different kinds of major-piece play without an established tactical or positional cause."
+    },
+    {
+      "id": "mistake-olympiad-open-i-9538c761d8e2bc41-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d2",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-olympiad-open-i-f46dd0cda7096773-47",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6e7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Ne7 permits the h2–g4 knight route before Black gets ...d4 in. The earlier ...d4 creates central counterplay and leads to a different pawn structure. Tactical contributions remain unclear."
+    },
+    {
+      "id": "mistake-olympiad-open-i-f46dd0cda7096773-41",
+      "scope": "mistake-mechanism",
+      "moveUci": "a5b4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The paired searches distinguish the two moves by only 0 centipawns."
+    },
+    {
+      "id": "mistake-olympiad-open-i-4f3881c530e3539f-60",
+      "scope": "mistake-mechanism",
+      "moveUci": "d2e3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qe3 gives up the timely h5 lever. After h5, hxg6 and Qh6 force an exchange and leave different kingside weaknesses. The exact tactical contribution is uncertain."
+    },
+    {
+      "id": "mistake-olympiad-open-i-4f3881c530e3539f-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1a3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-olympiad-open-i-c779dee2d69e3077-82",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6g5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Bg5 has two very different tested replies: the paired line uses ...e5 and the independent line prefers ...Be4+. The scores disagree on the size of the error in an already difficult position."
+    },
+    {
+      "id": "mistake-olympiad-open-i-c779dee2d69e3077-58",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4e3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-olympiad-open-i-c33f152c5e716aa2-33",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7b6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Nb6 delays the active route via Nc5. The engine can use either fxe6, opening lines toward the king, or Qf2. Both preserve pressure after Black gives up queenside initiative."
+    },
+    {
+      "id": "mistake-olympiad-open-i-c33f152c5e716aa2-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "g8e8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The paired searches distinguish the two moves by only 12 centipawns."
+    },
+    {
+      "id": "mistake-olympiad-open-i-e60ad32ec2b5f47f-54",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5e4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Bxe4 allows ...Qxe4, taking the bishop. Both searches use that recapture and retain the loss after subsequent exchanges, whereas Rhe1 keeps the bishop."
+    },
+    {
+      "id": "mistake-olympiad-open-i-e60ad32ec2b5f47f-39",
+      "scope": "mistake-mechanism",
+      "moveUci": "h7f6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-olympiad-open-i-6e0e60125294132c-60",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7e7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Re7 allows ...Qf6 and ...Rh5 followed by rook checks against the king. Rc8 activates the rooks with a concrete Rxf8 and Rd8+ counterplay sequence. The strategic contribution is uncertain."
+    },
+    {
+      "id": "mistake-olympiad-open-i-6e0e60125294132c-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "c3d5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-721d30b907aa922c-92",
+      "scope": "mistake-mechanism",
+      "moveUci": "f2e2",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Re2 is worse in paired and independent searches, but the paired search uses Rxf4+ while the independent search prefers Rxe2 and a pawn ending. The primary mechanism is unclear."
+    },
+    {
+      "id": "mistake-asian-amateur-721d30b907aa922c-42",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2d3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-1b098be33baef77d-82",
+      "scope": "mistake-mechanism",
+      "moveUci": "f1f3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rf3 allows ...g4 with tempo on the rook and a tested ...Qc1+ liquidation. b4 instead deflects the a5 pawn and creates an advanced outside a-pawn. The tactical tempo and passed-pawn opportunity are distinct."
+    },
+    {
+      "id": "mistake-asian-amateur-1b098be33baef77d-65",
+      "scope": "mistake-mechanism",
+      "moveUci": "f5g4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-5b57e2f49c33fb0b-80",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2c4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "c4 permits ...bxc3 en passant, an immediate pawn concession in both searches. It leaves Black's doubled rooks active along the newly opened c-file."
+    },
+    {
+      "id": "mistake-asian-amateur-5b57e2f49c33fb0b-48",
+      "scope": "mistake-mechanism",
+      "moveUci": "f4e3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-b01d7fbf1f3407ea-41",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5e3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qxe3 permits Rd3, attacking the queen, followed by fxg5 as Black tries to get the queen and rook into defensive positions. The alternatives corroborate queen displacement and king-side tactical pressure."
+    },
+    {
+      "id": "mistake-asian-amateur-b01d7fbf1f3407ea-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5f6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-f456beeeebbc3c99-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "d4c5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "dxc5 gives the d7 knight c5 and leaves Black's advanced c4 pawn. The quieter Bd2 enables a queenside plan with Ba5 and then b3, instead of conceding that placement."
+    },
+    {
+      "id": "mistake-asian-amateur-f456beeeebbc3c99-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "d2e4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-9458b80fdf1ea392-41",
+      "scope": "mistake-mechanism",
+      "moveUci": "a7a5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "a5 delays the d4 break. Rc1 and Qb5 become active and b6 falls while the central break comes later. The material and king-safety contributions to the earlier d4 line are uncertain."
+    },
+    {
+      "id": "mistake-asian-amateur-9458b80fdf1ea392-39",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4f6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-104cab8255892fa6-82",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3h4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "gxh4 gives Black an active rook on h4 and then f4. Ke1 first brings the king toward defensive squares and preserves more rook activity in the same rook ending."
+    },
+    {
+      "id": "mistake-asian-amateur-104cab8255892fa6-42",
+      "scope": "mistake-mechanism",
+      "moveUci": "b4c5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-asian-amateur-c0796d4aea80c7b8-62",
+      "scope": "mistake-mechanism",
+      "moveUci": "d6g6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rxg6 allows ...Nf4 with tempo against the rook on g6, after which ...Nxh4 restores the pawn. The Rd3 line instead keeps the two rooks active and preserves an exchange advantage. The strategic share is unclear."
+    },
+    {
+      "id": "mistake-asian-amateur-c0796d4aea80c7b8-73",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4f5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-world-amateur-c2e7d686e0f218d5-88",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7d5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Nd5 allows ...Be1 covering f2 and the repeated Qxf2+–Qf1+ pursuit. The paired and independent lines both show the king driven out and pawns falling."
+    },
+    {
+      "id": "mistake-world-amateur-c2e7d686e0f218d5-80",
+      "scope": "mistake-mechanism",
+      "moveUci": "d3d5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The paired searches distinguish the two moves by only 16 centipawns."
+    },
+    {
+      "id": "mistake-world-amateur-c73e32e95e942c8e-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "h2h7",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Rh7 allows Qxd6, but the two candidate moves also change rook coordination and the remaining attack on the king. The precise reason for the modest score difference is uncertain."
+    },
+    {
+      "id": "mistake-world-amateur-c73e32e95e942c8e-32",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3d6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-world-amateur-42546b576bc60d23-41",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7c6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Bc6 permits Bb5 and the forceful bxa5 Bxc6 exchange. The independent response continues with Bxa8, tying the loss to the misplaced bishop and exposed rook."
+    },
+    {
+      "id": "mistake-world-amateur-42546b576bc60d23-67",
+      "scope": "mistake-mechanism",
+      "moveUci": "h3g4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-world-amateur-4235c00aaafd736a-47",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7e6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Be6 allows Qd4+ and Qxa7+, winning a pawn with check and leaving b5 exposed too. Stockfish shows the same opening of the checking sequence in both searches."
+    },
+    {
+      "id": "mistake-world-amateur-4235c00aaafd736a-42",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4d5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-world-amateur-c56d044e7e57e80e-75",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4h3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "h3 permits Qc7 and a forcing queen exchange in which White recaptures on d5, creating a second dangerous passed pawn alongside b7. Bxd5 first removes the knight and reaches a different defensive setup."
+    },
+    {
+      "id": "mistake-world-amateur-c56d044e7e57e80e-59",
+      "scope": "mistake-mechanism",
+      "moveUci": "e6c8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-world-amateur-bdaa4835cae378b9-92",
+      "scope": "mistake-mechanism",
+      "moveUci": "c4c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "c5 spends the pawn break before the rook is active. Rc1 allows Rd1+–Rd5 before c5, while the played line leaves the knight pressure against h3 and a less active rook. The tactical share is uncertain."
+    },
+    {
+      "id": "mistake-world-amateur-bdaa4835cae378b9-33",
+      "scope": "mistake-mechanism",
+      "moveUci": "b7b6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    },
+    {
+      "id": "mistake-world-amateur-0eba9186a37fb180-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7f5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "f5 permits Qc3 and a trade on c5 that leaves the white knight on an advanced square, followed by Rac1 pressure. Nd7 can take the c5 bishop and contest the c-file from a different setup."
+    },
+    {
+      "id": "mistake-world-amateur-0eba9186a37fb180-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "e3c5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played move has the best supplied paired evaluation."
+    }
+  ],
+  "limitations": [
+    "One legal engine-assisted review, blind to classifier outputs, with uncertain mechanisms kept apart.",
+    "Broadcast game scores only select the loss and near-best strata. Fresh Stockfish paired and reply searches provide evidence.",
+    "The evidence addresses these 48 paired errors/controls from 24 distinct games and three untouched event sources."
+  ]
+}

@@ -6,6 +6,7 @@ import type { Square } from "chessops/types";
 import { makeSquare, makeUci } from "chessops/util";
 import {
     MIN_TACTICAL_CAPTURE_GAIN,
+    observeDefensibleMateThreat,
     proveTrappedMaterial,
     replayTacticalLine,
     tacticalCaptureGain,
@@ -86,6 +87,46 @@ function captureResources(better: Chess, played: Chess, target: number) {
         resources.push(makeUci(move));
     }
     return resources;
+}
+
+/** Winning a piece in the control line only explains a tactical mistake
+ * if that opponent reply has a concrete tactical consequence in play. */
+function meaningfulReply(
+    reply: TacticalReplayStep,
+    played: DecisionEngineLine,
+    opponent: DecisionEngineLine,
+) {
+    if (reply.after.isCheck()) return true;
+    if (
+        reply.capture &&
+        tacticalExchangeGain(reply.before, reply.move) >= MIN_TACTICAL_CAPTURE_GAIN
+    )
+        return true;
+    const piece = reply.after.board.get(reply.move.to);
+    if (!piece) return false;
+    const targets = attacks(piece, reply.move.to, reply.after.board.occupied).intersect(
+        reply.after.board[reply.after.turn],
+    );
+    for (const target of targets) {
+        if ((threatGain(reply, target) ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN) return true;
+    }
+    // A defended target can still be part of a tactical exchange. Require
+    // both searches to take that target with the piece that launched the reply.
+    const continuation = replayTacticalLine(opponent.fen, opponent.pvUci.slice(0, 5));
+    let retainedTargets = targets;
+    for (const [index, step] of continuation.entries()) {
+        if (step.uci !== played.pvUci[index + 1]) break;
+        if (index === 0) continue;
+        if (step.capture && step.move.from === reply.move.to && retainedTargets.has(step.move.to))
+            return true;
+        if (step.move.from === reply.move.to || step.move.to === reply.move.to) break;
+        retainedTargets = retainedTargets.without(step.move.from).without(step.move.to);
+    }
+    const threat = observeDefensibleMateThreat(reply);
+    return Boolean(
+        threat?.defences.some((move) => move.uci === played.pvUci[2]) &&
+        threat.defences.some((move) => move.uci === opponent.pvUci[1]),
+    );
 }
 
 /** The searches may choose different retreats. A bounded check of all legal
@@ -301,7 +342,8 @@ export function compareSharedReply(
     });
     if (
         captures.includes(answer.uci) &&
-        (tacticalCaptureGain(answer, 4096) ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN
+        (tacticalCaptureGain(answer, 4096) ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN &&
+        meaningfulReply(reply, played, opponent)
     ) {
         const afterPlayed = reply.after.clone();
         let detail = `${actual.san} leaves that capture unavailable.`;
@@ -322,7 +364,7 @@ export function compareSharedReply(
         }
         return episode(
             3,
-            `Against ${reply.san}, ${choice.san} gives you ${answer.san}, a profitable capture of the attacking piece. ${detail}`,
+            `Against ${reply.san}, ${choice.san} gives you ${answer.san}, a profitable capture. ${detail}`,
         );
     }
     if (!attack) return null;
