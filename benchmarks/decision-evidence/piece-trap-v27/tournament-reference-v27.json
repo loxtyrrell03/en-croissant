@@ -1,0 +1,230 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "trap-01Mnd",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7d5",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Rg5 catches the queen on d5. Qxg5 or Qxc6 gives up the queen for a rook. Qd7 allows a forcing double-rook sequence."
+    },
+    {
+      "id": "trap-025cb",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4g4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "...h5 forces Rg4 to exchange for the other rook. The loss comes from the resulting pawn ending; there is no immediate gain in material."
+    },
+    {
+      "id": "trap-02JQq",
+      "scope": "mistake-mechanism",
+      "moveUci": "d6c6",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": null
+      },
+      "rationale": "Rb6 attacks the queen on c6. ...Qd7 saves the queen but allows Qxf6 because the queen ceases to guard the rook. A trap and a defender-overload explanation overlap."
+    },
+    {
+      "id": "trap-02K8m",
+      "scope": "mistake-mechanism",
+      "moveUci": "d8h4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Rh3 catches the queen on h4. ...Qxh3 gxh3 and ...Qh6 Rxh6 gxh6 both exchange the queen for a rook."
+    },
+    {
+      "id": "trap-02jBf",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6d6",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Bb4 catches the queen on d6. ...Qc5 loses to Bxc5+, while ...Qxb4+ axb4 salvages a bishop and check before ...exd5."
+    },
+    {
+      "id": "trap-02jDq",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6f4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": null
+      },
+      "rationale": "...Rbf8 catches the queen on f4 in the game continuation. Qf2 Qe3 preserves the queen through the checked horizon, but the pressure on the pinned queen and king remains severe."
+    },
+    {
+      "id": "trap-02lAT",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5d4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Qf4 attacks the bishop on d4 and threatens mate. Even ...Bxf2+ loses the bishop, while ...Bxe5 and ...Bxb2 allow the short mate."
+    },
+    {
+      "id": "trap-02lUz",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "...Ne4 forks the queen and rook. Re2 saves the rook but lets ...Nxg3 take the queen."
+    },
+    {
+      "id": "trap-02nyA",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7f7",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "...Rf6 threatens mate and produces a forced rook exchange into a lost pawn ending after Rxf6+ gxf6. This is a tactical liquidation with equal material."
+    },
+    {
+      "id": "trap-034T9",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1b3",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "...Na5 attacks both the queen on b3 and bishop on c4. The queen safely retreats to c2 and ...Nxc4 takes the bishop."
+    },
+    {
+      "id": "trap-0Hfon",
+      "scope": "mistake-mechanism",
+      "moveUci": "h5f3",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Bg4 catches the queen on f3. Qxg4 Nxg4 is better than Qe3 or Qxf4, where the pawn wins the queen."
+    },
+    {
+      "id": "trap-0HktO",
+      "scope": "mistake-mechanism",
+      "moveUci": "b4b2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Bc3 catches the queen on b2. Even ...Qxc3 Nxc3 and ...Qxa1 Qxa1 give up the queen for less material."
+    },
+    {
+      "id": "trap-0JLFj",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6b2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Na4 catches the queen on b2. ...Qxa1 Qxa1 gives up the queen for a rook and ...Qb6 or ...Qb5 for less."
+    },
+    {
+      "id": "trap-0KCE1",
+      "scope": "mistake-mechanism",
+      "moveUci": "a4c6",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Bd7 catches the queen on c6. Qxc5 Bxc5 limits the loss by salvaging a knight; Qxd7 also gives up the queen."
+    },
+    {
+      "id": "trap-0O9a2",
+      "scope": "mistake-mechanism",
+      "moveUci": "b4c4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Ba6 catches the queen on c4. Qa4 lets ...Bxe2 start a sequence that costs the queen, and Qxa6 Rxa6 limits the loss."
+    },
+    {
+      "id": "trap-0Q32I",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4g4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": null
+      },
+      "rationale": "Be2 attacks the queen on g4. ...Qh4 Nd3 Qe4 keeps the queen through its first two moves. The subsequent ...Qxh1+ sacrifice is good practical salvage, but immediate queen confinement is uncertain."
+    },
+    {
+      "id": "trap-0R09h",
+      "scope": "mistake-mechanism",
+      "moveUci": "h7h6",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Kg7 catches the rook on h6. Rxg6+ Kxg6 costs the exchange of a rook for a pawn; Rh7+ or Rh8 loses the full rook."
+    },
+    {
+      "id": "trap-0Rixo",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5d4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...c5 catches the bishop on d4. Bxg7 Kxg7 or Bxc5 Nxc5 gives up the bishop for a pawn, and Be5 or Bf6 loses at least as much."
+    },
+    {
+      "id": "trap-0Svmd",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7e8",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Ke7 catches the bishop on e8. Its only legal exits Bf7 and Bd7 both allow the king to capture it."
+    },
+    {
+      "id": "trap-0VJPE",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6b2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Na4 catches the queen on b2. ...Qxa1 Qxa1 concedes the queen for a rook; ...Qb5 and ...Qxd4 lose more."
+    }
+  ],
+  "limitations": [
+    "One engine-assisted review. Paired root lines, unrestricted replies, and searches forcing each legal retreat of the attacked piece were checked before examining any classifier outputs.",
+    "Equal-material forced liquidations are tactical but are not scored as material traps. Prepared alternatives including ordinary forks and uncertain overlap are reviewed independently of the source tags.",
+    "This diagnostic overrepresents tactical errors. It does not estimate broad tactical precision or positional or mixed recall."
+  ]
+}

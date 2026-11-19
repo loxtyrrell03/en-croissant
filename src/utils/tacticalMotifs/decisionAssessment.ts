@@ -32,10 +32,14 @@ import {
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
 import { findConditionalFork } from "./conditionalForkEvidence";
 import { compareExposedForcingAttack } from "./decisionForcingConsequence";
-import { compareSharedReply, type DecisionSharedReplyProbe } from "./decisionSharedReply";
+import {
+    compareExposedPieceTrap,
+    compareSharedReply,
+    type DecisionSharedReplyProbe,
+} from "./decisionSharedReply";
 import { comparePawnEpisodes } from "./decisionPawnEpisode";
 
-export const DECISION_ASSESSMENT_VERSION = 8;
+export const DECISION_ASSESSMENT_VERSION = 9;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -553,6 +557,9 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             const playedProbe = input.replyProbes?.find(
                 (item) => item.moveUci === playedLine.pvUci[0],
             );
+            const betterProbe = input.replyProbes?.find(
+                (item) => item.moveUci === comparedBest.pvUci[0],
+            );
             if (corroboratingReply(input.fen, playedLine, playedProbe)) {
                 const opponent = playedProbe!.lines[0];
                 const playedBranch = measureDecisionLine(input.fen, {
@@ -611,6 +618,18 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                             opponent,
                             input.sharedReply,
                         );
+                if (
+                    tacticalEpisode?.kind !== "trap" &&
+                    corroboratingReply(input.fen, comparedBest, betterProbe)
+                )
+                    tacticalEpisode =
+                        compareExposedPieceTrap(
+                            input.fen,
+                            comparedBest,
+                            playedLine,
+                            opponent,
+                            betterProbe!.lines[0],
+                        ) ?? tacticalEpisode;
             }
             const assessment = emptyAssessment();
             if (missed.length || allowed.length || tacticalEpisode)
@@ -668,9 +687,6 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 )
             )
                 factors.push(lostOutpost);
-            const betterProbe = input.replyProbes?.find(
-                (item) => item.moveUci === comparedBest.pvUci[0],
-            );
             const pawnEpisodes =
                 validReplyFrame(input.fen, comparedBest, betterProbe) &&
                 validReplyFrame(input.fen, playedLine, playedProbe)

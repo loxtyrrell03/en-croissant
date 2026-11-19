@@ -152,3 +152,30 @@ test("one captured queen in the PV does not prove a trap when another retreat es
     const opponent = input.replyProbes![1].lines[0];
     expect(compareSharedReply(fen, better, retreat, opponent, input.sharedReply)).toBeNull();
 });
+
+const stationaryQueen = study(
+    "r3k2r/pp1bq3/1bn2n1p/5pp1/5Q2/2NP1N2/PP1BBPPP/2R2RK1 w kq - 0 18",
+    ["f4a4 e8c8 f1e1 c8b8", 52],
+    ["f4c4 c6a5 d3d4 a5c4", -559],
+    ["e8c8 f1e1 c8b8 e2f1", -34],
+    ["c6a5 c3d5 a5c4 d2g5", 561],
+);
+
+test("the trapped piece can stay put and the better choice can face a different reply", () => {
+    const episode = assessChessDecision(stationaryQueen)?.mistake?.tacticalEpisode;
+    expect(episode?.kind).toBe("trap");
+    expect(episode?.mechanisms[0]).toMatchObject({ mechanism: "trappedPiece", squares: ["c4"] });
+    expect(episode?.playedLineUci).toEqual(["f4c4", "c6a5", "c3d5", "a5c4"]);
+    expect(episode?.betterLineUci).toEqual(["f4a4", "e8c8", "f1e1", "c8b8"]);
+});
+
+test("two separate searches must confirm the advantage of the better choice", () => {
+    const [better, played] = stationaryQueen.replyProbes!;
+    const withDivergentControl = {
+        ...stationaryQueen,
+        replyProbes: [{ ...better, lines: [{ ...better.lines[0], cp: 575 }] }, played],
+    };
+    expect(assessChessDecision(withDivergentControl)?.mistake?.tacticalEpisode?.kind).not.toBe(
+        "trap",
+    );
+});

@@ -1148,3 +1148,66 @@ against the saved reference. The raw corpus was streamed and not saved.
 The exact v25 comparator used both its assessment and shared-reply
 modules from `1495c533` and the same engine inputs and query nominations.
 Use a new sample for any future held-out result.
+
+## Iteration 27 — traps without a shared reply or a retreat
+
+The local prover could establish seven of 15 reviewed traps on the
+earlier puzzle boards, including lines where the victim never moved.
+Requiring the two choices to face the same opponent reply excluded some
+of these cases. The narrower shared-reply proof remains available when
+the exact counterfactual exists.
+
+The second proof path requires paired searches and separate opponent
+searches to agree that the played move loses ground. Both searches of the
+played choice must find the same initial attack. The compared better
+line must retain the same piece. The chosen legal defence and actual
+capture must match the all-defence material proof, whether or not the
+piece retreats. The result can name a verified trap even when an existing
+mechanism already established that the mistake was tactical. This path
+uses the searches already needed by the report.
+
+**Held-out result.** The same public sampler drew another 20 positions
+after excluding all 20 prior source games and their boards. The reviewer
+checked the actual engine play and forced each legal retreat in a
+separate search, applying the same material trap definition. A fork that
+lets the attacked piece escape and a forced exchange of equal material
+into a lost pawn ending are different mechanisms. Three cases remained
+uncertain. The previous classifier was replayed with the same inputs.
+
+| Question | Reviewed positives / negatives | Legacy TP / FP | Same-board v26 TP / FP | v27 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical mistake | 20 / 0 | 7 / 0 | 13 / 0 | 14 / 0 |
+| Trapped-piece mechanism | 13 / 4 | Unavailable | 2 / 0 | 7 / 0 |
+
+`Rh6 ...Kg7` traps the rook with eight legal defensive branches.
+After `Rxg6+ Kxg6` the rook wins only a pawn, and `Rh7+` or `Rh8`
+loses the full rook. The compared `Ra7` line retains the rook.
+In a separate example, `...Be8 Ke7` traps the bishop even though the
+engine continuation leaves it on e8 for capture. The tests also check
+`Qc4 ...Na5 Nd5 ...Nxc4`, where the two searches on the played choice
+pick different defences and the better move faces long castling.
+
+On the earlier puzzle boards, now development data, trap detection
+improved from 2/15 to 6/15 and tactical detection from 14/20 to 15/20.
+No negative trap label changed. On the earlier 36 tournament decisions,
+the tactical, positional and mixed counts stayed at 3/9, 1/8 and 0/2
+with no new false positives. These results support the expanded proof
+for this mechanism. They leave positional and mixed coverage unresolved.
+Four reviewed negative cases are insufficient to estimate specificity
+precisely. Exchanges, immediate mating threats and counterchecks can
+fall outside the material proof, and the system still misses six of the
+13 verified traps on the fresh sample.
+
+Median classifier time stayed around 44 ms excluding engine work and
+legacy motif extraction. The previous search policy nominated 11
+shared replies, two available from cache and nine requiring a 1M-node
+search (8.1 aggregate engine-seconds). The new proof path requested no
+extra searches. 113 focused tests passed, one existing test was skipped,
+and TypeScript and scoped lint passed. The replay with the committed
+motif engine matched every fresh mistake report.
+
+Public manifests are in `benchmarks/decision-evidence/piece-trap-v27`.
+The sample and reference SHA-256 start with `d2a6892a` and `a871d5b2`.
+Use the v26 procedure with the `v27` cache profile and compare with
+the two corresponding modules at `7dbf0c70`. The source change has
+been verified without replacing the installed app.

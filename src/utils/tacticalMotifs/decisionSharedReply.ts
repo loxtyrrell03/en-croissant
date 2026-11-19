@@ -96,15 +96,16 @@ function trapWitness(
     line: TacticalReplayStep[],
 ): { witness: TacticalSequenceWitness; checkedReplies: number } | null {
     const victim = reply.after.board.get(square);
-    const retreat = line[1];
+    const defence = line[1];
     const take = line[2];
+    const targetSquare = defence?.move.from === square ? defence.move.to : square;
     if (
         reply.capture ||
         !victim ||
         victim.role === "pawn" ||
         victim.role === "king" ||
-        retreat?.move.from !== square ||
-        take?.move.to !== retreat.move.to ||
+        !defence ||
+        take?.move.to !== targetSquare ||
         !take.capture
     )
         return null;
@@ -116,7 +117,7 @@ function trapWitness(
     const proof = proveTrappedMaterial(reply, square);
     if (
         !proof?.branches.some(
-            (branch) => branch.replyUci === retreat.uci && branch.answerUci === take.uci,
+            (branch) => branch.replyUci === defence.uci && branch.answerUci === take.uci,
         )
     )
         return null;
@@ -130,11 +131,77 @@ function trapWitness(
             mechanismPly: 1,
             payoffPly: 3,
             squares: [target],
-            description: `The ${victim.role} is captured after ${retreat.san}.`,
+            description: `The ${victim.role} is captured after ${defence.san}.`,
             support: "legal-continuation",
             rootMoveInvolved: true,
-            lineUci: [reply.uci, retreat.uci, take.uci],
+            lineUci: [reply.uci, defence.uci, take.uci],
         },
+    };
+}
+
+/** Both choices have already passed paired and independent engine checks.
+ * A complete local trap proof can explain a material loss even when the
+ * opponent plays a different reply against the better move. */
+export function compareExposedPieceTrap(
+    fen: string,
+    better: DecisionEngineLine,
+    played: DecisionEngineLine,
+    opponent: DecisionEngineLine,
+    betterReply: DecisionEngineLine,
+): TacticalMistakeEpisode | null {
+    if (
+        better.depth < 16 ||
+        better.cp === null ||
+        played.cp === null ||
+        better.cp - played.cp < 100 ||
+        opponent.cp === null ||
+        betterReply.cp === null ||
+        opponent.cp - betterReply.cp < 100 ||
+        played.pvUci[1] !== opponent.pvUci[0]
+    )
+        return null;
+    const [actual] = replayTacticalLine(fen, [played.pvUci[0]]);
+    const [choice] = replayTacticalLine(fen, [better.pvUci[0]]);
+    const playedLine = replayTacticalLine(opponent.fen, opponent.pvUci.slice(0, 3));
+    const controlLine = replayTacticalLine(betterReply.fen, betterReply.pvUci.slice(0, 3));
+    const reply = playedLine[0];
+    if (
+        !actual ||
+        !choice ||
+        !reply ||
+        controlLine.length !== 3 ||
+        measureDecisionLine(makeFen(actual.after.toSetup()), opponent)?.drawnEnding !== false ||
+        measureDecisionLine(makeFen(choice.after.toSetup()), betterReply)?.drawnEnding !== false
+    )
+        return null;
+    const target = actual.move.to;
+    const victim = actual.after.board.get(target);
+    const gain = threatGain(reply, target);
+    if (actual.move.promotion || !victim || gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN)
+        return null;
+
+    let alternativeSquare =
+        choice.move.from === actual.move.from ? choice.move.to : actual.move.from;
+    const alternative = choice.after.board.get(alternativeSquare);
+    if (alternative?.color !== victim.color || alternative.role !== victim.role) return null;
+    for (const step of controlLine) {
+        if (step.before.turn !== victim.color && step.move.to === alternativeSquare) return null;
+        if (step.before.turn === victim.color && step.move.from === alternativeSquare)
+            alternativeSquare = step.move.to;
+    }
+    const retained = controlLine[2].after.board.get(alternativeSquare);
+    if (retained?.color !== victim.color || retained.role !== victim.role) return null;
+
+    const trap = trapWitness(reply, target, playedLine);
+    if (!trap) return null;
+    return {
+        kind: "trap",
+        checkedReplies: trap.checkedReplies,
+        throughPly: 4,
+        playedLineUci: [actual.uci, ...trap.witness.lineUci],
+        betterLineUci: [choice.uci, ...controlLine.map((step) => step.uci)],
+        mechanisms: [trap.witness],
+        explanation: `${reply.san} traps the ${victim.role} on ${makeSquare(target)}. The local search finds a material gain against all ${trap.checkedReplies} legal replies. The ${victim.role} stays on the board in the compared ${choice.san} line.`,
     };
 }
 
