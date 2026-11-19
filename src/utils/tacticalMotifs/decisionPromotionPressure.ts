@@ -52,7 +52,11 @@ function immediateCapture(steps: TacticalReplayStep[], i: number, square: Square
 /** Keep the starting pawn's identity across captures and promotions. The
  * first adverse occupant of its direct promotion square is a blockade only
  * after it remains there over several moves with the pawn still present. */
-function follow(steps: TacticalReplayStep[], start: Square, side: Color): Trajectory {
+export function traceAdvancedPawn(
+    steps: TacticalReplayStep[],
+    start: Square,
+    side: Color,
+): Trajectory {
     const result: Trajectory = {};
     let square = start;
     let entry = relativeRank(start, side) === 7 ? 0 : -1;
@@ -172,7 +176,7 @@ export function findPromotionPressure(
         const side = rootStep.before.board.get(pawn)!.color;
         const ownerMoves = rootStep.before.turn === side;
         const title = `The ${side} pawn starting on ${makeSquare(pawn)} shapes both choices.`;
-        const trajectories = paths.map((steps) => follow(steps, pawn, side));
+        const trajectories = paths.map((steps) => traceAdvancedPawn(steps, pawn, side));
         const best = trajectories[0];
         for (let i = 1; !positional && i < lines.length; i++) {
             const alt = trajectories[i];

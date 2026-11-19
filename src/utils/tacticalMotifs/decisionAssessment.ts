@@ -57,8 +57,9 @@ import {
 } from "./decisionPositionPlans";
 import { findSharedStructuralPlan } from "./decisionSharedStructure";
 import { findPromotionPressure } from "./decisionPromotionPressure";
+import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisionPromotionMistake";
 
-export const DECISION_ASSESSMENT_VERSION = 19;
+export const DECISION_ASSESSMENT_VERSION = 20;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -135,6 +136,7 @@ export type ChessDecisionReport = {
               allowed: TacticalSequenceWitness[];
               tacticalEpisode?: TacticalMistakeEpisode;
               mateConsequence?: DecisionMateConsequence;
+              promotion?: PromotionMistakeEvidence;
           })
         | null;
 };
@@ -806,11 +808,26 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                         ) ?? tacticalEpisode;
             }
             const assessment = emptyAssessment();
-            if (missed.length || allowed.length || tacticalEpisode)
+            const promotion =
+                playedLine.pvUci
+                    .slice(1, 8)
+                    .some((uci, index) => index % 2 === 0 && uci.length === 5) &&
+                validReplyFrame(input.fen, comparedBest, betterProbe) &&
+                validReplyFrame(input.fen, playedLine, playedProbe)
+                    ? comparePromotionMistake(
+                          input.fen,
+                          comparedBest,
+                          playedLine,
+                          betterProbe!.lines[0],
+                          playedProbe!.lines[0],
+                      )
+                    : null;
+            if (missed.length || allowed.length || tacticalEpisode || promotion)
                 assessment.tactical = {
                     support: "supported",
                     basis: tacticalEpisode?.kind === "trap" ? "bounded-proof" : "engine-supported",
                     reasons: [
+                        ...(promotion ? [promotion.tactical] : []),
                         ...missed.map(
                             (item) =>
                                 `The better choice uses ${item.mechanism}. The played continuation retains less material in the analysed horizon. ${item.description}`,
@@ -891,11 +908,12 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                           playedProbe!.lines[0],
                       )
                     : null;
-            if (factors.length || pawnEpisodes.length || shelter) {
+            if (factors.length || pawnEpisodes.length || shelter || promotion?.positional) {
                 assessment.positional = {
                     support: "supported",
                     basis: "heuristic",
                     reasons: [
+                        ...(promotion?.positional ? [promotion.positional] : []),
                         ...factors.map(
                             (item) =>
                                 `${item.description} The feature is absent from the played line in the compared window.`,
@@ -927,6 +945,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 missed,
                 allowed,
                 ...(tacticalEpisode ? { tacticalEpisode } : {}),
+                ...(promotion ? { promotion } : {}),
             };
         }
     }

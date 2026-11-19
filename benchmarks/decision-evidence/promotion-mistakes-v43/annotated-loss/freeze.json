@@ -1,0 +1,11 @@
+{
+  "comparator": "593538a1461a2b1a6d776d0d784451b65cc619f9",
+  "criterion": "One or more new reviewed promotion-mechanism or tactical/positional true positives without new reviewed false positives",
+  "sampleSha256": "173b21eb3aaa73873993ab205bf2a3ffbf24b3093595ed05dfcd01e9044d45c9",
+  "referenceSha256": "4f33376c9be21ce5dcdd73c957f9fbe7efa871295821bb98ba528239c84b3e90",
+  "candidate": {
+    "src/utils/tacticalMotifs/decisionPromotionMistake.ts": "7f3064de77590298ba51234a721d6ab32adfafa68a4a95e989b85c4b27a97cbb",
+    "src/utils/tacticalMotifs/decisionAssessment.ts": "e978829b7997b4e742621536c48deabd1fea412e5ff9a6065d44c21cc3da606f",
+    "src/components/panels/tactics/DecisionEvidencePanel.tsx": "286b4de912691194a1ce89658e28ab8de82957096324d766884c3a88d747a770"
+  }
+}

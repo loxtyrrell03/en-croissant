@@ -186,6 +186,7 @@ function DecisionReport({
   const selected = report.moves.find((item) => item.moveUci === move);
   const episode = report.mistake?.tacticalEpisode;
   const mate = report.mistake?.mateConsequence;
+  const mistakeComparison = report.mistake?.promotion ?? episode;
   const contrast = report.position.tacticalContrast;
   const plan = report.position.strategicPlan;
   const promotion = report.position.promotionTactic;
@@ -247,10 +248,16 @@ function DecisionReport({
           title={playedSan ? `What ${playedSan} missed or allowed` : "Mistake mechanism"}
           assessment={report.mistake}
           comparedLines={
-            episode
+            mistakeComparison
               ? [
-                  { label: "Played line", san: lineSan(report.fen, episode.playedLineUci) },
-                  { label: "Better line", san: lineSan(report.fen, episode.betterLineUci) },
+                  {
+                    label: "Played line",
+                    san: lineSan(report.fen, mistakeComparison.playedLineUci),
+                  },
+                  {
+                    label: "Better line",
+                    san: lineSan(report.fen, mistakeComparison.betterLineUci),
+                  },
                 ]
               : mate
                 ? [{ label: "Mating line", san: lineSan(report.fen, mate.lineUci) }]

@@ -1,0 +1,276 @@
+{
+  "protocol": 1,
+  "notes": "One engine-assisted reviewer compared paired and separately searched Stockfish lines before viewing classifier outputs.",
+  "cases": [
+    {
+      "id": "pawn-mistake-cap-negret-seniors-2026-81b4bd5cf41a2e27-73",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7g8",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Kg8 is the paired leading choice. Later e-pawn activity does not establish a mistake at this move."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-2c73347342b199d3-100",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2g1",
+      "tactical": null,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Both engine choices lose and permit the same b-pawn to promote. The sequences differ in whether a queen exchange happens first, with no separate strategic concession established."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-5108c503d8c3bcba-149",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6b6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rxb6 is the paired leading choice and still allows h8=Q. The later conversion is not evidence of an earlier error."
+    },
+    {
+      "id": "pawn-mistake-european-youth-g18-2026-0cec7d0b9b79859e-93",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3h2",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Kh2 is the engine's leading choice. The race leaves the d-pawn able to promote in both supplied searches."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-a898bfc688dc86a3-159",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5c7",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Na7 and Nc7 have similar scores and both can restrain the a-pawn. The promotion recorded later does not distinguish these choices."
+    },
+    {
+      "id": "pawn-mistake-cap-negret-seniors-2026-faacccc071fc0ff4-81",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5h6",
+      "tactical": true,
+      "positional": null,
+      "promotion": false,
+      "rationale": "After Kh6, Rf8 and Kxg7 leave the b8 rook available to Rxb8. The g-pawn is taken in both engine variations and does not account for the immediate rook loss."
+    },
+    {
+      "id": "pawn-mistake-european-youth-g18-2026-7643a6cdd534c272-103",
+      "scope": "mistake-mechanism",
+      "moveUci": "a6a5",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Both king or a-pawn choices are already lost to the same g-pawn. The two searches give the same mate distance after the compared moves."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-bcb8d463130aba5d-109",
+      "scope": "mistake-mechanism",
+      "moveUci": "f4f3",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "f3 is the leading choice. The engine lets the b-pawn promote anyway, while advancing Black's own counterplay."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-f80cca6df1903ce1-111",
+      "scope": "mistake-mechanism",
+      "moveUci": "f6g5",
+      "tactical": true,
+      "positional": null,
+      "promotion": true,
+      "rationale": "Rb2 exchanges the rook for the promoted piece via Rxb8. Bg5 instead leaves the new queen on the board during Black's checks and yields a corroborated mating evaluation."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-fc5d6b18df564b5d-140",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7g8q",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "g8=Q is the leading choice. The c-pawn promotes in both searches and White keeps the better prospects in the queen ending."
+    },
+    {
+      "id": "pawn-mistake-guernsey-open-2026-a1d869d486098d6d-95",
+      "scope": "mistake-mechanism",
+      "moveUci": "h2g4",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Nxg4 changes the immediate captures but still loses to the same h-pawn. The alternatives give comparable already-lost mating outcomes."
+    },
+    {
+      "id": "pawn-mistake-guernsey-open-2026-8d17ee96c62eb159-94",
+      "scope": "mistake-mechanism",
+      "moveUci": "d4b2",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Bb2 is the leading choice. The underpromotion and exchange on c1 occur anyway and do not establish an error at Bb2."
+    },
+    {
+      "id": "pawn-mistake-european-youth-g18-2026-c8a9b7786358b754-176",
+      "scope": "mistake-mechanism",
+      "moveUci": "d4c4",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Kc4 and Kc5 have similar paired and separately searched scores. The g-pawn remains a threat whichever king move is used."
+    },
+    {
+      "id": "pawn-mistake-guernsey-open-2026-7c003c4302d3e8c9-116",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5c5",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rc5+ is the leading choice. The b-pawn can promote in it, so the recorded promotion is not evidence that Rc5+ was inferior."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-2b48abc79e2c1e86-55",
+      "scope": "mistake-mechanism",
+      "moveUci": "b8b7",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rxb7 is the leading choice and both searches show c8=Q followed by the queen liquidation. There is no inferior played choice to diagnose."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-f4738af9a59a193a-94",
+      "scope": "mistake-mechanism",
+      "moveUci": "d6f8",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "The played check shares the leading draw score. The advanced pawn does not distinguish a losing alternative within this decision."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-087a139530105992-75",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3d3",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rd3 is the leading choice and gives Black repeated rook checks while the c-pawn remains blocked."
+    },
+    {
+      "id": "pawn-mistake-guernsey-challengers-2026-bcca5ae200faa2a2-76",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2g3",
+      "tactical": null,
+      "positional": null,
+      "promotion": false,
+      "rationale": "The paired comparison favours b4 modestly, while the independent replies defend against g3 similarly. The d-pawn persists and no specific promotion consequence is established."
+    },
+    {
+      "id": "pawn-mistake-guernsey-open-2026-b210d3413b8a15a6-44",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5f4",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Nf4 is the leading choice. The different early tactical lines arise after that same move."
+    },
+    {
+      "id": "pawn-mistake-guernsey-challengers-2026-482a6d6b2170ec7c-49",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5f3",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Nf3 is the leading choice and keeps the material and evaluation advantage. There is no measured played-move error here."
+    },
+    {
+      "id": "pawn-mistake-european-youth-g18-2026-27445f5144c6ccad-58",
+      "scope": "mistake-mechanism",
+      "moveUci": "b3d2",
+      "tactical": true,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Nbd2 allows Ne2+ and Qxg4+, losing the queen in both inferior variations. The advanced e-pawn helps the attack without promoting."
+    },
+    {
+      "id": "pawn-mistake-cap-negret-seniors-2026-fc5797a6f9165830-28",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1e1",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Qe1 is the leading choice. Both searches show the g3 pawn being removed after the forcing exchanges."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-0b15c078604d409f-110",
+      "scope": "mistake-mechanism",
+      "moveUci": "h2g1",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Kg1 is the leading choice in an already lost position. Re2 and the central pawn activity do not by themselves identify a mistake by White."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-87250ea4e7c1ec18-91",
+      "scope": "mistake-mechanism",
+      "moveUci": "e6c6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rc6 is the leading choice. Both continuations show Black's king reaching the g-pawn and taking it."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-25978565a14bf0ea-57",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5f3",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Nf3 is the leading choice. Black's own d-pawn advances later and White does not gain a promotion from the decision."
+    },
+    {
+      "id": "pawn-mistake-guernsey-open-2026-cec0efb266211d40-101",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6g8",
+      "tactical": null,
+      "positional": null,
+      "promotion": false,
+      "rationale": "Black is already lost to the connected passers. The paired frame changes which white pawn promotes, while the independent scores do not confirm a worse result after Ng8."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-a7a363c10b3a5c7b-61",
+      "scope": "mistake-mechanism",
+      "moveUci": "d6c5",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "dxc5 is the leading choice. Later white d-pawn activity does not identify a mistake on this move."
+    },
+    {
+      "id": "pawn-mistake-european-youth-u16-2026-5b7ad7b7f7555661-29",
+      "scope": "mistake-mechanism",
+      "moveUci": "b8b6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rxb6 is the paired leading choice and removes the advanced pawn before the subsequent central play."
+    },
+    {
+      "id": "pawn-mistake-european-youth-g18-2026-f7d30d46dda9cf8b-66",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6e6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Re6 is the leading choice and both searches show the c3 pawn taken amid the knight exchanges."
+    },
+    {
+      "id": "pawn-mistake-guernsey-open-2026-ee7894838f8c372c-67",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5d1",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rxd1 is the leading choice and both searches keep the c7 pawn from promotion in the displayed window."
+    }
+  ]
+}

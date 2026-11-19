@@ -1,0 +1,242 @@
+diff --git a/src/utils/tacticalMotifs/decisionPromotionMistake.ts b/src/utils/tacticalMotifs/decisionPromotionMistake.ts
+--- a/src/utils/tacticalMotifs/decisionPromotionMistake.ts
++++ b/src/utils/tacticalMotifs/decisionPromotionMistake.ts
+@@ -0,0 +1 @@
++import type { Chess } from "chessops/chess";
+@@ -2 +3 @@
+-import type { Color, Square } from "chessops/types";
++import type { Color, Role, Square } from "chessops/types";
+@@ -4 +5 @@
+-import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
++import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
+@@ -9,0 +11 @@
++const PROMOTION_ROLES = ["queen", "rook", "bishop", "knight"] satisfies Role[];
+@@ -40,2 +42,5 @@
+-    const end = promotion.through + RETENTION_WINDOW;
+-    if (steps.length < end) return;
++    const end = Math.min(steps.length, promotion.through + RETENTION_WINDOW);
++    const terminal = steps[end - 1];
++    if (end < promotion.through + RETENTION_WINDOW && !terminal.after.isCheckmate()) return;
++    if (steps.slice(0, end).some((step) => step.before.turn !== opponent && step.move.promotion))
++        return;
+@@ -52 +57,4 @@
+-        description: `${move.san} promotes the pawn and retains the new ${role} through ${steps[end - 1].san}`,
++        description:
++            terminal === move
++                ? `${move.san} is checkmate`
++                : `${move.san} promotes the pawn and retains the new ${role} through ${terminal.san}`,
+@@ -64 +71,0 @@
+-        played.cp === null ||
+@@ -66 +72,0 @@
+-        played.mate != null ||
+@@ -68 +73,0 @@
+-        better.cp - played.cp < 100 ||
+@@ -73,0 +79,8 @@
++    if (played.mate != null)
++        return (
++            played.mate < 0 &&
++            playedReply.mate != null &&
++            playedReply.mate > 0 &&
++            Math.abs(played.mate + playedReply.mate) <= 2
++        );
++    if (played.cp === null || better.cp - played.cp < 100) return false;
+@@ -79,0 +93,78 @@
++}
++
++function takesNewPiece(
++    steps: TacticalReplayStep[],
++    trace: ReturnType<typeof traceAdvancedPawn>,
++    target: Square,
++) {
++    const event = trace.promotion;
++    if (event?.square !== target || event.trade?.role === "queen") return;
++    const take = steps[event.through];
++    const reply = steps[event.through + 1];
++    if (
++        !take?.capture ||
++        take.move.to !== target ||
++        !reply ||
++        (reply.move.to === target && reply.capture && !event.trade)
++    )
++        return;
++    return {
++        through: event.trade?.through ?? event.through + 1,
++        contextThrough: event.trade?.through ?? event.through + 1,
++        description: `${take.san} takes the promoted piece${event.trade ? ` before ${steps[event.trade.through - 1].san}` : ""}`,
++    };
++}
++
++/** Test each legal straight promotion. A rook behind a pawn helps only if
++ * it can legally and profitably take the new piece even after underpromotion. */
++function rookCoversPromotion(board: Chess, pawn: Square, target: Square, rook: Square) {
++    if ((rook & 7) !== (target & 7) || !board.board.rook.has(rook)) return false;
++    let tested = false;
++    for (const promotion of PROMOTION_ROLES) {
++        const move = { from: pawn, to: target, promotion };
++        if (!board.isLegal(move)) continue;
++        tested = true;
++        const promoted = board.clone();
++        promoted.play(move);
++        const capture = { from: rook, to: target };
++        if (!promoted.isLegal(capture) || tacticalExchangeGain(promoted, capture) < 90)
++            return false;
++    }
++    return tested ? true : undefined;
++}
++
++function repeatedRookGuard(
++    steps: TacticalReplayStep[],
++    pawn: Square,
++    target: Square,
++    opponent: Color,
++) {
++    if (target !== pawn + (opponent === "white" ? 8 : -8) || !steps.length) return;
++    const board = steps[0].after;
++    const defender = opposite(opponent);
++    for (const rook of board.board.rook.intersect(board.board[defender])) {
++        if (!rookCoversPromotion(board, pawn, target, rook)) continue;
++        for (let i = 1; i < steps.length; i++) {
++            const step = steps[i];
++            if (
++                (step.before.turn === defender && step.move.from === rook) ||
++                (step.before.turn === opponent && step.move.from === pawn) ||
++                !step.after.board.pawn.has(pawn) ||
++                !step.after.board[opponent].has(pawn) ||
++                !step.after.board.rook.has(rook) ||
++                !step.after.board[defender].has(rook)
++            )
++                break;
++            if (step.after.turn === opponent) {
++                const covered = rookCoversPromotion(step.after, pawn, target, rook);
++                if (covered === undefined) continue;
++                if (!covered) break;
++                return {
++                    rook,
++                    through: i + 1,
++                    contextThrough: i + 1,
++                    description: `the rook on ${makeSquare(rook)} can capture any straight promotion on ${makeSquare(target)} in the checked positions`,
++                };
++            }
++        }
++    }
+@@ -130,7 +221,23 @@
+-        const prevented = first.removes ?? first.blockade;
+-        if (
+-            first.promotion ||
+-            second.promotion ||
+-            !prevented ||
+-            !(second.removes || second.blockade)
+-        )
++        const firstCapture =
++            found.signature === "retained:queen"
++                ? takesNewPiece(preferred, first, found.square)
++                : undefined;
++        const secondCapture =
++            found.signature === "retained:queen"
++                ? takesNewPiece(preferredSearch, second, found.square)
++                : undefined;
++        if ((first.promotion || second.promotion) && !(firstCapture && secondCapture)) continue;
++        const firstGuard =
++            first.removes && second.removes
++                ? undefined
++                : repeatedRookGuard(preferred.slice(0, through), pawn, found.square, opponent);
++        const secondGuard =
++            firstGuard &&
++            repeatedRookGuard(preferredSearch.slice(0, through), pawn, found.square, opponent);
++        const sameGuard =
++            firstGuard &&
++            secondGuard?.rook === firstGuard.rook &&
++            !rookCoversPromotion(actual[0].after, pawn, found.square, firstGuard.rook);
++        const prevented =
++            first.removes ?? first.blockade ?? firstCapture ?? (sameGuard ? firstGuard : undefined);
++        if (!prevented || !(second.removes || second.blockade || secondCapture || sameGuard))
+@@ -138 +245,2 @@
+-        const strategic = first.blockade && second.blockade;
++        const blockade = first.blockade && second.blockade ? first.blockade : undefined;
++        const strategic = blockade ?? (sameGuard ? firstGuard : undefined);
+@@ -140 +248 @@
+-            tactical: `${actual[0].san} allows the pawn from ${makeSquare(pawn)} to promote in both searches. ${found.description}. After ${preferred[0].san}, ${prevented.description}.`,
++            tactical: `${actual[0].san} allows the pawn from ${makeSquare(pawn)} to promote in both searches. ${found.description}. After ${preferred[0].san}, ${prevented === firstGuard ? "the rook can take the promoted piece" : prevented.description}.`,
+@@ -143 +251 @@
+-                      positional: `The better choice keeps a blockade against the pawn from ${makeSquare(pawn)} in both continuations. ${first.blockade!.description}.`,
++                      positional: `The better choice restrains the pawn from ${makeSquare(pawn)} in both continuations: ${strategic.description}.`,
+diff --git a/src/utils/tacticalMotifs/decisionAssessment.ts b/src/utils/tacticalMotifs/decisionAssessment.ts
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -647,0 +648 @@
++    let promotion: PromotionMistakeEvidence | null = null;
+@@ -654,2 +655,16 @@
+-        const replyFor = (choice: DecisionEngineLine) =>
+-            input.replyProbes?.find((probe) => probe.moveUci === choice.pvUci[0])?.lines[0];
++        const betterProbe = input.replyProbes?.find(
++            (probe) => probe.moveUci === comparedBest.pvUci[0],
++        );
++        const playedProbe = input.replyProbes?.find((probe) => probe.moveUci === played.pvUci[0]);
++        if (
++            played.pvUci.slice(1, 8).some((uci, index) => index % 2 === 0 && uci.length === 5) &&
++            validReplyFrame(input.fen, comparedBest, betterProbe) &&
++            validReplyFrame(input.fen, played, playedProbe)
++        )
++            promotion = comparePromotionMistake(
++                input.fen,
++                comparedBest,
++                played,
++                betterProbe!.lines[0],
++                playedProbe!.lines[0],
++            );
+@@ -660,4 +675,4 @@
+-            replyFor(comparedBest),
+-            replyFor(played),
+-        );
+-        if (mateConsequence) {
++            betterProbe?.lines[0],
++            playedProbe?.lines[0],
++        );
++        if (mateConsequence || (played.mate != null && promotion)) {
+@@ -667 +682 @@
+-                category: "tactical",
++                category: promotion?.positional ? "mixed" : "tactical",
+@@ -671 +686 @@
+-                        mateConsequence.kind === "missed" && mateConsequence.mateIn === 1
++                        mateConsequence?.kind === "missed" && mateConsequence.mateIn === 1
+@@ -674 +689,4 @@
+-                    reasons: [mateConsequence.explanation],
++                    reasons: [
++                        ...(promotion ? [promotion.tactical] : []),
++                        ...(mateConsequence ? [mateConsequence.explanation] : []),
++                    ],
+@@ -675,0 +694,9 @@
++                ...(promotion?.positional
++                    ? {
++                          positional: {
++                              support: "supported",
++                              basis: "heuristic",
++                              reasons: [promotion.positional],
++                          },
++                      }
++                    : {}),
+@@ -679,2 +706,7 @@
+-                mateConsequence,
+-                limitations: ["This is a measured mating consequence in the supplied search."],
++                ...(mateConsequence ? { mateConsequence } : {}),
++                ...(promotion ? { promotion } : {}),
++                limitations: [
++                    mateConsequence
++                        ? "This is a measured mating consequence in the supplied search."
++                        : "The searches agree on a mating evaluation and the local promotion consequence.",
++                ],
+@@ -811,14 +842,0 @@
+-            const promotion =
+-                playedLine.pvUci
+-                    .slice(1, 8)
+-                    .some((uci, index) => index % 2 === 0 && uci.length === 5) &&
+-                validReplyFrame(input.fen, comparedBest, betterProbe) &&
+-                validReplyFrame(input.fen, playedLine, playedProbe)
+-                    ? comparePromotionMistake(
+-                          input.fen,
+-                          comparedBest,
+-                          playedLine,
+-                          betterProbe!.lines[0],
+-                          playedProbe!.lines[0],
+-                      )
+-                    : null;

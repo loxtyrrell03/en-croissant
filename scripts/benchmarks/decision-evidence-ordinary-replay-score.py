@@ -129,13 +129,73 @@ def evaluate(before, after):
     return result
 
 
+def evaluate_mistakes(before, after):
+    if before.keys() != after.keys():
+        raise ValueError('The report pairs must cover the same decisions')
+    pairs = [(old, after[case]) for case, old in before.items()]
+    for old, new in pairs:
+        label = old['label']
+        if (
+            old['row'] != new['row'] or label != new['label']
+            or label['scope'] != 'mistake-mechanism'
+            or label.get('moveUci') != old['row']['playedMoveUci']
+            or 'promotion' not in label
+        ):
+            raise ValueError('A mistake reference must identify the actual move in both reports')
+    axes = (*DIMENSIONS, 'promotion')
+
+    def detect_mistake(case, axis):
+        mistake = case['report']['mistake']
+        if axis == 'promotion':
+            return bool(mistake and mistake.get('promotion'))
+        if axis == 'mixed':
+            return all(support(mistake, dimension) for dimension in DIMENSIONS[:2])
+        return support(mistake, axis)
+
+    return {
+        'cases': len(pairs),
+        'events': len({row['row']['event'] for row in before.values()}),
+        **{
+            version: {
+                axis: scoring.detection(
+                    [reference(row, axis) for row in rows.values()],
+                    [detect_mistake(row, axis) for row in rows.values()],
+                )
+                for axis in axes
+            }
+            for version, rows in [('before', before), ('after', after)]
+        },
+        'changedPositionReports': sum(old['report']['position'] != new['report']['position']
+                                      for old, new in pairs),
+        'changedMoveReports': sum(old['report']['moves'] != new['report']['moves']
+                                  for old, new in pairs),
+        'extraSearchDecisions': {
+            version: sum(row['searchedExtra'] for row in rows.values())
+            for version, rows in [('before', before), ('after', after)]
+        },
+        'workerMedianMs': {
+            version: median(row['workerMs'] for row in rows.values())
+            for version, rows in [('before', before), ('after', after)]
+        },
+        'changes': [
+            dict(id=old['row']['id'], reference={axis: reference(old, axis) for axis in axes},
+                 before=[axis for axis in axes if detect_mistake(old, axis)],
+                 after=[axis for axis in axes if detect_mistake(new, axis)],
+                 promotion=new['report']['mistake'].get('promotion') if new['report']['mistake'] else None)
+            for old, new in pairs if old['report']['mistake'] != new['report']['mistake']
+        ],
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('baseline', type=Path)
     parser.add_argument('candidate', type=Path)
     parser.add_argument('output', type=Path)
+    parser.add_argument('--mistakes', action='store_true')
     args = parser.parse_args()
-    metrics = evaluate(read(args.baseline), read(args.candidate))
+    compare = evaluate_mistakes if args.mistakes else evaluate
+    metrics = compare(read(args.baseline), read(args.candidate))
     with args.output.open('x', encoding='utf-8') as out:
         json.dump(metrics, out, indent=2)
         out.write('\n')

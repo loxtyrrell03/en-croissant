@@ -25,6 +25,7 @@ type Source = {
     cache: string;
     reference: string;
     strata?: string[];
+    scope?: "position-character" | "mistake-mechanism";
 };
 type Row = {
     id: string;
@@ -64,6 +65,7 @@ type Extras = {
 type Ref = {
     id: string;
     scope: string;
+    moveUci?: string;
     tactical: boolean | null;
     positional: boolean | null;
     rationale: string;
@@ -142,8 +144,13 @@ test.skipIf(!manifest)(
                 .filter((row) => strata.includes(row.stratum))
                 .map((row) => {
                     const label = refs.get(row.id);
-                    if (!label || label.scope !== "position-character")
-                        throw new Error("Missing position reference");
+                    const scope = source.scope ?? "position-character";
+                    if (
+                        !label ||
+                        label.scope !== scope ||
+                        (scope === "mistake-mechanism" && label.moveUci !== row.playedMoveUci)
+                    )
+                        throw new Error("Missing reference for " + row.id);
                     const identity = row.fen.split(" ").slice(0, 4).join(" ");
                     if (seen.has(identity) || groups.has(row.sourceGroup))
                         throw new Error("Duplicated board or game");

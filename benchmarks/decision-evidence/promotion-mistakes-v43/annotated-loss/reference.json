@@ -1,0 +1,186 @@
+{
+  "protocol": 1,
+  "notes": "One engine-assisted reviewer compared paired and separately searched Stockfish lines before viewing classifier outputs.",
+  "cases": [
+    {
+      "id": "annotated-pawn-sudamericano-2026-e6f26d47dd989423-108",
+      "scope": "mistake-mechanism",
+      "moveUci": "h5h6",
+      "tactical": null,
+      "positional": true,
+      "promotion": false,
+      "rationale": "After Rh6+, White's rook is less able to support c6 and Black's rook checks make the connected g- and h-pawns dangerous. The better counterplay remains credible, though the searches differ on its value."
+    },
+    {
+      "id": "annotated-pawn-lebanese-open-2026-0263629130fd2e79-51",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6f4",
+      "tactical": true,
+      "positional": null,
+      "promotion": false,
+      "rationale": "Nf4 permits Nxh5 and an attack through the knight checks, with Qxh6+ in the paired line. Qxd2+ removes this material and king attack by exchanging queens."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-women-2025-8dfb7a489fd733b2-104",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1c5",
+      "tactical": null,
+      "positional": true,
+      "promotion": false,
+      "rationale": "Rc5 leaves the advanced e-pawn alive and allows Black to activate bishop and rook with repeated checks. Rxe3 removes it before White reorganises the rook and king."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101",
+      "scope": "mistake-mechanism",
+      "moveUci": "b7b8",
+      "tactical": true,
+      "positional": true,
+      "promotion": false,
+      "rationale": "Kc7 makes Nb5+ answerable by taking c6. After Kb8, Rb4+ drives the king away and the white rook maintains the pass-pawn pressure."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-women-2025-433eaf789305680c-148",
+      "scope": "mistake-mechanism",
+      "moveUci": "h3h2",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Both branches lose the same a-pawn. The independent replies give equal evaluations, with no separate error attributable to Kh2."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-558f540bb676c79b-93",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5f8",
+      "tactical": true,
+      "positional": null,
+      "promotion": true,
+      "rationale": "After Bf8, both searches show a7 and a8=Q surviving Black's sequence of checks. The compared Kg7 lines give Black tactical activity before the pawn can convert, while lasting restraint remains unclear."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-35bf74abde88589b-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8f8",
+      "tactical": null,
+      "positional": true,
+      "promotion": false,
+      "rationale": "Re7 coordinates against d7 while Black's king can shift to f8. Rf8 leaves White's rooks to reposition with the same advanced pawn and reduces Black's activity."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-dae43ed4bcb442a6-102",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7d8q",
+      "tactical": true,
+      "positional": null,
+      "promotion": true,
+      "rationale": "The rook exchange following d8=Q frees Black's a-pawn to promote and exchange itself for White's rook. After Be7, both lines show Rxa2 removing the same pawn before promotion."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2g3",
+      "tactical": true,
+      "positional": true,
+      "promotion": false,
+      "rationale": "g3 allows d2 with tempo and the forced Rxd2 Bxd2 Qxd2 liquidation. The alternative can take the original d3 pawn before that advance and keep both rooks."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-c3f6afc569b4a565-77",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7g6",
+      "tactical": null,
+      "positional": null,
+      "promotion": false,
+      "rationale": "The two viable lines change the rook exchange and White's checking opportunities. Both still favour Black and the choice does not yield a specific promotion consequence."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-e36398c80da792c9-138",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6d5",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Both bishop and king choices retain the drawn ending in the paired and reply searches."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-d56eb5ef253ccb74-74",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3f3",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rf3+ is the leading choice and both searches let White take the b3 pawn."
+    },
+    {
+      "id": "annotated-pawn-lebanese-open-2026-2eeed8320f25a8d6-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "f5e4",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Bxe4 and Nxd6 maintain essentially equivalent evaluations and both resolve the d6-pawn."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-women-2025-70170550666350d1-71",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5f6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Qf6 is the leading choice, with the king taking e6 after White's checks in both analyses."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-71c5c69e6be8d411-78",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2h3",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Kxh3 is the leading choice. The later exchange on e4 takes place after the pawn has been removed."
+    },
+    {
+      "id": "annotated-pawn-sudamericano-2026-09c6eba4965f8f70-28",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d3",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rxd3 is the leading choice and removes the opponent's advanced pawn before White develops."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-957ecb87b125c593-115",
+      "scope": "mistake-mechanism",
+      "moveUci": "a3a6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Kg6 and Rxa6 have equivalent evaluations. The independent continuations show similar drawing prospects and removal of the a6 pawn."
+    },
+    {
+      "id": "annotated-pawn-lebanese-open-2026-220d2a1afd15a0df-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "b8b6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rxb6 is the leading choice and removes the pawn. Subsequent central play does not identify a distinct mistake."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-women-2025-d3cc2768e29c34a5-65",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7f7",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Qxf7 removes the pawn in the leading branch and the independent reply. The subsequent rook attack does not establish an inferior decision."
+    },
+    {
+      "id": "annotated-pawn-grand-swiss-open-2025-d4589fe3e9aa0a66-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8a6",
+      "tactical": false,
+      "positional": false,
+      "promotion": false,
+      "rationale": "Rxa6 is the leading choice. The capture and recapture resolve the pawn without a measured mistake."
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+diff --git a/src/utils/tacticalMotifs/decisionPromotionMistake.ts b/src/utils/tacticalMotifs/decisionPromotionMistake.ts
+--- a/src/utils/tacticalMotifs/decisionPromotionMistake.ts
++++ b/src/utils/tacticalMotifs/decisionPromotionMistake.ts
+@@ -0,0 +1 @@
++import type { Chess } from "chessops/chess";
+@@ -2 +3 @@
+-import type { Color, Square } from "chessops/types";
++import type { Color, Role, Square } from "chessops/types";
+@@ -4 +5 @@
+-import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
++import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
+@@ -9,0 +11 @@
++const PROMOTION_ROLES = ["queen", "rook", "bishop", "knight"] satisfies Role[];
+@@ -79,0 +82,55 @@
++}
++
++/** Test each legal straight promotion. A rook behind a pawn helps only if
++ * it can legally and profitably take the new piece even after underpromotion. */
++function rookCoversPromotion(board: Chess, pawn: Square, target: Square, rook: Square) {
++    if ((rook & 7) !== (target & 7) || !board.board.rook.has(rook)) return false;
++    let tested = false;
++    for (const promotion of PROMOTION_ROLES) {
++        const move = { from: pawn, to: target, promotion };
++        if (!board.isLegal(move)) continue;
++        tested = true;
++        const promoted = board.clone();
++        promoted.play(move);
++        const capture = { from: rook, to: target };
++        if (!promoted.isLegal(capture) || tacticalExchangeGain(promoted, capture) < 90)
++            return false;
++    }
++    return tested ? true : undefined;
++}
++
++function repeatedRookGuard(
++    steps: TacticalReplayStep[],
++    pawn: Square,
++    target: Square,
++    opponent: Color,
++) {
++    if (target !== pawn + (opponent === "white" ? 8 : -8) || !steps.length) return;
++    const board = steps[0].after;
++    const defender = opposite(opponent);
++    for (const rook of board.board.rook.intersect(board.board[defender])) {
++        if (!rookCoversPromotion(board, pawn, target, rook)) continue;
++        for (let i = 1; i < steps.length; i++) {
++            const step = steps[i];
++            if (
++                (step.before.turn === defender && step.move.from === rook) ||
++                (step.before.turn === opponent && step.move.from === pawn) ||
++                !step.after.board.pawn.has(pawn) ||
++                !step.after.board[opponent].has(pawn) ||
++                !step.after.board.rook.has(rook) ||
++                !step.after.board[defender].has(rook)
++            )
++                break;
++            if (step.after.turn === opponent) {
++                const covered = rookCoversPromotion(step.after, pawn, target, rook);
++                if (covered === undefined) continue;
++                if (!covered) break;
++                return {
++                    rook,
++                    through: i + 1,
++                    contextThrough: i + 1,
++                    description: `the rook on ${makeSquare(rook)} can capture any straight promotion on ${makeSquare(target)} in the checked positions`,
++                };
++            }
++        }
++    }
+@@ -130,9 +187,16 @@
+-        const prevented = first.removes ?? first.blockade;
+-        if (
+-            first.promotion ||
+-            second.promotion ||
+-            !prevented ||
+-            !(second.removes || second.blockade)
+-        )
+-            continue;
+-        const strategic = first.blockade && second.blockade;
++        if (first.promotion || second.promotion) continue;
++        const firstGuard =
++            first.removes && second.removes
++                ? undefined
++                : repeatedRookGuard(preferred.slice(0, through), pawn, found.square, opponent);
++        const secondGuard =
++            firstGuard &&
++            repeatedRookGuard(preferredSearch.slice(0, through), pawn, found.square, opponent);
++        const sameGuard =
++            firstGuard &&
++            secondGuard?.rook === firstGuard.rook &&
++            !rookCoversPromotion(actual[0].after, pawn, found.square, firstGuard.rook);
++        const prevented = first.removes ?? first.blockade ?? (sameGuard ? firstGuard : undefined);
++        if (!prevented || !(second.removes || second.blockade || sameGuard)) continue;
++        const blockade = first.blockade && second.blockade ? first.blockade : undefined;
++        const strategic = blockade ?? (sameGuard ? firstGuard : undefined);
+@@ -140 +204 @@
+-            tactical: `${actual[0].san} allows the pawn from ${makeSquare(pawn)} to promote in both searches. ${found.description}. After ${preferred[0].san}, ${prevented.description}.`,
++            tactical: `${actual[0].san} allows the pawn from ${makeSquare(pawn)} to promote in both searches. ${found.description}. After ${preferred[0].san}, ${prevented === firstGuard ? "the rook can take the promoted piece" : prevented.description}.`,
+@@ -143 +207 @@
+-                      positional: `The better choice keeps a blockade against the pawn from ${makeSquare(pawn)} in both continuations. ${first.blockade!.description}.`,
++                      positional: `The better choice restrains the pawn from ${makeSquare(pawn)} in both continuations: ${strategic.description}.`,

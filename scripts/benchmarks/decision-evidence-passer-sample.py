@@ -72,12 +72,45 @@ def blockade_trajectory(board, moves):
     return None
 
 
+def has_advanced_opponent_pawn(board):
+    opponent = not board.turn
+    return any(advanced_passed_pawn(board, pawn, opponent)
+               for pawn in board.pieces(chess.PAWN, opponent))
+
+
+def played_promotion_trajectory(board, moves):
+    if not has_advanced_opponent_pawn(board):
+        return None
+    if any(move.promotion for move in moves[1::2]):
+        return "opponent-promoted"
+    return "no-opponent-promotion" if len(moves) == 6 else None
+
+
+def annotated_promotion_decision(board, node):
+    if not has_advanced_opponent_pawn(board):
+        return None
+    before, after = node.parent.eval(), node.eval()
+    if not before or not after:
+        return None
+    first, second = before.pov(board.turn).score(), after.pov(board.turn).score()
+    if first is None or second is None or abs(first) > 500:
+        return None
+    loss = first - second
+    if loss >= 100:
+        return "recorded-loss"
+    return "recorded-control" if abs(loss) <= 15 else None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
     parser.add_argument("excluded", nargs="+", type=Path)
     parser.add_argument("--event", action="append", required=True, nargs=2)
-    parser.add_argument("--rook-blockade", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--rook-blockade", dest="mode", action="store_const", const="blockade")
+    mode.add_argument("--promotion-mistake", dest="mode", action="store_const", const="promotion")
+    mode.add_argument("--annotated-promotion-decision", dest="mode", action="store_const", const="annotated")
+    parser.set_defaults(mode="default")
     parser.add_argument("--per-stratum", type=int, default=6)
     args = parser.parse_args()
     if args.output.exists() or args.output.resolve().is_relative_to(Path(__file__).resolve().parents[2]):
@@ -85,8 +118,29 @@ def main():
     if args.per_stratum < 1:
         raise ValueError("The sample size must be positive")
     excluded_boards, excluded_groups, pool, events = set(), set(), {}, {}
-    sample_trajectory = blockade_trajectory if args.rook_blockade else pawn_trajectory
-    id_prefix = "blockade" if args.rook_blockade else "passer"
+    sample_trajectory, id_prefix, strata, scope = {
+        "blockade": (
+            blockade_trajectory, "blockade", ("blockade-persisted", "blockade-ended-early"),
+            "The mover's rook blocks an enemy passer on its promotion square. "
+            "The recorded blockade ends within four plies or persists for six.",
+        ),
+        "promotion": (
+            played_promotion_trajectory, "pawn-mistake", ("opponent-promoted", "no-opponent-promotion"),
+            "The opponent starts with an advanced passer. Recorded promotion within six plies "
+            "selects a stratum and does not establish a mistake.",
+        ),
+        "annotated": (
+            None, "annotated-pawn", ("recorded-loss", "recorded-control"),
+            "The opponent starts with an advanced passer and the recorded evaluations "
+            "show a loss of at least 100 centipawns or drift of at most 15. "
+            "Broadcast assessments select the stratum and supply no mechanism labels.",
+        ),
+        "default": (
+            pawn_trajectory, "passer", ("resolved-early", "persisted"),
+            "Both sides retain a rook and at least one pawn is an advanced passer. "
+            "Recorded persistence or resolution selects the sample; it does not supply the label.",
+        ),
+    }[args.mode]
     exclusion_hashes = []
     for sample in args.excluded:
         raw = sample.read_bytes()
@@ -101,7 +155,8 @@ def main():
         with path.open(encoding="utf-8-sig") as stream:
             while game := chess.pgn.read_game(stream):
                 board = game.board()
-                moves = list(game.mainline_moves())
+                nodes = list(game.mainline())
+                moves = [node.move for node in nodes]
                 if game.errors or type(board) is not chess.Board or not board.is_valid():
                     continue
                 group = tournament.digest(
@@ -113,7 +168,12 @@ def main():
                 for i, move in enumerate(moves):
                     fen = board.fen()
                     overlaps |= tournament.board_key(fen) in excluded_boards
-                    stratum = sample_trajectory(board, moves[i:i + 6]) if i >= 28 else None
+                    stratum = None
+                    if i >= 28:
+                        if args.mode == "annotated":
+                            stratum = annotated_promotion_decision(board, nodes[i])
+                        else:
+                            stratum = sample_trajectory(board, moves[i:i + 6])
                     if stratum and board.legal_moves.count() >= 3:
                         cases.append(dict(
                             id=f"{id_prefix}-{event}-{group[:16]}-{i}", event=event, stratum=stratum,
@@ -124,7 +184,6 @@ def main():
                 if cases and not overlaps:
                     pool[group] = sorted(cases, key=lambda row: tournament.order(row["id"]))
     chosen = []
-    strata = ("blockade-persisted", "blockade-ended-early") if args.rook_blockade else ("resolved-early", "persisted")
     for stratum in strata:
         matches = []
         for group in sorted(pool, key=tournament.order):
@@ -144,13 +203,7 @@ def main():
     with args.output.open("x", encoding="utf-8") as stream:
         json.dump(dict(
             protocol=1, cases=chosen, events=events, exclusions=exclusion_hashes,
-            scope=(
-                "The mover's rook blocks an enemy passer on its promotion square. "
-                "The recorded blockade ends within four plies or persists for six."
-                if args.rook_blockade else
-                "Both sides retain a rook and at least one pawn is an advanced passer. "
-                "Recorded persistence or resolution selects the sample; it does not supply the label."
-            ),
+            scope=scope,
         ), stream, indent=2)
     print(f"Selected {len(chosen)} boards from separate games")
 

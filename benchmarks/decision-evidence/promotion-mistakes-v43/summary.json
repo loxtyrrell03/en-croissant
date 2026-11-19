@@ -1,0 +1,508 @@
+{
+  "countOrder": [
+    "tp",
+    "fp",
+    "fn",
+    "tn",
+    "unknownReference"
+  ],
+  "sources": {
+    "recorded-promotion": [
+      "9xj1Ehti",
+      "3PSWusGV",
+      "7wQekTzK",
+      "em6k8D7g",
+      "EQTA1dP9"
+    ],
+    "annotated-loss": [
+      "vSyxclHS",
+      "NPYDsod4",
+      "spfLHc1K",
+      "R1jkFRlY"
+    ]
+  },
+  "replays": {
+    "recorded-promotion": {
+      "cases": 30,
+      "baseline": {
+        "tactical": [
+          0,
+          0,
+          3,
+          24,
+          3
+        ],
+        "positional": [
+          0,
+          0,
+          0,
+          26,
+          4
+        ],
+        "mixed": [
+          0,
+          0,
+          0,
+          26,
+          4
+        ],
+        "promotion": [
+          0,
+          0,
+          1,
+          29,
+          0
+        ]
+      },
+      "baselineWorkerMedianMs": 64.3442,
+      "sameRequestedExtraSearches": 9,
+      "variants": {
+        "a": {
+          "metrics": {
+            "tactical": [
+              0,
+              0,
+              3,
+              24,
+              3
+            ],
+            "positional": [
+              0,
+              0,
+              0,
+              26,
+              4
+            ],
+            "mixed": [
+              0,
+              0,
+              0,
+              26,
+              4
+            ],
+            "promotion": [
+              0,
+              0,
+              1,
+              29,
+              0
+            ]
+          },
+          "workerMedianMs": 63.16760000000022,
+          "changes": []
+        },
+        "b": {
+          "metrics": {
+            "tactical": [
+              0,
+              0,
+              3,
+              24,
+              3
+            ],
+            "positional": [
+              0,
+              0,
+              0,
+              26,
+              4
+            ],
+            "mixed": [
+              0,
+              0,
+              0,
+              26,
+              4
+            ],
+            "promotion": [
+              0,
+              0,
+              1,
+              29,
+              0
+            ]
+          },
+          "workerMedianMs": 64.47130000000016,
+          "changes": []
+        },
+        "c": {
+          "metrics": {
+            "tactical": [
+              0,
+              0,
+              3,
+              24,
+              3
+            ],
+            "positional": [
+              0,
+              0,
+              0,
+              26,
+              4
+            ],
+            "mixed": [
+              0,
+              0,
+              0,
+              26,
+              4
+            ],
+            "promotion": [
+              0,
+              0,
+              1,
+              29,
+              0
+            ]
+          },
+          "workerMedianMs": 65.57324999999992,
+          "changes": []
+        }
+      }
+    },
+    "annotated-loss": {
+      "cases": 20,
+      "baseline": {
+        "tactical": [
+          2,
+          0,
+          3,
+          11,
+          4
+        ],
+        "positional": [
+          0,
+          0,
+          5,
+          11,
+          4
+        ],
+        "mixed": [
+          0,
+          0,
+          2,
+          11,
+          7
+        ],
+        "promotion": [
+          0,
+          0,
+          2,
+          18,
+          0
+        ]
+      },
+      "baselineWorkerMedianMs": 129.68015000000014,
+      "sameRequestedExtraSearches": 13,
+      "variants": {
+        "a": {
+          "metrics": {
+            "tactical": [
+              2,
+              0,
+              3,
+              11,
+              4
+            ],
+            "positional": [
+              0,
+              0,
+              5,
+              11,
+              4
+            ],
+            "mixed": [
+              0,
+              0,
+              2,
+              11,
+              7
+            ],
+            "promotion": [
+              1,
+              0,
+              1,
+              18,
+              0
+            ]
+          },
+          "workerMedianMs": 130.4047999999998,
+          "changes": [
+            {
+              "id": "annotated-pawn-grand-swiss-open-2025-dae43ed4bcb442a6-102",
+              "reference": {
+                "tactical": true,
+                "positional": null,
+                "mixed": null,
+                "promotion": true
+              },
+              "before": [
+                "tactical"
+              ],
+              "after": [
+                "tactical",
+                "promotion"
+              ],
+              "promotion": {
+                "tactical": "d8=Q allows the pawn from a2 to promote in both searches. a1=Q Rxa1 Rxa1 trades the pawn for a rook. After Be7, Rxa2 takes the black pawn.",
+                "betterLineUci": [
+                  "f6e7",
+                  "c2d2",
+                  "e7f8",
+                  "g8f8",
+                  "a7a2"
+                ],
+                "playedLineUci": [
+                  "d7d8q",
+                  "f8d8",
+                  "f6d8",
+                  "c2c1",
+                  "d8f6",
+                  "d1b2",
+                  "g1f2",
+                  "a2a1q",
+                  "a7a1",
+                  "c1a1"
+                ]
+              }
+            }
+          ]
+        },
+        "b": {
+          "metrics": {
+            "tactical": [
+              2,
+              0,
+              3,
+              11,
+              4
+            ],
+            "positional": [
+              0,
+              0,
+              5,
+              11,
+              4
+            ],
+            "mixed": [
+              0,
+              0,
+              2,
+              11,
+              7
+            ],
+            "promotion": [
+              1,
+              0,
+              1,
+              18,
+              0
+            ]
+          },
+          "workerMedianMs": 129.61394999999993,
+          "changes": [
+            {
+              "id": "annotated-pawn-grand-swiss-open-2025-dae43ed4bcb442a6-102",
+              "reference": {
+                "tactical": true,
+                "positional": null,
+                "mixed": null,
+                "promotion": true
+              },
+              "before": [
+                "tactical"
+              ],
+              "after": [
+                "tactical",
+                "promotion"
+              ],
+              "promotion": {
+                "tactical": "d8=Q allows the pawn from a2 to promote in both searches. a1=Q Rxa1 Rxa1 trades the pawn for a rook. After Be7, Rxa2 takes the black pawn.",
+                "betterLineUci": [
+                  "f6e7",
+                  "c2d2",
+                  "e7f8",
+                  "g8f8",
+                  "a7a2"
+                ],
+                "playedLineUci": [
+                  "d7d8q",
+                  "f8d8",
+                  "f6d8",
+                  "c2c1",
+                  "d8f6",
+                  "d1b2",
+                  "g1f2",
+                  "a2a1q",
+                  "a7a1",
+                  "c1a1"
+                ]
+              }
+            }
+          ]
+        },
+        "c": {
+          "metrics": {
+            "tactical": [
+              2,
+              0,
+              3,
+              11,
+              4
+            ],
+            "positional": [
+              0,
+              0,
+              5,
+              11,
+              4
+            ],
+            "mixed": [
+              0,
+              0,
+              2,
+              11,
+              7
+            ],
+            "promotion": [
+              1,
+              0,
+              1,
+              18,
+              0
+            ]
+          },
+          "workerMedianMs": 127.62435000000028,
+          "changes": [
+            {
+              "id": "annotated-pawn-grand-swiss-open-2025-dae43ed4bcb442a6-102",
+              "reference": {
+                "tactical": true,
+                "positional": null,
+                "mixed": null,
+                "promotion": true
+              },
+              "before": [
+                "tactical"
+              ],
+              "after": [
+                "tactical",
+                "promotion"
+              ],
+              "promotion": {
+                "tactical": "d8=Q allows the pawn from a2 to promote in both searches. a1=Q Rxa1 Rxa1 trades the pawn for a rook. After Be7, Rxa2 takes the black pawn.",
+                "betterLineUci": [
+                  "f6e7",
+                  "c2d2",
+                  "e7f8",
+                  "g8f8",
+                  "a7a2"
+                ],
+                "playedLineUci": [
+                  "d7d8q",
+                  "f8d8",
+                  "f6d8",
+                  "c2c1",
+                  "d8f6",
+                  "d1b2",
+                  "g1f2",
+                  "a2a1q",
+                  "a7a1",
+                  "c1a1"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "development": {
+    "cases": 338,
+    "a": [
+      {
+        "id": "passer-stjernens-2026-46f6f63e16fa3162-51",
+        "before": "tactical",
+        "after": "tactical",
+        "promotion": {
+          "tactical": "Rd8 allows the pawn from d6 to promote in both searches. e8=Q+ promotes the pawn and retains the new queen through Qf6. After Qf6, Qxe7 takes the white pawn.",
+          "betterLineUci": [
+            "b2f6",
+            "d6e7",
+            "f6e7"
+          ],
+          "playedLineUci": [
+            "b8d8",
+            "d6e7",
+            "d8d1",
+            "c1d1",
+            "g7g6",
+            "e7e8q",
+            "g8g7",
+            "e4d5",
+            "b2f6"
+          ]
+        }
+      }
+    ],
+    "c": [
+      {
+        "id": "passer-stjernens-2026-46f6f63e16fa3162-51",
+        "before": "tactical",
+        "after": "tactical",
+        "promotion": {
+          "tactical": "Rd8 allows the pawn from d6 to promote in both searches. e8=Q+ promotes the pawn and retains the new queen through Qf6. After Qf6, Qxe7 takes the white pawn.",
+          "betterLineUci": [
+            "b2f6",
+            "d6e7",
+            "f6e7"
+          ],
+          "playedLineUci": [
+            "b8d8",
+            "d6e7",
+            "d8d1",
+            "c1d1",
+            "g7g6",
+            "e7e8q",
+            "g8g7",
+            "e4d5",
+            "b2f6"
+          ]
+        }
+      },
+      {
+        "id": "passer-nacional-juvenil-2026-9302f6ad65826866-119",
+        "before": "unclear",
+        "after": "mixed",
+        "promotion": {
+          "tactical": "Be1 allows the pawn from a7 to promote in both searches. a8=Q promotes the pawn and retains the new queen through Rb3. After Ra2, the rook can take the promoted piece.",
+          "positional": "The better choice restrains the pawn from a7 in both continuations: the rook on a2 can capture any straight promotion on a8 in the checked positions.",
+          "betterLineUci": [
+            "g2a2",
+            "g3f2",
+            "f6f5",
+            "g4f5",
+            "c3f6"
+          ],
+          "playedLineUci": [
+            "c3e1",
+            "a7a8q",
+            "g2g3",
+            "g4f5",
+            "g3b3"
+          ]
+        }
+      }
+    ]
+  },
+  "baselineCommit": "593538a1461a2b1a6d776d0d784451b65cc619f9",
+  "verifiedReleaseCases": 50,
+  "selected": "a",
+  "variants": {
+    "a": "agreed promotion payoff when both better lines capture or blockade the original pawn",
+    "b": "also check legal rook restraint from the same square on two opposing decisions",
+    "c": "also distinguish retention from immediate liquidation and allow corroborated mate evaluations"
+  },
+  "selectedModuleSha256": "66ef3c3c908f768d73b69331b94e1f66183482a4dd3486501f313bd9cd66d742"
+}

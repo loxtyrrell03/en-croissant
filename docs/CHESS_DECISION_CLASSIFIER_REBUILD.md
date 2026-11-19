@@ -2650,3 +2650,91 @@ used the committed tactical core because the checkout contains an
 unrelated tactical edit. The initial and removal-cost experiments
 are recorded as patches against this iteration for
 `git apply --unidiff-zero`, with separate results in the summary.
+
+## Iteration 43 — distinguish a promotion concession from a pawn that was already winning
+
+A game can end in promotion after the defender's best move. For mistake
+mechanism, compare the actual played move with the better root in the
+same search and check each choice against a separately searched opponent
+reply. The evaluated loss must be at least 100 centipawns in the paired
+frame, and the separate replies must corroborate the contrast. Trace
+the original enemy pawn in both actual lines. It must promote by ply
+eight on the same square and either retain the new piece for three
+more plies or exchange it for the same kind of defending piece. Both
+better lines must show the original pawn being taken or blockaded
+without that promotion in the matched window. Sustained blockades can
+add a separate strategic explanation. A promotion after another
+candidate never establishes a mechanism for the played move.
+
+In the Grand Swiss game `dae43ed4bcb442a6-102`, White's `d8=Q`
+leads to `...Rxd8 Bxd8 ...Rc1`. The same black pawn from a2
+then plays `...a1=Q Rxa1 Rxa1` in both searches, trading itself for
+a rook. Both branches after `Be7` instead show White taking the pawn
+on a2. The earlier classifier already recognised a tactical loss.
+The new report identifies the exact promotion exchange and shows the
+played and better lines. [FIDE Grand Swiss 2025 Open](https://lichess.org/api/broadcast/vSyxclHS.pgn)
+
+The first held-out sample selected 15 classical games in which the
+opponent promoted in the next six recorded plies, and 15 in which
+an advanced enemy passer did not promote in that window. Most played
+choices in both strata were sound on the later search. The second
+sample selected 10 annotated evaluation losses of at least 100
+centipawns and 10 annotated stable choices, all with advanced enemy
+passers. The broadcast scores select cases. The references use the
+paired and separately searched continuations. One engine-assisted
+reviewer froze both references before running the paired worker replays.
+Each sample has one position per distinct game. [Cap Negret 50+](https://lichess.org/api/broadcast/9xj1Ehti.pgn)
+[European Youth U16](https://lichess.org/api/broadcast/em6k8D7g.pgn)
+[Guernsey Open](https://lichess.org/api/broadcast/3PSWusGV.pgn)
+
+| Held-out sample and question | Reviewed positives / negatives / uncertain | v42 TP / FP | v43 TP / FP |
+| --- | ---: | ---: | ---: |
+| Recorded-promotion sample, tactical mistake | 3 / 24 / 3 | 0 / 0 | 0 / 0 |
+| Recorded-promotion sample, positional mistake | 0 / 26 / 4 | 0 / 0 | 0 / 0 |
+| Recorded-promotion sample, mixed mistake | 0 / 26 / 4 | 0 / 0 | 0 / 0 |
+| Recorded-promotion sample, specified promotion mechanism | 1 / 29 / 0 | 0 / 0 | 0 / 0 |
+| Annotated-loss sample, tactical mistake | 5 / 11 / 4 | 2 / 0 | 2 / 0 |
+| Annotated-loss sample, positional mistake | 5 / 11 / 4 | 0 / 0 | 0 / 0 |
+| Annotated-loss sample, mixed mistake | 2 / 11 / 7 | 0 / 0 | 0 / 0 |
+| Annotated-loss sample, specified promotion mechanism | 2 / 18 / 0 | 0 / 0 | 1 / 0 |
+
+The 338-game development replay added a more specific explanation
+after `...Rd8`, where the pawn from d6 takes on e7 and promotes on e8.
+Checking a rook's legal captures of the promoted piece from behind
+also found one development mixed mistake after `...Be1`, where the
+alternative `...Ra2` covers a8. A further candidate compared
+retention against immediate liquidation of a new queen and considered
+corroborated mating evaluations. All three variations matched on the
+50 held-out records. The simpler first version is integrated. The
+broader experiments are preserved as patches. One missed European
+Youth example reaches a different promotion payoff after `...Bg5`
+than after `...Rb2`. The better reply snapshot was depth 15, below the
+depth-16 validation gate shared by the application. Other misses
+include later promotions and branches where the better choice generates
+counterplay without taking or blockading the pawn in the available line.
+
+The position and move reports match v42 across all 388 replays, with
+the same optional search requests on the fresh games. On the
+annotated-loss study, median worker replay time was 129.7 ms versus
+130.4 ms. These timings include the cached worker analysis and exclude
+engine search. The actual report panel shows both compared branches
+through the existing Show evidence control at 320, 390 and 900 pixels.
+This is a narrowly verified improvement in mechanism explanation.
+Broader positional and mixed mistake recall remains open, along with
+verification in an installed desktop build.
+
+**Reproduction.** Use the sample, reference and freeze files under
+`benchmarks/decision-evidence/promotion-mistakes-v43`. Sample the two
+strata with `decision-evidence-passer-sample.py` using
+`--promotion-mistake --per-stratum 15` and
+`--annotated-promotion-decision --per-stratum 10`, respectively. Build
+the v43 ordinary root, reply, shared-reply and six-choice caches
+with the v42 search settings. Set `scope` to `mistake-mechanism`
+and include both strata in the worker replay manifest. Run
+`decisionOrdinaryReplay.test.ts` and score matching worker reports
+with `decision-evidence-ordinary-replay-score.py --mistakes`. The
+mistake scorer uses the actual move named by the reference and reports
+promotion evidence separately from the tactical dimension. Use
+`git apply --unidiff-zero` for either archived variant. The study
+used the committed tactical core because the shared checkout
+contains a separate tactical edit.
