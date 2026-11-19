@@ -1,0 +1,20 @@
+diff --git a/src/utils/tacticalMotifs/decisionPasserPlans.ts b/src/utils/tacticalMotifs/decisionPasserPlans.ts
+--- a/src/utils/tacticalMotifs/decisionPasserPlans.ts
++++ b/src/utils/tacticalMotifs/decisionPasserPlans.ts
+@@ -2,0 +3 @@
++import { makeBoardFen } from "chessops/fen";
+@@ -147 +148 @@
+-        best.length < 6 ||
++        best.length < 5 ||
+@@ -183 +184 @@
+-        if (a && b && (a.step.uci !== b.step.uci || a.step.move.from !== front))
++        if (a && b && makeBoardFen(a.step.after.board) !== makeBoardFen(b.step.after.board))
+@@ -193 +194,7 @@
+-    if (removed < 0 || removed > other.length - 2 || other.length - removed > 5) return null;
++    if (
++        removed < 0 ||
++        removed > other.length - 2 ||
++        other.length - removed > 9 ||
++        !other.slice(removed, -1).every((item) => item.square === origin)
++    )
++        return null;

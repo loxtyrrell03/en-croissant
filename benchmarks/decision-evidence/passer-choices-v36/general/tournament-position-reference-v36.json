@@ -1,0 +1,233 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "Single engine-assisted reviewer. References use ordinary root lines and played replies before reviewing candidate outputs. Uncertainty is explicit."
+  ],
+  "cases": [
+    {
+      "id": "tournament-box-hill-2026-c60c9fc0a63e32d1-47",
+      "scope": "position-character",
+      "moveUci": "d3d2",
+      "gameMoveUci": "d3d2",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rxd2 followed by Nf3+ wins the rook on h4 in the first line. The other choices use different capture orders. The forced exchange dominates the visible differences."
+    },
+    {
+      "id": "tournament-box-hill-2026-5c58b208a4f6c43a-48",
+      "scope": "position-character",
+      "moveUci": "a3b2",
+      "gameMoveUci": "a3b2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Bb2 and h4 transpose. Bc1 retains similar attacking chances. White reorganizes the bishop and challenges the knight through a3, with no sharp scored distinction in the lines."
+    },
+    {
+      "id": "tournament-box-hill-2026-d3d0a3725f186dd3-61",
+      "scope": "position-character",
+      "moveUci": "g5a5",
+      "gameMoveUci": "g5a5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black uses Ra5 against the a4 pawn in every leading line and brings the king forward. The moves differ mainly in timing the rook placement and support for the passed queenside pawns."
+    },
+    {
+      "id": "tournament-box-hill-2026-e1ed26319177c7e7-37",
+      "scope": "position-character",
+      "moveUci": "a7a5",
+      "gameMoveUci": "c8b8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "a5 invites an en passant capture and then Ra7, tying White to the queenside formation. The other options allow the immediate double-rook exchange on a7. The a-file is the shared strategic issue."
+    },
+    {
+      "id": "tournament-box-hill-2026-c74962509e8a3e3a-39",
+      "scope": "position-character",
+      "moveUci": "e5d4",
+      "gameMoveUci": "e5d4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "exd4 takes the knight directly. Castling or advancing a5 lets the knight move to f5 or f3 and loses most of the advantage. The other strategic reasons for the choices are unclear."
+    },
+    {
+      "id": "tournament-box-hill-2026-0e4e26a1bdcbcfa7-44",
+      "scope": "position-character",
+      "moveUci": "f1f5",
+      "gameMoveUci": "f1e1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Both rook moves support the forcing exchanges on e5, with Bb5 changing the order of captures. Bxf8 allows Nxf1 before White regains material. The scores are similar through concretely different exchanges."
+    },
+    {
+      "id": "tournament-box-hill-2026-c4fe1d2fee73a326-32",
+      "scope": "position-character",
+      "moveUci": "c4d5",
+      "gameMoveUci": "c4d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Taking the d5 bishop alters the centre and allows Black to answer with Qb6 and Nxb3. The queen raid permits Kd7 and leaves a different king and pawn structure."
+    },
+    {
+      "id": "tournament-box-hill-2026-67a123cc62129f8b-64",
+      "scope": "position-character",
+      "moveUci": "f3f4",
+      "gameMoveUci": "d4e2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "f4+ challenges the king and creates the advanced f-pawn. The alternative knight development can reach the same break, while Nc6+ allows bxc6 with a major material cost."
+    },
+    {
+      "id": "tournament-box-hill-2026-6dac64426a65a8b9-31",
+      "scope": "position-character",
+      "moveUci": "d7b6",
+      "gameMoveUci": "d7b6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The main lines change which central pawn is exchanged and where the knight can operate. The local releases of tension give different forcing replies with comparable resulting scores."
+    },
+    {
+      "id": "tournament-box-hill-2026-78bd31b085f69d60-32",
+      "scope": "position-character",
+      "moveUci": "e4d5",
+      "gameMoveUci": "e4d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "exd5 removes the knight and changes the central tension. d4 and Qc1 give the knight access to f4 or b4 with materially different forcing sequences."
+    },
+    {
+      "id": "tournament-box-hill-2026-e68ac384cb29dd93-49",
+      "scope": "position-character",
+      "moveUci": "e8e3",
+      "gameMoveUci": "e8e3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxe3+ forces exposed king moves, then Rd3+ changes the rook capture on c3. The other winning choices are substantially weaker attacks."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-2df6c8433d259fdf-70",
+      "scope": "position-character",
+      "moveUci": "g3e3",
+      "gameMoveUci": "g3g8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White repositions rooks to pressure the queenside and prepares a4 while Black works to install the knight on d4. Several equivalent move orders reach the same strategic contest."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-99d2161198c6977d-26",
+      "scope": "position-character",
+      "moveUci": "f1e2",
+      "gameMoveUci": "c1d2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black uses Na5 and often Nb3 to limit White's bishops and development. White's viable options deal with that pressure through bishop placement and king or rook activity."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-e5b56899bd324755-86",
+      "scope": "position-character",
+      "moveUci": "c4c5",
+      "gameMoveUci": "h1g2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White uses the c-pawn advance to force a queen exchange and counter Black's g-pawn pressure. The king-move line holds through a different forcing check and rook exchange."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-50066fc557d98e75-53",
+      "scope": "position-character",
+      "moveUci": "c6c5",
+      "gameMoveUci": "c6c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The c5 break appears in every line and changes the central pawn structure. Black can choose the timing relative to rook and knight activity with no single tactical difference established."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-01864f8f6cdc73a5-44",
+      "scope": "position-character",
+      "moveUci": "c3d5",
+      "gameMoveUci": "c3d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White builds pressure around d5, e5 and the d-file. Nd5 can force an exchange, while developing the bishop or advancing f4 retains equivalent ways to improve the rooks."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-a25a70d1968dcf9d-30",
+      "scope": "position-character",
+      "moveUci": "f4g3",
+      "gameMoveUci": "c2e2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White improves king protection and coordination and Black reorganizes through Be8. The distinct exchanges and rook placements leave close scores with no specific forced tactical difference."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-e9f6cd5048d5b706-58",
+      "scope": "position-character",
+      "moveUci": "c5e4",
+      "gameMoveUci": "c5e4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Ne4 changes the order of the forced queen exchange. Re8+ gains time after Qxc3, while the knight retreats permit the exchange with the rook invasion deferred."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-cd5474730ff94617-51",
+      "scope": "position-character",
+      "moveUci": "c8c1",
+      "gameMoveUci": "c8c1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rxc1+ removes the opposing rook before the central break. The alternative placements allow Rc6 and lasting pressure. The forcing tactical distinction beyond those structural choices is uncertain."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-9f7583211f1e805f-32",
+      "scope": "position-character",
+      "moveUci": "g2h3",
+      "gameMoveUci": "c3a4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White chooses when to contest the c-file and advance e4. Black's bishop and rook placements matter across similar assessments through different capture sequences."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-11986589ca07aa6f-75",
+      "scope": "position-character",
+      "moveUci": "b6b5",
+      "gameMoveUci": "c8c7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White's rooks acquire space on the a-file in every line. Black has various defensive queen placements but no leading counterplay that changes the material balance abruptly."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-9a577214d509ff19-39",
+      "scope": "position-character",
+      "moveUci": "a6a5",
+      "gameMoveUci": "a6a5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "a5 changes the queenside structure and allows Na4 before the rooks trade. Slower choices reorganize the same flank and preserve materially different capture orders."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-eb5795bbf77a6739-34",
+      "scope": "position-character",
+      "moveUci": "c3e4",
+      "gameMoveUci": "c3e4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White uses the f-pawn and central knight squares to contest e4 and the open files. The candidates all retain comparable prospects through different rearrangements."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-b746ebcd951b38c5-44",
+      "scope": "position-character",
+      "moveUci": "b3c2",
+      "gameMoveUci": "b3a2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can trade queenside pawns or use f6 and pressure on d4. White's main alternatives control different lines of retreat for the same pieces."
+    },
+    {
+      "id": "tournament-world-seniors-65-2026-43c366e48a2a42fe-40",
+      "scope": "position-character",
+      "moveUci": "c2d3",
+      "gameMoveUci": "c2d3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can trade queens and counter on the queenside, or retain queens and play c4. The scores stay near equality through strategic choices of open files and pawn expansion."
+    }
+  ]
+}

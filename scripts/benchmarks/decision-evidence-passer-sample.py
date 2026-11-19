@@ -50,15 +50,43 @@ def pawn_trajectory(board, moves):
     return "persisted" if persisting else None
 
 
+def blockade_trajectory(board, moves):
+    owner = not board.turn
+    for pawn in board.pieces(chess.PAWN, owner):
+        if chess.square_rank(pawn) != (6 if owner else 1) or not advanced_passed_pawn(board, pawn, owner):
+            continue
+        front = pawn + (8 if owner else -8)
+        blocker = chess.Piece(chess.ROOK, not owner)
+        if board.piece_at(front) != blocker:
+            continue
+        future = board.copy(stack=False)
+        for ply, move in enumerate(moves, 1):
+            future.push(move)
+            if future.piece_at(front) != blocker or future.piece_at(pawn) != chess.Piece(chess.PAWN, owner):
+                if ply <= 4:
+                    return "blockade-ended-early"
+                break
+        else:
+            if len(moves) == 6:
+                return "blockade-persisted"
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
     parser.add_argument("excluded", nargs="+", type=Path)
     parser.add_argument("--event", action="append", required=True, nargs=2)
+    parser.add_argument("--rook-blockade", action="store_true")
+    parser.add_argument("--per-stratum", type=int, default=6)
     args = parser.parse_args()
     if args.output.exists() or args.output.resolve().is_relative_to(Path(__file__).resolve().parents[2]):
         raise ValueError("Use a new sample outside the checkout")
+    if args.per_stratum < 1:
+        raise ValueError("The sample size must be positive")
     excluded_boards, excluded_groups, pool, events = set(), set(), {}, {}
+    sample_trajectory = blockade_trajectory if args.rook_blockade else pawn_trajectory
+    id_prefix = "blockade" if args.rook_blockade else "passer"
     exclusion_hashes = []
     for sample in args.excluded:
         raw = sample.read_bytes()
@@ -85,10 +113,10 @@ def main():
                 for i, move in enumerate(moves):
                     fen = board.fen()
                     overlaps |= tournament.board_key(fen) in excluded_boards
-                    stratum = pawn_trajectory(board, moves[i:i + 6]) if i >= 28 else None
+                    stratum = sample_trajectory(board, moves[i:i + 6]) if i >= 28 else None
                     if stratum and board.legal_moves.count() >= 3:
                         cases.append(dict(
-                            id=f"passer-{event}-{group[:16]}-{i}", event=event, stratum=stratum,
+                            id=f"{id_prefix}-{event}-{group[:16]}-{i}", event=event, stratum=stratum,
                             fen=fen, ply=board.ply(), playedMoveUci=move.uci(), sourceGroup=group,
                             split="validation", category="public-classical-broadcast",
                         ))
@@ -96,7 +124,8 @@ def main():
                 if cases and not overlaps:
                     pool[group] = sorted(cases, key=lambda row: tournament.order(row["id"]))
     chosen = []
-    for stratum in ("resolved-early", "persisted"):
+    strata = ("blockade-persisted", "blockade-ended-early") if args.rook_blockade else ("resolved-early", "persisted")
+    for stratum in strata:
         matches = []
         for group in sorted(pool, key=tournament.order):
             if group in excluded_groups:
@@ -107,16 +136,21 @@ def main():
                 matches.append(row)
                 excluded_groups.add(group)
                 excluded_boards.add(tournament.board_key(row["fen"]))
-            if len(matches) == 6:
+            if len(matches) == args.per_stratum:
                 break
-        if len(matches) != 6:
-            raise ValueError(f"Need six distinct games in {stratum}, found {len(matches)}")
+        if len(matches) != args.per_stratum:
+            raise ValueError(f"Need {args.per_stratum} distinct games in {stratum}, found {len(matches)}")
         chosen.extend(matches)
     with args.output.open("x", encoding="utf-8") as stream:
         json.dump(dict(
             protocol=1, cases=chosen, events=events, exclusions=exclusion_hashes,
-            scope="Both sides retain a rook and at least one pawn is an advanced passer. "
-                  "Recorded persistence or resolution selects the sample; it does not supply the label.",
+            scope=(
+                "The mover's rook blocks an enemy passer on its promotion square. "
+                "The recorded blockade ends within four plies or persists for six."
+                if args.rook_blockade else
+                "Both sides retain a rook and at least one pawn is an advanced passer. "
+                "Recorded persistence or resolution selects the sample; it does not supply the label."
+            ),
         ), stream, indent=2)
     print(f"Selected {len(chosen)} boards from separate games")
 

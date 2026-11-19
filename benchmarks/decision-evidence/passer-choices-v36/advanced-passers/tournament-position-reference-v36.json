@@ -1,0 +1,116 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "Single engine-assisted reviewer. References use ordinary root lines and played replies before reviewing candidate outputs. Uncertainty is explicit."
+  ],
+  "cases": [
+    {
+      "id": "passer-world-seniors-50-2026-d7c401720afc8431-72",
+      "scope": "position-character",
+      "moveUci": "b2b7",
+      "gameMoveUci": "e2a6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black can take the c6 pawn but doing so gives White time for Rb7 or Rxg7. The resulting activity and the g-pawn explain why both branches tolerate the capture."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-1d8eb7cae759c2dc-147",
+      "scope": "position-character",
+      "moveUci": "d8f7",
+      "gameMoveUci": "d8f7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nf7 gives Black time to eliminate the h6 passer. The other moves give White the timing to mobilize f5 and the king. The captures and the king geometry both matter."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-65984c9b8421ad08-58",
+      "scope": "position-character",
+      "moveUci": "d2b3",
+      "gameMoveUci": "d2b3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The b3 pawn can be removed by a knight or queen after different move orders. Black uses the time for Nf4 and kingside pressure. All three scores stay close."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-59bba34c1e4226cb-29",
+      "scope": "position-character",
+      "moveUci": "d8d6",
+      "gameMoveUci": "d8d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Capturing on d6 helps restrain White's advanced pawns. Nc8 allows b7 and the concrete bxc8 bishop promotion after tactical exchanges."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-252d8fe49dcdd482-57",
+      "scope": "position-character",
+      "moveUci": "f8e8",
+      "gameMoveUci": "g4e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re8 lets Black use the tempo from the advanced d2 pawn to take the bishop on e4. The other moves let White take d2 with a different material and rook outcome."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-0051173b81b907c6-107",
+      "scope": "position-character",
+      "moveUci": "b2b1q",
+      "gameMoveUci": "b2b1q",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Queen or rook promotion gives the same forced liquidation on b1. Bishop promotion changes the concrete result. The immediate promotion choice is the main calculation."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-57749f406d260434-59",
+      "scope": "position-character",
+      "moveUci": "b8e8",
+      "gameMoveUci": "b8e8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re8 and Nf6 followed by Ne8 control the approach to promotion. Rf8 permits the forcing e7 and e8 sequences, with a materially worse outcome."
+    },
+    {
+      "id": "passer-limerick-2026-5bdc4007e83ec5d0-62",
+      "scope": "position-character",
+      "moveUci": "e6e7",
+      "gameMoveUci": "e6e7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "e7 preserves the promotion threat, but Black can meet it by capturing on c5 with check later and then taking e7. The alternative rook moves change the sequence and counterplay."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-134edc479829af2b-72",
+      "scope": "position-character",
+      "moveUci": "h3g2",
+      "gameMoveUci": "h3g2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black's a-pawn ties down White's rook and balances the central e-pawn. The leading lines handle those targets with different timings, with insufficient evidence of a specific forced tactic."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-3df8eea00d7970d1-69",
+      "scope": "position-character",
+      "moveUci": "e6e4",
+      "gameMoveUci": "d8c8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The b-pawn and a-file constrain Black. Re4+ keeps the rook active, and Re2 allows a forcing sequence in which the rook has to give itself up on b8."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-fb0f497c9f2216ed-50",
+      "scope": "position-character",
+      "moveUci": "e7f8",
+      "gameMoveUci": "e7f8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White's d6 pawn restricts Black and remains a target while the bishop and rooks trade. The exchange on f8 and the alternate liquidation on f3 both require concrete calculation."
+    },
+    {
+      "id": "passer-world-seniors-50-2026-97a1745c545a7e67-61",
+      "scope": "position-character",
+      "moveUci": "c8d7",
+      "gameMoveUci": "c8e6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The b-pawn can be removed on b6 or allowed to reach c7. The latter choice creates a forcing promotion exchange, while Black's rook and minor pieces manage different long-term targets."
+    }
+  ]
+}

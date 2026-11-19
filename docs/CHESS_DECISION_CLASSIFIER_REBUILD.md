@@ -2021,3 +2021,89 @@ the original bytes. The two Python sampler tests and four new
 classifier regressions cover branch legality, the missing independent
 proof, and unavailable mating evidence. The focused TypeScript suite
 passed 133 tests with one existing skip.
+
+## Iteration 36 — compare the duty of a rook or queen toward a passer
+
+The earlier strategic plan check favours compatible material windows
+and quiet moves. That can miss a combination whose strategic reward
+is continuing control of a passed pawn. This experiment follows the
+same pawn through the existing legal Stockfish variations. It checks
+three concrete effects.
+
+- A newly placed rook legally recaptures the enemy rook if it takes
+  the passer, while a worse choice allows that exact capture.
+- A rook blockades a promotion square across several plies. A different
+  choice may let the same pawn promote, or a comparable choice may
+  remove the pawn with a different piece once the blockade has served
+  its purpose.
+- The same queen stays in place across two comparable move orders and
+  is eventually exchanged to remove the promoted pawn.
+
+The frozen candidate added four positional positives in a replay of
+153 earlier positions. Two had tactical evidence already and became
+mixed. For example, `Rg8+` gains time for `Ra8`, which defends the a4
+passer from the opposing rook. `Kd5` allows `...Rxa4`. A separate
+Bavarian game shows the d8 rook keeping a d7 passer under control after
+`...Qxb1+`. In the `...Qf6` line, that rook is exchanged and the same
+pawn promotes. Legal recapture and promotion, rather than material
+change by itself, supply the evidence in these examples.
+
+| Frozen cohort | Boards | Tactical TP / FP, both | Positional TP / FP, both | Mixed TP / FP, both |
+| --- | ---: | ---: | ---: | ---: |
+| Ordinary classical | 25 | 6 / 0 | 3 / 1 | 0 / 0 |
+| Advanced passed-pawn challenge | 12 | 4 / 0 | 1 / 0 | 0 / 0 |
+| Rook blockade challenge | 8 | 1 / 0 | 3 / 0 | 0 / 0 |
+
+The frozen candidate and v35 produced the same assessment, apart
+from the experimental schema version, on every board. No new engine
+queries were needed. On the ordinary sample, 15 of 17 missed positional
+positives had no passed pawn advanced to at least its fourth rank.
+None had an enemy seventh-rank passer with a defending rook on its
+promotion square. The specialised rule has little opportunity to
+improve ordinary positional recall. Even when all eight boards began
+with the exact rook blockade, the available lines did not reach the
+candidate's comparison conditions.
+
+A follow-up replay on exposed development data allowed two different
+positions to reach the same capture of the passer and allowed more
+time for the same pawn to promote after the blockade ended. This
+recovered two additional reviewed positional positives in the
+blockade sample. For example, `...b3` and `...Kf8` both ultimately
+permit `...Rxa7`, with different position layouts at the capture.
+Neither gain is a new held-out result. Across all 198 development
+positions, the follow-up has six positional additions including two
+mixed, with zero added reviewed false positives. The feature remains
+experimental. The ordinary misses also include central pawn breaks,
+file control, and defensive coordination that do not involve a passer.
+
+The ordinary cohort used completed classical games from Box Hill
+and World Seniors Open 65+. The passed-pawn cohort used Limerick and
+World Seniors Open 50+. The blockade sampler drew four persistent
+and four early-ending blockades from separate games in Cascade,
+Blumenau, Castel del Rio and Cap Negret. It also considered the German
+Amateur Group C event. The selector uses recorded board states and no
+evaluation scores. Each benchmark has a single engine-assisted review
+written before its classifier output.
+[Box Hill](https://lichess.org/broadcast/2026-box-hill-open/round-3/UkH5b5BS)
+[World Seniors Open 65+](https://lichess.org/broadcast/fide-world-senior-chess-championships-2026-open-65/round-7/32qHAwIa)
+[Limerick](https://lichess.org/api/broadcast/fYHaW9yz.pgn)
+[World Seniors Open 50+](https://lichess.org/api/broadcast/yVOLKime.pgn)
+[Cascade](https://lichess.org/api/broadcast/4YTdiRuu.pgn)
+[Blumenau](https://lichess.org/api/broadcast/eAhfBfzx.pgn)
+[Castel del Rio](https://lichess.org/api/broadcast/yZyZOsAy.pgn)
+[Cap Negret](https://lichess.org/api/broadcast/9xj1Ehti.pgn)
+[German Amateur Group C](https://lichess.org/api/broadcast/rNb7bbYI.pgn)
+
+**Reproduction.** Samples, reviewed labels, freeze receipts and the
+score summary are under `benchmarks/decision-evidence/passer-choices-v36`.
+The frozen code is preserved as `candidate-v36.patch` against
+`e04d3b3b`. Apply it in an isolated research workspace with
+`git apply --unidiff-zero`. The independently preserved
+`post-review-variant.patch` applies on top of it for development
+replay. Generate the existing root and reply profiles under `v36`
+and use the ordinary candidate audit with all three optional
+verification flags on. Rebuild the focused sample with
+`decision-evidence-passer-sample.py --rook-blockade --per-stratum 4`.
+Five prototype regressions passed within the 138-test focused suite.
+The blockade sampler regression and the frozen-input and grouping
+checks also passed.

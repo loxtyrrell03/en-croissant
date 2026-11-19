@@ -1,0 +1,186 @@
+{
+  "productionBaseline": "e04d3b3b",
+  "candidateState": "Experimental patch",
+  "earlyDevelopment": {
+    "positions": 153,
+    "positionalAdded": 4,
+    "mixedAdded": 2,
+    "addedReviewedFalsePositives": 0
+  },
+  "postReviewDevelopment": {
+    "positions": 198,
+    "positionalAdded": 6,
+    "mixedAdded": 2,
+    "addedReviewedFalsePositives": 0
+  },
+  "cohorts": {
+    "general": {
+      "positions": 25,
+      "identicalAssessments": 25,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 5,
+            "tn": 6,
+            "unknown": 8
+          },
+          "positional": {
+            "tp": 3,
+            "fp": 1,
+            "fn": 17,
+            "tn": 1,
+            "unknown": 3
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 8,
+            "unknown": 11
+          }
+        },
+        "medianClassifierMs": 23.144199999999728
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 5,
+            "tn": 6,
+            "unknown": 8
+          },
+          "positional": {
+            "tp": 3,
+            "fp": 1,
+            "fn": 17,
+            "tn": 1,
+            "unknown": 3
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 8,
+            "unknown": 11
+          }
+        },
+        "medianClassifierMs": 25.674600000000282
+      }
+    },
+    "advanced-passers": {
+      "positions": 12,
+      "identicalAssessments": 12,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 6,
+            "tn": 1,
+            "unknown": 1
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 10,
+            "tn": 1,
+            "unknown": 0
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 9,
+            "tn": 2,
+            "unknown": 1
+          }
+        },
+        "medianClassifierMs": 40.41319999999996
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 6,
+            "tn": 1,
+            "unknown": 1
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 10,
+            "tn": 1,
+            "unknown": 0
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 9,
+            "tn": 2,
+            "unknown": 1
+          }
+        },
+        "medianClassifierMs": 37.99344999999994
+      }
+    },
+    "rook-blockades": {
+      "positions": 8,
+      "identicalAssessments": 8,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 1,
+            "unknown": 0
+          },
+          "positional": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 4,
+            "tn": 0,
+            "unknown": 1
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 1,
+            "unknown": 1
+          }
+        },
+        "medianClassifierMs": 52.26695000000018
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 1,
+            "unknown": 0
+          },
+          "positional": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 4,
+            "tn": 0,
+            "unknown": 1
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 1,
+            "unknown": 1
+          }
+        },
+        "medianClassifierMs": 50.58924999999999
+      }
+    }
+  }
+}

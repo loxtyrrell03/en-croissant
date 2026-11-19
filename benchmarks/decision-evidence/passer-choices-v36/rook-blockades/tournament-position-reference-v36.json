@@ -1,0 +1,80 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer. References saved before classifier predictions; the recorded blockade stratum is not a label."
+  ],
+  "cases": [
+    {
+      "id": "blockade-cascade-2026-b5b6c30c0029b240-75",
+      "scope": "position-character",
+      "moveUci": "b4b3",
+      "gameMoveUci": "g8f8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The a8 rook holds the white a-pawn. b3 and b2 draw White's rook away and make Rxa7 possible. King moves can accomplish the same cleanup by approaching the pawn from a different route."
+    },
+    {
+      "id": "blockade-blumenau-2026-8abe494113d63b18-85",
+      "scope": "position-character",
+      "moveUci": "h5h4",
+      "gameMoveUci": "f5f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The b8 rook is tied to the advanced b7 pawn as White advances the king and uses the c-file. Black's pawn breaks produce separate promotion threats and forcing exchanges."
+    },
+    {
+      "id": "blockade-cascade-2026-0f62cec917954454-43",
+      "scope": "position-character",
+      "moveUci": "g7h7",
+      "gameMoveUci": "h5f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black cannot freely move the f8 rook while the advanced f7 pawn survives. The different defensive placements have to account for the f6 exchanges and White's activity on the c-file."
+    },
+    {
+      "id": "blockade-castel-del-rio-2026-bb9e9e0326c9bce4-96",
+      "scope": "position-character",
+      "moveUci": "e2f3",
+      "gameMoveUci": "e2f3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White's rook is occupied by b2 and the king's placement determines whether Rh1+ forces the rook trade on b1. Black's d-pawn and king remain the alternative winning plan."
+    },
+    {
+      "id": "blockade-castel-del-rio-2026-1838c175a0e2e309-33",
+      "scope": "position-character",
+      "moveUci": "f8f7",
+      "gameMoveUci": "e7f7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Taking f7 with the rook preserves the forcing exchange on f3. The queen capture changes the exchange order, and Kh8 permits White to preserve the active queen. A lasting positional advantage from one capture is unclear."
+    },
+    {
+      "id": "blockade-castel-del-rio-2026-0ea038e79051db93-55",
+      "scope": "position-character",
+      "moveUci": "d4d3",
+      "gameMoveUci": "h8h7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The h8 rook restrains the h7 pawn while Black's queen fights for checking tempos. Rd8 opens the promotion square, and the played capture of h7 allows an immediate attack on the exposed king."
+    },
+    {
+      "id": "blockade-cap-negret-50-2026-9aa88a5771a0d70e-80",
+      "scope": "position-character",
+      "moveUci": "b1b2",
+      "gameMoveUci": "b1b2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White must deal with the advanced b2 pawn while Black attacks d3 and f1. Rxb2 or Nxb2 clear the passer at the cost of different rook and knight tactics."
+    },
+    {
+      "id": "blockade-cap-negret-50-2026-618c8102e683e946-108",
+      "scope": "position-character",
+      "moveUci": "e3f4",
+      "gameMoveUci": "e3f2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can remove f2 immediately or after Kf4. The two move orders transpose and White's h-pawn becomes active in the resulting rook ending."
+    }
+  ]
+}

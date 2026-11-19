@@ -1,0 +1,432 @@
+diff --git a/src/utils/tacticalMotifs/decisionAssessment.ts b/src/utils/tacticalMotifs/decisionAssessment.ts
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -57,0 +58 @@
++import { findAdvancedPasserPlan } from "./decisionPasserPlans";
+@@ -59 +60 @@
+-export const DECISION_ASSESSMENT_VERSION = 15;
++export const DECISION_ASSESSMENT_VERSION = 16;
+@@ -522 +523,2 @@
+-            findKingShelterTradeoff(input.fen, input.candidates);
++            findKingShelterTradeoff(input.fen, input.candidates) ??
++            findAdvancedPasserPlan(input.fen, input.candidates);
+diff --git a/src/utils/tacticalMotifs/decisionPasserPlans.ts b/src/utils/tacticalMotifs/decisionPasserPlans.ts
+new file mode 100644
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionPasserPlans.ts
+@@ -0,0 +1,338 @@
++import { attacks } from "chessops/attacks";
++import type { Chess } from "chessops/chess";
++import type { Color, Square } from "chessops/types";
++import { makeSquare, opposite } from "chessops/util";
++import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import type { PositionStrategicPlan } from "./decisionPositionPlans";
++
++const WINDOW = 14;
++const file = (square: Square) => square % 8;
++const rank = (square: Square, side: Color) =>
++    side === "white" ? 1 + Math.floor(square / 8) : 8 - Math.floor(square / 8);
++
++function isPasser(board: Chess, square: Square, side: Color) {
++    return ![...board.board.pawn.intersect(board.board[opposite(side)])].some(
++        (enemy) =>
++            Math.abs(file(enemy) - file(square)) <= 1 && rank(enemy, side) > rank(square, side),
++    );
++}
++
++type PawnTrace = {
++    step: TacticalReplayStep;
++    square: Square;
++    outcome: "kept" | "captured" | "promoted";
++};
++
++/** Follow the original pawn, including a file change on capture. A different
++ * pawn subsequently arriving on the same square is a different asset. */
++function followPasser(steps: TacticalReplayStep[], origin: Square, side: Color) {
++    const trace: PawnTrace[] = [];
++    let square = origin;
++    for (const step of steps) {
++        const own = step.before.turn === side && step.move.from === square;
++        if (own) square = step.move.to;
++        const piece = step.after.board.get(square);
++        if (own && step.move.promotion) {
++            trace.push({ step, square, outcome: "promoted" });
++            break;
++        }
++        if (piece?.role !== "pawn" || piece.color !== side) {
++            trace.push({ step, square, outcome: "captured" });
++            break;
++        }
++        if (!isPasser(step.after, square, side)) break;
++        trace.push({ step, square, outcome: "kept" });
++    }
++    return trace;
++}
++
++function rookGuards(board: Chess, rook: Square, pawn: Square, side: Color) {
++    const defender = board.board.get(rook);
++    return (
++        defender?.role === "rook" &&
++        defender.color === side &&
++        file(rook) === file(pawn) &&
++        attacks(defender, rook, board.board.occupied).has(pawn)
++    );
++}
++
++function preservePasser(best: PawnTrace[], other: PawnTrace[], origin: Square, side: Color) {
++    const loss = other[1];
++    if (
++        loss?.outcome !== "captured" ||
++        loss.square !== origin ||
++        loss.step.move.to !== origin ||
++        tacticalExchangeGain(loss.step.before, loss.step.move) < 90
++    )
++        return null;
++    const { from } = loss.step.move;
++    const taker = loss.step.before.board.get(from);
++    if (!taker || taker.role !== "rook") return null;
++    for (const [index, { step, square, outcome }] of best.slice(0, 5).entries()) {
++        if (
++            outcome !== "kept" ||
++            step.before.turn !== side ||
++            square !== origin ||
++            step.before.board.get(step.move.from)?.role !== "rook" ||
++            rookGuards(step.before, step.move.from, square, side) ||
++            !rookGuards(step.after, step.move.to, square, side) ||
++            step.after.board.get(from)?.role !== taker.role ||
++            step.after.board.get(from)?.color !== taker.color ||
++            !step.after.isLegal(loss.step.move) ||
++            tacticalExchangeGain(step.after, loss.step.move) >= 0
++        )
++            continue;
++        // Track the opposing rook from its root square and the guarding rook
++        // through the next pair of moves. A check or new attack elsewhere
++        // cannot stand in for the specific pawn defence.
++        if (
++            best
++                .slice(0, index + 1)
++                .some(
++                    ({ step: seen }) =>
++                        (seen.before.turn === taker.color && seen.move.from === from) ||
++                        (seen.capture && seen.move.to === from),
++                )
++        )
++            continue;
++        const capture = step.after.clone();
++        capture.play(loss.step.move);
++        const recapture = { from: step.move.to, to: origin };
++        if (!capture.isLegal(recapture) || tacticalExchangeGain(capture, recapture) < 400) continue;
++        const afterGuard = best.slice(index, index + 3);
++        let rook = step.move.to;
++        if (
++            afterGuard.length !== 3 ||
++            afterGuard.slice(1).some(({ step: seen, square: pawn, outcome: state }) => {
++                if (seen.before.turn === side && seen.move.from === rook) rook = seen.move.to;
++                return (
++                    state !== "kept" || pawn !== square || !rookGuards(seen.after, rook, pawn, side)
++                );
++            })
++        )
++            continue;
++        return {
++            bestLength: index + 3,
++            otherLength: 2,
++            description: `After ${best[0].step.san}, ${step.san} puts a rook on the passer’s file. It can recapture on ${makeSquare(origin)} if the opponent takes the pawn. After ${other[0].step.san}, ${loss.step.san} takes it without that defence.`,
++        };
++    }
++    return null;
++}
++
++function blockedByRook(item: PawnTrace, front: Square, origin: Square, side: Color) {
++    const blocker = item.step.after.board.get(front);
++    return (
++        item.outcome === "kept" &&
++        item.square === origin &&
++        blocker?.role === "rook" &&
++        blocker.color === side
++    );
++}
++
++function containPasser(
++    best: PawnTrace[],
++    other: PawnTrace[],
++    origin: Square,
++    side: Color,
++    gap: number,
++) {
++    const original = best[0]?.step.before;
++    if (!original || rank(origin, opposite(side)) !== 7) return null;
++    const front = origin + (side === "white" ? -8 : 8);
++    const blocker = original.board.get(front);
++    if (blocker?.role !== "rook" || blocker.color !== side) return null;
++    if (
++        best.length < 6 ||
++        !best.slice(0, 4).every((item) => blockedByRook(item, front, origin, side))
++    )
++        return null;
++    const resolve = (trace: ReadonlyArray<PawnTrace>) => {
++        const end = trace.at(-1);
++        if (
++            !end ||
++            end.outcome !== "captured" ||
++            end.step.move.to !== origin ||
++            end.step.before.turn !== side
++        )
++            return null;
++        const release = trace
++            .slice(0, -1)
++            .findIndex((item) => !blockedByRook(item, front, origin, side));
++        if (release !== -1) {
++            // The rook may leave on the defender's penultimate move if the
++            // pawn still has no legal promotion before it is taken.
++            const released = trace[release];
++            if (
++                release < 4 ||
++                release !== trace.length - 3 ||
++                released.outcome !== "kept" ||
++                released.square !== origin ||
++                released.step.before.turn !== side ||
++                released.step.move.from !== front ||
++                !released.step.after.dests(origin).isEmpty()
++            )
++                return null;
++        }
++        return end;
++    };
++    if (gap <= 100 && other.length >= 3) {
++        const a = resolve(best),
++            b = resolve(other);
++        if (a && b && (a.step.uci !== b.step.uci || a.step.move.from !== front))
++            return {
++                bestLength: best.length,
++                otherLength: other.length,
++                description: `The rook on ${makeSquare(front)} blockades the passed pawn on ${makeSquare(origin)}. After ${best[0].step.san}, ${a.step.san} eventually takes that pawn. After ${other[0].step.san}, ${b.step.san} takes it in a different continuation.`,
++            };
++    }
++    const last = other.at(-1);
++    if (gap < 90 || last?.outcome !== "promoted" || last.square !== front) return null;
++    const removed = other.findIndex((item) => !blockedByRook(item, front, origin, side));
++    if (removed < 0 || removed > other.length - 2 || other.length - removed > 5) return null;
++    const conceded = other[removed].step;
++    if (
++        conceded.before.board.get(front)?.role !== "rook" ||
++        conceded.before.board.get(front)?.color !== side ||
++        !best
++            .slice(0, Math.min(best.length, other.length))
++            .every(
++                (item, i) =>
++                    blockedByRook(item, front, origin, side) ||
++                    (i === best.length - 1 && Boolean(resolve(best))),
++            )
++    )
++        return null;
++    return {
++        bestLength: Math.min(best.length, Math.max(6, other.length)),
++        otherLength: other.length,
++        description: `After ${best[0].step.san}, the rook on ${makeSquare(front)} keeps the ${makeSquare(origin)} passer from advancing. In the ${other[0].step.san} line, ${conceded.san} ends that blockade and ${last.step.san} promotes the same pawn.`,
++    };
++}
++
++function tradeQueenForPasser(
++    steps: TacticalReplayStep[],
++    trace: PawnTrace[],
++    origin: Square,
++    queen: Square,
++    side: Color,
++) {
++    const promotion = trace.at(-1);
++    if (
++        trace.length < 6 ||
++        promotion?.outcome !== "promoted" ||
++        promotion.step.move.from !== origin ||
++        trace
++            .slice(0, -1)
++            .some(
++                ({ step, square }) =>
++                    square !== origin ||
++                    step.after.board.get(queen)?.role !== "queen" ||
++                    step.after.board.get(queen)?.color !== side,
++            )
++    )
++        return null;
++    for (const index of [trace.length, trace.length + 2]) {
++        const take = steps[index],
++            retake = steps[index + 1];
++        if (
++            !take?.capture ||
++            !retake ||
++            take.before.turn !== side ||
++            take.before.board.get(queen)?.role !== "queen" ||
++            take.move.from !== queen ||
++            take.move.to !== promotion.square ||
++            retake.move.to !== promotion.square ||
++            retake.capture !== 900 ||
++            (index !== trace.length && !steps[trace.length]?.after.isCheck())
++        )
++            continue;
++        return {
++            through: index + 2,
++            promotion: promotion.step.san,
++            take: take.san,
++            retake: retake.san,
++        };
++    }
++    return null;
++}
++
++function sharedPromotionExchange(
++    primary: TacticalReplayStep[],
++    secondary: TacticalReplayStep[],
++    main: PawnTrace[],
++    other: PawnTrace[],
++    origin: Square,
++    side: Color,
++) {
++    if (rank(origin, opposite(side)) !== 7) return null;
++    const queens = primary[0].before.board.queen.intersect(primary[0].before.board[side]);
++    if (queens.size() !== 1) return null;
++    const queen = queens.singleSquare()!;
++    const a = tradeQueenForPasser(primary, main, origin, queen, side);
++    const b = tradeQueenForPasser(secondary, other, origin, queen, side);
++    if (!a || !b) return null;
++    return {
++        bestLength: a.through,
++        otherLength: b.through,
++        description: `In both lines the queen stays on ${makeSquare(queen)} to deal with the ${makeSquare(origin)} passer. After ${primary[0].san} or ${secondary[0].san}, ${a.promotion} is answered by ${a.take}, and ${a.retake} takes the queen in turn.`,
++    };
++}
++
++/** Compare sustained use of the same passed pawn. The engine supplies orders
++ * of play. The claim rests on the pawn and the exact rook duty in those lines. */
++export function findAdvancedPasserPlan(
++    fen: string,
++    candidates: DecisionEngineLine[],
++): PositionStrategicPlan | null {
++    const [best, ...alternatives] = candidates;
++    if (
++        !best ||
++        best.depth < 16 ||
++        best.cp === null ||
++        best.mate != null ||
++        candidates.length < 2 ||
++        !measureDecisionLine(fen, best)
++    )
++        return null;
++    const primary = replayTacticalLine(fen, best.pvUci.slice(0, WINDOW));
++    const board = primary[0].before;
++    const side = board.turn;
++    const passers = [...board.board.pawn]
++        .map((square) => ({ square, owner: board.board.get(square)!.color }))
++        .filter(({ square, owner }) => rank(square, owner) >= 4 && isPasser(board, square, owner));
++    if (!passers.length) return null;
++    for (const alternative of alternatives) {
++        if (
++            alternative.depth !== best.depth ||
++            alternative.cp === null ||
++            alternative.mate != null ||
++            alternative.cp > best.cp ||
++            alternative.pvUci[0] === best.pvUci[0] ||
++            !measureDecisionLine(fen, alternative)
++        )
++            continue;
++        const secondary = replayTacticalLine(fen, alternative.pvUci.slice(0, WINDOW));
++        const gap = best.cp - alternative.cp;
++        for (const { square, owner } of passers) {
++            const main = followPasser(primary, square, owner);
++            const other = followPasser(secondary, square, owner);
++            const evidence =
++                owner === side
++                    ? gap >= 90 && preservePasser(main, other, square, owner)
++                    : (containPasser(main, other, square, side, gap) ??
++                      (gap <= 100 &&
++                          sharedPromotionExchange(primary, secondary, main, other, square, side)));
++            if (evidence)
++                return {
++                    linesUci: [
++                        best.pvUci.slice(0, evidence.bestLength),
++                        alternative.pvUci.slice(0, evidence.otherLength),
++                    ],
++                    description: evidence.description,
++                };
++        }
++    }
++    return null;
++}
+diff --git a/src/utils/tests/decisionPasserPlans.test.ts b/src/utils/tests/decisionPasserPlans.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/utils/tests/decisionPasserPlans.test.ts
+@@ -0,0 +1,72 @@
++import { expect, test } from "vitest";
++import type { DecisionEngineLine } from "../tacticalMotifs/decisionEvidence";
++import { findAdvancedPasserPlan } from "../tacticalMotifs/decisionPasserPlans";
++import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
++
++const line = (fen: string, cp: number, moves: string): DecisionEngineLine => ({
++    fen,
++    cp,
++    depth: 20,
++    pvUci: moves.split(" "),
++});
++
++const d7 = "2Qr4/3P1pkp/pq4p1/2R5/P7/7P/6P1/1R5K b - - 0 33";
++const blockade = line(d7, -220, "b6b1 c5c1 b1b6 c1e1 b6f6 c8c7 g7f8 e1e3");
++const promotion = line(d7, -886, "b6f6 b1d1 f6e7 c8d8 e7d8 c5c8 d8e7 d7d8q");
++
++test("separates the retained blockade from a concrete promotion after a different choice", () => {
++    const report = assessChessDecision({ fen: d7, candidates: [blockade, promotion] });
++    expect(report?.position.positional.support).toBe("supported");
++    expect(report?.position.strategicPlan).toMatchObject({
++        linesUci: [blockade.pvUci, promotion.pvUci],
++        description: expect.stringMatching(
++            /rook on d8 keeps the d7 passer.*Qxd8 ends.*d8=Q promotes/,
++        ),
++    });
++    expect(report?.mistake).toBeNull();
++});
++
++test("requires observing the same pawn promote or be captured", () => {
++    expect(
++        findAdvancedPasserPlan(d7, [
++            blockade,
++            { ...promotion, pvUci: promotion.pvUci.slice(0, 7) },
++        ]),
++    ).toBeNull();
++    expect(findAdvancedPasserPlan(d7, [blockade, { ...promotion, depth: 19 }])).toBeNull();
++});
++
++test("shows when a check buys time to defend the passed pawn from a rook", () => {
++    const fen = "4k3/8/8/8/P2KP1R1/r7/8/8 w - - 3 51";
++    const preferred = line(fen, 445, "g4g8 e8d7 g8a8 d7c6 a8a5 c6b6 a5b5 b6c6");
++    const loss = line(fen, 29, "d4d5 a3a4 g4g7 e8f8 g7c7 a4a5 d5d6");
++    expect(findAdvancedPasserPlan(fen, [preferred, loss])?.description).toMatch(
++        /After Rg8\+, Ra8 puts a rook.*recapture on a4.*After Kd5, Rxa4/,
++    );
++    expect(
++        findAdvancedPasserPlan(fen, [{ ...preferred, pvUci: preferred.pvUci.slice(0, 4) }, loss]),
++    ).toBeNull();
++});
++
++test("compares a persistent blockade with different safe ways to remove the pawn", () => {
++    const fen = "r5k1/P7/4p3/1Np1P3/2P5/1P1n2K1/8/8 b - - 0 41";
++    const slower = line(fen, 609, "g8f7 g3f3 f7e7 f3e4 d3b4 e4f4 b4c6 b5d6 a8f8 f4e3 c6a7");
++    const earlier = line(fen, 575, "g8f8 b5c7 a8a7 c7e6 f8e7 e6c5 d3c5 g3f3");
++    expect(findAdvancedPasserPlan(fen, [slower, earlier])?.description).toMatch(
++        /rook on a8 blockades the passed pawn on a7.*Nxa7.*Rxa7/,
++    );
++});
++
++test("shows when the same queen is committed to a promotion exchange in two plans", () => {
++    const fen = "8/1P3pk1/1q2p1pp/8/8/4PB1P/5PP1/3R2K1 b - - 2 45";
++    const a = line(
++        fen,
++        -820,
++        "g6g5 d1c1 f7f5 c1c8 g5g4 h3g4 f5g4 f3e4 g4g3 b7b8q g3f2 g1f1 b6b8 c8b8",
++    );
++    const b = line(fen, -832, "f7f5 d1c1 g6g5 c1c8 g5g4 h3g4 f5g4 f3e4 g4g3 b7b8q b6b8 c8b8");
++    expect(findAdvancedPasserPlan(fen, [a, b])?.description).toMatch(
++        /queen stays on b6.*b8=Q.*Qxb8.*Rxb8/,
++    );
++    expect(findAdvancedPasserPlan(fen, [a, { ...b, pvUci: b.pvUci.slice(0, 11) }])).toBeNull();
++});

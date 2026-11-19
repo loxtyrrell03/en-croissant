@@ -1,0 +1,161 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "passer-world-seniors-50-2026-d7c401720afc8431-72",
+      "event": "world-seniors-50-2026",
+      "stratum": "resolved-early",
+      "fen": "2k2r2/p3n1p1/2P5/2Pp2P1/3P4/2N1P3/1R2Bn1b/1KB5 w - - 7 37",
+      "ply": 72,
+      "playedMoveUci": "e2a6",
+      "sourceGroup": "d7c401720afc8431090cba51e10dd000472a115ea8047f4e5a218c69017890d0",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-1d8eb7cae759c2dc-147",
+      "event": "world-seniors-50-2026",
+      "stratum": "resolved-early",
+      "fen": "3n3r/4k3/3p3P/3R2P1/4KP2/8/8/8 b - - 2 74",
+      "ply": 147,
+      "playedMoveUci": "d8f7",
+      "sourceGroup": "1d8eb7cae759c2dc9353a6205491f44b3264378833c57f14df088c2c8e0d590c",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-65984c9b8421ad08-58",
+      "event": "world-seniors-50-2026",
+      "stratum": "resolved-early",
+      "fen": "4r1k1/1br2pn1/p2q2pp/Qp1Pp3/4P2N/1pP1R2P/3N1PP1/4R1K1 w - - 0 30",
+      "ply": 58,
+      "playedMoveUci": "d2b3",
+      "sourceGroup": "65984c9b8421ad0863ebc197397873dc9ec741182a3f8db2bc4ef45541ac2b95",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-59bba34c1e4226cb-29",
+      "event": "world-seniors-50-2026",
+      "stratum": "resolved-early",
+      "fen": "r2q1rk1/1p2n1b1/1PpPbnpp/4pp2/8/2NP1NP1/4PPBP/1RBQ1RK1 b - - 0 15",
+      "ply": 29,
+      "playedMoveUci": "d8d6",
+      "sourceGroup": "59bba34c1e4226cb83f170e9a86fd5c53e49e223f430c1de027f38196d4861f8",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-252d8fe49dcdd482-57",
+      "event": "world-seniors-50-2026",
+      "stratum": "resolved-early",
+      "fen": "3q1r1k/6pp/b7/p7/2P1B1n1/Q5PN/P2p1P1P/3R2K1 b - - 1 29",
+      "ply": 57,
+      "playedMoveUci": "g4e5",
+      "sourceGroup": "252d8fe49dcdd482d612ec2d5241a35a9cfdc4a5b81854e6ed01976a3e55cc35",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-0051173b81b907c6-107",
+      "event": "world-seniors-50-2026",
+      "stratum": "resolved-early",
+      "fen": "8/3k4/1R6/3P2p1/3K2P1/5B2/1p6/4r3 b - - 1 54",
+      "ply": 107,
+      "playedMoveUci": "b2b1q",
+      "sourceGroup": "0051173b81b907c616ab798e18e9b04f71b3e7f3b6f6dc92961b42bca70f0244",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-57749f406d260434-59",
+      "event": "world-seniors-50-2026",
+      "stratum": "persisted",
+      "fen": "1r4k1/3R3p/B3P1p1/4p3/4n3/2r5/6PP/3R2K1 b - - 1 30",
+      "ply": 59,
+      "playedMoveUci": "b8e8",
+      "sourceGroup": "57749f406d260434ecd9762c7cefe89e13f371580dbe1b9176219938798ae0a6",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-limerick-2026-5bdc4007e83ec5d0-62",
+      "event": "limerick-2026",
+      "stratum": "persisted",
+      "fen": "2r3k1/1p4p1/p3P2p/2Bb4/1P2pbPP/q1r5/4B1R1/1Q1R2K1 w - - 0 32",
+      "ply": 62,
+      "playedMoveUci": "e6e7",
+      "sourceGroup": "5bdc4007e83ec5d0a1ee380bdfea1fb6ba1e161e7f09738573c9f8f17a75269c",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-134edc479829af2b-72",
+      "event": "world-seniors-50-2026",
+      "stratum": "persisted",
+      "fen": "5k2/8/6p1/R3P2p/7P/p3rBPK/4P3/r7 w - - 1 37",
+      "ply": 72,
+      "playedMoveUci": "h3g2",
+      "sourceGroup": "134edc479829af2b171393f7f01785fa32e5d7c14257bc4eb94c905d1f80eaaf",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-3df8eea00d7970d1-69",
+      "event": "world-seniors-50-2026",
+      "stratum": "persisted",
+      "fen": "3k4/R2p3p/1P2r3/2P2pp1/3K1p2/8/P5PP/8 b - - 0 35",
+      "ply": 69,
+      "playedMoveUci": "d8c8",
+      "sourceGroup": "3df8eea00d7970d1436bca88d6a5a4f956229fa84f84558dfee2e160bdc117fd",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-fb0f497c9f2216ed-50",
+      "event": "world-seniors-50-2026",
+      "stratum": "persisted",
+      "fen": "5rk1/pp1qBpp1/3Pp3/4r2p/5Q1P/2b3P1/P5PK/3R1R2 w - - 2 26",
+      "ply": 50,
+      "playedMoveUci": "e7f8",
+      "sourceGroup": "fb0f497c9f2216ed6c174362b68211a340b7febc53155a2b4c4ac8821bc1fa39",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-world-seniors-50-2026-97a1745c545a7e67-61",
+      "event": "world-seniors-50-2026",
+      "stratum": "persisted",
+      "fen": "2b5/1r2k2p/1P4p1/p4p2/2R1p2P/P3P3/n4PP1/3R2K1 b - - 2 31",
+      "ply": 61,
+      "playedMoveUci": "c8e6",
+      "sourceGroup": "97a1745c545a7e67c732cd8bf3fb5f7417f5f970928505215495ea0bf9a50c07",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "events": {
+    "limerick-2026": "69014e05db7966c77a14259f65b579941a062a598474171372d63cd3e6b0daeb",
+    "world-seniors-50-2026": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf"
+  },
+  "exclusions": [
+    "e1c833a9e94fb0eda99ada11de78743bd6edf066e14c06a769e565101a8e040b",
+    "aa2dd1f97e2c0a6c44b083e6595c3914f3c3401d323779fc9a7822052744e9b4",
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "b38b996a209c519e53a2dd763d4cc80fedef5f5d6f130df1f7a2ef8320eebacb",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53",
+    "6469b24fde897597dc44f73a5b2071d601887663858d4746305d5c7eef4cfdf8",
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "576b7c36c809e86ede526fff49ed3148dce5e4426066f3b20cc10ee4a005b269",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "48df231e103c0762290c892b985cb0ac2d432e27d190701af43885d9afcc6898"
+  ],
+  "scope": "Both sides retain a rook and at least one pawn is an advanced passer. Recorded persistence or resolution selects the sample; it does not supply the label."
+}
