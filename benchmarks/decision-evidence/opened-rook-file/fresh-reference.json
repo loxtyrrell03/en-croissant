@@ -1,0 +1,376 @@
+{
+  "scope": "Single-reviewer position character and newly opened rook file. Reviewed from legal root candidates and independent reply frames, before opening classifier results. Uncertain axes receive null.",
+  "cases": [
+    {
+      "id": "tournament-rudar-5a4305a77b31944e-28",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "White develops on the already open d-file and has several king-safety move orders."
+    },
+    {
+      "id": "tournament-rudar-c2305171ec47db08-79",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The competing a- and c-pawns and rook activity differ. The endgame lines leave exact tactical significance uncertain."
+    },
+    {
+      "id": "tournament-rudar-a194f8d1a723c427-36",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Several viable moves contest the e-file after the central exchange. The f8 rook has no repeated newly opened file entry."
+    },
+    {
+      "id": "tournament-rudar-623cbc86a8ffcec0-53",
+      "tactical": true,
+      "positional": false,
+      "rookFile": false,
+      "rationale": "Na4 attacks the queen and changes the double rook exchange. Its large gain comes immediately."
+    },
+    {
+      "id": "tournament-rudar-f574663bb26413fb-102",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Both sides must deal with the e-pawn plus the fixed queenside pawns and blockading pieces. Short checks alone are inconclusive."
+    },
+    {
+      "id": "tournament-rudar-2d79df5cd0804546-91",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "King centralisation and cutting the king off with rook checks explain the endgame plans."
+    },
+    {
+      "id": "tournament-rudar-56d191f5ee986d3b-35",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "An already open d-file and control of c4 persist across different knight placements. The severity of lesser tactical differences is unclear."
+    },
+    {
+      "id": "tournament-rudar-3d4f715af7f54c3c-29",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "Nxe5 is the only searched move near equality. The other choices let the bishop capture on c6 under concrete pressure."
+    },
+    {
+      "id": "tournament-rudar-af7c3b048cc1569e-84",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Nb2+ changes the a-pawn outcome. The remaining knight and opposed passed pawns still dictate separate plans after the capture."
+    },
+    {
+      "id": "tournament-rudar-5113edad39ad68e6-34",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Different preparations all contest c4 and the c-file. The equal captures leave viable strategic choices."
+    },
+    {
+      "id": "tournament-rudar-d3c61c0ec2067ab3-75",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "White can advance the a-pawn or increase rook pressure while Black keeps the g-pawn on the rook file."
+    },
+    {
+      "id": "tournament-rudar-7818a32c3ac89f19-36",
+      "tactical": true,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "Rxd2 is exact after Bxd4. On Bxd4 and Nfxd4 the removal of the d-pawn opens a lasting route for Black's rook to d8 and pressure on d2."
+    },
+    {
+      "id": "tournament-rudar-97395f6b9aa84d3d-70",
+      "tactical": null,
+      "positional": true,
+      "rookFile": null,
+      "rationale": "White can change the central tension or start kingside play. A secondary h4 line opens the h-file but another competitive route is uncertain."
+    },
+    {
+      "id": "tournament-serbia-women-f20842967149f36f-61",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Rook activity on the second rank and the knight's route through e5 recur in the balanced alternatives."
+    },
+    {
+      "id": "tournament-serbia-women-e3c754214110581b-32",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "axb4 attacks the knight and avoids losing the c3 knight. White's a-file and Black's remaining outposts shape the subsequent play. The other root choices have poor evaluations."
+    },
+    {
+      "id": "tournament-serbia-women-fa05ed514ae2d50b-44",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "cxd4 takes the bishop and avoids Qxe5. The second plausible-looking root only gives a tactical queen exchange."
+    },
+    {
+      "id": "tournament-serbia-women-f10f84743fb61d27-27",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The two d4 captures leave different central pawns and give the rooks different files. There is no repeated opening of the same rook file."
+    },
+    {
+      "id": "tournament-serbia-women-f9d5d6b84f49029d-100",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The choice is about rook activity, pawn advances and defending the a- and b-pawns with several viable move orders."
+    },
+    {
+      "id": "tournament-serbia-women-40ec01933cac29b4-51",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Keeping c6 available and fixing the central pawns changes the file and bishop play. No common newly opened rook file is observed."
+    },
+    {
+      "id": "tournament-serbia-women-f06f6b7bc08f5df4-78",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The a-pawn advance and rook placement on the a-file constrain White's defence through all credible lines."
+    },
+    {
+      "id": "tournament-serbia-women-225b72461d4eb635-36",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Nb3 avoids the attack on the d2 knight. The still-active queens can trade into a distinct structure with the f-pawn on e3."
+    },
+    {
+      "id": "tournament-serbia-women-aed3e9ebd2927fc9-35",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Several choices contest the already open d-file or use the c-file for coordination. Black can support d5 after the bishop capture."
+    },
+    {
+      "id": "tournament-serbia-women-fd1d800645e52989-67",
+      "tactical": true,
+      "positional": false,
+      "rookFile": false,
+      "rationale": "The rook and queen force a short mate. There is no stable strategic phase in the leading line."
+    },
+    {
+      "id": "tournament-world-junior-cc872c44bf702bfb-32",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The handling of g-file pressure differs after the bishop takes on f4. Black's rook can use an existing pawnless g-file."
+    },
+    {
+      "id": "tournament-world-junior-81336a852b5f9729-35",
+      "tactical": null,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "The black d-pawn is advanced and exchanged in both rook choices. It leaves Black with a continuing d-file rook presence and a capture on d4 in the corroborated second route."
+    },
+    {
+      "id": "tournament-world-junior-473362f5ad8a4876-28",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Whether the a3-pawn is taken immediately or after a2 changes the later rook activity. White already has no a-pawn in these lines."
+    },
+    {
+      "id": "tournament-world-junior-7524ad0d27235727-40",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Both sides use a file that was already open, and d4 changes the central fight in the alternative plans."
+    },
+    {
+      "id": "tournament-world-junior-ec80c2a1172b0ed2-32",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Choosing which piece takes d6 changes the black h-pawn's immediate capture and leaves different pawn structures. Rooks contest an already available c-file."
+    },
+    {
+      "id": "tournament-world-junior-122fdad2ca9aad3d-32",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Several queen moves permit the e5 break, king safety and e-file activity. The en passant capture does not establish a second tactical purpose."
+    },
+    {
+      "id": "tournament-world-junior-d6765932aa3b04ed-28",
+      "tactical": true,
+      "positional": false,
+      "rookFile": false,
+      "rationale": "Rxa5 immediately wins a rook through the undefended double capture and stays decisively ahead."
+    },
+    {
+      "id": "tournament-world-junior-27ee2876e8e59c1d-55",
+      "tactical": true,
+      "positional": false,
+      "rookFile": false,
+      "rationale": "Bc4 targets the bishop on d3 and induces a concrete minor-piece concession. No comparable positional purpose is shown."
+    },
+    {
+      "id": "tournament-world-junior-edd7fa353bbf8b4c-70",
+      "tactical": true,
+      "positional": true,
+      "rookFile": null,
+      "rationale": "Ne6 threatens a fork around f8, with a pawn on e6 in several branches. Actual sustained rook-file use beyond the tactical exchanges is uncertain."
+    },
+    {
+      "id": "tournament-world-junior-bcb922a6f6cd43b0-85",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Black's advanced outside pawn persists across different knight moves. The shown captures and reroutes establish concrete promotion resources."
+    },
+    {
+      "id": "tournament-world-junior-97b2d59bddb33684-99",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The rook trade requires the queen recapture. Otherwise White changes f- and h-pawn pressure while Black uses a different rook plan."
+    },
+    {
+      "id": "tournament-world-junior-6a936b4aeea14da7-65",
+      "tactical": true,
+      "positional": false,
+      "rookFile": false,
+      "rationale": "The serious choices use checks to win on h3 immediately. The h-file activity is part of the forced material gain."
+    },
+    {
+      "id": "tournament-world-junior-b522e2559de1e913-106",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Black's deeply advanced f-pawn limits White's pieces and has multiple concrete promotion continuations."
+    },
+    {
+      "id": "tournament-world-junior-f685a285a56d751f-36",
+      "tactical": true,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "Clearing White's e-file gives a rook sustained access after both fxg4 and e6. The tactical branches contain immediate checks and captures on the seventh rank."
+    },
+    {
+      "id": "tournament-world-junior-56f1aac1d60e0b92-52",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "The early knight sacrifice and captures dominate the first exchanges. Independent long-term value after liquidation is uncertain."
+    },
+    {
+      "id": "tournament-buongoma-fbac7704c5206b6c-45",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Black can trade queens into a position with distinct bishop and central pawn roles or keep queens with similar scores."
+    },
+    {
+      "id": "tournament-buongoma-2f6d7725c5cbfa00-36",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "White's f-break and queenside tension are resolved in different orders. No same newly opened file is actively used in two choices."
+    },
+    {
+      "id": "tournament-buongoma-cc7af8bab7a45ed4-83",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Immediate checks or knight moves prevent a forcing king attack. The black c-passer remains a separate winning resource."
+    },
+    {
+      "id": "tournament-buongoma-203874c674c45641-37",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Rooks contest an already open e-file and trade into c-file pressure. The significance of the short knight captures is uncertain."
+    },
+    {
+      "id": "tournament-buongoma-c9f59c3a0b84136d-27",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Bxe5 prevents forcing pressure after Qh5. It also diverts the d-pawn to e5 and permits Black's lasting d4 advance."
+    },
+    {
+      "id": "tournament-buongoma-5d9359f3d5a6c3bc-53",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The immediate capture and queen checks create threats around the exposed king. The e2-pawn remains a constraint in both near-best approaches."
+    },
+    {
+      "id": "tournament-buongoma-3eab225e0eaf5539-37",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Black improves minor pieces and uses opposing-colour king-side weaknesses. The timing of captures varies without one tested tactical dependency."
+    },
+    {
+      "id": "tournament-buongoma-2164dc391a03ee0e-34",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "Qxh6 and other candidates prepare direct captures around the king. The material wins make independent strategic purpose unclear."
+    },
+    {
+      "id": "tournament-buongoma-d2095352e75282cd-34",
+      "tactical": true,
+      "positional": true,
+      "rookFile": null,
+      "rationale": "The bishop checks and pawn exchanges alter the tactical defence. White's f-file may open, but concrete use in a second line is inconclusive."
+    },
+    {
+      "id": "tournament-buongoma-10e8fa180f011713-51",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "e4 accelerates a passed pawn and exact queen-fork or checking attacks arise when the white king is displaced."
+    },
+    {
+      "id": "tournament-buongoma-96368e1c2a0f9d42-35",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Capturing on b5 limits the queenside passer. Other moves concede a durable structural problem, while the tactical explanation is unclear."
+    },
+    {
+      "id": "tournament-buongoma-94a4f0c091c3a703-70",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Taking d5 directly and first repositioning the bishop produce different concrete exchanges and keep the white rook active on d6 or d7. White already lacks a d-pawn."
+    },
+    {
+      "id": "tournament-buongoma-b10301b1d3470a89-68",
+      "tactical": null,
+      "positional": true,
+      "rookFile": null,
+      "rationale": "The d-pawn has two different advancement or exchange plans. The second independent newly opened rook-file line is not established."
+    },
+    {
+      "id": "tournament-buongoma-e013b5a25a842411-40",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The Nxe5 resource exploits the central advance. Black also keeps the queenside pawn advantage and the bishop's diagonal."
+    },
+    {
+      "id": "tournament-buongoma-9542f54ace498a32-57",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Rexd2 preserves control of c3, while Rcxd2 lets the rook take there and changes the exchange. Several other choices keep the c-file pressure."
+    }
+  ]
+}

@@ -1,0 +1,426 @@
+diff --git a/src/utils/tacticalMotifs/decisionOpenedRookFile.ts b/src/utils/tacticalMotifs/decisionOpenedRookFile.ts
+new file mode 100644
+index 00000000..afb541a4
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionOpenedRookFile.ts
+@@ -0,0 +1,361 @@
++import { rookAttacks } from "chessops/attacks";
++import type { Chess } from "chessops/chess";
++import { makeFen } from "chessops/fen";
++import { SquareSet } from "chessops/squareSet";
++import type { Color, Square } from "chessops/types";
++import { makeSquare, opposite } from "chessops/util";
++import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import type { PositionStrategicPlan } from "./decisionPositionPlans";
++
++const WINDOW = 16;
++const file = (square: Square) => square % 8;
++const rank = (square: Square, side: Color) =>
++    side === "white" ? Math.floor(square / 8) + 1 : 8 - Math.floor(square / 8);
++
++type Probe = { moveUci: string; lines: DecisionEngineLine[] };
++type SearchMode = "root-only" | "reply-aware" | "anchored" | "contested" | "demonstrated";
++
++type FileUse = {
++    side: Color;
++    column: number;
++    entry: number;
++    exit: number;
++    pawnOrigin: Square;
++    rookOrigin: Square;
++    through: number;
++    anchor?: Square;
++    target?: Square;
++    static?: boolean;
++};
++type Branch = {
++    steps: TacticalReplayStep[];
++    use: FileUse[];
++    separate: boolean;
++};
++
++function pawnsOnFile(board: Chess, side: Color, column: number) {
++    return board.board.pawn.intersect(board.board[side]).intersect(SquareSet.fromFile(column));
++}
++
++function originalSquare(steps: TacticalReplayStep[], until: number, square: Square) {
++    const piece = steps[until].before.board.get(square);
++    if (!piece) return undefined;
++    for (let i = until - 1; i >= 0; i--) {
++        const step = steps[i];
++        if (step.before.turn === piece.color && step.move.to === square) square = step.move.from;
++        const before = step.before.board.get(square);
++        if (before?.color !== piece.color || before.role !== piece.role) return undefined;
++    }
++    return square;
++}
++
++function supportsRookOnFile(
++    steps: TacticalReplayStep[],
++    index: number,
++    column: number,
++    side: Color,
++) {
++    const first = steps[index];
++    let square = first.move.to;
++    let quiet = 0;
++    for (let i = index + 1; i <= index + 4 && i < steps.length; i++) {
++        const step = steps[i];
++        if (step.before.turn === side && step.move.from === square) square = step.move.to;
++        const rook = step.after.board.get(square);
++        if (
++            rook?.role !== "rook" ||
++            rook.color !== side ||
++            file(square) !== column ||
++            pawnsOnFile(step.after, side, column).nonEmpty() ||
++            Math.abs(step.balance) > 100
++        )
++            return null;
++        if (step.capture || step.after.isCheck()) quiet = 0;
++        else quiet++;
++        if (quiet >= 2) return i + 1;
++    }
++    return null;
++}
++
++function traceFileUse(steps: TacticalReplayStep[]) {
++    const use: FileUse[] = [];
++    const start = steps[0].before;
++    for (const [entry, step] of steps.slice(0, 8).entries()) {
++        const { before, after, move } = step;
++        const side = before.turn;
++        const column = file(move.to);
++        if (
++            before.board.get(move.from)?.role !== "rook" ||
++            rank(move.to, side) < 3 ||
++            after.isCheck() ||
++            Math.abs(step.balance) > 100 ||
++            pawnsOnFile(start, side, column).isEmpty() ||
++            pawnsOnFile(after, side, column).nonEmpty()
++        )
++            continue;
++        // Merely swinging a rook onto a cleared file supplies no evidence.
++        // Observe a vertical advance or an actual pawn contact on that file.
++        const advance =
++            file(move.from) === column && rank(move.to, side) >= rank(move.from, side) + 2;
++        const target = rookAttacks(move.to, after.board.occupied).intersect(
++            pawnsOnFile(after, opposite(side), column),
++        );
++        if (!advance && step.capture !== 100 && target.isEmpty()) continue;
++        const through = supportsRookOnFile(steps, entry, column, side);
++        if (through === null) continue;
++        let exit = entry - 1;
++        while (exit >= 0 && pawnsOnFile(steps[exit].before, side, column).isEmpty()) exit--;
++        if (
++            exit < 0 ||
++            exit > 5 ||
++            steps.slice(exit, through).some((s) => pawnsOnFile(s.after, side, column).nonEmpty())
++        )
++            continue;
++        const pawns = pawnsOnFile(steps[exit].before, side, column);
++        const departing = pawns.singleSquare();
++        if (departing === undefined) continue;
++        const pawnOrigin = originalSquare(steps, exit, departing);
++        const rookOrigin = originalSquare(steps, entry, move.from);
++        if (pawnOrigin === undefined || rookOrigin === undefined) continue;
++        use.push({ side, column, entry, exit, pawnOrigin, rookOrigin, through });
++    }
++    return use;
++}
++
++function traceFileContest(steps: TacticalReplayStep[], proved: boolean) {
++    const start = steps[0].before;
++    const use: FileUse[] = [];
++    for (const [exit, event] of steps.slice(0, 10).entries()) {
++        for (const side of ["white", "black"] as const) {
++            for (const pawn of event.before.board.pawn.intersect(event.before.board[side])) {
++                const column = file(pawn);
++                if (
++                    pawnsOnFile(start, side, column).isEmpty() ||
++                    pawnsOnFile(event.after, side, column).nonEmpty()
++                )
++                    continue;
++                const pawnOrigin = originalSquare(steps, exit, pawn);
++                if (pawnOrigin === undefined || file(pawnOrigin) !== column) continue;
++                const horizon = Math.min(exit + (proved ? 10 : 6), steps.length - 2);
++                for (let entry = exit; entry < horizon; entry++) {
++                    const current = steps[entry];
++                    if (pawnsOnFile(current.after, side, column).nonEmpty()) break;
++                    if (current.after.isCheck() || Math.abs(current.balance) > 100) continue;
++                    const onFile = SquareSet.fromFile(column);
++                    const rooks = current.after.board.rook
++                        .intersect(current.after.board[side])
++                        .intersect(onFile);
++                    for (const rook of rooks) {
++                        const moving = current.before.turn === side && current.move.to === rook;
++                        const origin = originalSquare(
++                            steps,
++                            entry,
++                            moving ? current.move.from : rook,
++                        );
++                        if (origin === undefined) continue;
++                        const targets = rookAttacks(rook, current.after.board.occupied)
++                            .intersect(current.after.board[opposite(side)])
++                            .diff(current.after.board.king)
++                            .intersect(onFile);
++                        const capture = moving && current.capture > 0;
++                        const later = steps.slice(entry + 1, entry + 3);
++                        const target = [...targets].find((square) =>
++                            later.every(
++                                (step) =>
++                                    step.move.from !== square &&
++                                    step.move.to !== square &&
++                                    rookAttacks(rook, step.after.board.occupied).has(square),
++                            ),
++                        );
++                        if (
++                            (!capture && (proved ? target === undefined : targets.isEmpty())) ||
++                            !later.every(
++                                (step) =>
++                                    step.after.board.rook.has(rook) &&
++                                    step.after.board[side].has(rook) &&
++                                    pawnsOnFile(step.after, side, column).isEmpty() &&
++                                    Math.abs(step.balance) <= 100 &&
++                                    (capture ||
++                                        rookAttacks(rook, step.after.board.occupied)
++                                            .intersect(step.after.board[opposite(side)])
++                                            .intersect(targets)
++                                            .nonEmpty()),
++                            )
++                        )
++                            continue;
++                        use.push({
++                            side,
++                            column,
++                            entry,
++                            exit,
++                            pawnOrigin,
++                            rookOrigin: origin,
++                            anchor: rook,
++                            target,
++                            static: !moving,
++                            through: entry + 3,
++                        });
++                    }
++                }
++            }
++        }
++    }
++    return use;
++}
++
++function analyseBranch(
++    fen: string,
++    line: DecisionEngineLine,
++    separate: boolean,
++    mode: SearchMode,
++): Branch | null {
++    if (!measureDecisionLine(fen, line)) return null;
++    const steps = replayTacticalLine(fen, line.pvUci.slice(0, WINDOW));
++    return steps.length
++        ? {
++              steps,
++              use: [
++                  ...traceFileUse(steps),
++                  ...(mode === "contested" || mode === "demonstrated"
++                      ? traceFileContest(steps, mode === "demonstrated")
++                      : []),
++              ],
++              separate,
++          }
++        : null;
++}
++
++function branches(
++    fen: string,
++    line: DecisionEngineLine,
++    reply: Probe | undefined,
++    mode: SearchMode,
++) {
++    const original = analyseBranch(fen, line, false, mode);
++    if (!original) return [];
++    const result = [original];
++    if (mode === "root-only" || !reply?.lines.length) return result;
++    const child = makeFen(original.steps[0].after.toSetup());
++    const [top] = reply.lines;
++    if (
++        line.cp === null ||
++        top.cp === null ||
++        top.mate != null ||
++        top.depth < 16 ||
++        Math.abs(top.cp + line.cp) > 90 ||
++        !measureDecisionLine(child, top)
++    )
++        return result;
++    for (const other of reply.lines.slice(0, 3)) {
++        if (
++            other.cp === null ||
++            other.mate != null ||
++            other.depth !== top.depth ||
++            other.cp > top.cp ||
++            top.cp - other.cp > 35 ||
++            !measureDecisionLine(child, other)
++        )
++            continue;
++        const expanded = analyseBranch(
++            fen,
++            { ...line, pvUci: [line.pvUci[0], ...other.pvUci] },
++            true,
++            mode,
++        );
++        if (expanded?.use.length) result.push(expanded);
++    }
++    return result;
++}
++
++function describe(branch: Branch, use: FileUse) {
++    const root = branch.steps[0];
++    const exit = branch.steps[use.exit];
++    const entry = branch.steps[use.entry];
++    const opening = exit.uci === root.uci ? "" : `${exit.san} clears the file and `;
++    if (use.anchor !== undefined)
++        return `After ${root.san}, ${exit.san} clears the file and the rook on ${makeSquare(use.anchor)} ${use.target === undefined ? "uses it" : `pressures ${makeSquare(use.target)}`}`;
++    return `After ${root.san}, ${opening}${entry.san} gives the rook access to ${makeSquare(entry.move.to)}`;
++}
++
++/** Find a lasting file consequence that recurs across competitive moves.
++ * This reports how the line uses the file. The evaluation is a guard
++ * for comparing choices and does not attribute the score to the feature. */
++export function findOpenedRookFile(
++    fen: string,
++    candidates: DecisionEngineLine[],
++    probes: Probe[],
++    mode: SearchMode = "anchored",
++): PositionStrategicPlan | null {
++    const [best, ...rest] = candidates;
++    if (!best || best.depth < 16 || best.cp === null || best.mate != null) return null;
++    const replies = (line: DecisionEngineLine) =>
++        branches(
++            fen,
++            line,
++            probes.find((probe) => probe.moveUci === line.pvUci[0]),
++            mode,
++        );
++    const primary = replies(best);
++    if (!primary.some((branch) => branch.use.length)) return null;
++    for (const alternative of rest.slice(0, 2)) {
++        if (
++            alternative.depth !== best.depth ||
++            alternative.mate != null ||
++            alternative.cp === null ||
++            alternative.cp > best.cp ||
++            best.cp - alternative.cp > 100 ||
++            alternative.pvUci[0] === best.pvUci[0]
++        )
++            continue;
++        for (const one of primary) {
++            for (const two of replies(alternative)) {
++                if (
++                    (mode === "anchored" || mode === "contested" || mode === "demonstrated") &&
++                    !one.separate &&
++                    !two.separate
++                )
++                    continue;
++                for (const a of one.use) {
++                    const b = two.use.find(
++                        (item) =>
++                            item.side === a.side &&
++                            item.column === a.column &&
++                            (mode !== "anchored" ||
++                                (item.pawnOrigin === a.pawnOrigin &&
++                                    item.rookOrigin === a.rookOrigin)) &&
++                            ((mode !== "contested" && mode !== "demonstrated") ||
++                                item.pawnOrigin === a.pawnOrigin) &&
++                            (mode !== "demonstrated" || !item.static || !a.static),
++                    );
++                    if (!b) continue;
++                    const before = new Set(
++                        one.steps
++                            .slice(0, a.entry)
++                            .map((s) =>
++                                makeFen(s.after.toSetup()).split(" ").slice(0, 4).join(" "),
++                            ),
++                    );
++                    if (
++                        two.steps
++                            .slice(0, b.entry)
++                            .some((s) =>
++                                before.has(
++                                    makeFen(s.after.toSetup()).split(" ").slice(0, 4).join(" "),
++                                ),
++                            )
++                    )
++                        continue;
++                    return {
++                        linesUci: [
++                            one.steps.slice(0, a.through).map((s) => s.uci),
++                            two.steps.slice(0, b.through).map((s) => s.uci),
++                        ],
++                        description: `${a.side === "white" ? "White's" : "Black's"} rook uses the ${"abcdefgh"[a.column]}-file in both lines once its own pawn is gone. ${describe(one, a)}. ${describe(two, b)}.`,
++                    };
++                }
++            }
++        }
++    }
++    return null;
++}
+diff --git a/src/utils/tests/decisionOpenedRookFileReplay.test.ts b/src/utils/tests/decisionOpenedRookFileReplay.test.ts
+new file mode 100644
+index 00000000..075a1ccc
+--- /dev/null
++++ b/src/utils/tests/decisionOpenedRookFileReplay.test.ts
+@@ -0,0 +1,53 @@
++import { readFileSync, writeFileSync } from "node:fs";
++import { test } from "vitest";
++import {
++    assessChessDecision,
++    type DecisionAssessmentInput,
++} from "../tacticalMotifs/decisionAssessment";
++import { findOpenedRookFile } from "../tacticalMotifs/decisionOpenedRookFile";
++import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
++
++type Case = DecisionAssessmentInput & { id: string; label?: unknown };
++const input = process.env.DECISION_OPEN_FILE_INPUT;
++const output = process.env.DECISION_OPEN_FILE_OUTPUT;
++
++test.runIf(input && output)(
++    "compares corroborated rook-file activity using the same engine frames",
++    () => {
++        const cases = JSON.parse(readFileSync(input!, "utf8")) as Case[];
++        const report = cases.map(({ id, label, ...row }) => {
++            const best = row.candidates[0];
++            const scan = buildLiveTacticalScan({
++                fen: row.fen,
++                pvUci: best.pvUci,
++                depth: best.depth,
++                engineName: "Stockfish 19",
++                variations: row.candidates,
++            });
++            const baseline = assessChessDecision({
++                ...row,
++                rootCertificates: scan.variations.map((variation) => ({
++                    fen: row.fen,
++                    moveUci: variation.lineUci[0],
++                    motifs: variation.motifs,
++                })),
++            });
++            const start = performance.now();
++            const attempts = (
++                ["root-only", "reply-aware", "anchored", "contested", "demonstrated"] as const
++            ).map((mode) => [
++                mode,
++                findOpenedRookFile(row.fen, row.candidates, row.replyProbes ?? [], mode),
++            ]);
++            return {
++                id,
++                label,
++                baseline,
++                plans: Object.fromEntries(attempts),
++                ms: performance.now() - start,
++            };
++        });
++        writeFileSync(output!, JSON.stringify(report), { flag: "wx" });
++    },
++    180_000,
++);

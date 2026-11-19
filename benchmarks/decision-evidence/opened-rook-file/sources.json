@@ -1,0 +1,14 @@
+{
+  "rudar": "https://lichess.org/broadcast/rudar-xxxvii-gm-round-robin/round-1/jFsKFqZe",
+  "serbia-women": "https://lichess.org/broadcast/20-pojedinacno-prvenstvo-srbije-za-sahistkinje/round-1/gib2xXny",
+  "world-junior": "https://lichess.org/broadcast/fide-world-junior-chess-championship-2026-open/round-1/5JLs2gkn",
+  "buongoma": "https://lichess.org/broadcast/buongoma-open-chess-championship-grand-prix-circuit-open/round-1/65fuD8yZ",
+  "korea": "https://lichess.org/broadcast/korea-international-chess-festival-2026-standard-open-a/round-1/3b6oROnj",
+  "pgnTournamentIds": {
+    "rudar": "Ko5362ZK",
+    "serbia-women": "WoBEgdCv",
+    "world-junior": "wYvYFVtt",
+    "buongoma": "q9ysPINd",
+    "korea": "YBXMeZ4B"
+  }
+}

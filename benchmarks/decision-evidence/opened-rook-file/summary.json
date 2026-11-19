@@ -1,0 +1,387 @@
+{
+  "baselineCommit": "f910a9e896267c67f02663a9fe389d5a948ac10b",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "initialFresh": {
+    "cases": 53,
+    "reviewed": {
+      "tactical": {
+        "True": 27,
+        "False": 9,
+        "None": 17
+      },
+      "positional": {
+        "True": 44,
+        "False": 5,
+        "None": 4
+      },
+      "mixed": {
+        "True": 18,
+        "False": 14,
+        "None": 21
+      },
+      "rookFile": {
+        "True": 3,
+        "False": 46,
+        "None": 4
+      }
+    },
+    "incumbentSupported": {
+      "tactical": {
+        "True": 7,
+        "False": 0,
+        "None": 0
+      },
+      "positional": {
+        "True": 11,
+        "False": 0,
+        "None": 0
+      },
+      "mixed": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "candidateEvidence": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 0,
+        "False": 1,
+        "None": 1
+      },
+      "demonstrated": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "wouldAddBroadPositional": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 1,
+        "False": 0,
+        "None": 0
+      },
+      "demonstrated": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "wouldAddMixed": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "demonstrated": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    }
+  },
+  "finalReserve": {
+    "cases": 25,
+    "reviewed": {
+      "tactical": {
+        "True": 17,
+        "False": 4,
+        "None": 4
+      },
+      "positional": {
+        "True": 19,
+        "False": 1,
+        "None": 5
+      },
+      "mixed": {
+        "True": 12,
+        "False": 5,
+        "None": 8
+      },
+      "rookFile": {
+        "True": 1,
+        "False": 22,
+        "None": 2
+      }
+    },
+    "incumbentSupported": {
+      "tactical": {
+        "True": 6,
+        "False": 0,
+        "None": 0
+      },
+      "positional": {
+        "True": 5,
+        "False": 0,
+        "None": 0
+      },
+      "mixed": {
+        "True": 1,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "candidateEvidence": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "demonstrated": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "wouldAddBroadPositional": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "demonstrated": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "wouldAddMixed": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "demonstrated": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    }
+  },
+  "allSeparateRepliesExploratory": {
+    "cases": 78,
+    "reviewed": {
+      "tactical": {
+        "True": 44,
+        "False": 13,
+        "None": 21
+      },
+      "positional": {
+        "True": 63,
+        "False": 6,
+        "None": 9
+      },
+      "mixed": {
+        "True": 30,
+        "False": 19,
+        "None": 29
+      },
+      "rookFile": {
+        "True": 4,
+        "False": 68,
+        "None": 6
+      }
+    },
+    "incumbentSupported": {
+      "tactical": {
+        "True": 13,
+        "False": 0,
+        "None": 0
+      },
+      "positional": {
+        "True": 20,
+        "False": 0,
+        "None": 0
+      },
+      "mixed": {
+        "True": 1,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "candidateEvidence": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 1,
+        "False": 4,
+        "None": 1
+      },
+      "demonstrated": {
+        "True": 1,
+        "False": 2,
+        "None": 0
+      }
+    },
+    "wouldAddBroadPositional": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 3,
+        "False": 0,
+        "None": 0
+      },
+      "demonstrated": {
+        "True": 2,
+        "False": 0,
+        "None": 0
+      }
+    },
+    "wouldAddMixed": {
+      "root-only": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "reply-aware": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "anchored": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "contested": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      },
+      "demonstrated": {
+        "True": 0,
+        "False": 0,
+        "None": 0
+      }
+    }
+  },
+  "finalNodesOfExtraProbes": 142000000,
+  "extraProbes": 109,
+  "medianMsAllCandidateArmsTogether": 4.885749999999916,
+  "development": {
+    "cases": 472,
+    "nominated": {
+      "root-only": 3,
+      "reply-aware": 5,
+      "anchored": 4,
+      "contested": 21,
+      "demonstrated": 15
+    }
+  },
+  "method": "The single-reviewer axes exclude unknowns when scoring. App-budget and wide-budget incumbent and candidates share the exact corresponding input frames. The 53 case sample was opened before the contested and demonstrated arms were designed. The Korea reference was frozen before its predictions."
+}

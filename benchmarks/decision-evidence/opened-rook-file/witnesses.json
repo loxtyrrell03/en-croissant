@@ -1,0 +1,6294 @@
+[
+  {
+    "input": {
+      "id": "tournament-world-amateur-w2000-2026-e8d4d1167eb95372-72",
+      "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+      "candidates": [
+        {
+          "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+          "cp": -174,
+          "mate": null,
+          "depth": 18,
+          "nodes": 549184,
+          "pvUci": [
+            "e3d5",
+            "f7f6",
+            "d6c6",
+            "f6c6",
+            "d5e7",
+            "c8c7",
+            "e7c6",
+            "c7c6",
+            "h1g2",
+            "g7g5",
+            "b6e3",
+            "g5g4",
+            "g2f2",
+            "h8g7",
+            "f2e2",
+            "g7f6"
+          ],
+          "wdl": [
+            0,
+            18,
+            982
+          ],
+          "searchMs": 491.0546999890357
+        },
+        {
+          "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+          "cp": -175,
+          "mate": null,
+          "depth": 18,
+          "nodes": 549184,
+          "pvUci": [
+            "h1g1",
+            "f5f4",
+            "g3f4",
+            "f7f4",
+            "b6d4",
+            "h8g8",
+            "h2h3",
+            "c6b5",
+            "e3d5",
+            "f4f7",
+            "b2b3",
+            "h7h6",
+            "d6b6",
+            "c8e8",
+            "c3c4",
+            "e8e4",
+            "d4e3",
+            "b5d7",
+            "b6a6",
+            "f7f3"
+          ],
+          "wdl": [
+            0,
+            17,
+            983
+          ],
+          "searchMs": 491.0546999890357
+        },
+        {
+          "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+          "cp": -333,
+          "mate": null,
+          "depth": 18,
+          "nodes": 549184,
+          "pvUci": [
+            "e3g2",
+            "f7e7",
+            "h1g1",
+            "e7e2",
+            "g2e3",
+            "e2b2",
+            "b6d4",
+            "h8g8",
+            "h2h4",
+            "b2b5",
+            "h4h5",
+            "b5a5",
+            "h5h6",
+            "a5a1",
+            "g1f2",
+            "a1a2",
+            "f2g1",
+            "g7g6"
+          ],
+          "wdl": [
+            0,
+            0,
+            1000
+          ],
+          "searchMs": 491.0546999890357
+        }
+      ],
+      "label": {
+        "tactical": true,
+        "positional": true,
+        "rationale": "Nd5 forces an exact rook and knight sequence on c6 and e7. Kg1 allows the pawn break ...f4 and changes control of the f-file after exchanges."
+      },
+      "replyProbes": [
+        {
+          "moveUci": "e3d5",
+          "lines": [
+            {
+              "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+              "depth": 17,
+              "cp": 189,
+              "mate": null,
+              "pvUci": [
+                "f5f4",
+                "g3f4",
+                "f7f5",
+                "c3c4",
+                "f5f6",
+                "d6f6",
+                "g7f6",
+                "h1g2",
+                "h8g7",
+                "g2f3",
+                "c6d5",
+                "c4d5",
+                "g7f7",
+                "b2b4",
+                "c8c3",
+                "f3e2",
+                "c3c2",
+                "e2d3",
+                "c2h2",
+                "b4b5",
+                "a6b5",
+                "a5a6"
+              ]
+            },
+            {
+              "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+              "depth": 17,
+              "cp": 164,
+              "mate": null,
+              "pvUci": [
+                "f7f6",
+                "d6c6",
+                "f6c6",
+                "d5e7",
+                "c8c7",
+                "e7c6",
+                "c7c6",
+                "h1g2",
+                "g7g5",
+                "b6e3",
+                "g5g4",
+                "g2f2",
+                "h8g8",
+                "f2e2",
+                "f5f4",
+                "g3f4",
+                "g8f7",
+                "e3f2",
+                "c6h6",
+                "f2g3",
+                "h6h3",
+                "e2d3"
+              ]
+            },
+            {
+              "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+              "depth": 17,
+              "cp": 159,
+              "mate": null,
+              "pvUci": [
+                "f7e7",
+                "h1g1",
+                "e7e2",
+                "d5c7",
+                "c6e4",
+                "b2b4",
+                "h7h6",
+                "d6d7",
+                "e4c6",
+                "d7f7",
+                "h8g8",
+                "f7f5",
+                "c6b7",
+                "b4b5",
+                "a6b5",
+                "a5a6",
+                "e2g2",
+                "g1f1"
+              ]
+            }
+          ]
+        }
+      ],
+      "checkpoints": [
+        [
+          {
+            "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+            "depth": 19,
+            "cp": 175,
+            "mate": null,
+            "pvUci": [
+              "f7f6",
+              "d6c6",
+              "f6c6",
+              "d5e7",
+              "c8c7",
+              "e7c6",
+              "c7c6",
+              "h1g2",
+              "g7g5",
+              "b6e3",
+              "g5g4",
+              "g2f2",
+              "h8g8",
+              "f2e2",
+              "f5f4",
+              "g3f4",
+              "g8f7",
+              "e3f2",
+              "c6h6",
+              "f2g3",
+              "h6h3",
+              "b2b4"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+            "depth": 19,
+            "cp": 170,
+            "mate": null,
+            "pvUci": [
+              "f7e7",
+              "h1g1",
+              "e7e2",
+              "d5c7",
+              "c6e4",
+              "b6d4",
+              "e2b2",
+              "c7a6",
+              "e4f3",
+              "a6c7",
+              "b2g2",
+              "g1f1",
+              "g2a2",
+              "d6e6",
+              "f3h5",
+              "e6e7",
+              "c8b8",
+              "d4b6",
+              "h7h6",
+              "h2h4",
+              "h5g4",
+              "c7d5"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+            "depth": 19,
+            "cp": 163,
+            "mate": null,
+            "pvUci": [
+              "f5f4",
+              "h1g1",
+              "f4g3",
+              "h2g3",
+              "c6b7",
+              "b6d4",
+              "h8g8",
+              "b2b4",
+              "c8e8",
+              "d5f4",
+              "h7h6",
+              "c3c4",
+              "e8e1",
+              "g1f2",
+              "e1c1",
+              "b4b5",
+              "c1c4",
+              "b5a6",
+              "b7a6",
+              "d4g7",
+              "c4c2",
+              "f2f3",
+              "a6e2",
+              "f3e3",
+              "f7e7",
+              "d6e6",
+              "e7e6",
+              "f4e6",
+              "g8f7"
+            ]
+          }
+        ],
+        [
+          {
+            "fen": "2r4k/6pp/pBbR1r2/P2N1p2/8/2P3P1/1P5P/7K w - - 3 38",
+            "depth": 19,
+            "cp": -173,
+            "mate": null,
+            "pvUci": [
+              "d6c6",
+              "f6c6",
+              "d5e7",
+              "c6c7",
+              "e7c8",
+              "c7c8",
+              "h1g2",
+              "g7g5",
+              "b6e3",
+              "g5g4",
+              "h2h4",
+              "h8g8",
+              "g2f2",
+              "g8f7",
+              "f2e2",
+              "f5f4",
+              "e3f4",
+              "c8c5",
+              "e2d3",
+              "c5a5",
+              "c3c4"
+            ]
+          },
+          {
+            "fen": "2r4k/6pp/pBbR1r2/P2N1p2/8/2P3P1/1P5P/7K w - - 3 38",
+            "depth": 19,
+            "cp": -638,
+            "mate": null,
+            "pvUci": [
+              "d6f6",
+              "c6d5",
+              "h1g1",
+              "g7f6",
+              "g1f2",
+              "c8e8",
+              "b2b4",
+              "d5f7",
+              "b6d4",
+              "h8g7",
+              "d4e3",
+              "f7h5",
+              "c3c4",
+              "f5f4",
+              "g3f4",
+              "h5f7",
+              "c4c5",
+              "g7g6",
+              "b4b5",
+              "a6b5"
+            ]
+          },
+          {
+            "fen": "2r4k/6pp/pBbR1r2/P2N1p2/8/2P3P1/1P5P/7K w - - 3 38",
+            "depth": 19,
+            "cp": -696,
+            "mate": null,
+            "pvUci": [
+              "b6c5",
+              "f6d6",
+              "c5d6",
+              "c6d5",
+              "h1g1",
+              "d5c4",
+              "g1f2",
+              "c8e8",
+              "b2b4",
+              "g7g5",
+              "d6c5",
+              "h8g8",
+              "h2h3",
+              "g5g4",
+              "h3h4",
+              "f5f4",
+              "g3f4",
+              "g4g3",
+              "f2g1"
+            ]
+          }
+        ],
+        [
+          {
+            "fen": "2r4k/6pp/pBR2r2/P2N1p2/8/2P3P1/1P5P/7K b - - 0 38",
+            "depth": 19,
+            "cp": 230,
+            "mate": null,
+            "pvUci": [
+              "f6c6",
+              "d5e7",
+              "c8c7",
+              "e7c6",
+              "c7c6",
+              "h1g2",
+              "g7g5",
+              "g2f3",
+              "h8g7",
+              "f3e3",
+              "g7f7",
+              "e3d4",
+              "f7e6",
+              "b2b4",
+              "c6d6",
+              "d4c4",
+              "d6d5",
+              "b6e3",
+              "h7h6",
+              "e3d4",
+              "f5f4",
+              "g3g4",
+              "d5d6",
+              "b4b5",
+              "a6b5",
+              "c4b5",
+              "e6d7"
+            ]
+          },
+          {
+            "fen": "2r4k/6pp/pBR2r2/P2N1p2/8/2P3P1/1P5P/7K b - - 0 38",
+            "depth": 19,
+            "cp": 134,
+            "mate": null,
+            "pvUci": [
+              "c8c6",
+              "d5f6",
+              "c6f6",
+              "h1g2",
+              "h8g8",
+              "g2f3",
+              "g8f7",
+              "h2h4",
+              "f6e6",
+              "b6e3",
+              "e6e4",
+              "f3e2",
+              "h7h6",
+              "h4h5",
+              "g7g5",
+              "h5g6",
+              "f7g6",
+              "b2b4",
+              "h6h5",
+              "e2d3",
+              "e4g4",
+              "b4b5",
+              "a6b5",
+              "e3f4",
+              "g6g7",
+              "d3d4"
+            ]
+          },
+          {
+            "fen": "2r4k/6pp/pBR2r2/P2N1p2/8/2P3P1/1P5P/7K b - - 0 38",
+            "depth": 19,
+            "cp": -654,
+            "mate": null,
+            "pvUci": [
+              "f6f8",
+              "c6c8",
+              "f8c8",
+              "h1g2",
+              "c8e8",
+              "g2f2",
+              "f5f4",
+              "g3f4",
+              "e8f8",
+              "c3c4"
+            ]
+          }
+        ],
+        [
+          {
+            "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+            "depth": 22,
+            "cp": -182,
+            "mate": null,
+            "pvUci": [
+              "d5e7",
+              "c8c7",
+              "e7c6",
+              "c7c6",
+              "h1g2",
+              "g7g5",
+              "b6e3",
+              "g5g4",
+              "h2h4",
+              "h8g7",
+              "g2f2",
+              "c6e6",
+              "f2e2",
+              "f5f4",
+              "g3f4",
+              "g7g6",
+              "b2b4",
+              "e6e4",
+              "e2d3",
+              "g6f5",
+              "c3c4",
+              "g4g3",
+              "b4b5",
+              "g3g2",
+              "e3f2",
+              "a6b5"
+            ]
+          },
+          {
+            "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+            "depth": 22,
+            "cp": -503,
+            "mate": null,
+            "pvUci": [
+              "d5e3",
+              "c6e6",
+              "h1g2",
+              "e6e5",
+              "g2f3",
+              "h8g8",
+              "c3c4",
+              "g8f7",
+              "b2b4",
+              "g7g6",
+              "h2h4",
+              "f7e6",
+              "e3d5",
+              "e5e4",
+              "d5e3",
+              "h7h6",
+              "b4b5",
+              "a6b5",
+              "a5a6"
+            ]
+          },
+          {
+            "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+            "depth": 22,
+            "cp": -553,
+            "mate": null,
+            "pvUci": [
+              "h1g2",
+              "c6d6",
+              "d5e7",
+              "d6d2",
+              "g2f3",
+              "c8e8",
+              "e7f5",
+              "d2b2",
+              "b6d4",
+              "h8g8",
+              "f5g7",
+              "e8e1",
+              "g7f5",
+              "b2h2",
+              "f3f4",
+              "h2a2",
+              "f5h6",
+              "g8f8",
+              "d4c5",
+              "f8e8",
+              "c5b4",
+              "e1f1",
+              "f4e5"
+            ]
+          }
+        ],
+        [
+          {
+            "fen": "2r4k/4N1pp/pBr5/P4p2/8/2P3P1/1P5P/7K b - - 1 39",
+            "depth": 18,
+            "cp": 160,
+            "mate": null,
+            "pvUci": [
+              "c8c7",
+              "e7c6",
+              "c7c6",
+              "h1g2",
+              "g7g5",
+              "b6e3",
+              "g5g4",
+              "g2f2",
+              "h8g8",
+              "f2e2",
+              "f5f4",
+              "g3f4",
+              "g8f7",
+              "e2d3",
+              "c6h6",
+              "e3g1",
+              "h6d6",
+              "g1d4"
+            ]
+          },
+          {
+            "fen": "2r4k/4N1pp/pBr5/P4p2/8/2P3P1/1P5P/7K b - - 1 39",
+            "depth": 18,
+            "cp": 154,
+            "mate": null,
+            "pvUci": [
+              "c6c7",
+              "e7c8",
+              "c7c8",
+              "h1g2",
+              "g7g5",
+              "g2f3",
+              "c8e8",
+              "g3g4",
+              "h8g7",
+              "g4f5",
+              "g7f6",
+              "b2b4",
+              "f6f5",
+              "c3c4",
+              "e8e5",
+              "f3g3",
+              "h7h5",
+              "h2h3",
+              "f5e6",
+              "b4b5",
+              "a6b5",
+              "a5a6",
+              "h5h4",
+              "g3f3",
+              "b5c4"
+            ]
+          },
+          {
+            "fen": "2r4k/4N1pp/pBr5/P4p2/8/2P3P1/1P5P/7K b - - 1 39",
+            "depth": 18,
+            "cp": 132,
+            "mate": null,
+            "pvUci": [
+              "c6c4",
+              "e7c8",
+              "c4c8",
+              "h1g2",
+              "g7g5",
+              "g2f3",
+              "c8e8",
+              "b6e3",
+              "g5g4",
+              "f3e2",
+              "f5f4",
+              "g3f4",
+              "h7h5",
+              "b2b4",
+              "h5h4",
+              "e2d2",
+              "h8h7",
+              "c3c4"
+            ]
+          }
+        ]
+      ],
+      "preparedCheckpoint": [
+        {
+          "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+          "depth": 22,
+          "cp": -182,
+          "mate": null,
+          "pvUci": [
+            "d5e7",
+            "c8c7",
+            "e7c6",
+            "c7c6",
+            "h1g2",
+            "g7g5",
+            "b6e3",
+            "g5g4",
+            "h2h4",
+            "h8g7",
+            "g2f2",
+            "c6e6",
+            "f2e2",
+            "f5f4",
+            "g3f4",
+            "g7g6",
+            "b2b4",
+            "e6e4",
+            "e2d3",
+            "g6f5",
+            "c3c4",
+            "g4g3",
+            "b4b5",
+            "g3g2",
+            "e3f2",
+            "a6b5"
+          ]
+        },
+        {
+          "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+          "depth": 22,
+          "cp": -503,
+          "mate": null,
+          "pvUci": [
+            "d5e3",
+            "c6e6",
+            "h1g2",
+            "e6e5",
+            "g2f3",
+            "h8g8",
+            "c3c4",
+            "g8f7",
+            "b2b4",
+            "g7g6",
+            "h2h4",
+            "f7e6",
+            "e3d5",
+            "e5e4",
+            "d5e3",
+            "h7h6",
+            "b4b5",
+            "a6b5",
+            "a5a6"
+          ]
+        },
+        {
+          "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+          "depth": 22,
+          "cp": -553,
+          "mate": null,
+          "pvUci": [
+            "h1g2",
+            "c6d6",
+            "d5e7",
+            "d6d2",
+            "g2f3",
+            "c8e8",
+            "e7f5",
+            "d2b2",
+            "b6d4",
+            "h8g8",
+            "f5g7",
+            "e8e1",
+            "g7f5",
+            "b2h2",
+            "f3f4",
+            "h2a2",
+            "f5h6",
+            "g8f8",
+            "d4c5",
+            "f8e8",
+            "c5b4",
+            "e1f1",
+            "f4e5"
+          ]
+        }
+      ]
+    },
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": {
+        "linesUci": [
+          [
+            "e3d5",
+            "f5f4",
+            "g3f4",
+            "f7f5",
+            "c3c4",
+            "f5f6"
+          ],
+          [
+            "h1g1",
+            "f5f4",
+            "g3f4",
+            "f7f4",
+            "b6d4",
+            "h8g8"
+          ]
+        ],
+        "description": "Black's rook uses the f-file in both lines once its own pawn is gone. After Nd5, gxf4 clears the file and Rf5 gives the rook access to f5. After Kg1, gxf4 clears the file and Rxf4 gives the rook access to f4."
+      },
+      "anchored": {
+        "linesUci": [
+          [
+            "e3d5",
+            "f5f4",
+            "g3f4",
+            "f7f5",
+            "c3c4",
+            "f5f6"
+          ],
+          [
+            "h1g1",
+            "f5f4",
+            "g3f4",
+            "f7f4",
+            "b6d4",
+            "h8g8"
+          ]
+        ],
+        "description": "Black's rook uses the f-file in both lines once its own pawn is gone. After Nd5, gxf4 clears the file and Rf5 gives the rook access to f5. After Kg1, gxf4 clears the file and Rxf4 gives the rook access to f4."
+      },
+      "contested": {
+        "linesUci": [
+          [
+            "e3d5",
+            "f5f4",
+            "g3f4",
+            "f7f5",
+            "c3c4",
+            "f5f6"
+          ],
+          [
+            "h1g1",
+            "f5f4",
+            "g3f4",
+            "f7f4",
+            "b6d4",
+            "h8g8"
+          ]
+        ],
+        "description": "Black's rook uses the f-file in both lines once its own pawn is gone. After Nd5, gxf4 clears the file and Rf5 gives the rook access to f5. After Kg1, gxf4 clears the file and Rxf4 gives the rook access to f4."
+      },
+      "demonstrated": {
+        "linesUci": [
+          [
+            "e3d5",
+            "f5f4",
+            "g3f4",
+            "f7f5",
+            "c3c4",
+            "f5f6"
+          ],
+          [
+            "h1g1",
+            "f5f4",
+            "g3f4",
+            "f7f4",
+            "b6d4",
+            "h8g8"
+          ]
+        ],
+        "description": "Black's rook uses the f-file in both lines once its own pawn is gone. After Nd5, gxf4 clears the file and Rf5 gives the rook access to f5. After Kg1, gxf4 clears the file and Rxf4 gives the rook access to f4."
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/R3R1K1 w - - 3 19",
+      "ply": 36,
+      "playedMoveUci": "e1e2",
+      "phase": "late-opening",
+      "id": "tournament-rudar-a194f8d1a723c427-36",
+      "sourceGroup": "a194f8d1a723c427b6fedcdee664c40ad9567039c912c81c859313c3dfd414b1",
+      "event": "rudar",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/R3R1K1 w - - 3 19",
+          "depth": 19,
+          "cp": -37,
+          "mate": null,
+          "pvUci": [
+            "d3e4",
+            "f5e4",
+            "e1e2",
+            "c7f7",
+            "d2e3",
+            "f7g6",
+            "a1e1",
+            "e8e7",
+            "b3c2",
+            "f8f3",
+            "g1f1",
+            "g6f5",
+            "f1g1",
+            "d4e5",
+            "g2f3",
+            "f5f3",
+            "e3c1",
+            "f3h3",
+            "e2e4",
+            "e5h2",
+            "g1h1",
+            "e7e4",
+            "e1e4"
+          ]
+        },
+        {
+          "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/R3R1K1 w - - 3 19",
+          "depth": 19,
+          "cp": -41,
+          "mate": null,
+          "pvUci": [
+            "d2e3",
+            "d4e5",
+            "d3e4",
+            "f5e4",
+            "a4a5",
+            "c7f7",
+            "a1b1",
+            "b7b6",
+            "a5b6",
+            "a7b6",
+            "b3b6",
+            "e8b8",
+            "b6a5",
+            "b8b3",
+            "a5d2",
+            "f7g6",
+            "d2c2",
+            "b3d3",
+            "c2a4",
+            "h7h5",
+            "b2b4",
+            "c5b4",
+            "b1b4",
+            "e5c3",
+            "e1b1"
+          ]
+        },
+        {
+          "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/R3R1K1 w - - 3 19",
+          "depth": 19,
+          "cp": -46,
+          "mate": null,
+          "pvUci": [
+            "a1d1",
+            "c7f7",
+            "d2e3",
+            "d4e5",
+            "d3d4",
+            "c5d4",
+            "e3d4",
+            "e5d4",
+            "d1d4",
+            "f7f6",
+            "d4d1",
+            "f5f4",
+            "c4c5",
+            "e4e3",
+            "e1e2",
+            "f6g6",
+            "f2e3",
+            "f4f3",
+            "e2f2",
+            "f3g2",
+            "f2g2"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "d3e4",
+          "lines": [
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1PbP3/1Q5P/1P1B1PP1/R3R1K1 b - - 0 19",
+              "depth": 19,
+              "cp": 43,
+              "mate": null,
+              "pvUci": [
+                "f5e4",
+                "e1e2",
+                "c7f7",
+                "d2e3",
+                "f7g6",
+                "a1e1",
+                "e8e7",
+                "b3c2",
+                "f8f3",
+                "g1h1",
+                "g6h5",
+                "h1g1",
+                "h5h4",
+                "g2f3",
+                "e4f3",
+                "c2f5",
+                "f3e2",
+                "e1e2",
+                "d4e3",
+                "e2e3",
+                "e7e3",
+                "f2e3",
+                "h4e1",
+                "g1g2",
+                "e1e3",
+                "f5c8",
+                "g8f7",
+                "c8f5",
+                "f7e7",
+                "f5h7"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1PbP3/1Q5P/1P1B1PP1/R3R1K1 b - - 0 19",
+              "depth": 19,
+              "cp": 0,
+              "mate": null,
+              "pvUci": [
+                "e8e4",
+                "e1e4",
+                "f5e4",
+                "d2e3",
+                "c7f7",
+                "a1e1",
+                "d4e5",
+                "a4a5",
+                "h7h5",
+                "e1e2",
+                "h5h4",
+                "e2e1",
+                "f8e8",
+                "e3g5",
+                "f7h5",
+                "g5d2",
+                "h5f5",
+                "b3b7",
+                "e5d4"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1PbP3/1Q5P/1P1B1PP1/R3R1K1 b - - 0 19",
+              "depth": 19,
+              "cp": -7,
+              "mate": null,
+              "pvUci": [
+                "c7d7",
+                "e4e5",
+                "d6e5",
+                "d2e3",
+                "e5e4",
+                "e1d1",
+                "d4e3",
+                "f2e3",
+                "d7d6",
+                "b3b7",
+                "e8b8",
+                "b7c6",
+                "d6g3",
+                "b2b4",
+                "g3e3",
+                "g1h1",
+                "c5b4",
+                "d5d6",
+                "f5f4",
+                "c6d5",
+                "g8h8",
+                "d1e1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000543,
+            "requestedNodes": 1000000,
+            "depth": 19,
+            "milliseconds": 914.0369000378996
+          }
+        },
+        {
+          "moveUci": "d2e3",
+          "lines": [
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1PB2P/1P3PP1/R3R1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 33,
+              "mate": null,
+              "pvUci": [
+                "c7f7",
+                "d3e4",
+                "f5e4",
+                "e1e2",
+                "e8e7",
+                "a1e1",
+                "f7g6",
+                "b3c2",
+                "f8f3",
+                "g1h1",
+                "g6h5",
+                "e3d4",
+                "c5d4",
+                "e2e4",
+                "d4d3",
+                "c2d2",
+                "e7e4",
+                "e1e4",
+                "f3h3",
+                "g2h3"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1PB2P/1P3PP1/R3R1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 29,
+              "mate": null,
+              "pvUci": [
+                "c7e7",
+                "d3e4",
+                "f5e4",
+                "e1e2",
+                "d4e5",
+                "b3c2",
+                "e7h4",
+                "e3d2",
+                "e8e7",
+                "d2c3",
+                "e5d4",
+                "a1e1",
+                "f8f4",
+                "c2d2",
+                "e7e5",
+                "c3d4",
+                "c5d4",
+                "g2g3"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1PB2P/1P3PP1/R3R1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 26,
+              "mate": null,
+              "pvUci": [
+                "d4e5",
+                "d3e4",
+                "f5e4",
+                "a4a5",
+                "c7d8",
+                "a1b1",
+                "d8a5",
+                "b1a1",
+                "a5b6",
+                "b3b6",
+                "a7b6",
+                "a1a7",
+                "e8b8",
+                "e1b1",
+                "f8f7",
+                "a7a3",
+                "e5d4",
+                "a3b3",
+                "b8f8",
+                "b3b6",
+                "f7f2",
+                "e3f2",
+                "f8f2"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000355,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 916.2065000273287
+          }
+        },
+        {
+          "moveUci": "a1d1",
+          "lines": [
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/3RR1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 54,
+              "mate": null,
+              "pvUci": [
+                "c7f7",
+                "d2e3",
+                "d4e5",
+                "d3d4",
+                "c5d4",
+                "e3d4",
+                "e5d4",
+                "d1d4",
+                "b7b6",
+                "a4a5",
+                "f7g6",
+                "b3c2",
+                "e8e5",
+                "b2b4",
+                "f8c8",
+                "g1h2",
+                "c8e8"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/3RR1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 51,
+              "mate": null,
+              "pvUci": [
+                "b7b6",
+                "d3e4",
+                "f5e4",
+                "e1e2",
+                "c7f7",
+                "d2e3",
+                "d4e5",
+                "b3c2",
+                "f7g6",
+                "e3c1",
+                "f8f7",
+                "d1e1",
+                "e8f8",
+                "e1f1",
+                "e5d4",
+                "c1e3",
+                "f7e7",
+                "g1h1",
+                "f8f6",
+                "e3c1",
+                "e7f7",
+                "e2e4",
+                "d4f2"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/3RR1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 50,
+              "mate": null,
+              "pvUci": [
+                "c7d8",
+                "d2e3",
+                "d4e5",
+                "d3d4",
+                "e5d4",
+                "e3d4",
+                "c5d4",
+                "d1d4",
+                "b7b6",
+                "a4a5",
+                "e8e5",
+                "b3c2",
+                "d8f6",
+                "a5b6",
+                "a7b6",
+                "c2b3",
+                "f6g6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000345,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 917.20660001738
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "d3e4",
+          "lines": [
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1PbP3/1Q5P/1P1B1PP1/R3R1K1 b - - 0 19",
+              "depth": 19,
+              "cp": 43,
+              "mate": null,
+              "pvUci": [
+                "f5e4",
+                "e1e2",
+                "c7f7",
+                "d2e3",
+                "f7g6",
+                "a1e1",
+                "e8e7",
+                "b3c2",
+                "f8f3",
+                "g1h1",
+                "g6h5",
+                "h1g1",
+                "h5h4",
+                "g2f3",
+                "e4f3",
+                "c2f5",
+                "f3e2",
+                "e1e2",
+                "d4e3",
+                "e2e3",
+                "e7e3",
+                "f2e3",
+                "h4e1",
+                "g1g2",
+                "e1e3",
+                "f5c8",
+                "g8f7",
+                "c8f5",
+                "f7e7",
+                "f5h7"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1PbP3/1Q5P/1P1B1PP1/R3R1K1 b - - 0 19",
+              "depth": 19,
+              "cp": 0,
+              "mate": null,
+              "pvUci": [
+                "e8e4",
+                "e1e4",
+                "f5e4",
+                "d2e3",
+                "c7f7",
+                "a1e1",
+                "d4e5",
+                "a4a5",
+                "h7h5",
+                "e1e2",
+                "h5h4",
+                "e2e1",
+                "f8e8",
+                "e3g5",
+                "f7h5",
+                "g5d2",
+                "h5f5",
+                "b3b7",
+                "e5d4"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1PbP3/1Q5P/1P1B1PP1/R3R1K1 b - - 0 19",
+              "depth": 19,
+              "cp": -7,
+              "mate": null,
+              "pvUci": [
+                "c7d7",
+                "e4e5",
+                "d6e5",
+                "d2e3",
+                "e5e4",
+                "e1d1",
+                "d4e3",
+                "f2e3",
+                "d7d6",
+                "b3b7",
+                "e8b8",
+                "b7c6",
+                "d6g3",
+                "b2b4",
+                "g3e3",
+                "g1h1",
+                "c5b4",
+                "d5d6",
+                "f5f4",
+                "c6d5",
+                "g8h8",
+                "d1e1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000543,
+            "requestedNodes": 1000000,
+            "depth": 19,
+            "milliseconds": 914.0369000378996
+          }
+        },
+        {
+          "moveUci": "d2e3",
+          "lines": [
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1PB2P/1P3PP1/R3R1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 33,
+              "mate": null,
+              "pvUci": [
+                "c7f7",
+                "d3e4",
+                "f5e4",
+                "e1e2",
+                "e8e7",
+                "a1e1",
+                "f7g6",
+                "b3c2",
+                "f8f3",
+                "g1h1",
+                "g6h5",
+                "e3d4",
+                "c5d4",
+                "e2e4",
+                "d4d3",
+                "c2d2",
+                "e7e4",
+                "e1e4",
+                "f3h3",
+                "g2h3"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1PB2P/1P3PP1/R3R1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 29,
+              "mate": null,
+              "pvUci": [
+                "c7e7",
+                "d3e4",
+                "f5e4",
+                "e1e2",
+                "d4e5",
+                "b3c2",
+                "e7h4",
+                "e3d2",
+                "e8e7",
+                "d2c3",
+                "e5d4",
+                "a1e1",
+                "f8f4",
+                "c2d2",
+                "e7e5",
+                "c3d4",
+                "c5d4",
+                "g2g3"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1PB2P/1P3PP1/R3R1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 26,
+              "mate": null,
+              "pvUci": [
+                "d4e5",
+                "d3e4",
+                "f5e4",
+                "a4a5",
+                "c7d8",
+                "a1b1",
+                "d8a5",
+                "b1a1",
+                "a5b6",
+                "b3b6",
+                "a7b6",
+                "a1a7",
+                "e8b8",
+                "e1b1",
+                "f8f7",
+                "a7a3",
+                "e5d4",
+                "a3b3",
+                "b8f8",
+                "b3b6",
+                "f7f2",
+                "e3f2",
+                "f8f2"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000355,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 916.2065000273287
+          }
+        },
+        {
+          "moveUci": "a1d1",
+          "lines": [
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/3RR1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 54,
+              "mate": null,
+              "pvUci": [
+                "c7f7",
+                "d2e3",
+                "d4e5",
+                "d3d4",
+                "c5d4",
+                "e3d4",
+                "e5d4",
+                "d1d4",
+                "b7b6",
+                "a4a5",
+                "f7g6",
+                "b3c2",
+                "e8e5",
+                "b2b4",
+                "f8c8",
+                "g1h2",
+                "c8e8"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/3RR1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 51,
+              "mate": null,
+              "pvUci": [
+                "b7b6",
+                "d3e4",
+                "f5e4",
+                "e1e2",
+                "c7f7",
+                "d2e3",
+                "d4e5",
+                "b3c2",
+                "f7g6",
+                "e3c1",
+                "f8f7",
+                "d1e1",
+                "e8f8",
+                "e1f1",
+                "e5d4",
+                "c1e3",
+                "f7e7",
+                "g1h1",
+                "f8f6",
+                "e3c1",
+                "e7f7",
+                "e2e4",
+                "d4f2"
+              ]
+            },
+            {
+              "fen": "4rrk1/ppq3pp/3p4/2pP1p2/P1Pbp3/1Q1P3P/1P1B1PP1/3RR1K1 b - - 4 19",
+              "depth": 17,
+              "cp": 50,
+              "mate": null,
+              "pvUci": [
+                "c7d8",
+                "d2e3",
+                "d4e5",
+                "d3d4",
+                "e5d4",
+                "e3d4",
+                "c5d4",
+                "d1d4",
+                "b7b6",
+                "a4a5",
+                "e8e5",
+                "b3c2",
+                "d8f6",
+                "a5b6",
+                "a7b6",
+                "c2b3",
+                "f6g6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000345,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 917.20660001738
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 2400500,
+        "requestedNodes": 2400000,
+        "depth": 19,
+        "milliseconds": 2300.218699965626
+      },
+      "label": {
+        "id": "tournament-rudar-a194f8d1a723c427-36",
+        "tactical": false,
+        "positional": true,
+        "rookFile": false,
+        "rationale": "Several viable moves contest the e-file after the central exchange. The f8 rook has no repeated newly opened file entry."
+      }
+    },
+    "review": {
+      "id": "tournament-rudar-a194f8d1a723c427-36",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Several viable moves contest the e-file after the central exchange. The f8 rook has no repeated newly opened file entry."
+    },
+    "positionsV26": "unclear",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": {
+        "linesUci": [
+          [
+            "d3e4",
+            "f5e4",
+            "e1e2",
+            "c7f7",
+            "d2e3",
+            "f7g6",
+            "a1e1",
+            "e8e7"
+          ],
+          [
+            "d2e3",
+            "c7e7",
+            "d3e4",
+            "f5e4",
+            "e1e2",
+            "d4e5"
+          ]
+        ],
+        "description": "Black's rook uses the f-file in both lines once its own pawn is gone. After dxe4, fxe4 clears the file and the rook on f8 pressures f2. After Be3, fxe4 clears the file and the rook on f8 pressures f2."
+      },
+      "demonstrated": {
+        "linesUci": [
+          [
+            "d3e4",
+            "f5e4",
+            "e1e2",
+            "c7f7",
+            "d2e3",
+            "f7g6",
+            "a1e1",
+            "e8e7",
+            "b3c2",
+            "f8f3",
+            "g1f1",
+            "g6f5"
+          ],
+          [
+            "d2e3",
+            "c7e7",
+            "d3e4",
+            "f5e4",
+            "e1e2",
+            "d4e5"
+          ]
+        ],
+        "description": "Black's rook uses the f-file in both lines once its own pawn is gone. After dxe4, fxe4 clears the file and the rook on f3 pressures f2. After Be3, fxe4 clears the file and the rook on f8 pressures f2."
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2Pp4/1P3N2/rB1RQPPP/5RK1 w - - 0 19",
+      "ply": 36,
+      "playedMoveUci": "b2d4",
+      "phase": "late-opening",
+      "id": "tournament-rudar-7818a32c3ac89f19-36",
+      "sourceGroup": "7818a32c3ac89f1935fe1114384d87f22b749245ec525cde32e020d8a6e2947b",
+      "event": "rudar",
+      "stratum": "recorded-rook-file",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2Pp4/1P3N2/rB1RQPPP/5RK1 w - - 0 19",
+          "depth": 21,
+          "cp": 9,
+          "mate": null,
+          "pvUci": [
+            "b2d4",
+            "a2d2",
+            "e2d2",
+            "b6c6",
+            "f1e1",
+            "e8a8",
+            "h2h3",
+            "a8d8",
+            "d2c3",
+            "d8a8",
+            "c3c2",
+            "h7h6",
+            "d4c3",
+            "c6c8",
+            "c2e2",
+            "d7c5",
+            "b3b4"
+          ]
+        },
+        {
+          "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2Pp4/1P3N2/rB1RQPPP/5RK1 w - - 0 19",
+          "depth": 21,
+          "cp": 3,
+          "mate": null,
+          "pvUci": [
+            "f3d4",
+            "e8d8",
+            "f1d1",
+            "e7b4",
+            "b2c3",
+            "a2d2",
+            "c3d2",
+            "b4d2",
+            "d1d2",
+            "b6a5",
+            "d4c2",
+            "d7f8",
+            "b5c3",
+            "a5c7",
+            "d2d8",
+            "c7d8",
+            "h2h3",
+            "f8g6"
+          ]
+        },
+        {
+          "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2Pp4/1P3N2/rB1RQPPP/5RK1 w - - 0 19",
+          "depth": 21,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "d2d4",
+            "h7h6",
+            "d4d2",
+            "e7b4",
+            "b2d4",
+            "a2d2",
+            "f3d2",
+            "b6c6",
+            "f1d1",
+            "e8d8",
+            "b5a7",
+            "c6c7",
+            "d2f3",
+            "d7c5",
+            "e2c2",
+            "c7f4"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "b2d4",
+          "lines": [
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PB4/1P3N2/r2RQPPP/5RK1 b - - 0 19",
+              "depth": 20,
+              "cp": -10,
+              "mate": null,
+              "pvUci": [
+                "a2d2",
+                "e2d2",
+                "b6c6",
+                "h2h3",
+                "h7h6",
+                "f1e1",
+                "e8d8",
+                "b5a7",
+                "c6c7",
+                "d2e2",
+                "e7b4",
+                "e1b1",
+                "b4f8",
+                "a7b5",
+                "c7c6",
+                "b3b4",
+                "f6e4"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PB4/1P3N2/r2RQPPP/5RK1 b - - 0 19",
+              "depth": 20,
+              "cp": -748,
+              "mate": null,
+              "pvUci": [
+                "b6d4",
+                "b5d4",
+                "a2d2",
+                "e2d2",
+                "f6e4",
+                "d2e1",
+                "d7c5",
+                "e1e3",
+                "c5d3",
+                "e3d3",
+                "e4f2",
+                "f1f2",
+                "e6e5",
+                "d3e2"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PB4/1P3N2/r2RQPPP/5RK1 b - - 0 19",
+              "depth": 20,
+              "cp": -769,
+              "mate": null,
+              "pvUci": [
+                "b6b5",
+                "c4b5",
+                "a2d2",
+                "e2d2",
+                "e6e5",
+                "f3e5",
+                "d7c5",
+                "d2c2",
+                "c5e6",
+                "d4a1",
+                "e6g5",
+                "g1h1",
+                "h7h6",
+                "b3b4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000519,
+            "requestedNodes": 1000000,
+            "depth": 20,
+            "milliseconds": 987.5867000082508
+          }
+        },
+        {
+          "moveUci": "f3d4",
+          "lines": [
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PN4/1P6/rB1RQPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -2,
+              "mate": null,
+              "pvUci": [
+                "d7f8",
+                "d4f3",
+                "f8g6",
+                "f3e5",
+                "e8d8",
+                "d2d8",
+                "b6d8",
+                "e5d3",
+                "d8b6",
+                "e2f3",
+                "h7h5",
+                "f1d1",
+                "b6c6",
+                "f3c6",
+                "b7c6"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PN4/1P6/rB1RQPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -3,
+              "mate": null,
+              "pvUci": [
+                "e8d8",
+                "f1d1",
+                "e7b4",
+                "b2c3",
+                "a2d2",
+                "c3d2",
+                "b4d2",
+                "d1d2",
+                "b6a5",
+                "d4c2",
+                "d7f8",
+                "d2d8",
+                "a5d8",
+                "g2g3",
+                "h7h5"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PN4/1P6/rB1RQPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -7,
+              "mate": null,
+              "pvUci": [
+                "e7b4",
+                "d2c2",
+                "e8d8",
+                "b2c1",
+                "a2a8",
+                "c1e3",
+                "b4c5",
+                "f1b1",
+                "d7e5",
+                "b3b4",
+                "c5d4",
+                "e3d4",
+                "d8d4",
+                "e2e5",
+                "d4d7"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000008,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 1031.958499981556
+          }
+        },
+        {
+          "moveUci": "d2d4",
+          "lines": [
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PR4/1P3N2/rB2QPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -4,
+              "mate": null,
+              "pvUci": [
+                "d7c5",
+                "e2c2",
+                "e8a8",
+                "f1b1",
+                "f6e8",
+                "h2h3",
+                "h7h6",
+                "d4d1",
+                "e7f6",
+                "g1f1",
+                "a2b2",
+                "b1b2",
+                "f6b2",
+                "c2b2",
+                "a8d8",
+                "d1d4"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PR4/1P3N2/rB2QPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -7,
+              "mate": null,
+              "pvUci": [
+                "e7b4",
+                "e2c2",
+                "e6e5",
+                "d4d1",
+                "h7h6",
+                "c2b1",
+                "a2a6",
+                "h2h3",
+                "b4c5",
+                "b2c3",
+                "e5e4",
+                "f3d4",
+                "e4e3",
+                "f2e3",
+                "e8e3"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PR4/1P3N2/rB2QPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -8,
+              "mate": null,
+              "pvUci": [
+                "e6e5",
+                "d4d2",
+                "e5e4",
+                "f3d4",
+                "e7b4",
+                "b2c3",
+                "b4c3",
+                "b5c3",
+                "a2d2",
+                "e2d2",
+                "e8d8",
+                "f1d1",
+                "d7e5",
+                "d2e3",
+                "h7h5",
+                "d4b5",
+                "d8d1",
+                "c3d1",
+                "b6a6",
+                "e3d4",
+                "e5c6",
+                "d4c3",
+                "a6a5",
+                "d1e3"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000437,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 1077.2564999642782
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "b2d4",
+          "lines": [
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PB4/1P3N2/r2RQPPP/5RK1 b - - 0 19",
+              "depth": 20,
+              "cp": -10,
+              "mate": null,
+              "pvUci": [
+                "a2d2",
+                "e2d2",
+                "b6c6",
+                "h2h3",
+                "h7h6",
+                "f1e1",
+                "e8d8",
+                "b5a7",
+                "c6c7",
+                "d2e2",
+                "e7b4",
+                "e1b1",
+                "b4f8",
+                "a7b5",
+                "c7c6",
+                "b3b4",
+                "f6e4"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PB4/1P3N2/r2RQPPP/5RK1 b - - 0 19",
+              "depth": 20,
+              "cp": -748,
+              "mate": null,
+              "pvUci": [
+                "b6d4",
+                "b5d4",
+                "a2d2",
+                "e2d2",
+                "f6e4",
+                "d2e1",
+                "d7c5",
+                "e1e3",
+                "c5d3",
+                "e3d3",
+                "e4f2",
+                "f1f2",
+                "e6e5",
+                "d3e2"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PB4/1P3N2/r2RQPPP/5RK1 b - - 0 19",
+              "depth": 20,
+              "cp": -769,
+              "mate": null,
+              "pvUci": [
+                "b6b5",
+                "c4b5",
+                "a2d2",
+                "e2d2",
+                "e6e5",
+                "f3e5",
+                "d7c5",
+                "d2c2",
+                "c5e6",
+                "d4a1",
+                "e6g5",
+                "g1h1",
+                "h7h6",
+                "b3b4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000519,
+            "requestedNodes": 1000000,
+            "depth": 20,
+            "milliseconds": 987.5867000082508
+          }
+        },
+        {
+          "moveUci": "f3d4",
+          "lines": [
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PN4/1P6/rB1RQPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -2,
+              "mate": null,
+              "pvUci": [
+                "d7f8",
+                "d4f3",
+                "f8g6",
+                "f3e5",
+                "e8d8",
+                "d2d8",
+                "b6d8",
+                "e5d3",
+                "d8b6",
+                "e2f3",
+                "h7h5",
+                "f1d1",
+                "b6c6",
+                "f3c6",
+                "b7c6"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PN4/1P6/rB1RQPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -3,
+              "mate": null,
+              "pvUci": [
+                "e8d8",
+                "f1d1",
+                "e7b4",
+                "b2c3",
+                "a2d2",
+                "c3d2",
+                "b4d2",
+                "d1d2",
+                "b6a5",
+                "d4c2",
+                "d7f8",
+                "d2d8",
+                "a5d8",
+                "g2g3",
+                "h7h5"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PN4/1P6/rB1RQPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -7,
+              "mate": null,
+              "pvUci": [
+                "e7b4",
+                "d2c2",
+                "e8d8",
+                "b2c1",
+                "a2a8",
+                "c1e3",
+                "b4c5",
+                "f1b1",
+                "d7e5",
+                "b3b4",
+                "c5d4",
+                "e3d4",
+                "d8d4",
+                "e2e5",
+                "d4d7"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000008,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 1031.958499981556
+          }
+        },
+        {
+          "moveUci": "d2d4",
+          "lines": [
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PR4/1P3N2/rB2QPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -4,
+              "mate": null,
+              "pvUci": [
+                "d7c5",
+                "e2c2",
+                "e8a8",
+                "f1b1",
+                "f6e8",
+                "h2h3",
+                "h7h6",
+                "d4d1",
+                "e7f6",
+                "g1f1",
+                "a2b2",
+                "b1b2",
+                "f6b2",
+                "c2b2",
+                "a8d8",
+                "d1d4"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PR4/1P3N2/rB2QPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -7,
+              "mate": null,
+              "pvUci": [
+                "e7b4",
+                "e2c2",
+                "e6e5",
+                "d4d1",
+                "h7h6",
+                "c2b1",
+                "a2a6",
+                "h2h3",
+                "b4c5",
+                "b2c3",
+                "e5e4",
+                "f3d4",
+                "e4e3",
+                "f2e3",
+                "e8e3"
+              ]
+            },
+            {
+              "fen": "4r1k1/1p1nbppp/1q2pn2/1N6/2PR4/1P3N2/rB2QPPP/5RK1 b - - 0 19",
+              "depth": 17,
+              "cp": -8,
+              "mate": null,
+              "pvUci": [
+                "e6e5",
+                "d4d2",
+                "e5e4",
+                "f3d4",
+                "e7b4",
+                "b2c3",
+                "b4c3",
+                "b5c3",
+                "a2d2",
+                "e2d2",
+                "e8d8",
+                "f1d1",
+                "d7e5",
+                "d2e3",
+                "h7h5",
+                "d4b5",
+                "d8d1",
+                "c3d1",
+                "b6a6",
+                "e3d4",
+                "e5c6",
+                "d4c3",
+                "a6a5",
+                "d1e3"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000437,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 1077.2564999642782
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 2400510,
+        "requestedNodes": 2400000,
+        "depth": 21,
+        "milliseconds": 2309.6155999810435
+      },
+      "label": {
+        "id": "tournament-rudar-7818a32c3ac89f19-36",
+        "tactical": true,
+        "positional": true,
+        "rookFile": true,
+        "rationale": "Rxd2 is exact after Bxd4. On Bxd4 and Nfxd4 the removal of the d-pawn opens a lasting route for Black's rook to d8 and pressure on d2."
+      }
+    },
+    "review": {
+      "id": "tournament-rudar-7818a32c3ac89f19-36",
+      "tactical": true,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "Rxd2 is exact after Bxd4. On Bxd4 and Nfxd4 the removal of the d-pawn opens a lasting route for Black's rook to d8 and pressure on d2."
+    },
+    "positionsV26": "unclear",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    }
+  },
+  {
+    "input": {
+      "fen": "r6r/pp1k1p1p/5bp1/2p1p3/2PP4/2N2NP1/PP3P1P/3RK2R b K - 0 14",
+      "ply": 27,
+      "playedMoveUci": "e5d4",
+      "phase": "late-opening",
+      "id": "tournament-serbia-women-f10f84743fb61d27-27",
+      "sourceGroup": "f10f84743fb61d27f31bf187e6da9f480f2cadae363ebac98ce4c3bc476543cb",
+      "event": "serbia-women",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "r6r/pp1k1p1p/5bp1/2p1p3/2PP4/2N2NP1/PP3P1P/3RK2R b K - 0 14",
+          "depth": 20,
+          "cp": -522,
+          "mate": null,
+          "pvUci": [
+            "c5d4",
+            "h2h4",
+            "a8c8",
+            "b2b3",
+            "h8e8",
+            "c3d5",
+            "f6g7",
+            "a2a4",
+            "h7h5",
+            "e1g1",
+            "d7c6",
+            "g1g2",
+            "b7b6",
+            "f1e1",
+            "a7a5",
+            "b3b4",
+            "f7f5",
+            "d1b1"
+          ]
+        },
+        {
+          "fen": "r6r/pp1k1p1p/5bp1/2p1p3/2PP4/2N2NP1/PP3P1P/3RK2R b K - 0 14",
+          "depth": 20,
+          "cp": -566,
+          "mate": null,
+          "pvUci": [
+            "e5d4",
+            "c3d5",
+            "f6g7",
+            "e1g1",
+            "d7c6",
+            "f1e1",
+            "h8e8",
+            "e1e8",
+            "a8e8",
+            "d5f4",
+            "a7a5",
+            "g1f1",
+            "b7b6",
+            "f4d3",
+            "h7h6"
+          ]
+        },
+        {
+          "fen": "r6r/pp1k1p1p/5bp1/2p1p3/2PP4/2N2NP1/PP3P1P/3RK2R b K - 0 14",
+          "depth": 20,
+          "cp": -731,
+          "mate": null,
+          "pvUci": [
+            "e5e4",
+            "c3e4",
+            "h8e8",
+            "f3e5",
+            "d7e7",
+            "e4c5",
+            "f6e5",
+            "d4e5",
+            "e8c8",
+            "d1d7",
+            "e7f8",
+            "d7d5",
+            "f8e7",
+            "b2b3"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "c5d4",
+          "lines": [
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/4p3/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 17,
+              "cp": 497,
+              "mate": null,
+              "pvUci": [
+                "h2h4",
+                "a8c8",
+                "b2b3",
+                "h8e8",
+                "a2a4",
+                "h7h5",
+                "e1g1",
+                "f6g7",
+                "c3d5",
+                "d7c6",
+                "a4a5",
+                "f7f5",
+                "f1e1",
+                "c6c5",
+                "f3g5",
+                "e5e4",
+                "d5f4",
+                "c5b4",
+                "g5e6",
+                "e8e6",
+                "f4e6",
+                "g7e5",
+                "e6f4",
+                "b4b3",
+                "f4g6"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/4p3/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 17,
+              "cp": 496,
+              "mate": null,
+              "pvUci": [
+                "g3g4",
+                "f6g7",
+                "h1g1",
+                "h8c8",
+                "b2b3",
+                "d7e6",
+                "c3e2"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/4p3/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 17,
+              "cp": 482,
+              "mate": null,
+              "pvUci": [
+                "b2b3",
+                "f6g7",
+                "h2h4",
+                "d7c6",
+                "c3d5",
+                "d4d3",
+                "h4h5",
+                "h8e8",
+                "f3g5",
+                "e5e4",
+                "g5h7",
+                "b7b5",
+                "h7g5",
+                "b5c4",
+                "b3c4",
+                "f7f6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000088,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 931.549500033725
+          }
+        },
+        {
+          "moveUci": "e5d4",
+          "lines": [
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/2p5/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 18,
+              "cp": 560,
+              "mate": null,
+              "pvUci": [
+                "e1f1",
+                "f6g7",
+                "c3d5",
+                "h8e8",
+                "a2a4",
+                "b7b6",
+                "h1g1",
+                "d7c6",
+                "g3g4",
+                "a7a6",
+                "g1g3",
+                "b6b5",
+                "b2b3",
+                "b5a4"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/2p5/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 18,
+              "cp": 555,
+              "mate": null,
+              "pvUci": [
+                "e1g1",
+                "d7c6",
+                "c3d5",
+                "f6g7",
+                "f1e1",
+                "b7b5",
+                "b2b3",
+                "a8b8",
+                "d5f4",
+                "b5c4",
+                "b3c4",
+                "b8b4",
+                "f4d3",
+                "b4c4",
+                "f3e5",
+                "g7e5"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/2p5/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 18,
+              "cp": 554,
+              "mate": null,
+              "pvUci": [
+                "c3d5",
+                "f6g7",
+                "a2a4",
+                "a8e8",
+                "e1f1",
+                "b7b6",
+                "d1b1",
+                "a7a5",
+                "b1a1",
+                "e8e6",
+                "a1a3",
+                "h8e8"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000628,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 910.1590000209399
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "c5d4",
+          "lines": [
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/4p3/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 17,
+              "cp": 497,
+              "mate": null,
+              "pvUci": [
+                "h2h4",
+                "a8c8",
+                "b2b3",
+                "h8e8",
+                "a2a4",
+                "h7h5",
+                "e1g1",
+                "f6g7",
+                "c3d5",
+                "d7c6",
+                "a4a5",
+                "f7f5",
+                "f1e1",
+                "c6c5",
+                "f3g5",
+                "e5e4",
+                "d5f4",
+                "c5b4",
+                "g5e6",
+                "e8e6",
+                "f4e6",
+                "g7e5",
+                "e6f4",
+                "b4b3",
+                "f4g6"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/4p3/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 17,
+              "cp": 496,
+              "mate": null,
+              "pvUci": [
+                "g3g4",
+                "f6g7",
+                "h1g1",
+                "h8c8",
+                "b2b3",
+                "d7e6",
+                "c3e2"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/4p3/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 17,
+              "cp": 482,
+              "mate": null,
+              "pvUci": [
+                "b2b3",
+                "f6g7",
+                "h2h4",
+                "d7c6",
+                "c3d5",
+                "d4d3",
+                "h4h5",
+                "h8e8",
+                "f3g5",
+                "e5e4",
+                "g5h7",
+                "b7b5",
+                "h7g5",
+                "b5c4",
+                "b3c4",
+                "f7f6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000088,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 931.549500033725
+          }
+        },
+        {
+          "moveUci": "e5d4",
+          "lines": [
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/2p5/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 18,
+              "cp": 560,
+              "mate": null,
+              "pvUci": [
+                "e1f1",
+                "f6g7",
+                "c3d5",
+                "h8e8",
+                "a2a4",
+                "b7b6",
+                "h1g1",
+                "d7c6",
+                "g3g4",
+                "a7a6",
+                "g1g3",
+                "b6b5",
+                "b2b3",
+                "b5a4"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/2p5/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 18,
+              "cp": 555,
+              "mate": null,
+              "pvUci": [
+                "e1g1",
+                "d7c6",
+                "c3d5",
+                "f6g7",
+                "f1e1",
+                "b7b5",
+                "b2b3",
+                "a8b8",
+                "d5f4",
+                "b5c4",
+                "b3c4",
+                "b8b4",
+                "f4d3",
+                "b4c4",
+                "f3e5",
+                "g7e5"
+              ]
+            },
+            {
+              "fen": "r6r/pp1k1p1p/5bp1/2p5/2Pp4/2N2NP1/PP3P1P/3RK2R w K - 0 15",
+              "depth": 18,
+              "cp": 554,
+              "mate": null,
+              "pvUci": [
+                "c3d5",
+                "f6g7",
+                "a2a4",
+                "a8e8",
+                "e1f1",
+                "b7b6",
+                "d1b1",
+                "a7a5",
+                "b1a1",
+                "e8e6",
+                "a1a3",
+                "h8e8"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000628,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 910.1590000209399
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 2400412,
+        "requestedNodes": 2400000,
+        "depth": 20,
+        "milliseconds": 2249.243700003717
+      },
+      "label": {
+        "id": "tournament-serbia-women-f10f84743fb61d27-27",
+        "tactical": null,
+        "positional": true,
+        "rookFile": false,
+        "rationale": "The two d4 captures leave different central pawns and give the rooks different files. There is no repeated opening of the same rook file."
+      }
+    },
+    "review": {
+      "id": "tournament-serbia-women-f10f84743fb61d27-27",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The two d4 captures leave different central pawns and give the rooks different files. There is no repeated opening of the same rook file."
+    },
+    "positionsV26": "positional",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": {
+        "linesUci": [
+          [
+            "c5d4",
+            "h2h4",
+            "a8c8"
+          ],
+          [
+            "e5d4",
+            "c3d5",
+            "f6g7"
+          ]
+        ],
+        "description": "White's rook uses the d-file in both lines once its own pawn is gone. After cxd4, cxd4 clears the file and the rook on d1 pressures d4. After exd4, exd4 clears the file and the rook on d1 pressures d4."
+      },
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": {
+        "linesUci": [
+          [
+            "c5d4",
+            "h2h4",
+            "a8c8"
+          ],
+          [
+            "e5d4",
+            "e1f1",
+            "f6g7"
+          ]
+        ],
+        "description": "White's rook uses the d-file in both lines once its own pawn is gone. After cxd4, cxd4 clears the file and the rook on d1 pressures d4. After exd4, exd4 clears the file and the rook on d1 pressures d4."
+      },
+      "demonstrated": null
+    }
+  },
+  {
+    "input": {
+      "fen": "r4rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 b - - 0 18",
+      "ply": 35,
+      "playedMoveUci": "a8d8",
+      "phase": "late-opening",
+      "id": "tournament-world-junior-81336a852b5f9729-35",
+      "sourceGroup": "81336a852b5f9729055223f0c837e23a3bda8fb237c404f52740c20dc53e30fd",
+      "event": "world-junior",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "r4rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 b - - 0 18",
+          "depth": 19,
+          "cp": -45,
+          "mate": null,
+          "pvUci": [
+            "a8d8",
+            "a1d1",
+            "d8d6",
+            "g2g3",
+            "f8d8",
+            "a6b5",
+            "d5d4",
+            "c3d4",
+            "c6d4",
+            "d1d4",
+            "d6d4",
+            "b3d4",
+            "d8d4",
+            "h5f3",
+            "e7g6",
+            "h2h4",
+            "g6f8",
+            "b2b3",
+            "d4d6",
+            "f3a8",
+            "c7c5"
+          ]
+        },
+        {
+          "fen": "r4rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 b - - 0 18",
+          "depth": 19,
+          "cp": -49,
+          "mate": null,
+          "pvUci": [
+            "f8d8",
+            "a1d1",
+            "d8d6",
+            "e1e2",
+            "a8d8",
+            "e2d2",
+            "d5d4",
+            "b3d4",
+            "c6d4",
+            "d2d4",
+            "d6d4",
+            "c3d4",
+            "c7f4",
+            "g2g3",
+            "f4f6",
+            "h5e2",
+            "g7g6",
+            "a6c4",
+            "d8d4"
+          ]
+        },
+        {
+          "fen": "r4rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 b - - 0 18",
+          "depth": 19,
+          "cp": -63,
+          "mate": null,
+          "pvUci": [
+            "c7f4",
+            "g2g3",
+            "f4f6",
+            "a1d1",
+            "a8d8",
+            "b3d4",
+            "d8d6",
+            "d4c6",
+            "d6c6",
+            "a6f1",
+            "f8d8",
+            "d1d3",
+            "c6e6",
+            "e1e6",
+            "f6e6",
+            "h2h4"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "a8d8",
+          "lines": [
+            {
+              "fen": "3r1rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 48,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "d8d6",
+                "e1e2",
+                "d6e6",
+                "g2g3",
+                "e6e2",
+                "a6e2",
+                "f8d8",
+                "b3d4",
+                "c7d6",
+                "h2h4",
+                "c6d4",
+                "d1d4",
+                "d6e6",
+                "e2b5",
+                "e7f5",
+                "d4f4"
+              ]
+            },
+            {
+              "fen": "3r1rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 40,
+              "mate": null,
+              "pvUci": [
+                "g2g3",
+                "d8d6",
+                "a1d1",
+                "f8d8",
+                "a6b5",
+                "d5d4",
+                "c3d4",
+                "c6d4",
+                "d1d4",
+                "d6d4",
+                "b3d4",
+                "d8d4",
+                "h5f3",
+                "d4d8",
+                "h2h4"
+              ]
+            },
+            {
+              "fen": "3r1rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 33,
+              "mate": null,
+              "pvUci": [
+                "h5g4",
+                "d8d6",
+                "a1d1",
+                "f8d8",
+                "d1d2",
+                "g7g6",
+                "g4f4",
+                "g8g7",
+                "g2g3",
+                "d6d7",
+                "f4a4",
+                "d7d6",
+                "a6b5",
+                "h6h5"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000078,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 897.8072000318207
+          }
+        },
+        {
+          "moveUci": "f8d8",
+          "lines": [
+            {
+              "fen": "r2r2k1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 53,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "d8d6",
+                "e1e2",
+                "d6e6",
+                "e2e6",
+                "f7e6",
+                "h5e2",
+                "c7d6",
+                "g2g3",
+                "a8d8",
+                "a6b5",
+                "g8h8",
+                "c3c4",
+                "d5d4"
+              ]
+            },
+            {
+              "fen": "r2r2k1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 50,
+              "mate": null,
+              "pvUci": [
+                "g2g3",
+                "d8d6",
+                "e1e2",
+                "d5d4",
+                "b3d4",
+                "c6d4",
+                "c3d4",
+                "d6d4",
+                "a1e1",
+                "e7d5",
+                "a6b5",
+                "a8f8",
+                "b2b3"
+              ]
+            },
+            {
+              "fen": "r2r2k1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 47,
+              "mate": null,
+              "pvUci": [
+                "h2h4",
+                "d8d6",
+                "a1d1",
+                "a8d8",
+                "g2g3",
+                "d6f6",
+                "a6d3",
+                "d8d6",
+                "e1e2",
+                "d6e6",
+                "e2e6",
+                "f6e6",
+                "d3b5",
+                "c7c8",
+                "d1d2",
+                "g7g6",
+                "h5h6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000322,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 904.5574000338092
+          }
+        },
+        {
+          "moveUci": "c7f4",
+          "lines": [
+            {
+              "fen": "r4rk1/p3npp1/Bpn4p/3p3Q/5q2/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 18,
+              "cp": 73,
+              "mate": null,
+              "pvUci": [
+                "g2g3",
+                "f4f6",
+                "a1d1",
+                "a8d8",
+                "b3d4",
+                "c6d4",
+                "d1d4",
+                "d8d6",
+                "a6f1",
+                "f6f5",
+                "h5f5",
+                "e7f5",
+                "d4d2",
+                "g7g5",
+                "f1h3",
+                "f5g7",
+                "e1e7",
+                "a7a5",
+                "e7d7",
+                "f8d8",
+                "d7d8",
+                "d6d8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p3npp1/Bpn4p/3p3Q/5q2/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 18,
+              "cp": 73,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "a8d8",
+                "g2g3",
+                "f4f6",
+                "b3d4",
+                "c6d4",
+                "d1d4",
+                "d8d6",
+                "a6f1",
+                "f6f5",
+                "h5f5",
+                "e7f5",
+                "d4d2",
+                "g7g5",
+                "f1h3",
+                "f5g7",
+                "e1e7",
+                "a7a5",
+                "e7d7"
+              ]
+            },
+            {
+              "fen": "r4rk1/p3npp1/Bpn4p/3p3Q/5q2/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 18,
+              "cp": 42,
+              "mate": null,
+              "pvUci": [
+                "a6b5",
+                "g7g6",
+                "h5e2",
+                "a8d8",
+                "a1d1",
+                "d8d6",
+                "g2g3",
+                "f4f6",
+                "d1d3"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000088,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 946.0303999949247
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "a8d8",
+          "lines": [
+            {
+              "fen": "3r1rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 48,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "d8d6",
+                "e1e2",
+                "d6e6",
+                "g2g3",
+                "e6e2",
+                "a6e2",
+                "f8d8",
+                "b3d4",
+                "c7d6",
+                "h2h4",
+                "c6d4",
+                "d1d4",
+                "d6e6",
+                "e2b5",
+                "e7f5",
+                "d4f4"
+              ]
+            },
+            {
+              "fen": "3r1rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 40,
+              "mate": null,
+              "pvUci": [
+                "g2g3",
+                "d8d6",
+                "a1d1",
+                "f8d8",
+                "a6b5",
+                "d5d4",
+                "c3d4",
+                "c6d4",
+                "d1d4",
+                "d6d4",
+                "b3d4",
+                "d8d4",
+                "h5f3",
+                "d4d8",
+                "h2h4"
+              ]
+            },
+            {
+              "fen": "3r1rk1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 33,
+              "mate": null,
+              "pvUci": [
+                "h5g4",
+                "d8d6",
+                "a1d1",
+                "f8d8",
+                "d1d2",
+                "g7g6",
+                "g4f4",
+                "g8g7",
+                "g2g3",
+                "d6d7",
+                "f4a4",
+                "d7d6",
+                "a6b5",
+                "h6h5"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000078,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 897.8072000318207
+          }
+        },
+        {
+          "moveUci": "f8d8",
+          "lines": [
+            {
+              "fen": "r2r2k1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 53,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "d8d6",
+                "e1e2",
+                "d6e6",
+                "e2e6",
+                "f7e6",
+                "h5e2",
+                "c7d6",
+                "g2g3",
+                "a8d8",
+                "a6b5",
+                "g8h8",
+                "c3c4",
+                "d5d4"
+              ]
+            },
+            {
+              "fen": "r2r2k1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 50,
+              "mate": null,
+              "pvUci": [
+                "g2g3",
+                "d8d6",
+                "e1e2",
+                "d5d4",
+                "b3d4",
+                "c6d4",
+                "c3d4",
+                "d6d4",
+                "a1e1",
+                "e7d5",
+                "a6b5",
+                "a8f8",
+                "b2b3"
+              ]
+            },
+            {
+              "fen": "r2r2k1/p1q1npp1/Bpn4p/3p3Q/8/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 17,
+              "cp": 47,
+              "mate": null,
+              "pvUci": [
+                "h2h4",
+                "d8d6",
+                "a1d1",
+                "a8d8",
+                "g2g3",
+                "d6f6",
+                "a6d3",
+                "d8d6",
+                "e1e2",
+                "d6e6",
+                "e2e6",
+                "f6e6",
+                "d3b5",
+                "c7c8",
+                "d1d2",
+                "g7g6",
+                "h5h6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000322,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 904.5574000338092
+          }
+        },
+        {
+          "moveUci": "c7f4",
+          "lines": [
+            {
+              "fen": "r4rk1/p3npp1/Bpn4p/3p3Q/5q2/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 18,
+              "cp": 73,
+              "mate": null,
+              "pvUci": [
+                "g2g3",
+                "f4f6",
+                "a1d1",
+                "a8d8",
+                "b3d4",
+                "c6d4",
+                "d1d4",
+                "d8d6",
+                "a6f1",
+                "f6f5",
+                "h5f5",
+                "e7f5",
+                "d4d2",
+                "g7g5",
+                "f1h3",
+                "f5g7",
+                "e1e7",
+                "a7a5",
+                "e7d7",
+                "f8d8",
+                "d7d8",
+                "d6d8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p3npp1/Bpn4p/3p3Q/5q2/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 18,
+              "cp": 73,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "a8d8",
+                "g2g3",
+                "f4f6",
+                "b3d4",
+                "c6d4",
+                "d1d4",
+                "d8d6",
+                "a6f1",
+                "f6f5",
+                "h5f5",
+                "e7f5",
+                "d4d2",
+                "g7g5",
+                "f1h3",
+                "f5g7",
+                "e1e7",
+                "a7a5",
+                "e7d7"
+              ]
+            },
+            {
+              "fen": "r4rk1/p3npp1/Bpn4p/3p3Q/5q2/1NP5/PP3PPP/R3R1K1 w - - 1 19",
+              "depth": 18,
+              "cp": 42,
+              "mate": null,
+              "pvUci": [
+                "a6b5",
+                "g7g6",
+                "h5e2",
+                "a8d8",
+                "a1d1",
+                "d8d6",
+                "g2g3",
+                "f4f6",
+                "d1d3"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000088,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 946.0303999949247
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 2400078,
+        "requestedNodes": 2400000,
+        "depth": 19,
+        "milliseconds": 2192.9280000040308
+      },
+      "label": {
+        "id": "tournament-world-junior-81336a852b5f9729-35",
+        "tactical": null,
+        "positional": true,
+        "rookFile": true,
+        "rationale": "The black d-pawn is advanced and exchanged in both rook choices. It leaves Black with a continuing d-file rook presence and a capture on d4 in the corroborated second route."
+      }
+    },
+    "review": {
+      "id": "tournament-world-junior-81336a852b5f9729-35",
+      "tactical": null,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "The black d-pawn is advanced and exchanged in both rook choices. It leaves Black with a continuing d-file rook presence and a capture on d4 in the corroborated second route."
+    },
+    "positionsV26": "unclear",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": {
+        "linesUci": [
+          [
+            "a8d8",
+            "a1d1",
+            "d8d6",
+            "g2g3",
+            "f8d8",
+            "a6b5",
+            "d5d4",
+            "c3d4",
+            "c6d4",
+            "d1d4",
+            "d6d4",
+            "b3d4",
+            "d8d4",
+            "h5f3",
+            "e7g6"
+          ],
+          [
+            "f8d8",
+            "g2g3",
+            "d8d6",
+            "e1e2",
+            "d5d4",
+            "b3d4",
+            "c6d4",
+            "c3d4",
+            "d6d4",
+            "a1e1",
+            "e7d5"
+          ]
+        ],
+        "description": "Black's rook uses the d-file in both lines once its own pawn is gone. After Rad8, cxd4 clears the file and the rook on d4 uses it. After Rfd8, Nxd4 clears the file and the rook on d4 uses it."
+      },
+      "demonstrated": {
+        "linesUci": [
+          [
+            "a8d8",
+            "a1d1",
+            "d8d6",
+            "g2g3",
+            "f8d8",
+            "a6b5",
+            "d5d4",
+            "c3d4",
+            "c6d4",
+            "d1d4",
+            "d6d4",
+            "b3d4",
+            "d8d4",
+            "h5f3",
+            "e7g6"
+          ],
+          [
+            "f8d8",
+            "g2g3",
+            "d8d6",
+            "e1e2",
+            "d5d4",
+            "b3d4",
+            "c6d4",
+            "c3d4",
+            "d6d4",
+            "a1e1",
+            "e7d5"
+          ]
+        ],
+        "description": "Black's rook uses the d-file in both lines once its own pawn is gone. After Rad8, cxd4 clears the file and the rook on d4 uses it. After Rfd8, Nxd4 clears the file and the rook on d4 uses it."
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/5RK1 w - - 1 36",
+      "ply": 70,
+      "playedMoveUci": "f4d3",
+      "phase": "late-game",
+      "id": "tournament-world-junior-edd7fa353bbf8b4c-70",
+      "sourceGroup": "edd7fa353bbf8b4c794f4867908faf38404886b53b14a86b9b17db027342211e",
+      "event": "world-junior",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/5RK1 w - - 1 36",
+          "depth": 19,
+          "cp": -15,
+          "mate": null,
+          "pvUci": [
+            "e3d3",
+            "f7d6",
+            "f4e6",
+            "d4e6",
+            "d5e6",
+            "d6b5",
+            "e4e5",
+            "b5d4",
+            "d3d4",
+            "c5d4",
+            "f2d4",
+            "h6g5",
+            "d4d6",
+            "f8e8",
+            "e5f6",
+            "g7f6",
+            "g2c6",
+            "e7e6",
+            "c6d5",
+            "g5e3",
+            "g1h1",
+            "g8h8",
+            "d5e6",
+            "e3e6",
+            "d6e6",
+            "e8e6",
+            "h3h4",
+            "h8g7"
+          ]
+        },
+        {
+          "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/5RK1 w - - 1 36",
+          "depth": 19,
+          "cp": -27,
+          "mate": null,
+          "pvUci": [
+            "f1d1",
+            "f7d6",
+            "a2a3",
+            "g7g5",
+            "f4e6",
+            "d4e6",
+            "d5e6",
+            "e7e6",
+            "b3b4",
+            "a5b4",
+            "a3b4",
+            "c5c4",
+            "e3e1",
+            "d6f7",
+            "e4e5",
+            "f6e5",
+            "g2d5"
+          ]
+        },
+        {
+          "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/5RK1 w - - 1 36",
+          "depth": 19,
+          "cp": -29,
+          "mate": null,
+          "pvUci": [
+            "h3h4",
+            "f7d6",
+            "f4e6",
+            "d4e6",
+            "d5e6",
+            "d6b5",
+            "a2a4",
+            "b5d4",
+            "e4e5",
+            "f6f5",
+            "g2d5",
+            "g8h8",
+            "f2f4",
+            "h6g6",
+            "g1g2",
+            "h7h5",
+            "d5c4",
+            "d4e6",
+            "c4e6",
+            "e7e6",
+            "f1d1",
+            "h8h7"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "e3d3",
+          "lines": [
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P1R2PP/P4QB1/5RK1 b - - 2 36",
+              "depth": 17,
+              "cp": 20,
+              "mate": null,
+              "pvUci": [
+                "h6g5",
+                "d3d4",
+                "c5d4",
+                "f4e6",
+                "g5e5",
+                "e6f8",
+                "g8f8",
+                "f1d1",
+                "e7c7",
+                "d1d4",
+                "h7h5",
+                "d5d6",
+                "f7d6",
+                "d4d5",
+                "d6e4",
+                "d5e5",
+                "e4f2",
+                "e5h5",
+                "f2d1"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P1R2PP/P4QB1/5RK1 b - - 2 36",
+              "depth": 17,
+              "cp": 18,
+              "mate": null,
+              "pvUci": [
+                "f7d6",
+                "f4e6",
+                "d4e6",
+                "d5e6",
+                "e7e6",
+                "e4e5",
+                "d6f7",
+                "e5f6",
+                "e6f6",
+                "f2e2",
+                "f7d6",
+                "d3f3",
+                "h6g6",
+                "e2e5",
+                "f6f3",
+                "g2f3"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P1R2PP/P4QB1/5RK1 b - - 2 36",
+              "depth": 17,
+              "cp": 9,
+              "mate": null,
+              "pvUci": [
+                "f8e8",
+                "h3h4",
+                "f7d6",
+                "f4e6",
+                "d4e6",
+                "d5e6",
+                "e7e6",
+                "g2h3",
+                "f6f5",
+                "e4f5",
+                "e6e2",
+                "f2f3",
+                "h6f6",
+                "f3c6",
+                "d6f7",
+                "c6f6",
+                "g7f6",
+                "f1f2",
+                "e2e1",
+                "h3f1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000761,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 833.194300008472
+          }
+        },
+        {
+          "moveUci": "f1d1",
+          "lines": [
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/3R2K1 b - - 2 36",
+              "depth": 16,
+              "cp": 29,
+              "mate": null,
+              "pvUci": [
+                "g8h8",
+                "e3e1",
+                "f8e8",
+                "g1h2",
+                "f7e5",
+                "h2g1",
+                "h6g5",
+                "a2a3",
+                "g5h6",
+                "b3b4",
+                "g7g5",
+                "f4e2",
+                "d4c2",
+                "e1f1",
+                "a5b4"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/3R2K1 b - - 2 36",
+              "depth": 16,
+              "cp": 28,
+              "mate": null,
+              "pvUci": [
+                "f8e8",
+                "e3e1",
+                "g8h8",
+                "g1h2",
+                "f7e5",
+                "h2g1",
+                "h6g5",
+                "e1e3",
+                "e5f7",
+                "d1c1",
+                "g5h6"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/3R2K1 b - - 2 36",
+              "depth": 16,
+              "cp": 22,
+              "mate": null,
+              "pvUci": [
+                "f7d6",
+                "e3e1",
+                "d6f7",
+                "a2a3",
+                "f7e5",
+                "b3b4",
+                "g7g5",
+                "b4c5",
+                "g5f4",
+                "d1d4",
+                "b6c5",
+                "d4d1",
+                "f4f3",
+                "d5d6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000534,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 892.7174000418745
+          }
+        },
+        {
+          "moveUci": "h3h4",
+          "lines": [
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN1P/1P2R1P1/P4QB1/5RK1 b - - 0 36",
+              "depth": 16,
+              "cp": 22,
+              "mate": null,
+              "pvUci": [
+                "f8e8",
+                "e3d3",
+                "g8h8",
+                "d3d4",
+                "c5d4",
+                "f2d4",
+                "b6b5",
+                "a2a3",
+                "f7d6",
+                "g1h2",
+                "f6f5",
+                "f4e6",
+                "d6e4",
+                "g2e4",
+                "f5e4",
+                "d4e4",
+                "h6d2",
+                "h2h3",
+                "d2c3",
+                "h4h5",
+                "h7h6",
+                "e4g6"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN1P/1P2R1P1/P4QB1/5RK1 b - - 0 36",
+              "depth": 16,
+              "cp": 17,
+              "mate": null,
+              "pvUci": [
+                "f7d6",
+                "a2a4",
+                "g7g5",
+                "f4e6",
+                "d4e6",
+                "d5e6",
+                "e7e6",
+                "e4e5",
+                "f6e5",
+                "e3f3",
+                "f8f3",
+                "g2f3",
+                "e5e4",
+                "f3g4",
+                "e6e5",
+                "h4g5",
+                "h6g7",
+                "f2d2",
+                "d6f7"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN1P/1P2R1P1/P4QB1/5RK1 b - - 0 36",
+              "depth": 16,
+              "cp": 16,
+              "mate": null,
+              "pvUci": [
+                "f7e5",
+                "g2h3",
+                "g7g5",
+                "f4e6",
+                "g5g4",
+                "f2f4",
+                "h6f4",
+                "g3f4",
+                "d4e6",
+                "f4e5",
+                "f6e5",
+                "e3g3",
+                "e7g7",
+                "f1f8",
+                "g8f8",
+                "g3g4",
+                "e6d8"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000369,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 866.1943000042811
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "e3d3",
+          "lines": [
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P1R2PP/P4QB1/5RK1 b - - 2 36",
+              "depth": 17,
+              "cp": 20,
+              "mate": null,
+              "pvUci": [
+                "h6g5",
+                "d3d4",
+                "c5d4",
+                "f4e6",
+                "g5e5",
+                "e6f8",
+                "g8f8",
+                "f1d1",
+                "e7c7",
+                "d1d4",
+                "h7h5",
+                "d5d6",
+                "f7d6",
+                "d4d5",
+                "d6e4",
+                "d5e5",
+                "e4f2",
+                "e5h5",
+                "f2d1"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P1R2PP/P4QB1/5RK1 b - - 2 36",
+              "depth": 17,
+              "cp": 18,
+              "mate": null,
+              "pvUci": [
+                "f7d6",
+                "f4e6",
+                "d4e6",
+                "d5e6",
+                "e7e6",
+                "e4e5",
+                "d6f7",
+                "e5f6",
+                "e6f6",
+                "f2e2",
+                "f7d6",
+                "d3f3",
+                "h6g6",
+                "e2e5",
+                "f6f3",
+                "g2f3"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P1R2PP/P4QB1/5RK1 b - - 2 36",
+              "depth": 17,
+              "cp": 9,
+              "mate": null,
+              "pvUci": [
+                "f8e8",
+                "h3h4",
+                "f7d6",
+                "f4e6",
+                "d4e6",
+                "d5e6",
+                "e7e6",
+                "g2h3",
+                "f6f5",
+                "e4f5",
+                "e6e2",
+                "f2f3",
+                "h6f6",
+                "f3c6",
+                "d6f7",
+                "c6f6",
+                "g7f6",
+                "f1f2",
+                "e2e1",
+                "h3f1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000761,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 833.194300008472
+          }
+        },
+        {
+          "moveUci": "f1d1",
+          "lines": [
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/3R2K1 b - - 2 36",
+              "depth": 16,
+              "cp": 29,
+              "mate": null,
+              "pvUci": [
+                "g8h8",
+                "e3e1",
+                "f8e8",
+                "g1h2",
+                "f7e5",
+                "h2g1",
+                "h6g5",
+                "a2a3",
+                "g5h6",
+                "b3b4",
+                "g7g5",
+                "f4e2",
+                "d4c2",
+                "e1f1",
+                "a5b4"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/3R2K1 b - - 2 36",
+              "depth": 16,
+              "cp": 28,
+              "mate": null,
+              "pvUci": [
+                "f8e8",
+                "e3e1",
+                "g8h8",
+                "g1h2",
+                "f7e5",
+                "h2g1",
+                "h6g5",
+                "e1e3",
+                "e5f7",
+                "d1c1",
+                "g5h6"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/3R2K1 b - - 2 36",
+              "depth": 16,
+              "cp": 22,
+              "mate": null,
+              "pvUci": [
+                "f7d6",
+                "e3e1",
+                "d6f7",
+                "a2a3",
+                "f7e5",
+                "b3b4",
+                "g7g5",
+                "b4c5",
+                "g5f4",
+                "d1d4",
+                "b6c5",
+                "d4d1",
+                "f4f3",
+                "d5d6"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000534,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 892.7174000418745
+          }
+        },
+        {
+          "moveUci": "h3h4",
+          "lines": [
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN1P/1P2R1P1/P4QB1/5RK1 b - - 0 36",
+              "depth": 16,
+              "cp": 22,
+              "mate": null,
+              "pvUci": [
+                "f8e8",
+                "e3d3",
+                "g8h8",
+                "d3d4",
+                "c5d4",
+                "f2d4",
+                "b6b5",
+                "a2a3",
+                "f7d6",
+                "g1h2",
+                "f6f5",
+                "f4e6",
+                "d6e4",
+                "g2e4",
+                "f5e4",
+                "d4e4",
+                "h6d2",
+                "h2h3",
+                "d2c3",
+                "h4h5",
+                "h7h6",
+                "e4g6"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN1P/1P2R1P1/P4QB1/5RK1 b - - 0 36",
+              "depth": 16,
+              "cp": 17,
+              "mate": null,
+              "pvUci": [
+                "f7d6",
+                "a2a4",
+                "g7g5",
+                "f4e6",
+                "d4e6",
+                "d5e6",
+                "e7e6",
+                "e4e5",
+                "f6e5",
+                "e3f3",
+                "f8f3",
+                "g2f3",
+                "e5e4",
+                "f3g4",
+                "e6e5",
+                "h4g5",
+                "h6g7",
+                "f2d2",
+                "d6f7"
+              ]
+            },
+            {
+              "fen": "5rk1/4rnpp/1p3p1q/p1pP4/3nPN1P/1P2R1P1/P4QB1/5RK1 b - - 0 36",
+              "depth": 16,
+              "cp": 16,
+              "mate": null,
+              "pvUci": [
+                "f7e5",
+                "g2h3",
+                "g7g5",
+                "f4e6",
+                "g5g4",
+                "f2f4",
+                "h6f4",
+                "g3f4",
+                "d4e6",
+                "f4e5",
+                "f6e5",
+                "e3g3",
+                "e7g7",
+                "f1f8",
+                "g8f8",
+                "g3g4",
+                "e6d8"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000369,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 866.1943000042811
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 2400568,
+        "requestedNodes": 2400000,
+        "depth": 19,
+        "milliseconds": 2155.698399990797
+      },
+      "label": {
+        "id": "tournament-world-junior-edd7fa353bbf8b4c-70",
+        "tactical": true,
+        "positional": true,
+        "rookFile": null,
+        "rationale": "Ne6 threatens a fork around f8, with a pawn on e6 in several branches. Actual sustained rook-file use beyond the tactical exchanges is uncertain."
+      }
+    },
+    "review": {
+      "id": "tournament-world-junior-edd7fa353bbf8b4c-70",
+      "tactical": true,
+      "positional": true,
+      "rookFile": null,
+      "rationale": "Ne6 threatens a fork around f8, with a pawn on e6 in several branches. Actual sustained rook-file use beyond the tactical exchanges is uncertain."
+    },
+    "positionsV26": "unclear",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": {
+        "linesUci": [
+          [
+            "e3d3",
+            "f7d6",
+            "f4e6",
+            "d4e6",
+            "d5e6",
+            "e7e6",
+            "e4e5"
+          ],
+          [
+            "f1d1",
+            "f7d6",
+            "a2a3",
+            "g7g5",
+            "f4e6",
+            "d4e6",
+            "d5e6",
+            "e7e6",
+            "b3b4"
+          ]
+        ],
+        "description": "White's rook uses the d-file in both lines once its own pawn is gone. After Rd3, dxe6 clears the file and the rook on d3 pressures d6. After Rd1, dxe6 clears the file and the rook on d1 pressures d6."
+      },
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": {
+        "linesUci": [
+          [
+            "e3d3",
+            "f7d6",
+            "f4e6",
+            "d4e6",
+            "d5e6",
+            "e7e6",
+            "e4e5"
+          ],
+          [
+            "f1d1",
+            "f7d6",
+            "a2a3",
+            "g7g5",
+            "f4e6",
+            "d4e6",
+            "d5e6",
+            "e7e6",
+            "b3b4"
+          ]
+        ],
+        "description": "White's rook uses the d-file in both lines once its own pawn is gone. After Rd3, dxe6 clears the file and the rook on d3 pressures d6. After Rd1, dxe6 clears the file and the rook on d1 pressures d6."
+      },
+      "demonstrated": null
+    }
+  },
+  {
+    "input": {
+      "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/2N2P2/PPP5/2KR3R w - - 0 19",
+      "ply": 36,
+      "playedMoveUci": "e5e6",
+      "phase": "late-opening",
+      "id": "tournament-world-junior-f685a285a56d751f-36",
+      "sourceGroup": "f685a285a56d751f634f40fc21d80e33230bc49d3733e039f5631897378b9de0",
+      "event": "world-junior",
+      "stratum": "recorded-rook-file",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/2N2P2/PPP5/2KR3R w - - 0 19",
+          "depth": 23,
+          "cp": 58,
+          "mate": null,
+          "pvUci": [
+            "f3g4",
+            "a5b6",
+            "c3a4",
+            "b6d4",
+            "d1d4",
+            "f7f6",
+            "h1e1",
+            "f6e5",
+            "e1e5",
+            "f8f1",
+            "c1d2",
+            "f1f2",
+            "d2c3",
+            "f2f3",
+            "d4d3",
+            "f3f4",
+            "e5g5",
+            "g8h8",
+            "b2b3",
+            "d7g4",
+            "d3g3",
+            "a8g8",
+            "g5g6"
+          ]
+        },
+        {
+          "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/2N2P2/PPP5/2KR3R w - - 0 19",
+          "depth": 23,
+          "cp": 35,
+          "mate": null,
+          "pvUci": [
+            "a2a3",
+            "g4f3",
+            "e5e6",
+            "a5b6",
+            "d4b6",
+            "a7b6",
+            "e6d7",
+            "f7f5",
+            "h1e1",
+            "g8f7",
+            "c3a2",
+            "g5g4",
+            "a2b4",
+            "f3f2",
+            "e1e2",
+            "g4g3",
+            "b4c6",
+            "f5f4",
+            "c1d2",
+            "f7f6",
+            "c6e7",
+            "f8d8",
+            "e7g6",
+            "f6g5",
+            "e2e5",
+            "g5g4",
+            "d2e2",
+            "d8d7",
+            "d1d4",
+            "a8c8",
+            "d4f4",
+            "g4h3",
+            "e2f1"
+          ]
+        },
+        {
+          "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/2N2P2/PPP5/2KR3R w - - 0 19",
+          "depth": 23,
+          "cp": 32,
+          "mate": null,
+          "pvUci": [
+            "e5e6",
+            "d7e6",
+            "h5h6",
+            "f7f6",
+            "h1e1",
+            "e6f5",
+            "e1e7",
+            "g4f3",
+            "e7g7",
+            "g8h8",
+            "g7g5",
+            "f5h7",
+            "g5g3",
+            "a5b6",
+            "d4d2",
+            "a8d8",
+            "g3f3",
+            "d5d4",
+            "c3a4",
+            "b6b5",
+            "b2b3",
+            "f8e8",
+            "d2f4",
+            "b5b8"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "f3g4",
+          "lines": [
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2P1/2N5/PPP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -71,
+              "mate": null,
+              "pvUci": [
+                "a5b6",
+                "d4d2",
+                "f7f6",
+                "d2d3",
+                "g8h8",
+                "h1e1",
+                "b6b4",
+                "e5e6",
+                "d7e8",
+                "c3e2",
+                "b4g4",
+                "e2d4",
+                "a8b8",
+                "b2b3",
+                "f8g8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2P1/2N5/PPP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -90,
+              "mate": null,
+              "pvUci": [
+                "d7e6",
+                "d4e3",
+                "g8h7",
+                "e3g5",
+                "f8g8",
+                "g5e7",
+                "g8g4",
+                "h1f1",
+                "a5d8",
+                "e7d8",
+                "a8d8",
+                "c3e2",
+                "c6c5",
+                "e2f4",
+                "d8d7",
+                "b2b3",
+                "g4g5",
+                "c1b2",
+                "a7a5",
+                "f1f3",
+                "g5e5"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2P1/2N5/PPP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -139,
+              "mate": null,
+              "pvUci": [
+                "a8b8",
+                "e5e6",
+                "b8b4",
+                "e6f7",
+                "f8f7",
+                "d4e5",
+                "a5c5",
+                "d1f1",
+                "b4f4",
+                "e5g5",
+                "g8h7",
+                "g5g6",
+                "h7h8",
+                "g6f7",
+                "f4f7",
+                "f1f7",
+                "d7e6",
+                "f7f8",
+                "h8h7",
+                "h1e1",
+                "e6g4",
+                "f8f7",
+                "h7h6",
+                "f7e7",
+                "c5d6",
+                "e7a7",
+                "d5d4",
+                "c3e4",
+                "d6e5",
+                "c1b1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000041,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 834.7450000001118
+          }
+        },
+        {
+          "moveUci": "a2a3",
+          "lines": [
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/P1N2P2/1PP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": 0,
+              "mate": null,
+              "pvUci": [
+                "g4f3",
+                "d4e3",
+                "f7f6",
+                "e3f3",
+                "a5a6",
+                "f3e3",
+                "a8b8",
+                "h1g1",
+                "a6b6",
+                "g1g5",
+                "f6g5",
+                "e3g5",
+                "g8h7",
+                "g5g6",
+                "h7h8",
+                "g6h6",
+                "h8g8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/P1N2P2/1PP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -58,
+              "mate": null,
+              "pvUci": [
+                "a5b6",
+                "d4d2",
+                "f7f6",
+                "h1g1",
+                "a8b8",
+                "c3a4",
+                "b6b5",
+                "b2b3",
+                "d7f5",
+                "f3g4",
+                "f5e4",
+                "e5f6",
+                "e7f6",
+                "d2c3",
+                "b8e8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/P1N2P2/1PP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -67,
+              "mate": null,
+              "pvUci": [
+                "d7e6",
+                "f3g4",
+                "a5b6",
+                "c3a4",
+                "b6d4",
+                "d1d4",
+                "f8b8",
+                "a4c5",
+                "b8b5",
+                "c5e6",
+                "f7e6",
+                "h1f1",
+                "c6c5",
+                "d4d2",
+                "a8b8",
+                "c2c3",
+                "a7a5",
+                "d2f2",
+                "c5c4",
+                "a3a4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000083,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 809.5972000155598
+          }
+        },
+        {
+          "moveUci": "e5e6",
+          "lines": [
+            {
+              "fen": "r4rk1/p2bpp2/2p1P3/q2p2pP/3Q2p1/2N2P2/PPP5/2KR3R b - - 0 19",
+              "depth": 18,
+              "cp": -35,
+              "mate": null,
+              "pvUci": [
+                "d7e6",
+                "h5h6",
+                "f7f6",
+                "h1e1",
+                "e6f5",
+                "e1e7",
+                "g4f3",
+                "e7g7",
+                "g8h8",
+                "g7g5",
+                "f5h7",
+                "g5g3",
+                "a5b6",
+                "d4d2",
+                "a8d8",
+                "g3f3",
+                "b6a5"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p1P3/q2p2pP/3Q2p1/2N2P2/PPP5/2KR3R b - - 0 19",
+              "depth": 18,
+              "cp": -196,
+              "mate": null,
+              "pvUci": [
+                "d7c8",
+                "d4g4",
+                "f7f6",
+                "g4f5",
+                "g8h8",
+                "f5g6",
+                "a5b4",
+                "d1e1",
+                "a8b8",
+                "g6h6",
+                "h8g8",
+                "c3d1",
+                "b4f4",
+                "c1b1",
+                "c6c5",
+                "h6g6",
+                "g8h8",
+                "h5h6",
+                "f8g8",
+                "g6f7",
+                "c8a6",
+                "f7e7",
+                "d5d4",
+                "e7c5"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p1P3/q2p2pP/3Q2p1/2N2P2/PPP5/2KR3R b - - 0 19",
+              "depth": 18,
+              "cp": -274,
+              "mate": null,
+              "pvUci": [
+                "a5b6",
+                "e6d7",
+                "b6d4",
+                "d1d4",
+                "g4f3",
+                "h1g1",
+                "f7f6",
+                "d4d3",
+                "a8d8",
+                "d3f3",
+                "d8d7",
+                "c3e2",
+                "c6c5",
+                "g1e1",
+                "g8f7",
+                "e2g3",
+                "f8e8",
+                "c2c4",
+                "d5c4",
+                "g3e4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000442,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 897.9824999696575
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "f3g4",
+          "lines": [
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2P1/2N5/PPP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -71,
+              "mate": null,
+              "pvUci": [
+                "a5b6",
+                "d4d2",
+                "f7f6",
+                "d2d3",
+                "g8h8",
+                "h1e1",
+                "b6b4",
+                "e5e6",
+                "d7e8",
+                "c3e2",
+                "b4g4",
+                "e2d4",
+                "a8b8",
+                "b2b3",
+                "f8g8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2P1/2N5/PPP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -90,
+              "mate": null,
+              "pvUci": [
+                "d7e6",
+                "d4e3",
+                "g8h7",
+                "e3g5",
+                "f8g8",
+                "g5e7",
+                "g8g4",
+                "h1f1",
+                "a5d8",
+                "e7d8",
+                "a8d8",
+                "c3e2",
+                "c6c5",
+                "e2f4",
+                "d8d7",
+                "b2b3",
+                "g4g5",
+                "c1b2",
+                "a7a5",
+                "f1f3",
+                "g5e5"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2P1/2N5/PPP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -139,
+              "mate": null,
+              "pvUci": [
+                "a8b8",
+                "e5e6",
+                "b8b4",
+                "e6f7",
+                "f8f7",
+                "d4e5",
+                "a5c5",
+                "d1f1",
+                "b4f4",
+                "e5g5",
+                "g8h7",
+                "g5g6",
+                "h7h8",
+                "g6f7",
+                "f4f7",
+                "f1f7",
+                "d7e6",
+                "f7f8",
+                "h8h7",
+                "h1e1",
+                "e6g4",
+                "f8f7",
+                "h7h6",
+                "f7e7",
+                "c5d6",
+                "e7a7",
+                "d5d4",
+                "c3e4",
+                "d6e5",
+                "c1b1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000041,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 834.7450000001118
+          }
+        },
+        {
+          "moveUci": "a2a3",
+          "lines": [
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/P1N2P2/1PP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": 0,
+              "mate": null,
+              "pvUci": [
+                "g4f3",
+                "d4e3",
+                "f7f6",
+                "e3f3",
+                "a5a6",
+                "f3e3",
+                "a8b8",
+                "h1g1",
+                "a6b6",
+                "g1g5",
+                "f6g5",
+                "e3g5",
+                "g8h7",
+                "g5g6",
+                "h7h8",
+                "g6h6",
+                "h8g8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/P1N2P2/1PP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -58,
+              "mate": null,
+              "pvUci": [
+                "a5b6",
+                "d4d2",
+                "f7f6",
+                "h1g1",
+                "a8b8",
+                "c3a4",
+                "b6b5",
+                "b2b3",
+                "d7f5",
+                "f3g4",
+                "f5e4",
+                "e5f6",
+                "e7f6",
+                "d2c3",
+                "b8e8"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p5/q2pP1pP/3Q2p1/P1N2P2/1PP5/2KR3R b - - 0 19",
+              "depth": 16,
+              "cp": -67,
+              "mate": null,
+              "pvUci": [
+                "d7e6",
+                "f3g4",
+                "a5b6",
+                "c3a4",
+                "b6d4",
+                "d1d4",
+                "f8b8",
+                "a4c5",
+                "b8b5",
+                "c5e6",
+                "f7e6",
+                "h1f1",
+                "c6c5",
+                "d4d2",
+                "a8b8",
+                "c2c3",
+                "a7a5",
+                "d2f2",
+                "c5c4",
+                "a3a4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000083,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 809.5972000155598
+          }
+        },
+        {
+          "moveUci": "e5e6",
+          "lines": [
+            {
+              "fen": "r4rk1/p2bpp2/2p1P3/q2p2pP/3Q2p1/2N2P2/PPP5/2KR3R b - - 0 19",
+              "depth": 18,
+              "cp": -35,
+              "mate": null,
+              "pvUci": [
+                "d7e6",
+                "h5h6",
+                "f7f6",
+                "h1e1",
+                "e6f5",
+                "e1e7",
+                "g4f3",
+                "e7g7",
+                "g8h8",
+                "g7g5",
+                "f5h7",
+                "g5g3",
+                "a5b6",
+                "d4d2",
+                "a8d8",
+                "g3f3",
+                "b6a5"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p1P3/q2p2pP/3Q2p1/2N2P2/PPP5/2KR3R b - - 0 19",
+              "depth": 18,
+              "cp": -196,
+              "mate": null,
+              "pvUci": [
+                "d7c8",
+                "d4g4",
+                "f7f6",
+                "g4f5",
+                "g8h8",
+                "f5g6",
+                "a5b4",
+                "d1e1",
+                "a8b8",
+                "g6h6",
+                "h8g8",
+                "c3d1",
+                "b4f4",
+                "c1b1",
+                "c6c5",
+                "h6g6",
+                "g8h8",
+                "h5h6",
+                "f8g8",
+                "g6f7",
+                "c8a6",
+                "f7e7",
+                "d5d4",
+                "e7c5"
+              ]
+            },
+            {
+              "fen": "r4rk1/p2bpp2/2p1P3/q2p2pP/3Q2p1/2N2P2/PPP5/2KR3R b - - 0 19",
+              "depth": 18,
+              "cp": -274,
+              "mate": null,
+              "pvUci": [
+                "a5b6",
+                "e6d7",
+                "b6d4",
+                "d1d4",
+                "g4f3",
+                "h1g1",
+                "f7f6",
+                "d4d3",
+                "a8d8",
+                "d3f3",
+                "d8d7",
+                "c3e2",
+                "c6c5",
+                "g1e1",
+                "g8f7",
+                "e2g3",
+                "f8e8",
+                "c2c4",
+                "d5c4",
+                "g3e4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000442,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 897.9824999696575
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 9600028,
+        "requestedNodes": 9600000,
+        "depth": 23,
+        "milliseconds": 8152.266799996141
+      },
+      "label": {
+        "id": "tournament-world-junior-f685a285a56d751f-36",
+        "tactical": true,
+        "positional": true,
+        "rookFile": true,
+        "rationale": "Clearing White's e-file gives a rook sustained access after both fxg4 and e6. The tactical branches contain immediate checks and captures on the seventh rank."
+      }
+    },
+    "review": {
+      "id": "tournament-world-junior-f685a285a56d751f-36",
+      "tactical": true,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "Clearing White's e-file gives a rook sustained access after both fxg4 and e6. The tactical branches contain immediate checks and captures on the seventh rank."
+    },
+    "positionsV26": "unclear",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    }
+  },
+  {
+    "input": {
+      "fen": "1r3rk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 b - - 0 19",
+      "ply": 37,
+      "playedMoveUci": "g8h8",
+      "phase": "late-opening",
+      "id": "tournament-buongoma-203874c674c45641-37",
+      "sourceGroup": "203874c674c45641e261f6dc37e77132abb02e93c04eea4c141189183d4bd179",
+      "event": "buongoma",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "1r3rk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 b - - 0 19",
+          "depth": 18,
+          "cp": -126,
+          "mate": null,
+          "pvUci": [
+            "g8h7",
+            "a1d1",
+            "f8e8",
+            "e1e8",
+            "b8e8",
+            "d5c7",
+            "e8c8",
+            "d1c1",
+            "d6a3",
+            "c4c3",
+            "a3a2",
+            "b3b4",
+            "c8b8",
+            "h2h3"
+          ]
+        },
+        {
+          "fen": "1r3rk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 b - - 0 19",
+          "depth": 18,
+          "cp": -144,
+          "mate": null,
+          "pvUci": [
+            "f8e8",
+            "e1e8",
+            "b8e8",
+            "d5c7",
+            "e8c8",
+            "a1c1",
+            "g6e4",
+            "c4c3",
+            "c8d8",
+            "c7b5",
+            "d6f6",
+            "f2f3",
+            "e4f5",
+            "b5a7",
+            "d8a8",
+            "c3c5",
+            "f6g5",
+            "c1e1",
+            "g5d2",
+            "e1e5",
+            "f5e6",
+            "d4d5",
+            "e6d7",
+            "h2h3"
+          ]
+        },
+        {
+          "fen": "1r3rk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 b - - 0 19",
+          "depth": 18,
+          "cp": -163,
+          "mate": null,
+          "pvUci": [
+            "b8e8",
+            "e1e8",
+            "f8e8",
+            "d5c7",
+            "e8c8",
+            "a1c1",
+            "g6e4",
+            "c4c3",
+            "h6h5",
+            "h2h4",
+            "e4b7",
+            "a2a4",
+            "a7a6",
+            "a4a5",
+            "d6d7",
+            "c3c5",
+            "d7g4",
+            "d4d5",
+            "g4h4",
+            "c5e3"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "g8h7",
+          "lines": [
+            {
+              "fen": "1r3r2/p1p2ppk/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 125,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "a7a5",
+                "d5c3",
+                "d6b4",
+                "c4c5",
+                "f8e8",
+                "h2h3",
+                "e8e1",
+                "d1e1",
+                "b8d8",
+                "e1d1",
+                "d8d7",
+                "c3d5",
+                "b4c5",
+                "d4c5"
+              ]
+            },
+            {
+              "fen": "1r3r2/p1p2ppk/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 83,
+              "mate": null,
+              "pvUci": [
+                "a1c1",
+                "a7a5",
+                "d5e7",
+                "b8b4",
+                "c4c7",
+                "d6c7",
+                "c1c7",
+                "b4d4",
+                "e7g6",
+                "h7g6",
+                "c7a7",
+                "f8e8",
+                "g1f1",
+                "e8c8",
+                "a7a5",
+                "c8c2",
+                "f1g1",
+                "d4d2",
+                "e1f1",
+                "c2b2"
+              ]
+            },
+            {
+              "fen": "1r3r2/p1p2ppk/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 34,
+              "mate": null,
+              "pvUci": [
+                "c4c5",
+                "b8d8",
+                "d5e3",
+                "d6d4",
+                "c5c7",
+                "f8e8",
+                "h2h3",
+                "d8d7",
+                "c7a5",
+                "e8e5",
+                "a5a3",
+                "g6h5",
+                "a1c1",
+                "f7f5",
+                "c1c4",
+                "d4d2",
+                "e1c1",
+                "e5e3",
+                "f2e3",
+                "d2e3",
+                "g1h1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000417,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 739.1431999858469
+          }
+        },
+        {
+          "moveUci": "f8e8",
+          "lines": [
+            {
+              "fen": "1r2r1k1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 17,
+              "cp": 152,
+              "mate": null,
+              "pvUci": [
+                "c4c5",
+                "b8d8",
+                "d5e7",
+                "g8h7",
+                "e7c6",
+                "e8e1",
+                "a1e1",
+                "d6c5",
+                "d4c5",
+                "d8d2",
+                "f2f3",
+                "d2a2",
+                "e1e7",
+                "a7a5",
+                "e7c7",
+                "a5a4",
+                "b3a4",
+                "a2a4",
+                "c6e5",
+                "a4a1",
+                "g1f2",
+                "f7f6",
+                "e5g4"
+              ]
+            },
+            {
+              "fen": "1r2r1k1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 17,
+              "cp": 137,
+              "mate": null,
+              "pvUci": [
+                "e1e8",
+                "b8e8",
+                "d5c7",
+                "e8c8",
+                "a1c1",
+                "g6e4",
+                "c4c3",
+                "e4b7",
+                "h2h3",
+                "d6a3",
+                "c3e3",
+                "a3a2",
+                "d4d5",
+                "a2a3",
+                "c1c4",
+                "c8d8",
+                "c4e4",
+                "a3a1",
+                "g1h2",
+                "a1f6",
+                "e4e8",
+                "d8e8",
+                "c7e8"
+              ]
+            },
+            {
+              "fen": "1r2r1k1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 17,
+              "cp": 88,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "c7c6",
+                "d5e3",
+                "g6e4",
+                "f2f3",
+                "e4d5",
+                "c4c5",
+                "d6d8",
+                "e3f1",
+                "e8e1",
+                "d1e1",
+                "h6h5",
+                "f1e3"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000272,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 851.215599977877
+          }
+        },
+        {
+          "moveUci": "b8e8",
+          "lines": [
+            {
+              "fen": "4rrk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 155,
+              "mate": null,
+              "pvUci": [
+                "c4c5",
+                "e8e1",
+                "a1e1",
+                "f8d8",
+                "d5e7",
+                "g8h7",
+                "e7c6",
+                "d6c5",
+                "d4c5",
+                "d8d2",
+                "f2f3",
+                "d2a2",
+                "e1e7",
+                "a7a5",
+                "e7c7",
+                "a2a3"
+              ]
+            },
+            {
+              "fen": "4rrk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 148,
+              "mate": null,
+              "pvUci": [
+                "e1e8",
+                "f8e8",
+                "d5c7",
+                "e8c8",
+                "a1c1",
+                "g6e4",
+                "c4c3",
+                "h6h5",
+                "h2h4",
+                "e4b7",
+                "a2a4",
+                "a7a6",
+                "c3c5",
+                "d6f4",
+                "d4d5"
+              ]
+            },
+            {
+              "fen": "4rrk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 133,
+              "mate": null,
+              "pvUci": [
+                "f2f3",
+                "g8h7",
+                "d5b4",
+                "f7f6",
+                "c4c5",
+                "d6f4",
+                "b4d5",
+                "e8e1",
+                "a1e1",
+                "f4d2",
+                "c5b4",
+                "d2b4",
+                "d5b4",
+                "f8d8",
+                "b4c6",
+                "d8d6",
+                "e1c1",
+                "g6e8",
+                "c6a7",
+                "d6d4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000362,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 914.4959999830462
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "g8h7",
+          "lines": [
+            {
+              "fen": "1r3r2/p1p2ppk/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 125,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "a7a5",
+                "d5c3",
+                "d6b4",
+                "c4c5",
+                "f8e8",
+                "h2h3",
+                "e8e1",
+                "d1e1",
+                "b8d8",
+                "e1d1",
+                "d8d7",
+                "c3d5",
+                "b4c5",
+                "d4c5"
+              ]
+            },
+            {
+              "fen": "1r3r2/p1p2ppk/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 83,
+              "mate": null,
+              "pvUci": [
+                "a1c1",
+                "a7a5",
+                "d5e7",
+                "b8b4",
+                "c4c7",
+                "d6c7",
+                "c1c7",
+                "b4d4",
+                "e7g6",
+                "h7g6",
+                "c7a7",
+                "f8e8",
+                "g1f1",
+                "e8c8",
+                "a7a5",
+                "c8c2",
+                "f1g1",
+                "d4d2",
+                "e1f1",
+                "c2b2"
+              ]
+            },
+            {
+              "fen": "1r3r2/p1p2ppk/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 34,
+              "mate": null,
+              "pvUci": [
+                "c4c5",
+                "b8d8",
+                "d5e3",
+                "d6d4",
+                "c5c7",
+                "f8e8",
+                "h2h3",
+                "d8d7",
+                "c7a5",
+                "e8e5",
+                "a5a3",
+                "g6h5",
+                "a1c1",
+                "f7f5",
+                "c1c4",
+                "d4d2",
+                "e1c1",
+                "e5e3",
+                "f2e3",
+                "d2e3",
+                "g1h1"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000417,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 739.1431999858469
+          }
+        },
+        {
+          "moveUci": "f8e8",
+          "lines": [
+            {
+              "fen": "1r2r1k1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 17,
+              "cp": 152,
+              "mate": null,
+              "pvUci": [
+                "c4c5",
+                "b8d8",
+                "d5e7",
+                "g8h7",
+                "e7c6",
+                "e8e1",
+                "a1e1",
+                "d6c5",
+                "d4c5",
+                "d8d2",
+                "f2f3",
+                "d2a2",
+                "e1e7",
+                "a7a5",
+                "e7c7",
+                "a5a4",
+                "b3a4",
+                "a2a4",
+                "c6e5",
+                "a4a1",
+                "g1f2",
+                "f7f6",
+                "e5g4"
+              ]
+            },
+            {
+              "fen": "1r2r1k1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 17,
+              "cp": 137,
+              "mate": null,
+              "pvUci": [
+                "e1e8",
+                "b8e8",
+                "d5c7",
+                "e8c8",
+                "a1c1",
+                "g6e4",
+                "c4c3",
+                "e4b7",
+                "h2h3",
+                "d6a3",
+                "c3e3",
+                "a3a2",
+                "d4d5",
+                "a2a3",
+                "c1c4",
+                "c8d8",
+                "c4e4",
+                "a3a1",
+                "g1h2",
+                "a1f6",
+                "e4e8",
+                "d8e8",
+                "c7e8"
+              ]
+            },
+            {
+              "fen": "1r2r1k1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 17,
+              "cp": 88,
+              "mate": null,
+              "pvUci": [
+                "a1d1",
+                "c7c6",
+                "d5e3",
+                "g6e4",
+                "f2f3",
+                "e4d5",
+                "c4c5",
+                "d6d8",
+                "e3f1",
+                "e8e1",
+                "d1e1",
+                "h6h5",
+                "f1e3"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000272,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 851.215599977877
+          }
+        },
+        {
+          "moveUci": "b8e8",
+          "lines": [
+            {
+              "fen": "4rrk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 155,
+              "mate": null,
+              "pvUci": [
+                "c4c5",
+                "e8e1",
+                "a1e1",
+                "f8d8",
+                "d5e7",
+                "g8h7",
+                "e7c6",
+                "d6c5",
+                "d4c5",
+                "d8d2",
+                "f2f3",
+                "d2a2",
+                "e1e7",
+                "a7a5",
+                "e7c7",
+                "a2a3"
+              ]
+            },
+            {
+              "fen": "4rrk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 148,
+              "mate": null,
+              "pvUci": [
+                "e1e8",
+                "f8e8",
+                "d5c7",
+                "e8c8",
+                "a1c1",
+                "g6e4",
+                "c4c3",
+                "h6h5",
+                "h2h4",
+                "e4b7",
+                "a2a4",
+                "a7a6",
+                "c3c5",
+                "d6f4",
+                "d4d5"
+              ]
+            },
+            {
+              "fen": "4rrk1/p1p2pp1/3q2bp/3N4/2QP4/1P6/P4PPP/R3R1K1 w - - 1 20",
+              "depth": 16,
+              "cp": 133,
+              "mate": null,
+              "pvUci": [
+                "f2f3",
+                "g8h7",
+                "d5b4",
+                "f7f6",
+                "c4c5",
+                "d6f4",
+                "b4d5",
+                "e8e1",
+                "a1e1",
+                "f4d2",
+                "c5b4",
+                "d2b4",
+                "d5b4",
+                "f8d8",
+                "b4c6",
+                "d8d6",
+                "e1c1",
+                "g6e8",
+                "c6a7",
+                "d6d4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000362,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 914.4959999830462
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 2400598,
+        "requestedNodes": 2400000,
+        "depth": 18,
+        "milliseconds": 1908.8807000080124
+      },
+      "label": {
+        "id": "tournament-buongoma-203874c674c45641-37",
+        "tactical": null,
+        "positional": true,
+        "rookFile": false,
+        "rationale": "Rooks contest an already open e-file and trade into c-file pressure. The significance of the short knight captures is uncertain."
+      }
+    },
+    "review": {
+      "id": "tournament-buongoma-203874c674c45641-37",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Rooks contest an already open e-file and trade into c-file pressure. The significance of the short knight captures is uncertain."
+    },
+    "positionsV26": "positional",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": {
+        "linesUci": [
+          [
+            "g8h7",
+            "a1d1",
+            "f8e8",
+            "e1e8",
+            "b8e8",
+            "d5c7",
+            "e8c8",
+            "d1c1",
+            "d6a3"
+          ],
+          [
+            "f8e8",
+            "e1e8",
+            "b8e8",
+            "d5c7",
+            "e8c8",
+            "a1c1",
+            "g6e4"
+          ]
+        ],
+        "description": "Black's rook uses the c-file in both lines once its own pawn is gone. After Kh7, Nxc7 clears the file and the rook on c8 pressures c7. After Rfe8, Nxc7 clears the file and the rook on c8 pressures c7."
+      },
+      "demonstrated": {
+        "linesUci": [
+          [
+            "g8h7",
+            "a1d1",
+            "f8e8",
+            "e1e8",
+            "b8e8",
+            "d5c7",
+            "e8c8",
+            "d1c1",
+            "d6a3"
+          ],
+          [
+            "f8e8",
+            "e1e8",
+            "b8e8",
+            "d5c7",
+            "e8c8",
+            "a1c1",
+            "g6e4"
+          ]
+        ],
+        "description": "Black's rook uses the c-file in both lines once its own pawn is gone. After Kh7, Nxc7 clears the file and the rook on c8 pressures c7. After Rfe8, Nxc7 clears the file and the rook on c8 pressures c7."
+      }
+    }
+  },
+  {
+    "input": {
+      "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 w - c6 0 20",
+      "ply": 38,
+      "playedMoveUci": "d5c6",
+      "phase": "middlegame",
+      "id": "tournament-korea-0f9c7a6c941999cf-38",
+      "sourceGroup": "0f9c7a6c941999cf7de3e749175d62ed7468349ba6be7d010a8b77efee9c089f",
+      "event": "korea",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast",
+      "candidates": [
+        {
+          "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 w - c6 0 20",
+          "depth": 19,
+          "cp": 120,
+          "mate": null,
+          "pvUci": [
+            "d5c6",
+            "b7c6",
+            "d2g5",
+            "c8e6",
+            "b4b5",
+            "a6b8",
+            "b5c6",
+            "b8c6",
+            "c3d5",
+            "a8c8",
+            "d1d2",
+            "c8b8",
+            "h2h3",
+            "b8b1",
+            "e1b1",
+            "g4f6",
+            "g5f6",
+            "g7f6",
+            "b1b6",
+            "c6d4",
+            "f3d4",
+            "e5d4"
+          ]
+        },
+        {
+          "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 w - c6 0 20",
+          "depth": 19,
+          "cp": 61,
+          "mate": null,
+          "pvUci": [
+            "c3a4",
+            "c8c7",
+            "h2h3",
+            "g4f6",
+            "b4c5",
+            "a6c5",
+            "a4c5",
+            "c7c5",
+            "d1b3",
+            "f8b8",
+            "d2e3",
+            "c5a3",
+            "b3a3",
+            "a8a3",
+            "c4c5",
+            "d6c5",
+            "e3c5",
+            "a3a4",
+            "c5e7",
+            "f6e4",
+            "d5d6",
+            "g7f8",
+            "f3e5",
+            "f8e7",
+            "d6e7",
+            "b8e8",
+            "b1b7",
+            "g8g7",
+            "e5c6",
+            "e4f6",
+            "f2f3"
+          ]
+        },
+        {
+          "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 w - c6 0 20",
+          "depth": 19,
+          "cp": 45,
+          "mate": null,
+          "pvUci": [
+            "b4c5",
+            "a6c5",
+            "h2h3",
+            "g4f6",
+            "d1c2",
+            "c8c7",
+            "d2e3",
+            "b7b6",
+            "b1a1",
+            "f8b8",
+            "e1b1",
+            "h7h5",
+            "g2g3",
+            "a8a1",
+            "b1a1",
+            "c7c8",
+            "g1g2",
+            "g7f8",
+            "e3g5",
+            "f6d7"
+          ]
+        }
+      ],
+      "replyProbes": [
+        {
+          "moveUci": "d5c6",
+          "lines": [
+            {
+              "fen": "r1q2rk1/1p3pbp/n1Pp2p1/4p3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 18,
+              "cp": -148,
+              "mate": null,
+              "pvUci": [
+                "b7c6",
+                "d2g5",
+                "c8d7",
+                "b4b5",
+                "a6c7",
+                "e1e2",
+                "a8a3",
+                "d1c1",
+                "a3a5",
+                "h2h3",
+                "g4f6",
+                "e2b2",
+                "f8e8",
+                "f3h2",
+                "a5a3"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n1Pp2p1/4p3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 18,
+              "cp": -412,
+              "mate": null,
+              "pvUci": [
+                "c8c6",
+                "h2h3",
+                "g4f2",
+                "g1f2",
+                "a6b4",
+                "d1e2",
+                "b4c2",
+                "c3d5",
+                "c6c5",
+                "d2e3",
+                "c2e3",
+                "e2e3",
+                "a8a2",
+                "f2g1",
+                "c5e3",
+                "d5e3",
+                "g7h6",
+                "e3d5",
+                "a2c2",
+                "b1b7"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n1Pp2p1/4p3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 18,
+              "cp": -484,
+              "mate": null,
+              "pvUci": [
+                "g4f6",
+                "c3d5",
+                "f6d5",
+                "c4d5",
+                "b7b5",
+                "d2e3",
+                "a6c7",
+                "e3b6",
+                "c7e8",
+                "b1a1",
+                "a8a1",
+                "d1a1",
+                "g7h6",
+                "h2h4",
+                "f7f5",
+                "f3g5",
+                "h6g5",
+                "h4g5",
+                "f5e4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000122,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 967.2804999863729
+          }
+        },
+        {
+          "moveUci": "c3a4",
+          "lines": [
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/NPP1P1n1/5N2/3B1PPP/1R1QR1K1 b - - 1 20",
+              "depth": 18,
+              "cp": -61,
+              "mate": null,
+              "pvUci": [
+                "c8c7",
+                "h2h3",
+                "g4f6",
+                "b4c5",
+                "a6c5",
+                "a4c5",
+                "c7c5",
+                "d1b3",
+                "f8c8",
+                "b3b7",
+                "c5c7",
+                "c4c5",
+                "c7b7",
+                "b1b7",
+                "c8c5",
+                "d2b4",
+                "c5c4",
+                "b4d6",
+                "c4e4",
+                "e1d1",
+                "e4a4",
+                "d6e5",
+                "a4a7",
+                "b7a7",
+                "a8a7",
+                "e5f6",
+                "g7f6",
+                "d5d6",
+                "g8f8"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/NPP1P1n1/5N2/3B1PPP/1R1QR1K1 b - - 1 20",
+              "depth": 18,
+              "cp": -115,
+              "mate": null,
+              "pvUci": [
+                "a8b8",
+                "b4b5",
+                "a6c7",
+                "b5b6",
+                "c7e8",
+                "a4c3",
+                "c8d8",
+                "d1c1",
+                "g4f6",
+                "d2g5",
+                "b8a8",
+                "b1a1",
+                "a8a1",
+                "c1a1",
+                "d8c8",
+                "c3b5",
+                "h7h6",
+                "g5f6",
+                "g7f6"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/NPP1P1n1/5N2/3B1PPP/1R1QR1K1 b - - 1 20",
+              "depth": 18,
+              "cp": -282,
+              "mate": null,
+              "pvUci": [
+                "a8a7",
+                "h2h3",
+                "g4f6",
+                "b4c5",
+                "a6c5",
+                "a4c5",
+                "d6c5",
+                "f3e5",
+                "f8e8",
+                "d2c3",
+                "f6h5",
+                "b1a1",
+                "a7a8",
+                "d5d6",
+                "a8a1",
+                "d1a1",
+                "c8e6",
+                "e5g4",
+                "g7c3",
+                "a1c3",
+                "e6d6",
+                "g4h6",
+                "g8f8",
+                "c3h8",
+                "f8e7",
+                "h8h7"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000265,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 935.9585999627598
+          }
+        },
+        {
+          "moveUci": "b4c5",
+          "lines": [
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2PPp3/2P1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 17,
+              "cp": -40,
+              "mate": null,
+              "pvUci": [
+                "a6c5",
+                "h2h3",
+                "g4f6",
+                "d1c2",
+                "c8c7",
+                "d2e3",
+                "b7b6",
+                "b1b5",
+                "f8b8",
+                "e3c5",
+                "b6c5"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2PPp3/2P1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 17,
+              "cp": -51,
+              "mate": null,
+              "pvUci": [
+                "c8c5",
+                "d1e2",
+                "c5c7",
+                "h2h3",
+                "g4f6",
+                "d2e3",
+                "f8c8",
+                "f3d2",
+                "a6c5",
+                "b1b2",
+                "a8a6",
+                "e1b1",
+                "b7b6",
+                "g2g3",
+                "g7f8",
+                "h3h4",
+                "h7h5"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2PPp3/2P1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 17,
+              "cp": -445,
+              "mate": null,
+              "pvUci": [
+                "g4f6",
+                "c5d6",
+                "f6d7",
+                "d1e2",
+                "a6c5",
+                "g2g3",
+                "h7h6",
+                "d2e3",
+                "f7f5",
+                "e4f5",
+                "g6f5",
+                "c3b5",
+                "f5f4",
+                "g3f4",
+                "e5f4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000379,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 1032.8614999889396
+          }
+        }
+      ],
+      "referenceReplies": [
+        {
+          "moveUci": "d5c6",
+          "lines": [
+            {
+              "fen": "r1q2rk1/1p3pbp/n1Pp2p1/4p3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 18,
+              "cp": -148,
+              "mate": null,
+              "pvUci": [
+                "b7c6",
+                "d2g5",
+                "c8d7",
+                "b4b5",
+                "a6c7",
+                "e1e2",
+                "a8a3",
+                "d1c1",
+                "a3a5",
+                "h2h3",
+                "g4f6",
+                "e2b2",
+                "f8e8",
+                "f3h2",
+                "a5a3"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n1Pp2p1/4p3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 18,
+              "cp": -412,
+              "mate": null,
+              "pvUci": [
+                "c8c6",
+                "h2h3",
+                "g4f2",
+                "g1f2",
+                "a6b4",
+                "d1e2",
+                "b4c2",
+                "c3d5",
+                "c6c5",
+                "d2e3",
+                "c2e3",
+                "e2e3",
+                "a8a2",
+                "f2g1",
+                "c5e3",
+                "d5e3",
+                "g7h6",
+                "e3d5",
+                "a2c2",
+                "b1b7"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n1Pp2p1/4p3/1PP1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 18,
+              "cp": -484,
+              "mate": null,
+              "pvUci": [
+                "g4f6",
+                "c3d5",
+                "f6d5",
+                "c4d5",
+                "b7b5",
+                "d2e3",
+                "a6c7",
+                "e3b6",
+                "c7e8",
+                "b1a1",
+                "a8a1",
+                "d1a1",
+                "g7h6",
+                "h2h4",
+                "f7f5",
+                "f3g5",
+                "h6g5",
+                "h4g5",
+                "f5e4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000122,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 967.2804999863729
+          }
+        },
+        {
+          "moveUci": "c3a4",
+          "lines": [
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/NPP1P1n1/5N2/3B1PPP/1R1QR1K1 b - - 1 20",
+              "depth": 18,
+              "cp": -61,
+              "mate": null,
+              "pvUci": [
+                "c8c7",
+                "h2h3",
+                "g4f6",
+                "b4c5",
+                "a6c5",
+                "a4c5",
+                "c7c5",
+                "d1b3",
+                "f8c8",
+                "b3b7",
+                "c5c7",
+                "c4c5",
+                "c7b7",
+                "b1b7",
+                "c8c5",
+                "d2b4",
+                "c5c4",
+                "b4d6",
+                "c4e4",
+                "e1d1",
+                "e4a4",
+                "d6e5",
+                "a4a7",
+                "b7a7",
+                "a8a7",
+                "e5f6",
+                "g7f6",
+                "d5d6",
+                "g8f8"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/NPP1P1n1/5N2/3B1PPP/1R1QR1K1 b - - 1 20",
+              "depth": 18,
+              "cp": -115,
+              "mate": null,
+              "pvUci": [
+                "a8b8",
+                "b4b5",
+                "a6c7",
+                "b5b6",
+                "c7e8",
+                "a4c3",
+                "c8d8",
+                "d1c1",
+                "g4f6",
+                "d2g5",
+                "b8a8",
+                "b1a1",
+                "a8a1",
+                "c1a1",
+                "d8c8",
+                "c3b5",
+                "h7h6",
+                "g5f6",
+                "g7f6"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2pPp3/NPP1P1n1/5N2/3B1PPP/1R1QR1K1 b - - 1 20",
+              "depth": 18,
+              "cp": -282,
+              "mate": null,
+              "pvUci": [
+                "a8a7",
+                "h2h3",
+                "g4f6",
+                "b4c5",
+                "a6c5",
+                "a4c5",
+                "d6c5",
+                "f3e5",
+                "f8e8",
+                "d2c3",
+                "f6h5",
+                "b1a1",
+                "a7a8",
+                "d5d6",
+                "a8a1",
+                "d1a1",
+                "c8e6",
+                "e5g4",
+                "g7c3",
+                "a1c3",
+                "e6d6",
+                "g4h6",
+                "g8f8",
+                "c3h8",
+                "f8e7",
+                "h8h7"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000265,
+            "requestedNodes": 1000000,
+            "depth": 18,
+            "milliseconds": 935.9585999627598
+          }
+        },
+        {
+          "moveUci": "b4c5",
+          "lines": [
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2PPp3/2P1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 17,
+              "cp": -40,
+              "mate": null,
+              "pvUci": [
+                "a6c5",
+                "h2h3",
+                "g4f6",
+                "d1c2",
+                "c8c7",
+                "d2e3",
+                "b7b6",
+                "b1b5",
+                "f8b8",
+                "e3c5",
+                "b6c5"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2PPp3/2P1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 17,
+              "cp": -51,
+              "mate": null,
+              "pvUci": [
+                "c8c5",
+                "d1e2",
+                "c5c7",
+                "h2h3",
+                "g4f6",
+                "d2e3",
+                "f8c8",
+                "f3d2",
+                "a6c5",
+                "b1b2",
+                "a8a6",
+                "e1b1",
+                "b7b6",
+                "g2g3",
+                "g7f8",
+                "h3h4",
+                "h7h5"
+              ]
+            },
+            {
+              "fen": "r1q2rk1/1p3pbp/n2p2p1/2PPp3/2P1P1n1/2N2N2/3B1PPP/1R1QR1K1 b - - 0 20",
+              "depth": 17,
+              "cp": -445,
+              "mate": null,
+              "pvUci": [
+                "g4f6",
+                "c5d6",
+                "f6d7",
+                "d1e2",
+                "a6c5",
+                "g2g3",
+                "h7h6",
+                "d2e3",
+                "f7f5",
+                "e4f5",
+                "g6f5",
+                "c3b5",
+                "f5f4",
+                "g3f4",
+                "e5f4"
+              ]
+            }
+          ],
+          "cost": {
+            "nodes": 1000379,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 1032.8614999889396
+          }
+        }
+      ],
+      "rootCost": {
+        "nodes": 2400368,
+        "requestedNodes": 2400000,
+        "depth": 19,
+        "milliseconds": 2226.06120002456
+      },
+      "label": {
+        "id": "tournament-korea-0f9c7a6c941999cf-38",
+        "tactical": true,
+        "positional": true,
+        "rookFile": true,
+        "rationale": "dxc6 changes the knight and bishop tactics. In the strongest line and after bxc5, White's b-pawn leaves the file, and the rooks contest it with a different b-pawn blockade."
+      }
+    },
+    "review": {
+      "id": "tournament-korea-0f9c7a6c941999cf-38",
+      "tactical": true,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "dxc6 changes the knight and bishop tactics. In the strongest line and after bxc5, White's b-pawn leaves the file, and the rooks contest it with a different b-pawn blockade."
+    },
+    "positionsV26": "unclear",
+    "ordinaryBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    },
+    "wideBudget": {
+      "root-only": null,
+      "reply-aware": null,
+      "anchored": null,
+      "contested": null,
+      "demonstrated": null
+    }
+  }
+]

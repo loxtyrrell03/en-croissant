@@ -1,0 +1,179 @@
+{
+  "cases": [
+    {
+      "id": "tournament-korea-a47f7081d5f2c821-85",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "King and bishop manoeuvres change the capture of the queenside pawns. White's rook pressures the a-file through different move orders with no own-pawn clearance in both."
+    },
+    {
+      "id": "tournament-korea-bf63aa27146a2e46-72",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "Queen checks and the exact capture of c4 drive the main choices. A separate durable plan is uncertain."
+    },
+    {
+      "id": "tournament-korea-08b29e85df68f9a5-50",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Rf2 coordinates the queen and bishop for the king attack. The f-file is already clear of white pawns."
+    },
+    {
+      "id": "tournament-korea-f2154ef3f2c94359-38",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The queenside pawn push and the rook rotations on c8 and b8 define the alternatives."
+    },
+    {
+      "id": "tournament-korea-d5c7f7e7d1a284aa-96",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Queen entry on f7 and checks matter alongside the two advanced white pawns. Black's rook does not gain a shared newly cleared file."
+    },
+    {
+      "id": "tournament-korea-490658206f4d6705-71",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "Re2+ preserves a forced checking resource for the draw. The independent positional value of the c-pawn in the other replies is uncertain."
+    },
+    {
+      "id": "tournament-korea-3c5f453d8ac47b55-51",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Pushing e4 permits the bishop to take d2 after a forcing sequence. The pawn changes the centre in additional routes."
+    },
+    {
+      "id": "tournament-korea-4451082181aeffee-43",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Black can play e5 directly or reorganise before deciding which central pawn to advance."
+    },
+    {
+      "id": "tournament-korea-8559b51be0a4f0ed-59",
+      "tactical": null,
+      "positional": true,
+      "rookFile": null,
+      "rationale": "The f-pawn break and f-file matter. The immediate Rf3 activity occurs in one credible branch. Its continuation under another choice remains unclear."
+    },
+    {
+      "id": "tournament-korea-f123398c537a1865-102",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Black's b-pawn and White's a-pawn create distinct promotion resources. The checking sequences determine which is realised first."
+    },
+    {
+      "id": "tournament-korea-2e41de86b181b411-28",
+      "tactical": null,
+      "positional": true,
+      "rookFile": null,
+      "rationale": "White's d4 and rook development can combine to clear the d-file. The parallel use after an alternative is uncertain in the supplied lines."
+    },
+    {
+      "id": "tournament-korea-9cef2176ce069574-27",
+      "tactical": false,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "Repetition and voluntary continuation remain available. A sustained strategic consequence of the choice is uncertain."
+    },
+    {
+      "id": "tournament-korea-bd987f8a474b97c9-46",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "h5 forces a choice about pawn cover while alternatives reposition knights and rooks. The new shared rook-file use is absent."
+    },
+    {
+      "id": "tournament-korea-ba7cd2c219d81f2e-54",
+      "tactical": true,
+      "positional": false,
+      "rookFile": false,
+      "rationale": "Rb8+ starts a close mating sequence with the rook and bishop."
+    },
+    {
+      "id": "tournament-korea-93d7664d00d1764d-63",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Bc3 forces a minor-piece trade that creates the c-passer, and the queen then attacks g5 in multiple searched lines."
+    },
+    {
+      "id": "tournament-korea-d03f0f2f6582172c-104",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "White must take the h-pawn without giving up the d-pawn for free. The remaining passed pawns and rook activity define the endgame."
+    },
+    {
+      "id": "tournament-korea-9903f725a12f0e33-40",
+      "tactical": null,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Several choices develop White's rook on an already available f-file and use the h- and a-pawn structure."
+    },
+    {
+      "id": "tournament-korea-0f9c7a6c941999cf-38",
+      "tactical": true,
+      "positional": true,
+      "rookFile": true,
+      "rationale": "dxc6 changes the knight and bishop tactics. In the strongest line and after bxc5, White's b-pawn leaves the file, and the rooks contest it with a different b-pawn blockade."
+    },
+    {
+      "id": "tournament-korea-c81d1bf628785e39-84",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The concrete queen entry and captures on d6 matter. The queenside pawn plans give Black more than one durable continuation."
+    },
+    {
+      "id": "tournament-korea-6e5aac12fb6d6c9c-83",
+      "tactical": false,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Both rook defences revolve around the d-passer and king activity. No new common rook-file clearance."
+    },
+    {
+      "id": "tournament-korea-0894242ea6074dd7-50",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "f3 attacks the knight and opens a concrete rook sacrifice on f8. The weaker choices settle into different rook and pawn structures."
+    },
+    {
+      "id": "tournament-korea-8581bcd97d34e601-41",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "En passant changes the checking sequence and converts an otherwise losing position. The positional part beyond the early exchanges is uncertain."
+    },
+    {
+      "id": "tournament-korea-4415e3c19d016349-45",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "The tactical capture and the rook checks interact with the d- and h-pawns. The rook does not use the newly cleared d-file durably in both alternatives."
+    },
+    {
+      "id": "tournament-korea-ad3e9ad8e5d8b533-47",
+      "tactical": true,
+      "positional": null,
+      "rookFile": false,
+      "rationale": "Rxd1+ prevents a concrete rook loss and the immediate recapture matters. A separate lasting structural factor is uncertain."
+    },
+    {
+      "id": "tournament-korea-78226465a424d827-50",
+      "tactical": true,
+      "positional": true,
+      "rookFile": false,
+      "rationale": "Underpromotion forces the recapture. The outside c-pawn survives in a number of these lines. The promotion routes largely converge before the strategic outcome."
+    }
+  ]
+}
