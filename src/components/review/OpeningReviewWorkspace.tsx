@@ -82,6 +82,7 @@ import { commands } from "@/bindings";
 import { Chessground } from "@/chessground/Chessground";
 import Board from "@/components/boards/Board";
 import ReviewSaveStatus from "@/components/review/ReviewSaveStatus";
+import { MistakeDecisionCheck } from "@/components/review/MistakeDecisionCheck";
 import { BoardWithAnnotationLayout } from "@/components/boards/BoardWithAnnotationLayout";
 import EngineDockedPanel from "@/components/boards/EngineDockedPanel";
 import EngineKeyboardShortcuts from "@/components/boards/EngineKeyboardShortcuts";
@@ -6551,6 +6552,7 @@ function MistakeReviewGameInfoPanel({
             />
           </Stack>
         )}
+        <MistakeDecisionCheck position={position} revealAnswer={revealAnswer} />
         {!expanded && (
           <SimpleGrid cols={{ base: 1, xs: 3 }} spacing={6}>
             <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />

@@ -242,11 +242,13 @@ export function DecisionEvidencePanel({
   current,
   previous,
   previousSan,
+  moveActionLabel = "Analyse last move",
 }: {
   engine: LocalEngine;
   current?: DecisionSearchTarget;
   previous?: DecisionSearchTarget;
   previousSan?: string | null;
+  moveActionLabel?: string;
 }) {
   const controller = useRef<AbortController | undefined>(undefined);
   const saved = useRef(new Map<DecisionSearchTarget["fen"], ChessDecisionReport>());
@@ -304,7 +306,7 @@ export function DecisionEvidencePanel({
             disabled={running}
             onClick={() => void run(previous, previousSan ?? undefined)}
           >
-            Analyse last move
+            {moveActionLabel}
           </Button>
         )}
         {running && (

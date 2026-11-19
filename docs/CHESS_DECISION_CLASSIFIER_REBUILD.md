@@ -604,6 +604,35 @@ results remain separate. The 40-position course reserve is independently
 sampled with unique identified player pairs, excluding all previous pairs
 and exact roots. See `decision-evidence-course-reserve.mjs`.
 
+The v21 reserve was scored after freezing the candidate and saving reference
+notes for all 40 positions. The old root output recognised 3/24 tactical
+choices and the candidate recognised 10/24. Both had zero false positives on
+nine reviewed tactical negatives. Candidate positional agreement was 3/22
+with three false positives on twelve reviewed negatives. The candidate
+missed all six reviewed mixed positives and classified two of the 21
+reviewed mixed negatives as mixed. The reserve therefore confirms an
+improvement in course tactical coverage and does not establish useful mixed
+recall. The two tactics recovered on the previous course replay were useful
+regressions, but not evidence that the same improvement generalises.
+
+Named root forks went from 0/2 to 2/2, with one candidate false positive on
+ten reviewed fork negatives. Two deflections, one interference and one
+intermediate move remained missed; other motifs have no reviewed positive in
+this slice. Baseline classifier median was 126 ms and the additional
+assessment median was 54 ms, excluding Stockfish. `decision-evidence-review.mjs`
+can build a private validation packet from the frozen manifest, keeping
+legal source variation prefixes distinct from the engine's lines.
+
+Revealed desktop Mistake Review cards now offer **Analyse this mistake** on
+the existing game information card. The check uses the saved board and
+legal recorded move, including older cards with SAN but no UCI. It prefers
+the card's configured local engine, then Stockfish. It appears only after
+the answer is revealed and aborts its own work when the user changes cards
+or hides the answer. This entry point shares the Tactics panel's report and
+does not rewrite saved classifications or training history. The reveal,
+legacy SAN, ownership and cancellation regression passes with the existing
+review and tactics checks.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and
