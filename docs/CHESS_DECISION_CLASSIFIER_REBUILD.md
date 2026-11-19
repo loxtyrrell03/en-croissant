@@ -633,6 +633,62 @@ does not rewrite saved classifications or training history. The reveal,
 legacy SAN, ownership and cancellation regression passes with the existing
 review and tactics checks.
 
+## Learned model comparison and overfitting
+
+The v21 course replay recovered mixed examples that informed its design.
+The subsequent frozen reserve found zero of six mixed positives. This is
+direct evidence that the replay gains did not generalise to that sample.
+The tactical gain held up, with a different precision and recall trade-off.
+
+The current reviewed move examples supply 31 mixed positives across the
+course and public puzzle sets. The classical mistake examples supply one
+clear mixed positive and the independent puzzle slice has no tactical
+negatives. Larger quantities of PGNs or Stockfish scores will not resolve
+these specific label gaps by themselves.
+
+`decision-evidence-model-pilot.py` compares an empirical prior, logistic
+regression, a shallow boosted tree, and a one-hidden-layer neural model with
+three fixed seeds. The two heads learn independent tactical and positional
+labels. Inputs are 17 legal board and Stockfish continuation measurements,
+without source categories or rule predictions. It trains on 112 older
+course moves and scores on the 40 previously reviewed reserve moves.
+The reserve was inspected before this model experiment. The reported
+scores are development evidence and the 0.5 thresholds were fixed.
+
+| Development pilot on 40 course moves | Tactical TP / FP | Positional TP / FP | Mixed TP / FP |
+|---|---:|---:|---:|
+| Current rule-based evidence | 10 / 0 | 3 / 3 | 0 / 2 |
+| Logistic regression | 24 / 5 | 22 / 3 | 6 / 8 |
+| Shallow boosted tree | 24 / 4 | 20 / 2 | 4 / 6 |
+| Small neural network, all three seeds | 24 / 4 | 22 / 3 | 6 / 7 |
+
+The denominators are 24 positives and 9 negatives for tactics, 22 and 12
+for positional, and 6 and 21 for mixed. Unknown labels are excluded.
+The closely matched logistic and neural results give little evidence the
+extra model complexity is useful here. With engine scores only, the neural
+pilot predicts tactical for all 33 reviewed tactical labels. On the 48
+independent puzzle positions, the full neural pilot calls all 47 reviewed
+tactical labels positive, a result also obtained by the constant prior.
+The neural model predicts 3/6 positional with 8/41 false positives and 2/5
+mixed with 8/41 false positives. It does not produce or verify motif evidence.
+
+The next learned approach should rank plausible mechanisms or which replies
+to search. Exact legal lines and counterfactual searches can then check the
+ranked ideas before the app makes a diagnosis. A credible evaluation needs
+ordinary tournament decisions, hard negatives and explicit mixed labels from
+new game and source groups. Compare learned and rule-based candidates at a
+matched false positive rate, with abstentions and evidence accuracy included.
+Validate independently by question before using learned scores in the app.
+No pilot model or private labels are shipped.
+
+Relevant research supports this separation. Maia learns human move choice and
+blunder likelihood from games, a different target from tactical and strategic
+causes. ACT-Eval measures factual chess claims and concept coverage separately.
+On structured features, benchmark studies have found strong tree baselines.
+[Maia](https://arxiv.org/abs/2006.01855)
+[ACT-Eval](https://arxiv.org/abs/2608.04240)
+[NeurIPS tabular benchmark](https://papers.nips.cc/paper_files/paper/2022/hash/0378c7692da36807bdec87ab043cdadc-Abstract.html)
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and
