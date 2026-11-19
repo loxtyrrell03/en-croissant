@@ -1,0 +1,170 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used ordinary root lines and played replies. Labels were saved before any candidate output was read. Uncertainty is explicit."
+  ],
+  "cases": [
+    {
+      "id": "structure-german-north-2026-342c02127bfde67d-59",
+      "scope": "position-character",
+      "moveUci": "e4e3",
+      "gameMoveUci": "d7d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The d-rooks are locked in a file contest, with Rxd6 or Rxd7 clearing the way for other pieces. e3 exploits the exact order of rook and queen captures and changes the central pawn outcome."
+    },
+    {
+      "id": "structure-german-north-2026-bffdb2d3313ef806-58",
+      "scope": "position-character",
+      "moveUci": "c1d1",
+      "gameMoveUci": "c1d1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White chooses whether to use the d-file immediately or after h3. The played exchanges on either file leave similar scores and lead to competing rook and queen activity."
+    },
+    {
+      "id": "structure-german-north-2026-e8e13918e8573a9f-38",
+      "scope": "position-character",
+      "moveUci": "f1f7",
+      "gameMoveUci": "f1f7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxf7 and Qxc7 pick apart the pawn targets while Black's other rook enters the f-file. The slower replies permit Rxf1+ or Rf2, changing how the open file is controlled."
+    },
+    {
+      "id": "structure-german-north-2026-be109c5a99e06d80-49",
+      "scope": "position-character",
+      "moveUci": "a8d8",
+      "gameMoveUci": "a8d8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rad8 contests the open d-file while White attacks on the kingside. Black's alternative queen check or e-file rotation gives White time for stronger h-pawn and knight threats."
+    },
+    {
+      "id": "structure-slovenian-league-2026-9567fb7f1d538f80-41",
+      "scope": "position-character",
+      "moveUci": "g7e8",
+      "gameMoveUci": "c8c1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The c-file is the focus of the rook and queen placements. White can trade there or retain a rook, and Black's knight manoeuvres keep the scores close."
+    },
+    {
+      "id": "structure-german-north-2026-3266183c398260cb-49",
+      "scope": "position-character",
+      "moveUci": "e8e3",
+      "gameMoveUci": "e8e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxe3 changes the kingside pawn structure and allows Bg3. The delayed rook moves reach the same e-file exchange through different queen placements and resulting checks."
+    },
+    {
+      "id": "structure-slovenian-league-2026-e88aeda6f495cb0e-98",
+      "scope": "position-character",
+      "moveUci": "c4f1",
+      "gameMoveUci": "f3f4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's bishop routes and Black's rook activity determine the passed-pawn and king play. The played f4 refreshes the pawn structure without a demonstrated concrete tactical advantage."
+    },
+    {
+      "id": "structure-german-north-2026-88ded0192e37d6ce-61",
+      "scope": "position-character",
+      "moveUci": "f7f6",
+      "gameMoveUci": "f7f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The f6 advance gives White the gxf6 capture and changes the kingside files. The exchanged rooks on c4 and the timing of f6 determine the resulting attack on the king."
+    },
+    {
+      "id": "structure-german-north-2026-7ce2e78b443dd2e6-29",
+      "scope": "position-character",
+      "moveUci": "f7f6",
+      "gameMoveUci": "f7f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can play f6 before or after castling, and the c5 alternative changes a different part of the pawn chain. Structural contact and development matter across near-equal scores."
+    },
+    {
+      "id": "structure-slovenian-league-2026-4d855e66d9c12e96-64",
+      "scope": "position-character",
+      "moveUci": "d5d6",
+      "gameMoveUci": "d5d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The advance d6 disturbs Black's pieces and supports exchanges on c7 and d5. The slower rook or c-pawn choices permit Rxh2. The central passer is the continuing strategic issue."
+    },
+    {
+      "id": "structure-slovenian-league-2026-72e54cd7d6967365-53",
+      "scope": "position-character",
+      "moveUci": "g8f7",
+      "gameMoveUci": "f6f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Quiet king and bishop moves keep the light squares and pawn tension under control. The played f5 allows a materially different capture sequence and a subsequent tactical gain by White."
+    },
+    {
+      "id": "structure-slovenian-league-2026-30528e8e26082ea1-46",
+      "scope": "position-character",
+      "moveUci": "g2g4",
+      "gameMoveUci": "f2f3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White challenges the central pawn with f3 or prepares a different rook arrangement. The Nf3+ geometry and d-file exchanges make several recapture orders tactically sensitive."
+    },
+    {
+      "id": "structure-slovenian-league-2026-88a8d362542fa93b-26",
+      "scope": "position-character",
+      "moveUci": "d4d5",
+      "gameMoveUci": "d4d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can use a5 to create a queenside target or play d5 first to change the pawn chain. Exchanging on e5 leads to a third viable pawn structure."
+    },
+    {
+      "id": "structure-german-north-2026-a901fac511f24b7c-58",
+      "scope": "position-character",
+      "moveUci": "g2h3",
+      "gameMoveUci": "d4d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The d-pawn advance and exchanges alter the centre while fxg3 exposes the king. Bh3 finesses the competing threats, and the delayed sequence changes the targets on d6 and e5."
+    },
+    {
+      "id": "structure-slovenian-league-2026-f16b3a630aae8416-41",
+      "scope": "position-character",
+      "moveUci": "h4h3",
+      "gameMoveUci": "f7f5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black changes the centre with dxc4 or dxe4 and can time the h3 push first. These choices reorganize pressure on the open files, with no single forcing outcome across the alternatives."
+    },
+    {
+      "id": "structure-slovenian-league-2026-044ee32734a61bfc-51",
+      "scope": "position-character",
+      "moveUci": "h7h6",
+      "gameMoveUci": "f7f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The f- and g-pawns create promotion and checking threats against an exposed king. The three moves change which pawn can advance and which knight checks or captures become available."
+    },
+    {
+      "id": "structure-slovenian-league-2026-d1c37be917f5949f-29",
+      "scope": "position-character",
+      "moveUci": "d7f6",
+      "gameMoveUci": "c6c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The c5 break and control of the c-file recur in all strong choices. The bishop check and later exchanges alter the sequence but leave similar assessments."
+    },
+    {
+      "id": "structure-german-north-2026-0945229a356159f1-49",
+      "scope": "position-character",
+      "moveUci": "f5f4",
+      "gameMoveUci": "f5f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "f4 changes the pawn race and leads to a forcing queen exchange on c5. Alternatives yield another queen trade or Qxg5+, affecting the resulting race on both wings."
+    }
+  ]
+}

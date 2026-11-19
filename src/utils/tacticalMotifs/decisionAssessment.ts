@@ -55,8 +55,9 @@ import {
     qualifyPositionFactors,
     type PositionStrategicPlan,
 } from "./decisionPositionPlans";
+import { findSharedStructuralPlan } from "./decisionSharedStructure";
 
-export const DECISION_ASSESSMENT_VERSION = 15;
+export const DECISION_ASSESSMENT_VERSION = 16;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -519,7 +520,8 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     if (position.positional.support === "unestablished" && !rejectedChoices) {
         const plan =
             findPositionStrategicPlan(input.fen, input.candidates) ??
-            findKingShelterTradeoff(input.fen, input.candidates);
+            findKingShelterTradeoff(input.fen, input.candidates) ??
+            findSharedStructuralPlan(input.fen, input.candidates);
         if (plan) {
             position.strategicPlan = plan;
             position.positional = {

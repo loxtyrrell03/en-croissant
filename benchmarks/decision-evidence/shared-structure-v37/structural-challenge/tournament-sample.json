@@ -1,0 +1,235 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "structure-german-north-2026-342c02127bfde67d-59",
+      "fen": "1n2r2k/3rq1pp/p2R1b2/P1BQ4/1pN1p3/1P6/2P3PP/5RK1 b - - 9 30",
+      "playedMoveUci": "d7d6",
+      "sourceGroup": "342c02127bfde67ddb34712958b60bbe449cc76b6f604a98ac8d16de34a9d8f8",
+      "event": "german-north-2026",
+      "ply": 59,
+      "stratum": "open-file-rook-trade",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-bffdb2d3313ef806-58",
+      "fen": "3r2k1/4qp1p/p5p1/2n4r/2B1p3/6Q1/P4PPP/1RR3K1 w - - 8 30",
+      "playedMoveUci": "c1d1",
+      "sourceGroup": "bffdb2d3313ef806bbedb9087b9e9b5c70762f98d0467b422c85e3ec8a0f400a",
+      "event": "german-north-2026",
+      "ply": 58,
+      "stratum": "open-file-rook-trade",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-e8e13918e8573a9f-38",
+      "fen": "3r2k1/1pp2rp1/7p/pB1b4/P7/3Pq3/1PQ3PP/3R1R1K w - - 0 20",
+      "playedMoveUci": "f1f7",
+      "sourceGroup": "e8e13918e8573a9f550d7466da7c31cbe35a40929eaec14562b86d732e887331",
+      "event": "german-north-2026",
+      "ply": 38,
+      "stratum": "open-file-rook-trade",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-be109c5a99e06d80-49",
+      "fen": "r4rk1/pp2qppp/2n1p1n1/4P1N1/2P1Q2P/1P4B1/P5P1/3R1RK1 b - - 2 25",
+      "playedMoveUci": "a8d8",
+      "sourceGroup": "be109c5a99e06d809ebfc5a3ea23b2ea950524f382c2209368778992775d0b5c",
+      "event": "german-north-2026",
+      "ply": 49,
+      "stratum": "open-file-rook-trade",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-9567fb7f1d538f80-41",
+      "fen": "1qr3k1/pb1nppnp/1p4p1/8/1P6/P3PN2/3NBPPP/Q1R3K1 b - - 1 21",
+      "playedMoveUci": "c8c1",
+      "sourceGroup": "9567fb7f1d538f807478bac2d75f1fe468159ccc45ce2480e3904782afbc0008",
+      "event": "slovenian-league-2026",
+      "ply": 41,
+      "stratum": "open-file-rook-trade",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-3266183c398260cb-49",
+      "fen": "r3r1k1/pp3p2/2pb2n1/7Q/2PP3p/1P2R2P/P4PP1/6K1 b - - 0 25",
+      "playedMoveUci": "e8e3",
+      "sourceGroup": "3266183c398260cb02975251bc8da4a08ed0ef2845d31a6fb14d13e1501dc7d3",
+      "event": "german-north-2026",
+      "ply": 49,
+      "stratum": "open-file-rook-trade",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-e88aeda6f495cb0e-98",
+      "fen": "8/7r/3p1k2/2nPp3/1pB1P2p/4KP2/PP5R/8 w - - 1 50",
+      "playedMoveUci": "f3f4",
+      "sourceGroup": "e88aeda6f495cb0ea6e67c058e21ae6819af8662679ee81ed043f04623e54865",
+      "event": "slovenian-league-2026",
+      "ply": 98,
+      "stratum": "central-contact-exchanged",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-88ded0192e37d6ce-61",
+      "fen": "1r6/5pk1/2Bp2p1/p1rPp1Pn/Pp5R/1K3P2/1PP4R/8 b - - 1 31",
+      "playedMoveUci": "f7f6",
+      "sourceGroup": "88ded0192e37d6ce33cb0ae7d2257246fe3fb55b04042a4dffd88cb6d5a084dc",
+      "event": "german-north-2026",
+      "ply": 61,
+      "stratum": "central-contact-exchanged",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-7ce2e78b443dd2e6-29",
+      "fen": "r3kn1r/1pqnbpp1/p1p1p2p/P2pP2P/3Pb3/1N4P1/1PPBBP2/R2QNRK1 b kq - 2 15",
+      "playedMoveUci": "f7f6",
+      "sourceGroup": "7ce2e78b443dd2e6c62720582ddfd6fe7090f2e196dd12a4701029067aebe059",
+      "event": "german-north-2026",
+      "ply": 29,
+      "stratum": "central-contact-exchanged",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-4d855e66d9c12e96-64",
+      "fen": "7r/bpp1r3/p4k2/P2Pppp1/1PP3p1/8/2B1RPPP/3R1K2 w - - 0 33",
+      "playedMoveUci": "d5d6",
+      "sourceGroup": "4d855e66d9c12e96289e17c4605670856926d3dd146dc354ab178e3aae9056d5",
+      "event": "slovenian-league-2026",
+      "ply": 64,
+      "stratum": "central-contact-exchanged",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-72e54cd7d6967365-53",
+      "fen": "5bk1/7p/2p1bpp1/1pp1p3/2P1P3/1P1P1N1P/qBQ2PP1/5K2 b - - 8 27",
+      "playedMoveUci": "f6f5",
+      "sourceGroup": "72e54cd7d696736575b69d16ec3c7a216345dd396604678e7fe6725e2a4513e9",
+      "event": "slovenian-league-2026",
+      "ply": 53,
+      "stratum": "central-contact-exchanged",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-30528e8e26082ea1-46",
+      "fen": "r5k1/pp1r2pp/2pB4/2P2p2/2n1p3/7P/PP3PP1/R3R1K1 w - - 3 24",
+      "playedMoveUci": "f2f3",
+      "sourceGroup": "30528e8e26082ea1ff7f58a8e8ca266cf3baeea4bcb6d0c0c7d3ef0cc7bd74fe",
+      "event": "slovenian-league-2026",
+      "ply": 46,
+      "stratum": "central-contact-exchanged",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-88a8d362542fa93b-26",
+      "fen": "r4rk1/pp1nqppp/2pb1nb1/4p3/P1BPP3/2N2N2/1P2QPPP/R1BR2K1 w - - 0 14",
+      "playedMoveUci": "d4d5",
+      "sourceGroup": "88a8d362542fa93be3733dd3dfa0368c61ee535315cf060944579dcc26c380d7",
+      "event": "slovenian-league-2026",
+      "ply": 26,
+      "stratum": "central-contact-held",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-a901fac511f24b7c-58",
+      "fen": "b2qr1k1/r5pp/1p1Bp1n1/p3P3/2PP1p2/PP1Q1NP1/6BP/3R2K1 w - - 4 30",
+      "playedMoveUci": "d4d5",
+      "sourceGroup": "a901fac511f24b7c249a6ecdb7b4b0043114382ae7f000f82abfcd910038dab5",
+      "event": "german-north-2026",
+      "ply": 58,
+      "stratum": "central-contact-held",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-f16b3a630aae8416-41",
+      "fen": "1k1r3r/pp1qnp2/2p5/3p2p1/2PPP2p/P2Q1P2/4N1PP/2R2RK1 b - - 0 21",
+      "playedMoveUci": "f7f5",
+      "sourceGroup": "f16b3a630aae84164a964e47b89fdc77b5b18b23bd25a9ae395c9850cd3dff4b",
+      "event": "slovenian-league-2026",
+      "ply": 41,
+      "stratum": "central-contact-held",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-044ee32734a61bfc-51",
+      "fen": "2rr2k1/4bppp/p7/1p2pPP1/1Pn1K2P/P1B2P2/R3N3/7R b - - 2 26",
+      "playedMoveUci": "f7f6",
+      "sourceGroup": "044ee32734a61bfc324583b08fcf46f0a468bf654fdc21444dbb2bb916994e94",
+      "event": "slovenian-league-2026",
+      "ply": 51,
+      "stratum": "central-contact-held",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-slovenian-league-2026-d1c37be917f5949f-29",
+      "fen": "r4rk1/pb1nqpp1/1pp1p2p/8/3P4/2RBPN2/PPQ2PPP/5RK1 b - - 3 15",
+      "playedMoveUci": "c6c5",
+      "sourceGroup": "d1c37be917f5949f767b5d4d642045a023c3d02562bcf8cfd1e9f894f9435cb8",
+      "event": "slovenian-league-2026",
+      "ply": 29,
+      "stratum": "central-contact-held",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "structure-german-north-2026-0945229a356159f1-49",
+      "fen": "6k1/4n2p/p2qN3/1ppP1pp1/2p5/2P1Q1PP/PP3P2/6K1 b - - 1 25",
+      "playedMoveUci": "f5f4",
+      "sourceGroup": "0945229a356159f1efd667466c78df6b0725a980f37eea7baeb9a1c5b36b5b1c",
+      "event": "german-north-2026",
+      "ply": 49,
+      "stratum": "central-contact-held",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "events": {
+    "slovenian-league-2026": "399dd6a04b9ef40a5b6c647029d9859e6f99968b0d605c7304e052b04af11ed0",
+    "german-north-2026": "9f2b63754642d52b9b0f0dbe4b3906114ce919eeb3df68fed0b508f4827553c6"
+  },
+  "exclusions": [
+    "e1c833a9e94fb0eda99ada11de78743bd6edf066e14c06a769e565101a8e040b",
+    "aa2dd1f97e2c0a6c44b083e6595c3914f3c3401d323779fc9a7822052744e9b4",
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "b38b996a209c519e53a2dd763d4cc80fedef5f5d6f130df1f7a2ef8320eebacb",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53",
+    "6469b24fde897597dc44f73a5b2071d601887663858d4746305d5c7eef4cfdf8",
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "576b7c36c809e86ede526fff49ed3148dce5e4426066f3b20cc10ee4a005b269",
+    "512a52822a7fe276bbd26f53eeb990dac7d6435fc4a232fe99497988eca583b8",
+    "48df231e103c0762290c892b985cb0ac2d432e27d190701af43885d9afcc6898",
+    "25630bb832a1e413702275bd91e95e153c361212cb02c1bcf17e521b50f0db8d",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "213ad8832d2c3144869fc5c489bcc635cb3a90b26bd953f805d8612219810bdb"
+  ],
+  "strata": {
+    "open-file-rook-trade": 6,
+    "central-contact-exchanged": 6,
+    "central-contact-held": 6
+  },
+  "scope": "One classical position per game selected by recorded structural interactions."
+}

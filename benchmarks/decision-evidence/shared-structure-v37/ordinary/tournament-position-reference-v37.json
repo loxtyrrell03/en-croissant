@@ -1,0 +1,296 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used ordinary root lines and played replies. Labels were saved before any candidate output was read. Uncertainty is explicit."
+  ],
+  "cases": [
+    {
+      "id": "tournament-brazilian-women-2026-1af116e26cdc45f0-94",
+      "scope": "position-character",
+      "moveUci": "g4h4",
+      "gameMoveUci": "g4h5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The king manoeuvres around the h-pawn while the rooks give checks from the side. The leading choices preserve the same drawn defensive setup."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-84c3d1bd224487e1-63",
+      "scope": "position-character",
+      "moveUci": "e7c5",
+      "gameMoveUci": "h8g8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The d-file remains contested until the rooks trade. Black can activate the bishop first or prepare the kingside pawn break. The exchange orders preserve the same balance."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-78624dc11e84a722-80",
+      "scope": "position-character",
+      "moveUci": "d6f8",
+      "gameMoveUci": "d6f8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxf8 takes the rook and the promoted c-pawn decides the precise follow-up. The alternative queen and bishop moves maintain pressure through different routes toward promotion."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-642f1625fc0c4c2a-53",
+      "scope": "position-character",
+      "moveUci": "b5e8",
+      "gameMoveUci": "b5d5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White and Black reorganize the queen and knight, with Nb8 a common route. The queen exchange and the king positions create viable strategic options without a clear forcing distinction."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-09f5b566d05f75dc-40",
+      "scope": "position-character",
+      "moveUci": "a1d1",
+      "gameMoveUci": "g2e4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The d-file and the advanced e-pawns shape the rook and queen placements. The three choices keep near-equal scores through different orders of pawn capture and regrouping."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-85d414f40deecaef-47",
+      "scope": "position-character",
+      "moveUci": "f6g4",
+      "gameMoveUci": "f6g4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Ng4 threatens the queen and changes which knight can operate on e6. The alternatives give White forcing access to e5 or f6. The knight routes and central files persist after the exchanges."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-f7629568c216ec05-27",
+      "scope": "position-character",
+      "moveUci": "d8d7",
+      "gameMoveUci": "b5b4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The queenside pawns and the knight's access to b3 shape the lines. The played advance and the two queen choices permit distinct capture sequences around the same flank."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-4e3a2841ded31589-84",
+      "scope": "position-character",
+      "moveUci": "b2c1",
+      "gameMoveUci": "f1e1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Both sides have advanced pawns, and Black's bishop has to account for b6. White can reposition the king or bishop first, with no single verified tactical distinction."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-3349ee46638305ff-41",
+      "scope": "position-character",
+      "moveUci": "f6d4",
+      "gameMoveUci": "f6d4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qxd4 allows the exact queen and rook sequence Qxa6 Rxa6 exd4 Rxa3. Slower choices allow White to keep material and reorganize. The lasting pawn payoff is uncertain."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-74d5c96321c44650-34",
+      "scope": "position-character",
+      "moveUci": "a1c1",
+      "gameMoveUci": "d1d2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can contest the c-file and exchange the central bishop or keep queens and castle queenside. The roughly equal choices change coordination and king placement through different sequences."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-67463d77f8a9b911-54",
+      "scope": "position-character",
+      "moveUci": "a1d1",
+      "gameMoveUci": "d2d7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rad1 commits to the d-file and permits a multi-rook exchange after Bxb5. The other rook or pawn moves retain pressure through the c4 break and expose different captures."
+    },
+    {
+      "id": "tournament-brazilian-women-2026-d102c4e277ffc946-64",
+      "scope": "position-character",
+      "moveUci": "g8h7",
+      "gameMoveUci": "g8b3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qh7+ starts a forcing attack culminating in Rxf4+. The quieter queen options retain a winning position but give up that concrete sequence."
+    },
+    {
+      "id": "tournament-aruba-open-2026-4fd80c91c8027bff-32",
+      "scope": "position-character",
+      "moveUci": "d2e3",
+      "gameMoveUci": "e1d1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qxe3 forces the knight recapture and allows king activity. Kd1 reaches a similar queen liquidation by a different order, while Ne2 gives the queen access to e4 and g2. The king and pawn break on f5 persist."
+    },
+    {
+      "id": "tournament-aruba-open-2026-c2c8fcfcf32901d5-29",
+      "scope": "position-character",
+      "moveUci": "e8g8",
+      "gameMoveUci": "d7a4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Castling or reorganizing the bishop and knight addresses the same e4 break and a-pawn pressure. The different move orders keep similar scores and provide no reliable short tactical distinction."
+    },
+    {
+      "id": "tournament-aruba-open-2026-4cc7bda1f58508f8-99",
+      "scope": "position-character",
+      "moveUci": "d1c2",
+      "gameMoveUci": "d1c2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The lines are all forced mates. The checks and queen exchanges are the decisive mechanism."
+    },
+    {
+      "id": "tournament-aruba-open-2026-094e2e011cb071a7-39",
+      "scope": "position-character",
+      "moveUci": "h7h6",
+      "gameMoveUci": "e7g8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black must manage the g5 pawn and White's h4 advance. The queenside and kingside preparations both redirect the rooks and bishops through similar scores."
+    },
+    {
+      "id": "tournament-aruba-open-2026-0f4e682858fbc45b-46",
+      "scope": "position-character",
+      "moveUci": "a2a4",
+      "gameMoveUci": "f4e2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The queen and rooks compete for the queenside files around a5 and c4. The candidates offer comparable opportunities to exchange the c-pawn and use the resulting squares."
+    },
+    {
+      "id": "tournament-aruba-open-2026-7b0605a2813243f5-97",
+      "scope": "position-character",
+      "moveUci": "e7f8",
+      "gameMoveUci": "e7f7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black keeps the rook in front of the b-pawn and improves the king. White doubles on the b-file. No one material sequence distinguishes the two king moves."
+    },
+    {
+      "id": "tournament-aruba-open-2026-35924551d6bb9718-34",
+      "scope": "position-character",
+      "moveUci": "e1d2",
+      "gameMoveUci": "e1d2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can bring a rook to the b-file or time the c5 break differently, changing which pawn pair opens. The leading scores are close and a specific forced outcome is unclear."
+    },
+    {
+      "id": "tournament-aruba-open-2026-8d99d585f3a92153-38",
+      "scope": "position-character",
+      "moveUci": "d4d5",
+      "gameMoveUci": "a1e1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "d5 prepares d6 and delays Black's king activity. The alternatives give Black time to castle or capture on d4. The major pieces and knights then have concretely different forcing moves."
+    },
+    {
+      "id": "tournament-aruba-open-2026-62ec44a99176a16d-78",
+      "scope": "position-character",
+      "moveUci": "a4a8",
+      "gameMoveUci": "a4a8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black's kingside passers and White's active rook are the main assets. White can seek checks or begin advancing the f-pawn, with the exact tactical distinctions otherwise uncertain."
+    },
+    {
+      "id": "tournament-aruba-open-2026-000ee9b4cf1209e5-39",
+      "scope": "position-character",
+      "moveUci": "d8f6",
+      "gameMoveUci": "d8f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qf6+ forces a reply and enables rook play on the d-file, while the e3 pawn restricts the king. The quieter moves retain the attack through different queen and rook geometry."
+    },
+    {
+      "id": "tournament-aruba-open-2026-02b52932e500fd0d-81",
+      "scope": "position-character",
+      "moveUci": "g4h2",
+      "gameMoveUci": "g4f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's bishop and queenside pawns constrain the king. Black can take h2 or reorganize the knight first. The checks and captures have similar overall consequences."
+    },
+    {
+      "id": "tournament-aruba-open-2026-295b3a9d268c2167-33",
+      "scope": "position-character",
+      "moveUci": "b6e3",
+      "gameMoveUci": "b8d7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bxe3 removes the knight before the central d4 and c5 breaks. The delayed development choices permit White to establish different pressure on the same central files."
+    },
+    {
+      "id": "tournament-mona-karff-2026-2a2998321869b6bb-66",
+      "scope": "position-character",
+      "moveUci": "h3h4",
+      "gameMoveUci": "f4f5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can reinforce the kingside pawn advance or improve the king first. Black obtains counterplay from the a- and b-pawns in each viable line."
+    },
+    {
+      "id": "tournament-mona-karff-2026-77faee58be0ba4bc-67",
+      "scope": "position-character",
+      "moveUci": "d1d2",
+      "gameMoveUci": "d1d2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The rook moves improve activity while the king and bishop contest the centre. White's h-pawn and the fxe5 exchange determine the strategic placement across similar evaluations."
+    },
+    {
+      "id": "tournament-mona-karff-2026-2b31e345881da6c7-27",
+      "scope": "position-character",
+      "moveUci": "c6e7",
+      "gameMoveUci": "c7e7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's rook repeatedly uses c1 while Black chooses where to place the knight and how to meet the c-pawn advance. The leading scores are nearly equal through different central exchanges."
+    },
+    {
+      "id": "tournament-mona-karff-2026-5b2dcf4ea2205002-35",
+      "scope": "position-character",
+      "moveUci": "e5c3",
+      "gameMoveUci": "e5c5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qxc3 changes the pawn structure and exploits the weakened c-files. Nd3 and Qxc5 allow different queen exchanges and follow-up knight routes with materially different consequences."
+    },
+    {
+      "id": "tournament-mona-karff-2026-4a67757e1d26dcd5-29",
+      "scope": "position-character",
+      "moveUci": "f6d7",
+      "gameMoveUci": "c8b7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black can develop the bishop or knight first and still reach f6. White's bishop goes to c2 while the rooks prepare e-file play. The leading lines transpose or show equivalent preparation."
+    },
+    {
+      "id": "tournament-mona-karff-2026-ae6cbc63b3e50813-31",
+      "scope": "position-character",
+      "moveUci": "f7g6",
+      "gameMoveUci": "f7g6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The rook on g6 can be taken immediately or after the central bishops exchange. The order of captures and the exposed kings dominate, with no clear independent positional payoff."
+    },
+    {
+      "id": "tournament-mona-karff-2026-a998838f40a39a6a-49",
+      "scope": "position-character",
+      "moveUci": "b6b7",
+      "gameMoveUci": "c6a5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can use the c-file or keep the queenside active while Black reorganizes the knights and king. The similar leading scores arise from different captures on a5 and d4."
+    },
+    {
+      "id": "tournament-mona-karff-2026-7de3dc95c4a7d097-95",
+      "scope": "position-character",
+      "moveUci": "e6e3",
+      "gameMoveUci": "e6e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qxe3+ takes the knight with tempo and buys a5 and a4 counterplay. The pawn advances alone allow the forcing Qb8+ sequence. The queenside passer remains a strategic resource."
+    }
+  ]
+}

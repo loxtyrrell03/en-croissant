@@ -1,0 +1,249 @@
+{
+  "productionBaseline": "47176ab2",
+  "developmentPositions": 198,
+  "developmentVariants": {
+    "strict": {
+      "positionalTrue": 7,
+      "positionalFalse": 1,
+      "positionalUncertain": 1,
+      "mixedTrue": 2,
+      "mixedFalse": 2
+    },
+    "settled": {
+      "positionalTrue": 8,
+      "positionalFalse": 0,
+      "positionalUncertain": 1,
+      "mixedTrue": 2,
+      "mixedFalse": 1
+    },
+    "closure": {
+      "positionalTrue": 10,
+      "positionalFalse": 0,
+      "positionalUncertain": 1,
+      "mixedTrue": 2,
+      "mixedFalse": 1
+    },
+    "file-use": {
+      "positionalTrue": 10,
+      "positionalFalse": 0,
+      "positionalUncertain": 1,
+      "mixedTrue": 2,
+      "mixedFalse": 1
+    }
+  },
+  "cohorts": {
+    "ordinary": {
+      "positions": 32,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 4,
+            "fp": 1,
+            "fn": 9,
+            "tn": 6,
+            "unknown": 12
+          },
+          "positional": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 21,
+            "tn": 2,
+            "unknown": 2
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 9,
+            "tn": 9,
+            "unknown": 14
+          }
+        },
+        "medianClassifierMs": 31.41085000000021,
+        "extraPositionNodes": 45830000
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 4,
+            "fp": 1,
+            "fn": 9,
+            "tn": 6,
+            "unknown": 12
+          },
+          "positional": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 21,
+            "tn": 2,
+            "unknown": 2
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 9,
+            "tn": 9,
+            "unknown": 14
+          }
+        },
+        "medianClassifierMs": 31.289549999999963,
+        "extraPositionNodes": 45830000
+      },
+      "changes": [],
+      "cleanReplayMatchesAll": true,
+      "changedMoveReports": 0,
+      "changedMistakeReports": 0
+    },
+    "structural-challenge": {
+      "positions": 18,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 10,
+            "tn": 2,
+            "unknown": 5
+          },
+          "positional": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 14,
+            "tn": 0,
+            "unknown": 0
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 11,
+            "tn": 2,
+            "unknown": 5
+          }
+        },
+        "medianClassifierMs": 33.745600000000195,
+        "extraPositionNodes": 26930000
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 10,
+            "tn": 2,
+            "unknown": 5
+          },
+          "positional": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 11,
+            "tn": 0,
+            "unknown": 0
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 11,
+            "tn": 2,
+            "unknown": 5
+          }
+        },
+        "medianClassifierMs": 33.694499999999834,
+        "extraPositionNodes": 26930000
+      },
+      "changes": [
+        {
+          "id": "structure-german-north-2026-88ded0192e37d6ce-61",
+          "baselineCategory": "unclear",
+          "category": "positional",
+          "plan": {
+            "linesUci": [
+              [
+                "f7f6",
+                "g5f6",
+                "g7f6",
+                "h2d2",
+                "f6g7"
+              ],
+              [
+                "b8h8",
+                "h4c4",
+                "c5c4",
+                "b3c4",
+                "h8b8",
+                "c6b5",
+                "f7f6",
+                "g5f6",
+                "h5f6",
+                "h2g2",
+                "f6h5"
+              ]
+            ],
+            "description": "The f6 pawn break changes the f-file in both move orders. f6 makes contact with the pawn on g5. The exchange gxf6+ Kxf6 leaves Black with no pawn on the f-file. After Rh8, f6 makes contact with the pawn on g5. The exchange gxf6+ Nxf6 leaves Black with no pawn on the f-file."
+          }
+        },
+        {
+          "id": "structure-slovenian-league-2026-4d855e66d9c12e96-64",
+          "baselineCategory": "unclear",
+          "category": "positional",
+          "plan": {
+            "linesUci": [
+              [
+                "d5d6",
+                "e7d7",
+                "d1d5",
+                "e5e4",
+                "d6c7",
+                "d7d5",
+                "c4d5"
+              ],
+              [
+                "c4c5",
+                "h8h2",
+                "e2d2",
+                "a7b8",
+                "d5d6",
+                "c7d6",
+                "c5d6",
+                "e7d7",
+                "c2a4"
+              ]
+            ],
+            "description": "The d6 pawn break changes the c-file in both move orders. d6 makes contact with the pawn on c7. The exchange dxc7 leaves Black with no pawn on the c-file. After c5, d6 makes contact with the pawn on c7. The exchange cxd6 cxd6 leaves Black with no pawn on the c-file."
+          }
+        },
+        {
+          "id": "structure-slovenian-league-2026-30528e8e26082ea1-46",
+          "baselineCategory": "unclear",
+          "category": "positional",
+          "plan": {
+            "linesUci": [
+              [
+                "g2g4",
+                "g7g6",
+                "f2f3",
+                "c4d2",
+                "f3e4",
+                "d2f3",
+                "g1f2"
+              ],
+              [
+                "a1d1",
+                "a8d8",
+                "g2g4",
+                "g7g6",
+                "f2f3",
+                "c4e5",
+                "f3e4",
+                "e5f3",
+                "g1f2"
+              ]
+            ],
+            "description": "The f3 pawn break changes the f-file in both move orders. After g4, f3 makes contact with the pawn on e4. The exchange fxe4 leaves White with no pawn on the f-file. After Rad1, f3 makes contact with the pawn on e4. The exchange fxe4 leaves White with no pawn on the f-file."
+          }
+        }
+      ],
+      "cleanReplayMatchesAll": true,
+      "changedMoveReports": 0,
+      "changedMistakeReports": 0
+    }
+  }
+}

@@ -2107,3 +2107,90 @@ verification flags on. Rebuild the focused sample with
 Five prototype regressions passed within the 138-test focused suite.
 The blockade sampler regression and the frozen-input and grouping
 checks also passed.
+
+## Iteration 37 — common pawn breaks and rook exchanges
+
+The earlier strategic comparison could miss a shared plan when two
+viable moves reached it at different plies. Temporary material gains
+during a chain of recaptures could also hide a structural effect that
+lasted after the exchanges. A new position-level comparison replays
+the legal lines and looks for two kinds of shared evidence.
+
+- The same central pawn advance contacts the same enemy pawn in two
+  move orders. An observed exchange clears a named file of one side's
+  pawn or pawns. The file stays clear through later moves, and material
+  is checked after the exchanges settle.
+- The candidate lines exchange opposing rooks on the same open file.
+  At least one rook must prepare the trade. If the trades happen on
+  different squares, one root choice must participate in the rook
+  manoeuvre or trade on that file. A pair of unrelated later exchanges
+  gives no position-level conclusion.
+
+Both explanations give the two legal continuations under Show
+evidence. They describe a strategic interpretation of observed board
+changes. The feature carries no assigned share of Stockfish's score.
+
+| Development replay on 198 earlier public positions | Added positional TP / FP | Added mixed TP / FP |
+| --- | ---: | ---: |
+| First comparison | 7 / 1 | 2 / 2 |
+| Wait for the central exchange to settle and require relevant rook placement | 8 / 0 | 2 / 1 |
+| Also settle an exchange at the end of the observation window | 10 / 0 | 2 / 1 |
+| Allow actual rook use of the opened file to substitute for neutral material | 10 / 0 | 2 / 1 |
+
+The final row gave no additional positives. The production candidate
+uses the preceding variant. Its development mixed false positive
+already had a tactical false positive before the positional evidence
+was added. The comparison distinguishes assessment by axis and by the
+joint label, since they can move in different directions.
+
+| Frozen cohort | Positions | Tactical TP / FP, both | v35 positional TP / FP | v37 positional TP / FP | Mixed TP / FP, both |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Ordinary classical | 32 | 4 / 1 | 7 / 0 | 7 / 0 | 0 / 0 |
+| Structural challenge | 18 | 1 / 0 | 4 / 0 | 7 / 0 | 0 / 0 |
+
+The three additional findings in the challenge were pawn breaks. In
+the German league game `88ded0192e37d6ce-61`, Black can play `...f6`
+immediately or after `...Rh8`. In both lines `gxf6+` clears Black's
+f-file. Black can recapture with the king or knight. In the Slovenian
+game `4d855e66d9c12e96-64`, White can play `d6` before or after `c5`
+and the resulting exchanges leave Black with no pawn on the c-file.
+All three new findings were reviewed as mixed. The separate tactical
+analysis missed their tactical dimension, so the app displayed
+positional evidence only. The same-file rook trade has regression
+coverage and a reviewed development example. It added no positives
+in the frozen cohorts.
+
+The ordinary sample drew one position per game from the Brazilian
+Women's Championship, Aruba Open Championship, and Mona Karff
+Memorial. The focused sample uses six recorded open-file rook trades,
+six central pawn contacts resolved by capture, and six contacts held
+in the next four plies. Every focused board was independently
+reviewed as positionally relevant, so that cohort measures recall
+and provides no positional specificity estimate. The ordinary sample
+has two reviewed positional negatives. A single engine-assisted
+reviewer saved the labels before the candidate output was read.
+[Brazilian Women's Championship](https://lichess.org/api/broadcast/tGKQocRe.pgn)
+[Aruba Open Championship](https://lichess.org/api/broadcast/ZPONzjmY.pgn)
+[Mona Karff Memorial](https://lichess.org/api/broadcast/n6gSt9Lm.pgn)
+[Slovenian Team Championship](https://lichess.org/api/broadcast/OeslJUKC.pgn)
+[German 2nd Bundesliga North](https://lichess.org/api/broadcast/VPkavlL1.pgn)
+
+The candidate uses no additional engine searches. The optional
+engine node totals and the move and mistake reports matched the v35
+comparator. On the ordinary set the median classifier time was 31.4 ms
+for v35 and 31.3 ms for v37, excluding engine searches. A replay with
+the committed tactical module reproduced all 50 candidate assessments.
+The focused suite passed 138 tests with one existing skip. The real
+worker and source panel showed both verified facts and legal branches
+with keyboard access at 320, 390 and 900 pixels. Installed desktop
+verification is pending.
+
+**Reproduction.** Use the public manifests, reviewed references and
+freeze receipts under `benchmarks/decision-evidence/shared-structure-v37`.
+The frozen comparator is `47176ab2`. Rebuild the focused sample with
+`decision-evidence-structure-sample.py`. Its recorded game moves
+select the stratum and do not determine the labels. Generate the
+ordinary root, reply, shared-reply and six-choice caches under the
+`v37` profile and run the standard candidate audit with all three
+optional verification flags. The compact summary also retains the
+development counts for each tested variant.
