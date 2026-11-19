@@ -904,3 +904,86 @@ the matching sealed reference. The reference SHA-256 is
 `466657c5d4a442b8452f466dcba8ef1b81e7331ea5ea8bb4a73a99605ea0c869`.
 Private artifacts provide the exact input identities and retained raw
 engine evidence. Treat this cohort as development data after publication.
+
+## Counterfactual attack entries and exploited pins (v24)
+
+The mistake verifier can use a common attack in the paired root search
+and an independent opponent search even if the net material difference is
+small. It first verifies what changed about the entry. The better move
+removes the attacker, forces an answer to check, or makes the same
+checking move leave the king out of check. The engine frames must agree
+on the reply's relevance. A verified quiet mate-in-one threat with an
+observed legal defence or a captured pin must follow in both searched
+continuations. The explanations cover the legal witness and the replies
+within the finite search.
+
+The pin extractor checks that a new absolute ray actually removes a legal
+off-ray move of the defender. That ray must persist until the same pinner
+takes the pinned piece, and the local capture proof must establish a gain
+with counterplay checked. This preserves the pin's true ply. It avoids
+credit for a geometric pin or for the incidental material balance elsewhere
+in the line. It is available to move-level evidence as well as mistake
+analysis.
+
+The preceding 34-decision v23 benchmark is now a development set. Its
+tactical mistake score rose from 4/11 to 7/11 with zero false positives on
+21 negatives. The new examples were `...Re4 Nf5+ Kf8 Qf6` threatening
+`Qh8#`, `Qxd7 ...Bg3` threatening `...Qxf2#`, and
+`Rxb6 ...Qa1+` followed by `...Rf2` and the capture of the pinned queen.
+Each better move changes the legal entry and each explanation includes
+both lines. The tactical basis is a concrete mating threat or a locally
+verified capture, independent of aggregate pawn balance.
+
+The separate frozen v24 test had 48 decisions from 24 new games. Each game
+provided one broadcast-evaluation loss and one near-best control. The
+games came from [Olympiad Open I round 4](https://lichess.org/broadcast/45th-chess-olympiad-budapest-2024-open-i/round-4/6wJduA1I/nT9Ykpvl),
+[Asian Amateur U2300 round 4](https://lichess.org/broadcast/asian-amateur-chess-championship-2025--open-u2300/round-4/EiOljS6R/z5AyEWaw)
+and [World Amateur U2300 round 4](https://lichess.org/broadcast/fide-world-amateur-chess-championships-2026-u2300/round-4/xYn1a1FM/Yk2s81dE).
+One reviewer labelled actual error mechanisms from legal paired and reply
+lines before opening classifier results. Broadcast estimates were sampling
+inputs only.
+
+| Played-move mistake | Reviewed positives / negatives | Legacy TP / FP | Same-board v23 TP / FP | v24 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical | 11 / 26 | 1 / 0 | 3 / 0 | 3 / 0 |
+| Positional | 12 / 27 | 0 / 0 | 0 / 0 | 0 / 0 |
+| Mixed | 3 / 29 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+The new attack proof added zero detections on these boards. All methods
+leave high recall and mixed classification unresolved. In five of the
+eight tactical misses, the very same entry was still legal and relevant
+to investigate after the better move. Two other misses reached the entry
+but had no supported endpoint. The remaining miss failed the paired
+root-depth gate. A subsequent development experiment forced the exact
+same reply under each choice with one million nodes per query. The
+opponent's score fell after the better move in all five cases, by roughly
+3.5, 4.1, 4.5, 8.4 and 21.5 normalized evaluation pawns in this sample.
+For example, `Nf4` attacks the rook after `Rxg6`, while after `Rd3`
+the exact same `...Nf4` permits `Rdxf3`. This is evidence to compare
+the continuation of a shared reply using its real legal alternatives.
+The experiment was selected from missed cases after evaluation, and its
+score differences are finite-depth measurements.
+
+The audit also caught an en passant explanation referring to c3 for a
+pawn physically captured on c4. The correction reuses the tracked victim
+square. In that example Black gains a passed pawn on the c-file, supported
+by its two rooks. The reviewed label is mixed on the basis of that passer
+and the immediate tactical concession.
+
+The v24 attack verifier uses existing engine searches. In the 48-position
+audit those searches took 314.1 aggregate engine-seconds for root and
+paired searches and 133.9 additional engine-seconds for replies. Median
+extra classifier time was 26.5 ms, including replay and other measurements
+in the same audit. The follow-up forced-query experiment is offline.
+
+**Reproduction.** The task's `classifier-rework/forcing-transfer` directory
+contains the private review, sample, manifest, exact searches and reports.
+Use `decision-evidence-tournament.py --mistake-event EVENT PGN SPLIT GAME_LIMIT`
+with `validation` and event limits 9/8/7 in the list order above. Exclude
+earlier roots with the same seven sample paths used in the v24 receipt.
+Run the standard depth-18 adaptive search and reply probe scripts, freeze
+`v24-forcing-entry`, then audit and score the saved mistake references.
+The preceding implementation comparator loads the three changed modules
+from `94144454` and runs them against the same v24 engine inputs and legacy
+certificates. The source manifest captures the shared checkout's exact
+dependencies. Use this cohort for development following this report.

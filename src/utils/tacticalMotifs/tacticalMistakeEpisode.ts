@@ -22,6 +22,7 @@ export type TacticalMistakeEpisode = {
 } & (
     | { kind: "comparative"; materialDifferencePoints: number }
     | { kind: "concession"; materialConcededPoints: number }
+    | { kind: "forcing-attack" }
 );
 
 function capturedSquare(step: TacticalReplayStep) {
@@ -122,12 +123,13 @@ export function compareTacticalMistakeEpisode(
         const alternative = betterSteps[0].after;
         const reduced = alternative.isLegal(take) ? tacticalExchangeGain(alternative, take) : 0;
         const gained = tacticalExchangeGain(reply.before, take);
+        const square = capturedSquare(reply);
+        const target = reply.before.board.get(square);
         // The same move in the alternative must be an unavailable or
         // unprofitable capture. An unrelated pawn won in both lines is not
         // evidence that the played move caused the loss.
         if (gained >= 90 && reduced >= 0 && gained - reduced >= 90) {
-            const target = reply.before.board.get(reply.move.to);
-            directCapture = `${reply.san} can take the ${target?.role ?? "pawn"} on ${makeSquare(reply.move.to)}. The same capture does not gain that material after ${betterSteps[0].san}.`;
+            directCapture = `${reply.san} can take the ${target?.role ?? "pawn"} on ${makeSquare(square)}${square !== reply.move.to ? " en passant" : ""}. The same capture does not gain that material after ${betterSteps[0].san}.`;
         } else if (gained >= 90 && alternative.isLegal(take) && reduced > -20000 && reduced < 0) {
             directCapture = `${reply.san} wins an exchange on ${makeSquare(reply.move.to)} that is unfavourable after ${betterSteps[0].san}.`;
         }

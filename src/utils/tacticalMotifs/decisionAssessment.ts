@@ -31,8 +31,9 @@ import {
 } from "./tacticalMistakeEpisode";
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
 import { findConditionalFork } from "./conditionalForkEvidence";
+import { compareExposedForcingAttack } from "./decisionForcingConsequence";
 
-export const DECISION_ASSESSMENT_VERSION = 5;
+export const DECISION_ASSESSMENT_VERSION = 6;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -582,13 +583,15 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                             ),
                     );
                 }
+                if (!tacticalEpisode && !missed.length && !allowed.length)
+                    tacticalEpisode = compareExposedForcingAttack(
+                        input.fen,
+                        comparedBest,
+                        playedLine,
+                        playedProbe!.lines,
+                    );
             }
             const assessment = emptyAssessment();
-            if (tacticalEpisode)
-                allowed = mergeTacticalSequenceWitnesses([
-                    ...allowed,
-                    ...tacticalEpisode.mechanisms,
-                ]);
             if (missed.length || allowed.length || tacticalEpisode)
                 assessment.tactical = {
                     support: "supported",
@@ -606,7 +609,9 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                             ? [
                                   tacticalEpisode.kind === "comparative"
                                       ? `${tacticalEpisode.explanation} The played line retains ${tacticalEpisode.materialDifferencePoints.toFixed(1)} fewer material points after ${tacticalEpisode.throughPly} plies of both compared lines.`
-                                      : `${tacticalEpisode.explanation} Both searches show a net loss of ${tacticalEpisode.materialConcededPoints.toFixed(1)} material points after ${tacticalEpisode.throughPly} plies of the played line.`,
+                                      : tacticalEpisode.kind === "concession"
+                                        ? `${tacticalEpisode.explanation} Both searches show a net loss of ${tacticalEpisode.materialConcededPoints.toFixed(1)} material points after ${tacticalEpisode.throughPly} plies of the played line.`
+                                        : tacticalEpisode.explanation,
                               ]
                             : []),
                     ],
@@ -658,6 +663,11 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
                 "The compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.",
             ];
+            if (tacticalEpisode)
+                allowed = mergeTacticalSequenceWitnesses([
+                    ...allowed,
+                    ...tacticalEpisode.mechanisms,
+                ]);
             mistake = {
                 ...assessment,
                 evaluationLossCp: loss,

@@ -1,8 +1,13 @@
-import { attacks, between } from "chessops/attacks";
+import { attacks, between, ray as throughLine } from "chessops/attacks";
 import type { Chess } from "chessops/chess";
 import type { Color, NormalMove, Square } from "chessops/types";
 import { makeSquare, opposite } from "chessops/util";
-import { replayTacticalLine } from "./causalTactics";
+import {
+    MIN_TACTICAL_CAPTURE_GAIN,
+    replayTacticalLine,
+    tacticalCaptureGain,
+    type TacticalReplayStep,
+} from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 
 /** A mechanism witnessed in a legal engine line. This is deliberately separate
@@ -11,6 +16,7 @@ export type TacticalSequenceWitness = {
     fen: string;
     mechanism:
         | "fork"
+        | "pin"
         | "deflection"
         | "capturingDefender"
         | "discoveredAttack"
@@ -168,6 +174,58 @@ function canRecapture(position: Chess, capture: NormalMove, defender: Square, si
     return legalCapture(copy, defender, capture.to, opposite(side));
 }
 
+function exploitedAbsolutePin(steps: TacticalReplayStep[], index: number) {
+    const step = steps[index];
+    const pinner = step.move.to;
+    const payoff = steps[index + 2];
+    if (!payoff?.capture || payoff.move.from !== pinner) return;
+    const slider = step.after.board.get(pinner);
+    const side = step.before.turn;
+    const defender = opposite(side);
+    const king = step.after.board.kingOf(defender);
+    if (
+        !slider ||
+        !["bishop", "rook", "queen"].includes(slider.role) ||
+        king === undefined ||
+        step.after.isCheck()
+    )
+        return;
+    const ray = between(pinner, king);
+    const target = payoff.move.to;
+    if (!ray.has(target) || ray.intersect(step.after.board.occupied).size() !== 1) return;
+    const pinned = step.after.board.get(target);
+    if (
+        pinned?.color !== defender ||
+        !step.after.ctx().blockers.has(target) ||
+        !attacks(slider, pinner, step.after.board.occupied).has(target) ||
+        !attacks(slider, pinner, step.after.board.occupied.without(target)).has(king)
+    )
+        return;
+    // Require an actual departure constrained by this new ray. Removing the
+    // pinner in a local legality test leaves other checks and pins in place.
+    const withoutPin = step.after.clone();
+    withoutPin.board.take(pinner);
+    if (
+        withoutPin
+            .dests(target)
+            .diff(throughLine(pinner, king))
+            .diff(step.after.dests(target))
+            .isEmpty()
+    )
+        return;
+    const original = step.before.clone();
+    original.turn = defender;
+    if (original.ctx().blockers.has(target)) return;
+    if (
+        payoff.before.board.kingOf(defender) !== king ||
+        ray.intersect(payoff.before.board.occupied).size() !== 1 ||
+        !payoff.before.board.get(target) ||
+        (tacticalCaptureGain(payoff, 4096) ?? 0) < MIN_TACTICAL_CAPTURE_GAIN
+    )
+        return;
+    return { target, king, pinner, role: pinned.role, payoff };
+}
+
 /** Nominate only mechanisms with an observed use, never a board pattern alone.
  * These nominations retain their real ply. A later motif is not automatically
  * the cause of the root move, even in a favourable principal variation. */
@@ -206,6 +264,15 @@ export function extractTacticalSequenceWitnesses(
         if (!moved || moved.color !== side) continue; // excludes rook-square castling ambiguity
         const reply = steps[i + 1],
             third = steps[i + 2];
+        const pin = exploitedAbsolutePin(steps, i);
+        if (pin)
+            push(
+                "pin",
+                i,
+                i + 2,
+                [pin.pinner, pin.target, pin.king],
+                `${first.san} pins the ${pin.role} on ${makeSquare(pin.target)} to the king on ${makeSquare(pin.king)}. After ${reply.san}, ${pin.payoff.san} wins material on that square in this continuation.`,
+            );
         const targets = [...first.after.board[opposite(side)]].filter((sq) =>
             meaningfulTarget(first.after, first.move.to, sq, side),
         );
