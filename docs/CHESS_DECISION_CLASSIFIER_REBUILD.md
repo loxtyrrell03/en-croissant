@@ -1729,3 +1729,98 @@ the experimental tooling at `b6171e2b`. Reproduce the nomination
 with `--policy-max-rank 2`. The freeze receipts hash the original
 Windows JSON bytes with CRLF line endings. If Git checks out these
 manifests with LF, restore CRLF when verifying the byte hashes.
+
+## Iteration 33 — one extra choice when the position is unresolved
+
+The position panel now has a second stage for unresolved tactical
+evidence. A 90,000-node search of up to six moves proposes the first
+choice outside the original ranked list. A 1.2M-node paired search
+must retain the same leading move and agree with its original
+evaluation. It must also show a meaningful loss after the extra
+choice. Stockfish then gets up to 1M nodes to analyse the opponent's
+replies independently. Each stage uses the same game history and the
+existing 28-second search deadline. An unavailable extra search
+leaves the original report usable.
+
+The verifier requires the same legal first reply in the two searches
+of the extra move. The reply must win material immediately or reach
+the verified payoff by the opponent's next turn. The continuation
+can go further to establish that the exchanges settle. This
+requires a concrete change in what the opponent can do. A position
+with a longer tactic can still receive that explanation through the
+normal played-move analysis. The extra branch only changes the
+position report, with both variations available under Show evidence.
+
+### Development and cost comparison
+
+| One extra Stockfish move | Nomination budget on 124 boards | Added tactical TP / FP on 124 reviewed boards | Added tactical TP / FP on 33 reviewed 2026 boards |
+| --- | ---: | ---: | ---: |
+| Original wider search | 285.0M nodes | 5 / 1 | 5 / 0 |
+| Short three at 60,000 nodes | 7.44M nodes | 3 / 1 | 0 / 0 |
+| Short six at 90,000 nodes | 11.16M nodes | 5 / 1 | 5 / 0 |
+| Short eight at 180,000 nodes | 22.32M nodes | 7 / 1 | 4 / 0 |
+| Short six with independent early-payoff confirmation | 11.16M nodes | 4 / 0 | 5 / 0 |
+
+The table reports the nomination budget separately from the work to
+verify a move. The raw variants used the same paired and independent
+reply searches as v32. The 124 boards include one reviewed false
+positive from `...Nh5`: a later deflection was real in the
+hypothetical mistake, but the payoff came too late to supply
+position-level evidence on its own. The early-payoff requirement
+excluded it and one correct diagnosis on development. The 33 boards
+had already been reviewed in v32 and were reused to compare search
+cost. Neither comparison served as the new held-out test.
+
+### Held-out evaluation
+
+The frozen candidate was tested on 36 more games. A stable hash
+selected one eligible position per game. The three cohorts contain
+12 games each. References were reviewed from ordinary Stockfish
+root lines and played-move probes before viewing the new candidate
+reports. [European Women's Championship, round 7](https://lichess.org/broadcast/25th-european-womens-chess-championship-2026/round-7/4jWpo2Ap)
+[Dutch Open, round 4](https://lichess.org/broadcast/dutch-open-2026-dutch-open/round-4/foOkbJHh)
+[World Amateur U1700, round 7](https://lichess.org/broadcast/fide-world-amateur-chess-championships-2026-u1700/round-7/PyXN5Fq9)
+
+| Position question | Reviewed positives / negatives | Legacy TP / FP | v31 TP / FP | v33 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical | 21 / 9 | 3 / 0 | 5 / 0 | 6 / 0 |
+| Positional | 27 / 6 | 0 / 0 | 4 / 0 | 4 / 0 |
+| Mixed | 12 / 15 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+Six tactical, three positional and nine mixed references were
+uncertain. The added tactical detection is the European Women's
+Championship position `e820fb095b7c05d0-42`. The short search
+nominates `Nf6+`. Both Stockfish searches find `...Qxf6`, and
+the resulting exchanges leave White down about a minor piece.
+`Nd2` avoids that immediate capture. The wider context still
+contains threats from `...Nd3`. The new evidence covers one
+concrete decision in that position.
+
+The additional stage ran on 31 of the 36 boards. The paired
+comparison warranted an independent reply search on nine, for
+49.0M additional requested nodes altogether. The median extra
+engine time was about 1.38 seconds on this test PC, with concurrent
+evaluation workers. Median classifier time was about 24 ms,
+excluding engine search and legacy motif extraction. The committed
+tactical core reproduced all reports, and the v31 assessment on
+the same inputs matched the v33 control. The move and mistake
+assessments matched the control on every board. Tests passed
+129 cases with one existing skip. The source panel and worker
+displayed the extra comparison and both legal lines at 320, 390
+and 900 pixels using recorded Stockfish evidence. Installed
+desktop verification is pending.
+
+**Reproduction.** Generate the ordinary root and reply caches for
+the sample in `benchmarks/decision-evidence/extra-choice-v33` using
+the v29 settings, profile `v33`. Run
+`decision-evidence-quick-nomination.py SAMPLE ENGINE OUTPUT
+--root-cache ROOT_CACHE --profile six90k`, naming the output
+`quick-nominations.json` in the audit directory. Use the ordinary
+shared- and position-reply flags and set
+`DECISION_AUDIT_EXTRA_CHOICE=1` for the freeze and candidate audit.
+The result includes `assessmentWithoutExtraChoice` for the
+same-board comparison. For the development replay, use the
+v32 breadth and candidate files with `--old-candidates`, then
+run `decisionQuickNominationAudit.test.ts`. The held-out result
+supports a narrow tactical improvement. Broad positional and
+mixed diagnosis still need evidence beyond this extra reply.

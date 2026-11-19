@@ -56,3 +56,94 @@ export function confirmPositionRefutation(
         nomination.defence,
     );
 }
+
+export type ExtraPositionChoice = {
+    shortlist: DecisionEngineLine[];
+    pair: DecisionEngineLine[];
+    replies: DecisionEngineLine[];
+};
+
+/** The short search proposes a move. All evaluation and attribution comes
+ * from the later paired search and the independent search after that move. */
+export function pickExtraPositionMove(
+    fen: string,
+    candidates: DecisionEngineLine[],
+    shortlist: DecisionEngineLine[],
+) {
+    const boardAfter = (line: DecisionEngineLine) => {
+        const first = replayTacticalLine(fen, line.pvUci.slice(0, 1))[0];
+        return first ? makeFen(first.after.toSetup()) : null;
+    };
+    const originalBoards = new Set(candidates.map(boardAfter));
+    const observed = shortlist.map(boardAfter);
+    if (
+        originalBoards.has(null) ||
+        observed.some((value) => value === null) ||
+        shortlist.some((line) => line.fen !== fen || line.depth !== shortlist[0].depth) ||
+        new Set(observed).size !== observed.length
+    )
+        return null;
+    const index = observed.findIndex((value) => !originalBoards.has(value));
+    return index < 0 ? null : shortlist[index].pvUci[0];
+}
+
+export function compareExtraPositionMove(
+    fen: string,
+    originalBest: DecisionEngineLine,
+    moveUci: string,
+    pair: DecisionEngineLine[],
+) {
+    const [best, alternative] = pair;
+    if (
+        pair.length !== 2 ||
+        best.pvUci[0] !== originalBest.pvUci[0] ||
+        alternative.pvUci[0] !== moveUci ||
+        originalBest.depth < 18 ||
+        best.depth < 16 ||
+        originalBest.cp === null ||
+        best.cp === null ||
+        alternative.cp === null ||
+        Math.abs(originalBest.cp - best.cp) > 90 ||
+        best.cp - alternative.cp < 100 ||
+        measurePositionDecision(fen, pair)?.bestSecondGapCp == null
+    )
+        return null;
+    const response = replyFromRoot(fen, alternative);
+    const defence = replyFromRoot(fen, best);
+    return response && defence ? { best, alternative, fen: response.fen, defence } : null;
+}
+
+export function confirmExtraPositionChoice(
+    fen: string,
+    candidates: DecisionEngineLine[],
+    evidence: ExtraPositionChoice,
+) {
+    const move = pickExtraPositionMove(fen, candidates, evidence.shortlist);
+    if (!move || !candidates.length) return null;
+    const pair = compareExtraPositionMove(fen, candidates[0], move, evidence.pair);
+    const [reply] = evidence.replies;
+    if (
+        !pair ||
+        !reply ||
+        reply.depth < 16 ||
+        reply.cp === null ||
+        reply.mate != null ||
+        Math.abs(pair.alternative.cp! + reply.cp) > 90 ||
+        reply.pvUci[0] !== pair.alternative.pvUci[1] ||
+        evidence.replies.some(
+            (line, index) =>
+                line.depth !== reply.depth ||
+                (index > 0 &&
+                    line.cp !== null &&
+                    evidence.replies[index - 1].cp !== null &&
+                    line.cp > evidence.replies[index - 1].cp!),
+        ) ||
+        measurePositionDecision(pair.fen, evidence.replies)?.lines.length !==
+            evidence.replies.length
+    )
+        return null;
+    // An extra alternative informs position character when its first reply
+    // wins something or sets up a material payoff by the next opponent turn.
+    // The comparison can look further to let the exchanges settle.
+    return compareTacticalMistakeEpisode(fen, pair.best, pair.alternative, reply, pair.defence, 3);
+}

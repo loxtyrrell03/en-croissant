@@ -39,14 +39,19 @@ import {
 } from "./decisionSharedReply";
 import { comparePawnEpisodes } from "./decisionPawnEpisode";
 import { compareLostKingShelter, findKingShelterTradeoff } from "./decisionKingShelter";
-import { confirmPositionRefutation, nominatePositionRefutation } from "./decisionPositionContrast";
+import {
+    confirmExtraPositionChoice,
+    confirmPositionRefutation,
+    nominatePositionRefutation,
+    type ExtraPositionChoice,
+} from "./decisionPositionContrast";
 import {
     findPositionStrategicPlan,
     qualifyPositionFactors,
     type PositionStrategicPlan,
 } from "./decisionPositionPlans";
 
-export const DECISION_ASSESSMENT_VERSION = 13;
+export const DECISION_ASSESSMENT_VERSION = 14;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -79,6 +84,7 @@ export type DecisionAssessmentInput = {
     comparisonCandidates?: DecisionEngineLine[];
     replyProbes?: DecisionReplyProbe[];
     positionReply?: DecisionReplyProbe;
+    extraPositionChoice?: ExtraPositionChoice;
     sharedReply?: DecisionSharedReplyProbe;
     rootCertificates?: Array<{ fen: string; moveUci: string; motifs: TacticalMotifEvidence[] }>;
     mistakeCertificate?: {
@@ -519,6 +525,30 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     ...contrast.mechanisms,
                 ]);
             }
+        }
+    }
+    if (!position.tacticalContrast && !rejectedChoices && input.extraPositionChoice) {
+        const contrast = confirmExtraPositionChoice(
+            input.fen,
+            input.candidates,
+            input.extraPositionChoice,
+        );
+        if (contrast) {
+            const [alternative] = replayTacticalLine(input.fen, contrast.playedLineUci.slice(0, 1));
+            position.tacticalContrast = contrast;
+            position.examinedChoices++;
+            if (!tactical)
+                position.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [
+                        `After ${alternative.san}, the opponent has a tactical reply. ${contrast.explanation}`,
+                    ],
+                };
+            position.mechanisms = mergeTacticalSequenceWitnesses([
+                ...position.mechanisms,
+                ...contrast.mechanisms,
+            ]);
         }
     }
     position.category = category(position.tactical, position.positional);

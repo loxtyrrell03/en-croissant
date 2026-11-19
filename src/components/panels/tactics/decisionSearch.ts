@@ -15,7 +15,12 @@ import type {
     DecisionReplyProbe,
 } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
-import { nominatePositionRefutation } from "@/utils/tacticalMotifs/decisionPositionContrast";
+import {
+    compareExtraPositionMove,
+    nominatePositionRefutation,
+    pickExtraPositionMove,
+    type ExtraPositionChoice,
+} from "@/utils/tacticalMotifs/decisionPositionContrast";
 import {
     nominateSharedReply,
     type DecisionSharedReplyProbe,
@@ -33,7 +38,7 @@ export type DecisionSearchTarget = {
 };
 const ROOT_BUDGETS = [600_000, 2_400_000, 9_600_000];
 const REPLY_BUDGETS = [1_000_000, 4_000_000];
-const SESSION_MS = 28_000;
+export const DECISION_SEARCH_SESSION_MS = 28_000;
 const LATE_START_MS = 35_000;
 const PIECE_VALUE: Record<Role, number> = {
     pawn: 100,
@@ -128,6 +133,7 @@ async function searchPosition(
     stopAt: number,
     history?: TacticalGameHistory,
     restricted?: string[],
+    width = 3,
 ): Promise<DecisionEngineLine[]> {
     signal.throwIfAborted();
     const legal = [...board(fen).allDests().values()].reduce((total, set) => total + set.size(), 0);
@@ -142,7 +148,7 @@ async function searchPosition(
                 : 0),
         0,
     );
-    const ranks = Math.min(3, restricted?.length ?? legal + additionalPromotions);
+    const ranks = Math.min(width, restricted?.length ?? legal + additionalPromotions);
     const tab = `decision-evidence:${crypto.randomUUID()}`;
     const origin = history?.fen ?? fen;
     const moves = history?.moves ?? [];
@@ -283,14 +289,71 @@ async function searchPosition(
     });
 }
 
+export async function gatherExtraPositionChoice(
+    engine: LocalEngine,
+    target: DecisionSearchTarget,
+    candidates: DecisionEngineLine[],
+    signal: AbortSignal,
+    deadline: number,
+): Promise<ExtraPositionChoice | undefined> {
+    signal.throwIfAborted();
+    const { fen, history } = target;
+    const best = candidates[0];
+    if (
+        !best ||
+        best.depth < 18 ||
+        best.cp === null ||
+        Date.now() >= deadline ||
+        (measurePositionDecision(fen, candidates)?.legalMoves ?? 0) <= candidates.length
+    )
+        return;
+    try {
+        const shortlist = await searchPosition(
+            engine,
+            fen,
+            90_000,
+            signal,
+            Math.min(deadline, Date.now() + 2_000),
+            history,
+            undefined,
+            6,
+        );
+        const move = pickExtraPositionMove(fen, candidates, shortlist);
+        if (!move) return;
+        const pair = await searchPosition(
+            engine,
+            fen,
+            1_200_000,
+            signal,
+            Math.min(deadline, Date.now() + 4_000),
+            history,
+            [best.pvUci[0], move],
+        );
+        const contrast = compareExtraPositionMove(fen, best, move, pair);
+        if (!contrast) return;
+        const replies = await searchPosition(
+            engine,
+            contrast.fen,
+            1_000_000,
+            signal,
+            Math.min(deadline, Date.now() + 3_000),
+            history ? { fen: history.fen, moves: [...history.moves, move] } : undefined,
+        );
+        return replies.length ? { shortlist, pair, replies } : undefined;
+    } catch {
+        signal.throwIfAborted();
+        return;
+    }
+}
+
 export async function gatherDecisionEvidence(
     engine: LocalEngine,
     target: DecisionSearchTarget,
     signal: AbortSignal,
     progress: (phase: string) => void,
+    sessionEnd = Date.now() + DECISION_SEARCH_SESSION_MS,
 ): Promise<DecisionAssessmentInput> {
     const { fen, playedMoveUci, history } = target;
-    const sessionEnd = Date.now() + SESSION_MS;
     let candidates: DecisionEngineLine[] = [];
     let rootNodes = ROOT_BUDGETS[0];
     progress("Comparing candidate moves…");

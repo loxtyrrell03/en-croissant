@@ -78,6 +78,13 @@ async function main() {
       "scripts/benchmarks/decision-evidence-reply-ranker.py",
       "scripts/benchmarks/decision-evidence-freeze.mjs",
       "src/utils/tests/decisionCandidateAudit.test.ts",
+      ...(process.env.DECISION_AUDIT_EXTRA_CHOICE === "1"
+        ? [
+            "scripts/benchmarks/decision-evidence-quick-nomination.py",
+            "scripts/benchmarks/decision-evidence-human-candidates.py",
+            "src/components/panels/tactics/DecisionEvidencePanel.tsx",
+          ]
+        : []),
     ].map((path) => join(repo, path)),
   ];
   const sourceHashes = Object.fromEntries(
@@ -131,6 +138,9 @@ async function main() {
         : {}),
       ...(process.env.DECISION_AUDIT_POSITION_CHOICES === "1"
         ? { positionReplyBudgetNodes: 1_000_000 }
+        : {}),
+      ...(process.env.DECISION_AUDIT_EXTRA_CHOICE === "1"
+        ? { extraChoice: { shortlistNodes: 90_000, shortlistWidth: 6, pairNodes: 1_200_000, replyNodes: 1_000_000 } }
         : {}),
       threadsPerEngine: 1,
       hashMb: 64,

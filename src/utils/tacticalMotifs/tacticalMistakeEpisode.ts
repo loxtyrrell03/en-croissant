@@ -88,6 +88,7 @@ export function compareTacticalMistakeEpisode(
     actual: DecisionEngineLine,
     opponent: DecisionEngineLine,
     betterReply: DecisionEngineLine,
+    maxReplyPayoffPly = 9,
 ): TacticalMistakeEpisode | null {
     if (better.cp === null || actual.cp === null || better.cp - actual.cp < 100) return null;
     const betterSteps = replayTacticalLine(fen, better.pvUci);
@@ -107,7 +108,7 @@ export function compareTacticalMistakeEpisode(
         (witness) =>
             witness.actor === opposite(played.before.turn) &&
             witness.mechanismPly <= 5 &&
-            witness.payoffPly <= 9 &&
+            witness.payoffPly <= maxReplyPayoffPly &&
             !antis.some(
                 (other) =>
                     other.actor === witness.actor &&

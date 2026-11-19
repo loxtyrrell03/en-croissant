@@ -1,0 +1,334 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "tournament-european-women-2026-3e007ef89e1d70ed-32",
+      "scope": "position-character",
+      "moveUci": "g3h4",
+      "gameMoveUci": "g3h4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "gxh4 changes whether ...Bxf1 can win the exchange and the rook entry at c7. The long-term value of the changed king cover is unclear in these lines."
+    },
+    {
+      "id": "tournament-european-women-2026-c88dcd1c61ad5946-43",
+      "scope": "position-character",
+      "moveUci": "d1d5",
+      "gameMoveUci": "d1d5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...Qd5, ...Nxe5 and ...h6 lead to distinct checks and threats around the black king. The concrete defence dominates the comparison."
+    },
+    {
+      "id": "tournament-european-women-2026-a19704575252fc9a-119",
+      "scope": "position-character",
+      "moveUci": "g6h5",
+      "gameMoveUci": "g6h5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black has to calculate the rook exchange and the opposing threats of promotion. The connected plans in the rook ending still revolve around the h- and f-pawns after the immediate captures."
+    },
+    {
+      "id": "tournament-european-women-2026-039fb226dacca8c7-46",
+      "scope": "position-character",
+      "moveUci": "d2f4",
+      "gameMoveUci": "d2f4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qxf4 takes the loose knight and gives Black a particular ...e5 continuation. The separate long-term influence of the exposed white king is uncertain in this window."
+    },
+    {
+      "id": "tournament-european-women-2026-b5020a5437ebd593-42",
+      "scope": "position-character",
+      "moveUci": "e1e3",
+      "gameMoveUci": "f2f4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's d6 pawn constrains Black while f4 and f5 gain space and Black advances the queenside pawns. The queen threatens entry on h6 in some lines, with unclear separate tactical demand."
+    },
+    {
+      "id": "tournament-european-women-2026-afc619cca8dfd76f-53",
+      "scope": "position-character",
+      "moveUci": "c8a8",
+      "gameMoveUci": "d7c6",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The rooks and minor pieces manoeuvre around the a-pawn. Several closely scored continuations contain ordinary exchanges and different ways to blockade or advance that pawn."
+    },
+    {
+      "id": "tournament-european-women-2026-80ef47e803b892e2-43",
+      "scope": "position-character",
+      "moveUci": "d5d4",
+      "gameMoveUci": "a8d8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...d4 opens a concrete line into e2 with a potential exchange sacrifice. The d-pawn advance and open files also govern the other continuations with the rook on a2 or b8."
+    },
+    {
+      "id": "tournament-european-women-2026-3b446609c22a3277-29",
+      "scope": "position-character",
+      "moveUci": "d5d4",
+      "gameMoveUci": "g7g5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...d4 forces a choice among queen and minor-piece exchanges. The open d-file and differing White queenside development persist in the quieter reply lines."
+    },
+    {
+      "id": "tournament-european-women-2026-e820fb095b7c05d0-42",
+      "scope": "position-character",
+      "moveUci": "e4d2",
+      "gameMoveUci": "e4g5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...Nd3 brings a concrete attack on e1 and f4. The alternatives allow different captures and forced trades. No independent lasting strategic consideration was established."
+    },
+    {
+      "id": "tournament-european-women-2026-e6bc2a69d3251951-104",
+      "scope": "position-character",
+      "moveUci": "a3a1",
+      "gameMoveUci": "a3a1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qa1+ and Qb2+ force the king away before b4+ and Ne3+ win the queen on g4. The checks and fork determine this choice."
+    },
+    {
+      "id": "tournament-european-women-2026-a5048c16c3b7d4b5-62",
+      "scope": "position-character",
+      "moveUci": "h4h5",
+      "gameMoveUci": "c1b1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White has to respond to the threats of ...Nf1 or ...Nxe2. The pressure of the rooks and queenside pawns around White's king continues after the first exchanges."
+    },
+    {
+      "id": "tournament-european-women-2026-0079c54fa2205c94-76",
+      "scope": "position-character",
+      "moveUci": "c1h1",
+      "gameMoveUci": "c1c3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxh1 takes the exposed rook and allows a different material balance after the following exchanges. Black's advanced d-pawn still constrains the rook and bishop in every line."
+    },
+    {
+      "id": "tournament-dutch-open-2026-2f6e6737dd840e84-47",
+      "scope": "position-character",
+      "moveUci": "h7h5",
+      "gameMoveUci": "f8c8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The c6 and b-pawns fix the rooks' roles. The similar lines include quiet choices and repeated rook manoeuvres, with no verified tactical difference."
+    },
+    {
+      "id": "tournament-dutch-open-2026-de8d22dc762101eb-52",
+      "scope": "position-character",
+      "moveUci": "g4g5",
+      "gameMoveUci": "g4g5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Both sides are deciding which pawn to advance and which rook controls the c-file. The leading alternatives lead to different but comparable structures."
+    },
+    {
+      "id": "tournament-dutch-open-2026-d91a30b5f265e89c-54",
+      "scope": "position-character",
+      "moveUci": "b1c1",
+      "gameMoveUci": "b1b2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can trade on c1 or maintain pressure on the c-file and defend the second rank. The b-pawn and minor-piece plans persist beyond the ordinary exchanges."
+    },
+    {
+      "id": "tournament-dutch-open-2026-331ea790b746a1de-27",
+      "scope": "position-character",
+      "moveUci": "g7g5",
+      "gameMoveUci": "g7g5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "...g5 and ...g4 gain space and displace pieces. ...Bxf3 instead changes White's pawn cover and the later pressure on e5. The tactical importance of these exchanges is uncertain."
+    },
+    {
+      "id": "tournament-dutch-open-2026-9c3f08c4ef543235-30",
+      "scope": "position-character",
+      "moveUci": "b5a6",
+      "gameMoveUci": "b5a6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The pawn choices fix different queenside structures and influence the knight route to b6. Concrete exchanges occur later, with unclear tactical significance for the first move."
+    },
+    {
+      "id": "tournament-dutch-open-2026-bbf1addfb6cbe953-38",
+      "scope": "position-character",
+      "moveUci": "c3e4",
+      "gameMoveUci": "g3f3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's knight and bishop can use d6 while rooks occupy the open files. The plausible a4 plan changes pressure on b5. The relative tactical demand is uncertain."
+    },
+    {
+      "id": "tournament-dutch-open-2026-14396a57b8df0a9f-54",
+      "scope": "position-character",
+      "moveUci": "g2g3",
+      "gameMoveUci": "c1c4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Nd6 changes whether the ...f4 exchange opens a checking route for a black rook. White still has a dangerous c6 passer and choices about how to support it."
+    },
+    {
+      "id": "tournament-dutch-open-2026-74a7a844702ac71f-60",
+      "scope": "position-character",
+      "moveUci": "e4g3",
+      "gameMoveUci": "e4g3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "...Qg5 changes the immediate queen-trade and knight threats in each variation. Its strategic meaning after the exchanges is uncertain because the shown alternatives are already losing."
+    },
+    {
+      "id": "tournament-dutch-open-2026-25416d50e0266c2f-30",
+      "scope": "position-character",
+      "moveUci": "h2h3",
+      "gameMoveUci": "g2g3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "h3 and g4 regain space, Nd5 uses a different central route, and a4 alters the queenside lever. The leading exchanges do not establish an immediate tactical refutation."
+    },
+    {
+      "id": "tournament-dutch-open-2026-bfef852b355c957b-28",
+      "scope": "position-character",
+      "moveUci": "d1d2",
+      "gameMoveUci": "d1d2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White's rooks and queen choose files while Black prepares different pawn breaks. The knight excursions are one of several similar plans for the centre."
+    },
+    {
+      "id": "tournament-dutch-open-2026-dc1621206465f80f-37",
+      "scope": "position-character",
+      "moveUci": "d8h4",
+      "gameMoveUci": "d8h4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Qh4 and ...Qf6 determine whether White's e-pawn advances or Black can attack with ...Nf3+. The advanced pawns e6 and g3 remain distinct strategic constraints in both branches."
+    },
+    {
+      "id": "tournament-dutch-open-2026-46f27c14f9dececc-39",
+      "scope": "position-character",
+      "moveUci": "f6e4",
+      "gameMoveUci": "f6d7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Both sides can contest the c5 square with their knights, while h4 and ...b4 alter the structure on the wings. The closely scored trades on c5 do not show a separate forced gain."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-b7b765ea84af4f87-74",
+      "scope": "position-character",
+      "moveUci": "a6a7",
+      "gameMoveUci": "a6a7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White must account for ...h3+ and ...g3 while advancing the a-pawn. That passer and the placement of the two rooks continue to govern the position after the immediate exchanges."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-d5517c85bab6697f-44",
+      "scope": "position-character",
+      "moveUci": "c1b1",
+      "gameMoveUci": "d2b2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rb1, Qxb2 and Rc2 change whether Black can promote and which rooks can enter the second rank. The d- and e-pawn breaks keep influencing the resulting structure."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-6568a3bc54482999-61",
+      "scope": "position-character",
+      "moveUci": "d4d2",
+      "gameMoveUci": "d4c4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "...Rd2 improves the second-rank rook while ...g5 and ...g6 prepare king and rook activity. The ordinary defences keep the position governed by open files and pawn weaknesses."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-09169a353bff5d2a-51",
+      "scope": "position-character",
+      "moveUci": "c7f7",
+      "gameMoveUci": "c7f7",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...Rf7 or ...Rf8 leads to forced captures and attacks against the white king. ...exd4 leads to a different immediate liquidation. The analysed value rests on those concrete lines."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-95b226c9a5458ce0-70",
+      "scope": "position-character",
+      "moveUci": "g2g3",
+      "gameMoveUci": "g2g3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "g3 changes the forcing options for ...Qc1+ and the captures around White's king. Rxg8+ and Qe6+ yield a concrete material consequence."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-5e3a800e88696b8f-78",
+      "scope": "position-character",
+      "moveUci": "g2g3",
+      "gameMoveUci": "e6c6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The checks matter for safe king placement, but the leading lines give White similar lasting activity with the c-file and queenside passed-pawn potential. The tactical margin is uncertain."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-caffbe29ec3849c2-40",
+      "scope": "position-character",
+      "moveUci": "d2e4",
+      "gameMoveUci": "d2e4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Ne4 prevents the same ...e4 and ...Bxb2 sequence admitted by other moves. The advanced h3 pawn and Black's queenside lever remain strategic concerns even after White finds the defence."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-53e2a53a60dfb429-69",
+      "scope": "position-character",
+      "moveUci": "f7g6",
+      "gameMoveUci": "f7g6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The two bishops and pawn relationships govern the f4 break and the pressure on h6. The most direct captures in the short lines do not establish the tactical margin."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-cf9935ef3c2efdf3-59",
+      "scope": "position-character",
+      "moveUci": "a5a4",
+      "gameMoveUci": "a5a4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "...a4 creates the lasting rook entry on b2 while ...Rb4 and ...Re8 permit different pawn and file play. The ordinary exchanges do not display a decisive forcing mechanism."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-0aeac4fe17f65546-65",
+      "scope": "position-character",
+      "moveUci": "b8b1",
+      "gameMoveUci": "b8b1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...Rxb1 changes the sequence on g6 and permits ...Qf2+ after the exchanges. The near-term calculation around the king dominates."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-0a74060d46b2313c-47",
+      "scope": "position-character",
+      "moveUci": "d7c7",
+      "gameMoveUci": "d7f7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Qc7 makes Qxb7 lead to a particular queen trade and knight attack. Other moves preserve the central bishop pressure and allow White to use c5 and the b-file in different ways."
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-98f482a24ad828c8-35",
+      "scope": "position-character",
+      "moveUci": "h3f1",
+      "gameMoveUci": "h3f1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The leading choices change the bishop capture on f1 and the knight trades on d5. Black's supported e4 pawn and kingside file pressure remain useful after those trades."
+    }
+  ],
+  "limitations": [
+    "One engine-assisted reviewer used the ordinary Stockfish root lines and recorded-move probes before viewing any candidate outputs.",
+    "One position per game, selected by a stable hash without scores. Three classical broadcasts with 12 boards each.",
+    "Each axis has a separate judgement. Uncertain cases are excluded from the corresponding metric."
+  ]
+}

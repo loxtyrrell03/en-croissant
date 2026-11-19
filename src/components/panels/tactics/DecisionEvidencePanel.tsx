@@ -11,7 +11,12 @@ import type {
   DecisionAssessment,
   DecisionCategory,
 } from "@/utils/tacticalMotifs/decisionAssessment";
-import { gatherDecisionEvidence, type DecisionSearchTarget } from "./decisionSearch";
+import {
+  DECISION_SEARCH_SESSION_MS,
+  gatherDecisionEvidence,
+  gatherExtraPositionChoice,
+  type DecisionSearchTarget,
+} from "./decisionSearch";
 import { classifyDecisionInWorker } from "./decisionReportWorker";
 
 const categoryLabels: Record<DecisionCategory, string> = {
@@ -276,7 +281,7 @@ export function DecisionEvidencePanel({
 
   async function run(target: DecisionSearchTarget, playedSan?: string) {
     if (controller.current) return;
-    const identity = JSON.stringify([target.fen, target.playedMoveUci]);
+    const identity = JSON.stringify([engine.id, engine.version, target]);
     const cached = saved.current.get(identity);
     if (cached) {
       setState({ status: "done", report: cached, playedSan });
@@ -289,12 +294,34 @@ export function DecisionEvidencePanel({
       if (active()) setState({ status: "running", phase });
     };
     try {
-      const input = await gatherDecisionEvidence(engine, target, owned.signal, progress);
+      const deadline = Date.now() + DECISION_SEARCH_SESSION_MS;
+      const input = await gatherDecisionEvidence(engine, target, owned.signal, progress, deadline);
       progress("Verifying the continuations…");
-      const report = await classifyDecisionInWorker(
+      let report = await classifyDecisionInWorker(
         { input, engineName: engine.name, history: target.history },
         owned.signal,
       );
+      if (active() && report.position.tactical.support !== "supported" && Date.now() < deadline) {
+        progress("Checking one more candidate…");
+        const extraPositionChoice = await gatherExtraPositionChoice(
+          engine,
+          target,
+          input.candidates,
+          owned.signal,
+          deadline,
+        );
+        if (active() && extraPositionChoice) {
+          progress("Verifying the extra candidate…");
+          report = await classifyDecisionInWorker(
+            {
+              input: { ...input, extraPositionChoice },
+              engineName: engine.name,
+              history: target.history,
+            },
+            owned.signal,
+          ).catch(() => report);
+        }
+      }
       if (!active()) return;
       saved.current.set(identity, report);
       setState({ status: "done", report, playedSan });

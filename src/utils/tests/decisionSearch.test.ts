@@ -2,7 +2,9 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import {
     decisionCaptureChoices,
     gatherDecisionEvidence,
+    gatherExtraPositionChoice,
 } from "@/components/panels/tactics/decisionSearch";
+import { assessChessDecision } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { BestMoves, EngineOptions } from "@/bindings";
 import type { LocalEngine } from "@/utils/engines";
 
@@ -108,6 +110,67 @@ test("capture nominations allow en passant and reject an ordinary defended-piece
         "d4e3",
     ]);
     expect(decisionCaptureChoices("1q3rk1/2N2ppp/8/7Q/8/3B4/8/R5K1 w - - 0 1", "a1a8")).toEqual([]);
+});
+
+test("the extra comparison uses a short list, one paired search and an independent reply", async () => {
+    const start = "r7/4k3/4p3/8/8/2N5/7P/6K1 w - - 0 1";
+    const best = ["c3b5", "e7f7", "g1f2", "f7g6", "f2g3", "a8a1"];
+    const alternative = ["c3d5", "e6d5", "g1g2", "e7f6", "g2f3", "f6e5", "h2h3"];
+    const candidates = [
+        { fen: start, cp: -100, depth: 18, pvUci: best },
+        { fen: start, cp: -120, depth: 18, pvUci: ["c3a4"] },
+        { fen: start, cp: -150, depth: 18, pvUci: ["h2h3"] },
+    ];
+    const target = { fen: start, history: { fen: start, moves: [] } };
+    let failReply = false;
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) => {
+        if (options.searchMoves)
+            return Promise.resolve([100, lines([best, alternative], [-100, -410])]);
+        if (options.moves[0] === alternative[0]) {
+            if (failReply) return Promise.reject(new Error("The optional reply failed"));
+            return Promise.resolve([
+                100,
+                lines([alternative.slice(1), ["e7f7"], ["e7d8"]], [-408, -155, -90]),
+            ]);
+        }
+        return Promise.resolve([
+            100,
+            lines(
+                [best, ["c3a4"], ["h2h3"], alternative, ["g1f2"], ["c3b1"]],
+                [-100, -125, -160, -175, -200, -250],
+                10,
+            ),
+        ]);
+    });
+    const add = () =>
+        gatherExtraPositionChoice(
+            engine,
+            target,
+            candidates,
+            new AbortController().signal,
+            Date.now() + 10_000,
+        );
+    const extraPositionChoice = await add();
+    const result = assessChessDecision({ fen: start, candidates, extraPositionChoice });
+    expect(result?.position.tactical).toMatchObject({
+        support: "supported",
+        basis: "engine-supported",
+    });
+    expect(result?.position.tacticalContrast?.explanation).toContain("exd5");
+    expect(result?.position.examinedChoices).toBe(4);
+    expect(result?.moves.map((move) => move.moveUci)).toEqual(["c3b5", "c3a4", "h2h3"]);
+    expect(result?.mistake).toBeNull();
+    const calls = native.getBestMoves.mock.calls;
+    expect(calls.map((call) => call[2])).toEqual([
+        { t: "Nodes", c: 90_000 },
+        { t: "Nodes", c: 1_200_000 },
+        { t: "Nodes", c: 1_000_000 },
+    ]);
+    expect(calls[0][3].extraOptions).toContainEqual({ name: "MultiPV", value: "6" });
+    expect(calls[1][3].searchMoves).toEqual(["c3b5", "c3d5"]);
+    expect(calls[2][3]).toMatchObject({ fen: start, moves: ["c3d5"] });
+    failReply = true;
+    await expect(add()).resolves.toBeUndefined();
 });
 
 test("one restricted query uses the better move's history and can fail independently", async () => {

@@ -9,7 +9,11 @@ import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
 import { classifyMistakeReviewNature } from "../mistakeReview";
 import { extractStrategicRootEffects } from "../tacticalMotifs/strategicRootEffects";
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
-import { nominatePositionRefutation } from "../tacticalMotifs/decisionPositionContrast";
+import {
+    compareExtraPositionMove,
+    nominatePositionRefutation,
+    pickExtraPositionMove,
+} from "../tacticalMotifs/decisionPositionContrast";
 import {
     nominateSharedReply,
     type DecisionSharedReplyProbe,
@@ -19,6 +23,22 @@ const directory = process.env.DECISION_EVIDENCE_AUDIT;
 const rankReplies = process.env.DECISION_AUDIT_RANK_REPLIES === "1";
 const sharedReplies = process.env.DECISION_AUDIT_SHARED_REPLIES === "1";
 const positionChoices = process.env.DECISION_AUDIT_POSITION_CHOICES === "1";
+const extraChoices = process.env.DECISION_AUDIT_EXTRA_CHOICE === "1";
+
+type ExtraChoiceCase = {
+    id: string;
+    cachedRootSha256: string;
+    observed: { six90k?: { lines: DecisionEngineLine[]; attempt: { milliseconds: number } } };
+    choices: { six90k?: string | null };
+    verification: Record<
+        string,
+        {
+            pair: DecisionEngineLine[];
+            attempt: { milliseconds: number };
+            reply?: { lines: DecisionEngineLine[]; attempt: { milliseconds: number } };
+        }
+    >;
+};
 
 type ReplyQuery = {
     moveUci: string;
@@ -127,6 +147,12 @@ test.skipIf(!directory)(
                 maximumRootNodes: number;
                 sharedReplyBudgetNodes?: number;
                 positionReplyBudgetNodes?: number;
+                extraChoice?: {
+                    shortlistNodes: number;
+                    shortlistWidth: number;
+                    pairNodes: number;
+                    replyNodes: number;
+                };
             };
         } | null = null;
         let freezeSha256: string | null = null;
@@ -149,6 +175,8 @@ test.skipIf(!directory)(
                     throw new Error("Shared reply use must match the frozen search plan");
                 if (Boolean(frozen?.search.positionReplyBudgetNodes) !== positionChoices)
                     throw new Error("Position reply use must match the frozen search plan");
+                if (Boolean(frozen?.search.extraChoice) !== extraChoices)
+                    throw new Error("Extra candidate use must match the frozen search plan");
             }
             rows = selectFrozenValidation(sampleBytes, cohort, frozen);
             const referenceBytes = readFileSync(referencePath);
@@ -182,6 +210,19 @@ test.skipIf(!directory)(
         if (!/^[a-z0-9-]+$/.test(name)) throw new Error("Invalid audit name");
         const output = privateReportPath(join(directory!, `${name}.json`));
         expect(existsSync(output)).toBe(false);
+        const extra = extraChoices
+            ? JSON.parse(readFileSync(join(directory!, "quick-nominations.json"), "utf8"))
+            : null;
+        if (
+            extra &&
+            (extra.rootSha256 !== createHash("sha256").update(sampleBytes).digest("hex") ||
+                (frozen && extra.engineSha256 !== frozen.engineSha256) ||
+                JSON.stringify(extra.profiles) !== JSON.stringify({ six90k: [6, 90_000] }))
+        )
+            throw new Error("Extra search does not match the audited sample and shortlist budget");
+        const extraById = new Map<string, ExtraChoiceCase>(
+            (extra?.results ?? []).map((row: ExtraChoiceCase) => [row.id, row]),
+        );
         const results = rows.map((row: { id: string; fen: string; category: string }) => {
             const engineBytes = readFileSync(
                 join(
@@ -336,11 +377,63 @@ test.skipIf(!directory)(
                     }
                 }
             }
-            const assessment = assessChessDecision(input);
+            const assessmentWithoutExtraChoice = assessChessDecision(input);
+            let extraChoiceNodes: number | undefined;
+            let extraChoiceMs: number | undefined;
+            if (
+                extraChoices &&
+                assessmentWithoutExtraChoice?.position.tactical.support !== "supported"
+            ) {
+                const cache = extraById.get(row.id);
+                if (!cache || cache.cachedRootSha256 !== engineHash)
+                    throw new Error("Extra search did not use this board's exact root frame");
+                const shortlist = cache.observed.six90k;
+                if (
+                    shortlist &&
+                    input.candidates[0].depth >= 18 &&
+                    input.candidates[0].cp !== null
+                ) {
+                    extraChoiceNodes = 90_000;
+                    extraChoiceMs = shortlist.attempt.milliseconds;
+                    const move = pickExtraPositionMove(row.fen, input.candidates, shortlist.lines);
+                    if (move !== (cache.choices.six90k ?? null))
+                        throw new Error("Engine shortlist and move nomination disagree");
+                    if (move) {
+                        const evidence = cache.verification[move];
+                        extraChoiceNodes += 1_200_000;
+                        extraChoiceMs += evidence.attempt.milliseconds;
+                        if (
+                            compareExtraPositionMove(
+                                row.fen,
+                                input.candidates[0],
+                                move,
+                                evidence.pair,
+                            ) &&
+                            evidence.reply
+                        ) {
+                            extraChoiceNodes += 1_000_000;
+                            extraChoiceMs += evidence.reply.attempt.milliseconds;
+                            input.extraPositionChoice = {
+                                shortlist: shortlist.lines,
+                                pair: evidence.pair,
+                                replies: evidence.reply.lines,
+                            };
+                        }
+                    }
+                }
+            }
+            const assessment = input.extraPositionChoice
+                ? assessChessDecision(input)
+                : assessmentWithoutExtraChoice;
             const milliseconds = performance.now() - started - baselineMs;
             const rootOnlyAssessment =
                 cohort === "tournament"
-                    ? assessChessDecision({ ...input, replyProbes: [], positionReply: undefined })
+                    ? assessChessDecision({
+                          ...input,
+                          replyProbes: [],
+                          positionReply: undefined,
+                          extraPositionChoice: undefined,
+                      })
                     : undefined;
             return {
                 id: row.id,
@@ -351,6 +444,11 @@ test.skipIf(!directory)(
                 strategicEffects: extractStrategicRootEffects(row.fen, engine.deep[0]),
                 structuralTransitions: extractPositionalTransitions(row.fen, engine.deep[0]),
                 assessment,
+                assessmentWithoutExtraChoice: extraChoices
+                    ? assessmentWithoutExtraChoice
+                    : undefined,
+                extraChoiceNodes,
+                extraChoiceMs,
                 rootOnlyAssessment,
                 sharedReplyNodes,
                 sharedReplyMs,
