@@ -1,0 +1,483 @@
+{
+  "previewNodes": 18000,
+  "screened": 1103,
+  "sources": {
+    "asian": {
+      "sha256": "880fb4d2db907add3ba7a6d3ac0ea78165a9473f91f16d08effa34a631b0d10a",
+      "candidates": 224
+    },
+    "revolucion": {
+      "sha256": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7",
+      "candidates": 122
+    },
+    "bengbu": {
+      "sha256": "fa82c881f49a5cdd3b945698e7404ce3c48986ffd77d5f8d0baaad5605c1f2fe",
+      "candidates": 136
+    },
+    "tajik": {
+      "sha256": "d2854b1296d8102331e0128a3b1184f9e61591e5ed92fdd18eeae4c9f6057359",
+      "candidates": 156
+    },
+    "world-seniors": {
+      "sha256": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+      "candidates": 100
+    },
+    "uruguay": {
+      "sha256": "8d4b11d1c5427b19710ddd30f8060ad72c2ab1e81308e8cd2feab46d7e228c85",
+      "candidates": 113
+    },
+    "slovenian-league": {
+      "sha256": "399dd6a04b9ef40a5b6c647029d9859e6f99968b0d605c7304e052b04af11ed0",
+      "candidates": 130
+    },
+    "barbera": {
+      "sha256": "3871edb7430fc3c84817de20f67aa94f55fb1fbec9fdcb0580e7761f1fd1aebc",
+      "candidates": 48
+    },
+    "european-individual": {
+      "sha256": "c122d7bee782eff41e85aa1bb09bef3e8386de230c3b8f93a1d246fa5a23b82f",
+      "candidates": 74
+    }
+  },
+  "exclusions": [
+    {
+      "name": "sample.json",
+      "sha256": "fbe1a01be9e0e0ff02f0347a71059cd5e156360b636f5369a2b9df9031971035"
+    },
+    {
+      "name": "sample.json",
+      "sha256": "216a59e42dab71a8da0d395ae6cb2d2185f60ed19949ba43c49fd98b6ee06138"
+    },
+    {
+      "name": "reserve.json",
+      "sha256": "77b4fab7e0efd6f3e56f26e115f5df6aa9290084596711baed067d10cd3246b4"
+    },
+    {
+      "name": "reserve.json",
+      "sha256": "a6f2f402f2c2f9d5d28a408ff1c47ee286dd8a98c985468ccdbe27fe79880fa9"
+    }
+  ],
+  "matchedExchanges": 84,
+  "cases": [
+    {
+      "id": "passer-tajik-7f84001105e2c5-118",
+      "game": "7f84001105e2c5bc7295818a86e09c76c8dcb51b6613b7f2f60fbbb6fc73474b",
+      "event": "tajik",
+      "move": "f6f7",
+      "fen": "8/3Pk2r/2p1PR2/2K3p1/6P1/p7/8/8 w - - 1 60",
+      "boardKey": "8/3Pk2r/2p1PR2/2K3p1/6P1/p7/8/8 w - -",
+      "ply": 118,
+      "preview": {
+        "reply": "h7f7",
+        "recapture": "e6f7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-asian-6e7680a5122922-57",
+      "game": "6e7680a5122922f5b8bca582116c1939466ab0edc0918891d589ade63bcfe4cd",
+      "event": "asian",
+      "move": "e3f2",
+      "fen": "r3k1r1/2pb1p2/pp1p1q2/3Pn3/2P1P3/2N1bPp1/PP1NB1R1/3QK2R b q - 2 29",
+      "boardKey": "3qk2r/pp1nb1r1/2n1BpP1/2p1p3/3pN3/PP1P1Q2/2PB1P2/R3K1R1 w Q -",
+      "ply": 57,
+      "preview": {
+        "reply": "g2f2",
+        "recapture": "g3f2",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-world-seniors-97a1745c545a7e-62",
+      "game": "97a1745c545a7e67c732cd8bf3fb5f7417f5f970928505215495ea0bf9a50c07",
+      "event": "world-seniors",
+      "move": "c4c7",
+      "fen": "8/1r2k2p/1P2b1p1/p4p2/2R1p2P/P3P3/n4PP1/3R2K1 w - - 3 32",
+      "boardKey": "3r2k1/N4pp1/p3p3/2r1P2p/P4P2/1p2B1P1/1R2K2P/8 b - -",
+      "ply": 62,
+      "preview": {
+        "reply": "b7c7",
+        "recapture": "b6c7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-asian-4cc9e5bf655fa1-46",
+      "game": "4cc9e5bf655fa10c958ecd8ce20ae571987219c57b2cc5cdbb6a163009135a21",
+      "event": "asian",
+      "move": "c4f7",
+      "fen": "r4rk1/p3pn2/2np2P1/2p3N1/1pBbPB2/q4P2/P1PQ4/1K1R3R w - - 1 24",
+      "boardKey": "1k1r3r/p1pq4/Q4p2/1PbBpb2/2P3n1/2NP2p1/P3PN2/R4RK1 b - -",
+      "ply": 46,
+      "preview": {
+        "reply": "f8f7",
+        "recapture": "g6f7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-revolucion-00ffbead9c7b9d-40",
+      "game": "00ffbead9c7b9d46c93d6685eb74e563a7caabf643fc5f4944fbe78af70fa38e",
+      "event": "revolucion",
+      "move": "b3b7",
+      "fen": "4r1k1/pp2qppp/2Pr2n1/3ppb2/8/1Q2PN2/P3BPPP/3RR1K1 w - - 0 21",
+      "boardKey": "3rr1k1/p3bppp/1q2pn2/8/3PPB2/2pR2N1/PP2QPPP/4R1K1 b - -",
+      "ply": 40,
+      "preview": {
+        "reply": "e7b7",
+        "recapture": "c6b7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-slovenian-league-5bee88721297d3-118",
+      "game": "5bee88721297d3a18e76f76b9261d1540c902872c490d23609af927376bb2f2c",
+      "event": "slovenian-league",
+      "move": "h7f7",
+      "fen": "5kn1/5p1Q/1p2P1qp/6p1/P7/6P1/B4PK1/8 w - - 1 60",
+      "boardKey": "5kn1/5p1Q/1p2P1qp/6p1/P7/6P1/B4PK1/8 w - -",
+      "ply": 118,
+      "preview": {
+        "reply": "g6f7",
+        "recapture": "e6f7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-european-individual-00b4c3b319dbb6-71",
+      "game": "00b4c3b319dbb61fa3d914497625fe238abe0ca2482413c3f19128fac6635284",
+      "event": "european-individual",
+      "move": "b4b2",
+      "fen": "7R/4b1k1/3pPr2/p2B4/1q1B1Q2/p7/KPb5/8 b - - 0 36",
+      "boardKey": "7R/4b1k1/3pPr2/p2B4/1q1B1Q2/p7/KPb5/8 b - -",
+      "ply": 71,
+      "preview": {
+        "reply": "d4b2",
+        "recapture": "a3b2",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-slovenian-league-46a76c93087ec5-84",
+      "game": "46a76c93087ec56cd2a4244b923c776ae212516dd61d5c162e27be181a3915fe",
+      "event": "slovenian-league",
+      "move": "c6c7",
+      "fen": "6n1/3r1p1k/2RPp1pp/1p1bB3/1p1P3P/5P2/6P1/1B4K1 w - - 3 43",
+      "boardKey": "1b4k1/6p1/5p2/1P1p3p/1P1Bb3/2rpP1PP/3R1P1K/6N1 b - -",
+      "ply": 84,
+      "preview": {
+        "reply": "d7c7",
+        "recapture": "d6c7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-tajik-da20305a2d3a71-45",
+      "game": "da20305a2d3a71b0fc1892447fd297c031654cc4b32a19f8856929d24ac064df",
+      "event": "tajik",
+      "move": "a8a2",
+      "fen": "r2r4/1p1b1pkp/4pN2/2n5/2Pq4/1p1P2P1/P3Q1BP/R4R1K b - - 2 23",
+      "boardKey": "r2r4/1p1b1pkp/4pN2/2n5/2Pq4/1p1P2P1/P3Q1BP/R4R1K b - -",
+      "ply": 45,
+      "preview": {
+        "reply": "a1a2",
+        "recapture": "b3a2",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-world-seniors-08dbc2f872f95a-60",
+      "game": "08dbc2f872f95a9ed66885704f8452b208f816de41f336a36c243cf85400ab4c",
+      "event": "world-seniors",
+      "move": "c1c7",
+      "fen": "1kr1r3/1p2qp2/pP3npp/P2p4/1b1P1P2/3B1Q1P/6P1/R1R2NK1 w - - 1 31",
+      "boardKey": "1kr1r3/1p2qp2/pP3npp/P2p4/1b1P1P2/3B1Q1P/6P1/R1R2NK1 w - -",
+      "ply": 60,
+      "preview": {
+        "reply": "c8c7",
+        "recapture": "b6c7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-asian-6558d6db0763fa-42",
+      "game": "6558d6db0763fa79cdc518e4821c9c1601cb1a513172c8ea7f30706fcd63877f",
+      "event": "asian",
+      "move": "c1c7",
+      "fen": "r1r3k1/pp1n2p1/3P1pp1/1P2p3/8/B7/5PPP/R1R3K1 w - - 0 22",
+      "boardKey": "r1r3k1/5ppp/b7/8/1p2P3/3p1PP1/PP1N2P1/R1R3K1 b - -",
+      "ply": 42,
+      "preview": {
+        "reply": "c8c7",
+        "recapture": "d6c7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-asian-83f66c0031c13b-51",
+      "game": "83f66c0031c13bb1587289e645db9d6735f8c61edeef0146e0b24a17896ec3fe",
+      "event": "asian",
+      "move": "d5d2",
+      "fen": "1k1r1r2/1p3R2/p6p/3qP1p1/1b2B3/1Pp3P1/2P1Q1KP/5R2 b - - 2 26",
+      "boardKey": "1k1r1r2/1p3R2/p6p/3qP1p1/1b2B3/1Pp3P1/2P1Q1KP/5R2 b - -",
+      "ply": 51,
+      "preview": {
+        "reply": "e2d2",
+        "recapture": "c3d2",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-revolucion-8d5c633a5c73ff-49",
+      "game": "8d5c633a5c73ffff41ef8e79fa0adac39ed6a35a1c95ecea586a8f04cf8839fc",
+      "event": "revolucion",
+      "move": "c1d2",
+      "fen": "3r1rk1/1p3p1p/p5p1/Q3PP2/8/P2Bp1N1/6PP/2q2RK1 b - - 0 25",
+      "boardKey": "2Q2rk1/6pp/p2bP1n1/8/q3pp2/P5P1/1P3P1P/3R1RK1 w - -",
+      "ply": 49,
+      "preview": {
+        "reply": "a5d2",
+        "recapture": "e3d2",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-bengbu-fd0548920ceb8a-64",
+      "game": "fd0548920ceb8aaaeaf22ba487e48c819494563a7763ae1d80e10f55fd5dbc6a",
+      "event": "bengbu",
+      "move": "g8f7",
+      "fen": "6Q1/1bp1kp2/pp2P3/7q/1P3P2/4P3/Pr1rNKPP/1B2R3 w - - 3 33",
+      "boardKey": "1b2r3/pR1Rnkpp/4p3/1p3p2/7Q/PP2p3/1BP1KP2/6q1 b - -",
+      "ply": 64,
+      "preview": {
+        "reply": "h5f7",
+        "recapture": "e6f7",
+        "pawnRank": 7
+      }
+    },
+    {
+      "id": "passer-uruguay-dee86fdf06a729-63",
+      "game": "dee86fdf06a729f2e11ba4532fa7554dc68c9b7a9b35b421a0654215a6fd748b",
+      "event": "uruguay",
+      "move": "c5d3",
+      "fen": "8/1b4rk/pn4Np/2nP4/1qpQ2P1/2N4P/1PB1R2K/8 b - - 0 32",
+      "boardKey": "8/1b4rk/pn4Np/2nP4/1qpQ2P1/2N4P/1PB1R2K/8 b - -",
+      "ply": 63,
+      "preview": {
+        "reply": "c2d3",
+        "recapture": "c4d3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-uruguay-e6f26d47dd9894-55",
+      "game": "e6f26d47dd989423a09ffe2b84b5fa49e41e9a3e318464dedb1558f45da8d7e4",
+      "event": "uruguay",
+      "move": "g4e3",
+      "fen": "4r1k1/p4ppp/5q2/8/2Pp2n1/P2P2P1/4R2P/2BQ2K1 b - - 1 28",
+      "boardKey": "2bq2k1/4r2p/p2p2p1/2pP2N1/8/5Q2/P4PPP/4R1K1 w - -",
+      "ply": 55,
+      "preview": {
+        "reply": "c1e3",
+        "recapture": "d4e3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-asian-a208c2c5a0b4b0-37",
+      "game": "a208c2c5a0b4b0454ee54a4105c6176bd3cf4c9ee9e5e38656fdc580b42620b6",
+      "event": "asian",
+      "move": "b2d3",
+      "fen": "r2q1rk1/1ppb2bn/3p4/p2P1p2/2P1pP2/PNN1B2P/1n1QB1P1/1R3RK1 b - - 1 19",
+      "boardKey": "1r3rk1/1N1qb1p1/pnn1b2p/2p1Pp2/P2p1P2/3P4/1PPB2BN/R2Q1RK1 w - -",
+      "ply": 37,
+      "preview": {
+        "reply": "e2d3",
+        "recapture": "e4d3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-asian-41688651551f4e-69",
+      "game": "41688651551f4e40558e227a6c6e9d68329ff50f06ad4fbd14d623b6b1e243c8",
+      "event": "asian",
+      "move": "e1e3",
+      "fen": "8/pp5p/5p1k/8/P1Br1p1P/1P3RP1/7K/4r3 b - - 0 35",
+      "boardKey": "4R3/7k/1p3rp1/p1bR1P1p/8/5P1K/PP5P/8 w - -",
+      "ply": 69,
+      "preview": {
+        "reply": "f3e3",
+        "recapture": "f4e3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-european-individual-9ffb99c6f2b1aa-28",
+      "game": "9ffb99c6f2b1aad35ad67a7e392e39f2cc320ac4a85a45eb022e13ecfe341a70",
+      "event": "european-individual",
+      "move": "b5d6",
+      "fen": "r2qk2r/pp2b3/2n1b2p/1N1pPpp1/3P4/5N2/PP3PP1/R1BQ1RK1 w kq - 0 15",
+      "boardKey": "r1bq1rk1/pp3pp1/5n2/3p4/1n1PpPP1/2N1B2P/PP2B3/R2QK2R b KQ -",
+      "ply": 28,
+      "preview": {
+        "reply": "e7d6",
+        "recapture": "e5d6",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-tajik-773c5061fee739-54",
+      "game": "773c5061fee739b1ae3892d0dd6d62f28c70da77b53399618de44a724c80a17b",
+      "event": "tajik",
+      "move": "e5g6",
+      "fen": "1rbq1rkn/1p2b1p1/p2npp1p/2p1N2P/2P2PP1/1P1P4/PB2QNB1/4RRK1 w - - 0 28",
+      "boardKey": "1rbq1rkn/1p2b1p1/p2npp1p/2p1N2P/2P2PP1/1P1P4/PB2QNB1/4RRK1 w - -",
+      "ply": 54,
+      "preview": {
+        "reply": "h8g6",
+        "recapture": "h5g6",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-asian-d9a10d9f6058a3-41",
+      "game": "d9a10d9f6058a32bd6532381fcc92fb55ad8f85df44f2d6e65b8816a9c827958",
+      "event": "asian",
+      "move": "c8c3",
+      "fen": "r1r3k1/5ppp/p3p3/n2pP3/1p1P4/q1P1Q3/P2N1PPP/R1R3K1 b - - 1 21",
+      "boardKey": "r1r3k1/5ppp/p3p3/n2pP3/1p1P4/q1P1Q3/P2N1PPP/R1R3K1 b - -",
+      "ply": 41,
+      "preview": {
+        "reply": "c1c3",
+        "recapture": "b4c3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-asian-539b083fe23a4b-43",
+      "game": "539b083fe23a4b6e327f18b0adc6f73af2720321f085849d8132c0712260c898",
+      "event": "asian",
+      "move": "b6b3",
+      "fen": "2b2rk1/6p1/rqp1p2p/3pP3/p3pP1P/P1Q3P1/1P2P1BK/2RR4 b - - 3 22",
+      "boardKey": "2b2rk1/6p1/rqp1p2p/3pP3/p3pP1P/P1Q3P1/1P2P1BK/2RR4 b - -",
+      "ply": 43,
+      "preview": {
+        "reply": "c3b3",
+        "recapture": "a4b3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-bengbu-bbbbd8b1ac94a0-107",
+      "game": "bbbbd8b1ac94a012b10cb70cc3f3121d5ea42852283bf78151a5064ecc2ad4c7",
+      "event": "bengbu",
+      "move": "b7f3",
+      "fen": "2r5/1q3p2/4p3/4P2p/1k1P1Qp1/1ppK2P1/5P1P/R7 b - - 3 54",
+      "boardKey": "2r5/1q3p2/4p3/4P2p/1k1P1Qp1/1ppK2P1/5P1P/R7 b - -",
+      "ply": 107,
+      "preview": {
+        "reply": "f4f3",
+        "recapture": "g4f3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-asian-065c37477492ca-53",
+      "game": "065c37477492ca631ec1c544e389576af9cadaaebfdb8acb08f36b26b5aba608",
+      "event": "asian",
+      "move": "b5d3",
+      "fen": "4r1k1/3q1pp1/1nNp1n1p/1b1P4/pP2p3/P1R1N1PP/3Q1PB1/6K1 b - - 1 27",
+      "boardKey": "4r1k1/3q1pp1/1nNp1n1p/1b1P4/pP2p3/P1R1N1PP/3Q1PB1/6K1 b - -",
+      "ply": 53,
+      "preview": {
+        "reply": "c3d3",
+        "recapture": "e4d3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-revolucion-621a58b89a23c8-68",
+      "game": "621a58b89a23c89bc97e2d4a964a3e92ce27a188d3fc77d97a00d7b1b2b57ca2",
+      "event": "revolucion",
+      "move": "e4d6",
+      "fen": "1Rb1rb2/5pk1/p5pp/1p2P3/2p1NP2/8/1P4PP/3R2K1 w - - 6 35",
+      "boardKey": "1Rb1rb2/5pk1/p5pp/1p2P3/2p1NP2/8/1P4PP/3R2K1 w - -",
+      "ply": 68,
+      "preview": {
+        "reply": "f8d6",
+        "recapture": "e5d6",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-tajik-cea00b6da5ae05-68",
+      "game": "cea00b6da5ae05833d10e1fdf87b55b0fde5a227c0aac7670b1b307aaf6a1859",
+      "event": "tajik",
+      "move": "g5e6",
+      "fen": "4r1k1/2pbr3/1p1p1b1q/p2P1pN1/2P2P2/6PB/PP1B2K1/3Q1R2 w - - 7 35",
+      "boardKey": "3q1r2/pp1b2k1/6pb/2p2p2/P2p1Pn1/1P1P1B1Q/2PBR3/4R1K1 b - -",
+      "ply": 68,
+      "preview": {
+        "reply": "d7e6",
+        "recapture": "d5e6",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-uruguay-d47a0dcb195f95-42",
+      "game": "d47a0dcb195f953f6d4526c252018b291589db940e68de92fbb0285d40c3fce2",
+      "event": "uruguay",
+      "move": "d5f6",
+      "fen": "r3nrk1/pq3pbp/1p1p2p1/2pNn1P1/2P1P3/2BP3P/2PQ2B1/1R3R1K w - - 2 22",
+      "boardKey": "1r3r1k/2pq2b1/2bp3p/2p1p3/2PnN1p1/1P1P2P1/PQ3PBP/R3NRK1 b - -",
+      "ply": 42,
+      "preview": {
+        "reply": "e8f6",
+        "recapture": "g5f6",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-asian-fd88de8c16b76d-55",
+      "game": "fd88de8c16b76ddfbe1206edf1f3329f3ee44bb486601d53cd93e1cc7f371995",
+      "event": "asian",
+      "move": "e5f3",
+      "fen": "r1b2rk1/1p2q3/pR1p4/P1pPn2p/2P1Ppp1/2P3P1/3QBB1P/4R1K1 b - - 5 28",
+      "boardKey": "4r1k1/3qbb1p/2p3p1/2p1pPP1/p1PpN2P/Pr1P4/1P2Q3/R1B2RK1 w - -",
+      "ply": 55,
+      "preview": {
+        "reply": "e2f3",
+        "recapture": "g4f3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-slovenian-league-2da0e788f3a568-37",
+      "game": "2da0e788f3a568dfd5eb334a6b355711a2a0e6eaf20f68486d7a0152abaa237d",
+      "event": "slovenian-league",
+      "move": "e4e3",
+      "fen": "r4rk1/1p3ppp/p1b1p3/4P3/3pq3/2B1PP2/PP2Q1PP/2RR2K1 b - - 0 19",
+      "boardKey": "2rr2k1/pp2q1pp/2b1pp2/3PQ3/4p3/P1B1P3/1P3PPP/R4RK1 w - -",
+      "ply": 37,
+      "preview": {
+        "reply": "e2e3",
+        "recapture": "d4e3",
+        "pawnRank": 6
+      }
+    },
+    {
+      "id": "passer-asian-fa322c5803f2dd-92",
+      "game": "fa322c5803f2dd371f4fae08f1ef47c21679948a39add55b7c8a630a1c2d4db0",
+      "event": "asian",
+      "move": "d4c6",
+      "fen": "3k4/3b2p1/1p3r1p/pPnP1p2/P2N4/7P/2R2PPK/3R4 w - - 8 47",
+      "boardKey": "3k4/3b2p1/1p3r1p/pPnP1p2/P2N4/7P/2R2PPK/3R4 w - -",
+      "ply": 92,
+      "preview": {
+        "reply": "d7c6",
+        "recapture": "d5c6",
+        "pawnRank": 6
+      }
+    }
+  ]
+}

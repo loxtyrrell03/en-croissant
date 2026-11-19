@@ -1,0 +1,125 @@
+{
+  "previewNodes": 18000,
+  "screened": 525,
+  "sources": {
+    "marsh": {
+      "sha256": "f2b4933db90a224997f18aacded255556004f04bdf6e7aa5bc3b826005e7b473",
+      "candidates": 35
+    },
+    "ny-girls": {
+      "sha256": "cdc49ebd994f9da954842fa583f9b72c7844757ce1d928786f4bd597e62b5bcf",
+      "candidates": 35
+    },
+    "candidates": {
+      "sha256": "ead832af00e41767c46d56cc54e5f9e6f322d728a464250650c98570f57860e0",
+      "candidates": 49
+    },
+    "rio": {
+      "sha256": "23e101ef67f9ac9fdc462bd1ec2e7dcc6d883383054ba156bd23d4d81f89abcf",
+      "candidates": 34
+    },
+    "armenia": {
+      "sha256": "694adc64935d639fd03eb8e1fe1430022b5548fca60984cf501e767ea056712b",
+      "candidates": 49
+    },
+    "hastings": {
+      "sha256": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4",
+      "candidates": 41
+    },
+    "european-team": {
+      "sha256": "7e3bbc423895bf5e63b3644c3f78997b8114f36b956053a308354bb85e486193",
+      "candidates": 37
+    },
+    "british-major": {
+      "sha256": "0b47b20f265f4ce4ca14e4a390f30f1adf54d06c5a144ab223836c5b15467006",
+      "candidates": 46
+    },
+    "stjernens": {
+      "sha256": "fc0b8ffb59a99fed7e6561f5861945460bb9f20105df7531fd45431a48bcd530",
+      "candidates": 45
+    },
+    "aeroflot": {
+      "sha256": "9fb3d4f8795451372a6f3a3b5ba62b474685678335009a1c015d88f6db1421ed",
+      "candidates": 68
+    },
+    "asian-men": {
+      "sha256": "a559cfee041d16ed2f5a037855801f0c00fdd64332dca8b5e63af495f6ff1823",
+      "candidates": 48
+    },
+    "asian-women": {
+      "sha256": "2d6cb2b52d8e8ea6c01cf738ef9b87b3c26957b5fe51741812d0b9c164ae2fc7",
+      "candidates": 38
+    }
+  },
+  "exclusions": [
+    {
+      "name": "sample.json",
+      "sha256": "fbe1a01be9e0e0ff02f0347a71059cd5e156360b636f5369a2b9df9031971035"
+    },
+    {
+      "name": "sample.json",
+      "sha256": "216a59e42dab71a8da0d395ae6cb2d2185f60ed19949ba43c49fd98b6ee06138"
+    },
+    {
+      "name": "sample.json",
+      "sha256": "e24946be6d6d40fe9cd141a9d90f1f5f1610f3c0e44fde46951cdd9807320f3c"
+    },
+    {
+      "name": "sample.json",
+      "sha256": "01796ca22fd64e368ad9582262aac2abb6e8509ccbc2823f3feb17129a659787"
+    },
+    {
+      "name": "reserve.json",
+      "sha256": "77b4fab7e0efd6f3e56f26e115f5df6aa9290084596711baed067d10cd3246b4"
+    }
+  ],
+  "leadingMoves": true,
+  "matchedExchanges": 3,
+  "cases": [
+    {
+      "id": "passer-asian-women-de3c926b57e6dc-62",
+      "game": "de3c926b57e6dc67530fc21b1f620f54f169be8c2dbd0733980c93da95112381",
+      "event": "asian-women",
+      "move": "e6d7",
+      "fen": "5r2/2q3pk/1pPpQ2p/4pp2/8/2P1PP2/6PP/5RK1 w - - 3 32",
+      "boardKey": "5r2/2q3pk/1pPpQ2p/4pp2/8/2P1PP2/6PP/5RK1 w - -",
+      "ply": 62,
+      "preview": {
+        "reply": "c7d7",
+        "recapture": "c6d7",
+        "pawnRank": 7,
+        "blockade": true
+      }
+    },
+    {
+      "id": "passer-european-team-b20873207dd7e9-58",
+      "game": "b20873207dd7e9cd65b3122a7f4b28af5f15f8593e1d2f9383a6f6a7ef67a23a",
+      "event": "european-team",
+      "move": "a1a7",
+      "fen": "6k1/pr2rp1p/1P2b1p1/1B6/8/2R4P/5PP1/R5K1 w - - 3 30",
+      "boardKey": "6k1/pr2rp1p/1P2b1p1/1B6/8/2R4P/5PP1/R5K1 w - -",
+      "ply": 58,
+      "preview": {
+        "reply": "b7a7",
+        "recapture": "b6a7",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-aeroflot-23d13c2afdb37e-105",
+      "game": "23d13c2afdb37ed4e3fca879c897e2ff68425d29dd4390c5c7428d52616ddd3b",
+      "event": "aeroflot",
+      "move": "c7c2",
+      "fen": "8/2rq3k/6pp/4P3/4QPP1/3p3P/3R3K/8 b - - 1 53",
+      "boardKey": "8/2rq3k/6pp/4P3/4QPP1/3p3P/3R3K/8 b - -",
+      "ply": 105,
+      "preview": {
+        "reply": "d2c2",
+        "recapture": "d3c2",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    }
+  ]
+}

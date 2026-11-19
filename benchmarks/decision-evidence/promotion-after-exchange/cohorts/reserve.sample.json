@@ -1,0 +1,185 @@
+{
+  "previewNodes": 18000,
+  "screened": 185,
+  "sources": {
+    "grand-swiss": {
+      "sha256": "27d81b53de716705ba4949d5775209966521972ada3e6384d5e9d21132a2610f",
+      "candidates": 65
+    },
+    "club-women": {
+      "sha256": "925ca2273901e489e7521851c0122b3e00a532048c1cb0ce0c990e9c81fe8947",
+      "candidates": 49
+    },
+    "hvar": {
+      "sha256": "8bbea58a784f9117ffa141d8402bb4c0e6e7187d50ac00d4081f2010495967aa",
+      "candidates": 12
+    },
+    "sahel": {
+      "sha256": "acc3f50a613b823c80a4077dd1f267a35007b473bb8c345a82a737e9e978705e",
+      "candidates": 18
+    },
+    "dubai": {
+      "sha256": "4df1be0903df973ca277321ec66480cedaf777a53132d82c40f1b0fc03515d5e",
+      "candidates": 12
+    },
+    "poland": {
+      "sha256": "8c20aae8325c8504373f7729be29b33d7242647104d1f794a50ae3888e0ffdef",
+      "candidates": 20
+    },
+    "formentera": {
+      "sha256": "45b78fb178fe98a72be3cd3d34a9e10de2d0b954fb070f0b7a35743ec4ede47a",
+      "candidates": 9
+    }
+  },
+  "exclusions": [
+    {
+      "name": "reserve.json",
+      "sha256": "77b4fab7e0efd6f3e56f26e115f5df6aa9290084596711baed067d10cd3246b4"
+    },
+    {
+      "name": "classical.json",
+      "sha256": "267d5ee3aaa744654e560dae9588039c00a7cbd9ab14fbbae7d4fabd13745d99"
+    },
+    {
+      "name": "reserve.json",
+      "sha256": "a6f2f402f2c2f9d5d28a408ff1c47ee286dd8a98c985468ccdbe27fe79880fa9"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "24c66cf7f43277b47be941e6f59b242103404e14630f68c5f1535e2a0a961ed3"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "10bee309ee117de43ea5b7fb42473edfe3b048d9d4df53badf574a906d960939"
+    }
+  ],
+  "matchedExchanges": 9,
+  "cases": [
+    {
+      "id": "passer-club-women-00062bcf4ee57e-69",
+      "game": "00062bcf4ee57e59fc8f229f2926789bfe887909fa593be9f65e07fba2699a4f",
+      "event": "club-women",
+      "move": "c2d2",
+      "fen": "5rk1/5p1p/6p1/p7/PbB3P1/2p2R2/2r2PP1/3R1K2 b - - 1 35",
+      "boardKey": "3r1k2/2R2pp1/2P2r2/pBb3p1/P7/6P1/5P1P/5RK1 w - -",
+      "ply": 69,
+      "preview": {
+        "reply": "d1d2",
+        "recapture": "c3d2",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-grand-swiss-8f0d06a2445695-44",
+      "game": "8f0d06a2445695909c4e1625da43baf6d62cd14fff107efc900194b3343c16a0",
+      "event": "grand-swiss",
+      "move": "g6e7",
+      "fen": "r2k2r1/pp1b2p1/2pPppNp/3n4/3P4/P5R1/1P1KBP1P/6R1 w - - 3 23",
+      "boardKey": "6r1/1p1kbp1p/p5r1/3p4/3N4/2PpPPnP/PP1B2P1/R2K2R1 b - -",
+      "ply": 44,
+      "preview": {
+        "reply": "d5e7",
+        "recapture": "d6e7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-hvar-b9851da746d4d3-93",
+      "game": "b9851da746d4d341385bf6248c35315ef680cf7c09120abbdb40861e89219876",
+      "event": "hvar",
+      "move": "f6f2",
+      "fen": "8/p7/5r1k/P1pBp2p/4P1qP/2P3p1/1Q4K1/8 b - - 3 47",
+      "boardKey": "8/1q4k1/2p3P1/4p1Qp/p1PbP2P/5R1K/P7/8 w - -",
+      "ply": 93,
+      "preview": {
+        "reply": "b2f2",
+        "recapture": "g3f2",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-formentera-53eee459da5f6d-58",
+      "game": "53eee459da5f6d3ef5c96578773e4b4aeb58f51e82dd4f8c49e33a8c1bf4b081",
+      "event": "formentera",
+      "move": "e1e7",
+      "fen": "3rr3/1bq2p1k/p1p2Ppp/2P5/7Q/1p5P/5PP1/R3RBK1 w - - 2 30",
+      "boardKey": "3rr3/1bq2p1k/p1p2Ppp/2P5/7Q/1p5P/5PP1/R3RBK1 w - -",
+      "ply": 58,
+      "preview": {
+        "reply": "e8e7",
+        "recapture": "f6e7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-club-women-b1115dbb8be019-80",
+      "game": "b1115dbb8be0198017f4512bbcc773b30852dd1063ae158c4262179c7b742fc2",
+      "event": "club-women",
+      "move": "e1e7",
+      "fen": "2rq4/6k1/3P2pp/2pQ1pn1/2B5/P6P/5PP1/4R1K1 w - - 0 41",
+      "boardKey": "2rq4/6k1/3P2pp/2pQ1pn1/2B5/P6P/5PP1/4R1K1 w - -",
+      "ply": 80,
+      "preview": {
+        "reply": "d8e7",
+        "recapture": "d6e7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-club-women-1b147270a788d1-73",
+      "game": "1b147270a788d175bbdb16b087d4bccb42d5170a7b25b7a05a43268318572e02",
+      "event": "club-women",
+      "move": "e4e2",
+      "fen": "8/1p3pkp/p5p1/8/4q3/P2p4/5QPP/5K2 b - - 1 37",
+      "boardKey": "5k2/5qpp/p2P4/4Q3/8/P5P1/1P3PKP/8 w - -",
+      "ply": 73,
+      "preview": {
+        "reply": "f2e2",
+        "recapture": "d3e2",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-grand-swiss-64aa2eea24cf44-80",
+      "game": "64aa2eea24cf44a61ea73ea864d161e7ed4f07f7cba4ff9bffb38d2c56a034ed",
+      "event": "grand-swiss",
+      "move": "b5b7",
+      "fen": "1r6/1bk2p2/P5p1/1R6/3p2Pp/3P3P/3K1P2/8 w - - 0 41",
+      "boardKey": "1r6/1bk2p2/P5p1/1R6/3p2Pp/3P3P/3K1P2/8 w - -",
+      "ply": 80,
+      "preview": {
+        "reply": "b8b7",
+        "recapture": "a6b7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-hvar-cadfbb1a7088a7-52",
+      "game": "cadfbb1a7088a73bf342f38d70fb3d79c6389f0c4964d02f9543ccef5ac19586",
+      "event": "hvar",
+      "move": "e5c7",
+      "fen": "3qrbk1/1p1r1ppb/1P2p2p/2p1B3/p1P5/P2PR1P1/1Q3PBP/3R2K1 w - - 5 27",
+      "boardKey": "3qrbk1/1p1r1ppb/1P2p2p/2p1B3/p1P5/P2PR1P1/1Q3PBP/3R2K1 w - -",
+      "ply": 52,
+      "preview": {
+        "reply": "d7c7",
+        "recapture": "b6c7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-grand-swiss-af827cb5e5287e-58",
+      "game": "af827cb5e5287e595d206c6dca5c08f3bd2ae64ee22ea5d9a9a04e30c72c9e0c",
+      "event": "grand-swiss",
+      "move": "d1d7",
+      "fen": "r3n1k1/2p1qp2/2P3pb/4p2p/r3P3/PB3Q1P/1B3PP1/3R2K1 w - - 1 30",
+      "boardKey": "3r2k1/1b3pp1/pb3q1p/R3p3/4P2P/2p3PB/2P1QP2/R3N1K1 b - -",
+      "ply": 58,
+      "preview": {
+        "reply": "e7d7",
+        "recapture": "c6d7",
+        "isPassed": true
+      }
+    }
+  ]
+}

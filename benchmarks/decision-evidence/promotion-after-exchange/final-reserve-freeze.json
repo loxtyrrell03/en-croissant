@@ -1,0 +1,22 @@
+[
+  {
+    "sha256": "d6d76b8f9199228f22edaf22c47aadceb7689efc9359648a3a920057eb51986d",
+    "file": "decisionExchangePasser.ts"
+  },
+  {
+    "sha256": "e3ac27c5a89c688a2450f9e43b5c141b72d92085e0d5fb7192271f14e6dd030f",
+    "file": "scoped-decisionAssessment.ts"
+  },
+  {
+    "sha256": "01796ca22fd64e368ad9582262aac2abb6e8509ccbc2823f3feb17129a659787",
+    "file": "sample.json"
+  },
+  {
+    "sha256": "2f3202c0cc1f90bfbe2201b4ab37b7874b8cb35341cbf071ec7fd5469a288da2",
+    "file": "reference.json"
+  },
+  {
+    "sha256": "1cf17bacc8875700186fcf07823da8dd807dc6c7ee4a69429f22881c491d16b4",
+    "file": "decision-input.json"
+  }
+]

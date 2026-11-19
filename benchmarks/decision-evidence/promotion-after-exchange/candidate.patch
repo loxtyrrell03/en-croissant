@@ -1,0 +1,494 @@
+diff --git a/src/components/panels/tactics/DecisionEvidencePanel.tsx b/src/components/panels/tactics/DecisionEvidencePanel.tsx
+index d70edbb0ae225ff197b72966710a7517fec708eb..ffd1d16bb9ca7082ae219442976b0db4a7ac3cec 100644
+--- a/src/components/panels/tactics/DecisionEvidencePanel.tsx
++++ b/src/components/panels/tactics/DecisionEvidencePanel.tsx
+@@ -81,6 +81,7 @@ function EvidenceSummary({
+   );
+   const resources = assessment.conditionalResources;
+   const conditionalFork = assessment.conditionalFork;
++  const exchangePasser = assessment.exchangePasser;
+   const conditionalMate = assessment.conditionalMate;
+   return (
+     <Paper withBorder p="xs">
+@@ -142,6 +143,34 @@ function EvidenceSummary({
+             </Text>
+           </Stack>
+         )}
++        {expanded && exchangePasser && (
++          <Stack gap={4}>
++            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
++              <Text component="span" fw={600} size="xs">
++                Pawn advance.{" "}
++              </Text>
++              {lineSan(exchangePasser.fen, exchangePasser.principalLineUci)}
++            </Text>
++            <Text size="xs" c="dimmed">
++              Material change after the exchange {exchangePasser.materialBalancePoints > 0 ? "+" : ""}
++              {exchangePasser.materialBalancePoints} points
++            </Text>
++            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
++              <Text component="span" fw={600} size="xs">
++                Other candidate.{" "}
++              </Text>
++              {lineSan(exchangePasser.fen, exchangePasser.alternativeLineUci)}
++            </Text>
++            {exchangePasser.pawnCapture && (
++              <Text size="xs" style={{ overflowWrap: "anywhere" }}>
++                <Text component="span" fw={600} size="xs">
++                  If {exchangePasser.pawnCapture.replySan}.{" "}
++                </Text>
++                {lineSan(exchangePasser.fen, exchangePasser.pawnCapture.lineUci)}
++              </Text>
++            )}
++          </Stack>
++        )}
+         {expanded &&
+           comparedLines?.map(({ label, san }) => (
+             <Text key={label} size="xs" style={{ overflowWrap: "anywhere" }}>
+@@ -174,6 +203,7 @@ function EvidenceSummary({
+         {(reasons.length > 2 ||
+           resources.length > 0 ||
+           !!conditionalFork ||
++          !!exchangePasser ||
+           !!conditionalMate ||
+           !!comparedLines?.length ||
+           assessment.limitations.length > 0 ||
+diff --git a/src/components/panels/tactics/decisionSearch.ts b/src/components/panels/tactics/decisionSearch.ts
+index 3234e575f66e67c50ed88a433d980c7064a04daa..321df9acc1efb02763559eeda91236259bb62f81 100644
+--- a/src/components/panels/tactics/decisionSearch.ts
++++ b/src/components/panels/tactics/decisionSearch.ts
+@@ -5,6 +5,7 @@ import type { Role } from "chessops/types";
+ import { events, type BestMoves, type BestMovesPayload } from "@/bindings";
+ import { getBestMoves, killEngine, type LocalEngine } from "@/utils/engines";
+ import { buildTacticalEngineOptions } from "@/utils/tacticalMotifs/liveTactics";
++import { nominateExchangePasserCaptures } from "@/utils/tacticalMotifs/decisionExchangePasser";
+ import {
+     measureDecisionLine,
+     measurePositionDecision,
+@@ -455,6 +456,20 @@ export async function gatherDecisionEvidence(
+                 if (selected) probe.targetedCaptures!.push({ line: selected });
+             }
+         }
++        if (root === best) {
++            const captureChoices = nominateExchangePasserCaptures(fen, candidates, lines);
++            if (captureChoices.length) {
++                progress("Checking replies that take the pawn…");
++                probe.pawnCaptureProbes = [];
++                for (const capture of captureChoices) {
++                    const [line] = await searchPosition(
++                        engine, nextFen, 1_000_000, signal,
++                        Math.min(sessionEnd, Date.now() + 3_000), nextHistory, [capture],
++                    );
++                    if (line) probe.pawnCaptureProbes.push(line);
++                }
++            }
++        }
+         replyProbes.push(probe);
+     }
+     let sharedReply: DecisionSharedReplyProbe | undefined;
+diff --git a/src/utils/tacticalMotifs/decisionAssessment.ts b/src/utils/tacticalMotifs/decisionAssessment.ts
+index 13072b71db01c2bfc0e323de25f14cf3606dcf90..f95cb2a927b7b2b990fe3c90ffe1e716424c033f 100644
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -58,6 +58,7 @@ import {
+ } from "./decisionPositionPlans";
+ import { findSharedStructuralPlan } from "./decisionSharedStructure";
+ import { findPromotionPressure } from "./decisionPromotionPressure";
++import { findExchangePasser, type ExchangePasserEvidence } from "./decisionExchangePasser";
+ import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisionPromotionMistake";
+ import { compareRookPressure, type RookPressureEvidence } from "./decisionRookPressure";
+ import { comparePawnStructure, type PawnStructureEvidence } from "./decisionPawnStructure";
+@@ -79,6 +80,7 @@ export type DecisionAssessment = {
+     episodeOutcomes: TacticalEpisodeOutcome[];
+     conditionalResources: ConditionalTacticalResource[];
+     conditionalFork?: ConditionalForkEvidence;
++    exchangePasser?: ExchangePasserEvidence;
+     conditionalMate?: DecisionConditionalMate;
+     positionalFactors: ComparativePositionalEvidence[];
+     limitations: string[];
+@@ -88,6 +90,7 @@ export type DecisionReplyProbe = {
+     moveUci: string;
+     lines: DecisionEngineLine[];
+     targetedCaptures?: Array<{ line: DecisionEngineLine }>;
++    pawnCaptureProbes?: DecisionEngineLine[];
+ };
+ export type DecisionAssessmentInput = {
+     fen: string;
+@@ -251,6 +254,13 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
+         witnessedBranches.flatMap((branch) => branch.witnesses),
+     );
+     const factors = comparePositionalTransitions(input.fen, line, input.candidates);
++    const exchangePasser = probe
++        ? findExchangePasser(input.fen, line, input.candidates, probe.lines, probe.pawnCaptureProbes)
++        : null;
++    if (exchangePasser) {
++        result.exchangePasser = exchangePasser;
++        factors.push(exchangePasser.factor);
++    }
+     const corroboratedFactors = corroborated ? corroboratePositionalEffects(input.fen, line, branches[0]) : [];
+     for (const item of corroboratedFactors) {
+         if (
+@@ -385,6 +395,16 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
+             }
+         }
+     }
++    if (exchangePasser?.pawnCapture && result.tactical.support !== "supported") {
++        result.tactical = {
++            support: "supported",
++            basis: "engine-supported",
++            reasons: [exchangePasser.pawnCapture.description],
++        };
++        result.limitations.push(
++            "The material gain follows the shown pawn capture. The strongest searched defence avoids that line and blocks promotion.",
++        );
++    }
+     const certificates =
+         input.rootCertificates
+             ?.find((item) => item.fen === input.fen && item.moveUci === line.pvUci[0])
+@@ -525,6 +545,18 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
+         position.positionalFactors = qualified.map(({ factor }) => factor);
+         break;
+     }
++    if (position.positional.support === "unestablished" && !rejectedChoices) {
++        const exchange = viable[0]?.exchangePasser;
++        if (exchange) {
++            position.exchangePasser = exchange;
++            position.positional = {
++                support: "supported",
++                basis: "heuristic",
++                reasons: [exchange.factor.description],
++            };
++            position.positionalFactors = [exchange.factor];
++        }
++    }
+     if (position.positional.support === "unestablished" && !rejectedChoices) {
+         const plan =
+             findPositionStrategicPlan(input.fen, input.candidates) ??
+diff --git a/src/utils/tacticalMotifs/decisionExchangePasser.ts b/src/utils/tacticalMotifs/decisionExchangePasser.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..dc8a7fcba62150bb97cf5bd9fee35021bf7ffb98
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionExchangePasser.ts
+@@ -0,0 +1,220 @@
++import { makeFen } from "chessops/fen";
++import type { Color, Square } from "chessops/types";
++import { makeSquare, makeUci, opposite, parseSquare } from "chessops/util";
++import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import type { ComparativePositionalEvidence } from "./positionalTransitions";
++
++const HORIZON = 9;
++const rank = (square: Square, side: Color) =>
++    side === "white" ? 1 + (square >> 3) : 8 - (square >> 3);
++
++export type ExchangePasserEvidence = {
++    fen: string;
++    factor: ComparativePositionalEvidence;
++    pawnFrom: string;
++    pawnTo: string;
++    promotionSquare: string;
++    materialBalancePoints: number;
++    principalLineUci: string[];
++    alternativeLineUci: string[];
++    pawnCapture?: { replySan: string; lineUci: string[]; description: string };
++};
++
++function passed(step: TacticalReplayStep, square: Square, side: Color) {
++    return ![...step.after.board.pawn.intersect(step.after.board[opposite(side)])].some(
++        pawn => Math.abs((pawn & 7) - (square & 7)) <= 1 && rank(pawn, side) > rank(square, side),
++    );
++}
++
++function blockadedPasser(steps: TacticalReplayStep[], square: Square, side: Color) {
++    const promotionSquare = square + (side === "white" ? 8 : -8);
++    let blockadePly = 0;
++    let through = 0;
++    for (const [index, step] of steps.entries()) {
++        if (index < 2) continue;
++        const pawn = step.after.board.get(square);
++        if (pawn?.color !== side || pawn.role !== "pawn" || !passed(step, square, side)) break;
++        if (!blockadePly &&
++            step.before.turn !== side &&
++            step.move.to === promotionSquare &&
++            step.after.board.get(promotionSquare)?.color === opposite(side)
++        ) {
++            const promotion = step.before.clone();
++            promotion.turn = side;
++            promotion.epSquare = undefined;
++            if (promotion.isLegal({ from: square, to: promotionSquare, promotion: "queen" }))
++                blockadePly = index + 1;
++        }
++        if (blockadePly && step.after.board.get(promotionSquare)?.color !== opposite(side))
++            return null;
++        if (blockadePly && index + 1 >= 7) {
++            through = index + 1;
++            break;
++        }
++    }
++    return through && blockadePly <= 7 ? { through, blockadePly, promotionSquare } : null;
++}
++
++function alternativeKeepsAdvance(steps: TacticalReplayStep[], from: Square, side: Color) {
++    let square = from;
++    for (const step of steps) {
++        if (step.before.turn === side && step.move.from === square) {
++            square = step.move.to;
++            if (step.move.promotion) return true;
++        }
++        const pawn = step.after.board.get(square);
++        if (pawn?.color !== side || pawn.role !== "pawn") return false;
++    }
++    return rank(square, side) >= 7;
++}
++
++function pawnCaptureBranch(
++    fen: string,
++    root: TacticalReplayStep,
++    pawn: Square,
++    replies: readonly DecisionEngineLine[],
++    targeted: readonly DecisionEngineLine[],
++): ExchangePasserEvidence["pawnCapture"] {
++    const best = replies[0];
++    if (best.cp == null) return;
++    const replyFen = makeFen(root.after.toSetup());
++    const comparable = replies.slice(1).filter(reply => reply.depth === best.depth);
++    for (const reply of [...comparable, ...targeted]) {
++        if (
++            reply.depth < 16 || reply.cp == null || reply.mate != null ||
++            best.cp - reply.cp < 100 || reply.pvUci[0] === best.pvUci[0]
++        )
++            continue;
++        const measured = measureDecisionLine(replyFen, reply);
++        if (!measured || measured.drawnEnding) continue;
++        const line = [root.uci, ...reply.pvUci.slice(0, 7)];
++        const steps = replayTacticalLine(fen, line);
++        const [, takePawn, counter, retake, collect, firstQuiet, secondQuiet] = steps;
++        if (
++            !takePawn?.capture || takePawn.move.to !== pawn ||
++            !counter || counter.capture < 300 || counter.move.from !== root.move.to ||
++            !retake?.capture || retake.move.to !== counter.move.to || retake.move.from === pawn ||
++            !collect?.capture || collect.move.to !== pawn || collect.balance < 90 ||
++            !firstQuiet || !secondQuiet ||
++            [firstQuiet, secondQuiet].some(step => step.capture || step.move.promotion || step.after.isCheck())
++        )
++            continue;
++        return {
++            replySan: takePawn.san,
++            lineUci: line.slice(0, 7),
++            description: `Taking the pawn with ${takePawn.san} allows ${counter.san} ${retake.san} ${collect.san}, leaving a gain of ${collect.balance / 100} material points in the analysed line.`,
++        };
++    }
++}
++
++/** A piece offer turns the exact recapturing pawn into a seventh-rank
++ * passer. The opponent commits to a blockade in both searched branches,
++ * and the nearest ranked alternative does not advance that same pawn. */
++export function findExchangePasser(
++    fen: string,
++    line: DecisionEngineLine,
++    candidates: readonly DecisionEngineLine[],
++    replies: readonly DecisionEngineLine[],
++    targeted: readonly DecisionEngineLine[] = [],
++): ExchangePasserEvidence | null {
++    const bestReply = replies[0];
++    const alternative = candidates[1];
++    if (
++        line.pvUci[0] !== candidates[0]?.pvUci[0] ||
++        !bestReply || !alternative || alternative.pvUci[0] === line.pvUci[0] ||
++        line.depth < 16 || bestReply.depth < 16 || line.depth !== alternative.depth ||
++        line.cp == null || alternative.cp == null ||
++        line.mate != null || alternative.mate != null ||
++        bestReply.cp == null || bestReply.mate != null
++    )
++        return null;
++    const confirmedAdvantage = Math.min(line.cp, -bestReply.cp);
++    if (confirmedAdvantage < -35 || confirmedAdvantage - alternative.cp < 90) return null;
++    const [first, answer, recapture] = line.pvUci;
++    if (!answer || !recapture || first.slice(2, 4) !== answer.slice(2, 4) ||
++        first.slice(2, 4) !== recapture.slice(2, 4) ||
++        bestReply.pvUci[0] !== answer || bestReply.pvUci[1] !== recapture)
++        return null;
++    const steps = replayTacticalLine(fen, line.pvUci.slice(0, HORIZON));
++    const [root, defence, retake] = steps;
++    if (!root || !defence?.capture || !retake?.capture) return null;
++    const side = root.before.turn;
++    const dest = root.move.to;
++    const pawn = retake.move.from;
++    const offer = root.before.board.get(root.move.from);
++    if (
++        !offer || offer.role === "king" || offer.role === "pawn" ||
++        defence.move.to !== dest || retake.move.to !== dest ||
++        retake.before.board.get(pawn)?.role !== "pawn" || rank(dest, side) !== 7 ||
++        retake.balance > 100 || retake.balance - root.balance > 50 ||
++        bestReply.pvUci[0] !== defence.uci || bestReply.pvUci[1] !== retake.uci
++    )
++        return null;
++    const principal = measureDecisionLine(fen, line);
++    const separate = measureDecisionLine(makeFen(root.after.toSetup()), bestReply);
++    const control = measureDecisionLine(fen, alternative);
++    if (!principal || !separate || !control || principal.drawnEnding || separate.drawnEnding || control.drawnEnding)
++        return null;
++    const second = replayTacticalLine(fen, [root.uci, ...bestReply.pvUci.slice(0, HORIZON - 1)]);
++    const a = blockadedPasser(steps, dest, side);
++    const b = blockadedPasser(second, dest, side);
++    if (!a || !b) return null;
++    const alternateSteps = replayTacticalLine(fen, alternative.pvUci.slice(0, HORIZON));
++    if (alternateSteps.length < 7 || alternativeKeepsAdvance(alternateSteps.slice(0, 7), pawn, side))
++        return null;
++    const from = makeSquare(pawn);
++    const to = makeSquare(dest);
++    const promotion = makeSquare(a.promotionSquare);
++    const block = steps[a.blockadePly - 1].san;
++    return {
++        fen,
++        factor: {
++            feature: "passed-pawn-progress",
++            side,
++            squareOrFile: to,
++            description: `${root.san} ${defence.san} ${retake.san} brings the pawn from ${from} to ${to}. ${block} blocks its promotion square on ${promotion}, and the pawn stays on the seventh rank in both searches.`,
++            before: rank(pawn, side),
++            after: 7,
++            unit: "relative-rank",
++            firstPly: 3,
++            lastConsecutivePly: Math.min(a.through, b.through),
++            support: "board-fact",
++            comparisonMoveUci: alternative.pvUci[0],
++            comparisonGapCp: line.cp - alternative.cp,
++            supportInComparison: false,
++            comparison: "alternative-choice",
++            materialWindowPlies: 7,
++            interpretation: "heuristic",
++        },
++        pawnFrom: from,
++        pawnTo: to,
++        promotionSquare: promotion,
++        materialBalancePoints: retake.balance / 100,
++        principalLineUci: steps.slice(0, a.through).map(step => step.uci),
++        alternativeLineUci: alternateSteps.slice(0, 7).map(step => step.uci),
++        pawnCapture: pawnCaptureBranch(fen, root, pawn, replies, targeted),
++    };
++}
++
++/** Only verified exchanges earn an additional reply nomination. Reuse moves
++ * that were already searched, and limit the remaining work to two captures. */
++export function nominateExchangePasserCaptures(
++    fen: string,
++    candidates: readonly DecisionEngineLine[],
++    replies: readonly DecisionEngineLine[],
++): string[] {
++    const root = candidates[0];
++    if (!root) return [];
++    const proof = findExchangePasser(fen, root, candidates, replies);
++    if (!proof || proof.pawnCapture) return [];
++    const pawn = parseSquare(proof.pawnFrom);
++    const step = replayTacticalLine(fen, root.pvUci.slice(0, 1))[0];
++    if (pawn === undefined || !step) return [];
++    const searched = new Set(replies.map(reply => reply.pvUci[0]));
++    return [...step.after.allDests()]
++        .filter(([, targets]) => targets.has(pawn))
++        .map(([from]) => makeUci({ from, to: pawn }))
++        .filter(uci => !searched.has(uci))
++        .slice(0, 2);
++}
+diff --git a/src/utils/tests/decisionExactForkAudit.test.ts b/src/utils/tests/decisionExactForkAudit.test.ts
+index 41b432c8d55191fdae2fad4d67c7fa2c965c3b6f..688be148faabc3369d28483969e6d8d029c31cf1 100644
+--- a/src/utils/tests/decisionExactForkAudit.test.ts
++++ b/src/utils/tests/decisionExactForkAudit.test.ts
+@@ -15,7 +15,7 @@ type Row = {
+ const input = process.env.DECISION_EXACT_FORK_INPUT;
+ const output = process.env.DECISION_EXACT_FORK_OUTPUT;
+ 
+-test.runIf(input && output)("reads exact-fork evidence in the live and decision analyzers", () => {
++test.runIf(input && output)("reads exact-move evidence in the live and decision analyzers", () => {
+     const cases = JSON.parse(readFileSync(input!, "utf8")) as Row[];
+     const results = cases.map(row => {
+         const exact = row.paired.find(candidate => candidate.pvUci[0] === row.move);
+@@ -39,6 +39,7 @@ test.runIf(input && output)("reads exact-fork evidence in the live and decision
+                 category: decision.position.category,
+                 tactical: decision.position.tactical.support,
+                 positional: decision.position.positional.support,
++                exchangePasser: decision.position.exchangePasser,
+             },
+             decision: move && {
+                 category: move.category,
+@@ -46,6 +47,7 @@ test.runIf(input && output)("reads exact-fork evidence in the live and decision
+                 positional: move.positional.support,
+                 rootMotifs: move.verifiedMotifs.map(motif => motif.id),
+                 conditionalFork: move.conditionalFork,
++                exchangePasser: move.exchangePasser,
+                 mechanisms: move.mechanisms.filter(mechanism => mechanism.rootMoveInvolved && mechanism.mechanismPly === 1),
+             },
+         };
+diff --git a/src/utils/tests/decisionExchangePasser.test.ts b/src/utils/tests/decisionExchangePasser.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..70ce8d816ede3fa86d970a2d4ea947f310370631
+--- /dev/null
++++ b/src/utils/tests/decisionExchangePasser.test.ts
+@@ -0,0 +1,67 @@
++import { expect, test } from "vitest";
++import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
++import { findExchangePasser, nominateExchangePasserCaptures } from "../tacticalMotifs/decisionExchangePasser";
++
++const fen = "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36";
++const replyFen = "b4bk1/4np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1BrN1P2/1B4K1 w - - 2 37";
++const best = {
++    fen: replyFen,
++    depth: 17,
++    cp: -337,
++    pvUci: "b1c2 b3c2 e3b3 b6d4 b2c1 d4a1 d2f3 e7f5 f3e1".split(" "),
++};
++const root = { fen, depth: 21, cp: 444, pvUci: ["c7c2", ...best.pvUci] };
++const other = { fen, depth: 21, cp: 77, pvUci: "c7c8 e3b3 b6a5 g5e3 a8d5 b3c3 c8b8 b2a3 f8h6".split(" ") };
++const weaker = { ...best, cp: -685, pvUci: "e3b3 c2d2 g5d2 b6b3 d2e2 h5h4 b1d3 h4g3".split(" ") };
++
++const assess = (replies = [best, weaker]) =>
++    assessChessDecision({
++        fen,
++        candidates: [root, other],
++        replyProbes: [{ moveUci: "c7c2", lines: replies }],
++    });
++
++test("traces the same passer through a rook offer and verifies the pawn-capture consequence separately", () => {
++    const report = assess();
++    expect(report?.moves[0]).toMatchObject({
++        category: "mixed",
++        tactical: { support: "supported", basis: "engine-supported" },
++        positional: { support: "supported", basis: "heuristic" },
++        exchangePasser: { pawnFrom: "b3", pawnTo: "c2", promotionSquare: "c1", materialBalancePoints: -1.7 },
++    });
++    expect(report?.moves[0].exchangePasser?.pawnCapture).toMatchObject({
++        replySan: "Rxb3",
++        lineUci: ["c7c2", "e3b3", "c2d2", "g5d2", "b6b3", "d2e2", "h5h4"],
++    });
++    expect(report?.position.category).toBe("mixed");
++});
++
++test("keeps the structural evidence when a searched pawn-capture reply is unavailable", () => {
++    const move = assess([best])?.moves[0];
++    expect(move?.positional.support).toBe("supported");
++    expect(move?.exchangePasser).toBeDefined();
++    expect(move?.exchangePasser?.pawnCapture).toBeUndefined();
++    expect(move?.tactical.support).not.toBe("supported");
++});
++
++test("requires the same traded pieces and an actual blockade in both searches", () => {
++    const displaced = { ...best, pvUci: "b1c2 b3c2 e3b3 b6d4 b2a3 e7f5 a3c1 d4d5".split(" ") };
++    expect(findExchangePasser(fen, root, [root, other], [displaced])).toBeNull();
++    const secondReply = { ...weaker, cp: best.cp };
++    expect(findExchangePasser(fen, root, [root, other], [secondReply])).toBeNull();
++});
++
++test("requires the pawn advance to distinguish two comparable searches", () => {
++    expect(findExchangePasser(fen, root, [root, { ...other, cp: 330 }], [best])).toBeNull();
++    expect(findExchangePasser(fen, root, [root], [best])).toBeNull();
++    expect(findExchangePasser(fen, root, [root, { ...other, depth: 18 }], [best])).toBeNull();
++});
++
++test("nominates only unsearched legal captures after establishing the exchange", () => {
++    expect(nominateExchangePasserCaptures(fen, [root, other], [best]).sort()).toEqual(["d2b3", "e3b3"]);
++    expect(nominateExchangePasserCaptures(fen, [root, other], [best, weaker])).toEqual([]);
++    expect(nominateExchangePasserCaptures(fen, [root, other], [weaker])).toEqual([]);
++    const targeted = { ...weaker, depth: 28, cp: -720 };
++    expect(findExchangePasser(fen, root, [root, other], [best], [targeted])?.pawnCapture?.replySan).toBe("Rxb3");
++    expect(findExchangePasser(fen, root, [root, other], [best], [{ ...targeted, fen }])?.pawnCapture).toBeUndefined();
++});

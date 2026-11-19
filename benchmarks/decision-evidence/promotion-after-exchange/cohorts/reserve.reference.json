@@ -1,0 +1,59 @@
+{
+  "scope": "The exact played root earns a lasting seventh-rank passer, after an identifiable piece exchange, verified in a separately searched defence and a contrast with the leading other candidate. This label addresses the structural contribution, independently of the general tactical verdict.",
+  "cases": [
+    {
+      "id": "passer-club-women-00062bcf4ee57e-69",
+      "moveUci": "c2d2",
+      "passerCompensation": false,
+      "rationale": "The played Rd2 is well below Rb2 and exchanges equal rooks. There is no material offer for a pawn advance in the leading move."
+    },
+    {
+      "id": "passer-grand-swiss-8f0d06a2445695-44",
+      "moveUci": "g6e7",
+      "passerCompensation": false,
+      "rationale": "The d-pawn arrives at e7 with check and is immediately taken. Leading choices remain around equality."
+    },
+    {
+      "id": "passer-hvar-b9851da746d4d3-93",
+      "moveUci": "f6f2",
+      "passerCompensation": false,
+      "rationale": "The played Rf2+ is slower than an available mate. The pawn on f2 is immediately taken with the king."
+    },
+    {
+      "id": "passer-formentera-53eee459da5f6d-58",
+      "moveUci": "e1e7",
+      "passerCompensation": true,
+      "rationale": "Re7 Rxe7 fxe7 trades the rook for no material surplus and puts the pawn from f6 on e7. Both independent searches show Re8 immediately blockading e8. The nearest ranked alternative lacks that advance and is materially inferior in evaluation."
+    },
+    {
+      "id": "passer-club-women-b1115dbb8be019-80",
+      "moveUci": "e1e7",
+      "passerCompensation": false,
+      "rationale": "Re7+ forces the opposing queen capture and dxe7 wins a queen for a rook. The promotion line has a different material purpose and no durable blockade."
+    },
+    {
+      "id": "passer-club-women-1b147270a788d1-73",
+      "moveUci": "e4e2",
+      "passerCompensation": false,
+      "rationale": "The queen exchange reaches a pawn ending by surrendering d2's pawn to the king immediately. The played move is below h5."
+    },
+    {
+      "id": "passer-grand-swiss-64aa2eea24cf44-80",
+      "moveUci": "b5b7",
+      "passerCompensation": false,
+      "rationale": "Rxb7+ Rxb7 axb7 Kxb7 gives a favorable liquidation. The pawn is removed on the next move."
+    },
+    {
+      "id": "passer-hvar-cadfbb1a7088a7-52",
+      "moveUci": "e5c7",
+      "passerCompensation": false,
+      "rationale": "The principal Qc8 avoids the offer. Rxc7 bxc7 Qxc7 immediately trades off the purported passer in the other line."
+    },
+    {
+      "id": "passer-grand-swiss-af827cb5e5287e-58",
+      "moveUci": "d1d7",
+      "passerCompensation": false,
+      "rationale": "The deepest replies use Qf6 and never play the sample preview's recapture on d7. An advance tied to Rd7 is unestablished."
+    }
+  ]
+}

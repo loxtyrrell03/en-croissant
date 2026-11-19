@@ -3600,3 +3600,73 @@ both arms on the same paired root and defence frames using
 `decisionExactForkAudit.test.ts` followed by
 `decision-evidence-fork-payoff-audit.py`. Ordinary and mistake
 library replays use the existing release manifests.
+
+## A prototype for promotion pressure after an exchange
+
+The older assessment follows pawn moves from the initial decision
+and searches for pawn plans shared by different root moves. A
+piece offer can create the important pawn advance only after the
+opponent takes it. The causal sequence then starts with the offer
+and the recapture rather than with a pawn move.
+
+In the Benasque example the independent root and reply searches
+agree on `...Rc2 Bxc2 ...bxc2`. The pawn from b3 reaches c2 and
+`Bc1` occupies its promotion square in both searches. On the
+other leading choice, `...Rc8`, White can take the pawn on b3.
+The exchange initially costs Black 1.7 material points.
+
+The prototype requires the exact same three legal moves in two
+searches. The pawn must still be on the seventh rank while the
+defender occupies its promotion square. The ranking comparison
+checks whether the same pawn reaches and survives on the seventh
+after another viable choice. It allows a move which retains a
+draw. An early promotion or immediate capture does not supply
+the same strategic evidence.
+
+The tactic is verified independently. In the app-budget replay
+the leading opponent variations put a piece on c1 but do not
+include the pawn capture `Rxb3`. A conditional search of that
+capture obtains `...Rxd2 Qxd2 ...Qxb3`, retaining 2.2 material
+points for Black in the shown window. Under that same engine
+profile the initial prototype result is positional. The extra
+legal line makes the result mixed. Search is limited to two
+legal captures of the original pawn, at 1M nodes each, and only
+after the structured pawn evidence has been verified. The scope
+of the tactical explanation is the searched reply.
+
+The sacrifice-only variant misses the even rook trade
+`Re7 ...Rxe7 fxe7` in Formentera. The broader variant confirms
+that the pawn persists on e7 behind `...Re8`. The next version
+compares pawn survival even when the alternative also advances
+the same pawn. In the Revolucion example, `Qxb7 ...Qxb7 cxb7`
+keeps the pawn on b7, whereas direct `cxb7` lets the rook take
+it earlier. Both boards informed the subsequent variants and
+serve as development evidence.
+
+| Evidence checked | Result |
+| --- | --- |
+| Benasque at the normal app search budget | Unclear before, positional with the new structural proof, mixed once the reply to Rxb3 has been searched |
+| Formentera and Revolucion after iteration | New exact positional explanations for both piece exchanges |
+| Fresh blockade challenge and separate leading-choice reserve | 29 cases, 26 reviewed negatives and three uncertain, with zero new reports |
+| Ordinary and mistake replay libraries | 259 ordinary and 318 mistake reports match the incumbent |
+
+The final reserves contain no reviewed positives for the
+specific sustained-blockade proof, so they do not establish
+improved recall. They do contain worthwhile separate questions,
+including a pawn which promotes and trades for a bishop and a
+queen exchange which produces a passer guarded from the side.
+The prototype remains an experimental patch. Five focused
+regression tests pass, and the source-built panel shows both
+analysis states at 320, 390 and 900 pixels.
+
+**Reproduction.** See `benchmarks/decision-evidence/promotion-after-exchange`.
+The sampler previews one exact played exchange per game before
+scoring. It can also select leading choices at deterministic
+positions and include sixth-rank exchange controls. Use
+`decision-evidence-engine.py` for the paired root frames, then
+`decision-evidence-fork-replies.py` for the separate replies.
+For a root found in the full multi-variation frame, use that full
+frame. Otherwise keep its matched best/played pair. The checked
+patch applies to `8d367519` and extends
+`decisionExactForkAudit.test.ts`. The combined Benasque receipt
+contains the app-budget frames and the two exact capture searches.

@@ -1,0 +1,259 @@
+{
+  "previewNodes": 18000,
+  "screened": 313,
+  "sources": {
+    "biel-masters": {
+      "sha256": "d4040be3cb26790004a76b7cdc30683e4b26f87a52e4bb2bfe386a8bafc969e1",
+      "candidates": 73
+    },
+    "sants": {
+      "sha256": "079282c8284e3439fdfc01ed8edab95ed9df38d8db1d3fd481c7ad36599f3b23",
+      "candidates": 28
+    },
+    "arco": {
+      "sha256": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18",
+      "candidates": 40
+    },
+    "aruba": {
+      "sha256": "7fd0982cd73dd27687b5fde61275a623d10cbde845d8adf500830fe0a18088dc",
+      "candidates": 5
+    },
+    "czech": {
+      "sha256": "c3f659ae45718903aedda659a3fdf20e0d6049d5fe0f1060a93e9c42a3b31451",
+      "candidates": 43
+    },
+    "benidorm": {
+      "sha256": "7fe0fabdffa65a0c38938eb106e53148cb4c953d7bd0d677dea4595f91ded527",
+      "candidates": 28
+    },
+    "women": {
+      "sha256": "197bc0e988cde1b234d1e1608ddc3ddb2f87d0fa35b68374fd24f39bc5f81e04",
+      "candidates": 45
+    },
+    "olympiad": {
+      "sha256": "5de1bea0dd205641078cc9184e595e50a2a0b2f09cc8d4ba2a22e7fc1670d70d",
+      "candidates": 51
+    }
+  },
+  "exclusions": [
+    {
+      "name": "reserve.json",
+      "sha256": "77b4fab7e0efd6f3e56f26e115f5df6aa9290084596711baed067d10cd3246b4"
+    },
+    {
+      "name": "classical.json",
+      "sha256": "267d5ee3aaa744654e560dae9588039c00a7cbd9ab14fbbae7d4fabd13745d99"
+    },
+    {
+      "name": "reserve.json",
+      "sha256": "a6f2f402f2c2f9d5d28a408ff1c47ee286dd8a98c985468ccdbe27fe79880fa9"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "24c66cf7f43277b47be941e6f59b242103404e14630f68c5f1535e2a0a961ed3"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "10bee309ee117de43ea5b7fb42473edfe3b048d9d4df53badf574a906d960939"
+    }
+  ],
+  "matchedExchanges": 17,
+  "cases": [
+    {
+      "id": "passer-sants-5c350e2e7f25de-96",
+      "game": "5c350e2e7f25dea58a285ce2a9c186f926edc277bf01dd86495c5d721a6a7cdc",
+      "event": "sants",
+      "move": "e2e7",
+      "fen": "3r4/5qpk/3P3p/5p2/8/3Q1PBP/4R2K/8 w - - 5 49",
+      "boardKey": "3r4/5qpk/3P3p/5p2/8/3Q1PBP/4R2K/8 w - -",
+      "ply": 96,
+      "preview": {
+        "reply": "f7e7",
+        "recapture": "d6e7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-women-26efa99736924c-62",
+      "game": "26efa99736924c7a0cb57686f0f6436b6a2c5af719de357515d081732602603e",
+      "event": "women",
+      "move": "h5h7",
+      "fen": "2b1r2k/2p3rp/pp3qP1/3p3R/P3pP1N/4B3/1bP1BQ1K/6R1 w - - 1 32",
+      "boardKey": "2b1r2k/2p3rp/pp3qP1/3p3R/P3pP1N/4B3/1bP1BQ1K/6R1 w - -",
+      "ply": 62,
+      "preview": {
+        "reply": "g7h7",
+        "recapture": "g6h7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-biel-masters-05fcd497bea694-87",
+      "game": "05fcd497bea694e636de96ce25bb0a5dc1409e58f60ee888c325f525909b07db",
+      "event": "biel-masters",
+      "move": "b5e2",
+      "fen": "4r1k1/5q1p/p7/PbN2p2/1P2p3/2P2pP1/3Q1K1P/4R3 b - - 8 44",
+      "boardKey": "4r1k1/5q1p/p7/PbN2p2/1P2p3/2P2pP1/3Q1K1P/4R3 b - -",
+      "ply": 87,
+      "preview": {
+        "reply": "e1e2",
+        "recapture": "f3e2",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-arco-64929a50e8880b-72",
+      "game": "64929a50e8880bb9a888ff1cb557cd157674a66061ccef7ea75723ca5f5fbaca",
+      "event": "arco",
+      "move": "a7c7",
+      "fen": "2r1r2k/R7/1P5p/8/1P2p2P/6P1/2p5/4R1K1 w - - 0 37",
+      "boardKey": "2r1r2k/R7/1P5p/8/1P2p2P/6P1/2p5/4R1K1 w - -",
+      "ply": 72,
+      "preview": {
+        "reply": "c8c7",
+        "recapture": "b6c7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-olympiad-acb8f62bbaa16d-50",
+      "game": "acb8f62bbaa16dbdb696a755883463aecb6da3e09bc7bdccbab5dbe918cb1bfd",
+      "event": "olympiad",
+      "move": "c1c7",
+      "fen": "2r2rk1/p2p1ppp/qp1Pp3/8/P3QP2/1P4PK/1R5P/2R5 w - - 1 26",
+      "boardKey": "2r2rk1/p2p1ppp/qp1Pp3/8/P3QP2/1P4PK/1R5P/2R5 w - -",
+      "ply": 50,
+      "preview": {
+        "reply": "c8c7",
+        "recapture": "d6c7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-biel-masters-d2c93ff58bb00c-54",
+      "game": "d2c93ff58bb00ca27de840efc4f8aa8c223ab819ef89cf4f30939b51d190090b",
+      "event": "biel-masters",
+      "move": "f2f7",
+      "fen": "5rk1/1bq3p1/p3P1Pp/3p4/1p1Nr3/4b3/PPP2QB1/1K1R3R w - - 6 28",
+      "boardKey": "1k1r3r/ppp2qb1/4B3/1P1nR3/3P4/P3p1pP/1BQ3P1/5RK1 b - -",
+      "ply": 54,
+      "preview": {
+        "reply": "f8f7",
+        "recapture": "e6f7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-sants-6839e6745c41a4-47",
+      "game": "6839e6745c41a43369b2cfca0ebd1b3ff575105099bc605d2b748871fb75431b",
+      "event": "sants",
+      "move": "c3e2",
+      "fen": "5rk1/pbq2ppp/5b2/2n5/PpB1pPP1/1PnpP3/1B4QP/RN2R1K1 b - - 0 24",
+      "boardKey": "5rk1/pbq2ppp/5b2/2n5/PpB1pPP1/1PnpP3/1B4QP/RN2R1K1 b - -",
+      "ply": 47,
+      "preview": {
+        "reply": "e1e2",
+        "recapture": "d3e2",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-benidorm-8d621c2a6c2572-28",
+      "game": "8d621c2a6c2572bda05987c731ea87068a5b43ecd0511a3455eaed507cb9d68f",
+      "event": "benidorm",
+      "move": "g5e7",
+      "fen": "r1b1qrk1/bp4p1/p1nPp1np/5pB1/5P2/1NNB2P1/PPP1Q2P/R3K2R w KQ - 0 15",
+      "boardKey": "r1b1qrk1/bp4p1/p1nPp1np/5pB1/5P2/1NNB2P1/PPP1Q2P/R3K2R w KQ -",
+      "ply": 28,
+      "preview": {
+        "reply": "g6e7",
+        "recapture": "d6e7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-czech-e62c75fe83659f-57",
+      "game": "e62c75fe83659fd37050f84a966587b38aa9c4cda232f15e60cd588ab9e0c09f",
+      "event": "czech",
+      "move": "h8h2",
+      "fen": "2kr3r/bpp2p2/p7/P3qPp1/4N1P1/2P2Pp1/1PQ3K1/R6R b - - 3 29",
+      "boardKey": "2kr3r/bpp2p2/p7/P3qPp1/4N1P1/2P2Pp1/1PQ3K1/R6R b - -",
+      "ply": 57,
+      "preview": {
+        "reply": "h1h2",
+        "recapture": "g3h2",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-biel-masters-cde89d68d8d020-70",
+      "game": "cde89d68d8d0203ca7194c508162df8fcb19b6f6e135cf77bcc05f1555bf70f8",
+      "event": "biel-masters",
+      "move": "d5e7",
+      "fen": "1r2rbk1/1p3p1p/p2p1Pp1/2nN2P1/2PRP3/6QP/q5BK/3R4 w - - 0 36",
+      "boardKey": "1r2rbk1/1p3p1p/p2p1Pp1/2nN2P1/2PRP3/6QP/q5BK/3R4 w - -",
+      "ply": 70,
+      "preview": {
+        "reply": "f8e7",
+        "recapture": "f6e7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-czech-4f95077c5b777e-39",
+      "game": "4f95077c5b777edc6c6c264f8337ffe3d7145dce3af181068a205f8de712c4e0",
+      "event": "czech",
+      "move": "c4b2",
+      "fen": "r2qr1k1/2n1bpp1/b1p4p/p2pP3/N1nP1P2/pP1B4/2Q1NBPP/R4RK1 b - - 0 20",
+      "boardKey": "r2qr1k1/2n1bpp1/b1p4p/p2pP3/N1nP1P2/pP1B4/2Q1NBPP/R4RK1 b - -",
+      "ply": 39,
+      "preview": {
+        "reply": "a4b2",
+        "recapture": "a3b2",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-arco-79e34efc5afe05-90",
+      "game": "79e34efc5afe05ff940a812ac823e0b065c23f639d406a281601d0dc49367efb",
+      "event": "arco",
+      "move": "g7f7",
+      "fen": "5k2/3r1bR1/2p3P1/1p3p2/5P1p/7P/1P6/5K2 w - - 1 46",
+      "boardKey": "5k2/1p6/7p/5p1P/1P3P2/2P3p1/3R1Br1/5K2 b - -",
+      "ply": 90,
+      "preview": {
+        "reply": "d7f7",
+        "recapture": "g6f7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-arco-5cf088675dabb0-100",
+      "game": "5cf088675dabb0b078fb9fd78e8028096f267b24c282c4031e8fcdb9c31415fd",
+      "event": "arco",
+      "move": "g6g7",
+      "fen": "5q1k/5r2/p2p2QP/1p6/4P3/1P6/P1P5/1K4R1 w - - 4 51",
+      "boardKey": "1k4r1/p1p5/1p6/4p3/1P6/P2P2qp/5R2/5Q1K b - -",
+      "ply": 100,
+      "preview": {
+        "reply": "f7g7",
+        "recapture": "h6g7",
+        "isPassed": true
+      }
+    },
+    {
+      "id": "passer-czech-053e82722e7180-74",
+      "game": "053e82722e718067b97f349f827947194897e04d5d23f05cdb354aceb96ce64e",
+      "event": "czech",
+      "move": "d5d7",
+      "fen": "3r3k/2p1q1pp/p1P1Pp2/1p1Q4/5PP1/7P/PP2R1K1/8 w - - 0 38",
+      "boardKey": "3r3k/2p1q1pp/p1P1Pp2/1p1Q4/5PP1/7P/PP2R1K1/8 w - -",
+      "ply": 74,
+      "preview": {
+        "reply": "d8d7",
+        "recapture": "c6d7",
+        "isPassed": true
+      }
+    }
+  ]
+}

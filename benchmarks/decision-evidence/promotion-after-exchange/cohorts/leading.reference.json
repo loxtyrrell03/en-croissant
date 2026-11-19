@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "id": "passer-asian-women-de3c926b57e6dc-62",
+      "moveUci": "e6d7",
+      "passerCompensation": false,
+      "rationale": "The d7 pawn is taken by the rook before the seventh ply; the earlier reply just creates a temporary blockage."
+    },
+    {
+      "id": "passer-european-team-b20873207dd7e9-58",
+      "moveUci": "a1a7",
+      "passerCompensation": false,
+      "rationale": "The leading move is bxa7. In the rook exchange both engines see Rxa7 immediately remove the advanced pawn."
+    },
+    {
+      "id": "passer-aeroflot-23d13c2afdb37e-105",
+      "moveUci": "c7c2",
+      "passerCompensation": false,
+      "rationale": "The queen immediately takes the c2 pawn. The rest is a queen endgame with a separate tactical sequence."
+    }
+  ]
+}

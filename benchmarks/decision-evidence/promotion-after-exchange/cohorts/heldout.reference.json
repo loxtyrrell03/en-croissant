@@ -1,0 +1,185 @@
+{
+  "scope": "An exact piece exchange yields a durable seventh-rank pawn with a separately evidenced defence and a contrasting leading alternative. Independent single reviewer before classifier output.",
+  "cases": [
+    {
+      "id": "passer-tajik-7f84001105e2c5-118",
+      "moveUci": "f6f7",
+      "passerCompensation": false,
+      "rationale": "Rf7+ is part of a forced mate with two passers. The retaking pawn is itself removed immediately in the stronger separate line."
+    },
+    {
+      "id": "passer-asian-6e7680a5122922-57",
+      "moveUci": "e3f2",
+      "passerCompensation": false,
+      "rationale": "The advanced f2 pawn is taken by the king in both principal lines. The value comes from the ensuing checks and knight attack."
+    },
+    {
+      "id": "passer-world-seniors-97a1745c545a7e-62",
+      "moveUci": "c4c7",
+      "passerCompensation": null,
+      "rationale": "Rc7+ brings the passer to c7, but both strong choices reach that same promotion plan. The bishop ultimately trades for it after promotion, with no distinct immediate blockade."
+    },
+    {
+      "id": "passer-asian-4cc9e5bf655fa1-46",
+      "moveUci": "c4f7",
+      "passerCompensation": false,
+      "rationale": "Bxf7+ is below two alternatives and gxf7+ is a temporary check, followed by Kxf7 in the stronger separate line."
+    },
+    {
+      "id": "passer-revolucion-00ffbead9c7b9d-40",
+      "moveUci": "b3b7",
+      "passerCompensation": true,
+      "rationale": "Qxb7 Qxb7 cxb7 retains the same pawn on b7 behind Rb8 in both searches. Direct cxb7 is met by an earlier capture of that pawn. The queen exchange retains the structural effect and the drawing evaluation."
+    },
+    {
+      "id": "passer-slovenian-league-5bee88721297d3-118",
+      "moveUci": "h7f7",
+      "passerCompensation": false,
+      "rationale": "The f8 king is already on the promotion square and the knight moves elsewhere. The searches do not show a newly induced occupation."
+    },
+    {
+      "id": "passer-european-individual-00b4c3b319dbb6-71",
+      "moveUci": "b4b2",
+      "passerCompensation": false,
+      "rationale": "The branch leaves the recorded Qxb2+ side decisively worse and the passer does not survive the continuation."
+    },
+    {
+      "id": "passer-slovenian-league-46a76c93087ec5-84",
+      "moveUci": "c6c7",
+      "passerCompensation": null,
+      "rationale": "Both leading alternatives reach an equivalent c7 passer after Rc7. The best-choice reason is better treated as a shared plan."
+    },
+    {
+      "id": "passer-tajik-da20305a2d3a71-45",
+      "moveUci": "a8a2",
+      "passerCompensation": false,
+      "rationale": "Rxa2 gives up the material initiative and the pawn is taken by Qxa2 at once."
+    },
+    {
+      "id": "passer-world-seniors-08dbc2f872f95a-60",
+      "moveUci": "c1c7",
+      "passerCompensation": false,
+      "rationale": "Rc7 loses to a queen capture of the passer and is below the direct rook exchange."
+    },
+    {
+      "id": "passer-asian-6558d6db0763fa-42",
+      "moveUci": "c1c7",
+      "passerCompensation": false,
+      "rationale": "The played rook exchange reaches a c7 pawn but a closely ranked alternative holds similarly. The separate stronger line collects the pawn at c7."
+    },
+    {
+      "id": "passer-asian-83f66c0031c13b-51",
+      "moveUci": "d5d2",
+      "passerCompensation": null,
+      "rationale": "Qd2 reaches a d2 passer with Bd1 late. Qxf7 gives a similar evaluation so the decisive contribution of the passer is uncertain."
+    },
+    {
+      "id": "passer-revolucion-8d5c633a5c73ff-49",
+      "moveUci": "c1d2",
+      "passerCompensation": null,
+      "rationale": "Qd2 leaves a strong d2 passer after the exchange, but the immediate reply is Bc2 guarding the promotion square rather than occupying it. The stronger line also contains a separate kingside pawn exchange."
+    },
+    {
+      "id": "passer-bengbu-fd0548920ceb8a-64",
+      "moveUci": "g8f7",
+      "passerCompensation": false,
+      "rationale": "The white queen trade remains objectively losing, and Kxf7 removes the passer."
+    },
+    {
+      "id": "passer-uruguay-dee86fdf06a729-63",
+      "moveUci": "c5d3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-uruguay-e6f26d47dd9894-55",
+      "moveUci": "g4e3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-asian-a208c2c5a0b4b0-37",
+      "moveUci": "b2d3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-asian-41688651551f4e-69",
+      "moveUci": "e1e3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-european-individual-9ffb99c6f2b1aa-28",
+      "moveUci": "b5d6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-tajik-773c5061fee739-54",
+      "moveUci": "e5g6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-asian-d9a10d9f6058a3-41",
+      "moveUci": "c8c3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-asian-539b083fe23a4b-43",
+      "moveUci": "b6b3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-bengbu-bbbbd8b1ac94a0-107",
+      "moveUci": "b7f3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-asian-065c37477492ca-53",
+      "moveUci": "b5d3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-revolucion-621a58b89a23c8-68",
+      "moveUci": "e4d6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-tajik-cea00b6da5ae05-68",
+      "moveUci": "g5e6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-uruguay-d47a0dcb195f95-42",
+      "moveUci": "d5f6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-asian-fd88de8c16b76d-55",
+      "moveUci": "e5f3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-slovenian-league-2da0e788f3a568-37",
+      "moveUci": "e4e3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-asian-fa322c5803f2dd-92",
+      "moveUci": "d4c6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    }
+  ]
+}

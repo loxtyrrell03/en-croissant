@@ -1,0 +1,465 @@
+{
+  "previewNodes": 18000,
+  "screened": 451,
+  "sources": {
+    "castel": {
+      "sha256": "d83050474521f2e85ec9af8491f704c7020b8faadd2a95fcbb41a7b4b0816bd9",
+      "candidates": 52
+    },
+    "cap-negret": {
+      "sha256": "32e911c2a220862a2cacb284c8808f7070ab1bec46be4e0818acd444dc24458e",
+      "candidates": 29
+    },
+    "european-women": {
+      "sha256": "2623b600973a334f8f459818431b32c5f88b5211a1892a21cee9b46209c15bb5",
+      "candidates": 80
+    },
+    "brazil-women": {
+      "sha256": "f465b520b89878adec0ce576382e595ebb9052c8d8064d3de2d1a10ab3d52853",
+      "candidates": 45
+    },
+    "greece": {
+      "sha256": "830d0af1cca132afa487032c747b1746b85b80fc53eceb01d762bd6bab8c8663",
+      "candidates": 42
+    },
+    "new-york": {
+      "sha256": "ee9617348c42a804e1f06b00e259eb0d4a643ab6bad13be1d4775451b413059b",
+      "candidates": 54
+    },
+    "reykjavik": {
+      "sha256": "acb4fa9de710591b43d0dc2d4b9b5715c4a533e132f84ebddafb0ad73a6d0120",
+      "candidates": 35
+    },
+    "lebanon": {
+      "sha256": "065a47c9706cb3ee47291d0deda0fb44443e6b67dd31bc28ee972a2d8656f9cb",
+      "candidates": 26
+    },
+    "guernsey": {
+      "sha256": "74232ed341751e5b2a39b379c8819808e9924225e1644fae156c601427c2f6d3",
+      "candidates": 15
+    },
+    "thanksgiving": {
+      "sha256": "6c05da05de7270de21d7d501e532e03a424ae0259c73c13eb5ad698306212b4c",
+      "candidates": 30
+    },
+    "london": {
+      "sha256": "e4d5835c7d61c4efcfde14b7eb2fe2e89abd685c6d2d31bdfcb5301ae860b87d",
+      "candidates": 43
+    }
+  },
+  "exclusions": [
+    {
+      "name": "sample.json",
+      "sha256": "fbe1a01be9e0e0ff02f0347a71059cd5e156360b636f5369a2b9df9031971035"
+    },
+    {
+      "name": "sample.json",
+      "sha256": "216a59e42dab71a8da0d395ae6cb2d2185f60ed19949ba43c49fd98b6ee06138"
+    },
+    {
+      "name": "sample.json",
+      "sha256": "e24946be6d6d40fe9cd141a9d90f1f5f1610f3c0e44fde46951cdd9807320f3c"
+    },
+    {
+      "name": "reserve.json",
+      "sha256": "77b4fab7e0efd6f3e56f26e115f5df6aa9290084596711baed067d10cd3246b4"
+    },
+    {
+      "name": "reserve.json",
+      "sha256": "a6f2f402f2c2f9d5d28a408ff1c47ee286dd8a98c985468ccdbe27fe79880fa9"
+    }
+  ],
+  "matchedExchanges": 48,
+  "cases": [
+    {
+      "id": "passer-european-women-a19704575252fc-72",
+      "game": "a19704575252fc9a41ebd722ee66aa43e17e20e82150dc7e4ea77958b067190b",
+      "event": "european-women",
+      "move": "c8c7",
+      "fen": "2R5/r6p/3Pkbp1/P7/1R2p3/7P/r4P2/4BK2 w - - 7 37",
+      "boardKey": "2R5/r6p/3Pkbp1/P7/1R2p3/7P/r4P2/4BK2 w - -",
+      "ply": 72,
+      "preview": {
+        "reply": "a7c7",
+        "recapture": "d6c7",
+        "pawnRank": 7,
+        "blockade": true
+      }
+    },
+    {
+      "id": "passer-guernsey-9d70b35cdc20d5-68",
+      "game": "9d70b35cdc20d5ac561e22148c17f68e13cd6abe9d2e4918a40fb16d7e6a16b6",
+      "event": "guernsey",
+      "move": "g1g7",
+      "fen": "7k/5b1r/2n1pP1P/3pP3/2pP3R/1pP1K3/2q5/5NQ1 w - - 2 35",
+      "boardKey": "5nq1/2Q5/1Pp1k3/2Pp3r/3Pp3/2N1Pp1p/5B1R/7K b - -",
+      "ply": 68,
+      "preview": {
+        "reply": "h7g7",
+        "recapture": "h6g7",
+        "pawnRank": 7,
+        "blockade": true
+      }
+    },
+    {
+      "id": "passer-london-ccd077269fb4d8-75",
+      "game": "ccd077269fb4d87ec5d26daf2b3a5ba1d87ec44645a222bd8ef7aa6874d7c40a",
+      "event": "london",
+      "move": "d4e2",
+      "fen": "5rk1/q4r1p/p3R3/3Q4/2pn2B1/3p2P1/PP1R1P2/6K1 b - - 1 38",
+      "boardKey": "5rk1/q4r1p/p3R3/3Q4/2pn2B1/3p2P1/PP1R1P2/6K1 b - -",
+      "ply": 75,
+      "preview": {
+        "reply": "d2e2",
+        "recapture": "d3e2",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-european-women-c343acc7a380e4-48",
+      "game": "c343acc7a380e4e37e4043b79c2e0ff715080ba90ca76b8ba07bb01fe6dbb1c2",
+      "event": "european-women",
+      "move": "f1f7",
+      "fen": "r4rk1/3b3p/1pp1p1P1/2qp2Q1/2p5/2P5/PP4PP/2N1RR1K w - - 1 25",
+      "boardKey": "2n1rr1k/pp4pp/2p5/2P5/2QP2q1/1PP1P1p1/3B3P/R4RK1 b - -",
+      "ply": 48,
+      "preview": {
+        "reply": "f8f7",
+        "recapture": "g6f7",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-new-york-3ff7bd431b08e0-77",
+      "game": "3ff7bd431b08e02dd72c0726a0726f38378d74f47c6b181b836a429e1d3e70bc",
+      "event": "new-york",
+      "move": "a1b2",
+      "fen": "5k2/2p5/6p1/2pP1p1p/2Pb1P1P/pB4P1/4QPK1/q7 b - - 9 39",
+      "boardKey": "5k2/2p5/6p1/2pP1p1p/2Pb1P1P/pB4P1/4QPK1/q7 b - -",
+      "ply": 77,
+      "preview": {
+        "reply": "e2b2",
+        "recapture": "a3b2",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-brazil-women-5f37ccc7277aca-29",
+      "game": "5f37ccc7277aca882e971e82ee4681b5fa9cd30d5b5fae45c8bba8ea6b446b0f",
+      "event": "brazil-women",
+      "move": "c8c2",
+      "fen": "2q1kb1r/1p3ppp/p3bn2/4n3/4P3/PN1pBP2/1P1N2PP/2Q1KB1R b Kk - 1 15",
+      "boardKey": "2q1kb1r/1p1n2pp/pn1Pbp2/4p3/4N3/P3BN2/1P3PPP/2Q1KB1R w Kk -",
+      "ply": 29,
+      "preview": {
+        "reply": "c1c2",
+        "recapture": "d3c2",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-cap-negret-53676f7040adfa-78",
+      "game": "53676f7040adfa0535358faf65bfaa7697f03314f4b66d4332ab9ebd85a13655",
+      "event": "cap-negret",
+      "move": "b6b7",
+      "fen": "3n4/2r3k1/1RPp1pp1/7p/4BP2/6PP/7K/8 w - - 0 40",
+      "boardKey": "3n4/2r3k1/1RPp1pp1/7p/4BP2/6PP/7K/8 w - -",
+      "ply": 78,
+      "preview": {
+        "reply": "c7b7",
+        "recapture": "c6b7",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-brazil-women-7b7e0015b7f0a0-48",
+      "game": "7b7e0015b7f0a0238852bd077fd098544af103427dedf640ee60eb4208d6211f",
+      "event": "brazil-women",
+      "move": "d3d7",
+      "fen": "3r2k1/pp1q1ppp/2P5/2P2P2/2B1r3/1P1R3P/P2b2P1/3R2K1 w - - 0 25",
+      "boardKey": "3r2k1/p2B2p1/1p1r3p/2b1R3/2p2p2/2p5/PP1Q1PPP/3R2K1 b - -",
+      "ply": 48,
+      "preview": {
+        "reply": "d8d7",
+        "recapture": "c6d7",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-reykjavik-5652fcef84a4e8-68",
+      "game": "5652fcef84a4e87660a8cf87db9747a4f46bda7a5a5c18d950474bcbd6a61731",
+      "event": "reykjavik",
+      "move": "g4g7",
+      "fen": "5r2/kp3q1p/p4P1r/2P1p3/1P1pB1R1/P3bQ2/6PP/5R1K w - - 1 35",
+      "boardKey": "5r1k/6pp/p3Bq2/1p1Pb1r1/2p1P3/P4p1R/KP3Q1P/5R2 b - -",
+      "ply": 68,
+      "preview": {
+        "reply": "f7g7",
+        "recapture": "f6g7",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-reykjavik-38f776c1713619-73",
+      "game": "38f776c1713619fdc6f6bf46598987f3337d028a6a983b07865de6e88b3b8e20",
+      "event": "reykjavik",
+      "move": "e4d2",
+      "fen": "1r4k1/p7/3r4/3P1ppN/3Qn2p/2p1BK1P/1q3PP1/1B5R b - - 5 37",
+      "boardKey": "1b5r/1Q3pp1/2P1bk1p/3qN2P/3p1PPn/3R4/P7/1R4K1 w - -",
+      "ply": 73,
+      "preview": {
+        "reply": "e3d2",
+        "recapture": "c3d2",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-thanksgiving-5fb6fedbd858ba-37",
+      "game": "5fb6fedbd858ba092ad74328ee080cbd0664aec9e75084207ea67164dc6850a0",
+      "event": "thanksgiving",
+      "move": "g2f2",
+      "fen": "r3k3/pp3p1p/2b1p3/b2n4/4N3/4p1BP/PPP1NPr1/R4K1R b q - 1 19",
+      "boardKey": "r3k3/pp3p1p/2b1p3/b2n4/4N3/4p1BP/PPP1NPr1/R4K1R b q -",
+      "ply": 37,
+      "preview": {
+        "reply": "e4f2",
+        "recapture": "e3f2",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-greece-1fa991caba0b03-76",
+      "game": "1fa991caba0b03ce879b008d11463c529dcea6e342f8c68f7ac7b7c2ca0cc3de",
+      "event": "greece",
+      "move": "d8e7",
+      "fen": "3B2k1/1p6/5Pp1/1bb4p/5R2/2P5/3K4/8 w - - 2 39",
+      "boardKey": "3B2k1/1p6/5Pp1/1bb4p/5R2/2P5/3K4/8 w - -",
+      "ply": 76,
+      "preview": {
+        "reply": "c5e7",
+        "recapture": "f6e7",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-reykjavik-4132ee6c373129-48",
+      "game": "4132ee6c37312942b7e49e68252116c5181aff433f3cdde9d367df5c4a929952",
+      "event": "reykjavik",
+      "move": "c7d7",
+      "fen": "4q2r/2R3bp/p2kP3/1p1b1Q2/3p4/3n4/PP4PP/6K1 w - - 4 25",
+      "boardKey": "4q2r/2R3bp/p2kP3/1p1b1Q2/3p4/3n4/PP4PP/6K1 w - -",
+      "ply": 48,
+      "preview": {
+        "reply": "e8d7",
+        "recapture": "e6d7",
+        "pawnRank": 7,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-european-women-039fb226dacca8-69",
+      "game": "039fb226dacca8c7eb2fa0f4b1b8752a6c05f3bad8d53da2415e193063b926b5",
+      "event": "european-women",
+      "move": "g4f3",
+      "fen": "1k3rr1/2p5/1p1b3Q/p2P3P/P3ppbB/1P3PPq/7N/3R1R1K b - - 0 35",
+      "boardKey": "1k3rr1/2p5/1p1b3Q/p2P3P/P3ppbB/1P3PPq/7N/3R1R1K b - -",
+      "ply": 69,
+      "preview": {
+        "reply": "f1f3",
+        "recapture": "e4f3",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-european-women-b5020a5437ebd5-24",
+      "game": "b5020a5437ebd593d6cab308a4f0111258a6779f5e2825a40a20b43fa470e9eb",
+      "event": "european-women",
+      "move": "e4d6",
+      "fen": "r2qk2r/pb1pbppp/1pn1p3/4P3/4N1n1/P4N2/1PPBQPPP/R3KB1R w KQkq - 3 13",
+      "boardKey": "r2qk2r/pb1pbppp/1pn1p3/4P3/4N1n1/P4N2/1PPBQPPP/R3KB1R w KQkq -",
+      "ply": 24,
+      "preview": {
+        "reply": "e7d6",
+        "recapture": "e5d6",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-european-women-b4918895f1b9c4-55",
+      "game": "b4918895f1b9c429c26a25ea20072512a37be33f631321a00607356f3f45bf7b",
+      "event": "european-women",
+      "move": "c5d3",
+      "fen": "rr2b3/2q2pbk/p2p1np1/1pnP3p/P1p1P2R/2P1BNNP/RPBQ2P1/7K b - - 1 28",
+      "boardKey": "7k/rpbq2p1/2p1bnnp/p1P1p2r/1PNp3P/P2P1NP1/2Q2PBK/RR2B3 w - -",
+      "ply": 55,
+      "preview": {
+        "reply": "c2d3",
+        "recapture": "c4d3",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-cap-negret-ce77eb4aae9660-111",
+      "game": "ce77eb4aae9660ee6cfda2418beaf877fb5ff69cfe3965df541008d325f7b016",
+      "event": "cap-negret",
+      "move": "e5f3",
+      "fen": "6rr/4qk2/3p1p2/pBpPnP2/Pp2PBpP/1P4P1/4QR2/5K1R b - - 3 56",
+      "boardKey": "5k1r/4qr2/1p4p1/pP2pbPp/PbPpNp2/3P1P2/4QK2/6RR w - -",
+      "ply": 111,
+      "preview": {
+        "reply": "f2f3",
+        "recapture": "g4f3",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-greece-c911f02f86282b-87",
+      "game": "c911f02f86282bdc78c900dab85598ecfe3a5dd9b9c1923ee311a73013d8d683",
+      "event": "greece",
+      "move": "b4b3",
+      "fen": "8/6p1/3k1p1p/4p3/pr2P1P1/2RK1P1P/8/8 b - - 9 44",
+      "boardKey": "8/6p1/3k1p1p/4p3/pr2P1P1/2RK1P1P/8/8 b - -",
+      "ply": 87,
+      "preview": {
+        "reply": "c3b3",
+        "recapture": "a4b3",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-castel-eba7a546bde8bc-52",
+      "game": "eba7a546bde8bc04c21b5648d4055f95e180e20ac6d7f70bd2e54cc562d4a717",
+      "event": "castel",
+      "move": "e4f6",
+      "fen": "r2r2k1/1bq2pbp/p3p1p1/1pp1P3/4N3/P1PBQN2/1P4PP/R6K w - - 1 27",
+      "boardKey": "r2r2k1/1bq2pbp/p3p1p1/1pp1P3/4N3/P1PBQN2/1P4PP/R6K w - -",
+      "ply": 52,
+      "preview": {
+        "reply": "g7f6",
+        "recapture": "e5f6",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-greece-9bc22650506659-52",
+      "game": "9bc22650506659006f042771956c81ba68048e770c2cd7bae2cf9b7f11940e71",
+      "event": "greece",
+      "move": "e4d6",
+      "fen": "1r2r2k/bn4pp/2p1Np2/q1P2n2/P1Q1N3/B5P1/5P1P/R4RK1 w - - 1 27",
+      "boardKey": "1r2r2k/bn4pp/2p1Np2/q1P2n2/P1Q1N3/B5P1/5P1P/R4RK1 w - -",
+      "ply": 52,
+      "preview": {
+        "reply": "b7d6",
+        "recapture": "c5d6",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-cap-negret-e1246f0394b0fd-71",
+      "game": "e1246f0394b0fdb76fd1ddd330b4f26c04e575c45dd372fa3d2981bb6b853588",
+      "event": "cap-negret",
+      "move": "c3d3",
+      "fen": "2r3k1/6b1/3R2p1/1pB1q1Pp/pPp1p3/P1r5/3Q3R/3K4 b - - 1 36",
+      "boardKey": "2r3k1/6b1/3R2p1/1pB1q1Pp/pPp1p3/P1r5/3Q3R/3K4 b - -",
+      "ply": 71,
+      "preview": {
+        "reply": "d6d3",
+        "recapture": "e4d3",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-castel-52192e46b8ab46-40",
+      "game": "52192e46b8ab461e9588a18d9ebe8fc4812d03b90de360f2f03ba9f3749952de",
+      "event": "castel",
+      "move": "d1d6",
+      "fen": "2bBk2r/2rn1pp1/pqN1p3/1pb1P2p/4B1nP/P1N3Q1/1PP3P1/2KR3R w k - 9 21",
+      "boardKey": "2bBk2r/2rn1pp1/pqN1p3/1pb1P2p/4B1nP/P1N3Q1/1PP3P1/2KR3R w k -",
+      "ply": 40,
+      "preview": {
+        "reply": "c5d6",
+        "recapture": "e5d6",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-castel-8473f575b30e45-148",
+      "game": "8473f575b30e454a1ecadc869beb9717a18479f312664b2eaf828afbdbfc2463",
+      "event": "castel",
+      "move": "c8c6",
+      "fen": "2R1n3/6k1/1p2r3/1P6/2PK1P2/8/8/8 w - - 0 75",
+      "boardKey": "2R1n3/6k1/1p2r3/1P6/2PK1P2/8/8/8 w - -",
+      "ply": 148,
+      "preview": {
+        "reply": "e6c6",
+        "recapture": "b5c6",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-cap-negret-1d388c6933828b-68",
+      "game": "1d388c6933828bc42ac60312f27db6bb2be4373ca06d9194c65427e8d1b4a987",
+      "event": "cap-negret",
+      "move": "c4d6",
+      "fen": "4k3/2q2npp/2p1p3/p2rP3/2N3P1/1P6/P1P2Q1P/1K3R2 w - - 7 35",
+      "boardKey": "1k3r2/p1p2q1p/1p6/2n3p1/P2Rp3/2P1P3/2Q2NPP/4K3 b - -",
+      "ply": 68,
+      "preview": {
+        "reply": "d5d6",
+        "recapture": "e5d6",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-cap-negret-c64ce787ed25d0-37",
+      "game": "c64ce787ed25d0a1faf5ab8ee5b59731ab3cf5923c250452e2903e5f5d5d484c",
+      "event": "cap-negret",
+      "move": "g4e3",
+      "fen": "2qr2k1/ppr2pbp/4b1p1/4P3/3pPBn1/5NP1/PP4BP/R2Q1RK1 b - - 4 19",
+      "boardKey": "2qr2k1/ppr2pbp/4b1p1/4P3/3pPBn1/5NP1/PP4BP/R2Q1RK1 b - -",
+      "ply": 37,
+      "preview": {
+        "reply": "f4e3",
+        "recapture": "d4e3",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    },
+    {
+      "id": "passer-new-york-10f3217d356954-52",
+      "game": "10f3217d356954210d4696d05da320d7ff33ec63b6fa103e4be391d7657b0716",
+      "event": "new-york",
+      "move": "c1c6",
+      "fen": "1q2r1k1/2rn2pp/b2p1pn1/3P4/Pp2PP2/6NP/1B3RPK/1BRQ4 w - - 4 27",
+      "boardKey": "1brq4/1b3rpk/6np/pP2pp2/3p4/B2P1PN1/2RN2PP/1Q2R1K1 b - -",
+      "ply": 52,
+      "preview": {
+        "reply": "c7c6",
+        "recapture": "d5c6",
+        "pawnRank": 6,
+        "blockade": false
+      }
+    }
+  ]
+}

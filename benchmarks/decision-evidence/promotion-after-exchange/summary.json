@@ -1,0 +1,1105 @@
+{
+  "scope": "Offline patch based on 8d367519. Final confirmation cohort includes no reviewed positive examples.",
+  "results": {
+    "development": {
+      "screened": 313,
+      "matchedExchanges": 17,
+      "selected": 14
+    },
+    "reserve": {
+      "screened": 185,
+      "matchedExchanges": 9,
+      "selected": 9,
+      "Base": {
+        "positives": 1,
+        "negatives": 8,
+        "unknown": 0,
+        "truePositives": 0,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      },
+      "Sacrifice": {
+        "positives": 1,
+        "negatives": 8,
+        "unknown": 0,
+        "truePositives": 0,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      },
+      "Balanced": {
+        "positives": 1,
+        "negatives": 8,
+        "unknown": 0,
+        "truePositives": 1,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      },
+      "Candidate": {
+        "positives": 1,
+        "negatives": 8,
+        "unknown": 0,
+        "truePositives": 1,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      }
+    },
+    "heldout": {
+      "screened": 1103,
+      "matchedExchanges": 84,
+      "selected": 30,
+      "Base": {
+        "positives": 1,
+        "negatives": 25,
+        "unknown": 4,
+        "truePositives": 0,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      },
+      "Balanced": {
+        "positives": 1,
+        "negatives": 25,
+        "unknown": 4,
+        "truePositives": 0,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      },
+      "Candidate": {
+        "positives": 1,
+        "negatives": 25,
+        "unknown": 4,
+        "truePositives": 1,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      }
+    },
+    "blockade-reserve": {
+      "screened": 451,
+      "matchedExchanges": 48,
+      "selected": 26,
+      "Base": {
+        "positives": 0,
+        "negatives": 23,
+        "unknown": 3,
+        "truePositives": 0,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      },
+      "Candidate": {
+        "positives": 0,
+        "negatives": 23,
+        "unknown": 3,
+        "truePositives": 0,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      }
+    },
+    "leading": {
+      "screened": 525,
+      "matchedExchanges": 3,
+      "selected": 3,
+      "Candidate": {
+        "positives": 0,
+        "negatives": 3,
+        "unknown": 0,
+        "truePositives": 0,
+        "falsePositives": 0,
+        "touchedUncertain": 0
+      }
+    }
+  },
+  "libraryComparison": {
+    "ordinary": {
+      "count": 259,
+      "changedReports": 0
+    },
+    "mistakes": {
+      "count": 318,
+      "changedReports": 0
+    }
+  },
+  "named": {
+    "rc2-deeper": {
+      "Base": {
+        "category": "unclear",
+        "tactical": "unestablished",
+        "positional": "unestablished",
+        "rootMotifs": [],
+        "mechanisms": []
+      },
+      "Balanced": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ]
+        },
+        "mechanisms": []
+      },
+      "Candidate": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ]
+        },
+        "mechanisms": []
+      }
+    },
+    "rc2-normal": {
+      "Base": {
+        "category": "unclear",
+        "tactical": "unestablished",
+        "positional": "unestablished",
+        "rootMotifs": [],
+        "mechanisms": []
+      },
+      "Balanced": {
+        "category": "mixed",
+        "tactical": "supported",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ],
+          "pawnCapture": {
+            "replySan": "Rxb3",
+            "lineUci": [
+              "c7c2",
+              "e3b3",
+              "c2d2",
+              "g5d2",
+              "b6b3",
+              "d2e2",
+              "h5h4"
+            ],
+            "description": "Taking the pawn with Rxb3 allows Rxd2 Qxd2 Qxb3, leaving a gain of 2.2 material points in the analysed line."
+          }
+        },
+        "mechanisms": []
+      },
+      "Candidate": {
+        "category": "mixed",
+        "tactical": "supported",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ],
+          "pawnCapture": {
+            "replySan": "Rxb3",
+            "lineUci": [
+              "c7c2",
+              "e3b3",
+              "c2d2",
+              "g5d2",
+              "b6b3",
+              "d2e2",
+              "h5h4"
+            ],
+            "description": "Taking the pawn with Rxb3 allows Rxd2 Qxd2 Qxb3, leaving a gain of 2.2 material points in the analysed line."
+          }
+        },
+        "mechanisms": []
+      }
+    },
+    "rc2-app-profile": {
+      "Base": {
+        "category": "unclear",
+        "tactical": "unestablished",
+        "positional": "unestablished",
+        "rootMotifs": [],
+        "conditionalFork": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "mechanism": "fork",
+          "actor": "black",
+          "mechanismPly": 1,
+          "payoffPly": 3,
+          "squares": [
+            "c2",
+            "b2",
+            "d2"
+          ],
+          "support": "legal-continuation",
+          "rootMoveInvolved": true,
+          "lineUci": [
+            "c7c2",
+            "e3c3",
+            "c2b2",
+            "g5e3",
+            "a8d5"
+          ],
+          "description": "Rc2 attacks both b2 and d2. After Rc3, Rxb2 collects one of the targets.",
+          "bestReplyLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1",
+            "d2f3",
+            "e7f5"
+          ],
+          "weakerReplySan": "Rc3",
+          "defenceConsequence": null
+        },
+        "mechanisms": []
+      },
+      "Balanced": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "conditionalFork": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "mechanism": "fork",
+          "actor": "black",
+          "mechanismPly": 1,
+          "payoffPly": 3,
+          "squares": [
+            "c2",
+            "b2",
+            "d2"
+          ],
+          "support": "legal-continuation",
+          "rootMoveInvolved": true,
+          "lineUci": [
+            "c7c2",
+            "e3c3",
+            "c2b2",
+            "g5e3",
+            "a8d5"
+          ],
+          "description": "Rc2 attacks both b2 and d2. After Rc3, Rxb2 collects one of the targets.",
+          "bestReplyLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1",
+            "d2f3",
+            "e7f5"
+          ],
+          "weakerReplySan": "Rc3",
+          "defenceConsequence": null
+        },
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ]
+        },
+        "mechanisms": []
+      },
+      "Candidate": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "conditionalFork": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "mechanism": "fork",
+          "actor": "black",
+          "mechanismPly": 1,
+          "payoffPly": 3,
+          "squares": [
+            "c2",
+            "b2",
+            "d2"
+          ],
+          "support": "legal-continuation",
+          "rootMoveInvolved": true,
+          "lineUci": [
+            "c7c2",
+            "e3c3",
+            "c2b2",
+            "g5e3",
+            "a8d5"
+          ],
+          "description": "Rc2 attacks both b2 and d2. After Rc3, Rxb2 collects one of the targets.",
+          "bestReplyLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1",
+            "d2f3",
+            "e7f5"
+          ],
+          "weakerReplySan": "Rc3",
+          "defenceConsequence": null
+        },
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ]
+        },
+        "mechanisms": []
+      }
+    },
+    "rc2-app-profile-targeted": {
+      "Base": {
+        "category": "unclear",
+        "tactical": "unestablished",
+        "positional": "unestablished",
+        "rootMotifs": [],
+        "conditionalFork": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "mechanism": "fork",
+          "actor": "black",
+          "mechanismPly": 1,
+          "payoffPly": 3,
+          "squares": [
+            "c2",
+            "b2",
+            "d2"
+          ],
+          "support": "legal-continuation",
+          "rootMoveInvolved": true,
+          "lineUci": [
+            "c7c2",
+            "e3c3",
+            "c2b2",
+            "g5e3",
+            "a8d5"
+          ],
+          "description": "Rc2 attacks both b2 and d2. After Rc3, Rxb2 collects one of the targets.",
+          "bestReplyLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1",
+            "d2f3",
+            "e7f5"
+          ],
+          "weakerReplySan": "Rc3",
+          "defenceConsequence": null
+        },
+        "mechanisms": []
+      },
+      "Balanced": {
+        "category": "mixed",
+        "tactical": "supported",
+        "positional": "supported",
+        "rootMotifs": [],
+        "conditionalFork": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "mechanism": "fork",
+          "actor": "black",
+          "mechanismPly": 1,
+          "payoffPly": 3,
+          "squares": [
+            "c2",
+            "b2",
+            "d2"
+          ],
+          "support": "legal-continuation",
+          "rootMoveInvolved": true,
+          "lineUci": [
+            "c7c2",
+            "e3c3",
+            "c2b2",
+            "g5e3",
+            "a8d5"
+          ],
+          "description": "Rc2 attacks both b2 and d2. After Rc3, Rxb2 collects one of the targets.",
+          "bestReplyLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1",
+            "d2f3",
+            "e7f5"
+          ],
+          "weakerReplySan": "Rc3",
+          "defenceConsequence": null
+        },
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ],
+          "pawnCapture": {
+            "replySan": "Rxb3",
+            "lineUci": [
+              "c7c2",
+              "e3b3",
+              "c2d2",
+              "g5d2",
+              "b6b3",
+              "d2e2",
+              "h5h4"
+            ],
+            "description": "Taking the pawn with Rxb3 allows Rxd2 Qxd2 Qxb3, leaving a gain of 2.2 material points in the analysed line."
+          }
+        },
+        "mechanisms": []
+      },
+      "Candidate": {
+        "category": "mixed",
+        "tactical": "supported",
+        "positional": "supported",
+        "rootMotifs": [],
+        "conditionalFork": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "mechanism": "fork",
+          "actor": "black",
+          "mechanismPly": 1,
+          "payoffPly": 3,
+          "squares": [
+            "c2",
+            "b2",
+            "d2"
+          ],
+          "support": "legal-continuation",
+          "rootMoveInvolved": true,
+          "lineUci": [
+            "c7c2",
+            "e3c3",
+            "c2b2",
+            "g5e3",
+            "a8d5"
+          ],
+          "description": "Rc2 attacks both b2 and d2. After Rc3, Rxb2 collects one of the targets.",
+          "bestReplyLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1",
+            "d2f3",
+            "e7f5"
+          ],
+          "weakerReplySan": "Rc3",
+          "defenceConsequence": null
+        },
+        "exchangePasser": {
+          "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "black",
+            "squareOrFile": "c2",
+            "description": "Rc2 Bxc2 bxc2 brings the pawn from b3 to c2. Bc1 blocks its promotion square on c1, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c7c8",
+            "comparisonGapCp": 367,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "b3",
+          "pawnTo": "c2",
+          "promotionSquare": "c1",
+          "materialBalancePoints": -1.7,
+          "principalLineUci": [
+            "c7c2",
+            "b1c2",
+            "b3c2",
+            "e3b3",
+            "b6d4",
+            "b2c1",
+            "d4a1"
+          ],
+          "alternativeLineUci": [
+            "c7c8",
+            "e3b3",
+            "b6a5",
+            "g5e3",
+            "a8d5",
+            "b3c3",
+            "c8b8"
+          ],
+          "pawnCapture": {
+            "replySan": "Rxb3",
+            "lineUci": [
+              "c7c2",
+              "e3b3",
+              "c2d2",
+              "g5d2",
+              "b6b3",
+              "d2e2",
+              "h5h4"
+            ],
+            "description": "Taking the pawn with Rxb3 allows Rxd2 Qxd2 Qxb3, leaving a gain of 2.2 material points in the analysed line."
+          }
+        },
+        "mechanisms": []
+      }
+    },
+    "passer-biel-masters-d2c93ff58bb00c-54": {
+      "Base": {
+        "category": "unclear",
+        "tactical": "unestablished",
+        "positional": "unestablished",
+        "rootMotifs": [],
+        "mechanisms": []
+      },
+      "Balanced": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "5rk1/1bq3p1/p3P1Pp/3p4/1p1Nr3/4b3/PPP2QB1/1K1R3R w - - 6 28",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "white",
+            "squareOrFile": "f7",
+            "description": "Qf7+ Rxf7 exf7+ brings the pawn from e6 to f7. Kf8 blocks its promotion square on f8, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "f2e1",
+            "comparisonGapCp": 465,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "e6",
+          "pawnTo": "f7",
+          "promotionSquare": "f8",
+          "materialBalancePoints": -4,
+          "principalLineUci": [
+            "f2f7",
+            "f8f7",
+            "e6f7",
+            "g8f8",
+            "g2e4",
+            "c7e5",
+            "h1e1"
+          ],
+          "alternativeLineUci": [
+            "f2e1",
+            "e4e5",
+            "e1b4",
+            "e3d4",
+            "b4d4",
+            "e5e6",
+            "h1g1"
+          ]
+        },
+        "mechanisms": []
+      },
+      "Candidate": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "5rk1/1bq3p1/p3P1Pp/3p4/1p1Nr3/4b3/PPP2QB1/1K1R3R w - - 6 28",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "white",
+            "squareOrFile": "f7",
+            "description": "Qf7+ Rxf7 exf7+ brings the pawn from e6 to f7. Kf8 blocks its promotion square on f8, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "f2e1",
+            "comparisonGapCp": 465,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "e6",
+          "pawnTo": "f7",
+          "promotionSquare": "f8",
+          "materialBalancePoints": -4,
+          "principalLineUci": [
+            "f2f7",
+            "f8f7",
+            "e6f7",
+            "g8f8",
+            "g2e4",
+            "c7e5",
+            "h1e1"
+          ],
+          "alternativeLineUci": [
+            "f2e1",
+            "e4e5",
+            "e1b4",
+            "e3d4",
+            "b4d4",
+            "e5e6",
+            "h1g1"
+          ]
+        },
+        "mechanisms": []
+      }
+    },
+    "passer-formentera-53eee459da5f6d-58": {
+      "Base": {
+        "category": "unclear",
+        "tactical": "unestablished",
+        "positional": "unestablished",
+        "rootMotifs": [],
+        "mechanisms": []
+      },
+      "Balanced": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "3rr3/1bq2p1k/p1p2Ppp/2P5/7Q/1p5P/5PP1/R3RBK1 w - - 2 30",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "white",
+            "squareOrFile": "e7",
+            "description": "Re7 Rxe7 fxe7 brings the pawn from f6 to e7. Re8 blocks its promotion square on e8, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "h4b4",
+            "comparisonGapCp": 150,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "f6",
+          "pawnTo": "e7",
+          "promotionSquare": "e8",
+          "materialBalancePoints": 0,
+          "principalLineUci": [
+            "e1e7",
+            "e8e7",
+            "f6e7",
+            "d8e8",
+            "a1e1",
+            "c7d7",
+            "f1c4"
+          ],
+          "alternativeLineUci": [
+            "h4b4",
+            "b7c8",
+            "b4b3",
+            "c8e6",
+            "b3b6",
+            "c7d7",
+            "b6a6"
+          ]
+        },
+        "mechanisms": []
+      },
+      "Candidate": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "3rr3/1bq2p1k/p1p2Ppp/2P5/7Q/1p5P/5PP1/R3RBK1 w - - 2 30",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "white",
+            "squareOrFile": "e7",
+            "description": "Re7 Rxe7 fxe7 brings the pawn from f6 to e7. Re8 blocks its promotion square on e8, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "h4b4",
+            "comparisonGapCp": 150,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "f6",
+          "pawnTo": "e7",
+          "promotionSquare": "e8",
+          "materialBalancePoints": 0,
+          "principalLineUci": [
+            "e1e7",
+            "e8e7",
+            "f6e7",
+            "d8e8",
+            "a1e1",
+            "c7d7",
+            "f1c4"
+          ],
+          "alternativeLineUci": [
+            "h4b4",
+            "b7c8",
+            "b4b3",
+            "c8e6",
+            "b3b6",
+            "c7d7",
+            "b6a6"
+          ]
+        },
+        "mechanisms": []
+      }
+    },
+    "passer-revolucion-00ffbead9c7b9d-40": {
+      "Base": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "mechanisms": []
+      },
+      "Balanced": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "mechanisms": []
+      },
+      "Candidate": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "rootMotifs": [],
+        "exchangePasser": {
+          "fen": "4r1k1/pp2qppp/2Pr2n1/3ppb2/8/1Q2PN2/P3BPPP/3RR1K1 w - - 0 21",
+          "factor": {
+            "feature": "passed-pawn-progress",
+            "side": "white",
+            "squareOrFile": "b7",
+            "description": "Qxb7 Qxb7 cxb7 brings the pawn from c6 to b7. Rb8 blocks its promotion square on b8, and the pawn stays on the seventh rank in both searches.",
+            "before": 6,
+            "after": 7,
+            "unit": "relative-rank",
+            "firstPly": 3,
+            "lastConsecutivePly": 7,
+            "support": "board-fact",
+            "comparisonMoveUci": "c6b7",
+            "comparisonGapCp": 108,
+            "supportInComparison": false,
+            "comparison": "alternative-choice",
+            "materialWindowPlies": 7,
+            "interpretation": "heuristic"
+          },
+          "pawnFrom": "c6",
+          "pawnTo": "b7",
+          "promotionSquare": "b8",
+          "materialBalancePoints": 1,
+          "principalLineUci": [
+            "b3b7",
+            "e7b7",
+            "c6b7",
+            "e8b8",
+            "h2h4",
+            "f7f6",
+            "e3e4"
+          ],
+          "alternativeLineUci": [
+            "c6b7",
+            "e8b8",
+            "b3c3",
+            "b8b7",
+            "a2a4",
+            "b7c7",
+            "c3a3"
+          ]
+        },
+        "mechanisms": []
+      }
+    }
+  },
+  "candidatePatchSha256": "fba8f775802f21b92b67a5f1873c3e5674fa3e8105fb1003c7083a4657c908ff"
+}

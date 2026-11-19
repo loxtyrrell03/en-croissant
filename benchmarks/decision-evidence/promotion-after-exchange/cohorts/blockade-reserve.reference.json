@@ -1,0 +1,161 @@
+{
+  "scope": "An exact piece exchange yields a durable seventh-rank pawn with a separately evidenced defence and a contrasting leading alternative. Independent single reviewer before classifier output.",
+  "cases": [
+    {
+      "id": "passer-european-women-a19704575252fc-72",
+      "moveUci": "c8c7",
+      "passerCompensation": false,
+      "rationale": "Rc7 lies below Rxe4+. The separate Kd7 line then takes the advanced pawn on c7."
+    },
+    {
+      "id": "passer-guernsey-9d70b35cdc20d5-68",
+      "moveUci": "g1g7",
+      "passerCompensation": false,
+      "rationale": "Qg7+ is a forced mate in three. There is no durable pawn blockade or trading decision."
+    },
+    {
+      "id": "passer-london-ccd077269fb4d8-75",
+      "moveUci": "d4e2",
+      "passerCompensation": false,
+      "rationale": "Ne2+ is a combination followed by immediate Rxe2. The passer never stays advanced."
+    },
+    {
+      "id": "passer-european-women-c343acc7a380e4-48",
+      "moveUci": "f1f7",
+      "passerCompensation": false,
+      "rationale": "The king immediately takes the f7 pawn. Rf1+ starts a separate attack."
+    },
+    {
+      "id": "passer-new-york-3ff7bd431b08e0-77",
+      "moveUci": "a1b2",
+      "passerCompensation": null,
+      "rationale": "Qb2 offers a queen exchange below the current first choice. Bc2 keeps an eye on promotion but does not occupy the square."
+    },
+    {
+      "id": "passer-brazil-women-5f37ccc7277aca-29",
+      "moveUci": "c8c2",
+      "passerCompensation": false,
+      "rationale": "Qc2 is substantially worse than Qb8. The move reaches a passer in a losing line."
+    },
+    {
+      "id": "passer-cap-negret-53676f7040adfa-78",
+      "moveUci": "b6b7",
+      "passerCompensation": false,
+      "rationale": "Rb7 allows a liquidation that gives up the new pawn on the next move and wins a knight."
+    },
+    {
+      "id": "passer-brazil-women-7b7e0015b7f0a0-48",
+      "moveUci": "d3d7",
+      "passerCompensation": false,
+      "rationale": "Rxd7 is a sequence of material exchanges. Rd4 and later Rxd7 attack the passer from behind and remove it."
+    },
+    {
+      "id": "passer-reykjavik-5652fcef84a4e8-68",
+      "moveUci": "g4g7",
+      "passerCompensation": false,
+      "rationale": "The separate strongest reply is Bg5, so the intended early pawn recapture is not corroborated."
+    },
+    {
+      "id": "passer-reykjavik-38f776c1713619-73",
+      "moveUci": "e4d2",
+      "passerCompensation": null,
+      "rationale": "Nd2+ reaches d2 in an equal position. The main line trades queens and White handles the pawn through checks and piece play, without occupying d1."
+    },
+    {
+      "id": "passer-thanksgiving-5fb6fedbd858ba-37",
+      "moveUci": "g2f2",
+      "passerCompensation": false,
+      "rationale": "The rook move is inferior to Rxg3. Kxf2 later takes the advanced pawn."
+    },
+    {
+      "id": "passer-greece-1fa991caba0b03-76",
+      "moveUci": "d8e7",
+      "passerCompensation": null,
+      "rationale": "Be7 Bxe7 fxe7 reaches a winning passer, but no piece occupies e8 and the two searches convert the pawn by promotion and exchange."
+    },
+    {
+      "id": "passer-reykjavik-4132ee6c373129-48",
+      "moveUci": "c7d7",
+      "passerCompensation": false,
+      "rationale": "The played Rd7+ leaves a decisively lost position. Kxd7 takes the pawn in both lines."
+    },
+    {
+      "id": "passer-european-women-039fb226dacca8-69",
+      "moveUci": "g4f3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-european-women-b5020a5437ebd5-24",
+      "moveUci": "e4d6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-european-women-b4918895f1b9c4-55",
+      "moveUci": "c5d3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-cap-negret-ce77eb4aae9660-111",
+      "moveUci": "e5f3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-greece-c911f02f86282b-87",
+      "moveUci": "b4b3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-castel-eba7a546bde8bc-52",
+      "moveUci": "e4f6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-greece-9bc22650506659-52",
+      "moveUci": "e4d6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-cap-negret-e1246f0394b0fd-71",
+      "moveUci": "c3d3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-castel-52192e46b8ab46-40",
+      "moveUci": "d1d6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-castel-8473f575b30e45-148",
+      "moveUci": "c8c6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-cap-negret-1d388c6933828b-68",
+      "moveUci": "c4d6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-cap-negret-c64ce787ed25d0-37",
+      "moveUci": "g4e3",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    },
+    {
+      "id": "passer-new-york-10f3217d356954-52",
+      "moveUci": "c1c6",
+      "passerCompensation": false,
+      "rationale": "Sixth-rank exchange control. The exact piece exchange cannot move the pawn immediately to the seventh."
+    }
+  ]
+}
