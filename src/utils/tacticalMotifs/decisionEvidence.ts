@@ -155,8 +155,12 @@ export function measurePositionDecision(
     const moves = new Set<string>();
     for (const candidate of candidates) {
         const line = measureDecisionLine(fen, candidate);
-        if (!line || moves.has(line.moves[0])) continue;
-        moves.add(line.moves[0]);
+        if (!line) continue;
+        const afterRoot = position.clone();
+        afterRoot.play(parseUci(line.moves[0])!);
+        const rootIdentity = makeFen(afterRoot.toSetup());
+        if (moves.has(rootIdentity)) continue;
+        moves.add(rootIdentity);
         lines.push(line);
     }
     const first = lines[0],

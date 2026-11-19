@@ -5,13 +5,53 @@ import concurrent.futures
 import hashlib
 import json
 import os
+import re
 import tempfile
 import time
 
 import chess
 import chess.engine
 
-PROTOCOL = 1
+PROTOCOL = 2
+
+
+class CompleteVariations:
+    """Retain whole ordered UCI MultiPV frames, never mutable per-rank leftovers.
+
+    A search can publish another frame at the same depth while reordering roots.
+    Keeping the latest value for each rank can splice two frames and duplicate a
+    root. Commit only a contiguous, unique, score-ordered 1..N frame instead.
+    """
+    def __init__(self, board, ranks, root_moves=None):
+        self.board = board
+        self.ranks = ranks
+        self.allowed = set(root_moves) if root_moves is not None else None
+        self.frame = []
+        self.best = None
+
+    def add(self, info):
+        if 'depth' not in info or 'score' not in info or not info.get('pv'):
+            return
+        rank = info.get('multipv', 1)
+        if rank == 1:
+            self.frame = []
+        if info.get('lowerbound') or info.get('upperbound') or rank != len(self.frame) + 1:
+            self.frame = []
+            return
+        if self.frame and info['depth'] != self.frame[0]['depth']:
+            self.frame = []
+            return
+        self.frame.append({**info, 'pv': list(info['pv'])})
+        if rank != self.ranks:
+            return
+        roots = [item['pv'][0] for item in self.frame]
+        scores = [item['score'].pov(self.board.turn) for item in self.frame]
+        valid = (len(set(roots)) == self.ranks and all(move in self.board.legal_moves for move in roots)
+                 and (self.allowed is None or all(move in self.allowed for move in roots))
+                 and all(scores[i] <= scores[i-1] for i in range(1, len(scores))))
+        if valid and (self.best is None or info['depth'] >= self.best[0]['depth']):
+            self.best = [dict(item, pv=list(item['pv'])) for item in self.frame]
+        self.frame = []
 
 
 def atomic_json(path, value):
@@ -29,9 +69,13 @@ def atomic_json(path, value):
 
 def inspect(task):
     row, executable, output, engine_hash = task
+    if not re.fullmatch(r'[a-zA-Z0-9_-]+', row['id']):
+        raise ValueError('Invalid case identifier')
     path = Path(output) / (row['id'] + '.json')
     identity = dict(protocol=PROTOCOL, engine_sha256=engine_hash, fen=row['fen'],
                     nodes=[60000, 600000, 300000], threads=1, hash_mb=64)
+    if row.get('playedMoveUci'):
+        identity.update(played_move=row['playedMoveUci'], comparison_nodes=600000)
     if path.exists():
         cached = json.loads(path.read_text(encoding='utf-8'))
         if cached.get('identity') != identity:
@@ -41,22 +85,18 @@ def inspect(task):
     with chess.engine.SimpleEngine.popen_uci(executable) as engine:
         engine.configure({'Threads': 1, 'Hash': 64, 'UCI_ShowWDL': True})
 
-        def search(position, nodes):
+        def search(position, nodes, root_moves=None):
             engine.configure({'Clear Hash': None})
-            ranks = min(3, position.legal_moves.count())
-            iterations = {}
+            ranks = min(3, len(root_moves) if root_moves is not None else position.legal_moves.count())
+            completed = CompleteVariations(position, ranks, root_moves)
             started = time.perf_counter()
-            with engine.analysis(position, chess.engine.Limit(nodes=nodes), multipv=ranks) as analysis:
+            with engine.analysis(position, chess.engine.Limit(nodes=nodes), multipv=ranks, root_moves=root_moves) as analysis:
                 for info in analysis:
-                    if not info.get('pv') or info.get('lowerbound') or info.get('upperbound'):
-                        continue
-                    iterations.setdefault(info['depth'], {})[info.get('multipv', 1)] = info
+                    completed.add(info)
             elapsed = (time.perf_counter() - started) * 1000
-            complete = [depth for depth, lanes in iterations.items() if len(lanes) == ranks]
-            if not complete:
+            if not completed.best:
                 raise ValueError('No complete engine iteration')
-            lanes = iterations[max(complete)]
-            infos = [lanes[index] for index in range(1, ranks + 1)]
+            infos = completed.best
             return [dict(fen=position.fen(), cp=info['score'].pov(position.turn).score(),
                          mate=info['score'].pov(position.turn).mate(), depth=info['depth'],
                          nodes=info['nodes'], pvUci=[move.uci() for move in info['pv']],
@@ -65,12 +105,20 @@ def inspect(task):
 
         shallow = search(board, 60000)
         deep = search(board, 600000)
-        played = deep[-1]['pvUci'][0]
+        played = row.get('playedMoveUci') or deep[-1]['pvUci'][0]
+        if chess.Move.from_uci(played) not in board.legal_moves:
+            raise ValueError('The recorded played move is not legal on the supplied board')
+        comparison = None
+        if row.get('playedMoveUci'):
+            selected_roots = list(dict.fromkeys([deep[0]['pvUci'][0], played]))
+            comparison = search(board, 600000, [chess.Move.from_uci(move) for move in selected_roots])
         reached = board.copy()
         reached.push_uci(played)
         reply = search(reached, 300000) if not reached.is_game_over() else []
-        atomic_json(path, dict(identity=identity, id=row['id'], shallow=shallow,
-                               deep=deep, played=played, reply=reply))
+        result = dict(identity=identity, id=row['id'], shallow=shallow, deep=deep, played=played, reply=reply)
+        if comparison is not None:
+            result['comparison'] = comparison
+        atomic_json(path, result)
     return row['id']
 
 
@@ -100,7 +148,8 @@ def main():
     atomic_json(output / 'receipt.json', dict(protocol=PROTOCOL, engine_sha256=engine_hash,
         sample_sha256=hashlib.sha256(args.sample.read_bytes()).hexdigest(), split=args.split,
         positions=len(selected), nodes=[60000, 600000, 300000], threads=1, hash_mb=64,
-        category_scope='Course categories are weak labels'))
+        comparison_nodes_per_recorded_move=600000,
+        category_scope='Source categories and existing labels require independent review'))
 
 
 if __name__ == '__main__':

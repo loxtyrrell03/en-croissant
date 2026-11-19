@@ -137,3 +137,14 @@ test("candidate comparison cannot promote a later line after rejecting rank one"
         ])?.bestSecondGapCp,
     ).toBeNull();
 });
+
+test("king-destination and rook-square castling are one candidate", () => {
+    const fen = "4k3/8/8/8/8/8/8/4K2R w K - 0 1";
+    const common = { fen, depth: 18, cp: 500 };
+    const result = measurePositionDecision(fen, [
+        { ...common, pvUci: ["e1g1"] },
+        { ...common, pvUci: ["e1h1"] },
+    ]);
+    expect(result?.lines).toHaveLength(1);
+    expect(result?.bestSecondGapCp).toBeNull();
+});

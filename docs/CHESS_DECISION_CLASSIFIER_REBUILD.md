@@ -57,7 +57,7 @@ The primary checkout already has an unrelated checking-ray deflection patch.
 Baseline source hashes and that patch are saved privately. Preserve that work.
 Existing pawn-structure extraction and Engine Plans are available for reuse.
 
-## First measured baseline
+## First measured baseline (superseded input protocol)
 
 The two downloaded Woodpecker courses were successfully read. There are 33 PGN
 chapters and 2,128 distinct legal exercise roots in the combined candidate pool.
@@ -139,7 +139,122 @@ Lichess puzzle themes are useful candidates for reference review. Their tagging
 rules have documented restrictions, including king forks and relative pins.
 [Lichess tagging issue](https://github.com/lichess-org/lila/issues/17125)
 
-## Outstanding work
+## Experimental candidate progression
+
+The new code remains experimental and is not called by the production UI or
+stored-review classifier. `tacticalSequenceEvidence.ts` builds legally replayed
+mechanism witnesses, including the actual starting FEN and mechanism/payoff ply.
+It currently covers used forks, deflections, defender removal, discoveries,
+skewers, clearance, checking intermezzos, decoys into forks and short preparations
+by a tracked piece. It suppresses duplicate fork/king-deflection descriptions.
+Each witness is explicitly a continuation observation, not an all-defence proof.
+
+`decisionAssessment.ts` separates position, individual move and actual mistake
+assessments. Tactical and positional support are independent ordinal evidence
+states, not probabilities. It retains applicable existing bounded certificates,
+checks separate opponent-reply searches for score/position consistency, and can
+report legal short mating continuations without inventing a named mating motif.
+An allowed opponent fork can explain a mistake independently of a quiet better
+move. Paired searches can compare actual played moves outside the global top
+three. Later events retain their own boards and plies.
+
+`positionalTransitions.ts` tracks new structural facts and their persistence.
+The first candidate overlabelled incidental pawn changes during material wins.
+The revised comparison requires both a specific persistent change and a worse
+same-depth alternative with comparable settled material. Its interpretation is
+still explicitly heuristic. This is too restrictive for many real strategic
+decisions and does not yet meet the requested positional coverage.
+
+The first reply-gated candidate also required the original PV's reply to remain
+the new engine's first choice. Deeper analysis often changes that reply. The
+revision inspects competitive separately searched replies and retains the
+conditional line ownership. It never claims these are every legal defence.
+
+A provisional 60-case development reference uses source annotations and legal
+source/engine continuations. Null labels are unresolved, not negatives. Reviews
+were made after development outputs, are not independently human-adjudicated,
+and contain only three explicit tactical negatives. Source/main-engine move
+disagreements stay unlabelled. They cannot support a general accuracy claim.
+
+| Root move justification, provisional reference | Existing live classifier | Candidate v4 |
+|---|---:|---:|
+| Tactical positives detected / reviewed positives | 2 / 39 | 10 / 39 |
+| False positives / reviewed tactical negatives | 0 / 3 | 0 / 3 |
+| Positional positives detected / reviewed positives | 0 / 29 | 1 / 29 |
+| Mixed positives detected / reviewed mixed cases | 0 / 11 | 1 / 11 |
+
+This comparison concerns explanations of the first move, so later PV motifs do
+not count as root detections. The earlier 10/30 live-label count includes later
+events and answers a different question. The old live classifier has no
+positional/mixed move output; its separate mistake classifier must be compared
+on actual mistakes, not counted as a move classifier. Candidate v4 still misses
+29 of 39 reviewed tactical positives and 10 of 11 mixed cases. Do not promote
+these development gains as acceptance or held-out success. Per-motif accuracy
+is unavailable until complete positive/negative motif references are reviewed.
+
+Two further samples are frozen before candidate evaluation. A streamed CC0
+Lichess sample has 96 distinct positions from 96 source games, with no game or
+position overlap with the earlier fixture. Sixteen theme strata include quiet,
+defensive and drawing tactics; source tags remain weak labels. Current exports
+use both `/game/<id>` and `/<id>` URLs, which the sampler normalizes before
+grouping. No raw public corpus is retained. A 48-position personal classical
+sample has 24 games, one prior >=100 cp error and one <=20 cp decision per game,
+across the previously verified classical time-control groups. Existing losses
+only select strata. Fresh paired searches evaluate the actual recorded moves.
+Development partitions are 48 and 24 positions respectively; their validation
+partitions and the 60 course validation roots remain unopened.
+
+Reply probing uses one million nodes, then four million if depth 16 or root
+score consistency is missing, one thread and 64 MiB per process. Exact engine,
+root-cache and search-setting identities govern cache reuse. The scripts retain
+attempted/observed nodes and elapsed time. Material settlements, compulsory
+draws and branch relevance can still prevent a confident classification.
+
+The broader development audit found a second input-protocol issue: a new UCI
+MultiPV frame can reorder roots at the same depth. A last-value-per-rank map can
+then splice frames and duplicate a root. Engine protocol 2 accepts only complete
+contiguous 1..N frames with distinct legal roots, matching depths, ordered scores
+and no bounds. Its snapshots copy PV lists rather than sharing mutable updates.
+Synthetic sequence regressions and a real Stockfish replay reproduce and fix the
+affected course root. Earlier protocol-1 counts and candidate-v4 agreement above
+are historical provisional measurements; protocol-2 reruns supersede them.
+
+The protocol-2 rerun (candidate v6) reproduces the table's 10/39 tactical,
+1/29 positional and 1/11 mixed development detections, versus 2/39, 0/29 and
+0/11 for the old root-move output. The independent puzzle development sample
+produces 32 tactical, 15 unclear and one invalid-input root assessment; these
+are output counts, not accuracy against reviewed labels. The classical sample
+produces three tactical and 21 unclear root assessments. Its actual-mistake
+assessments retain all five existing tactical explanations, leave eight
+measured errors unclear and produce no measured mistake for eleven choices.
+The latter includes unavailable comparisons and must not be interpreted as
+eleven confirmed correct moves. Pure assessment overhead medians were 20, 16
+and 14 milliseconds in these runs, excluding legacy proof and engine search.
+The extra reply searches remain the dominant cost. No validation partition was
+opened for these iterations.
+
+For the current experiments use `decision-evidence-public.py`,
+`decision-evidence-classical.py`, `decision-evidence-engine.py`,
+`decision-evidence-probes.py`, and `decision-evidence-review.mjs`. The opt-in
+`decisionCandidateAudit.test.ts` accepts `DECISION_EVIDENCE_AUDIT`, a cohort
+(`course`, `independent`, `classical`) in `DECISION_AUDIT_COHORT`, and a fresh
+`DECISION_AUDIT_NAME`. It is deliberately development-only. Every audit saves
+source hashes and refuses to overwrite an earlier result. Score reviewed
+dimensions with `decision-evidence-score.py`; uncertainty is excluded from
+denominators and abstentions on positives count as misses. Wilson intervals are
+case-level descriptive intervals, not a correction for correlated source games.
+The default evidence paths are `<cohort>-engine-v2` and `<cohort>-probes-v2`;
+`DECISION_ENGINE_PROTOCOL=1` exists only for historical comparisons.
+
+The research literature supports checking atomic chess claims separately from
+their relevance to an explanation. The ACT-Eval paper reports that tool-backed
+verification still misses errors; its linked data repository returned 404 in
+this investigation, so no experiment here uses that unavailable reference set.
+[ACT-Eval paper](https://arxiv.org/abs/2608.04240)
+The public independent sample follows the documented premove convention and
+CC0 terms. [Lichess database](https://database.lichess.org/#puzzles)
+
+## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and
 motifs, including actual owner mistakes and fresh independent source games.

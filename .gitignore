@@ -35,3 +35,6 @@ tsconfig.tsbuildinfo
 *.sw?
 
 src-tauri/gen/
+
+# Local Python benchmark bytecode
+__pycache__/
