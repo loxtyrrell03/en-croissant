@@ -1,0 +1,15 @@
+{
+  "baseline": "6a5387d38504dbe07dd324f1a2f0262d976e13ed",
+  "sampleSha256": "24c66cf7f43277b47be941e6f59b242103404e14630f68c5f1535e2a0a961ed3",
+  "referenceSha256": "7da3177f5b552c619a799e4f391dbde382a647e665599d4ae66e1060ab56c2b7",
+  "algorithmSha256": "63a8a9d3fd90bc8d1766530b70a5c57964c0b6b14772846d44dc9069b3a0c49d",
+  "variants": [
+    "linked-root-or-recapture",
+    "broader-early-recapture"
+  ],
+  "criterion": "Gain at least one reviewed positional true positive, preserve reviewed positives and add zero reviewed false positives. Keep other scopes and paired engine scores unchanged. Search only the existing frames.",
+  "repositoryLfSha256": {
+    "sampleSha256": "24c66cf7f43277b47be941e6f59b242103404e14630f68c5f1535e2a0a961ed3",
+    "referenceSha256": "a47438b18bba72230d8a34ea0fa7a0b095f0032ff84c471aac7375bba95d3503"
+  }
+}

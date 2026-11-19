@@ -60,8 +60,9 @@ import { findSharedStructuralPlan } from "./decisionSharedStructure";
 import { findPromotionPressure } from "./decisionPromotionPressure";
 import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisionPromotionMistake";
 import { compareRookPressure, type RookPressureEvidence } from "./decisionRookPressure";
+import { comparePawnStructure, type PawnStructureEvidence } from "./decisionPawnStructure";
 
-export const DECISION_ASSESSMENT_VERSION = 23;
+export const DECISION_ASSESSMENT_VERSION = 24;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -140,6 +141,7 @@ export type ChessDecisionReport = {
               mateConsequence?: DecisionMateConsequence;
               promotion?: PromotionMistakeEvidence;
               rookPressure?: RookPressureEvidence;
+              pawnStructure?: PawnStructureEvidence;
           })
         | null;
 };
@@ -928,12 +930,22 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                       playedProbe!.lines[0],
                   )
                 : null;
+            const pawnStructure = corroboratedChoices
+                ? comparePawnStructure(
+                      input.fen,
+                      comparedBest,
+                      playedLine,
+                      betterProbe!.lines[0],
+                      playedProbe!.lines[0],
+                  )
+                : null;
             if (
                 factors.length ||
                 pawnEpisodes.length ||
                 shelter ||
                 promotion?.positional ||
-                rookPressure
+                rookPressure ||
+                pawnStructure
             ) {
                 assessment.positional = {
                     support: "supported",
@@ -947,6 +959,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                         ...pawnEpisodes.map((item) => item.description),
                         ...(shelter ? [shelter.description] : []),
                         ...(rookPressure ? [rookPressure.factor.description] : []),
+                        ...(pawnStructure ? [pawnStructure.factor.description] : []),
                     ],
                 };
                 assessment.positionalFactors = [
@@ -954,6 +967,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     ...pawnEpisodes,
                     ...(shelter ? [shelter] : []),
                     ...(rookPressure ? [rookPressure.factor] : []),
+                    ...(pawnStructure ? [pawnStructure.factor] : []),
                 ];
             }
             assessment.category = category(assessment.tactical, assessment.positional);
@@ -975,6 +989,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 ...(tacticalEpisode ? { tacticalEpisode } : {}),
                 ...(promotion ? { promotion } : {}),
                 ...(rookPressure ? { rookPressure } : {}),
+                ...(pawnStructure ? { pawnStructure } : {}),
             };
         }
     }

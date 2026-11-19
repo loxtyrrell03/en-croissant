@@ -1,0 +1,253 @@
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -62,0 +63 @@
++import { comparePawnStructure, type PawnStructureEvidence } from "./decisionPawnStructure";
+@@ -142,0 +144 @@
++              pawnStructure?: PawnStructureEvidence;
+@@ -930,0 +933,9 @@
++            const pawnStructure = corroboratedChoices
++                ? comparePawnStructure(
++                      input.fen,
++                      comparedBest,
++                      playedLine,
++                      betterProbe!.lines[0],
++                      playedProbe!.lines[0],
++                  )
++                : null;
+@@ -936 +947,2 @@
+-                rookPressure
++                rookPressure ||
++                pawnStructure
+@@ -949,0 +962 @@
++                        ...(pawnStructure ? [pawnStructure.factor.description] : []),
+@@ -956,0 +970 @@
++                    ...(pawnStructure ? [pawnStructure.factor] : []),
+@@ -977,0 +992 @@
++                ...(pawnStructure ? { pawnStructure } : {}),
+diff --git a/src/utils/tacticalMotifs/decisionPawnStructure.ts b/src/utils/tacticalMotifs/decisionPawnStructure.ts
+new file mode 100644
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionPawnStructure.ts
+@@ -0,0 +1,222 @@
++import type { Chess } from "chessops/chess";
++import { makeFen } from "chessops/fen";
++import type { Color, Square } from "chessops/types";
++import { makeSquare, opposite } from "chessops/util";
++import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import type { ComparativePositionalEvidence } from "./positionalTransitions";
++
++const WINDOW = 12;
++const DURATION = 4;
++const file = (square: Square) => square % 8;
++const rank = (square: Square, side: Color) =>
++    side === "white" ? Math.floor(square / 8) : 7 - Math.floor(square / 8);
++const ownPawns = (board: Chess, side: Color) => board.board.pawn.intersect(board.board[side]);
++
++type Feature = "doubled-pawn" | "isolated-pawn";
++type Weakness = {
++    feature: Feature;
++    capture: TacticalReplayStep;
++    start: number;
++    finish: number;
++};
++
++export type PawnStructureEvidence = {
++    factor: ComparativePositionalEvidence;
++    playedLineUci: string[];
++    betterLineUci: string[];
++};
++type ComparisonMode = "linked" | "wider" | "linked-settled" | "wider-settled";
++
++function shape(board: Chess, square: Square, side: Color, feature: Feature) {
++    const pawns = [...ownPawns(board, side)];
++    if (feature === "doubled-pawn")
++        return pawns.filter((pawn) => file(pawn) === file(square)).length > 1;
++    return !pawns.some((pawn) => Math.abs(file(pawn) - file(square)) === 1);
++}
++
++function passed(board: Chess, square: Square, side: Color) {
++    return ![...ownPawns(board, opposite(side))].some(
++        (pawn) => Math.abs(file(pawn) - file(square)) <= 1 && rank(pawn, side) > rank(square, side),
++    );
++}
++
++function examineChoice(fen: string, choice: DecisionEngineLine, reply?: DecisionEngineLine) {
++    const [root] = replayTacticalLine(fen, [choice.pvUci[0]]);
++    if (!root || (reply && !measureDecisionLine(makeFen(root.after.toSetup()), reply))) return [];
++    const line = reply ? { ...choice, pvUci: [root.uci, ...reply.pvUci] } : choice;
++    const measured = measureDecisionLine(fen, line);
++    return measured && !measured.drawnEnding
++        ? replayTacticalLine(fen, line.pvUci.slice(0, WINDOW))
++        : [];
++}
++
++function samePawnOn(board: Chess, square: Square, side: Color) {
++    const piece = board.board.get(square);
++    return piece?.role === "pawn" && piece.color === side;
++}
++
++function candidateWeaknesses(steps: TacticalReplayStep[], side: Color, wider: boolean) {
++    const result: Weakness[] = [];
++    for (const [index, capture] of steps.slice(0, wider ? 5 : 3).entries()) {
++        const { before, move } = capture;
++        if (
++            before.turn !== side ||
++            !capture.capture ||
++            move.promotion ||
++            !samePawnOn(before, move.from, side) ||
++            !samePawnOn(steps[0].before, move.from, side) ||
++            steps.slice(0, index).some((step) => step.move.from === move.from || step.move.to === move.from)
++        )
++            continue;
++
++        // Link a later recapture to the root choice. The wider experiment
++        // also considers an independently repeated early exchange elsewhere.
++        if (index > 0) {
++            const previous = steps[index - 1];
++            if (previous.move.to !== move.to || !previous.capture) continue;
++            if (!wider && steps[0].move.to !== move.to) continue;
++        }
++        for (const feature of ["doubled-pawn", "isolated-pawn"] as const) {
++            if (
++                shape(steps[0].before, move.from, side, feature) ||
++                shape(before, move.from, side, feature)
++            )
++                continue;
++            const lasting = steps.slice(index, index + DURATION);
++            if (
++                lasting.length !== DURATION ||
++                lasting.some(({ after }) =>
++                    !samePawnOn(after, move.to, side) ||
++                    !shape(after, move.to, side, feature) ||
++                    passed(after, move.to, side),
++                )
++            )
++                continue;
++            result.push({ feature, capture, start: index + 1, finish: index + DURATION });
++        }
++    }
++    return result;
++}
++
++function survivesWithoutWeakness(
++    steps: TacticalReplayStep[],
++    originalPawn: Square,
++    side: Color,
++    feature: Feature,
++    through: number,
++) {
++    let square = originalPawn;
++    return (
++        steps.length >= through &&
++        steps.slice(0, through).every(({ before, after, move }) => {
++            if (before.turn === side && move.from === square) square = move.to;
++            return samePawnOn(after, square, side) && !shape(after, square, side, feature);
++        })
++    );
++}
++
++function comparableMaterial(lines: TacticalReplayStep[][], through: number) {
++    const ends = lines.map((steps) => steps[through - 1]);
++    const balances = ends.map(({ balance }) => balance);
++    return (
++        Math.max(...balances) - Math.min(...balances) <= 110 &&
++        ends.every(({ balance, after }, index) =>
++            balance === lines[index][through - 2].balance && !after.isCheck(),
++        )
++    );
++}
++
++/** A repeated, material-comparable structural change can explain one
++ * positional consequence of a mistake. The pawn's long-term value is still
++ * an interpretation of the two compared choices. */
++export function comparePawnStructure(
++    fen: string,
++    better: DecisionEngineLine,
++    played: DecisionEngineLine,
++    betterReply: DecisionEngineLine,
++    playedReply: DecisionEngineLine,
++    mode: ComparisonMode = "linked",
++): PawnStructureEvidence | null {
++    if (
++        better.cp === null ||
++        played.cp === null ||
++        better.depth !== played.depth ||
++        better.depth < 16 ||
++        better.cp - played.cp < 60 ||
++        betterReply.cp === null ||
++        playedReply.cp === null ||
++        playedReply.cp - betterReply.cp < 40 ||
++        [better, played, betterReply, playedReply].some((line) => line.mate != null)
++    )
++        return null;
++    const paired = examineChoice(fen, played);
++    if (paired.length < DURATION) return null;
++    const side = paired[0].before.turn;
++    const wider = mode.startsWith("wider");
++    const candidates = candidateWeaknesses(paired, side, wider);
++    if (!candidates.length) return null;
++    const poor = [paired, examineChoice(fen, played, playedReply)];
++    const repeated = candidateWeaknesses(poor[1], side, wider);
++    if (!repeated.length) return null;
++    const good = [examineChoice(fen, better), examineChoice(fen, better, betterReply)];
++    for (const effect of candidates) {
++        const second = repeated.find(
++            (match) =>
++                match.feature === effect.feature &&
++                match.capture.uci === effect.capture.uci &&
++                (wider || match.start === effect.start),
++        );
++        if (!second) continue;
++        const earliest = Math.max(effect.finish, second.finish);
++        const compared = [...good, ...poor];
++        const latest = Math.min(
++            earliest + (mode.endsWith("settled") ? 5 : 0),
++            ...compared.map((line) => line.length),
++        );
++        const horizons = Array.from({ length: latest - earliest + 1 }, (_, index) => earliest + index);
++        const through = horizons.find(
++            (ply) =>
++                comparableMaterial(compared, ply) &&
++                good.every((steps) =>
++                    survivesWithoutWeakness(steps, effect.capture.move.from, side, effect.feature, ply),
++                ) &&
++                poor.every((steps, index) =>
++                    steps.slice((index === 0 ? effect.start : second.start) - 1, ply).every(
++                        ({ after }) =>
++                            samePawnOn(after, effect.capture.move.to, side) &&
++                            shape(after, effect.capture.move.to, side, effect.feature) &&
++                            !passed(after, effect.capture.move.to, side),
++                    ),
++                ),
++        );
++        if (through === undefined) continue;
++        const target = makeSquare(effect.capture.move.to);
++        const consequence =
++            effect.feature === "doubled-pawn"
++                ? `doubles the pawns on the ${target[0]}-file`
++                : `leaves an isolated pawn on ${target}`;
++        const origin = makeSquare(effect.capture.move.from);
++        const setup = effect.start > 1 ? `After ${poor[0][0].san}, ` : "";
++        return {
++            playedLineUci: poor[0].slice(0, through).map(({ uci }) => uci),
++            betterLineUci: good[0].slice(0, through).map(({ uci }) => uci),
++            factor: {
++                feature: effect.feature,
++                side,
++                squareOrFile: target[0],
++                firstPly: effect.start,
++                lastConsecutivePly: through,
++                description: `${setup}${effect.capture.san} ${consequence} in both searches. The ${good[0][0].san} lines avoid that weakness for the pawn from ${origin} through the same window.`,
++                support: "board-fact",
++                comparisonMoveUci: better.pvUci[0],
++                comparisonGapCp: better.cp - played.cp,
++                supportInComparison: false,
++                comparison: "separate-reply-search",
++                materialWindowPlies: through,
++                interpretation: "heuristic",
++            },
++        };
++    }
++    return null;
++}

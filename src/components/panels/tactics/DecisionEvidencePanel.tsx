@@ -188,6 +188,7 @@ function DecisionReport({
   const mate = report.mistake?.mateConsequence;
   const mistakeComparison = report.mistake?.promotion ?? episode;
   const rookPressure = report.mistake?.rookPressure;
+  const pawnStructure = report.mistake?.pawnStructure;
   const mistakeLines = mistakeComparison
     ? [
         { label: "Played line", san: lineSan(report.fen, mistakeComparison.playedLineUci) },
@@ -196,18 +197,22 @@ function DecisionReport({
     : mate
       ? [{ label: "Mating line", san: lineSan(report.fen, mate.lineUci) }]
       : [];
-  if (rookPressure) {
-    const played = lineSan(report.fen, rookPressure.playedLineUci);
-    const better = lineSan(report.fen, rookPressure.betterLineUci);
+  for (const [comparison, detail] of [
+    [rookPressure, "rook comparison"],
+    [pawnStructure, "pawn structure"],
+  ] as const) {
+    if (!comparison) continue;
+    const played = lineSan(report.fen, comparison.playedLineUci);
+    const better = lineSan(report.fen, comparison.betterLineUci);
     const hasOtherComparison = mistakeLines.length > 0;
     if (!mistakeLines.some((line) => line.san === played))
       mistakeLines.push({
-        label: hasOtherComparison ? "Played line for rook comparison" : "Played line",
+        label: hasOtherComparison ? `Played line for ${detail}` : "Played line",
         san: played,
       });
     if (!mistakeLines.some((line) => line.san === better))
       mistakeLines.push({
-        label: hasOtherComparison ? "Better line for rook comparison" : "Better line",
+        label: hasOtherComparison ? `Better line for ${detail}` : "Better line",
         san: better,
       });
   }

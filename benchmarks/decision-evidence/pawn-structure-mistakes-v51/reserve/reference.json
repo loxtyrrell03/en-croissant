@@ -1,0 +1,166 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "structure-arco-open-2026-a47e68d26648c7ff-45",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7g5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "After Qg5, White can force several exchanges, including cxb6. The resulting b-pawn is isolated, but the paired loss is small and the impact of that pawn is uncertain."
+    },
+    {
+      "id": "structure-arco-open-2026-99334968318c6c4a-55",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Kf6 gives White Nc4 and Ra8 in both searches. Rc8 keeps Black's rook active and reaches a central pawn exchange before the invasion. The later tactical material changes vary."
+    },
+    {
+      "id": "structure-arco-open-2026-70d84a822f75ef78-34",
+      "scope": "mistake-mechanism",
+      "moveUci": "b4c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The stronger d5 break creates and sustains an advanced white d5 pawn in both searches. After bxc5, Black takes the first c5 pawn immediately, and the play turns to a roughly level exchange of pieces. The initial doubled structure is transient."
+    },
+    {
+      "id": "structure-arco-open-2026-6beb6128dab02179-73",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5d4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After exd4 both replies give White exd4 and Black loses the e5 pawn. g5 preserves an additional plan of keeping central tension and putting rooks on the kingside. The paired line later uses a different recapture. Tactical causation is uncertain."
+    },
+    {
+      "id": "structure-arco-open-2026-675b6b4ea8b7dcd6-81",
+      "scope": "mistake-mechanism",
+      "moveUci": "f6f5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "f5+ allows the white king to cross to e5 and d6 in both searches. Rd8 brings the rook to the contested file and keeps the king from invading during the same stretch. The played g4 pawn advance is transitory."
+    },
+    {
+      "id": "structure-arco-open-2026-d2f09ebcf0645d4a-50",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3f5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Nf5 brings Qe5 in both searches, but White trades queens immediately in only one. The stronger Be6 lines also lose the g5 pawn. A specific shared cause of the loss remains unclear."
+    },
+    {
+      "id": "structure-polish-open-semifinal-2026-1820ed2c6867ed15-50",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1g1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rdg1 allows the same a3 and d5 pressure and then returns the rook to d1. Kb1 gets the king out of that file earlier before meeting the same pawn advances. No distinct forcing material consequence is established."
+    },
+    {
+      "id": "structure-polish-open-semifinal-2026-fad9b88020deb1a2-59",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5h4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "gxh4 allows Rde1, Re5 and Qxh4 in both lines, followed by a sequence in which White takes the rook on e5 for the bishop. The h4 pawn is recovered immediately, leaving no separate durable weakness established."
+    },
+    {
+      "id": "structure-arco-open-2026-63215443a93b15e2-83",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7f7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kf7 allows Rxe5 and dxe5 followed by Nxe5+ in both lines. White's d-pawn can advance to d6 once the blocker is diverted. Nb6 leads to an alternative in which Black contests the d5 pawn and White does not get the same passer."
+    },
+    {
+      "id": "structure-arco-open-2026-0b41c1f496240505-33",
+      "scope": "mistake-mechanism",
+      "moveUci": "h5h4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "After h4, both searches repeat Bxc6 and bxc6, creating the same isolated black c6 pawn and letting White play Nc4. Ne5 keeps the b-pawn linked to a7 and permits a different, even minor-piece trade. There is no separate concrete forcing payoff."
+    },
+    {
+      "id": "structure-arco-open-2026-a5f813a280cd60da-23",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5e4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "dxe4 and dxc4 are close in score, despite shaping the central pawn play differently. No consequential played-move error is established."
+    },
+    {
+      "id": "structure-polish-open-semifinal-2026-dc0252f4bbcefd8e-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "b3a4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "bxa4 is the engine's preferred move and retains White's advantage in both searches."
+    },
+    {
+      "id": "structure-arco-open-2026-5aa1dc472b3bc66d-23",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7f6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "gxf6 is the engine's preferred move and keeps approximately equal play. A compromised pawn shape alone does not establish a mistake."
+    },
+    {
+      "id": "structure-polish-open-semifinal-2026-0656b7d522675f83-52",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3f4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "gxf4 is the preferred move and preserves some advantage. The ensuing pawn exchanges are already part of that choice."
+    },
+    {
+      "id": "structure-arco-open-2026-cfe0dc1d2b44a231-73",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5b4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "b4 is the engine's preferred defense in a position already badly lost. The existing advanced white pawns are not a new concession by that move."
+    },
+    {
+      "id": "structure-polish-open-semifinal-2026-038950c605d8ab43-56",
+      "scope": "mistake-mechanism",
+      "moveUci": "a2a3",
+      "tactical": null,
+      "positional": null,
+      "rationale": "a3 allows Nd4 and a4 in both searches, while Rd1 allows the rook to become active via f3. Black retains a substantial advantage either way and the eventual payoff varies."
+    },
+    {
+      "id": "structure-polish-open-semifinal-2026-ba1f13cbd76185ab-58",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5h5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qh5 delays bringing the rook to c2 to contest the queenside while Black defends and reorganises the heavy pieces. Rc2 does this before Black gets the same setup. The two better branches differ in tactical details."
+    },
+    {
+      "id": "structure-arco-open-2026-6bf85da09580ab14-44",
+      "scope": "mistake-mechanism",
+      "moveUci": "a1d1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rd1 lets h6 lead to Bxc5 and bxc5, with White giving up a bishop for pawns in both searched continuations. Qxa7 lets White reposition the queen while facing a different attack. A separate enduring harm remains unclear."
+    },
+    {
+      "id": "structure-arco-open-2026-05cb36e06697ad82-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "h7h5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "h5 lets White consolidate with Qb3 and Rfe1 before taking on d6. Both g4 lines instead draw the f-pawn away and open distinct counterplay. The material exchanges do not by themselves establish a separate tactic."
+    },
+    {
+      "id": "structure-arco-open-2026-090b176669674cfc-41",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7g5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qg5 permits Nf3 and costs Black a tempo before playing Qf6, by which time White can get b4 in both continuations. Immediate Qf6 retains Qb2 and forces a defensive regrouping before that pawn advance."
+    }
+  ]
+}

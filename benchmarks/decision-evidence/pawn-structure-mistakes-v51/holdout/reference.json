@@ -1,0 +1,198 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "structure-halloween-open-2026-50d2bec8f9a10534-46",
+      "scope": "mistake-mechanism",
+      "moveUci": "e2g4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "After Qg4 the queen trade forces hxg4 and leaves White with doubled g-pawns in both played continuations. Rc2 keeps the h-pawn beside the g-pawn through the compared window and retains the queens. The exchanges settle without a distinct tactical payoff."
+    },
+    {
+      "id": "structure-hvar-open-2026-bc1a92f5635f9086-68",
+      "scope": "mistake-mechanism",
+      "moveUci": "c4d5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "The immediate cxd5 is followed by Qxd4 in both played lines, so the doubled pawns vanish one ply later. The independent Bf3 line also reaches cxd5 before Qxd4. The cause of the modest loss is uncertain."
+    },
+    {
+      "id": "structure-hvar-open-2026-ea16a260974fb7df-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6f5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Nf5 permits Bxc6 and bxc6, leaving doubled c-pawns. Bg4 also sees Bxc6 and bxc6 later, and White can take on c6 with check. The paired loss is only modest."
+    },
+    {
+      "id": "structure-hvar-open-2026-f42b7a2590226db4-49",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6e8",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Be8 gives White c3 and more central activity; axb4 opens queenside rook access earlier. The doubled pawns in the played line are immediately recaptured. The lines differ beyond that point."
+    },
+    {
+      "id": "structure-hvar-open-2026-23a562ad4d837eaf-69",
+      "scope": "mistake-mechanism",
+      "moveUci": "f6h6",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Both Rh6 and the stronger Rf3 eventually allow gxh3 en passant. The same advanced h-pawn appears in both routes. The root rook choice changes the timing, but the mechanism is uncertain."
+    },
+    {
+      "id": "structure-hvar-open-2026-8796369a96a16dc9-29",
+      "scope": "mistake-mechanism",
+      "moveUci": "a5e5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "The Qe5 lines disagree about how White trades on d2 and how Black uses the e-pawn. The paired search shows a small loss and the forced continuation is unclear."
+    },
+    {
+      "id": "structure-hvar-open-2026-f8a12b29c569312e-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6c7",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Bc7 permits e5 and a minor-piece exchange leaving Black with less coordination. The better Rh7 continuations use quite different defensive plans, so a distinct concession is uncertain."
+    },
+    {
+      "id": "structure-thanksgiving-premier-2026-1fc52b06a75d2179-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5c4",
+      "tactical": null,
+      "positional": null,
+      "rationale": "bxc4 concedes the b-pawn's connection to a6, but the better e4 branch also reaches bxc4 and dxc4 later. The paired search sees a small difference and the immediate mechanism is unclear."
+    },
+    {
+      "id": "structure-hvar-open-2026-b48ef4fb5a4313cc-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8b8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rab8 allows Rxh5 in both searches, removing the knight. ...f6 and ...gxf5 then leave doubled f-pawns and alter Black's king cover. The stronger Rfe8 lines retain the knight through this window and avoid that pawn structure."
+    },
+    {
+      "id": "structure-hvar-open-2026-cc7d03e5c3f7d4c6-68",
+      "scope": "mistake-mechanism",
+      "moveUci": "f3e4",
+      "tactical": null,
+      "positional": false,
+      "rationale": "The stronger Qd5 line and the played fxe4 line both lead to the same f-pawn capture on e4. The former has much more active queen checks, but the tactical continuation varies. The recorded isolation is shared in the compared lines."
+    },
+    {
+      "id": "structure-hvar-open-2026-becf3db6a83fe803-32",
+      "scope": "mistake-mechanism",
+      "moveUci": "c3d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Nxd5 allows both searches to reach Nxf3 and gxf3, leaving White with doubled f-pawns. The Bc5 branches preserve the g-pawn through that window. The evaluation difference is modest and an independent tactical mechanism is unclear."
+    },
+    {
+      "id": "structure-halloween-open-2026-cab2aad2f516a2f9-74",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bf6 allows Bxf6, exf6 and Nxf6. White gives up the anchored e5 pawn in both responses. Bxe7 keeps that pawn through the comparison, and the same tactical capture sequence is avoided."
+    },
+    {
+      "id": "structure-hvar-open-2026-bcd57d3defaf7306-25",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5c4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "dxc4 is itself the engine's preferred move in a close-to-level position. White can recapture the pawn immediately."
+    },
+    {
+      "id": "structure-hvar-open-2026-9129edf40744e850-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "a5b4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "axb4 remains the preferred move. The position is roughly three quarters of a pawn worse before and after; the capture does not explain a new mistake."
+    },
+    {
+      "id": "structure-hvar-open-2026-39c7843ae274b006-39",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5e4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "dxe4 is the preferred choice and keeps Black's substantial advantage. The recorded pawn geometry accompanies a good move."
+    },
+    {
+      "id": "structure-thanksgiving-premier-2026-e67abda3160b6250-24",
+      "scope": "mistake-mechanism",
+      "moveUci": "g4g5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "g5 is the preferred attack. gxh6 in the continuation helps the kingside pawn storm; it is insufficient evidence of a mistake."
+    },
+    {
+      "id": "structure-hvar-open-2026-11c8a81efa47c821-34",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2f3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qc4+ and immediate gxf3 are separated by very little. Both positions can reach similar pawn changes, with playable activity."
+    },
+    {
+      "id": "structure-hvar-open-2026-5d222e33e967737f-27",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7h6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "gxh6 is the preferred response and keeps Black better. Its pawn structure is compatible with the rest of the position."
+    },
+    {
+      "id": "structure-hvar-open-2026-c57306cd402b9d18-49",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7b6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Ndb6 lets e5 and exd6 create the same advanced white d6 pawn in both played searches. Qa7 gives Black time to address central pressure early, though its responses differ. A separate forced material payoff is unclear."
+    },
+    {
+      "id": "structure-hvar-open-2026-c3d174fb3b8a553e-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "b2b1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rb1+ first gives White scope to answer with a bishop followed by Ke2. Nd3+ first gives Black Bh4, Rb1+ and Nf4+ in a concrete forcing combination. A distinct lasting positional concession is unclear."
+    },
+    {
+      "id": "structure-hvar-open-2026-026723a8a042c574-26",
+      "scope": "mistake-mechanism",
+      "moveUci": "e1g1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Immediate castling permits g4 and the h-pawn exchange, opening the h-file beside White's king while Black's pawn attacks f3 or advances to g3. Nbd2 delays that decision and both better lines can address the knight pressure earlier."
+    },
+    {
+      "id": "structure-hvar-open-2026-2fc35d9dffa6aaa9-26",
+      "scope": "mistake-mechanism",
+      "moveUci": "e2e3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "e3 lets Black build queenside space with b4 and the b-file pawn in both played searches. Bf3 accepts the d4 capture but creates active bishop and rook play before the same queenside advance."
+    },
+    {
+      "id": "structure-hvar-open-2026-4b78d1de2c5021bd-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "c8a6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "After Ba6, White gets Rf2 and Nc6 before a forcing knight, bishop and queen sequence in both played searches. f6 is a different tactical defense. A separate structural mechanism is uncertain."
+    },
+    {
+      "id": "structure-hvar-open-2026-051118732b3ae07e-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8c8",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Rac8 permits Nxe5 and dxe5 while exf5 attacks the g-pawn directly. Both retain a Black advantage and diverge on the ensuing middlegame. A specific mistake mechanism is uncertain."
+    }
+  ]
+}

@@ -3243,3 +3243,78 @@ continuation, an inadequate score contrast, a missing control and a
 check that applies after both choices. The public-game preview uses
 `decision-evidence-intermezzo-preview.py` and the source list in
 `preview-scan.json`.
+
+
+## Iteration 51 — compare pawn structure after recaptures settle
+
+The previous worker could recognize a structural benefit caused by
+some root moves. It had much less coverage for a positional cost that
+appeared in the subsequent exchanges. The new comparison follows the
+same original pawn across an actual played move, a stronger move and
+independent reply searches for both choices. It works with the existing
+engine frames.
+
+A pawn capture in the first five plies can nominate a new isolated or
+doubled pawn. Both played continuations must repeat the capture. The
+structure must persist across at least four plies and the pawn must
+remain blocked from passed-pawn status by an opposing pawn. Both
+stronger continuations must retain the original pawn and avoid the
+same structural weakness. The worker allows a bounded wait for
+exchanges to settle before comparing material at the same ply. It
+shows the evidence as a board fact supporting a strategic
+interpretation.
+
+Four experimental arms independently varied which recaptures were
+eligible and whether the material comparison could wait for a later
+ply. Both fixed-window arms missed the Halloween case. After
+`24.Qg4 Qxg4 25.hxg4`, the doubled g-pawns survive a further exchange
+on b5. Looking one ply beyond the recapture on b5 confirms the same
+structure at comparable material. This example informed the settlement
+variants. The Arco case came from the untouched reserve.
+`17...h4 18.Bxc6 bxc6` leaves the black c6 pawn isolated.
+`17...Ne5` leaves the b7 pawn connected and allows a different
+minor-piece exchange. The broad arms find the latter example, which
+comes from a recapture away from the square of the played move.
+
+| Sample | Reviewed positive positional cases | Incumbent | Linked fixed | Broad fixed | Linked settled | Broad settled |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 274 development decisions | 72 | 11 | 12 | 13 | 14 | 16 |
+| Initial 24-game sample | 7 | 0 | 0 | 0 | 1 | 1 |
+| Untouched 20-game reserve | 10 | 2 | 2 | 3 | 2 | 3 |
+
+No variant adds a reviewed positional false positive, and all
+previously detected positives survive. The reserve contains five
+reviewed positional negatives and five uncertain positional references.
+The initial 24 games were unseen for the fixed-window variants and
+informed the later settlement comparison. All labels were frozen
+before opening classifier output for the respective experiment. The
+new samples are enriched for structural changes and use one
+engine-assisted reviewer. They measure the evidence rule on this
+class of mistakes.
+
+The app uses the broader settled variant and shows both lines under
+Show evidence. The 318-decision release replay matches that variant
+and retains the same tactical verdicts, candidate-move reports,
+position-character reports and paired evaluation losses. It performs
+no extra Stockfish searches. Confirmed mixed coverage on these samples
+remains limited. In Benidorm, the existing tactical assessment gains
+a positional explanation for the damage from `...Nh6 Bxh6 gxh6`.
+Its historical mixed reference is uncertain and it does not count as
+a verified mixed gain.
+
+The TypeScript check and 33 focused tests pass. The source-built
+panel shows the Arco and Halloween cases with their legal lines at
+320, 390 and 900 pixels using the stored Stockfish searches. The
+installed desktop app is unverified.
+
+**Reproduction.** Sample the public tournaments with
+`decision-evidence-structure-mistake-sample.py`. The sources,
+case selections, frozen reference labels and exact results are under
+`benchmarks/decision-evidence/pawn-structure-mistakes-v51`.
+Regenerate the v51 root, reply and shared-reply frames at the
+v47 engine settings and use `decisionMistakeBreadthReplay.test.ts`.
+Apply the experimental patch to the recorded baseline with
+`git apply --unidiff-zero` and set the sixth argument of
+`comparePawnStructure` to `"linked"`, `"wider"`,
+`"linked-settled"` or `"wider-settled"`. Score using
+`decision-evidence-ordinary-replay-score.py --mistakes`.
