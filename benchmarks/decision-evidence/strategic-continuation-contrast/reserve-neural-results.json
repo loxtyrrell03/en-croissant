@@ -1,0 +1,862 @@
+{
+  "training": 259,
+  "transfer": 35,
+  "inputs": [
+    "278a2ada510c2077652405d523a171a79c348dc11b41b78644c2626001a246f5",
+    "696a275517df201d4c933a98572737eea3adf1c9fc14409e06ee94f5606c467b"
+  ],
+  "medianNetworkForwardMs": 43.15759998280555,
+  "additionalEngineNodes": 0,
+  "results": {
+    "tactical": {
+      "reference": {
+        "negative": 5,
+        "positive": 25,
+        "uncertain": 5
+      },
+      "incumbent": {
+        "truePositives": 8,
+        "falsePositives": 0
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": 0.9800950683303624,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": 0.9835956312349501,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": 0.9840397923875434,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-turkiye-7965a2f59ee20313-54",
+            "tournament-bangladesh-eb00f7e69a142632-37"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": 0.980351686598272,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": 0.9234328915989816,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": 0.9816588400065909,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-c8949ffec10c14a5-48",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": 0.9895953479430989,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": 0.9932718185313342,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": 0.9606307212890715,
+          "slots": 5,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        }
+      }
+    },
+    "positional": {
+      "reference": {
+        "positive": 30,
+        "uncertain": 2,
+        "negative": 3
+      },
+      "incumbent": {
+        "truePositives": 7,
+        "falsePositives": 0
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": 0.9705615298043913,
+          "slots": 6,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-37ec79a5051d8fb3-86",
+            "tournament-spice-fe6b9751874c20dd-60",
+            "tournament-spice-f4f46bf2af6ef86c-119",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": 0.9767491001796045,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-fe6b9751874c20dd-60",
+            "tournament-spice-320aac4d153d25dc-109",
+            "tournament-spice-36d0709e26865a8c-47",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": 0.9965217391304348,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-36d0709e26865a8c-47",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-fe6b9751874c20dd-60",
+            "tournament-turkiye-632de37dd37e844a-72",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-bangladesh-717b768e53595d2e-84"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": 0.9747822264736004,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-fe6b9751874c20dd-60",
+            "tournament-spice-320aac4d153d25dc-109",
+            "tournament-spice-36d0709e26865a8c-47",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-bangladesh-717b768e53595d2e-84"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": 0.8910271956277768,
+          "slots": 6,
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 2,
+            "bangladesh": 0
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-7bc8896f9b9e573d-37",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+            "tournament-bangladesh-9c8d5800bfb5a091-54"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": 0.9701080727426803,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-fe6b9751874c20dd-60",
+            "tournament-spice-36d0709e26865a8c-47",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-632de37dd37e844a-72",
+            "tournament-turkiye-0a092e9f55a406ab-39",
+            "tournament-bangladesh-717b768e53595d2e-84"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": 0.9796109942068494,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-36d0709e26865a8c-47",
+            "tournament-spice-320aac4d153d25dc-109",
+            "tournament-spice-fe6b9751874c20dd-60",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-bangladesh-717b768e53595d2e-84"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": 0.9890462404640098,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-320aac4d153d25dc-109",
+            "tournament-spice-36d0709e26865a8c-47",
+            "tournament-spice-c8949ffec10c14a5-48",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-bangladesh-717b768e53595d2e-84"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": 0.9890462404640098,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 2,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-c8949ffec10c14a5-48",
+            "tournament-spice-36d0709e26865a8c-47",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+            "tournament-bangladesh-717b768e53595d2e-84"
+          ]
+        }
+      }
+    },
+    "mixed": {
+      "reference": {
+        "negative": 8,
+        "positive": 20,
+        "uncertain": 7
+      },
+      "incumbent": {
+        "truePositives": 0,
+        "falsePositives": 0
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": 0.9540007662485286,
+          "slots": 7,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-3d42c5007494ff49-44",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+            "tournament-turkiye-ddb19d14c2969f6f-40",
+            "tournament-bangladesh-eb00f7e69a142632-37"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": 0.966494484486812,
+          "slots": 7,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-c8949ffec10c14a5-48",
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": 0.9591011583445794,
+          "slots": 7,
+          "positives": 7,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-c8949ffec10c14a5-48",
+            "tournament-spice-6447cf7755f876f8-52",
+            "tournament-turkiye-574158b04faba47f-31",
+            "tournament-turkiye-18e1cb2c81d22572-59",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-50667e8cd14106a0-69"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": 0.9613947252848856,
+          "slots": 7,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-c8949ffec10c14a5-48",
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": 0.8578575182986949,
+          "slots": 7,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-7bc8896f9b9e573d-37",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-8ef873b29219be6e-67",
+            "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-b31fce706543ca4b-50"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": 0.9672644512350397,
+          "slots": 7,
+          "positives": 7,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "spice": 3,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-c8949ffec10c14a5-48",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-6447cf7755f876f8-52",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": 0.9730503795721188,
+          "slots": 7,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-6447cf7755f876f8-52",
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+            "tournament-turkiye-574158b04faba47f-31",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": 0.9775616577676076,
+          "slots": 7,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-6447cf7755f876f8-52",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-turkiye-c961bd6adf389a58-64",
+            "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-bangladesh-d7ad0739a73fe558-59"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": 0.9470485173581149,
+          "slots": 7,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "spice": 2,
+            "turkiye": 3,
+            "bangladesh": 1
+          },
+          "selected": [
+            "tournament-spice-76afc7d50d29a2df-51",
+            "tournament-spice-1e22dee039bf65c2-33",
+            "tournament-spice-6447cf7755f876f8-52",
+            "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+            "tournament-turkiye-eb37e0e236eaac03-71",
+            "tournament-turkiye-1624202de5d36309-46",
+            "tournament-bangladesh-eb00f7e69a142632-37"
+          ]
+        }
+      }
+    }
+  },
+  "directMixed": {
+    "reference": {
+      "negative": 8,
+      "positive": 20,
+      "uncertain": 7
+    },
+    "incumbent": {
+      "truePositives": 0,
+      "falsePositives": 0
+    },
+    "rankings": {
+      "score-logistic": {
+        "unresolvedAP": 0.9540007662485286,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-spice-3d42c5007494ff49-44",
+          "tournament-turkiye-1624202de5d36309-46",
+          "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+          "tournament-turkiye-ddb19d14c2969f6f-40",
+          "tournament-bangladesh-eb00f7e69a142632-37"
+        ]
+      },
+      "line-logistic": {
+        "unresolvedAP": 0.966494484486812,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-spice-c8949ffec10c14a5-48",
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-turkiye-1624202de5d36309-46",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      },
+      "line-tree": {
+        "unresolvedAP": 0.9591011583445794,
+        "slots": 7,
+        "positives": 7,
+        "negatives": 0,
+        "uncertain": 0,
+        "positivesByEvent": {
+          "spice": 3,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-spice-c8949ffec10c14a5-48",
+          "tournament-spice-6447cf7755f876f8-52",
+          "tournament-turkiye-574158b04faba47f-31",
+          "tournament-turkiye-18e1cb2c81d22572-59",
+          "tournament-turkiye-1624202de5d36309-46",
+          "tournament-bangladesh-50667e8cd14106a0-69"
+        ]
+      },
+      "line-network": {
+        "unresolvedAP": 0.9613947252848856,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-spice-c8949ffec10c14a5-48",
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-turkiye-1624202de5d36309-46",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      },
+      "stockfish-gap": {
+        "unresolvedAP": 0.8578575182986949,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-spice-7bc8896f9b9e573d-37",
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-turkiye-8ef873b29219be6e-67",
+          "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+          "tournament-turkiye-1624202de5d36309-46",
+          "tournament-bangladesh-b31fce706543ca4b-50"
+        ]
+      },
+      "line-maia-policy": {
+        "unresolvedAP": 0.9672644512350397,
+        "slots": 7,
+        "positives": 7,
+        "negatives": 0,
+        "uncertain": 0,
+        "positivesByEvent": {
+          "spice": 3,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-c8949ffec10c14a5-48",
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-spice-6447cf7755f876f8-52",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-turkiye-1624202de5d36309-46",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      },
+      "line-maia-root": {
+        "unresolvedAP": 0.9730503795721188,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-6447cf7755f876f8-52",
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+          "tournament-turkiye-574158b04faba47f-31",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      },
+      "line-maia-branches": {
+        "unresolvedAP": 0.9775616577676076,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-6447cf7755f876f8-52",
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      },
+      "line-random-branches": {
+        "unresolvedAP": 0.9470485173581149,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-spice-6447cf7755f876f8-52",
+          "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-turkiye-1624202de5d36309-46",
+          "tournament-bangladesh-eb00f7e69a142632-37"
+        ]
+      },
+      "direct-line-logistic": {
+        "unresolvedAP": 0.9722241005038994,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-3d42c5007494ff49-44",
+          "tournament-spice-c8949ffec10c14a5-48",
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-turkiye-18e1cb2c81d22572-59",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      },
+      "direct-line-network": {
+        "unresolvedAP": 0.9732928234476224,
+        "slots": 7,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 1,
+        "positivesByEvent": {
+          "spice": 2,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-c8949ffec10c14a5-48",
+          "tournament-spice-3d42c5007494ff49-44",
+          "tournament-spice-76afc7d50d29a2df-51",
+          "tournament-turkiye-18e1cb2c81d22572-59",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      },
+      "direct-maia-root": {
+        "unresolvedAP": 0.9781456789254779,
+        "slots": 7,
+        "positives": 7,
+        "negatives": 0,
+        "uncertain": 0,
+        "positivesByEvent": {
+          "spice": 3,
+          "turkiye": 3,
+          "bangladesh": 1
+        },
+        "selected": [
+          "tournament-spice-c8949ffec10c14a5-48",
+          "tournament-spice-7bc8896f9b9e573d-37",
+          "tournament-spice-1e22dee039bf65c2-33",
+          "tournament-turkiye-eb37e0e236eaac03-71",
+          "tournament-turkiye-18e1cb2c81d22572-59",
+          "tournament-turkiye-c961bd6adf389a58-64",
+          "tournament-bangladesh-d7ad0739a73fe558-59"
+        ]
+      }
+    }
+  },
+  "directMixedPassesGate": [],
+  "passesFrozenGate": {
+    "tactical": [],
+    "positional": [],
+    "mixed": []
+  }
+}

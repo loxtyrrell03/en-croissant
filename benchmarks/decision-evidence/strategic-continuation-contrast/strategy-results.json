@@ -1,0 +1,824 @@
+{
+  "archive-development-v1": {
+    "positions": 111,
+    "candidateMedianMs": 2.12329999999929,
+    "engineNodesAdded": 0,
+    "methods": {
+      "baseline": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 23,
+          "falsePositive": 0,
+          "falseNegative": 66,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "geometry": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 39,
+          "falsePositive": 0,
+          "falseNegative": 50,
+          "trueNegative": 9,
+          "uncertainCalled": 2,
+          "uncertainAbstained": 11
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "active": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 30,
+          "falsePositive": 0,
+          "falseNegative": 59,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "confirmed": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 28,
+          "falsePositive": 0,
+          "falseNegative": 61,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "contrast": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 30,
+          "falsePositive": 0,
+          "falseNegative": 59,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      }
+    }
+  },
+  "archive-development-v2": {
+    "positions": 111,
+    "candidateMedianMs": 1.5552999999999884,
+    "engineNodesAdded": 0,
+    "methods": {
+      "baseline": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 23,
+          "falsePositive": 0,
+          "falseNegative": 66,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "geometry": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 38,
+          "falsePositive": 0,
+          "falseNegative": 51,
+          "trueNegative": 9,
+          "uncertainCalled": 2,
+          "uncertainAbstained": 11
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "active": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 27,
+          "falsePositive": 0,
+          "falseNegative": 62,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "confirmed": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 25,
+          "falsePositive": 0,
+          "falseNegative": 64,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      },
+      "contrast": {
+        "tactical": {
+          "truePositive": 15,
+          "falsePositive": 0,
+          "falseNegative": 47,
+          "trueNegative": 23,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 26
+        },
+        "positional": {
+          "truePositive": 25,
+          "falsePositive": 0,
+          "falseNegative": 64,
+          "trueNegative": 9,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 13
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 40,
+          "trueNegative": 32,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 38
+        }
+      }
+    }
+  },
+  "archive-holdout-v1": {
+    "positions": 36,
+    "candidateMedianMs": 2.803649999999948,
+    "engineNodesAdded": 0,
+    "methods": {
+      "baseline": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 6,
+          "falsePositive": 1,
+          "falseNegative": 25,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "geometry": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 13,
+          "falsePositive": 1,
+          "falseNegative": 18,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "active": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 10,
+          "falsePositive": 1,
+          "falseNegative": 21,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "confirmed": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 9,
+          "falsePositive": 1,
+          "falseNegative": 22,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "contrast": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 9,
+          "falsePositive": 1,
+          "falseNegative": 22,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      }
+    }
+  },
+  "archive-holdout-v2": {
+    "positions": 36,
+    "candidateMedianMs": 1.985899999999674,
+    "engineNodesAdded": 0,
+    "methods": {
+      "baseline": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 6,
+          "falsePositive": 1,
+          "falseNegative": 25,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "geometry": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 13,
+          "falsePositive": 1,
+          "falseNegative": 18,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "active": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 9,
+          "falsePositive": 1,
+          "falseNegative": 22,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "confirmed": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 8,
+          "falsePositive": 1,
+          "falseNegative": 23,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      },
+      "contrast": {
+        "tactical": {
+          "truePositive": 4,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 4,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 11
+        },
+        "positional": {
+          "truePositive": 9,
+          "falsePositive": 1,
+          "falseNegative": 22,
+          "trueNegative": 3,
+          "uncertainCalled": 1,
+          "uncertainAbstained": 0
+        },
+        "mixed": {
+          "truePositive": 1,
+          "falsePositive": 1,
+          "falseNegative": 15,
+          "trueNegative": 7,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 12
+        }
+      }
+    }
+  },
+  "archive-reserve-v1": {
+    "positions": 35,
+    "candidateMedianMs": 2.1453999999998814,
+    "engineNodesAdded": 0,
+    "methods": {
+      "baseline": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 7,
+          "falsePositive": 0,
+          "falseNegative": 23,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "geometry": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 10,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "active": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 9,
+          "falsePositive": 0,
+          "falseNegative": 21,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "confirmed": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 9,
+          "falsePositive": 0,
+          "falseNegative": 21,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "contrast": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 10,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      }
+    }
+  },
+  "archive-reserve-v2": {
+    "positions": 35,
+    "candidateMedianMs": 1.315900000000056,
+    "engineNodesAdded": 0,
+    "methods": {
+      "baseline": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 7,
+          "falsePositive": 0,
+          "falseNegative": 23,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "geometry": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 10,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "active": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 22,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "confirmed": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 22,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      },
+      "contrast": {
+        "tactical": {
+          "truePositive": 8,
+          "falsePositive": 0,
+          "falseNegative": 17,
+          "trueNegative": 5,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 5
+        },
+        "positional": {
+          "truePositive": 9,
+          "falsePositive": 0,
+          "falseNegative": 21,
+          "trueNegative": 3,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 2
+        },
+        "mixed": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 20,
+          "trueNegative": 8,
+          "uncertainCalled": 0,
+          "uncertainAbstained": 7
+        }
+      }
+    }
+  }
+}

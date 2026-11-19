@@ -1,0 +1,99 @@
+{
+  "baseline": "11f8d368ab9b3258387461c2e9e79e3cfbc27ef2",
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "search": {
+    "threads": 1,
+    "hashMiB": 64,
+    "rootMultiPV": 3,
+    "rootAttemptNodes": [
+      600000,
+      2400000,
+      9600000
+    ],
+    "rootTargetDepth": 18,
+    "replyMultiPV": 3,
+    "replyAttemptNodes": [
+      1000000,
+      4000000
+    ],
+    "replyTargetDepth": 16,
+    "featureArmsGet": "only leading root reply search",
+    "candidateAdditionalSearches": 0
+  },
+  "inputSha256": {
+    "development.json": "f373945a2e2a5674faf5882fc9986023adc5905d7e11e53def938b55b80a88ff",
+    "holdout.json": "f2c99e02c6680b165f430263a2acafa23e8488d7228d7f6b4fb152e654e3d693",
+    "reserve.json": "278a2ada510c2077652405d523a171a79c348dc11b41b78644c2626001a246f5"
+  },
+  "sourceSha256": {
+    "candidate-v1.ts.txt": "bbdc8ba6ba657f74fe5f15cfee0088728725282c74e34ca00a45b20c6a3a9cae",
+    "candidate-v2.ts.txt": "89637cb4f30710dac347c38be94d8d7336cb791fbddabb7d851f0ddfad324757"
+  },
+  "holdoutSourceReviewFreeze": {
+    "decisionStrategicContinuation.ts": "bbdc8ba6ba657f74fe5f15cfee0088728725282c74e34ca00a45b20c6a3a9cae",
+    "independent-sample.json": "a69cb4f1cf83062ab27ea84f8221a835c13629b0101cb192d858e510e6944c9b",
+    "independent-engine.json": "d2b1f54807e3dc4b098f69f577f2f417559d7f6058cc8411044bb9a805b6cf81",
+    "independent-reference.json": "ce3d1b4f032cdb9296704e773e7b25d2d25d8badbd094601dad23775b7aef070"
+  },
+  "reserveSourceReviewFreeze": {
+    "inputs": {
+      "reserve-reference.json": "9d3d771d0f6a805d7894e6258daeb92cea7700e4dee65886f465a513ad89ca5e",
+      "reserve-input.json": "9c428fedeee053520aa630376049b4a2cbb4fd0a55037e3b59af66abbd209276",
+      "reserve-sample.json": "6b06d098295513b1a86a3e12189027de36f76984698667a5873f6d71109f1ca2",
+      "v1-code.ts": "bbdc8ba6ba657f74fe5f15cfee0088728725282c74e34ca00a45b20c6a3a9cae",
+      "v2-code.ts": "89637cb4f30710dac347c38be94d8d7336cb791fbddabb7d851f0ddfad324757",
+      "neural-transfer.py": "be14aa2cb304625afad18a122eb1481abd40dc70a4d9cd3cac39a209c2f6e850"
+    },
+    "positionalRolloutGate": "Active witnessed effects in both branches, two or more adjudicated new exact witnesses, no new false positive and no search cost increase. Independently confirmed variant considered if it also passes.",
+    "neuralGate": "The frozen Maia comparison from maia-branch-probe, with no model or operating-point changes."
+  },
+  "directMixedRunnerFreeze": "e393e4247254c3e1a7b8677379a5784a71b5d8955402e40334dae4590ca21d73",
+  "events": {
+    "kovin": {
+      "scope": "full event, 90+30",
+      "export": "https://lichess.org/api/broadcast/7HMSNcbF.pgn",
+      "reference": "https://lichess.org/broadcast/round-robin-chess-club-radnicki-kovin-im-8/round-1/29au3rPs",
+      "games": 18,
+      "sha256": "37ef02c01598a22206184ee57f5f97baa42bba522f4aeb275d2638a41b86dae7",
+      "eligible": 39,
+      "cohort": "holdout"
+    },
+    "team-open": {
+      "scope": "full event, 90+30",
+      "export": "https://lichess.org/api/broadcast/KLKHTTMF.pgn",
+      "reference": "https://lichess.org/broadcast/campeonato-de-ajedrez-abierto-por-equipos-2026/round-1/CKrBNAiu",
+      "games": 18,
+      "sha256": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+      "eligible": 75,
+      "cohort": "holdout"
+    },
+    "spice": {
+      "scope": "round 1, 90+30",
+      "export": "https://lichess.org/api/broadcast/round/HUCtFdGE.pgn",
+      "reference": "https://chess-results.com/tnr1530643.aspx?lan=1",
+      "games": 14,
+      "sha256": "0556e1cff7215d315b9be83396da6ea367830e110a236c00f18c99e812df05a2",
+      "eligible": 19,
+      "cohort": "reserve"
+    },
+    "turkiye": {
+      "scope": "round 1, 90+30",
+      "export": "https://lichess.org/api/broadcast/round/9XjONG6e.pgn",
+      "reference": "https://lichess.org/broadcast/2026-turkiye-kupas/round-9/M8M4xT8z",
+      "games": 14,
+      "sha256": "7969b0228cdf1417ab4c69477096c64a24b6c2aa8d7e257bc6994f1637c89359",
+      "eligible": 47,
+      "cohort": "reserve"
+    },
+    "bangladesh": {
+      "scope": "round 1, 90/40 then 30 minutes, 30-second increment",
+      "export": "https://lichess.org/api/broadcast/round/z00pzxjA.pgn",
+      "reference": "https://s3.chess-results.com/test/tnr1532115.aspx?art=2&fed=BAN&flag=30&lan=1&turdet=YES",
+      "games": 7,
+      "sha256": "d5a21f71b6125eefdea64314608052fff1454ff6852322982db342a0dcb2a488",
+      "eligible": 7,
+      "cohort": "reserve"
+    }
+  },
+  "archiveNeuralRunnerSha256": "be49822f32faa98681ebaae55afaeb2ee719080687cf7ddb232f538bec8a9be9"
+}

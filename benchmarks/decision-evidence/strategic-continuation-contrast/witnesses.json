@@ -1,0 +1,1572 @@
+[
+  {
+    "cohortAndVersion": "holdout-v1",
+    "witnesses": [
+      {
+        "id": "tournament-kovin-e6ab7c29809b64dd-74",
+        "label": {
+          "id": "tournament-kovin-e6ab7c29809b64dd-74",
+          "tactical": null,
+          "positional": true,
+          "rationale": "White must contain the d-pawn advance while Black chooses between rook use on c8 and kingside expansion."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "b2d4",
+                "d8c8",
+                "f1d1",
+                "g7g5",
+                "h4g5",
+                "h6g5",
+                "g1g2",
+                "e6f5",
+                "d4c5",
+                "c8c5",
+                "d2d4",
+                "h5h4"
+              ],
+              [
+                "f1a1",
+                "e6f5",
+                "b2d4",
+                "d8c8",
+                "a1d1",
+                "g7g5",
+                "d4c5",
+                "c8c5",
+                "h4g5",
+                "h6g5",
+                "g1f1",
+                "f5f3"
+              ]
+            ],
+            "description": "After Bd4, Black plays Rc8 on the c-file, and the continuation shows Rxc5. After Qa1, Black plays Rc8 on the c-file, and the continuation shows Rxc5."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "b2d4",
+                "d8c8",
+                "f1d1",
+                "g7g5",
+                "h4g5",
+                "h6g5",
+                "g1g2",
+                "e6f5",
+                "d4c5",
+                "c8c5",
+                "d2d4",
+                "h5h4"
+              ],
+              [
+                "f1a1",
+                "e6f5",
+                "b2d4",
+                "d8c8",
+                "a1d1",
+                "g7g5",
+                "d4c5",
+                "c8c5",
+                "h4g5",
+                "h6g5",
+                "g1f1",
+                "f5f3"
+              ]
+            ],
+            "description": "After Bd4, Black plays Rc8 on the c-file, and the continuation shows Rxc5. After Qa1, Black plays Rc8 on the c-file, and the continuation shows Rxc5."
+          },
+          "confirmed": null,
+          "contrast": null
+        }
+      },
+      {
+        "id": "tournament-kovin-33b1104b30e2f283-43",
+        "label": {
+          "id": "tournament-kovin-33b1104b30e2f283-43",
+          "tactical": true,
+          "positional": true,
+          "rationale": "The h-pawn and rook choices alter how the queen can take on h7 or f7. The c-pawn break remains important independently of those captures."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "h7h6",
+                "h2h4",
+                "h8d8",
+                "e4f4",
+                "e6e5",
+                "f4f6"
+              ],
+              [
+                "h7h5",
+                "h2h4",
+                "h8d8",
+                "e4f4",
+                "d8d7",
+                "f4f6"
+              ]
+            ],
+            "description": "After h6, Black plays Rd8 on the d-file. After h5, Black plays Rd8 on the d-file, and the continuation shows Rd7."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      },
+      {
+        "id": "tournament-team-open-9222ded9b09464f3-52",
+        "label": {
+          "id": "tournament-team-open-9222ded9b09464f3-52",
+          "tactical": true,
+          "positional": true,
+          "rationale": "Nf4 creates concrete material threats, while Black's a- and b-pawns can advance in several of the separately checked routes."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f3e3",
+                "f8f7",
+                "c1b1",
+                "a7a5",
+                "a2a3",
+                "h5f4"
+              ],
+              [
+                "f3d1",
+                "h5f4",
+                "c1b1",
+                "a7a5",
+                "c2c3",
+                "g8h8"
+              ]
+            ],
+            "description": "After Qe3, White plays Rb1 on the b-file. After Qd1, White plays Rb1 on the b-file."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      },
+      {
+        "id": "tournament-team-open-3b19edc77ed245e7-33",
+        "label": {
+          "id": "tournament-team-open-3b19edc77ed245e7-33",
+          "tactical": null,
+          "positional": true,
+          "rationale": "The queen exchange after f6 and the alternative rook moves lead to continuing use of the d-file. The alternative knight move changes its timing."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "d1e3",
+                "e7d7",
+                "e1d1",
+                "a8d8",
+                "d1d2"
+              ],
+              [
+                "e7c7",
+                "c3b5",
+                "c7d7",
+                "a1d1",
+                "a8d8",
+                "b5c3",
+                "c6e7",
+                "h2h3",
+                "g8h8",
+                "h4h5"
+              ]
+            ],
+            "description": "After f6, White plays Red1 on the d-file, and the continuation shows Rad8. After Rc7, White plays Rad1 on the d-file, and the continuation shows Rad8."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "d1e3",
+                "e7d7",
+                "e1d1",
+                "a8d8",
+                "d1d2"
+              ],
+              [
+                "e7c7",
+                "c3b5",
+                "c7d7",
+                "a1d1",
+                "a8d8",
+                "b5c3",
+                "c6e7",
+                "h2h3",
+                "g8h8",
+                "h4h5"
+              ]
+            ],
+            "description": "After f6, White plays Red1 on the d-file, and the continuation shows Rad8. After Rc7, White plays Rad1 on the d-file, and the continuation shows Rad8."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "d1e3",
+                "e7d7",
+                "e1d1",
+                "a8d8",
+                "d1d2"
+              ],
+              [
+                "e7c7",
+                "c3b5",
+                "c7d7",
+                "a1d1",
+                "a8d8",
+                "b5c3",
+                "c6e7",
+                "h2h3",
+                "g8h8",
+                "h4h5"
+              ]
+            ],
+            "description": "After f6, White plays Red1 on the d-file, and the continuation shows Rad8. After Rc7, White plays Rad1 on the d-file, and the continuation shows Rad8."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "d1e3",
+                "e7d7",
+                "e1d1",
+                "a8d8",
+                "d1d2"
+              ],
+              [
+                "e7c7",
+                "c3b5",
+                "c7d7",
+                "a1d1",
+                "a8d8",
+                "b5c3",
+                "c6e7",
+                "h2h3",
+                "g8h8",
+                "h4h5"
+              ]
+            ],
+            "description": "After f6, White plays Red1 on the d-file, and the continuation shows Rad8. After Rc7, White plays Rad1 on the d-file, and the continuation shows Rad8."
+          }
+        }
+      },
+      {
+        "id": "tournament-team-open-8ba4a437f1ac611a-42",
+        "label": {
+          "id": "tournament-team-open-8ba4a437f1ac611a-42",
+          "tactical": false,
+          "positional": true,
+          "rationale": "The a-file rook, knight reroute and king approach drive the alternatives without a verified forcing material sequence."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "c1a1",
+                "g7g5",
+                "d4c4",
+                "g8g7",
+                "h2h3",
+                "g7g6",
+                "a1a3",
+                "h7h6"
+              ],
+              [
+                "c1c3",
+                "g7g6",
+                "c3a3",
+                "g8g7",
+                "d4c4",
+                "g7f6",
+                "h2h3",
+                "f7f8"
+              ]
+            ],
+            "description": "After Ra1, White plays Ra1 on the a-file, and the continuation shows Ra3. After Rc3, White plays Ra3 on the a-file."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "c1a1",
+                "g7g5",
+                "d4c4",
+                "g8g7",
+                "h2h3",
+                "g7g6",
+                "a1a3",
+                "h7h6"
+              ],
+              [
+                "h2h4",
+                "g7g6",
+                "c1a1",
+                "g8g7",
+                "a1a3",
+                "g7f6",
+                "b5c3",
+                "f6g7"
+              ]
+            ],
+            "description": "After Ra1, White plays Ra1 on the a-file, and the continuation shows Ra3. After h4, White plays Ra1 on the a-file, and the continuation shows Ra3."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "c1a1",
+                "f7f8",
+                "d4c4",
+                "f8a8",
+                "a1a3",
+                "g7g6"
+              ],
+              [
+                "h2h4",
+                "g7g6",
+                "c1a1",
+                "g8g7",
+                "a1a3",
+                "g7f6"
+              ]
+            ],
+            "description": "After Ra1, White plays Ra1 on the a-file, and the continuation shows Ra8. After h4, White plays Ra1 on the a-file, and the continuation shows Ra3."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "c1a1",
+                "f7f8",
+                "d4c4",
+                "f8a8",
+                "a1a3",
+                "g7g6"
+              ],
+              [
+                "h2h4",
+                "g7g6",
+                "c1a1",
+                "g8g7",
+                "a1a3",
+                "g7f6"
+              ]
+            ],
+            "description": "After Ra1, White plays Ra1 on the a-file, and the continuation shows Ra8. After h4, White plays Ra1 on the a-file, and the continuation shows Ra3."
+          }
+        }
+      },
+      {
+        "id": "tournament-team-open-55970232ddc81e98-32",
+        "label": {
+          "id": "tournament-team-open-55970232ddc81e98-32",
+          "tactical": null,
+          "positional": true,
+          "rationale": "The choices produce either a c-file contest after the knight exchange, a repetition, or a c5 break. The temporary exchanges leave the tactical dimension uncertain."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f1d1",
+                "d5c3",
+                "c1c3",
+                "a8b8",
+                "b2b3",
+                "b8b4",
+                "f3d3",
+                "d8d7",
+                "h4g3"
+              ],
+              [
+                "c3e2",
+                "d8b6",
+                "b2b3",
+                "c6c5",
+                "d4c5",
+                "e7c5",
+                "c1c4",
+                "a8c8",
+                "f1c1"
+              ]
+            ],
+            "description": "After Rfd1, White plays Rxc3 on the c-file. After Ne2, White plays Rc4 on the c-file, and the continuation shows Rac8."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "f1d1",
+                "d5c3",
+                "c1c3",
+                "a8b8",
+                "b2b3",
+                "b8b4",
+                "f3d3",
+                "d8d7",
+                "h4g3"
+              ],
+              [
+                "c3e2",
+                "d8b6",
+                "b2b3",
+                "c6c5",
+                "d4c5",
+                "e7c5",
+                "c1c4",
+                "a8c8",
+                "f1c1"
+              ]
+            ],
+            "description": "After Rfd1, White plays Rxc3 on the c-file. After Ne2, White plays Rc4 on the c-file, and the continuation shows Rac8."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "f1d1",
+                "d5c3",
+                "c1c3",
+                "a8b8",
+                "b2b3",
+                "b8b4",
+                "f3d3",
+                "d8d7",
+                "h4g3"
+              ],
+              [
+                "c3e2",
+                "d8b6",
+                "b2b3",
+                "c6c5",
+                "d4c5",
+                "e7c5",
+                "c1c4",
+                "a8c8",
+                "f1c1"
+              ]
+            ],
+            "description": "After Rfd1, White plays Rxc3 on the c-file. After Ne2, White plays Rc4 on the c-file, and the continuation shows Rac8."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "f1d1",
+                "d5c3",
+                "c1c3",
+                "a8b8",
+                "b2b3",
+                "b8b4",
+                "f3d3",
+                "d8d7",
+                "h4g3"
+              ],
+              [
+                "c3e2",
+                "d8b6",
+                "b2b3",
+                "c6c5",
+                "d4c5",
+                "e7c5",
+                "c1c4",
+                "a8c8",
+                "f1c1"
+              ]
+            ],
+            "description": "After Rfd1, White plays Rxc3 on the c-file. After Ne2, White plays Rc4 on the c-file, and the continuation shows Rac8."
+          }
+        }
+      },
+      {
+        "id": "tournament-team-open-2dbabba6e0be2cc3-49",
+        "label": {
+          "id": "tournament-team-open-2dbabba6e0be2cc3-49",
+          "tactical": true,
+          "positional": true,
+          "rationale": "The f- and b-pawn plans persist in the separate replies. The exposed king and rook checks create a distinct tactical problem."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "h8g8",
+                "b4b5",
+                "g7h7",
+                "f1f2",
+                "g6g5",
+                "f4f5",
+                "a6a5",
+                "a1d1",
+                "g5g4",
+                "f5f6",
+                "e7a3"
+              ],
+              [
+                "d8c8",
+                "b4b5",
+                "c8c7",
+                "a1d1",
+                "h8c8",
+                "e5e6",
+                "g7h6",
+                "e6f7",
+                "e7f7",
+                "d4e5",
+                "f7f5"
+              ]
+            ],
+            "description": "After Rhg8, White plays Rd1 on the d-file. After Rc8, White plays Rad1 on the d-file."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      }
+    ]
+  },
+  {
+    "cohortAndVersion": "holdout-v2",
+    "witnesses": [
+      {
+        "id": "tournament-kovin-e6ab7c29809b64dd-74",
+        "label": {
+          "id": "tournament-kovin-e6ab7c29809b64dd-74",
+          "tactical": null,
+          "positional": true,
+          "rationale": "White must contain the d-pawn advance while Black chooses between rook use on c8 and kingside expansion."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "b2d4",
+                "d8c8",
+                "f1d1",
+                "g7g5",
+                "h4g5",
+                "h6g5",
+                "g1g2",
+                "e6f5",
+                "d4c5",
+                "c8c5",
+                "d2d4",
+                "h5h4"
+              ],
+              [
+                "f1a1",
+                "e6f5",
+                "b2d4",
+                "d8c8",
+                "a1d1",
+                "g7g5",
+                "d4c5",
+                "c8c5",
+                "h4g5",
+                "h6g5",
+                "g1f1",
+                "f5f3"
+              ]
+            ],
+            "description": "After Bd4, Black plays Rc8 on the c-file, and the continuation shows Rxc5. After Qa1, Black plays Rc8 on the c-file, and the continuation shows Rxc5."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "b2d4",
+                "d8c8",
+                "f1d1",
+                "g7g5",
+                "h4g5",
+                "h6g5",
+                "g1g2",
+                "e6f5",
+                "d4c5",
+                "c8c5",
+                "d2d4",
+                "h5h4"
+              ],
+              [
+                "f1a1",
+                "e6f5",
+                "b2d4",
+                "d8c8",
+                "a1d1",
+                "g7g5",
+                "d4c5",
+                "c8c5",
+                "h4g5",
+                "h6g5",
+                "g1f1",
+                "f5f3"
+              ]
+            ],
+            "description": "After Bd4, Black plays Rc8 on the c-file, and the continuation shows Rxc5. After Qa1, Black plays Rc8 on the c-file, and the continuation shows Rxc5."
+          },
+          "confirmed": null,
+          "contrast": null
+        }
+      },
+      {
+        "id": "tournament-kovin-33b1104b30e2f283-43",
+        "label": {
+          "id": "tournament-kovin-33b1104b30e2f283-43",
+          "tactical": true,
+          "positional": true,
+          "rationale": "The h-pawn and rook choices alter how the queen can take on h7 or f7. The c-pawn break remains important independently of those captures."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "h7h6",
+                "h2h4",
+                "h8d8",
+                "e4f4",
+                "e6e5",
+                "f4f6"
+              ],
+              [
+                "h7h5",
+                "h2h4",
+                "h8d8",
+                "e4f4",
+                "d8d7",
+                "f4f6"
+              ]
+            ],
+            "description": "After h6, Black plays Rd8 on the d-file. After h5, Black plays Rd8 on the d-file, and the continuation shows Rd7."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      },
+      {
+        "id": "tournament-team-open-9222ded9b09464f3-52",
+        "label": {
+          "id": "tournament-team-open-9222ded9b09464f3-52",
+          "tactical": true,
+          "positional": true,
+          "rationale": "Nf4 creates concrete material threats, while Black's a- and b-pawns can advance in several of the separately checked routes."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f3e3",
+                "f8f7",
+                "c1b1",
+                "a7a5",
+                "a2a3",
+                "h5f4"
+              ],
+              [
+                "f3d1",
+                "h5f4",
+                "c1b1",
+                "a7a5",
+                "c2c3",
+                "g8h8"
+              ]
+            ],
+            "description": "After Qe3, White plays Rb1 on the b-file. After Qd1, White plays Rb1 on the b-file."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      },
+      {
+        "id": "tournament-team-open-3b19edc77ed245e7-33",
+        "label": {
+          "id": "tournament-team-open-3b19edc77ed245e7-33",
+          "tactical": null,
+          "positional": true,
+          "rationale": "The queen exchange after f6 and the alternative rook moves lead to continuing use of the d-file. The alternative knight move changes its timing."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "e1e2",
+                "a8d8",
+                "e2d2",
+                "g8f7"
+              ],
+              [
+                "e7c7",
+                "c3b5",
+                "c7d7",
+                "a1d1",
+                "a8d8",
+                "b5c3",
+                "c6e7",
+                "h2h3",
+                "g8h8"
+              ]
+            ],
+            "description": "After f6, White plays Rd2 on the d-file. After Rc7, White plays Rad1 on the d-file."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "d1e3",
+                "e7d7",
+                "e1d1",
+                "a8d8",
+                "d1d2",
+                "g8f8"
+              ],
+              [
+                "a8e8",
+                "a1d1",
+                "c6d4",
+                "d1d2",
+                "e7c7",
+                "f2f4",
+                "f7f6",
+                "e1f1",
+                "b7b5",
+                "g2h3",
+                "e6f7"
+              ]
+            ],
+            "description": "After f6, White plays Red1 on the d-file, and the continuation shows Rd2. After Rae8, White plays Rad1 on the d-file, and the continuation shows Rd2."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "d1e3",
+                "e7d7",
+                "e1d1",
+                "a8d8",
+                "d1d2",
+                "g8f8"
+              ],
+              [
+                "a8e8",
+                "a1d1",
+                "c6d4",
+                "d1d2",
+                "e7c7",
+                "f2f4",
+                "f7f6",
+                "e1f1",
+                "b7b5",
+                "g2h3",
+                "e6f7"
+              ]
+            ],
+            "description": "After f6, White plays Red1 on the d-file, and the continuation shows Rd2. After Rae8, White plays Rad1 on the d-file, and the continuation shows Rd2."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "f7f6",
+                "c3d1",
+                "g7g5",
+                "h4g5",
+                "f6g5",
+                "d1e3",
+                "e7d7",
+                "e1d1",
+                "a8d8",
+                "d1d2",
+                "g8f8"
+              ],
+              [
+                "a8e8",
+                "a1d1",
+                "c6d4",
+                "d1d2",
+                "e7c7",
+                "f2f4",
+                "f7f6",
+                "e1f1",
+                "b7b5",
+                "g2h3",
+                "e6f7"
+              ]
+            ],
+            "description": "After f6, White plays Red1 on the d-file, and the continuation shows Rd2. After Rae8, White plays Rad1 on the d-file, and the continuation shows Rd2."
+          }
+        }
+      },
+      {
+        "id": "tournament-team-open-8ba4a437f1ac611a-42",
+        "label": {
+          "id": "tournament-team-open-8ba4a437f1ac611a-42",
+          "tactical": false,
+          "positional": true,
+          "rationale": "The a-file rook, knight reroute and king approach drive the alternatives without a verified forcing material sequence."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "c1a1",
+                "g7g5",
+                "d4c4",
+                "g8g7",
+                "h2h3",
+                "g7g6",
+                "a1a3",
+                "h7h6"
+              ],
+              [
+                "c1c3",
+                "g7g6",
+                "c3a3",
+                "g8g7",
+                "d4c4",
+                "g7f6",
+                "h2h3",
+                "f7f8"
+              ]
+            ],
+            "description": "White plays Ra1 on the a-file, and the continuation shows Ra3. After Rc3, White plays Ra3 on the a-file."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "c1a1",
+                "g7g5",
+                "d4c4",
+                "g8g7",
+                "h2h3",
+                "g7g6",
+                "a1a3",
+                "h7h6"
+              ],
+              [
+                "h2h4",
+                "g7g6",
+                "c1a1",
+                "g8g7",
+                "a1a3",
+                "g7f6",
+                "b5c3",
+                "f6g7"
+              ]
+            ],
+            "description": "White plays Ra1 on the a-file, and the continuation shows Ra3. After h4, White plays Ra1 on the a-file, and the continuation shows Ra3."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "c1a1",
+                "f7f8",
+                "d4c4",
+                "f8a8",
+                "a1a3",
+                "g7g6"
+              ],
+              [
+                "h2h4",
+                "g7g6",
+                "c1a1",
+                "g8g7",
+                "a1a3",
+                "g7f6"
+              ]
+            ],
+            "description": "White plays Ra1 on the a-file, and the continuation shows Ra3. After h4, White plays Ra1 on the a-file, and the continuation shows Ra3."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "c1a1",
+                "f7f8",
+                "d4c4",
+                "f8a8",
+                "a1a3",
+                "g7g6"
+              ],
+              [
+                "h2h4",
+                "g7g6",
+                "c1a1",
+                "g8g7",
+                "a1a3",
+                "g7f6"
+              ]
+            ],
+            "description": "White plays Ra1 on the a-file, and the continuation shows Ra3. After h4, White plays Ra1 on the a-file, and the continuation shows Ra3."
+          }
+        }
+      },
+      {
+        "id": "tournament-team-open-55970232ddc81e98-32",
+        "label": {
+          "id": "tournament-team-open-55970232ddc81e98-32",
+          "tactical": null,
+          "positional": true,
+          "rationale": "The choices produce either a c-file contest after the knight exchange, a repetition, or a c5 break. The temporary exchanges leave the tactical dimension uncertain."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f1d1",
+                "d5c3",
+                "c1c3",
+                "a8b8",
+                "b2b3",
+                "b8b4",
+                "f3d3",
+                "d8d7"
+              ],
+              [
+                "c3e2",
+                "d8b6",
+                "b2b3",
+                "c6c5",
+                "d4c5",
+                "e7c5",
+                "c1c4",
+                "a8c8"
+              ]
+            ],
+            "description": "After Rfd1, White plays Rxc3 on the c-file. After Ne2, White plays Rc4 on the c-file."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": {
+            "linesUci": [
+              [
+                "f1d1",
+                "d5c3",
+                "c1c3",
+                "a8b8",
+                "b2b3",
+                "b8b4",
+                "f3d3",
+                "d8d7",
+                "h4g3",
+                "g7g6",
+                "h2h3"
+              ],
+              [
+                "c3e2",
+                "d8b6",
+                "b2b3",
+                "c6c5",
+                "d4c5",
+                "e7c5",
+                "c1c4",
+                "a8c8",
+                "f1c1",
+                "c8c7",
+                "h2h3"
+              ]
+            ],
+            "description": "After Rfd1, Black plays Rb8 on the b-file, and the continuation shows Rb4. After Ne2, Black plays Rac8 on the c-file, and the continuation shows Rc7."
+          }
+        }
+      },
+      {
+        "id": "tournament-team-open-2dbabba6e0be2cc3-49",
+        "label": {
+          "id": "tournament-team-open-2dbabba6e0be2cc3-49",
+          "tactical": true,
+          "positional": true,
+          "rationale": "The f- and b-pawn plans persist in the separate replies. The exposed king and rook checks create a distinct tactical problem."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "h8g8",
+                "b4b5",
+                "g7h7",
+                "f1f2",
+                "g6g5",
+                "f4f5",
+                "a6a5",
+                "a1d1",
+                "g5g4",
+                "f5f6",
+                "e7a3"
+              ],
+              [
+                "d8c8",
+                "b4b5",
+                "c8c7",
+                "a1d1",
+                "h8c8",
+                "e5e6",
+                "g7h6",
+                "e6f7",
+                "e7f7",
+                "d4e5",
+                "f7f5"
+              ]
+            ],
+            "description": "After Rhg8, White plays Rd1 on the d-file. After Rc8, White plays Rad1 on the d-file."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      }
+    ]
+  },
+  {
+    "cohortAndVersion": "reserve-v1",
+    "witnesses": [
+      {
+        "id": "tournament-spice-ae4029adc174e23e-69",
+        "label": {
+          "id": "tournament-spice-ae4029adc174e23e-69",
+          "tactical": false,
+          "positional": true,
+          "rationale": "Black can trade on d4 immediately or improve the king first. Rook activity and the king's route to d5 drive the resulting endgame."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          }
+        }
+      },
+      {
+        "id": "tournament-spice-1e22dee039bf65c2-33",
+        "label": {
+          "id": "tournament-spice-1e22dee039bf65c2-33",
+          "tactical": true,
+          "positional": true,
+          "rationale": "The identity of the piece taking b5 changes the bishop attack and risks losing a5. White's a4 lever and Black's f-pawn break also shape the choice."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "d7b5",
+                "c2a4",
+                "c8d7",
+                "a4b5",
+                "b8b5",
+                "d1a4",
+                "e8b8",
+                "c1c2",
+                "c7c6"
+              ],
+              [
+                "b8b5",
+                "c2a4",
+                "b5b8",
+                "d2c4",
+                "c8d8",
+                "c4a5",
+                "b8b2",
+                "a4b3",
+                "f7f5"
+              ]
+            ],
+            "description": "After Bxb5, Black plays Rxb5 on the b-file. After Rxb5, Black plays Rxb5 on the b-file."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "d7b5",
+                "c2a4",
+                "c8d7",
+                "a4b5",
+                "b8b5",
+                "d1a4",
+                "e8b8",
+                "c1c2",
+                "c7c6"
+              ],
+              [
+                "b8b5",
+                "c2a4",
+                "b5b8",
+                "d2c4",
+                "c8d8",
+                "c4a5",
+                "b8b2",
+                "a4b3",
+                "f7f5"
+              ]
+            ],
+            "description": "After Bxb5, Black plays Rxb5 on the b-file. After Rxb5, Black plays Rxb5 on the b-file."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "d7b5",
+                "c2a4",
+                "c8d7",
+                "a4b5",
+                "b8b5",
+                "d1a4",
+                "e8b8",
+                "c1c2",
+                "c7c6"
+              ],
+              [
+                "b8b5",
+                "c2a4",
+                "b5b8",
+                "d2c4",
+                "c8d8",
+                "c4a5",
+                "b8b2",
+                "a4b3",
+                "f7f5"
+              ]
+            ],
+            "description": "After Bxb5, Black plays Rxb5 on the b-file. After Rxb5, Black plays Rxb5 on the b-file."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "d7b5",
+                "c2a4",
+                "c8d7",
+                "a4b5",
+                "b8b5",
+                "d1a4",
+                "e8b8",
+                "c1c2",
+                "c7c6"
+              ],
+              [
+                "b8b5",
+                "c2a4",
+                "b5b8",
+                "d2c4",
+                "c8d8",
+                "c4a5",
+                "b8b2",
+                "a4b3",
+                "f7f5"
+              ]
+            ],
+            "description": "After Bxb5, Black plays Rxb5 on the b-file. After Rxb5, Black plays Rxb5 on the b-file."
+          }
+        }
+      },
+      {
+        "id": "tournament-spice-f4f46bf2af6ef86c-119",
+        "label": {
+          "id": "tournament-spice-f4f46bf2af6ef86c-119",
+          "tactical": false,
+          "positional": true,
+          "rationale": "White can make progress with the queenside majority or trade rooks into the favourable bishop ending. The checks alter the timing."
+        },
+        "candidate": {
+          "geometry": null,
+          "active": null,
+          "confirmed": null,
+          "contrast": {
+            "linesUci": [
+              [
+                "d1d6",
+                "f2f6",
+                "d6d1",
+                "c4c5",
+                "e8d7",
+                "c5c6",
+                "d7c8",
+                "g5f4",
+                "d1g1",
+                "g6f7",
+                "g1f1"
+              ],
+              [
+                "e8d7",
+                "f2d2",
+                "d1d2",
+                "g5d2",
+                "d7d6",
+                "a2a4",
+                "d6c7",
+                "b3b4",
+                "c7b8",
+                "a4a5",
+                "b8b7"
+              ]
+            ],
+            "description": "After Rd6+, White plays c5 to advance the passed pawn from c4 before c6+. After Kd7, White plays a4 to advance the passed pawn from a2 before a5."
+          }
+        }
+      },
+      {
+        "id": "tournament-bangladesh-717b768e53595d2e-84",
+        "label": {
+          "id": "tournament-bangladesh-717b768e53595d2e-84",
+          "tactical": null,
+          "positional": true,
+          "rationale": "Nd5 and doubling rooks can transpose. The positional test is whether the f4 break and d-file pressure remain available after different replies."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "e3d5",
+                "e7f7",
+                "d1d2",
+                "f7f8",
+                "d5c3",
+                "e8e7"
+              ],
+              [
+                "d3d2",
+                "e7f7",
+                "e3d5",
+                "f7f8",
+                "d2d3",
+                "f8f7"
+              ]
+            ],
+            "description": "After Nd5, White plays R1d2 on the d-file. After R3d2, White plays R3d2 on the d-file, and the continuation shows Rd3."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      }
+    ]
+  },
+  {
+    "cohortAndVersion": "reserve-v2",
+    "witnesses": [
+      {
+        "id": "tournament-spice-ae4029adc174e23e-69",
+        "label": {
+          "id": "tournament-spice-ae4029adc174e23e-69",
+          "tactical": false,
+          "positional": true,
+          "rationale": "Black can trade on d4 immediately or improve the king first. Rook activity and the king's route to d5 drive the resulting endgame."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          },
+          "active": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          },
+          "confirmed": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          },
+          "contrast": {
+            "linesUci": [
+              [
+                "f7e6",
+                "g2g4",
+                "f5d4",
+                "c3d4",
+                "e6d5",
+                "f2e3"
+              ],
+              [
+                "f5d4",
+                "c3d4",
+                "f7e6",
+                "f2e3",
+                "e6d5",
+                "d2d3"
+              ]
+            ],
+            "description": "After Ke6, White plays cxd4 to advance the passed pawn from c3 before Kd5. After Nxd4, White plays cxd4 to advance the passed pawn from c3 before Kd5."
+          }
+        }
+      },
+      {
+        "id": "tournament-spice-1e22dee039bf65c2-33",
+        "label": {
+          "id": "tournament-spice-1e22dee039bf65c2-33",
+          "tactical": true,
+          "positional": true,
+          "rationale": "The identity of the piece taking b5 changes the bishop attack and risks losing a5. White's a4 lever and Black's f-pawn break also shape the choice."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "d7b5",
+                "c2a4",
+                "c8d7",
+                "a4b5",
+                "b8b5",
+                "d1a4",
+                "e8b8",
+                "c1c2",
+                "c7c6"
+              ],
+              [
+                "b8b5",
+                "c2a4",
+                "b5b8",
+                "d2c4",
+                "c8d8",
+                "c4a5",
+                "b8b2",
+                "a4b3",
+                "f7f5"
+              ]
+            ],
+            "description": "After Bxb5, Black plays Rxb5 on the b-file. Black plays Rxb5 on the b-file, and the continuation shows Rxb2."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      },
+      {
+        "id": "tournament-spice-f4f46bf2af6ef86c-119",
+        "label": {
+          "id": "tournament-spice-f4f46bf2af6ef86c-119",
+          "tactical": false,
+          "positional": true,
+          "rationale": "White can make progress with the queenside majority or trade rooks into the favourable bishop ending. The checks alter the timing."
+        },
+        "candidate": {
+          "geometry": null,
+          "active": null,
+          "confirmed": null,
+          "contrast": {
+            "linesUci": [
+              [
+                "d1d6",
+                "f2f6",
+                "d6d1",
+                "c4c5",
+                "e8d7",
+                "c5c6",
+                "d7c8",
+                "g5f4",
+                "d1g1",
+                "g6f7",
+                "g1f1"
+              ],
+              [
+                "e8d7",
+                "f2d2",
+                "d1d2",
+                "g5d2",
+                "d7d6",
+                "a2a4",
+                "d6c7",
+                "b3b4",
+                "c7b8",
+                "a4a5",
+                "b8b7"
+              ]
+            ],
+            "description": "After Rd6+, White plays c5 to advance the passed pawn from c4 before c6+. After Kd7, White plays a4 to advance the passed pawn from a2 before a5."
+          }
+        }
+      },
+      {
+        "id": "tournament-bangladesh-717b768e53595d2e-84",
+        "label": {
+          "id": "tournament-bangladesh-717b768e53595d2e-84",
+          "tactical": null,
+          "positional": true,
+          "rationale": "Nd5 and doubling rooks can transpose. The positional test is whether the f4 break and d-file pressure remain available after different replies."
+        },
+        "candidate": {
+          "geometry": {
+            "linesUci": [
+              [
+                "e3d5",
+                "e7f7",
+                "d1d2",
+                "f7f8",
+                "d5c3",
+                "e8e7"
+              ],
+              [
+                "d3d2",
+                "e7f7",
+                "e3d5",
+                "f7f8",
+                "d2d3",
+                "f8f7"
+              ]
+            ],
+            "description": "After Nd5, White plays R1d2 on the d-file. White plays R3d2 on the d-file, and the continuation shows Rd3."
+          },
+          "active": null,
+          "confirmed": null,
+          "contrast": null
+        }
+      }
+    ]
+  }
+]

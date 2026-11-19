@@ -1,0 +1,429 @@
+import { attacks, pawnAttacks } from "chessops/attacks";
+import type { Chess } from "chessops/chess";
+import { makeFen } from "chessops/fen";
+import { SquareSet } from "chessops/squareSet";
+import type { Color, Square } from "chessops/types";
+import { makeSquare, opposite } from "chessops/util";
+import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
+import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
+import type { PositionStrategicPlan } from "./decisionPositionPlans";
+import { tacticalRepetitionKey } from "./repetitionHistory";
+
+type Feature = "rook-file" | "pawn-contact" | "passed-pawn" | "outpost" | "minor-exchange";
+type Witness = {
+    feature: Feature;
+    side: Color;
+    asset: string;
+    starts: number;
+    payoff: number;
+    through: number;
+    description: string;
+    active: boolean;
+};
+type Branch = { steps: TacticalReplayStep[]; patterns: Witness[]; separate: boolean };
+type Reply = { moveUci: string; lines: DecisionEngineLine[] };
+type Mode = "geometry" | "active" | "confirmed" | "contrast";
+
+const HORIZON = 12;
+const file = (square: Square) => square % 8;
+const rank = (square: Square, side: Color) =>
+    side === "white" ? Math.floor(square / 8) + 1 : 8 - Math.floor(square / 8);
+const fileName = (square: Square) => makeSquare(square)[0];
+const sideName = (side: Color) => (side === "white" ? "White" : "Black");
+const pawns = (board: Chess, side: Color) => board.board.pawn.intersect(board.board[side]);
+const sameSidePawn = (board: Chess, square: Square, side: Color) => pawns(board, side).has(square);
+const emptyFile = (board: Chess, side: Color, column: number) =>
+    pawns(board, side).intersect(SquareSet.fromFile(column)).isEmpty();
+
+function initialSquare(steps: TacticalReplayStep[], index: number, square: Square) {
+    const original = steps[index].before.board.get(square);
+    for (let i = index - 1; original && i >= 0; i--) {
+        const step = steps[i];
+        if (step.before.turn === original.color && step.move.to === square) square = step.move.from;
+        const piece = step.before.board.get(square);
+        if (piece?.role !== original.role || piece.color !== original.color) return undefined;
+    }
+    return original && square;
+}
+
+function pieceWindow(
+    steps: TacticalReplayStep[],
+    index: number,
+    square: Square,
+    predicate: (board: Chess, square: Square) => boolean,
+) {
+    const piece = steps[index].after.board.get(square);
+    if (!piece) return index;
+    for (let i = index; i < steps.length; i++) {
+        const step = steps[i];
+        if (i !== index && step.move.from === square && step.before.turn === piece.color)
+            square = step.move.to;
+        const found = step.after.board.get(square);
+        if (
+            found?.color !== piece.color ||
+            found.role !== piece.role ||
+            !predicate(step.after, square)
+        )
+            return i;
+    }
+    return steps.length;
+}
+
+function isPassed(board: Chess, square: Square, side: Color) {
+    return [...pawns(board, opposite(side))].every(
+        (other) =>
+            Math.abs(file(square) - file(other)) > 1 || rank(other, side) <= rank(square, side),
+    );
+}
+
+function outpost(board: Chess, sq: Square, side: Color) {
+    if (rank(sq, side) < 4 || file(sq) < 2 || file(sq) > 5) return false;
+    return (
+        [...pawns(board, side)].some((pawn) => pawnAttacks(side, pawn).has(sq)) &&
+        [...pawns(board, opposite(side))].every(
+            (pawn) => Math.abs(file(sq) - file(pawn)) !== 1 || rank(pawn, side) < rank(sq, side),
+        )
+    );
+}
+
+function quiet(steps: TacticalReplayStep[], through: number) {
+    // A nominal exchange can leave a temporary imbalance. Read the same
+    // settled material before comparing strategic evidence across branches.
+    const tail = steps.slice(through - 3, through);
+    return (
+        tail.length === 3 &&
+        Math.abs(tail[0].balance) <= 100 &&
+        tail.every((step) => step.balance === tail[0].balance) &&
+        tail.slice(-2).every((step) => !step.capture && !step.after.isCheck())
+    );
+}
+
+function trace(fen: string, line: DecisionEngineLine, separate: boolean): Branch | null {
+    const legal = measureDecisionLine(fen, line);
+    if (!legal || legal.drawnEnding) return null;
+    const steps = replayTacticalLine(fen, line.pvUci.slice(0, HORIZON));
+    const patterns: Witness[] = [];
+    for (const [index, move] of steps.slice(0, 8).entries()) {
+        const {
+            before,
+            after,
+            move: { from, to },
+        } = move;
+        const piece = before.board.get(from)!;
+        const side = piece.color;
+        const prefix = `${sideName(side)} plays ${move.san}`;
+        const start = index + 1;
+        if (after.isCheck() || move.move.promotion || before.isCheck()) continue;
+        if (piece.role === "rook" && emptyFile(after, side, file(to))) {
+            const column = file(to);
+            const through = pieceWindow(
+                steps,
+                index,
+                to,
+                (board, square) => file(square) === column && emptyFile(board, side, column),
+            );
+            if (through >= start + 3) {
+                const build = steps.slice(index, through);
+                let tracked = to;
+                const action = build.findIndex((step, at) => {
+                    if (at === 0) return false;
+                    if (step.before.turn === side && step.move.from === tracked) {
+                        tracked = step.move.to;
+                        return step.capture > 0 || rank(tracked, side) > rank(step.move.from, side);
+                    }
+                    const attacker = step.after.board.get(step.move.to);
+                    return (
+                        attacker?.role === "rook" &&
+                        attacker.color === opposite(side) &&
+                        file(step.move.to) === column &&
+                        attacks(attacker, step.move.to, step.after.board.occupied).has(tracked)
+                    );
+                });
+                patterns.push({
+                    feature: "rook-file",
+                    side,
+                    asset: fileName(to),
+                    starts: start,
+                    payoff: action < 0 ? start : start + action,
+                    through,
+                    active: action >= 0,
+                    description: `${prefix} on the ${fileName(to)}-file${action > 0 ? `, and the continuation shows ${build[action].san}` : ""}`,
+                });
+            }
+        }
+        if (piece.role === "knight" && !move.capture && outpost(after, to, side)) {
+            const through = pieceWindow(
+                steps,
+                index,
+                to,
+                (board, square) => square === to && outpost(board, to, side),
+            );
+            if (through >= start + 3) {
+                const opposition = attacks(piece, to, after.board.occupied)
+                    .intersect(after.board[opposite(side)])
+                    .diff(after.board.king);
+                const response = steps
+                    .slice(index + 1, through)
+                    .findIndex(
+                        (step) => step.before.turn !== side && opposition.has(step.move.from),
+                    );
+                patterns.push({
+                    feature: "outpost",
+                    side,
+                    asset: makeSquare(to),
+                    starts: start,
+                    payoff: response < 0 ? start : start + response + 1,
+                    through,
+                    active: response >= 0,
+                    description: `${prefix} to occupy the pawn-supported square ${makeSquare(to)}`,
+                });
+            }
+        }
+        if (piece.role === "pawn" && rank(to, side) >= 4) {
+            const origin = initialSquare(steps, index, from);
+            if (origin === undefined) continue;
+            if (rank(to, side) <= 6 && isPassed(after, to, side)) {
+                const through = pieceWindow(
+                    steps,
+                    index,
+                    to,
+                    (board, square) => rank(square, side) <= 7 && isPassed(board, square, side),
+                );
+                if (through >= start + 3) {
+                    const blocker = to + (side === "white" ? 8 : -8);
+                    const use = steps
+                        .slice(index + 1, through)
+                        .findIndex(
+                            (step) =>
+                                (step.before.turn === side && step.move.from === to) ||
+                                (step.before.turn !== side && step.move.to === blocker),
+                        );
+                    patterns.push({
+                        feature: "passed-pawn",
+                        side,
+                        asset: makeSquare(origin),
+                        starts: start,
+                        payoff: use < 0 ? start : start + use + 1,
+                        through,
+                        active: use >= 0,
+                        description: `${prefix} to advance the passed pawn from ${makeSquare(origin)}${use >= 0 ? ` before ${steps[index + use + 1].san}` : ""}`,
+                    });
+                }
+            }
+            if (file(to) < 2 || file(to) > 5 || rank(to, side) > 5) continue;
+            for (const pawn of pawnAttacks(side, to).intersect(pawns(after, opposite(side)))) {
+                const opposingOrigin = initialSquare(steps, index, pawn);
+                if (opposingOrigin === undefined) continue;
+                const end = steps
+                    .slice(index + 1, index + 5)
+                    .findIndex(
+                        (step) =>
+                            step.move.from === to ||
+                            step.move.to === to ||
+                            step.move.from === pawn ||
+                            step.move.to === pawn,
+                    );
+                if (end < 0) continue;
+                const exchange = steps[index + end + 1];
+                if (
+                    !exchange.capture ||
+                    !(
+                        (exchange.move.from === to && exchange.move.to === pawn) ||
+                        (exchange.move.from === pawn && exchange.move.to === to)
+                    )
+                )
+                    continue;
+                const through = steps.findIndex(
+                    (step, i) => i > index + end + 1 && sameSidePawn(step.after, from, side),
+                );
+                patterns.push({
+                    feature: "pawn-contact",
+                    side,
+                    asset: `${makeSquare(origin)}-${makeSquare(opposingOrigin)}`,
+                    starts: start,
+                    payoff: index + end + 2,
+                    through: through < 0 ? steps.length : through,
+                    active: true,
+                    description: `${prefix} to challenge the pawn on ${makeSquare(pawn)}. ${exchange.san} resolves the contact`,
+                });
+            }
+        }
+        if (
+            ["knight", "bishop"].includes(piece.role) &&
+            before.board.get(to)?.role === "bishop" &&
+            before.board.bishop.intersect(before.board[opposite(side)]).size() === 2
+        ) {
+            const retake = steps[index + 1];
+            if (
+                !retake ||
+                retake.move.to !== to ||
+                retake.balance !== (steps[index - 1]?.balance ?? 0)
+            )
+                continue;
+            const enemy = opposite(side);
+            const disappears = steps.findIndex(
+                (step, i) =>
+                    i > index &&
+                    step.after.board.bishop.intersect(step.after.board[enemy]).size() !== 1,
+            );
+            const through = disappears < 0 ? steps.length : disappears;
+            const answer = steps
+                .slice(index + 2, Math.min(through, index + 6))
+                .findIndex(
+                    (step) =>
+                        step.before.turn === opposite(side) &&
+                        step.before.board.bishop.has(step.move.from) &&
+                        !step.capture,
+                );
+            patterns.push({
+                feature: "minor-exchange",
+                side,
+                asset: makeSquare(initialSquare(steps, index, to) ?? to),
+                starts: start,
+                payoff: answer < 0 ? start + 1 : start + answer + 2,
+                through,
+                active: answer >= 0,
+                description: `${prefix} and ${retake.san} completes the exchange of that bishop`,
+            });
+        }
+    }
+    return { steps, patterns, separate };
+}
+
+function branches(fen: string, choice: DecisionEngineLine, probes: Reply[]) {
+    const principal = trace(fen, choice, false);
+    if (!principal) return [];
+    const result = [principal];
+    const probe = probes.find((item) => item.moveUci === choice.pvUci[0]);
+    const [top] = probe?.lines ?? [];
+    const child = makeFen(principal.steps[0].after.toSetup());
+    if (
+        !top ||
+        top.cp === null ||
+        top.mate != null ||
+        top.depth < 16 ||
+        choice.cp === null ||
+        Math.abs(top.cp + choice.cp) > 90 ||
+        !measureDecisionLine(child, top)
+    )
+        return result;
+    for (const reply of probe!.lines.slice(0, 3)) {
+        if (
+            reply.cp === null ||
+            reply.mate != null ||
+            reply.depth !== top.depth ||
+            reply.cp > top.cp ||
+            top.cp - reply.cp > 35 ||
+            !measureDecisionLine(child, reply)
+        )
+            continue;
+        const actual = trace(fen, { ...choice, pvUci: [choice.pvUci[0], ...reply.pvUci] }, true);
+        if (actual) result.push(actual);
+    }
+    return result;
+}
+
+function common(a: Witness, b: Witness) {
+    return a.feature === b.feature && a.side === b.side && a.asset === b.asset;
+}
+
+function matchingWindow(a: Branch, b: Branch, left: Witness, right: Witness) {
+    for (
+        let end = Math.max(6, left.payoff + 1, right.payoff + 1);
+        end <= Math.min(left.through, right.through);
+        end++
+    ) {
+        if (
+            quiet(a.steps, end) &&
+            quiet(b.steps, end) &&
+            Math.abs(a.steps[end - 1].balance - b.steps[end - 1].balance) <= 50
+        )
+            return end;
+    }
+    return undefined;
+}
+
+function compare(a: Branch, b: Branch, mode: Mode): PositionStrategicPlan | null {
+    for (const left of a.patterns) {
+        for (const right of b.patterns) {
+            if (
+                Math.min(left.starts, right.starts) > 4 ||
+                (mode !== "geometry" && (!left.active || !right.active))
+            )
+                continue;
+            const same = common(left, right);
+            if (
+                !same &&
+                (mode !== "contrast" ||
+                    left.feature !== right.feature ||
+                    left.side !== right.side ||
+                    left.asset === right.asset)
+            )
+                continue;
+            if ((mode === "confirmed" || mode === "contrast") && !a.separate && !b.separate)
+                continue;
+            const end = matchingWindow(a, b, left, right);
+            if (end === undefined) continue;
+            const earlier = new Set(
+                a.steps.slice(0, left.payoff - 1).map((s) => tacticalRepetitionKey(s.after)),
+            );
+            if (
+                b.steps
+                    .slice(0, right.payoff - 1)
+                    .some((s) => earlier.has(tacticalRepetitionKey(s.after)))
+            )
+                continue;
+            const explain = (branch: Branch, witness: Witness) =>
+                witness.starts === 1
+                    ? witness.description
+                    : `After ${branch.steps[0].san}, ${witness.description}`;
+            return {
+                linesUci: [
+                    a.steps.slice(0, end).map((s) => s.uci),
+                    b.steps.slice(0, end).map((s) => s.uci),
+                ],
+                description: `${explain(a, left)}. ${explain(b, right)}.`,
+            };
+        }
+    }
+    return null;
+}
+
+/** Compare two genuine root choices on a shared legal board. */
+export function compareStrategicContinuations(
+    fen: string,
+    lines: DecisionEngineLine[],
+    probes: Reply[],
+): Record<Mode, PositionStrategicPlan | null> {
+    const result: Record<Mode, PositionStrategicPlan | null> = {
+        geometry: null,
+        active: null,
+        confirmed: null,
+        contrast: null,
+    };
+    const [best, ...others] = lines;
+    if (!best || best.cp === null || best.mate != null || best.depth < 16) return result;
+    const alternatives = others
+        .slice(0, 2)
+        .filter(
+            (line) =>
+                line.depth === best.depth &&
+                line.cp !== null &&
+                line.mate == null &&
+                best.cp! >= line.cp &&
+                best.cp! - line.cp <= 100 &&
+                line.pvUci[0] !== best.pvUci[0],
+        );
+    if (!alternatives.length) return result;
+    const primary = branches(fen, best, probes);
+    for (const alternative of alternatives) {
+        const secondary = branches(fen, alternative, probes);
+        for (const a of primary) {
+            for (const b of secondary) {
+                for (const mode of ["geometry", "active", "confirmed", "contrast"] as const)
+                    result[mode] ??= compare(a, b, mode);
+            }
+        }
+    }
+    return result;
+}

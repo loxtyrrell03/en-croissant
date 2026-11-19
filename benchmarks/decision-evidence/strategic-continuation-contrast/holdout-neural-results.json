@@ -1,0 +1,605 @@
+{
+  "training": 259,
+  "transfer": 36,
+  "inputs": [
+    "f2c99e02c6680b165f430263a2acafa23e8488d7228d7f6b4fb152e654e3d693",
+    "85dd7f368c35c7af3922e33ba4fb816cd77128295296bc98f8ea3a60880bee28"
+  ],
+  "medianNetworkForwardMs": 43.59815001953393,
+  "additionalEngineNodes": 0,
+  "results": {
+    "tactical": {
+      "reference": {
+        "uncertain": 11,
+        "negative": 4,
+        "positive": 21
+      },
+      "incumbent": {
+        "truePositives": 4,
+        "falsePositives": 0
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": 0.9306099250918045,
+          "slots": 8,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-kovin-e34354d81cd090a7-40",
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-team-open-3b19edc77ed245e7-33",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-ad066911d050deec-29",
+            "tournament-team-open-2dbabba6e0be2cc3-49"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": 0.976947211765551,
+          "slots": 8,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-e6ab7c29809b64dd-74",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-9222ded9b09464f3-52"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": 0.9932718185313342,
+          "slots": 8,
+          "positives": 7,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "kovin": 4,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-kovin-50b81f386472fb6c-74",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-13fe8de4bfd38ffd-34",
+            "tournament-team-open-26a7916a166c5042-39"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": 0.976947211765551,
+          "slots": 8,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-e6ab7c29809b64dd-74",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-9222ded9b09464f3-52"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": 0.9683159161100339,
+          "slots": 8,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 2,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-9229c00b7bf67d9d-108",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-kovin-5759f895b58cfdf5-119",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-13fe8de4bfd38ffd-34",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-3b19edc77ed245e7-33"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": 0.9720452509812372,
+          "slots": 8,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 2
+          },
+          "selected": [
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-50b81f386472fb6c-74",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-55970232ddc81e98-32"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": 0.9856737793156479,
+          "slots": 8,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-9222ded9b09464f3-52"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": 0.981472098643379,
+          "slots": 8,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 2,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-9222ded9b09464f3-52",
+            "tournament-team-open-ad956bc71c8b8b41-36"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": 0.9720452509812372,
+          "slots": 8,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-e6ab7c29809b64dd-74",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-9222ded9b09464f3-52",
+            "tournament-team-open-ad956bc71c8b8b41-36"
+          ]
+        }
+      }
+    },
+    "positional": {
+      "reference": {
+        "positive": 31,
+        "negative": 4,
+        "uncertain": 1
+      },
+      "incumbent": {
+        "truePositives": 6,
+        "falsePositives": 1
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": 0.9205064515628254,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-eb5f591a8891bc3a-106",
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-33b1104b30e2f283-43",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-9222ded9b09464f3-52",
+            "tournament-team-open-2dbabba6e0be2cc3-49"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": 0.9939601139601142,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-50b81f386472fb6c-74",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-8ba4a437f1ac611a-42",
+            "tournament-team-open-6f870ba29da3ea9d-34"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": 0.9934557413600892,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-377303a6b808cce0-28",
+            "tournament-kovin-342471cbcb330b25-55",
+            "tournament-kovin-b19fc704578c3a1e-56",
+            "tournament-team-open-ad066911d050deec-29",
+            "tournament-team-open-6f870ba29da3ea9d-34",
+            "tournament-team-open-55970232ddc81e98-32"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": 0.9890209835253314,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-d779ce38e8acc760-46",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-8ba4a437f1ac611a-42",
+            "tournament-team-open-9222ded9b09464f3-52"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": 0.7787394753240358,
+          "slots": 6,
+          "positives": 3,
+          "negatives": 3,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 1,
+            "team-open": 2
+          },
+          "selected": [
+            "tournament-kovin-143ab4374045470d-28",
+            "tournament-kovin-9229c00b7bf67d9d-108",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-team-open-10e4f581d4e79ec2-51",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-13fe8de4bfd38ffd-34"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": 1.0000000000000002,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-b19fc704578c3a1e-56",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-8ba4a437f1ac611a-42",
+            "tournament-team-open-9222ded9b09464f3-52"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": 0.9934557413600893,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-342471cbcb330b25-55",
+            "tournament-kovin-50b81f386472fb6c-74",
+            "tournament-team-open-6f870ba29da3ea9d-34",
+            "tournament-team-open-3b19edc77ed245e7-33",
+            "tournament-team-open-8ba4a437f1ac611a-42"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": 0.995194871794872,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-377303a6b808cce0-28",
+            "tournament-kovin-342471cbcb330b25-55",
+            "tournament-kovin-eb5f591a8891bc3a-106",
+            "tournament-team-open-6f870ba29da3ea9d-34",
+            "tournament-team-open-8ba4a437f1ac611a-42",
+            "tournament-team-open-ad956bc71c8b8b41-36"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": 0.9937703703703705,
+          "slots": 6,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-377303a6b808cce0-28",
+            "tournament-kovin-33b1104b30e2f283-43",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-ad066911d050deec-29",
+            "tournament-team-open-9222ded9b09464f3-52"
+          ]
+        }
+      }
+    },
+    "mixed": {
+      "reference": {
+        "uncertain": 12,
+        "negative": 8,
+        "positive": 16
+      },
+      "incumbent": {
+        "truePositives": 1,
+        "falsePositives": 1
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": 0.6627077895731147,
+          "slots": 8,
+          "positives": 3,
+          "negatives": 2,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 0,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-kovin-e34354d81cd090a7-40",
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-9229c00b7bf67d9d-108",
+            "tournament-team-open-3b19edc77ed245e7-33",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-ad066911d050deec-29",
+            "tournament-team-open-2dbabba6e0be2cc3-49"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": 0.8410674785597386,
+          "slots": 8,
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 4,
+          "positivesByEvent": {
+            "kovin": 1,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-e6ab7c29809b64dd-74",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-9222ded9b09464f3-52",
+            "tournament-team-open-26a7916a166c5042-39"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": 0.8512741400899295,
+          "slots": 8,
+          "positives": 6,
+          "negatives": 1,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "kovin": 3,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-50b81f386472fb6c-74",
+            "tournament-kovin-143ab4374045470d-28",
+            "tournament-kovin-9229c00b7bf67d9d-108",
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-13fe8de4bfd38ffd-34",
+            "tournament-team-open-26a7916a166c5042-39"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": 0.8319310594233195,
+          "slots": 8,
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 1,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-e6ab7c29809b64dd-74",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-9222ded9b09464f3-52",
+            "tournament-team-open-26a7916a166c5042-39"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": 0.6902547143259217,
+          "slots": 8,
+          "positives": 4,
+          "negatives": 3,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "kovin": 1,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-143ab4374045470d-28",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-9229c00b7bf67d9d-108",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-team-open-10e4f581d4e79ec2-51",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-13fe8de4bfd38ffd-34",
+            "tournament-team-open-fcef8c95fc3409fe-43"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": 0.8813107810089233,
+          "slots": 8,
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 4,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 2
+          },
+          "selected": [
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-50b81f386472fb6c-74",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-26a7916a166c5042-39",
+            "tournament-team-open-55970232ddc81e98-32"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": 0.8708053332975932,
+          "slots": 8,
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 2
+          },
+          "selected": [
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-33b1104b30e2f283-43",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-10e4f581d4e79ec2-51",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-26a7916a166c5042-39"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": 0.8828516962340491,
+          "slots": 8,
+          "positives": 5,
+          "negatives": 1,
+          "uncertain": 2,
+          "positivesByEvent": {
+            "kovin": 2,
+            "team-open": 3
+          },
+          "selected": [
+            "tournament-kovin-d4042f10b1fb2111-96",
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-00085819f26c0786-37",
+            "tournament-kovin-50b81f386472fb6c-74",
+            "tournament-team-open-9222ded9b09464f3-52",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-10e4f581d4e79ec2-51"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": 0.8368633656791552,
+          "slots": 8,
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "kovin": 0,
+            "team-open": 4
+          },
+          "selected": [
+            "tournament-kovin-1b146f3fad567292-26",
+            "tournament-kovin-8e302bf0faa1ec7c-57",
+            "tournament-kovin-e6ab7c29809b64dd-74",
+            "tournament-kovin-4de084d65a9b4b00-72",
+            "tournament-team-open-fcef8c95fc3409fe-43",
+            "tournament-team-open-9222ded9b09464f3-52",
+            "tournament-team-open-ad956bc71c8b8b41-36",
+            "tournament-team-open-ad066911d050deec-29"
+          ]
+        }
+      }
+    }
+  },
+  "passesFrozenGate": {
+    "tactical": [],
+    "positional": [],
+    "mixed": []
+  }
+}
