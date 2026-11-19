@@ -13,10 +13,17 @@ import {
 import {
     extractTacticalSequenceWitnesses,
     mergeTacticalSequenceWitnesses,
+    measureTacticalEpisode,
+    type TacticalEpisodeOutcome,
     type TacticalSequenceWitness,
 } from "./tacticalSequenceEvidence";
 import { isImmediateTacticalLesson } from "./mistakeReviewAdapter";
 import type { TacticalMotifEvidence } from "./types";
+import { refineDecisionCertificates, type DecisionLocalProof } from "./decisionProofAdapter";
+import {
+    findConditionalCaptureResources,
+    type ConditionalTacticalResource,
+} from "./conditionalTacticalResources";
 
 export const DECISION_ASSESSMENT_VERSION = 1;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
@@ -31,6 +38,9 @@ export type DecisionAssessment = {
     positional: DecisionDimension;
     mechanisms: TacticalSequenceWitness[];
     verifiedMotifs: TacticalMotifEvidence[];
+    localProofs: DecisionLocalProof[];
+    episodeOutcomes: TacticalEpisodeOutcome[];
+    conditionalResources: ConditionalTacticalResource[];
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -38,6 +48,7 @@ export type DecisionReplyProbe = {
     /** The root choice whose best opponent responses were searched. */
     moveUci: string;
     lines: DecisionEngineLine[];
+    targetedCaptures?: Array<{ line: DecisionEngineLine }>;
 };
 export type DecisionAssessmentInput = {
     fen: string;
@@ -65,10 +76,17 @@ export type ChessDecisionReport = {
         bestSecondGapCp: number | null;
         examinedChoices: number;
         legalChoices: number;
+        rejectedChoices: number;
     };
     moves: Array<
         DecisionAssessment & { moveUci: string; evaluationCp: number | null; depth: number }
     >;
+    mistakeStatus:
+        | "not-requested"
+        | "best-supplied-choice"
+        | "no-meaningful-loss-measured"
+        | "comparison-unavailable"
+        | "assessed";
     mistake:
         | (DecisionAssessment & {
               evaluationLossCp: number;
@@ -90,6 +108,9 @@ function emptyAssessment(): DecisionAssessment {
         positional: emptyDimension("No relevant positional difference has been established."),
         mechanisms: [],
         verifiedMotifs: [],
+        localProofs: [],
+        episodeOutcomes: [],
+        conditionalResources: [],
         positionalFactors: [],
         limitations: [],
     };
@@ -199,6 +220,18 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
         );
     }
     if (witnesses.length) {
+        result.episodeOutcomes = witnessedBranches
+            .flatMap((branch) =>
+                branch.witnesses
+                    .map((witness) => measureTacticalEpisode(input.fen, branch.line, witness))
+                    .filter((outcome): outcome is TacticalEpisodeOutcome => outcome !== null),
+            )
+            .filter(
+                (outcome, index, all) =>
+                    all.findIndex(
+                        (other) => other.lineUci.join(" ") === outcome.lineUci.join(" "),
+                    ) === index,
+            );
         const relevantOutcome = witnessedBranches.some((branch) => {
             const outcome = branch.measured;
             return (
@@ -213,7 +246,10 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             );
         });
         result.tactical = {
-            support: corroborated && relevantOutcome ? "supported" : "suggestive",
+            support:
+                corroborated && (relevantOutcome || result.episodeOutcomes.length > 0)
+                    ? "supported"
+                    : "suggestive",
             basis: corroborated ? "engine-supported" : "insufficient",
             reasons: witnesses.map((item) => item.description),
         };
@@ -221,13 +257,35 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             result.limitations.push(
                 "The mechanism appears in a legal line, but a separate stable search of the opponent's replies has not confirmed it.",
             );
-        if (!relevantOutcome)
+        if (!relevantOutcome && !result.episodeOutcomes.length)
             result.limitations.push(
                 "The analysed line does not yet connect this mechanism to a settled material, mating or identified positional outcome.",
             );
         result.limitations.push(
             "The shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.",
+            ...result.episodeOutcomes.map((outcome) => outcome.limitation).slice(0, 1),
         );
+    }
+    if (corroborated && probe?.targetedCaptures?.length) {
+        result.conditionalResources = findConditionalCaptureResources(
+            input.fen,
+            line,
+            probe.lines,
+            probe.targetedCaptures.map((item) => item.line),
+        );
+        if (result.conditionalResources.length) {
+            result.tactical = {
+                support: "supported",
+                basis: "engine-supported",
+                reasons: [
+                    ...result.tactical.reasons.filter(
+                        (reason) => !reason.startsWith("No relevant"),
+                    ),
+                    ...result.conditionalResources.map((item) => item.description),
+                ],
+            };
+            result.limitations.push(result.conditionalResources[0].limitation);
+        }
     }
     const certificates =
         input.rootCertificates
@@ -239,11 +297,13 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
                     isImmediateTacticalLesson(motif),
             ) ?? [];
     if (certificates.length) {
-        result.verifiedMotifs = certificates;
+        const refined = refineDecisionCertificates(input.fen, line.pvUci[0], certificates);
+        result.verifiedMotifs = refined.motifs;
+        result.localProofs = refined.proofs;
         result.tactical = {
             support: "supported",
             basis: "bounded-proof",
-            reasons: certificates.map((item) => item.evidence),
+            reasons: refined.motifs.map((item) => item.evidence),
         };
         result.limitations.push(
             "The local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.",
@@ -281,8 +341,26 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
  * 100%, and no player thought process is inferred from the objective error. */
 export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisionReport | null {
     const measured = measurePositionDecision(input.fen, input.candidates);
-    if (!measured || !measured.lines.length || measured.lines.length !== input.candidates.length)
+    if (!measured || !measured.lines.length || !measureDecisionLine(input.fen, input.candidates[0]))
         return null;
+    const validCandidates = input.candidates.filter((line) => measureDecisionLine(input.fen, line));
+    // Duplicated roots are incoherent input; a later invalid alternative is
+    // merely unavailable evidence. Keep a valid principal line without
+    // promoting a different move or borrowing an invalid variation's score.
+    if (validCandidates.length !== measured.lines.length) return null;
+    const rejectedChoices = input.candidates.length - validCandidates.length;
+    if (
+        validCandidates.every(
+            (line) =>
+                line.cp !== null && line.mate == null && line.depth === validCandidates[0].depth,
+        ) &&
+        validCandidates.some(
+            (line, index) => index > 0 && line.cp! > validCandidates[index - 1].cp!,
+        )
+    )
+        return null;
+    const originalCandidates = input.candidates;
+    input = { ...input, candidates: validCandidates };
     const moves = input.candidates.map((line) => ({
         ...assessMove(input, line),
         moveUci: line.pvUci[0],
@@ -295,6 +373,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         bestSecondGapCp: measured.bestSecondGapCp,
         examinedChoices: measured.lines.length,
         legalChoices: measured.legalMoves,
+        rejectedChoices,
     };
     // Position character describes the available decisions. Only choices within
     // the measured competitive band contribute; a losing combination does not.
@@ -313,16 +392,40 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.category = category(position.tactical, position.positional);
     position.mechanisms = tactical?.mechanisms ?? [];
     position.verifiedMotifs = tactical?.verifiedMotifs ?? [];
+    position.localProofs = tactical?.localProofs ?? [];
+    position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
+    position.conditionalResources = tactical?.conditionalResources ?? [];
     position.positionalFactors = positional?.positionalFactors ?? [];
     position.limitations = [
         "Position character reflects the supplied competitive choices, not every legal move or every future plan.",
+        ...(rejectedChoices
+            ? [
+                  `${rejectedChoices} alternative continuation(s) could not be validated. Their scores and motifs were not used; the gap between choices is unavailable.`,
+              ]
+            : []),
     ];
 
     let mistake: ChessDecisionReport["mistake"] = null;
-    const comparison = input.comparisonCandidates ?? input.candidates;
+    let mistakeStatus: ChessDecisionReport["mistakeStatus"] = input.playedMoveUci
+        ? "comparison-unavailable"
+        : "not-requested";
+    const comparison = input.comparisonCandidates ?? originalCandidates;
     const comparisonMeasured = measurePositionDecision(input.fen, comparison);
     const comparedBest = comparison[0];
-    const playedIndex = comparison.findIndex((line) => line.pvUci[0] === input.playedMoveUci);
+    const afterChoice = (uci: string | undefined) => {
+        const step = uci ? replayTacticalLine(input.fen, [uci])[0] : undefined;
+        return step ? makeFen(step.after.toSetup()) : undefined;
+    };
+    const playedBoard = afterChoice(input.playedMoveUci);
+    const playedIndex = comparison.findIndex(
+        (line) => playedBoard !== undefined && afterChoice(line.pvUci[0]) === playedBoard,
+    );
+    if (
+        playedIndex === 0 &&
+        comparedBest?.pvUci[0] === first.pvUci[0] &&
+        comparisonMeasured?.lines.length === comparison.length
+    )
+        mistakeStatus = "best-supplied-choice";
     if (
         playedIndex > 0 &&
         comparisonMeasured?.bestSecondGapCp !== null &&
@@ -332,7 +435,9 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     ) {
         const playedLine = comparison[playedIndex];
         const loss = comparedBest.cp! - playedLine.cp!;
+        if (loss <= 20) mistakeStatus = "no-meaningful-loss-measured";
         if (loss > 20) {
+            mistakeStatus = "assessed";
             // A best-move label is not automatically an error explanation.
             // Require a witnessed root mechanism absent from the played choice
             // AND a material consequence difference to attribute a missed tactic.
@@ -465,5 +570,12 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             };
         }
     }
-    return { version: DECISION_ASSESSMENT_VERSION, fen: input.fen, position, moves, mistake };
+    return {
+        version: DECISION_ASSESSMENT_VERSION,
+        fen: input.fen,
+        position,
+        moves,
+        mistake,
+        mistakeStatus,
+    };
 }

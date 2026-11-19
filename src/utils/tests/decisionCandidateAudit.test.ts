@@ -23,6 +23,8 @@ test.skipIf(!directory)(
         if (!["1", "2"].includes(protocol)) throw new Error("Invalid engine protocol");
         const profile = process.env.DECISION_ENGINE_PROFILE ?? "v2";
         if (!/^[a-z0-9-]+$/.test(profile)) throw new Error("Invalid engine profile");
+        const probeProfile = process.env.DECISION_PROBE_PROFILE ?? profile;
+        if (!/^[a-z0-9-]+$/.test(probeProfile)) throw new Error("Invalid probe profile");
         const sample = JSON.parse(readFileSync(join(directory!, `${cohort}-sample.json`), "utf8"));
         const name = process.env.DECISION_AUDIT_NAME ?? "decision-candidate-v3";
         if (!/^[a-z0-9-]+$/.test(name)) throw new Error("Invalid audit name");
@@ -49,7 +51,7 @@ test.skipIf(!directory)(
                     join(
                         directory!,
                         protocol === "2"
-                            ? `${cohort}-probes-${profile}`
+                            ? `${cohort}-probes-${probeProfile}`
                             : cohort === "course"
                               ? "reply-probes"
                               : `${cohort}-probes`,
@@ -131,6 +133,8 @@ test.skipIf(!directory)(
         const sourceHashes = Object.fromEntries(
             [
                 "decisionAssessment.ts",
+                "decisionProofAdapter.ts",
+                "conditionalTacticalResources.ts",
                 "tacticalSequenceEvidence.ts",
                 "positionalTransitions.ts",
                 "strategicRootEffects.ts",
@@ -153,6 +157,7 @@ test.skipIf(!directory)(
                     scope: "Development candidate, not held-out accuracy",
                     engineProtocol: protocol,
                     engineProfile: profile,
+                    probeProfile,
                     cohort,
                     sourceHashes,
                     results,

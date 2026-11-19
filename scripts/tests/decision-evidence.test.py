@@ -15,6 +15,9 @@ score_spec.loader.exec_module(scores)
 engine_spec = importlib.util.spec_from_file_location('engine_frames', path.with_name('decision-evidence-engine.py'))
 engine_frames = importlib.util.module_from_spec(engine_spec)
 engine_spec.loader.exec_module(engine_frames)
+probe_spec = importlib.util.spec_from_file_location('capture_probes', path.with_name('decision-evidence-probes.py'))
+probes = importlib.util.module_from_spec(probe_spec)
+probe_spec.loader.exec_module(probes)
 
 
 class SourceGameIdentity(unittest.TestCase):
@@ -52,6 +55,20 @@ class ReferenceMetrics(unittest.TestCase):
     def test_duplicate_predictions_are_rejected(self):
         with self.assertRaises(ValueError):
             scores.score({'cases': []}, {'results': [{'id': 'same'}, {'id': 'same'}]})
+
+
+class CaptureNominations(unittest.TestCase):
+    def test_only_legal_captures_of_the_moved_piece_are_nominated(self):
+        board = chess.Board('8/2r1k2p/3b4/8/8/2N5/1P5P/6K1 w - - 0 1')
+        self.assertEqual([item[1] for item in probes.capture_nominations(board, 'b2b4')], ['d6b4'])
+
+    def test_en_passant_identifies_the_removed_pawn(self):
+        board = chess.Board('8/2r1k2p/8/8/3p4/2N5/4P2P/6K1 w - - 0 1')
+        self.assertEqual([item[1] for item in probes.capture_nominations(board, 'e2e4')], ['d4e3'])
+
+    def test_ordinary_expensive_capture_of_a_defended_piece_is_excluded(self):
+        board = chess.Board('1q3rk1/2N2ppp/8/7Q/8/3B4/8/R5K1 w - - 0 1')
+        self.assertEqual(probes.capture_nominations(board, 'a1a8'), [])
 
 
 class EngineFrames(unittest.TestCase):

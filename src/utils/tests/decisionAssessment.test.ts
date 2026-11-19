@@ -41,6 +41,7 @@ test("a legal pattern needs separately corroborated replies and a connected outc
     });
     expect(confirmed.moves[0].positional.support).toBe("unestablished");
     expect(confirmed.mistake).toBeNull();
+    expect(confirmed.mistakeStatus).toBe("not-requested");
 });
 
 test("mismatched, shallow, divergent or bound reply searches do not corroborate a tactic", () => {
@@ -58,6 +59,12 @@ test("mistake attribution requires the actual evaluated played move and loss", (
     const input = { fen, candidates: [best, other], replyProbes: [probe] };
     expect(assessChessDecision({ ...input, playedMoveUci: best.pvUci[0] })?.mistake).toBeNull();
     expect(assessChessDecision({ ...input, playedMoveUci: "g1h1" })?.mistake).toBeNull();
+    expect(assessChessDecision({ ...input, playedMoveUci: "g1h1" })?.mistakeStatus).toBe(
+        "comparison-unavailable",
+    );
+    expect(assessChessDecision({ ...input, playedMoveUci: best.pvUci[0] })?.mistakeStatus).toBe(
+        "best-supplied-choice",
+    );
     const mistake = assessChessDecision({ ...input, playedMoveUci: other.pvUci[0] })?.mistake;
     expect(mistake).toMatchObject({ evaluationLossCp: 200, category: "tactical", allowed: [] });
     expect(mistake?.missed[0].mechanism).toBe("fork");
@@ -125,6 +132,28 @@ test("a later capture does not erase a bounded strategic window", () => {
 test("incoherent root evidence cannot produce a report", () => {
     expect(assessChessDecision({ fen, candidates: [best, best] })).toBeNull();
     expect(assessChessDecision({ fen, candidates: [{ ...best, pvUci: ["b4b8"] }] })).toBeNull();
+    expect(
+        assessChessDecision({ fen, candidates: [{ ...best, pvUci: ["b4b8"] }, other] }),
+    ).toBeNull();
+    expect(assessChessDecision({ fen, candidates: [other, best] })).toBeNull();
+});
+
+test("an invalid later continuation cannot erase or replace valid principal evidence", () => {
+    const report = assessChessDecision({
+        fen,
+        candidates: [best, { ...other, pvUci: ["b4d5", "f7g6"] }],
+        replyProbes: [probe],
+        playedMoveUci: other.pvUci[0],
+    })!;
+    expect(report.moves.map((move) => move.moveUci)).toEqual([best.pvUci[0]]);
+    expect(report.moves[0].tactical.support).toBe("supported");
+    expect(report.position).toMatchObject({
+        examinedChoices: 1,
+        rejectedChoices: 1,
+        bestSecondGapCp: null,
+    });
+    expect(report.mistake).toBeNull();
+    expect(report.mistakeStatus).toBe("comparison-unavailable");
 });
 
 test("an allowed fork is diagnosed independently of the quiet better move", () => {
@@ -183,4 +212,15 @@ test("existing mistake certificates preserve their exact board and move ownershi
             })?.mistake?.category,
         ).toBe("unclear");
     }
+});
+
+test("equivalent castling notation is the same supplied choice, not missing error evidence", () => {
+    const root = "k7/8/8/8/8/8/8/4K2R w K - 0 1";
+    const report = assessChessDecision({
+        fen: root,
+        candidates: [{ fen: root, depth: 18, cp: 500, pvUci: ["e1h1"] }],
+        playedMoveUci: "e1g1",
+    });
+    expect(report?.mistake).toBeNull();
+    expect(report?.mistakeStatus).toBe("best-supplied-choice");
 });

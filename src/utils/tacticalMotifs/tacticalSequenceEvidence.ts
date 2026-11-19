@@ -52,6 +52,54 @@ export function mergeTacticalSequenceWitnesses(witnesses: TacticalSequenceWitnes
     return [...grouped.values()];
 }
 
+export type TacticalEpisodeOutcome = {
+    kind: "material";
+    throughPly: number;
+    materialGainPoints: number;
+    lineUci: string[];
+    limitation: string;
+};
+
+/** A bounded material episode after the actual payoff and settling replies.
+ * This is not a claim about the PV's final balance or every legal defence. */
+export function measureTacticalEpisode(
+    fen: string,
+    line: DecisionEngineLine,
+    witness: TacticalSequenceWitness,
+): TacticalEpisodeOutcome | null {
+    if (
+        witness.fen !== fen ||
+        !witness.rootMoveInvolved ||
+        !measureDecisionLine(fen, line) ||
+        !witness.lineUci.every((move, index) => line.pvUci[index] === move)
+    )
+        return null;
+    for (
+        let end = witness.payoffPly + 3;
+        end <= Math.min(line.pvUci.length, witness.payoffPly + 6);
+        end++
+    ) {
+        const prefix = line.pvUci.slice(0, end);
+        const measured = measureDecisionLine(fen, { ...line, pvUci: prefix });
+        if (
+            measured &&
+            !measured.drawnEnding &&
+            measured.quietEndingPlies >= 2 &&
+            measured.endingMaterialRangeCp[0] === measured.endingMaterialRangeCp[1] &&
+            measured.materialChangeCp >= 90
+        )
+            return {
+                kind: "material",
+                throughPly: end,
+                materialGainPoints: measured.materialChangeCp / 100,
+                lineUci: prefix,
+                limitation:
+                    "This is the material change in the displayed tactical episode after settling replies. Later play and other defences can alter it.",
+            };
+    }
+    return null;
+}
+
 function legalCapture(position: Chess, from: Square, to: Square, side: Color) {
     const piece = position.board.get(from),
         target = position.board.get(to);

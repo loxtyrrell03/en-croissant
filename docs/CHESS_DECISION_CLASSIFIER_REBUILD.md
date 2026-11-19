@@ -310,6 +310,82 @@ write to a fresh private cache, and set `DECISION_ENGINE_PROFILE=v2deep` for its
 audit. The default profile stays `v2`; source/engine identities and actual
 adaptive attempts are recorded. Never overwrite earlier evidence to rerun it.
 
+## Bounded episodes and conditional capture resources
+
+Candidate v12 separates a settled tactical episode from the end of a longer
+principal variation. A later unrelated capture no longer erases an earlier
+material outcome. The recorded episode starts at the original position, includes
+settling replies after the witnessed payoff, and explicitly does not claim the
+same material balance survives all later play. The witness must involve the root
+move and the separate reply search must corroborate the root evaluation.
+
+Candidate v13 additionally searches up to three legal captures of the moved
+piece. This tests resources that the best defensive reply avoids. Ordinary
+captures by a more valuable piece that can immediately be recaptured are
+excluded. En passant uses the removed pawn's square. Each accepted resource
+requires coherent legal evidence at depth 16 or higher, convergent root/best
+reply evaluations, and either a legal mating continuation against the capturing
+side or a used tactical mechanism with a settled net material gain. Recovering
+the offered piece alone is not a gain. A score difference alone never supplies
+a motif.
+
+These branches remain conditional: they are not spliced into the main line,
+labelled forced, or automatically used to diagnose the player's mistake. Their
+motifs retain the refutation's own position and move numbers. Three development
+recoveries include a knight offer that cannot be taken because of a mating
+sequence, a bishop offer followed by a knight fork winning the queen, and a rook
+offer whose acceptance leads to mate. These are engine-supported finite search
+conclusions, not exhaustive proofs of all defences.
+
+| Provisional course development agreement | Tactical / 39 | Positional / 29 | Mixed / 11 |
+|---|---:|---:|---:|
+| Existing root output, same deeper inputs | 2 | 0 | 0 |
+| v10, deeper budget | 11 | 13 | 2 |
+| v12, bounded tactical episodes | 14 | 13 | 2 |
+| v13, separate capture counterfactuals | 17 | 13 | 2 |
+
+There are still only three reviewed tactical negatives, with no detections on
+them, and no positional negatives. Uncertain labels are excluded, not counted
+as successful negatives. The five newly supported conditional resources include
+three newly detected tactical positives; none establishes additional reviewed
+mixed agreement because their positional reference labels are uncertain. This
+is development evidence only. It does not meet the acceptance criterion for
+held-out accuracy or establish high precision.
+
+The 60-position experiment nominated 55 capture branches in 45 positions; 32
+were already present in the reply frame and 23 required additional searches.
+Those extra searches used 23,008,132 observed nodes and 29.08 aggregate engine
+seconds (median 1.27 seconds per extra search). The nomination is bounded to
+three branches per position. Some searches remain below the evidence depth
+gate and are honestly unavailable. Main root and reply searches have their own
+costs; total interactive latency has not yet been verified. Use
+`decision-evidence-probes.py --capture-resources` and a fresh cache, then set
+`DECISION_PROBE_PROFILE=v2deep-targeted` for the course audit while retaining
+`DECISION_ENGINE_PROFILE=v2deep`.
+
+The decision report now distinguishes an unrequested mistake analysis, the
+best supplied choice, no meaningful measured loss, unavailable comparison and
+an assessed error. A bad secondary PV cannot erase a valid principal line, but
+its score is excluded and the candidate gap is unavailable. Castling aliases
+are matched by their resulting board. Overloading is refined from a deflection
+certificate only when the existing bounded exchange proof establishes the
+defender's multiple duties and supplies separate legal acceptance/refusal
+branches. Geometric resemblance alone cannot add that label.
+
+The source-group audit resolved original player-pair identities for 112 of 120
+course rows. It found two cross-partition player-pair collisions. Validation
+excludes those overlaps plus six rows with unresolved game identity, retaining
+52 course positions. Grouping every encounter of a pair across years is more
+conservative than grouping by game, although spelling/initial differences can
+still evade identity resolution. No validation classifier outputs were read to
+make this mask. The independent and classical samples retain their source-game
+grouping. Source annotations and paid material remain private.
+
+Verification for this milestone: 82 focused frontend checks pass (one opt-in
+audit is skipped without a private dataset), full TypeScript and scoped lint
+pass, and 13 Python plus two source-group checks pass. Production integration,
+rendered workflow checks and deployment remain outstanding.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and

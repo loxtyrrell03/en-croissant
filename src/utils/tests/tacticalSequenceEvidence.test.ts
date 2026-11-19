@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { measureTacticalEpisode } from "../tacticalMotifs/tacticalSequenceEvidence";
 import {
     extractTacticalSequenceWitnesses,
     mergeTacticalSequenceWitnesses,
@@ -94,6 +95,55 @@ test("removing a defender can support a later fork after an intervening check", 
     const fen = "3r2k1/p2n4/8/1B2p3/8/5N2/P7/K6R w - - 0 1";
     const moves = ["b5d7", "d8d7", "h1h8", "g8f7", "f3e5", "f7g7", "e5d7", "g7f7"];
     const witnesses = inspect(fen, moves);
-    expect(witnesses).toContainEqual(expect.objectContaining({ mechanism: "capturingDefender", mechanismPly: 1, payoffPly: 5, rootMoveInvolved: true }));
-    expect(witnesses).toContainEqual(expect.objectContaining({ mechanism: "fork", mechanismPly: 5, payoffPly: 7, rootMoveInvolved: false }));
+    expect(witnesses).toContainEqual(
+        expect.objectContaining({
+            mechanism: "capturingDefender",
+            mechanismPly: 1,
+            payoffPly: 5,
+            rootMoveInvolved: true,
+        }),
+    );
+    expect(witnesses).toContainEqual(
+        expect.objectContaining({
+            mechanism: "fork",
+            mechanismPly: 5,
+            payoffPly: 7,
+            rootMoveInvolved: false,
+        }),
+    );
+});
+
+test("episode outcomes keep their bounded material claim separate from later play", () => {
+    const fen = "3r4/4k2p/8/8/1N6/8/7P/6K1 w - - 0 1";
+    const line = {
+        fen,
+        depth: 18,
+        cp: 200,
+        pvUci: ["b4c6", "e7f7", "c6d8", "f7g6", "g1f2", "g6f5", "f2e3", "f5e5", "d8e6", "e5e6"],
+    };
+    const witness = extractTacticalSequenceWitnesses(fen, line).find(
+        (item) => item.mechanism === "fork",
+    )!;
+    expect(measureTacticalEpisode(fen, line, witness)).toMatchObject({
+        materialGainPoints: 5,
+        throughPly: 6,
+    });
+    expect(
+        measureTacticalEpisode(fen, line, { ...witness, fen: fen.replace("0 1", "0 2") }),
+    ).toBeNull();
+});
+
+test("a transient capture repaid by an immediate recapture is not a winning episode", () => {
+    const fen = "r2b4/4k2p/8/8/1N6/8/7P/6K1 w - - 0 1";
+    const line = {
+        fen,
+        depth: 18,
+        cp: 0,
+        pvUci: ["b4c6", "e7f7", "c6d8", "a8d8", "g1f2", "f7g6", "f2e3", "g6f5"],
+    };
+    const witness = extractTacticalSequenceWitnesses(fen, line).find(
+        (item) => item.mechanism === "fork",
+    )!;
+    expect(witness).toBeDefined();
+    expect(measureTacticalEpisode(fen, line, witness)).toBeNull();
 });
