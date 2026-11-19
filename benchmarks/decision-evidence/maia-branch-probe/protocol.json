@@ -1,0 +1,38 @@
+{
+  "scope": "Offline diagnostic nominations for exact played moves. Compare tactical, positional, and combined labels independently. No automatic verdict.",
+  "exposure": "Three training replays from v46. Prior 18-position shelter studies are exploratory transfer. Primary transfer is the v49 48-decision replay across four other events, previously reviewed for another method and unopened for these rankers. No training games, event families or mirrored root boards overlap the transfer games.",
+  "checkpoint": "ba14208b2992d85502f5fb501934abf6aaaeb355e9f3fdf90e326911f562524f",
+  "replays": {
+    "training": [
+      "eb3ea9297da94aae3b2bfdccccf9d46ad305ddb0ea26560249c3c9ad5d556472",
+      "ef4ef452d940cca4ecab82280899333ccde1626dc08914c59d745217355fd51b",
+      "9eda23bb6f82e9db57a1cb6f0d7a544caf0445105e2ebfc68ebd4a93728b6fa2"
+    ],
+    "transfer": [
+      "7c5960eece0b1759116049309f1c95e5c4877d7ff0f2fbb7534e49d542f2021f",
+      "dae7890cfa0d24aa7a17c9e388428ef5098cfced6df1cff71077d42705721a19",
+      "1e37d1e418df3487bbe4161378de3f32e7f316f529f5f7cff17353a4878864ab"
+    ]
+  },
+  "disputedTrainingLabels": [
+    "mistake-world-amateur-c56d044e7e57e80e-75",
+    "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45"
+  ],
+  "eventFamilies": {
+    "asian-disabilities-men-2026": "asian-disabilities-2026",
+    "asian-disabilities-women-2026": "asian-disabilities-2026",
+    "european-youth-g18-2026": "european-youth-2026",
+    "european-youth-u16-2026": "european-youth-2026",
+    "grand-swiss-open-2025": "grand-swiss-2025",
+    "grand-swiss-women-2025": "grand-swiss-2025",
+    "guernsey-challengers-2026": "guernsey-2026",
+    "guernsey-open-2026": "guernsey-2026",
+    "biel-mto-2026": "biel-2026",
+    "biel-ato-2026": "biel-2026"
+  },
+  "features": "Reuse existing score and legal PV inputs. Freeze Maia-3 5M at Elo 1900 for both players with padded available history, no true ratings or clocks. Compare root and two legal branches up to ply four. Control uses the same architecture before pretraining with seed 47. Fit regularized logistic probes only on training game labels, scaling the feature blocks on training cases.",
+  "coverage": "Compare arms on identical cases with legal paired roots or a recorded move equal to the best move. Report exclusions and do not infer unsupported assessments.",
+  "baseline": "Reuse independent tactical and positional classifiers from v41 and v48, the played-move Stockfish loss and the labels already supported by the v46 worker. Add no Stockfish searches for any arm.",
+  "primaryMetric": "Take a quarter of the unique unresolved games per event and axis, rounded down, with one nomination per game. A reviewed uncertain position consumes one slot and does not enter average precision. Secondary metric is unresolved average precision.",
+  "prespecifiedPromotion": "On the 48-decision primary replay require two more reviewed positives than the strongest control at the same review budget, no extra reviewed negatives, and improvements in at least two events. This would justify a new prospective verification experiment only."
+}

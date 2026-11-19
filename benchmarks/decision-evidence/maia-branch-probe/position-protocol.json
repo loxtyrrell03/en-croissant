@@ -1,0 +1,19 @@
+{
+  "scope": "Position character before any move. Independent tactical and positional review axes with a separate mixed ranking.",
+  "exposure": "259 positions from the v41 model audit, same saved three-line Stockfish inputs. Development uses five grouped folds that keep entire tournament families together. Independent transfer uses 33 v32 positions from Reykjavik Open, Prague IM Open and the World Amateur W2000, previously reviewed for another method. These events, games and mirrored root boards are excluded from fitting.",
+  "replays": {
+    "training": [
+      "5b20631712b499a070d7a8edb21143f4c3812ed905170d132df66c725dfdedf4",
+      "1abd642dc112fdbffe27f2e7e8318191baf102f748ac0c791969325641377734"
+    ],
+    "transfer": [
+      "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+      "1ed1ba74fd7bcc4539c69360283ab29b64832d8420d9a5d8ead2a5ce9bfd3ca6",
+      "9a0d5f781023185d469d48b4533f72e093f2d0890789cdc538d93c3da00a3e54",
+      "b4fe25c54786b0237a51c26db8b0080c9e2fd938029aeff29d668d73a906b72f"
+    ]
+  },
+  "checkpoint": "ba14208b2992d85502f5fb501934abf6aaaeb355e9f3fdf90e326911f562524f",
+  "neural": "Same frozen network and controls as the played move protocol, but compare the leading and second Stockfish choices, never the game move. Retain only the three original lines for all arms. No extra Stockfish runs.",
+  "scoring": "Same prespecified review budget and gate as the played move experiment. Legal annotations are a separate later step if the transfer screen passes."
+}

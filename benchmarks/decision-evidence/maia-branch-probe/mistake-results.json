@@ -1,0 +1,1618 @@
+{
+  "reproduced": true,
+  "runnerSha256": "85d510ce0f5f5b0240169dab9b8bedc70c78ca4c24e511ddbc43dbdbf0b0990f",
+  "cost": [
+    {
+      "additionalStockfishNodes": 0,
+      "medianPretrainedForwardMs": 46.049650030909106,
+      "medianAllFeatureMsIncludingRandomControl": 96.64254999370314,
+      "pretrainedPositionsPerDecision": 7
+    },
+    {
+      "additionalStockfishNodes": 0,
+      "medianPretrainedForwardMs": 44.59695002879016,
+      "medianAllFeatureMsIncludingRandomControl": 93.4716500050854,
+      "pretrainedPositionsPerDecision": 7
+    }
+  ],
+  "protocolSha256": "5edcb215571b6780094d9cbff66647f93dfea8966bd41e94d5a822357761388d",
+  "parameters": 5230084,
+  "software": {
+    "maia3": "0.1.0",
+    "torch": "2.10.0+cpu",
+    "python-chess": "1.999",
+    "numpy": "2.5.5",
+    "scikit-learn": "1.9.1"
+  },
+  "inputCounts": [
+    226,
+    18,
+    18,
+    48
+  ],
+  "scoredCounts": [
+    225,
+    18,
+    18,
+    48
+  ],
+  "results": {
+    "shelter-a": {
+      "tactical": {
+        "reference": {
+          "uncertain": 7,
+          "negative": 10,
+          "positive": 1
+        },
+        "incumbent": {
+          "truePositives": 0,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-c6887dfbc08b9fed-66"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-4dfa1d0079d97e26-52"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-c6887dfbc08b9fed-66"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-4dfa1d0079d97e26-52"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-c6887dfbc08b9fed-66"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-4dfa1d0079d97e26-52"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-4dfa1d0079d97e26-52"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-c6887dfbc08b9fed-66"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-4dfa1d0079d97e26-52"
+            ]
+          }
+        }
+      },
+      "positional": {
+        "reference": {
+          "uncertain": 4,
+          "positive": 5,
+          "negative": 9
+        },
+        "incumbent": {
+          "truePositives": 0,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.9266666666666665,
+            "slots": 2,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "benasque-2026": 2,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-ba5df1690361ce1e-85"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.7266666666666666,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-ba5df1690361ce1e-85",
+              "shelter-benasque-2026-1fd30cee61842936-46"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-ba5df1690361ce1e-85",
+              "shelter-benasque-2026-1fd30cee61842936-46"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 0.7266666666666666,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 1,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-ba5df1690361ce1e-85",
+              "shelter-benasque-2026-7ae18189453a0f0b-28"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "benasque-2026": 2,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-c6887dfbc08b9fed-66"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 0.726923076923077,
+            "slots": 2,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "benasque-2026": 2,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-ba5df1690361ce1e-85",
+              "shelter-benasque-2026-7049a863d7b5011d-36"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 0.7051948051948052,
+            "slots": 2,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "benasque-2026": 2,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-ba5df1690361ce1e-85"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 0.7888888888888888,
+            "slots": 2,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "benasque-2026": 2,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-7049a863d7b5011d-36"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 0.7433333333333334,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-1fd30cee61842936-46",
+              "shelter-benasque-2026-ba5df1690361ce1e-85"
+            ]
+          }
+        }
+      },
+      "mixed": {
+        "reference": {
+          "uncertain": 7,
+          "negative": 10,
+          "positive": 1
+        },
+        "incumbent": {
+          "truePositives": 0,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-7049a863d7b5011d-36"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-1fd30cee61842936-46"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-1fd30cee61842936-46"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-1fd30cee61842936-46"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-c6887dfbc08b9fed-66"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-1fd30cee61842936-46"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 0,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "benasque-2026": 0,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-7049a863d7b5011d-36",
+              "shelter-benasque-2026-4dfa1d0079d97e26-52"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-7049a863d7b5011d-36"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 1.0,
+            "slots": 2,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "benasque-2026": 1,
+              "barbera-2026": 0,
+              "sitges-2026": 0,
+              "sants-a-2026": 0,
+              "sants-b-2026": 0
+            },
+            "selected": [
+              "shelter-benasque-2026-c6887dfbc08b9fed-66",
+              "shelter-benasque-2026-4dfa1d0079d97e26-52"
+            ]
+          }
+        }
+      }
+    },
+    "shelter-b": {
+      "tactical": {
+        "reference": {
+          "uncertain": 5,
+          "positive": 7,
+          "negative": 6
+        },
+        "incumbent": {
+          "truePositives": 3,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 1,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-mto-2026-bf3e8172f32cd29b-60",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 0.9166666666666666,
+            "slots": 3,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 1.0,
+            "slots": 3,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 1,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-511c00d924b51935-31",
+              "shelter-biel-mto-2026-c3fc6cbe779a5eca-33",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          }
+        }
+      },
+      "positional": {
+        "reference": {
+          "positive": 8,
+          "uncertain": 4,
+          "negative": 6
+        },
+        "incumbent": {
+          "truePositives": 0,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.7469246031746032,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 2,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 1,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-mto-2026-a6f7666c3a52932b-48",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.9241452991452992,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-d9e35261e1e43fae-32",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-mto-2026-c3fc6cbe779a5eca-33",
+              "shelter-biel-ato-2026-abf0556e435bc158-48",
+              "shelter-biel-ato-2026-d9e35261e1e43fae-32",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 0.9502840909090909,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-d9e35261e1e43fae-32",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-ato-2026-abf0556e435bc158-48",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 0.9248511904761905,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "biel-2026": 1,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-ato-2026-d9e35261e1e43fae-32",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 0.8623397435897435,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-d9e35261e1e43fae-32",
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-abf0556e435bc158-48",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 0.8200757575757576,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 0.8628787878787878,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "biel-2026": 3,
+              "dubai-open-2025": 1
+            },
+            "selected": [
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-ato-2026-abf0556e435bc158-48",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          }
+        }
+      },
+      "mixed": {
+        "reference": {
+          "uncertain": 8,
+          "positive": 4,
+          "negative": 6
+        },
+        "incumbent": {
+          "truePositives": 0,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "biel-2026": 1,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-d9e35261e1e43fae-32",
+              "shelter-biel-mto-2026-c3fc6cbe779a5eca-33",
+              "shelter-dubai-open-2025-172ffaafbdac5cb1-58"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.875,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "biel-2026": 1,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-mto-2026-c3fc6cbe779a5eca-33",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 0.9166666666666666,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 1,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "biel-2026": 3,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 0.8928571428571428,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 0.875,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 0.95,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-biel-ato-2026-abf0556e435bc158-48",
+              "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 0.95,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "biel-2026": 2,
+              "dubai-open-2025": 0
+            },
+            "selected": [
+              "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+              "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+              "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+              "shelter-dubai-open-2025-e74059380c91a58e-67"
+            ]
+          }
+        }
+      }
+    },
+    "primary": {
+      "tactical": {
+        "reference": {
+          "uncertain": 12,
+          "negative": 24,
+          "positive": 12
+        },
+        "incumbent": {
+          "truePositives": 2,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.9809090909090908,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-feee1561e82b9ece-53"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.8166522366522366,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-c4da58bf896b1ed3-46"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 0.9999999999999999,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-feee1561e82b9ece-53"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 0.8258080808080808,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-c4da58bf896b1ed3-46"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 0.980909090909091,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-feee1561e82b9ece-53"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 0.8032142857142857,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 1,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-467333df5397dfb4-63",
+              "mistake-fall-nyc-norms-2026-53a8c33c0a6d8716-48",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-feee1561e82b9ece-35"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 0.7760195551574861,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-c4da58bf896b1ed3-46"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 0.6759844752948201,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-467333df5397dfb4-63",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-feee1561e82b9ece-35"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 0.790639400921659,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-467333df5397dfb4-63",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-c4da58bf896b1ed3-46"
+            ]
+          }
+        }
+      },
+      "positional": {
+        "reference": {
+          "positive": 14,
+          "negative": 23,
+          "uncertain": 11
+        },
+        "incumbent": {
+          "truePositives": 1,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.8488864579362314,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+              "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.6366878491878494,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 1,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 0,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-470bb298511c2797-30",
+              "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+              "mistake-tournament-of-peace-2026-31acf8742a982f4a-83",
+              "mistake-benidorm-a-2026-7db86faaa6a46f32-29"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 0.9999999999999998,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-eb15fe34368d4ada-47",
+              "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+              "mistake-tournament-of-peace-2026-da7a9b59ba8ec820-67",
+              "mistake-benidorm-a-2026-5404948be32efaa6-78"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 0.7763582571274878,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-470bb298511c2797-30",
+              "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+              "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+              "mistake-benidorm-a-2026-7db86faaa6a46f32-29"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 0.7393889781235521,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 0,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-470bb298511c2797-30",
+              "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+              "mistake-tournament-of-peace-2026-d30cc78bb69dd275-65",
+              "mistake-benidorm-a-2026-beeb5017e7210c7e-73"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 0.7292738444351348,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            },
+            "selected": [
+              "mistake-cascade-open-2026-470bb298511c2797-30",
+              "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-7db86faaa6a46f32-29"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 0.6904344108588139,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-c4da58bf896b1ed3-46"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 0.7689733726885428,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-470bb298511c2797-30",
+              "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-beeb5017e7210c7e-73"
+            ]
+          }
+        }
+      },
+      "mixed": {
+        "reference": {
+          "uncertain": 20,
+          "negative": 24,
+          "positive": 4
+        },
+        "incumbent": {
+          "truePositives": 0,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.95,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30"
+            ]
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.5102380952380952,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-7db86faaa6a46f32-29"
+            ]
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-feee1561e82b9ece-53"
+            ]
+          },
+          "line-network": {
+            "unresolvedAP": 0.5218855218855218,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-7db86faaa6a46f32-29"
+            ]
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30"
+            ]
+          },
+          "line-maia-policy": {
+            "unresolvedAP": 0.5826330532212884,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-7db86faaa6a46f32-29"
+            ]
+          },
+          "line-maia-root": {
+            "unresolvedAP": 0.5894736842105264,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-7db86faaa6a46f32-29"
+            ]
+          },
+          "line-maia-branches": {
+            "unresolvedAP": 0.5697115384615384,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-467333df5397dfb4-63",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30"
+            ]
+          },
+          "line-random-branches": {
+            "unresolvedAP": 0.57125,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            },
+            "selected": [
+              "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+              "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+              "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+              "mistake-benidorm-a-2026-c4da58bf896b1ed3-46"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "promisingPrimaryArms": {
+    "tactical": [],
+    "positional": [],
+    "mixed": []
+  }
+}
