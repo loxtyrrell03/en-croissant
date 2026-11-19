@@ -1,0 +1,335 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "mistake-london-classical-eae916c11bc1f79d-58",
+      "scope": "position-character",
+      "moveUci": "e1e3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "White must calculate against the e3 knight and the h3 bishop near the king. Rg3 allows ...f5 and ...Qd5+, while capturing the knight changes those lines.",
+      "gameMoveUci": "g1g3"
+    },
+    {
+      "id": "mistake-london-classical-eae916c11bc1f79d-41",
+      "scope": "position-character",
+      "moveUci": "a7a6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The black king, queen on a5 and hanging e4 knight create concrete threats on both sides. ...Bxe4 permits Qxa7 followed by a pawn retake on e4, while ...a6 keeps a higher evaluation.",
+      "gameMoveUci": "a7a6"
+    },
+    {
+      "id": "mistake-london-classical-d9516645c05e702b-94",
+      "scope": "position-character",
+      "moveUci": "d2b1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black is trying to bring the king to c5 and create a queenside passer. Nb1\u2013c3 reorganizes the knight to challenge this. Several alternative plans leave material similar.",
+      "gameMoveUci": "f3f4"
+    },
+    {
+      "id": "mistake-london-classical-d9516645c05e702b-58",
+      "scope": "position-character",
+      "moveUci": "b2a3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Ba3, Nb3 and Nc3 change minor-piece routes and c-file use. Black challenges the d5 pawn; the leading variations stay close and do not require an immediate tactical payoff.",
+      "gameMoveUci": "d2b3"
+    },
+    {
+      "id": "mistake-london-classical-6173b5a23b7fd326-65",
+      "scope": "position-character",
+      "moveUci": "d8e8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Both kings are exposed to direct concrete threats. ...Qg5+ and ...Re8 lead to materially different checking play, and the game ...Rxd4 allows Nxd4 and further threats to the black rook.",
+      "gameMoveUci": "d8d4"
+    },
+    {
+      "id": "mistake-london-classical-6173b5a23b7fd326-46",
+      "scope": "position-character",
+      "moveUci": "f3g3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rg3 lifts the rook out of the immediate ...Nxf3+ capture. Qf1 allows ...Nxf3+ Nxf3 for an exchange, so the nominally quiet defence depends on calculation.",
+      "gameMoveUci": "f3g3"
+    },
+    {
+      "id": "mistake-london-classical-1c84b256088cb591-42",
+      "scope": "position-character",
+      "moveUci": "f1a1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Ra1 contests the a-file and the bishop on a2, retaining c7 and d7 pressure. The alternative choices change open-file occupation. The queen exchange after Qxd7 is material-balanced, so tactical urgency is uncertain.",
+      "gameMoveUci": "b5d7"
+    },
+    {
+      "id": "mistake-london-classical-1c84b256088cb591-27",
+      "scope": "position-character",
+      "moveUci": "e4f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black must complete development and choose how to defend e5 and place the e4 knight. ...Nf6 ...d6 and ...Nc5 lead to lasting different material-balanced arrangements. The danger to the exposed king is harder to isolate.",
+      "gameMoveUci": "e4f6"
+    },
+    {
+      "id": "mistake-london-classical-3ef0179896cb5c7b-30",
+      "scope": "position-character",
+      "moveUci": "e4f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The exf5/d6 move order uses Qd5+ and the related queenside capture sequence. The central pawn break and the resulting advanced d-pawn also drive both plans.",
+      "gameMoveUci": "f3d4"
+    },
+    {
+      "id": "mistake-london-classical-3ef0179896cb5c7b-51",
+      "scope": "position-character",
+      "moveUci": "h4h5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Black can force a perpetual against the exposed king. The checking routes avoid White promoting with check, and immediate ...Nf3+ instead allows Qxf3 Rxf3 e8=Q+.",
+      "gameMoveUci": "h4h5"
+    },
+    {
+      "id": "mistake-london-classical-3474e089a2cd8201-36",
+      "scope": "position-character",
+      "moveUci": "b2b3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White preserves the advanced d5 knight and bishop-pair activity while restricting the displaced a5 knight. b3 and Bf4 lead to pressure without an immediate forced gain.",
+      "gameMoveUci": "e3d2"
+    },
+    {
+      "id": "mistake-london-classical-3474e089a2cd8201-34",
+      "scope": "position-character",
+      "moveUci": "e2f3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Bf3, b3 and Rhe1 maintain the d5 outpost and improve coordination. The bishop and rook can be deployed in several orders with nearly the same evaluation.",
+      "gameMoveUci": "e2f3"
+    },
+    {
+      "id": "mistake-london-classical-d5cfe8ccfda18745-51",
+      "scope": "position-character",
+      "moveUci": "e6e5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black needs counterplay against the advanced a-pawn and White doubling on b6. ...e5 and ...h6 give distinct routes, while the importance of the later h7 attack is uncertain.",
+      "gameMoveUci": "d8f7"
+    },
+    {
+      "id": "mistake-london-classical-d5cfe8ccfda18745-36",
+      "scope": "position-character",
+      "moveUci": "f3h4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black must defend the queenside majority and b-file pressure. White can exchange the h4 knight or centralize with Ne5. The exchanges are relatively balanced, so the degree of tactical demand is uncertain.",
+      "gameMoveUci": "f3h4"
+    },
+    {
+      "id": "mistake-london-classical-23d598aa8c41bd15-97",
+      "scope": "position-character",
+      "moveUci": "f6e7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The a6 passer ties down Black, but ...Kxa6 loses the bishop to Bxf6 and ...Bd8 allows the Ba5+ skewer. Keeping the bishop mobile while handling the passer matters independently.",
+      "gameMoveUci": "f6d8"
+    },
+    {
+      "id": "mistake-london-classical-23d598aa8c41bd15-30",
+      "scope": "position-character",
+      "moveUci": "d1f3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Both sides choose development and open-file occupation. Qf3, Bd2 and Qe2 retain comparable evaluations and do not reveal a sharp material threat.",
+      "gameMoveUci": "c1d2"
+    },
+    {
+      "id": "mistake-london-classical-f51ff4b3cc5c402a-75",
+      "scope": "position-character",
+      "moveUci": "f7g6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black must deal with g6 and potential gxf7+ against the king. After ...fxg6 the protected c- and d-pawns gain counterplay. Their long-term advance matters even after immediate tactics settle.",
+      "gameMoveUci": "e5g5"
+    },
+    {
+      "id": "mistake-london-classical-f51ff4b3cc5c402a-62",
+      "scope": "position-character",
+      "moveUci": "d3c2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The Rb3\u2013b1 setup pressures the b-file but Black has an a-file route and a d4 passer. Qc2, Ra3 and f4 trade durable activity and structural considerations.",
+      "gameMoveUci": "b3a3"
+    },
+    {
+      "id": "mistake-4ncl-division2-2611bb6eb2550e48-47",
+      "scope": "position-character",
+      "moveUci": "f6g6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "...a5 allows Bc3+ and rook activity against e5, observed in both searches. The king and bishop placement jointly constrain Black; a specific lasting strategic difference is less clear.",
+      "gameMoveUci": "a6a5"
+    },
+    {
+      "id": "mistake-4ncl-division2-2611bb6eb2550e48-39",
+      "scope": "position-character",
+      "moveUci": "d5c4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Black has to calculate captures on c4 and d6. ...Bg3 changes the order, ...bxc4 opens a different pawn liquidation, and immediate exchanges settle differently.",
+      "gameMoveUci": "d5c4"
+    },
+    {
+      "id": "mistake-4ncl-division2-b5160d16939e576e-39",
+      "scope": "position-character",
+      "moveUci": "f7f6",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The knight on h6 and black king are under direct attack. Qd2 and Bxh6 or Qxh6 win the knight in several lines if Black cannot reorganize.",
+      "gameMoveUci": "c6c5"
+    },
+    {
+      "id": "mistake-4ncl-division2-b5160d16939e576e-29",
+      "scope": "position-character",
+      "moveUci": "f5h6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The attacked f5 knight retreats in the best line. ...Bb7 instead allows gxf5 with a stable piece loss. White\u2019s pawn mass constrains the reply, but a separate positional diagnosis is uncertain.",
+      "gameMoveUci": "f5h6"
+    },
+    {
+      "id": "mistake-4ncl-division2-20ebf52eb11c3935-56",
+      "scope": "position-character",
+      "moveUci": "g6g3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The white rook on g6 and knight on f3 are exposed. Rg3 or Rxg7+ takes a different tactical concession from Qd2 Rxf3, when several forced recaptures follow.",
+      "gameMoveUci": "e2d2"
+    },
+    {
+      "id": "mistake-4ncl-division2-20ebf52eb11c3935-49",
+      "scope": "position-character",
+      "moveUci": "e8e6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Immediate ...Rxe6 and ...Rf8 are viable but require calculating queen recaptures and checks. The difference between resulting structures was not isolated confidently.",
+      "gameMoveUci": "e8f8"
+    },
+    {
+      "id": "mistake-4ncl-division2-6a7aa25c070e3b2f-43",
+      "scope": "position-character",
+      "moveUci": "d4f2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rook and bishop activity govern the ending. ...Bxf2 opens the Bxc7 exchange and gives active play, while ...Bb6 gives White time to mobilize the king. Tactical significance beyond the pawn exchange is unclear.",
+      "gameMoveUci": "d4b6"
+    },
+    {
+      "id": "mistake-4ncl-division2-6a7aa25c070e3b2f-80",
+      "scope": "position-character",
+      "moveUci": "c2d3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The bishop ending is held by the c5 pawn lock and king placement. Several choices transpose with little material or evaluation change.",
+      "gameMoveUci": "f5g6"
+    },
+    {
+      "id": "mistake-4ncl-division2-e6a8f54befff9624-43",
+      "scope": "position-character",
+      "moveUci": "e6e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...e5 and ...g4 connect the centre to threats at the king and force the white bishop and knight to react. Opening routes with the central pawns remains an important independent strategic choice.",
+      "gameMoveUci": "f7f6"
+    },
+    {
+      "id": "mistake-4ncl-division2-e6a8f54befff9624-52",
+      "scope": "position-character",
+      "moveUci": "d4f3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "White must resolve the f3 bishop and kingside threats. Nxf3 and Rxf3 give different concrete replies; captures and checks can swing the immediate material balance.",
+      "gameMoveUci": "d4f3"
+    },
+    {
+      "id": "mistake-4ncl-division2-2aea9ec930c2e3da-55",
+      "scope": "position-character",
+      "moveUci": "f7e6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White\u2019s doubled rooks can penetrate the c-file and displace the black bishop. Material-balanced exchanges in the leading lines preserve this pressure. Immediate tactical demand is uncertain.",
+      "gameMoveUci": "f8d8"
+    },
+    {
+      "id": "mistake-4ncl-division2-2aea9ec930c2e3da-91",
+      "scope": "position-character",
+      "moveUci": "h5f6",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black can hold with several rook and knight routes. Doubled queenside pawns, king activation and white bishop squares matter beyond the repeated harmless checks.",
+      "gameMoveUci": "d8d6"
+    },
+    {
+      "id": "mistake-4ncl-division2-52c8aa94a00f0d02-40",
+      "scope": "position-character",
+      "moveUci": "f1d1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rd1 changes the forcing ...Nd4 line. Qxe5 and Qd5+ give counterplay to the exposed king. The bishop moves allow ...Nd4 to keep its force.",
+      "gameMoveUci": "g6e4"
+    },
+    {
+      "id": "mistake-4ncl-division2-52c8aa94a00f0d02-41",
+      "scope": "position-character",
+      "moveUci": "c6d4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Nd4 drives off the queen and advances the c3 passer with a rook behind it. ...Kc7 also permits a forcing Nf7\u2013Nxh8 sequence, so concrete exchanges and the lasting passer both matter.",
+      "gameMoveUci": "c6d4"
+    },
+    {
+      "id": "mistake-4ncl-division2-f09aa2bf30ea08dd-65",
+      "scope": "position-character",
+      "moveUci": "b8b5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can challenge the a6 pawn, activate the king, or advance kingside pawns. The distinct root plans affect passed-pawn control. Some tactical recaptures occur, but their overall significance is unclear.",
+      "gameMoveUci": "b8b6"
+    },
+    {
+      "id": "mistake-4ncl-division2-f09aa2bf30ea08dd-39",
+      "scope": "position-character",
+      "moveUci": "a8b8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black chooses between ...Rb8, ...f6 and ...Ba6 with a small evaluation gap. The pawn islands, bishop activity and route for the uncastled White king are lasting issues.",
+      "gameMoveUci": "c8a6"
+    },
+    {
+      "id": "mistake-4ncl-division2-09b9962e472693d4-76",
+      "scope": "position-character",
+      "moveUci": "f3g5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nxg5 requires surviving ...Ne3+ and the checking sequence. The advanced a4 pawn remains an independent objective in the alternative lines, where Black opens a3 and coordinates the rooks.",
+      "gameMoveUci": "f3g1"
+    },
+    {
+      "id": "mistake-4ncl-division2-09b9962e472693d4-34",
+      "scope": "position-character",
+      "moveUci": "e3e4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxe4 takes the loose queen. g4 and Bd3 miss that immediate material opportunity and allow the queen to escape.",
+      "gameMoveUci": "e3e4"
+    }
+  ],
+  "limitations": [
+    "One engine-assisted reviewer examined the board, leading root variations and supplied played-move probes before opening classifier output or optional position replies.",
+    "Tactical character requires a concrete material, mating or defensive calculation among reasonable choices. Positional character requires identifiable durable structural or activity differences. Unknown denotes insufficient or ambiguous evidence.",
+    "Samples were stratified by existing broadcast loss and control scores. This does not estimate prevalence across all classical positions. Two positions per game share a source group.",
+    "The played move identifies the game decision. The evaluator uses the engine first choice as the legacy position-character proxy."
+  ]
+}

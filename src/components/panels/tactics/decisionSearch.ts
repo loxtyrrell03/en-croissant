@@ -15,6 +15,7 @@ import type {
     DecisionReplyProbe,
 } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
+import { nominatePositionRefutation } from "@/utils/tacticalMotifs/decisionPositionContrast";
 import {
     nominateSharedReply,
     type DecisionSharedReplyProbe,
@@ -427,6 +428,24 @@ export async function gatherDecisionEvidence(
                 };
         }
     }
+    let positionReply: DecisionReplyProbe | undefined;
+    const alternative = nominatePositionRefutation(fen, candidates);
+    if (alternative && !replyProbes.some((probe) => probe.moveUci === alternative.moveUci)) {
+        const lines = await searchPosition(
+            engine,
+            alternative.fen,
+            1_000_000,
+            signal,
+            Math.min(sessionEnd, Date.now() + 3_000),
+            history
+                ? { fen: history.fen, moves: [...history.moves, alternative.moveUci] }
+                : undefined,
+        ).catch(() => {
+            signal.throwIfAborted();
+            return [];
+        });
+        if (lines.length) positionReply = { moveUci: alternative.moveUci, lines };
+    }
     signal.throwIfAborted();
     return {
         fen,
@@ -434,6 +453,7 @@ export async function gatherDecisionEvidence(
         playedMoveUci,
         comparisonCandidates: comparison,
         replyProbes,
+        positionReply,
         sharedReply,
     };
 }

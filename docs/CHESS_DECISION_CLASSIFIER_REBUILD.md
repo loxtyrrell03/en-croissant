@@ -1211,3 +1211,78 @@ The sample and reference SHA-256 start with `d2a6892a` and `a871d5b2`.
 Use the v26 procedure with the `v27` cache profile and compare with
 the two corresponding modules at `7dbf0c70`. The source change has
 been verified without replacing the installed app.
+
+## Iteration 28 — position character from refuted alternatives
+
+The previous position report inherited dimensions from the leading
+moves. A quiet defence could have no tactical label of its own even
+when the next plausible move lost material to a concrete tactic.
+The position report now examines the runner-up and, when close to
+the runner-up, the third candidate. A same-depth evaluation gap
+nominates a check only when the published legal branches already
+show a concrete early material consequence. A separate search on
+the alternative's board must confirm the same tactical entry and
+a compatible score. The local comparison rechecks the consequence.
+An ordinary capture available after both moves cannot establish a
+counterfactual. An evaluation gap alone is insufficient.
+
+The workstation checks at most one extra reply for the position.
+It reuses a reply search when that exact root was already searched,
+and the optional query stays inside the existing time limit with the
+original game history. The report stores the additional reply apart
+from move and mistake evidence. In **Position character**, **Show
+evidence** opens both compared SAN lines. The preferred move's own
+classification is unaffected by an alternative's refutation.
+
+**Held-out evaluation.** Two decisions per game were sampled from
+18 previously unused games of the [London Chess Classic FIDE Open round
+5](https://lichess.org/broadcast/2025-london-chess-classic-fide-open/round-5/3u7ggHST)
+and [4NCL Division 2 round
+5](https://lichess.org/broadcast/4ncl-division-2-2025-2026/round-5/mZIxt7nQ).
+Within a game, one sampled decision had a large broadcast evaluation
+loss and one was a control. The single engine-assisted reviewer
+recorded tactical, positional and uncertain dimensions before the
+audit and did not use the optional candidate-reply output for the
+reference. The legacy tactical proxy uses a motif on the engine's
+first choice. The legacy system has no independent positional axis
+on this surface.
+
+| Position character | Reviewed positives / negatives | Legacy TP / FP | Same-board v27 TP / FP | v28 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical | 20 / 9 | 3 / 0 | 4 / 1 | 6 / 1 |
+| Positional | 22 / 9 | 0 / 0 | 6 / 4 | 6 / 4 |
+| Mixed | 6 / 18 | 0 / 0 | 1 / 1 | 2 / 2 |
+
+After `Qf1`, `...Nxf3+ Nxf3` wins the exchange. `Rg3` moves the
+rook out of that capture. The new position diagnosis identifies the
+tactical demand. The original positional reader also marks the rook's
+semi-open file, which creates a false mixed result on the saved label.
+In a reviewed mixed position, `...Kc7` gives White `Nf7 Qf6 Nxh8`,
+a fork distinct from the durable pressure of `...Nd4` with the c3
+passer. The v27 replay matched the move and mistake reports exactly,
+so the measured changes apply only to position character.
+
+Three additional searches used 3M requested nodes and 2.8 aggregate
+engine-seconds. Two corroborated the projected tactic. Median candidate
+classifier time was 35 ms excluding legacy motif extraction and engine
+work. The targeted tests cover sound and refuted alternatives, a reply
+from another search, score disagreement, optional search failure,
+and a far inferior move. The 116 focused TS checks passed, with one
+existing skip. Twenty-two sampler and protocol checks, types and scoped
+lint passed. An isolated browser build exercised the production panel
+and decision worker at 320, 390 and 900 px with recorded Stockfish
+search input. It verified position analysis, keyboard expansion and
+both SAN lines. The native query route was tested with mocked engine
+transport. These checks are for the source and isolated build.
+
+**Reproduction.** Copy the two public manifests under
+`benchmarks/decision-evidence/position-character-v28` into an exterior
+working directory. Use the adaptive root and reply procedure above,
+with `--position-choices` when generating reply probes in
+`tournament-probes-v28-position`. Build the matching shared-reply cache
+in `tournament-shared-v28-position` using those probes. Freeze and audit
+with `DECISION_AUDIT_POSITION_CHOICES=1`,
+`DECISION_AUDIT_SHARED_REPLIES=1`, `DECISION_ENGINE_PROFILE=v28`, and
+`DECISION_PROBE_PROFILE=v28-position`. The same-board comparator
+uses the assessment module from `fb55be9c`. Use another disjoint set
+for any held-out claim based on changes derived from these results.

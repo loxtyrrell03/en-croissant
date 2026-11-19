@@ -38,8 +38,9 @@ import {
     type DecisionSharedReplyProbe,
 } from "./decisionSharedReply";
 import { comparePawnEpisodes } from "./decisionPawnEpisode";
+import { confirmPositionRefutation, nominatePositionRefutation } from "./decisionPositionContrast";
 
-export const DECISION_ASSESSMENT_VERSION = 9;
+export const DECISION_ASSESSMENT_VERSION = 10;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -71,6 +72,7 @@ export type DecisionAssessmentInput = {
      * root. Useful when the human move is outside the global top three. */
     comparisonCandidates?: DecisionEngineLine[];
     replyProbes?: DecisionReplyProbe[];
+    positionReply?: DecisionReplyProbe;
     sharedReply?: DecisionSharedReplyProbe;
     rootCertificates?: Array<{ fen: string; moveUci: string; motifs: TacticalMotifEvidence[] }>;
     mistakeCertificate?: {
@@ -92,6 +94,7 @@ export type ChessDecisionReport = {
         examinedChoices: number;
         legalChoices: number;
         rejectedChoices: number;
+        tacticalContrast?: TacticalMistakeEpisode;
     };
     moves: Array<
         DecisionAssessment & { moveUci: string; evaluationCp: number | null; depth: number }
@@ -412,7 +415,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         depth: line.depth,
     }));
     const first = input.candidates[0];
-    const position = {
+    const position: ChessDecisionReport["position"] = {
         ...emptyAssessment(),
         bestSecondGapCp: measured.bestSecondGapCp,
         examinedChoices: measured.lines.length,
@@ -433,15 +436,44 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     const positional = viable.find((move) => move.positional.support === "supported");
     if (tactical) position.tactical = tactical.tactical;
     if (positional) position.positional = positional.positional;
-    position.category = category(position.tactical, position.positional);
     position.mechanisms = tactical?.mechanisms ?? [];
     position.verifiedMotifs = tactical?.verifiedMotifs ?? [];
     position.localProofs = tactical?.localProofs ?? [];
     position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
     position.conditionalResources = tactical?.conditionalResources ?? [];
     position.positionalFactors = positional?.positionalFactors ?? [];
+    const nomination =
+        rejectedChoices === 0 && (input.positionReply || input.replyProbes?.length)
+            ? nominatePositionRefutation(input.fen, input.candidates)
+            : null;
+    if (nomination) {
+        const probe =
+            input.positionReply?.moveUci === nomination.moveUci
+                ? input.positionReply
+                : input.replyProbes?.find((item) => item.moveUci === nomination.moveUci);
+        if (corroboratingReply(input.fen, nomination.alternative, probe)) {
+            const contrast = confirmPositionRefutation(input.fen, nomination, probe!.lines[0]);
+            if (contrast) {
+                const [alternative] = replayTacticalLine(input.fen, [nomination.moveUci]);
+                position.tacticalContrast = contrast;
+                if (!tactical)
+                    position.tactical = {
+                        support: "supported",
+                        basis: "engine-supported",
+                        reasons: [
+                            `${alternative.san}, one of the engine's leading alternatives, allows a tactical reply. ${contrast.explanation}`,
+                        ],
+                    };
+                position.mechanisms = mergeTacticalSequenceWitnesses([
+                    ...position.mechanisms,
+                    ...contrast.mechanisms,
+                ]);
+            }
+        }
+    }
+    position.category = category(position.tactical, position.positional);
     position.limitations = [
-        "Position character reflects the supplied competitive choices, not every legal move or every future plan.",
+        "The position assessment covers the candidate moves and replies examined in this search.",
         ...(rejectedChoices
             ? [
                   `${rejectedChoices} alternative continuation(s) could not be validated. Their scores and motifs were not used; the gap between choices is unavailable.`,

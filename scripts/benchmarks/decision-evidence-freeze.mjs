@@ -129,6 +129,9 @@ async function main() {
       ...(process.env.DECISION_AUDIT_SHARED_REPLIES === "1"
         ? { sharedReplyBudgetNodes: 1_000_000 }
         : {}),
+      ...(process.env.DECISION_AUDIT_POSITION_CHOICES === "1"
+        ? { positionReplyBudgetNodes: 1_000_000 }
+        : {}),
       threadsPerEngine: 1,
       hashMb: 64,
     },

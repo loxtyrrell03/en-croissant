@@ -9,6 +9,7 @@ import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
 import { classifyMistakeReviewNature } from "../mistakeReview";
 import { extractStrategicRootEffects } from "../tacticalMotifs/strategicRootEffects";
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
+import { nominatePositionRefutation } from "../tacticalMotifs/decisionPositionContrast";
 import {
     nominateSharedReply,
     type DecisionSharedReplyProbe,
@@ -17,6 +18,7 @@ import {
 const directory = process.env.DECISION_EVIDENCE_AUDIT;
 const rankReplies = process.env.DECISION_AUDIT_RANK_REPLIES === "1";
 const sharedReplies = process.env.DECISION_AUDIT_SHARED_REPLIES === "1";
+const positionChoices = process.env.DECISION_AUDIT_POSITION_CHOICES === "1";
 
 type ReplyQuery = {
     moveUci: string;
@@ -124,6 +126,7 @@ test.skipIf(!directory)(
                 minimumDepth: number;
                 maximumRootNodes: number;
                 sharedReplyBudgetNodes?: number;
+                positionReplyBudgetNodes?: number;
             };
         } | null = null;
         let freezeSha256: string | null = null;
@@ -144,6 +147,8 @@ test.skipIf(!directory)(
                 assertFrozenFiles(process.cwd(), frozen);
                 if (Boolean(frozen?.search.sharedReplyBudgetNodes) !== sharedReplies)
                     throw new Error("Shared reply use must match the frozen search plan");
+                if (Boolean(frozen?.search.positionReplyBudgetNodes) !== positionChoices)
+                    throw new Error("Position reply use must match the frozen search plan");
             }
             rows = selectFrozenValidation(sampleBytes, cohort, frozen);
             const referenceBytes = readFileSync(referencePath);
@@ -279,7 +284,11 @@ test.skipIf(!directory)(
                     if (request) {
                         const cached = JSON.parse(
                             readFileSync(
-                                join(directory!, `${cohort}-shared-${profile}`, `${row.id}.json`),
+                                join(
+                                    directory!,
+                                    `${cohort}-shared-${probeProfile}`,
+                                    `${row.id}.json`,
+                                ),
                                 "utf8",
                             ),
                         );
@@ -304,11 +313,34 @@ test.skipIf(!directory)(
                     }
                 }
             }
+            let positionReplyNodes: number | undefined;
+            let positionReplyMs: number | undefined;
+            if (positionChoices) {
+                if (probes.identity.position_reply_budget !== 1_000_000)
+                    throw new Error("Position reply cache uses an unexpected node budget");
+                const nomination = nominatePositionRefutation(row.fen, input.candidates);
+                if (nomination) {
+                    const fromGame = input.replyProbes!.some(
+                        (probe) => probe.moveUci === nomination.moveUci,
+                    );
+                    if (fromGame) positionReplyNodes = 0;
+                    else {
+                        const evidence = probes.positionReplyProbes.find(
+                            (probe: { moveUci: string }) => probe.moveUci === nomination.moveUci,
+                        );
+                        if (!evidence)
+                            throw new Error("No cached position reply for the nominated move");
+                        input.positionReply = evidence;
+                        positionReplyNodes = evidence.attempt.requestedNodes;
+                        positionReplyMs = evidence.attempt.milliseconds;
+                    }
+                }
+            }
             const assessment = assessChessDecision(input);
             const milliseconds = performance.now() - started - baselineMs;
             const rootOnlyAssessment =
                 cohort === "tournament"
-                    ? assessChessDecision({ ...input, replyProbes: [] })
+                    ? assessChessDecision({ ...input, replyProbes: [], positionReply: undefined })
                     : undefined;
             return {
                 id: row.id,
@@ -322,6 +354,8 @@ test.skipIf(!directory)(
                 rootOnlyAssessment,
                 sharedReplyNodes,
                 sharedReplyMs,
+                positionReplyNodes,
+                positionReplyMs,
                 replyRanking: rankReplies
                     ? auditRankedReplies(
                           join(directory!, `${cohort}-rank-probes-${profile}`, `${row.id}.json`),
@@ -365,6 +399,7 @@ test.skipIf(!directory)(
                 "decisionForcingConsequence.ts",
                 "decisionSharedReply.ts",
                 "decisionPawnEpisode.ts",
+                "decisionPositionContrast.ts",
                 "conditionalForkEvidence.ts",
                 "tacticalSequenceEvidence.ts",
                 "positionalTransitions.ts",

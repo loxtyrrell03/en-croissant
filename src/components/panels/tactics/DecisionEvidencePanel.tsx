@@ -171,9 +171,19 @@ function DecisionReport({
   const selected = report.moves.find((item) => item.moveUci === move);
   const episode = report.mistake?.tacticalEpisode;
   const mate = report.mistake?.mateConsequence;
+  const contrast = report.position.tacticalContrast;
   return (
     <Stack gap="xs">
-      <EvidenceSummary title="Position character" assessment={report.position}>
+      <EvidenceSummary
+        title="Position character"
+        assessment={report.position}
+        comparedLines={
+          contrast && [
+            { label: "Better line", san: lineSan(report.fen, contrast.betterLineUci) },
+            { label: "Refuted choice", san: lineSan(report.fen, contrast.playedLineUci) },
+          ]
+        }
+      >
         <Text size="xs" c="dimmed">
           {report.position.examinedChoices} candidate moves examined
         </Text>

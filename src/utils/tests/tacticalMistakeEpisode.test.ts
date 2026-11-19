@@ -54,6 +54,39 @@ test("a wrong reply board or unstable reply evaluation cannot establish a mistak
     expect(report?.mistake?.category).toBe("unclear");
 });
 
+test("a refuted leading alternative makes the position tactical even without a played move", () => {
+    const input = { fen, candidates: [better, actual] };
+    expect(assessChessDecision(input)?.position.tacticalContrast).toBeUndefined();
+    const positionReply = { moveUci: actual.pvUci[0], lines: [reply] };
+    const report = assessChessDecision({ ...input, positionReply });
+    expect(report?.mistakeStatus).toBe("not-requested");
+    expect(report?.moves[0].tactical.support).toBe("unestablished");
+    expect(report?.position).toMatchObject({
+        category: "tactical",
+        tacticalContrast: {
+            playedLineUci: actual.pvUci.slice(0, 5),
+            betterLineUci: better.pvUci.slice(0, 5),
+        },
+    });
+    const disagreement = { ...reply, cp: 180 };
+    expect(
+        assessChessDecision({
+            ...input,
+            positionReply: { ...positionReply, lines: [disagreement] },
+        })?.position.tacticalContrast,
+    ).toBeUndefined();
+});
+
+test("refuting a much worse third move does not establish tactical demand on the board", () => {
+    const plausible = { ...better, cp: -120, pvUci: ["c3a4", "e7f7", "g1f2", "f7g6", "f2g3"] };
+    const report = assessChessDecision({
+        fen,
+        candidates: [better, plausible, actual],
+        positionReply: { moveUci: actual.pvUci[0], lines: [reply] },
+    });
+    expect(report?.position.tacticalContrast).toBeUndefined();
+});
+
 test("an ordinary capture available on both boards does not establish the cause", () => {
     const unchanged = "r7/4k3/8/4p3/3N4/8/7P/6K1 w - - 0 1";
     const bad = {

@@ -164,3 +164,48 @@ test("one restricted query uses the better move's history and can fail independe
     expect(fallback.sharedReply).toBeUndefined();
     expect(fallback.replyProbes).toEqual(result.replyProbes);
 });
+
+test("position analysis checks one plausible alternative on its own board and history", async () => {
+    const start = "r7/4k3/4p3/8/8/2N5/7P/6K1 w - - 0 1";
+    const best = ["c3b5", "e7f7", "g1f2", "f7g6", "f2g3", "a8a1"];
+    const alternative = ["c3d5", "e6d5", "g1g2", "e7f6", "g2f3", "f6e5", "h2h3"];
+    let failAlternative = false;
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) => {
+        if (options.moves[0] === best[0])
+            return Promise.resolve([
+                100,
+                lines([best.slice(1), ["a8a1"], ["e7d7"]], [-100, -70, -40]),
+            ]);
+        if (options.moves[0] === alternative[0])
+            return failAlternative
+                ? Promise.reject(new Error("Engine rejected the optional position query"))
+                : Promise.resolve([
+                      100,
+                      lines([alternative.slice(1), ["e7f7"], ["e7d8"]], [-408, -155, -90]),
+                  ]);
+        return Promise.resolve([100, lines([best, alternative, ["h2h3"]], [-100, -410, -510])]);
+    });
+    const analyse = () =>
+        gatherDecisionEvidence(
+            engine,
+            { fen: start, history: { fen: start, moves: [] } },
+            new AbortController().signal,
+            vi.fn(),
+        );
+    const report = await analyse();
+    expect(report.positionReply).toMatchObject({
+        moveUci: alternative[0],
+        lines: [expect.objectContaining({ cp: 408 }), expect.anything(), expect.anything()],
+    });
+    expect(report.replyProbes?.map((probe) => probe.moveUci)).toEqual([best[0]]);
+    expect(native.getBestMoves.mock.calls.map((call) => call[3].moves)).toEqual([
+        [],
+        [best[0]],
+        [alternative[0]],
+    ]);
+    expect(native.getBestMoves.mock.calls.at(-1)?.[2]).toEqual({ t: "Nodes", c: 1_000_000 });
+    failAlternative = true;
+    const fallback = await analyse();
+    expect(fallback.positionReply).toBeUndefined();
+    expect(fallback.replyProbes).toEqual(report.replyProbes);
+});
