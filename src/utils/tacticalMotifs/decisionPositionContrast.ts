@@ -1,4 +1,6 @@
+import { pawnAttacks } from "chessops/attacks";
 import { makeFen } from "chessops/fen";
+import { opposite } from "chessops/util";
 import { replayTacticalLine } from "./causalTactics";
 import { measurePositionDecision, type DecisionEngineLine } from "./decisionEvidence";
 import { compareTacticalMistakeEpisode } from "./tacticalMistakeEpisode";
@@ -145,5 +147,36 @@ export function confirmExtraPositionChoice(
     // An extra alternative informs position character when its first reply
     // wins something or sets up a material payoff by the next opponent turn.
     // The comparison can look further to let the exchanges settle.
-    return compareTacticalMistakeEpisode(fen, pair.best, pair.alternative, reply, pair.defence, 3);
+    const episode = compareTacticalMistakeEpisode(
+        fen,
+        pair.best,
+        pair.alternative,
+        reply,
+        pair.defence,
+        3,
+    );
+    if (!episode || episode.mechanisms.length) return episode;
+    // Moving a pawn to a square where it can simply be taken is a real
+    // move-level error. A lower-ranked example of that error, by itself,
+    // is too little evidence of a tactical demand in the original position.
+    const [choice, response] = replayTacticalLine(fen, [move, reply.pvUci[0]]);
+    if (
+        choice.capture ||
+        choice.after.isCheck() ||
+        choice.before.board.get(choice.move.from)?.role !== "pawn" ||
+        response.capture !== 100 ||
+        response.move.to !== choice.move.to
+    )
+        return episode;
+    const side = choice.before.turn;
+    const sameSide = choice.after.clone();
+    sameSide.turn = side;
+    sameSide.epSquare = undefined;
+    const promotionThreat =
+        Math.floor(choice.move.to / 8) === (side === "white" ? 6 : 1);
+    const attacksPiece = [...pawnAttacks(side, choice.move.to)
+        .intersect(choice.after.board[opposite(side)])
+        .diff(choice.after.board.pawn.union(choice.after.board.king))]
+        .some((to) => sameSide.isLegal({ from: choice.move.to, to }));
+    return attacksPiece || promotionThreat ? episode : null;
 }

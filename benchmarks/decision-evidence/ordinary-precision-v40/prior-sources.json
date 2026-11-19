@@ -1,0 +1,65 @@
+[
+  {
+    "name": "v33",
+    "profile": "v33",
+    "sample": "extra-choice-v33/tournament-sample.json",
+    "reference": "extra-choice-v33/tournament-position-reference-v33.json",
+    "workerRows": 36,
+    "sampleSha256": "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "referenceSha256": "cf3167e5da6fe5ff9c4572197a546b57361c3253bfa1bab3ca9c1913d3d67eaa"
+  },
+  {
+    "name": "v34",
+    "profile": "v34",
+    "sample": "neural-refutation-v34/general/tournament-sample.json",
+    "reference": "neural-refutation-v34/general/general-reference.json",
+    "workerRows": 30,
+    "sampleSha256": "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "referenceSha256": "2e6ab8eff472ab0e03e29a2fa4eb2bcaf5576847f004ce4ea859d21250130de2"
+  },
+  {
+    "name": "v35",
+    "profile": "v35",
+    "sample": "defensive-resources-v35/general/tournament-sample.json",
+    "reference": "defensive-resources-v35/general/tournament-position-reference-v35.json",
+    "workerRows": 32,
+    "sampleSha256": "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "referenceSha256": "4e9d8e5df1f7435b79bac0660cf14a7f640e2c5d85f838892da48f4be83e064e"
+  },
+  {
+    "name": "v36",
+    "profile": "v36",
+    "sample": "passer-choices-v36/general/tournament-sample.json",
+    "reference": "passer-choices-v36/general/tournament-position-reference-v36.json",
+    "workerRows": 25,
+    "sampleSha256": "48df231e103c0762290c892b985cb0ac2d432e27d190701af43885d9afcc6898",
+    "referenceSha256": "cb076a71a7e6ba5ff54ad1fb06e009eb84510199c4d618c39e6dc9cdc257dc4c"
+  },
+  {
+    "name": "v37",
+    "profile": "v37",
+    "sample": "shared-structure-v37/ordinary/tournament-sample.json",
+    "reference": "shared-structure-v37/ordinary/tournament-position-reference-v37.json",
+    "workerRows": 32,
+    "sampleSha256": "213ad8832d2c3144869fc5c489bcc635cb3a90b26bd953f805d8612219810bdb",
+    "referenceSha256": "0f8f361d3bd21b8ba24e303635c04419e1e1346320d370c37c09c5e4675eb63a"
+  },
+  {
+    "name": "v38",
+    "profile": "v38",
+    "sample": "nested-counterfactual-v38/tournament-sample.json",
+    "reference": "nested-counterfactual-v38/reference.json",
+    "workerRows": 45,
+    "sampleSha256": "708dc00c4cee37d1e5ee19c6c1515d44b0f9f1bc5e01a1ce19d5fd29542a8ce1",
+    "referenceSha256": "b699b4fd6898150b2037c6d023be87ac544a4561ffe0c676fba78274a72966d0"
+  },
+  {
+    "name": "v39",
+    "profile": "v39",
+    "sample": "conditional-mate-v39/tournament-sample.json",
+    "reference": "conditional-mate-v39/reference.json",
+    "workerRows": 27,
+    "sampleSha256": "4c50efb41ca7cccc10d27f3732c1ec2aef2d3ac5f7a4721eb530d4371b46347b",
+    "referenceSha256": "18510e6232e4861c70076383d58b9afe3c0968592550ee3c289f53f629f993d6"
+  }
+]

@@ -2374,3 +2374,96 @@ removal of the rook candidate. Compare both variants with the
 same ordinary cache and score with the saved references. A
 replay against the committed earlier tactical module reproduced
 all 55 release assessments.
+
+## Iteration 40 — ordinary-game replay and two position scope fixes
+
+The same worker used by the Tactics panel was replayed over 227
+ordinary classical decisions from 21 events. The seven previous
+cohorts supply one decision per game with duplicate boards and games
+rejected. Cached reply and extra-choice searches use the same board
+and frame identities as the original sample. This is a retrospective
+development audit. Its counts are separate from the fresh sample.
+
+| Position dimension | Reviewed positive / negative / uncertain | v39 TP / FP | v40 TP / FP |
+| --- | ---: | ---: | ---: |
+| Tactical | 118 / 47 / 62 | 48 / 2 | 48 / 1 |
+| Positional | 182 / 25 / 20 | 47 / 1 | 47 / 0 |
+| Mixed | 73 / 72 / 82 | 2 / 1 | 2 / 0 |
+
+The legacy first-move motif proxy reached 30 of 118 tactical positives
+with zero false positives. The new proof combines information about
+choices, replies and consequences. The legacy motif proxy has no
+positional or mixed dimension.
+
+Forty of 73 reviewed mixed positions lacked evidence on both axes.
+Twenty-three had tactical evidence only, eight had positional evidence
+only, and two had both. In 16 of 135 positional misses, at least one
+viable move already had positional evidence that failed the additional
+position-level relevance check. In 107 misses an early legal line had
+a persistent board change. That change alone does not establish why
+the choice matters. Of 70 tactical misses, three had a supported mistake
+explanation and none had a supported justification of a viable move.
+Thirty had an early tactical witness in a root line. The remaining
+case-level records and intervals are in the audit summary.
+
+The replay exposed two attribution errors and motivates fixes at the
+position level.
+
+- Rf5 and Rfe1 in the Box Hill game both reached the same board after
+  the rook took on e5. The shared line later placed a bishop on b4.
+  The two copies of that later occupancy cannot establish the earlier
+  position's character. The outpost check now considers whether the
+  lines converged before the outpost appeared in either line.
+- In a Trois Vallées game the extra candidate e5 simply allowed dxe5.
+  That hypothetical move did not supply sufficient evidence of a
+  tactical requirement in a position already explained by the c5
+  break. The extra-choice path withholds the tactical label when its
+  sole certificate is taking a pawn that was just advanced without
+  a concrete additional threat. Existing named mechanisms, checks
+  and directly threatened pieces still qualify. The separate mistake
+  assessment retains the proved direct loss. A first draft excluded
+  a second pawn advance, e3, even though it attacks the bishop on d2.
+  Testing that control added a legal capture check for the threat.
+
+A separate development candidate tracked rook pressure against the
+same pawn across different viable lines. Eighteen positions had the
+initial geometry. One relied on a demonstrated defensive response in
+both lines, and two qualified when one line supplied the concrete
+response. None added a mixed true positive. This candidate remains
+experimental.
+
+On 32 fresh ordinary positions from AQ Prime, Næstved Høst and
+Misamis Occidental, v39 and v40 both found 5/17 tactical, 7/30
+positional and 1/15 mixed positives. They both made one reviewed
+positional and one mixed false positive. The two corrections
+made no change on those 32 reports. One engine-assisted reviewer
+saved those references before the comparison was run. The pooled
+precision gains are development findings. Recall remains low,
+especially for mixed decisions.
+[AQ Prime](https://lichess.org/api/broadcast/chW5EdDC.pgn)
+[Næstved Høst](https://lichess.org/api/broadcast/WvpmQdzN.pgn)
+[Misamis Occidental](https://lichess.org/api/broadcast/7sIlRA7Q.pgn)
+
+The changes request no additional engine searches. All candidate move
+and mistake reports matched in both replays. The focused suite
+passed 160 tests with three skips. The isolated browser
+fixture replays the evidence with the actual worker at 320, 390
+and 900 pixels. It shows the c5 plan under Position character, the
+pawn loss under the distinct mistake analysis, and an unclear result
+when the only proposed outpost arrives after a shared continuation.
+Installed desktop verification is pending.
+
+**Reproduction.** Use the source and reference identities in
+`benchmarks/decision-evidence/ordinary-precision-v40`. The input to
+`decisionOrdinaryReplay.test.ts` is a JSON array with `name`, `profile`,
+`cache` and `reference` per cohort. The `cache` is the directory
+containing the exact tournament sample and the ordinary, reply, shared
+and six-choice search caches for that profile. Set
+`ORDINARY_REPLAY_MANIFEST` and `ORDINARY_REPLAY_OUTPUT` to the input
+and a new private output file. Run the test against `c1f6147c` and the
+candidate, then run `decision-evidence-ordinary-replay-score.py`
+with those two reports and a new output file. The sample freeze records
+the source of the candidate before any fresh predictions were read.
+Use the same replay harness when testing the baseline modules.
+The worker audit above used the prior committed tactical module
+because the working tree already contained an unrelated local edit.

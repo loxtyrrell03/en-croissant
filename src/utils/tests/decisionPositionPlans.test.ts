@@ -139,3 +139,17 @@ test("a pawn holding its new rank without an observed role does not establish sp
     );
     expect(qualifyPositionFactors(fen, line, [pawnSpace("f5")])).toEqual([]);
 });
+
+test("a late outpost in a shared continuation does not characterise the earlier choices", () => {
+    const fen = "r4rk1/4Bppp/ppb5/4p3/8/P2B4/1PPn2PP/R4R1K w - - 0 23";
+    const lines = [
+        candidate(fen, 1, "f1f5 f8e8 f5e5 c6b5 d3b5 a6b5 a1e1 a8c8 e7b4 e8e5 e1e5 f7f6"),
+        candidate(fen, -1, "f1e1 f8e8 e1e5 c6b5 d3b5 a6b5 a1e1 a8c8 e7b4 e8e5 e1e5 f7f6"),
+    ];
+    const after = lines.map((line) => replayTacticalLine(fen, line.pvUci));
+    expect(after.every((line) => line.length === 12)).toBe(true);
+    expect(makeFen(after[0][2].after.toSetup()).split(" ").slice(0, 4)).toEqual(
+        makeFen(after[1][2].after.toSetup()).split(" ").slice(0, 4),
+    );
+    expect(findPositionStrategicPlan(fen, lines)).toBeNull();
+});

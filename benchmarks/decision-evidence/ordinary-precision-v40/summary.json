@@ -1,0 +1,712 @@
+{
+  "baselineCommit": "c1f6147c90d823e6c492c45cb4322b74abc1c64d",
+  "pooledDevelopment": {
+    "cases": 227,
+    "events": 21,
+    "legacyTacticalProxy": {
+      "tp": 30,
+      "fp": 0,
+      "fn": 88,
+      "tn": 47,
+      "unknownReference": 62,
+      "precision": {
+        "value": 1.0,
+        "numerator": 30,
+        "denominator": 30,
+        "interval95": [
+          0.8864866068260312,
+          0.9999999999999999
+        ]
+      },
+      "recall": {
+        "value": 0.2542372881355932,
+        "numerator": 30,
+        "denominator": 118,
+        "interval95": [
+          0.1842822782172189,
+          0.3396892782514648
+        ]
+      },
+      "specificity": {
+        "value": 1.0,
+        "numerator": 47,
+        "denominator": 47,
+        "interval95": [
+          0.9244423958360037,
+          1.0
+        ]
+      },
+      "agreement": {
+        "value": 0.4666666666666667,
+        "numerator": 77,
+        "denominator": 165,
+        "interval95": [
+          0.3921704102345302,
+          0.542679714392255
+        ]
+      }
+    },
+    "before": {
+      "tactical": {
+        "tp": 48,
+        "fp": 2,
+        "fn": 70,
+        "tn": 45,
+        "unknownReference": 62,
+        "precision": {
+          "value": 0.96,
+          "numerator": 48,
+          "denominator": 50,
+          "interval95": [
+            0.8653990931249297,
+            0.9889611156723802
+          ]
+        },
+        "recall": {
+          "value": 0.4067796610169492,
+          "numerator": 48,
+          "denominator": 118,
+          "interval95": [
+            0.32244480291963507,
+            0.4969926840167622
+          ]
+        },
+        "specificity": {
+          "value": 0.9574468085106383,
+          "numerator": 45,
+          "denominator": 47,
+          "interval95": [
+            0.8575147232210055,
+            0.9882517240332106
+          ]
+        },
+        "agreement": {
+          "value": 0.5636363636363636,
+          "numerator": 93,
+          "denominator": 165,
+          "interval95": [
+            0.4873692154824444,
+            0.6370078193209655
+          ]
+        }
+      },
+      "positional": {
+        "tp": 47,
+        "fp": 1,
+        "fn": 135,
+        "tn": 24,
+        "unknownReference": 20,
+        "precision": {
+          "value": 0.9791666666666666,
+          "numerator": 47,
+          "denominator": 48,
+          "interval95": [
+            0.8910078200474814,
+            0.9963128890224893
+          ]
+        },
+        "recall": {
+          "value": 0.25824175824175827,
+          "numerator": 47,
+          "denominator": 182,
+          "interval95": [
+            0.2001162199838931,
+            0.32636188367270136
+          ]
+        },
+        "specificity": {
+          "value": 0.96,
+          "numerator": 24,
+          "denominator": 25,
+          "interval95": [
+            0.8045593626380625,
+            0.9929037664980127
+          ]
+        },
+        "agreement": {
+          "value": 0.34299516908212563,
+          "numerator": 71,
+          "denominator": 207,
+          "interval95": [
+            0.2817154833787465,
+            0.4099960027608085
+          ]
+        }
+      },
+      "mixed": {
+        "tp": 2,
+        "fp": 1,
+        "fn": 71,
+        "tn": 71,
+        "unknownReference": 82,
+        "precision": {
+          "value": 0.6666666666666666,
+          "numerator": 2,
+          "denominator": 3,
+          "interval95": [
+            0.2076596008020477,
+            0.9385080552796037
+          ]
+        },
+        "recall": {
+          "value": 0.0273972602739726,
+          "numerator": 2,
+          "denominator": 73,
+          "interval95": [
+            0.007545758679607641,
+            0.09450148171690531
+          ]
+        },
+        "specificity": {
+          "value": 0.9861111111111112,
+          "numerator": 71,
+          "denominator": 72,
+          "interval95": [
+            0.9254339785252386,
+            0.9975440481170943
+          ]
+        },
+        "agreement": {
+          "value": 0.503448275862069,
+          "numerator": 73,
+          "denominator": 145,
+          "interval95": [
+            0.4230351408955185,
+            0.5836834172798934
+          ]
+        }
+      }
+    },
+    "after": {
+      "tactical": {
+        "tp": 48,
+        "fp": 1,
+        "fn": 70,
+        "tn": 46,
+        "unknownReference": 62,
+        "precision": {
+          "value": 0.9795918367346939,
+          "numerator": 48,
+          "denominator": 49,
+          "interval95": [
+            0.8930647847660838,
+            0.9963883274101746
+          ]
+        },
+        "recall": {
+          "value": 0.4067796610169492,
+          "numerator": 48,
+          "denominator": 118,
+          "interval95": [
+            0.32244480291963507,
+            0.4969926840167622
+          ]
+        },
+        "specificity": {
+          "value": 0.9787234042553191,
+          "numerator": 46,
+          "denominator": 47,
+          "interval95": [
+            0.8888701895837066,
+            0.996234231961403
+          ]
+        },
+        "agreement": {
+          "value": 0.5696969696969697,
+          "numerator": 94,
+          "denominator": 165,
+          "interval95": [
+            0.4934120975282137,
+            0.6428103691612355
+          ]
+        }
+      },
+      "positional": {
+        "tp": 47,
+        "fp": 0,
+        "fn": 135,
+        "tn": 25,
+        "unknownReference": 20,
+        "precision": {
+          "value": 1.0,
+          "numerator": 47,
+          "denominator": 47,
+          "interval95": [
+            0.9244423958360037,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 0.25824175824175827,
+          "numerator": 47,
+          "denominator": 182,
+          "interval95": [
+            0.2001162199838931,
+            0.32636188367270136
+          ]
+        },
+        "specificity": {
+          "value": 1.0,
+          "numerator": 25,
+          "denominator": 25,
+          "interval95": [
+            0.8668077490609515,
+            0.9999999999999999
+          ]
+        },
+        "agreement": {
+          "value": 0.34782608695652173,
+          "numerator": 72,
+          "denominator": 207,
+          "interval95": [
+            0.2862504475957929,
+            0.4149468389702373
+          ]
+        }
+      },
+      "mixed": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 71,
+        "tn": 72,
+        "unknownReference": 82,
+        "precision": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "interval95": [
+            0.34238022750665303,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 0.0273972602739726,
+          "numerator": 2,
+          "denominator": 73,
+          "interval95": [
+            0.007545758679607641,
+            0.09450148171690531
+          ]
+        },
+        "specificity": {
+          "value": 1.0,
+          "numerator": 72,
+          "denominator": 72,
+          "interval95": [
+            0.9493488274035422,
+            1.0
+          ]
+        },
+        "agreement": {
+          "value": 0.5103448275862069,
+          "numerator": 74,
+          "denominator": 145,
+          "interval95": [
+            0.4297685883792334,
+            0.5903870861470023
+          ]
+        }
+      }
+    },
+    "missesBefore": {
+      "tactical": {
+        "missed": 70,
+        "foundInAViableMove": 0,
+        "foundInMistake": 3,
+        "withEarlyWitness": 30
+      },
+      "positional": {
+        "missed": 135,
+        "foundInAViableMove": 16,
+        "foundInMistake": 0,
+        "withPersistentBoardFact": 107
+      }
+    },
+    "changedMoves": 0,
+    "changedMistakes": 0,
+    "changes": [
+      {
+        "id": "tournament-trois-vallees-2026-a9101a1b69ebb694-27",
+        "reference": {
+          "tactical": false,
+          "positional": true,
+          "mixed": false
+        },
+        "before": "mixed",
+        "after": "positional"
+      },
+      {
+        "id": "tournament-box-hill-2026-0e4e26a1bdcbcfa7-44",
+        "reference": {
+          "tactical": true,
+          "positional": false,
+          "mixed": false
+        },
+        "before": "positional",
+        "after": "unclear"
+      }
+    ],
+    "workerCpuMedianMilliseconds": {
+      "before": 69.8755000000001,
+      "after": 68.9452999999994
+    }
+  },
+  "freshOrdinary": {
+    "cases": 32,
+    "events": 3,
+    "legacyTacticalProxy": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 16,
+      "tn": 7,
+      "unknownReference": 8,
+      "precision": {
+        "value": 1.0,
+        "numerator": 1,
+        "denominator": 1,
+        "interval95": [
+          0.20654931437723745,
+          1.0
+        ]
+      },
+      "recall": {
+        "value": 0.058823529411764705,
+        "numerator": 1,
+        "denominator": 17,
+        "interval95": [
+          0.010460400984997592,
+          0.26982030637575405
+        ]
+      },
+      "specificity": {
+        "value": 1.0,
+        "numerator": 7,
+        "denominator": 7,
+        "interval95": [
+          0.6456695649333126,
+          1.0
+        ]
+      },
+      "agreement": {
+        "value": 0.3333333333333333,
+        "numerator": 8,
+        "denominator": 24,
+        "interval95": [
+          0.1797219032729775,
+          0.5329368316186824
+        ]
+      }
+    },
+    "before": {
+      "tactical": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 12,
+        "tn": 7,
+        "unknownReference": 8,
+        "precision": {
+          "value": 1.0,
+          "numerator": 5,
+          "denominator": 5,
+          "interval95": [
+            0.5655175352168251,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 0.29411764705882354,
+          "numerator": 5,
+          "denominator": 17,
+          "interval95": [
+            0.1327998961029523,
+            0.5313311006653985
+          ]
+        },
+        "specificity": {
+          "value": 1.0,
+          "numerator": 7,
+          "denominator": 7,
+          "interval95": [
+            0.6456695649333126,
+            1.0
+          ]
+        },
+        "agreement": {
+          "value": 0.5,
+          "numerator": 12,
+          "denominator": 24,
+          "interval95": [
+            0.3142742581957335,
+            0.6857257418042665
+          ]
+        }
+      },
+      "positional": {
+        "tp": 7,
+        "fp": 1,
+        "fn": 23,
+        "tn": 1,
+        "unknownReference": 0,
+        "precision": {
+          "value": 0.875,
+          "numerator": 7,
+          "denominator": 8,
+          "interval95": [
+            0.5291118177871464,
+            0.9775825085499433
+          ]
+        },
+        "recall": {
+          "value": 0.23333333333333334,
+          "numerator": 7,
+          "denominator": 30,
+          "interval95": [
+            0.11792388144489496,
+            0.40928326158122164
+          ]
+        },
+        "specificity": {
+          "value": 0.5,
+          "numerator": 1,
+          "denominator": 2,
+          "interval95": [
+            0.09453120573423074,
+            0.9054687942657693
+          ]
+        },
+        "agreement": {
+          "value": 0.25,
+          "numerator": 8,
+          "denominator": 32,
+          "interval95": [
+            0.1325240091850904,
+            0.4210655899424448
+          ]
+        }
+      },
+      "mixed": {
+        "tp": 1,
+        "fp": 1,
+        "fn": 14,
+        "tn": 8,
+        "unknownReference": 8,
+        "precision": {
+          "value": 0.5,
+          "numerator": 1,
+          "denominator": 2,
+          "interval95": [
+            0.09453120573423074,
+            0.9054687942657693
+          ]
+        },
+        "recall": {
+          "value": 0.06666666666666667,
+          "numerator": 1,
+          "denominator": 15,
+          "interval95": [
+            0.011866895493268553,
+            0.2981652987378003
+          ]
+        },
+        "specificity": {
+          "value": 0.8888888888888888,
+          "numerator": 8,
+          "denominator": 9,
+          "interval95": [
+            0.5650002944233439,
+            0.9801091123614551
+          ]
+        },
+        "agreement": {
+          "value": 0.375,
+          "numerator": 9,
+          "denominator": 24,
+          "interval95": [
+            0.21159367559548778,
+            0.5729003755732572
+          ]
+        }
+      }
+    },
+    "after": {
+      "tactical": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 12,
+        "tn": 7,
+        "unknownReference": 8,
+        "precision": {
+          "value": 1.0,
+          "numerator": 5,
+          "denominator": 5,
+          "interval95": [
+            0.5655175352168251,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 0.29411764705882354,
+          "numerator": 5,
+          "denominator": 17,
+          "interval95": [
+            0.1327998961029523,
+            0.5313311006653985
+          ]
+        },
+        "specificity": {
+          "value": 1.0,
+          "numerator": 7,
+          "denominator": 7,
+          "interval95": [
+            0.6456695649333126,
+            1.0
+          ]
+        },
+        "agreement": {
+          "value": 0.5,
+          "numerator": 12,
+          "denominator": 24,
+          "interval95": [
+            0.3142742581957335,
+            0.6857257418042665
+          ]
+        }
+      },
+      "positional": {
+        "tp": 7,
+        "fp": 1,
+        "fn": 23,
+        "tn": 1,
+        "unknownReference": 0,
+        "precision": {
+          "value": 0.875,
+          "numerator": 7,
+          "denominator": 8,
+          "interval95": [
+            0.5291118177871464,
+            0.9775825085499433
+          ]
+        },
+        "recall": {
+          "value": 0.23333333333333334,
+          "numerator": 7,
+          "denominator": 30,
+          "interval95": [
+            0.11792388144489496,
+            0.40928326158122164
+          ]
+        },
+        "specificity": {
+          "value": 0.5,
+          "numerator": 1,
+          "denominator": 2,
+          "interval95": [
+            0.09453120573423074,
+            0.9054687942657693
+          ]
+        },
+        "agreement": {
+          "value": 0.25,
+          "numerator": 8,
+          "denominator": 32,
+          "interval95": [
+            0.1325240091850904,
+            0.4210655899424448
+          ]
+        }
+      },
+      "mixed": {
+        "tp": 1,
+        "fp": 1,
+        "fn": 14,
+        "tn": 8,
+        "unknownReference": 8,
+        "precision": {
+          "value": 0.5,
+          "numerator": 1,
+          "denominator": 2,
+          "interval95": [
+            0.09453120573423074,
+            0.9054687942657693
+          ]
+        },
+        "recall": {
+          "value": 0.06666666666666667,
+          "numerator": 1,
+          "denominator": 15,
+          "interval95": [
+            0.011866895493268553,
+            0.2981652987378003
+          ]
+        },
+        "specificity": {
+          "value": 0.8888888888888888,
+          "numerator": 8,
+          "denominator": 9,
+          "interval95": [
+            0.5650002944233439,
+            0.9801091123614551
+          ]
+        },
+        "agreement": {
+          "value": 0.375,
+          "numerator": 9,
+          "denominator": 24,
+          "interval95": [
+            0.21159367559548778,
+            0.5729003755732572
+          ]
+        }
+      }
+    },
+    "missesBefore": {
+      "tactical": {
+        "missed": 12,
+        "foundInAViableMove": 0,
+        "foundInMistake": 0,
+        "withEarlyWitness": 5
+      },
+      "positional": {
+        "missed": 23,
+        "foundInAViableMove": 0,
+        "foundInMistake": 0,
+        "withPersistentBoardFact": 20
+      }
+    },
+    "changedMoves": 0,
+    "changedMistakes": 0,
+    "changes": [],
+    "workerCpuMedianMilliseconds": {
+      "before": 116.56105000000025,
+      "after": 114.5651499999999
+    }
+  },
+  "positiveMixedBeforeFixBySupportedDimensions": {
+    "neither": 40,
+    "tacticalOnly": 23,
+    "positionalOnly": 8,
+    "both": 2
+  },
+  "researchFilePressure": {
+    "candidateGeometryCases": 18,
+    "withMatchingConcreteActionAcrossTwoLines": 1,
+    "withMatchingPressureAndActionInOneLine": 2,
+    "reviewedPositionalFalsePositives": 0,
+    "newMixedTruePositives": 0,
+    "promoted": false
+  },
+  "limitations": [
+    "One engine-assisted reference reviewer and retrospective use of the seven prior cohorts.",
+    "A move-level fact or early witness in a missed position is an opportunity for further verification.",
+    "Classifier CPU times from parallel runs are descriptive and exclude Stockfish searches.",
+    "The legacy comparison uses the first move in the live motif panel as a tactical proxy only."
+  ],
+  "releaseVerification": {
+    "reportsIdenticalToFrozenCandidate": 259,
+    "sourceDigestsLF": {
+      "src/utils/tacticalMotifs/decisionPositionContrast.ts": "2ca95581fe65f57ca89ce5c0d309522484aca748367cf87b4429da30e1fb6ea9",
+      "src/utils/tacticalMotifs/decisionPositionPlans.ts": "08a0c199ef088dbf0b5847f94d9202c39950bcfb75c2feb4022dc8e9a0b23b8f",
+      "src/utils/tacticalMotifs/decisionAssessment.ts": "c5fde938e3af1ef2c015174a1f2b989646af405b963c9a7e6feadcad59a121ab"
+    }
+  }
+}

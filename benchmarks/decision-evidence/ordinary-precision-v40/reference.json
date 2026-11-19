@@ -1,0 +1,296 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used the original Stockfish candidate and played-move comparison lines. Labels were frozen before the candidate or any comparison output was inspected. Uncertain judgments are explicit."
+  ],
+  "cases": [
+    {
+      "id": "tournament-aq-prime-2026-42be7301ffc28f26-37",
+      "scope": "position-character",
+      "moveUci": "h7h6",
+      "gameMoveUci": "h7h6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "h6 forces the knight to move, allowing the rook to swing to h5. The alternatives alter the exchange on e5 or leave the h-pawn open to Nxh7. The rook and kingside pawn placement persist."
+    },
+    {
+      "id": "tournament-aq-prime-2026-c42504db169a616f-86",
+      "scope": "position-character",
+      "moveUci": "b4b5",
+      "gameMoveUci": "b4b5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rb5 changes the exchange on a5 and the queenside pawn structure. The alternate d-file rook permits the Nb2 and Nxd1 sequence."
+    },
+    {
+      "id": "tournament-aq-prime-2026-98f35e2a5dcbe854-47",
+      "scope": "position-character",
+      "moveUci": "e6c5",
+      "gameMoveUci": "e6c5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nc5 changes the response to Nc7 and when Black can take f4 and a4. The quiet positioning of the rooks and the central pawn trade continue to govern the resulting lines."
+    },
+    {
+      "id": "tournament-aq-prime-2026-ff9b2c7e2c1beef5-77",
+      "scope": "position-character",
+      "moveUci": "f4g3",
+      "gameMoveUci": "a7a3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "fxg3+ and Rxa3 produce defensible exchanges in different orders. A slower rook move leaves White control of the checking file and a materially different pawn ending."
+    },
+    {
+      "id": "tournament-aq-prime-2026-1d4e204810f31063-84",
+      "scope": "position-character",
+      "moveUci": "g7d4",
+      "gameMoveUci": "g7g8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The queen can check or trade into a rook ending to support the d-pawn. The lines show different checks but give insufficient evidence of a distinct tactical requirement for White's defensive choice."
+    },
+    {
+      "id": "tournament-aq-prime-2026-96bfc29440c714d9-58",
+      "scope": "position-character",
+      "moveUci": "g1g2",
+      "gameMoveUci": "e2f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rg2 addresses the kingside attack before Bxh4 and defence of the exposed king. The other moves let Black enter on d3 or h4 immediately. The pawn shelter and open files remain the underlying issue."
+    },
+    {
+      "id": "tournament-aq-prime-2026-58e1e6515c32f203-66",
+      "scope": "position-character",
+      "moveUci": "g4f5",
+      "gameMoveUci": "g4f3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxf5 avoids the Rc2+ tactics that follow a less active queen move. The passed e6 pawn and the open files shape the positions after the forcing sequence."
+    },
+    {
+      "id": "tournament-aq-prime-2026-304d1571a0c97d59-37",
+      "scope": "position-character",
+      "moveUci": "a5a4",
+      "gameMoveUci": "e3c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can play a4 around a queen exchange or keep queens and defend the f-file. The alternatives change the structure with near-equal evaluations, and the checking options have no clear single payoff."
+    },
+    {
+      "id": "tournament-aq-prime-2026-205b0e06b73757e6-85",
+      "scope": "position-character",
+      "moveUci": "b3a3",
+      "gameMoveUci": "b3a3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The rook can take a3 or play from behind the h-pawn while the king moves to stop White's connected kingside pawns. The moves govern defensive activity and pawn targets."
+    },
+    {
+      "id": "tournament-aq-prime-2026-982f85b9a9a723d7-32",
+      "scope": "position-character",
+      "moveUci": "c3d5",
+      "gameMoveUci": "c4d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Taking with the knight changes the follow-up to e4 and supports the d-pawn's advance. The pawn capture instead permits Nd4 and exchanges which expose the centre."
+    },
+    {
+      "id": "tournament-aq-prime-2026-86e3f61119125c71-39",
+      "scope": "position-character",
+      "moveUci": "b7e7",
+      "gameMoveUci": "b7e7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Rbe7 and h6 can precede the same central setup. Both sides organise rooks around e3 and e7, and the h-pawn decision changes the board without forcing a distinct result."
+    },
+    {
+      "id": "tournament-aq-prime-2026-94c11b67f34ebbed-61",
+      "scope": "position-character",
+      "moveUci": "f4d4",
+      "gameMoveUci": "b6b5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can pursue rook activity with checks or change the queenside pawn structure with b5. The differences in the b- and c-pawns are clear and the exact tactic among the ordinary replies remains uncertain."
+    },
+    {
+      "id": "tournament-naestved-2026-32305703cfefd00e-40",
+      "scope": "position-character",
+      "moveUci": "e1e8",
+      "gameMoveUci": "e1e8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White can trade rooks with check or move a bishop, which changes whether Black takes a rook or the d4 knight. The a-pawn advance and rook placements matter in each line."
+    },
+    {
+      "id": "tournament-naestved-2026-e0e6425037b2b742-27",
+      "scope": "position-character",
+      "moveUci": "a5d5",
+      "gameMoveUci": "a5h5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qd5 offers a queen trade and changes which central pawns remain. The queen retreat to h5 or Bb4 instead allows Qxa8+ and substantially different material."
+    },
+    {
+      "id": "tournament-naestved-2026-fcae1f71894654d7-43",
+      "scope": "position-character",
+      "moveUci": "b5b2",
+      "gameMoveUci": "b5b2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qxb2 works because the queen then captures a1 and threatens b1. The slower captures change the concrete material outcome."
+    },
+    {
+      "id": "tournament-naestved-2026-af09215c82bb3e0f-77",
+      "scope": "position-character",
+      "moveUci": "f8f2",
+      "gameMoveUci": "c6b6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The rook positions determine whether White can support a move from e5 to e6. Black also has viable kingside control and a-pawn routes without a demonstrated required calculation at the root."
+    },
+    {
+      "id": "tournament-naestved-2026-a1af175eba98674d-82",
+      "scope": "position-character",
+      "moveUci": "f1f3",
+      "gameMoveUci": "f1f3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The queen has a continuous sequence of checks against the white king. Rook and king moves change the order needed to stay in the draw."
+    },
+    {
+      "id": "tournament-naestved-2026-6fdd04b2c1c66fbb-35",
+      "scope": "position-character",
+      "moveUci": "f5g4",
+      "gameMoveUci": "f5g4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "fxg4 allows the immediate Rxf8+ exchange, while a different pawn trade keeps different pieces on the board. Black's queenside pawns shape the resulting choices."
+    },
+    {
+      "id": "tournament-naestved-2026-58a6ec8c851ab58b-37",
+      "scope": "position-character",
+      "moveUci": "d8c7",
+      "gameMoveUci": "d8c7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The queen placements and queenside pawn moves change space and how Black can reposition the rooks and knight. The leading lines stay close without a material decision."
+    },
+    {
+      "id": "tournament-naestved-2026-0299c79166a0750e-47",
+      "scope": "position-character",
+      "moveUci": "f8b8",
+      "gameMoveUci": "f8b8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rfb8 changes White's best queen route and contests the b-file, while Qf4 can prepare the same rook placement later. A concrete short tactic is uncertain among these approaches."
+    },
+    {
+      "id": "tournament-misamis-2026-10954ec0b4676540-89",
+      "scope": "position-character",
+      "moveUci": "g7h8",
+      "gameMoveUci": "h6h3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The timing of gxf5, the knight's entry to d3, and the queen capture all change the concrete attack. The f- and e-pawns continue to shape the play on the open files."
+    },
+    {
+      "id": "tournament-misamis-2026-d4a921d18adba727-58",
+      "scope": "position-character",
+      "moveUci": "c6c7",
+      "gameMoveUci": "c6c7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can activate the rook or choose a bishop route while Black keeps the d-file and queenside majority. The ordinary checks serve different piece placements without a confirmed material requirement."
+    },
+    {
+      "id": "tournament-misamis-2026-6576470936726289-75",
+      "scope": "position-character",
+      "moveUci": "e7d6",
+      "gameMoveUci": "e7e6",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The king's routes and knight moves meet the bishop activity in comparable ways. The queen-side pawns and the timing of f6 determine the longer-term plan."
+    },
+    {
+      "id": "tournament-misamis-2026-99f6868ac2fb563e-45",
+      "scope": "position-character",
+      "moveUci": "g7f8",
+      "gameMoveUci": "b8b2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The bishop choice protects the kingside pawn structure before Qf5. Other rook placements leave pressure on different pawn targets and the c-file. A distinct forcing result is unclear."
+    },
+    {
+      "id": "tournament-misamis-2026-5c285a8e4db58e28-28",
+      "scope": "position-character",
+      "moveUci": "c1e3",
+      "gameMoveUci": "a2a3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Be3, a3 and exf6 each handle a different sequence of pawn captures or bishop checks. White's exposed king and the central pawn structure remain relevant after the first exchange."
+    },
+    {
+      "id": "tournament-misamis-2026-188044ef775c1501-67",
+      "scope": "position-character",
+      "moveUci": "a1b2",
+      "gameMoveUci": "a1b2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qb2+ gains time for Rc3 and an exchange on d3 while the other queen checks leave White more freedom to advance e6. The e- and f-pawns drive the attack."
+    },
+    {
+      "id": "tournament-misamis-2026-b21ee705538f9c0e-72",
+      "scope": "position-character",
+      "moveUci": "b6a4",
+      "gameMoveUci": "b6a4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Na4 controls the promotion race before Qa1 and Qxa2. Direct advances allow different knight captures. The passed a- and c-pawns define the resulting position."
+    },
+    {
+      "id": "tournament-misamis-2026-d498449b47f0d75f-27",
+      "scope": "position-character",
+      "moveUci": "e7d5",
+      "gameMoveUci": "e7d5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black can use the knight to support the d-pawn or advance on either wing. The choices preserve central pressure and change how White can challenge the pawn."
+    },
+    {
+      "id": "tournament-misamis-2026-1c79da0d3a73d4dd-67",
+      "scope": "position-character",
+      "moveUci": "e6d4",
+      "gameMoveUci": "e6d4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The knight and rook choices change access to c2 and e2, while the b-pawn and e-pawn still govern the plan. The leading alternatives are similar despite different captures."
+    },
+    {
+      "id": "tournament-misamis-2026-bce751d7e959b5fc-45",
+      "scope": "position-character",
+      "moveUci": "c6c5",
+      "gameMoveUci": "c6c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can play c5 to support the bishop or trade it on e3, changing the central pawn structure and where the rooks become active. A distinct required tactic is uncertain."
+    },
+    {
+      "id": "tournament-misamis-2026-e7ff0e0a204f9312-28",
+      "scope": "position-character",
+      "moveUci": "b2b3",
+      "gameMoveUci": "f1d1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "b3 and the d-file rook placement can come in different orders. White's knight returns to c3 while Black builds the same central structure."
+    },
+    {
+      "id": "tournament-misamis-2026-3a95b4124ca654ab-40",
+      "scope": "position-character",
+      "moveUci": "c4d5",
+      "gameMoveUci": "c4d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "cxd5 opens the c-file and lets Rc1+ dislodge Black's king. The other choices allow d4 and use the d-file instead, leaving different pawn targets and rook placements."
+    }
+  ]
+}

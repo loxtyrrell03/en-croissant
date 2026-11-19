@@ -5,6 +5,7 @@ import { makeSquare, opposite, parseSquare } from "chessops/util";
 import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import type { ComparativePositionalEvidence } from "./positionalTransitions";
+import { tacticalRepetitionKey } from "./repetitionHistory";
 
 const WINDOW = 12;
 const rank = (square: Square, side: Color) =>
@@ -235,7 +236,8 @@ export function findPositionStrategicPlan(fen: string, candidates: DecisionEngin
         const legal = measureDecisionLine(fen, line);
         if (!legal || legal.drawnEnding) return null;
         const steps = replayTacticalLine(fen, line.pvUci.slice(0, WINDOW));
-        return { steps, actions: findPlanActions(steps) };
+        const positions = steps.map(({ after }) => tacticalRepetitionKey(after));
+        return { steps, actions: findPlanActions(steps), positions };
     };
     const principal = analysed(best);
     if (!principal?.actions.length) return null;
@@ -244,6 +246,14 @@ export function findPositionStrategicPlan(fen: string, candidates: DecisionEngin
         if (!other || other.steps[0]?.uci === principal.steps[0].uci) continue;
         for (const main of principal.actions) {
             for (const matching of other.actions.filter((item) => item.key === main.key)) {
+                // A minor piece settling on an outpost only after convergence
+                // is one later observation. Require evidence tied to the
+                // actual choice before using it to characterise the position.
+                if (main.key.startsWith("outpost:")) {
+                    const earlier = new Set(principal.positions.slice(0, main.ply - 1));
+                    if (other.positions.slice(0, matching.ply - 1).some((fen) => earlier.has(fen)))
+                        continue;
+                }
                 const first = Math.max(8, main.ply, matching.ply);
                 const end = Math.min(main.maintainedThrough, matching.maintainedThrough);
                 for (let ply = first; ply <= end; ply++) {

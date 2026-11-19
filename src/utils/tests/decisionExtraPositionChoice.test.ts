@@ -55,3 +55,53 @@ test("a later deflection can explain a hypothetical mistake without defining the
         }),
     ).toBeNull();
 });
+
+test("taking a simply offered pawn supplies no extra evidence about the original position", () => {
+    const fen = "r4rk1/pppnp1bp/6p1/5p2/3P4/2P2N1P/PP3PP1/R1B1R1K1 b - - 0 14";
+    const line = (cp: number, depth: number, uci: string, root = fen) => ({
+        fen: root, cp, depth, pvUci: uci.split(" "),
+    });
+    const candidates = [
+        line(-25, 20, "f8e8 c1f4 c7c5 a1d1 c5d4 f3d4 d7c5 f4e5"),
+        line(-36, 20, "g7f6"),
+        line(-44, 20, "a8e8"),
+    ];
+    const shortlist = [
+        line(-33, 10, "f8e8"), line(-44, 10, "a8e8"),
+        line(-47, 10, "g7f6"), line(-111, 10, "e7e5"),
+    ];
+    const pair = [
+        line(-24, 21, "f8e8 c1f4 c7c5 a1d1 c5d4 f3d4 d7c5 f4e5 g7e5 e1e5"),
+        line(-126, 21, "e7e5 d4e5 d7c5 e1d1 c5e6 f3d4 a8d8 c1e3 e6d4 e3d4"),
+    ];
+    const [choice] = replayTacticalLine(fen, ["e7e5"]);
+    const reply = line(118, 18, "d4e5 d7c5 e1d1 f5f4 c3c4 c5e6 c1d2 g8f7 d2b4", makeFen(choice.after.toSetup()));
+    expect(confirmExtraPositionChoice(fen, candidates, { shortlist, pair, replies: [reply] })).toBeNull();
+    const report = assessChessDecision({
+        fen, candidates, comparisonCandidates: pair, playedMoveUci: "e7e5",
+        replyProbes: [{ moveUci: "e7e5", lines: [reply] }],
+    });
+    expect(report?.mistake?.tacticalEpisode?.explanation).toContain("dxe5 takes the pawn on e5");
+});
+
+test("the same pawn-capture reply can answer a plausible threat to a piece", () => {
+    const fen = "r1b3k1/pp1nq2p/2pb3r/8/2PPpPP1/P7/1P1BBPK1/2RQ1RN1 b - - 0 20";
+    const line = (cp: number, depth: number, uci: string, root = fen) => ({
+        fen: root, cp, depth, pvUci: uci.split(" "),
+    });
+    const candidates = [
+        line(131, 19, "e7h4 f1e1 h4h1 g2f1 d7f6 c1c3 h6h2"),
+        line(-158, 19, "c6c5"),
+        line(-246, 19, "d7f6"),
+    ];
+    const shortlist = [line(211, 9, "e7h4"), line(-85, 9, "e4e3"), line(-152, 9, "c6c5")];
+    const pair = [
+        line(94, 18, "e7h4 f1e1 d7f6 c1c3 h4h1 g2f1 h6h2 c3g3 h7h5 d1b3"),
+        line(-299, 18, "e4e3 f2e3 d7f6 g4g5 e7g7 g1f3 h6h3 c4c5 f6e4 d2e1"),
+    ];
+    const [choice] = replayTacticalLine(fen, ["e4e3"]);
+    const reply = line(296, 16, "f2e3 d7f6 g4g5 e7g7 f1f3 f6e4 e2d3 c8f5 g1e2", makeFen(choice.after.toSetup()));
+    expect(confirmExtraPositionChoice(fen, candidates, {
+        shortlist, pair, replies: [reply],
+    })?.explanation).toContain("fxe3 can take the pawn on e3");
+});

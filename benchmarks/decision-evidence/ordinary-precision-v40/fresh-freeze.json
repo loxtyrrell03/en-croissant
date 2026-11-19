@@ -1,0 +1,25 @@
+{
+  "Comparison": "c1f6147c90d823e6c492c45cb4322b74abc1c64d",
+  "Expected": "No added reviewed false positives and no loss of reviewed true positives on new ordinary positions",
+  "Files": [
+    {
+      "Path": "src/utils/tacticalMotifs/decisionPositionContrast.ts",
+      "Hash": "2CA95581FE65F57CA89CE5C0D309522484ACA748367CF87B4429DA30E1FB6EA9"
+    },
+    {
+      "Path": "src/utils/tacticalMotifs/decisionPositionPlans.ts",
+      "Hash": "7F888329600F06BBD59AF3C5FA111C6E8F40D0584315266CF0C8C2BA3BFBE071"
+    },
+    {
+      "Path": "src/utils/tacticalMotifs/decisionAssessment.ts",
+      "Hash": "C5FDE938E3AF1EF2C015174A1F2B989646AF405B963C9A7E6FEADCAD59A121AB"
+    },
+    {
+      "Path": "tournament-sample.json",
+      "Hash": "D3CFB52561420C828FF4C8D91F51DC30DF11A5F774ED8E3D5DA55EEF9F9AB571"
+    }
+  ],
+  "ReferenceSha256": "fd9a2ac951ccb6ea110ff8d1f3b9e77043410721672efa611521bbc138d0989d",
+  "Candidate": "v40-precision",
+  "SourceMethod": "One engine-assisted reviewer saved references before running the comparison with the frozen candidate."
+}

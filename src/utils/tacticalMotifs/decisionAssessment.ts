@@ -57,7 +57,7 @@ import {
 } from "./decisionPositionPlans";
 import { findSharedStructuralPlan } from "./decisionSharedStructure";
 
-export const DECISION_ASSESSMENT_VERSION = 17;
+export const DECISION_ASSESSMENT_VERSION = 18;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
