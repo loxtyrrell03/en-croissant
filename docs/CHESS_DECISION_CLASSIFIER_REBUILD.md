@@ -1535,3 +1535,137 @@ module at `5d7a2de6`; both comparisons use that revision's tactical
 core. The earlier course-trained model and reply-selection experiments
 still provide the evidence for leaving neural inference out of the
 interactive classifier.
+
+## Iteration 32 — search breadth and human-move nomination
+
+The existing position reports can miss an important choice in two ways.
+Stockfish may leave it out of the candidate list, or the classifier may
+fail to explain the lines it already has. This experiment changes
+search inputs while keeping the v31 verifier fixed.
+
+### Three versus eight Stockfish candidates
+
+The four general development cohorts from v28–v31 contain 124 reviewed
+positions. The two 12-position challenge cohorts are scored separately.
+For each board the original three-line search was compared with eight
+lines at the same final requested node budget. Both widths were also
+searched with four times that budget, capped at 9.6M nodes. Analysing
+only the first three entries from the same eight-line frame isolates
+the contribution of ranks four through eight from changes to the
+search itself.
+
+Each setting used independently searched replies to its first choice
+and any alternative nominated by the existing position-refutation
+rule. Replies for identical positions were shared in the bench. This
+replay uses the same ordinary reply policy in every arm. Targeted
+capture probes and game-history effects were excluded. A rejected
+principal variation counts as an abstention. The experiment evaluates
+previously reviewed positions and does not provide a new holdout.
+
+| General development search | Median depth | Root nodes | Tactical TP / FP | Positional TP / FP | Mixed TP / FP |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Original three | 20 | 285.0M | 23 / 0 | 24 / 1 | 4 / 0 |
+| Eight, score first three | 16 | 285.0M | 23 / 0 | 17 / 0 | 4 / 0 |
+| Eight, score all | 16 | 285.0M | 23 / 0 | 19 / 0 | 4 / 0 |
+| Deeper three | 25 | 1,111.2M | 23 / 1 | 17 / 1 | 3 / 0 |
+| Deeper eight, score first three | 21 | 1,111.2M | 25 / 1 | 14 / 2 | 3 / 0 |
+| Deeper eight, score all | 21 | 1,111.2M | 25 / 1 | 17 / 3 | 3 / 0 |
+
+There were 85 reviewed tactical positives and 17 negatives, 80
+positional positives and 27 negatives, and 41 mixed positives and 44
+negatives. Unknown labels are excluded per axis. Allowing the live
+certificate scanner to consider the first two supplemental choices
+from the deeper eight-line frame produced the same counts.
+
+With the original budget, 57 boards gained at least one choice within
+100 centipawns of the best at ranks four through eight. This recovered
+two positional true positives relative to scoring the first three
+entries of that same frame. Yet positional recall fell from 24 to 19
+relative to the original search. On nine of the ten boards that lost
+a previously supported positional label at the same budget, Stockfish
+kept the first move. It changed the continuation or the alternatives
+that supported the explanation. For instance, the first move in the
+4NCL position `2aea9ec930c2e3da-55` remained `...Be6`, while the wider
+frame lost the shared rook exchange on the c-file that supported
+the original explanation. At the higher budget the four-through-eight
+choices recovered three positional true positives and added one
+false positive relative to its own first three. The two focused
+challenge cohorts also gave mixed results. A wider default search
+has insufficient evidence of benefit.
+
+### Can a neural model choose a better extra move?
+
+Maia-3 5M predicted likely human moves at its Elo 1900 setting.
+The comparison tested one move outside the original three per board.
+Maia supplied the highest such move from its ranking. The Stockfish
+comparison supplied the first such move from the equal-budget
+eight-line frame. Selection used the board and engine candidates
+without access to the recorded move or review labels. Maia's
+evaluation fields were discarded. [Maia-3 official implementation](https://github.com/CSSLab/maia3)
+
+The same Stockfish verification followed each nomination. A 1.2M-node
+paired search compared the suggestion with the original first move.
+An extra 1M-node opponent search was requested for a confirmed first
+choice and a drop of at least 100 centipawns or a newly allowed mate.
+Only a concrete tactical episode or mating consequence from the
+existing mistake verifier counted as evidence. The initial scoring
+experiment provisionally adds this evidence to the position's tactical
+axis. Positional evidence still comes from the original report.
+
+| General development route | Extra moves tested | Recorded moves retrieved outside the top three | Refutations verified | Tactical TP / FP | Mixed TP / FP |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Original analysis | 0 | 0 of 44 | 0 | 23 / 0 | 4 / 0 |
+| Extra Stockfish choice | 124 | 5 of 44 | 8 | 28 / 1 | 4 / 0 |
+| Extra Maia choice | 124 | 15 of 44 | 20 | 34 / 2 | 6 / 1 |
+| Maia restricted to its first two ranks | 80 | 13 of 44 | 9 | 29 / 0 | 4 / 0 |
+
+The first two ranks were selected after inspecting development
+errors. For example, Maia's third-ranked `...Nh5` in the European
+Individual position `125107747783814e-43` allowed a later removal
+of the defender. The independently verified variation was legal,
+but the position reference emphasized the pawn structure and
+knight plans arising from the leading choices. This is an
+attribution problem as well as a move-selection problem. At the
+top-two cutoff, one real gain is the London position
+`6173b5a23b7fd326-65`, where Maia nominated the recorded `...Rxd4`
+and Stockfish verified `Nxd4` winning the rook. It also found
+`...Ng3+` in the Grand Swiss position `460511aae00015dd-63`,
+where `fxg3` changes the exchanges relative to `...Qg5`.
+
+On those 124 boards the unrestricted Maia route requested 92
+reply searches, the top-two replay would request 52, and the
+Stockfish route requested 72. Corresponding budgets after move
+nomination were 240.8M, 148.0M and 220.8M nodes, excluding the
+original analysis and the extra wide frame needed for the
+Stockfish nomination. Maia's median warm request was about 75 ms
+on one CPU thread in this experiment. The two challenge sets are
+available in the same scoring report and do not enter the table.
+
+Neural move nomination is promising enough to test prospectively.
+The restricted rule improves tactical recall on development, with
+unchanged aggregate mixed recall. The evaluation is too small to
+establish high precision on fresh games, and the unrestricted
+experiment exposes the risk of treating an avoidable error as a
+feature of the whole position. The app still uses the v31 search.
+
+### Reproduction
+
+Build a root cache for the six checked-in v28–v31 manifests with the
+same Stockfish 19 revision and adaptive root profile documented above.
+Run `decision-evidence-breadth.py` with one `--cohort NAME SAMPLE ROOT_CACHE`
+argument per cohort. In a clean checkout run
+`decisionBreadthAudit.test.ts` with `DECISION_BREADTH_AUDIT` set to the
+output directory and `DECISION_BREADTH_PLAN=1`. Feed its requests to
+`decision-evidence-breadth-replies.py` and repeat the audit with plan
+mode off. For the model experiment run
+`decision-evidence-human-candidates.py` and
+`decisionHumanCandidateAudit.test.ts`. Finally run
+`decision-evidence-breadth-score.py` with the checked-in references
+and the four general cohort names, excluding the focused challenges
+from the general subtotal. Use `--human-proofs` for the nomination
+comparison. The environment used Python 3.13, python-chess 1.999,
+PyTorch 2.10.0+cpu and Maia source
+`1e13597c42d4858b7cfd7cfdae01e297263364b2`. The Maia-3 5M checkpoint
+SHA-256 is `ba14208b2992d85502f5fb501934abf6aaaeb355e9f3fdf90e326911f562524f`.
+Generated searches, the model and its environment stay outside
+the repository.
