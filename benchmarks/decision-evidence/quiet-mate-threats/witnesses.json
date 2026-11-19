@@ -1,0 +1,539 @@
+{
+  "development": [
+    {
+      "id": "quiet-threat-grand-swiss-2025-2b62c26304b99057-61",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "1r5k/4bQp1/1n2p3/2p1p1P1/4q3/P1P1B2P/8/2KNRR2 b - - 0 31",
+          "defenceLinesUci": [
+            [
+              "b6c4",
+              "f7h5"
+            ]
+          ],
+          "ignoredLineUci": [
+            "b6c4",
+            "d1f2",
+            "e4b1"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Nc4 threatens Qb1#. Qh5+ stops immediate mate. Nf2 allows Qb1#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-grand-swiss-2025-7134bc3c86c8bc32-83",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "4r1k1/6p1/2P2p2/p7/R2N1r2/P3n1KP/4R1P1/8 b - - 2 42",
+          "defenceLinesUci": [
+            [
+              "g7g5",
+              "e2e1"
+            ],
+            [
+              "g7g5",
+              "e2f2"
+            ]
+          ],
+          "ignoredLineUci": [
+            "g7g5",
+            "e2a2",
+            "e3f1"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "g5 threatens Nf1#. Re1 and Rf2 each stop immediate mate. Ra2 allows Nf1#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-grand-swiss-2025-93454922652318cf-58",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "5k2/1pr2pp1/7p/2nR4/2B5/1P1R3P/1r3PP1/6K1 w - - 5 30",
+          "defenceLinesUci": [
+            [
+              "d3e3",
+              "g7g6"
+            ]
+          ],
+          "ignoredLineUci": [
+            "d3e3",
+            "b2a2",
+            "d5d8"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Re3 threatens Rd8#. g6 stops immediate mate. Ra2 allows Rd8#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-grand-swiss-2025-b2a28af94fa15924-56",
+      "stratum": "geometry",
+      "before": "tactical",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "3r1rk1/1p3p1p/p1qp1Q2/3p4/N1P1PPb1/1P6/P6P/5R1K w - - 1 29",
+          "defenceLinesUci": [
+            [
+              "f1g1",
+              "h7h5"
+            ]
+          ],
+          "ignoredLineUci": [
+            "f1g1",
+            "d5c4",
+            "g1g4"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Rg1 threatens Rxg4#. h5 stops immediate mate. dxc4 allows Rxg4#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-grand-swiss-2025-a7772d58c5440cce-32",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "3q1rk1/1brnbpp1/p3p2p/2p5/Pp1P4/1P2P3/1B2NPPP/1BRQ1RK1 w - - 2 17",
+          "defenceLinesUci": [
+            [
+              "d1c2",
+              "d7f6"
+            ]
+          ],
+          "ignoredLineUci": [
+            "d1c2",
+            "c5c4",
+            "c2h7"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qc2 threatens Qh7#. Nf6 stops immediate mate. c4 allows Qh7#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-grand-swiss-2025-a4bead1b4d570aa8-48",
+      "stratum": "geometry",
+      "before": "positional",
+      "after": "mixed",
+      "witnesses": [
+        {
+          "fen": "r2r2k1/4bpp1/2q1p2p/1pp5/4P2P/P1B3P1/1P2QP2/2RR2K1 w - - 0 25",
+          "defenceLinesUci": [
+            [
+              "e2g4",
+              "e7f8"
+            ]
+          ],
+          "ignoredLineUci": [
+            "e2g4",
+            "b5b4",
+            "g4g7"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qg4 threatens Qxg7#. Bf8 stops immediate mate. b4 allows Qxg7#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-british-2025-a70b14be23297c76-31",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "2rqr1k1/pb3ppp/1p2pn2/4P3/8/P1PB4/3BQPPP/R4RK1 b - - 0 16",
+          "defenceLinesUci": [
+            [
+              "d8d5",
+              "f2f3"
+            ]
+          ],
+          "ignoredLineUci": [
+            "d8d5",
+            "a1b1",
+            "d5g2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qd5 threatens Qxg2#. f3 stops immediate mate. Rab1 allows Qxg2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-british-2025-3d493b33fe7efed2-67",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "5rk1/4Q1p1/p3p3/b2p2P1/2qPpPP1/4B3/1Pr5/R4RK1 b - - 3 34",
+          "defenceLinesUci": [
+            [
+              "c4e2",
+              "e7e6"
+            ]
+          ],
+          "ignoredLineUci": [
+            "c4e2",
+            "a1b1",
+            "e2g2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qe2 threatens Qg2#. Qxe6+ stops immediate mate. Rab1 allows Qg2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-british-2025-460f2c44e6cc7829-24",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "r1bqkb1r/pp2pppp/2p2n2/4N3/3P4/6P1/PPP2P1P/R1BQKB1R w KQkq - 2 13",
+          "defenceLinesUci": [
+            [
+              "f1c4",
+              "e7e6"
+            ]
+          ],
+          "ignoredLineUci": [
+            "f1c4",
+            "c6c5",
+            "c4f7"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Bc4 threatens Bxf7#. e6 stops immediate mate. c5 allows Bxf7#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-british-2025-db4e9bfa88b367f2-45",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "5rk1/pp3ppp/8/8/4q3/PK2B3/1P3PPP/3R2NR b - - 10 23",
+          "defenceLinesUci": [
+            [
+              "b7b5",
+              "b3a2"
+            ]
+          ],
+          "ignoredLineUci": [
+            "b7b5",
+            "d1a1",
+            "e4c4"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "b5 threatens Qc4#. Ka2 stops immediate mate. Ra1 allows Qc4#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-british-2025-bfb663605818b70b-149",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "8/8/8/R5p1/4kb2/7K/4b3/8 b - - 15 75",
+          "defenceLinesUci": [
+            [
+              "e4f3",
+              "a5a1"
+            ]
+          ],
+          "ignoredLineUci": [
+            "e4f3",
+            "a5a4",
+            "e2f1"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Kf3 threatens Bf1#. Ra1 stops immediate mate. Ra4 allows Bf1#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-british-2025-eec9464498f93c9d-43",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "r4r1k/ppb1q2p/2n5/2p2pP1/P2p4/1N1P1Q1P/1PPB4/4RRK1 b - - 0 22",
+          "defenceLinesUci": [
+            [
+              "e7d6",
+              "d2f4"
+            ]
+          ],
+          "ignoredLineUci": [
+            "e7d6",
+            "e1a1",
+            "d6h2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qd6 threatens Qh2#. Bf4 stops immediate mate. Ra1 allows Qh2#."
+        }
+      ],
+      "labelTactical": null
+    }
+  ],
+  "reserve": [
+    {
+      "id": "quiet-threat-senior-2025-open65-cfdbd33b2880ec0b-67",
+      "stratum": "geometry",
+      "before": "positional",
+      "after": "mixed",
+      "witnesses": [
+        {
+          "fen": "5r1k/2pr2pp/Q3p3/2P4q/3Pb3/P6P/1P4P1/3RR1K1 b - - 2 34",
+          "defenceLinesUci": [
+            [
+              "h5g6",
+              "a6e2"
+            ],
+            [
+              "h5g6",
+              "d1d2"
+            ]
+          ],
+          "ignoredLineUci": [
+            "h5g6",
+            "d1a1",
+            "g6g2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qg6 threatens Qxg2#. Qe2 and Rd2 each stop immediate mate. Ra1 allows Qxg2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-5808927f6791f350-41",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "1r1q1rk1/1N6/4b2p/p1p2p2/2p5/P2P2b1/1P2P1B1/R1BQ1K1R b - - 2 21",
+          "defenceLinesUci": [
+            [
+              "d8d4",
+              "e2e3"
+            ]
+          ],
+          "ignoredLineUci": [
+            "d8d4",
+            "a1b1",
+            "d4f2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qd4 threatens Qf2#. e3 stops immediate mate. Rb1 allows Qf2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-cd3b160df44a5357-63",
+      "stratum": "geometry",
+      "before": "positional",
+      "after": "mixed",
+      "witnesses": [
+        {
+          "fen": "1br1r1k1/1b2q1p1/4p2p/5p2/2nP4/2N5/BP2QBPP/R2R2K1 b - - 6 32",
+          "defenceLinesUci": [
+            [
+              "e7g5",
+              "g2g3"
+            ]
+          ],
+          "ignoredLineUci": [
+            "e7g5",
+            "a1b1",
+            "g5g2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qg5 threatens Qxg2#. g3 stops immediate mate. Rab1 allows Qxg2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-d122dd6552cc30c5-31",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "r3k2r/2q1bp1p/pn1p1p2/1p1PpP2/6P1/P4Q2/1PP1N2P/2KR1B1R b kq - 0 16",
+          "defenceLinesUci": [
+            [
+              "a8c8",
+              "c2c3"
+            ]
+          ],
+          "ignoredLineUci": [
+            "a8c8",
+            "d1e1",
+            "c7c2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Rc8 threatens Qxc2#. c3 stops immediate mate. Re1 allows Qxc2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-0853df3e473571d0-55",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "3q1r1k/7p/7r/pPP1pp2/3ppb2/P5R1/1B3PPP/3Q1RK1 b - - 2 28",
+          "defenceLinesUci": [
+            [
+              "d8h4",
+              "h2h3"
+            ]
+          ],
+          "ignoredLineUci": [
+            "d8h4",
+            "d1a1",
+            "h4h2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qh4 threatens Qxh2#. h3 stops immediate mate. Qa1 allows Qxh2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-9a4744eb3eeb1ff6-42",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "q2n2k1/p4ppp/3P4/r7/5P2/8/2P3PP/3Q1RK1 w - - 1 22",
+          "defenceLinesUci": [
+            [
+              "d1e1",
+              "d8c6"
+            ]
+          ],
+          "ignoredLineUci": [
+            "d1e1",
+            "a5a1",
+            "e1e8"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qe1 threatens Qe8#. Nc6 stops immediate mate. Ra1 allows Qe8#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-7942d6d12f0ed586-61",
+      "stratum": "geometry",
+      "before": "positional",
+      "after": "mixed",
+      "witnesses": [
+        {
+          "fen": "4r1k1/1p5p/p2p2pn/3P4/PQ3P2/7P/4r3/6BK b - - 0 31",
+          "defenceLinesUci": [
+            [
+              "h6f5",
+              "b4c3"
+            ]
+          ],
+          "ignoredLineUci": [
+            "h6f5",
+            "h3h4",
+            "f5g3"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Nf5 threatens Ng3#. Qc3 stops immediate mate. h4 allows Ng3#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-c157eddaa12c752a-39",
+      "stratum": "geometry",
+      "before": "unclear",
+      "after": "tactical",
+      "witnesses": [
+        {
+          "fen": "2b1rnk1/4qppp/p1p4r/Pp1p4/1P1P4/3BP1N1/3Q1PPP/1R3RK1 b - - 4 20",
+          "defenceLinesUci": [
+            [
+              "e7h4",
+              "h2h3"
+            ]
+          ],
+          "ignoredLineUci": [
+            "e7h4",
+            "b1a1",
+            "h4h2"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qh4 threatens Qxh2#. h3 stops immediate mate. Ra1 allows Qxh2#."
+        }
+      ],
+      "labelTactical": null
+    },
+    {
+      "id": "quiet-threat-senior-2025-open65-a8624996864fd5c2-56",
+      "stratum": "geometry",
+      "before": "positional",
+      "after": "mixed",
+      "witnesses": [
+        {
+          "fen": "2b4r/ppk1nqr1/2n1p2p/P2pPp2/2pP1B2/2P5/1Q2B1PP/RR2N1K1 w - - 5 29",
+          "defenceLinesUci": [
+            [
+              "b2a3",
+              "c7b8"
+            ]
+          ],
+          "ignoredLineUci": [
+            "b2a3",
+            "c6d4",
+            "a3d6"
+          ],
+          "exampleWasSearched": false,
+          "explanation": "Qa3 threatens Qd6#. Kb8 stops immediate mate. Nxd4 allows Qd6#."
+        }
+      ],
+      "labelTactical": null
+    }
+  ]
+}

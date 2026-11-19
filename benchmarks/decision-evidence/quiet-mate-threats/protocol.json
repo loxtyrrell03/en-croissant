@@ -1,0 +1,77 @@
+{
+  "comparisonBase": "8ff28909",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "threads": 1,
+  "hashMiB": 64,
+  "rootBudgetsNodes": [
+    600000,
+    2400000,
+    9600000
+  ],
+  "replyBudgetsNodes": [
+    1000000,
+    4000000
+  ],
+  "seed": "quiet-mate-threat-20251119-v1",
+  "sources": {
+    "grand-swiss-2025": {
+      "gamePopulation": 57,
+      "casePopulations": {
+        "geometry": 7,
+        "control": 57
+      },
+      "picked": {
+        "geometry": 7,
+        "control": 10
+      },
+      "sha256": "3f1c04b3e8347f94c1cd665d561abce85b1dcf9a0cd426f8519e36848abc5f62",
+      "category": "standard",
+      "timeControl": "100 min / 40 moves + 50 min / 20 moves + 15 min / rest + 30 sec / move",
+      "source": "https://lichess.org/broadcast/fide-grand-swiss-2025-open/round-1/xSCoiNg0",
+      "pgn": "https://lichess.org/api/broadcast/round/xSCoiNg0.pgn"
+    },
+    "british-2025": {
+      "gamePopulation": 48,
+      "casePopulations": {
+        "geometry": 11,
+        "control": 48
+      },
+      "picked": {
+        "geometry": 11,
+        "control": 10
+      },
+      "sha256": "d376eb246c885719553eaab5b3a38b72b4f0c4118c7c639c69848ecfc08c9d13",
+      "category": "standard",
+      "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+      "source": "https://lichess.org/broadcast/2025-british-chess-championships-championship/round-1/Rus7vgww",
+      "pgn": "https://lichess.org/api/broadcast/round/Rus7vgww.pgn"
+    },
+    "senior-2025-open65": {
+      "gamePopulation": 91,
+      "casePopulations": {
+        "geometry": 15,
+        "control": 91
+      },
+      "picked": {
+        "geometry": 15,
+        "control": 10
+      },
+      "sha256": "10a64723a2defae058a33a9a3e293fcc59d22196005dfce0afea3788a916c8a4",
+      "category": "standard",
+      "timeControl": "90 min / 40 move + 30 min + 30 sec / move",
+      "source": "https://lichess.org/broadcast/fide-world-senior-championship-2025-open-65/round-1/Cb9z7AQN",
+      "pgn": "https://lichess.org/api/broadcast/round/Cb9z7AQN.pgn"
+    }
+  },
+  "freezeBeforeReserve": {
+    "decisionQuietMateThreat.ts": "ded527cd8eefb8f855cf5164ab5e45c7de6e4729c1ab40b08d9bfa0031d6ddab",
+    "decisionAssessment.ts": "f82fb789b573e8eecd8b1ce036a82069c9db802770dc03881e7fe01bfd004c0f",
+    "collect-threats.py": "8cad5abdef44804093d80c0e5b7dec03fb5c2f90bce2b3139426b539cef4aabf"
+  },
+  "inputSha256": {
+    "development.json": "5f22b386390a62b1827e74f2b323dfb76f7347193a9bccd171b0243f290e295c",
+    "reserve.json": "5a978c340bca144f019ea1139aa90e5f5e983f8b19e31e7919c029f7a25f6b07",
+    "examples.json": "6919f9a1b8c4943770966ae16b652fe56038f00db6909e912c412a4adce6606d"
+  }
+}

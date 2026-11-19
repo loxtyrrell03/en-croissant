@@ -3746,3 +3746,24 @@ independent classical games. The baseline already caught that case.
 The worker keeps the existing search budget. The 112 fresh decisions
 and 1,050 valid archived decisions preserve their earlier assessments.
 [Benchmark and source](../benchmarks/decision-evidence/conditional-recovery/README.md)
+
+## Quiet threats and matched review across all three questions
+
+The broader replay finds higher detection in archived classical
+positions and mistakes. It also finds persistent mixed and motif
+misses. On 68 reviewed tactical mistakes the original identifies ten
+and the rebuilt system identifies nineteen. The original produces
+one false tactical call among 165 reviewed negatives. The rebuilt
+system produces zero. The rebuilt classifier finds only one of
+seventeen reviewed mixed mistakes. Exact live root motif predictions
+match the original on the compared independent and course slices.
+[Comparison, limits and reproduction](../benchmarks/decision-evidence/cross-scope-audit/README.md)
+
+Decision assessment v33 gives quiet mate threats their own checked
+evidence in position and move reports. The local verifier confirms
+that the separate Stockfish replies stop immediate mate and that a
+real alternative allows it. This restores the missed Montenegro
+position and adds nine tactical diagnoses on the separate 25-game
+World Senior reserve. Ten controls and all played-move diagnoses
+match. It adds zero engine searches.
+[Quiet-threat experiment](../benchmarks/decision-evidence/quiet-mate-threats/README.md)

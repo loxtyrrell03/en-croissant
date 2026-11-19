@@ -1,0 +1,40 @@
+{
+  "strictEngineExampleArm": {
+    "development": 38,
+    "newTacticalPositions": 0,
+    "knownRegressionRestored": true
+  },
+  "legalExampleArm": {
+    "development": {
+      "inputs": 18,
+      "valid": 18,
+      "changedReports": 12,
+      "positionEvidenceAdded": 12,
+      "moveEvidenceAdded": 12,
+      "positionTacticalAdded": 11,
+      "controls": 20,
+      "changedControls": 0
+    },
+    "reserve": {
+      "inputs": 15,
+      "valid": 15,
+      "changedReports": 9,
+      "positionEvidenceAdded": 9,
+      "moveEvidenceAdded": 9,
+      "positionTacticalAdded": 9,
+      "controls": 10,
+      "changedControls": 0,
+      "existingPositionalAlsoSupported": 4
+    },
+    "archive": {
+      "inputs": 1051,
+      "valid": 1050,
+      "changedReports": 3,
+      "positionEvidenceAdded": 1,
+      "moveEvidenceAdded": 3,
+      "positionTacticalAdded": 1
+    },
+    "additionalEngineRequests": 0,
+    "changedMistakeReports": 0
+  }
+}

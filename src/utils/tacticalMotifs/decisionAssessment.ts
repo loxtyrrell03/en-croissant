@@ -38,6 +38,7 @@ import {
 import type { TacticalGameHistory } from "./gameHistory";
 import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
 import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
+import { findQuietMateThreat, type QuietMateThreat } from "./decisionQuietMateThreat";
 import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
 import {
     findConditionalMate,
@@ -78,7 +79,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 32;
+export const DECISION_ASSESSMENT_VERSION = 33;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -98,6 +99,7 @@ export type DecisionAssessment = {
     conditionalMate?: DecisionConditionalMate;
     matingLines?: ConfirmedMatingLines;
     mateDefence?: ImmediateMateDefence;
+    quietMateThreat?: QuietMateThreat;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -544,12 +546,27 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         return null;
     const originalCandidates = input.candidates;
     input = { ...input, candidates: validCandidates };
-    const moves = input.candidates.map((line) => ({
-        ...assessMove(input, line),
-        moveUci: line.pvUci[0],
-        evaluationCp: line.cp,
-        depth: line.depth,
-    }));
+    const moves = input.candidates.map((line) => {
+        const assessment = assessMove(input, line);
+        if (assessment.tactical.support !== "supported") {
+            const probe = input.replyProbes?.find(
+                (item) => item.moveUci === line.pvUci[0],
+            );
+            if (probe && validReplyFrame(input.fen, line, probe)) {
+                const threat = findQuietMateThreat(input.fen, line, probe.lines);
+                if (threat) {
+                    assessment.quietMateThreat = threat;
+                    assessment.tactical = {
+                        support: "supported",
+                        basis: "bounded-proof",
+                        reasons: [threat.explanation],
+                    };
+                    assessment.category = category(assessment.tactical, assessment.positional);
+                }
+            }
+        }
+        return { ...assessment, moveUci: line.pvUci[0], evaluationCp: line.cp, depth: line.depth };
+    });
     const first = input.candidates[0];
     const position: ChessDecisionReport["position"] = {
         ...emptyAssessment(),
@@ -589,6 +606,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     if (tactical?.conditionalFork) position.conditionalFork = tactical.conditionalFork;
     if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
     if (tactical?.matingLines) position.matingLines = tactical.matingLines;
+    if (tactical?.quietMateThreat) position.quietMateThreat = tactical.quietMateThreat;
     for (const move of viable) {
         const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;
         const qualified = qualifyPositionFactors(

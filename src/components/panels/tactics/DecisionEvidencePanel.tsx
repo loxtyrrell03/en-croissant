@@ -107,6 +107,7 @@ function EvidenceSummary({
   const conditionalMate = assessment.conditionalMate;
   const matingLines = assessment.matingLines;
   const mateDefence = assessment.mateDefence;
+  const quietThreat = assessment.quietMateThreat;
   return (
     <Paper withBorder p="xs">
       <Stack gap={6}>
@@ -212,6 +213,26 @@ function EvidenceSummary({
             )}
           </Stack>
         )}
+        {expanded && quietThreat && (
+          <Stack gap={4}>
+            {quietThreat.defenceLinesUci.map((moves) => (
+              <Text key={moves.join(" ")} size="xs" style={{ overflowWrap: "anywhere" }}>
+                <Text component="span" fw={600} size="xs">
+                  Defence.{" "}
+                </Text>
+                {lineSan(quietThreat.fen, moves)}
+              </Text>
+            ))}
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">
+                {quietThreat.exampleWasSearched
+                  ? "Searched reply that allows mate."
+                  : "Example reply that allows mate."}{" "}
+              </Text>
+              {lineSan(quietThreat.fen, quietThreat.ignoredLineUci)}
+            </Text>
+          </Stack>
+        )}
         {expanded && conditionalMate && (
           <Text size="xs" style={{ overflowWrap: "anywhere" }}>
             <Text component="span" fw={600} size="xs">
@@ -237,6 +258,7 @@ function EvidenceSummary({
           !!conditionalFork ||
           !!conditionalMate ||
           !!matingLines ||
+          !!quietThreat ||
           !!mateDefence ||
           !!comparedLines?.length ||
           assessment.limitations.length > 0 ||
