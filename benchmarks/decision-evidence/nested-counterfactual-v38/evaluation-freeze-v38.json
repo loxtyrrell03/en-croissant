@@ -1,0 +1,23 @@
+{
+  "protocol": 1,
+  "comparator": "20af76cbc08fda99313ad760d156be39c1712c33",
+  "candidate": "single",
+  "minimumAddedTacticalTruePositives": 2,
+  "maximumAddedReviewedTacticalFalsePositives": 0,
+  "maximumQueriesPerPosition": 2,
+  "maximumRequestedNodesPerPosition": 1750000,
+  "hashes": [
+    {
+      "File": "screen.py",
+      "Hash": "AAB4AC82C53A9781F8DCEB0E7170A049CFFF54FA1CEFD365757D47D941FCA1F5"
+    },
+    {
+      "File": "tournament-sample.json",
+      "Hash": "708DC00C4CEE37D1E5EE19C6C1515D44B0F9F1BC5E01A1CE19D5FD29542A8CE1"
+    },
+    {
+      "File": "decisionNestedResearch.test.ts",
+      "Hash": "7E6BA4A971CE88509091BA3815BA28C1016E035C795ABF84BE896419A9E61843"
+    }
+  ]
+}

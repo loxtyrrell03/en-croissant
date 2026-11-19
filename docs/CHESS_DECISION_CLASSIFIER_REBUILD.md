@@ -2194,3 +2194,103 @@ ordinary root, reply, shared-reply and six-choice caches under the
 `v37` profile and run the standard candidate audit with all three
 optional verification flags. The compact summary also retains the
 development counts for each tested variant.
+
+## Iteration 38 — look for a tactical decision inside a viable line
+
+The root comparison stops short of asking whether a viable move is viable
+only because a specific reply avoids a tactic. For this experiment, replay
+the first two Stockfish choices within 50 centipawns of the leading score.
+Nominate a board where the recorded move delivers check or creates a new
+immediate capture threat which the engine's reply answers. Search the
+board with three candidates and check one alternative reply independently.
+A cheap board comparison nominates the capture. It supplies no label.
+
+Initial exploration covered 248 previously reviewed positions from the
+v33–v37 public cohorts, including 184 without established tactical
+evidence. Across up to five plies in each viable line it searched 321
+boards with a candidate threat or check. The broad policy searched only
+one board, with principal-continuation priority, and added 12 reviewed
+positives and four false positives. It accepted routine
+recaptures and unrelated threats after otherwise strategic choices.
+The strict policy considers only the first three plies. A check must
+have at most four evasions and the inferior one must permit confirmed
+mate within six moves. A capture must match the threat that prompted the
+search. After the first ply a capture threat must require a capture in
+the leading defence, which removes the simple later knight retreat in the
+Dutch Open control. Retain only a follow-up where the best move agrees
+with the original line. For a material conclusion the independent reply
+must match the capture, converge on the evaluation and leave a settled
+material consequence under the existing comparison.
+
+| Development comparison, one follow-up board | Follow-up searches | Added reviewed tactical TP / FP |
+| --- | ---: | ---: |
+| Broad, earliest eligible board | 112 | 13 / 4 |
+| Strict, earliest eligible board and one corroboration | 107 | 6 / 0 |
+| Strict, principal continuation first and one corroboration | 107 | 7 / 0 |
+
+A second strict board with the same principal ordering and corroboration
+rules added one more positive at a cost of 40M additional nodes in
+development. The frozen policy searches one follow-up board at 750k
+nodes and at most one reply at 1M nodes. It requires two net new
+reviewed tactical positives and zero new reviewed false positives to
+qualify for runtime consideration.
+
+| Held-out position question | Positive / negative / uncertain references | Legacy root-motif proxy TP / FP | v37 TP / FP | Follow-up TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical | 23 / 10 / 12 | 7 / 0 | 9 / 0 | 10 / 0 |
+| Positional | 39 / 4 / 2 | unavailable | 11 / 0 | 11 / 0 |
+| Mixed | 17 / 14 / 14 | unavailable | 0 / 0 | 0 / 0 |
+
+The 45 fresh positions come from different games across the Lugano
+Standard Open, Montenegro Cup finals and four North American Youth
+Championship sections. One engine-assisted reviewer saved the labels on
+the ordinary search frame and played-choice comparison before the extra
+search was run. Game and board identities were screened against the
+earlier public benchmark manifests. Legacy results use first-choice
+root motifs as a proxy for tactical position character. The candidate
+has no new scoring head for move justification, mistake mechanism or a
+specific motif.
+
+- In an Open U18 game, after 19.O-O-O Ra7 20.Bd6, both searches agree
+  that Bxd6 prevents a loss. After ...b6, Bxf8 wins the exchange even
+  after Black recaptures. The reviewer also saw a strategic consequence
+  of castling and using the d-file, but neither system recognised that
+  axis. This raised tactical recall only.
+- In an Open U14 game, after 30.Qd5+ Kf8, the two searches tie the
+  move to mate in four beginning 31.Bb4+. The positional reference
+  was positive and the tactical reference was uncertain. Keep this
+  proof outside the measured tactical gain.
+
+The follow-up searched 24 of 45 boards and required three separate reply
+searches, a total of 21M new requested nodes. The median engine time was
+711 ms among queried cases and the maximum was 1.90 s, measured with one
+thread per process and four workers, excluding the original search and
+UI time. Seven of the 24 follow-ups were at first-reply boards already
+searched by v37, including six at depth 16 or higher. The candidate
+missed the promotion gate and remains a benchmark. Reusing those
+existing reply frames is a lower-cost branch to test. The small
+sample and single reviewer limit the estimates, particularly for
+mixed accuracy and specificity.
+
+[Lugano Standard Open, round 1](https://lichess.org/api/broadcast/round/r2h3ZELp.pgn)
+[Montenegro Cup, finals](https://lichess.org/api/broadcast/round/2cHuz9HO.pgn)
+[North American Youth Open U14](https://lichess.org/api/broadcast/round/Xn4ayeXi.pgn)
+[North American Youth Open U16](https://lichess.org/api/broadcast/round/kab5yVJr.pgn)
+[North American Youth Girls U16](https://lichess.org/api/broadcast/round/1IgX8gCg.pgn)
+[North American Youth Open U18](https://lichess.org/api/broadcast/round/WPIGkjno.pgn)
+
+**Reproduction.** The manifest, labels, original policy digest and
+compact receipt are under `benchmarks/decision-evidence/nested-counterfactual-v38`.
+Run the standard root, reply, shared-reply and six-choice collectors
+using profile `v38` and the v37 classifier at `20af76cb` for the
+ordinary assessment. Make a JSON array with one row listing the cache
+directory, profile, path to the reference and path to the ordinary
+assessment. Give that manifest, the engine and a separate output
+directory to `decision-evidence-nested-counterfactual.py --screen single`.
+Set `NESTED_SCREEN` to that output and `NESTED_OUTPUT` to an unused
+result file, then run `decisionNestedResearch.test.ts`. For this policy
+overlay tactical support for rows with a matching defensive line and
+a confirmed capture threat or mate. Score the three axes with the
+ordinary reference evaluator. The committed runner reproduced all
+35 evaluated records, including the 24 probed boards and both verified
+proofs, apart from timings.
