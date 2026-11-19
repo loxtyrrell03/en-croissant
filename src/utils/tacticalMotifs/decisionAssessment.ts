@@ -45,6 +45,7 @@ import {
     type DecisionConditionalMate,
 } from "./conditionalDecisionResources";
 import { compareExposedForcingAttack } from "./decisionForcingConsequence";
+import { compareTacticalRecovery, type DecisionTacticalRecovery } from "./decisionTacticalRecovery";
 import {
     compareExposedPieceTrap,
     compareSharedReply,
@@ -73,7 +74,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 30;
+export const DECISION_ASSESSMENT_VERSION = 31;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -159,6 +160,7 @@ export type ChessDecisionReport = {
               mateConsequence?: DecisionMateConsequence;
               promotion?: PromotionMistakeEvidence;
               rookPressure?: RookPressureEvidence;
+              tacticalRecovery?: DecisionTacticalRecovery;
               pawnStructure?: PawnStructureEvidence;
           })
         | null;
@@ -1012,6 +1014,24 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     ],
                 };
             }
+            const recovery =
+                assessment.tactical.support !== "supported" &&
+                betterProbe?.lines[0] &&
+                playedProbe?.lines[0]
+                    ? compareTacticalRecovery(
+                          input.fen,
+                          comparedBest,
+                          playedLine,
+                          betterProbe.lines[0],
+                          playedProbe.lines[0],
+                      )
+                    : null;
+            if (recovery)
+                assessment.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [recovery.explanation],
+                };
             // Compare this particular played choice, not a different alternative.
             const factors = comparePositionalTransitions(input.fen, comparedBest, [playedLine]);
             const lostOutpost = compareLostOutpost(input.fen, comparedBest, playedLine);
@@ -1124,6 +1144,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 ...(promotion ? { promotion } : {}),
                 ...(rookPressure ? { rookPressure } : {}),
                 ...(pawnStructure ? { pawnStructure } : {}),
+                ...(recovery ? { tacticalRecovery: recovery } : {}),
             };
         }
     }

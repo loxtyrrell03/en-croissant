@@ -1,0 +1,439 @@
+[
+  {
+    "id": "exchange-lorca-bbaeca114c6d471d-43",
+    "evidence": {
+      "local-recovery": {
+        "commonReply": "Nxf7+",
+        "commonVictim": "f7",
+        "recovery": "Kg8",
+        "recoveredVictim": "f4",
+        "horizon": 8,
+        "materialMargin": 140,
+        "lines": [
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5"
+          ],
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qf6+",
+            "Bg7",
+            "Qh4"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qc7",
+            "Nc8",
+            "Rad1"
+          ]
+        ]
+      },
+      "material-settled": {
+        "commonReply": "Nxf7+",
+        "commonVictim": "f7",
+        "recovery": "Kg8",
+        "recoveredVictim": "f4",
+        "horizon": 12,
+        "materialMargin": 140,
+        "lines": [
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qf6+",
+            "Bg7",
+            "Qh4",
+            "Nd7",
+            "Qh5",
+            "Ref8",
+            "Rad1"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qc7",
+            "Nc8",
+            "Rad1",
+            "Ne7",
+            "Qxc5",
+            "Ng6",
+            "Rd4"
+          ]
+        ]
+      },
+      "quiet-settled": {
+        "commonReply": "Nxf7+",
+        "commonVictim": "f7",
+        "recovery": "Kg8",
+        "recoveredVictim": "f4",
+        "horizon": 12,
+        "materialMargin": 140,
+        "lines": [
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qf6+",
+            "Bg7",
+            "Qh4",
+            "Nd7",
+            "Qh5",
+            "Ref8",
+            "Rad1"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qc7",
+            "Nc8",
+            "Rad1",
+            "Ne7",
+            "Qxc5",
+            "Ng6",
+            "Rd4"
+          ]
+        ]
+      }
+    },
+    "event": "original"
+  },
+  {
+    "id": "exchange-karlstad-dd622ad81f48cc4a-44",
+    "evidence": {
+      "local-recovery": {
+        "commonReply": "Nxa1",
+        "commonVictim": "a1",
+        "recovery": "Ne5",
+        "recoveredVictim": "d8",
+        "horizon": 8,
+        "materialMargin": 180,
+        "lines": [
+          [
+            "Kg1",
+            "Nxa1",
+            "Ne5",
+            "Rd6",
+            "Ngxf7",
+            "Nh7",
+            "Nxd6",
+            "exd6"
+          ],
+          [
+            "Kg1",
+            "Nxa1",
+            "Ne5",
+            "Rd6",
+            "Ngxf7",
+            "Nh7",
+            "Nxd6",
+            "exd6"
+          ],
+          [
+            "Bf4",
+            "Nxa1",
+            "Kg1",
+            "Nc2",
+            "Ne5",
+            "Rd6",
+            "Ngxf7",
+            "Nh7"
+          ],
+          [
+            "Bf4",
+            "Nxa1",
+            "Kg3",
+            "e5",
+            "Bxe5",
+            "Re7",
+            "Kh2",
+            "Nc2"
+          ]
+        ]
+      }
+    },
+    "event": "original"
+  },
+  {
+    "id": "exchange-lorca-bbaeca114c6d471d-43",
+    "evidence": {
+      "local-recovery": {
+        "commonReply": "Nxf7+",
+        "commonVictim": "f7",
+        "recovery": "Kg8",
+        "recoveredVictim": "f4",
+        "horizon": 8,
+        "materialMargin": 140,
+        "lines": [
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5"
+          ],
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qf6+",
+            "Bg7",
+            "Qh4"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qc7",
+            "Nc8",
+            "Rad1"
+          ]
+        ]
+      },
+      "material-settled": {
+        "commonReply": "Nxf7+",
+        "commonVictim": "f7",
+        "recovery": "Kg8",
+        "recoveredVictim": "f4",
+        "horizon": 12,
+        "materialMargin": 140,
+        "lines": [
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qf6+",
+            "Bg7",
+            "Qh4",
+            "Nd7",
+            "Qh5",
+            "Ref8",
+            "Re2"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qc7",
+            "Nc8",
+            "Rad1",
+            "Ne7",
+            "Qxc5",
+            "Ng6",
+            "Rd4"
+          ]
+        ]
+      },
+      "quiet-settled": {
+        "commonReply": "Nxf7+",
+        "commonVictim": "f7",
+        "recovery": "Kg8",
+        "recoveredVictim": "f4",
+        "horizon": 12,
+        "materialMargin": 140,
+        "lines": [
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Rg6",
+            "Nxf7+",
+            "Kg8",
+            "Bxf8",
+            "Qxf7",
+            "Qxf7+",
+            "Kxf7",
+            "Bxc5",
+            "Nd7",
+            "Bd4",
+            "Reg8",
+            "Re3"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qf6+",
+            "Bg7",
+            "Qh4",
+            "Nd7",
+            "Qh5",
+            "Ref8",
+            "Re2"
+          ],
+          [
+            "Bxh6",
+            "Nxf7+",
+            "Qxf7",
+            "Qxf7",
+            "Ba8",
+            "Qc7",
+            "Nc8",
+            "Rad1",
+            "Ne7",
+            "Qxc5",
+            "Ng6",
+            "Rd4"
+          ]
+        ]
+      }
+    },
+    "event": "deeper"
+  },
+  {
+    "id": "exchange-karlstad-dd622ad81f48cc4a-44",
+    "evidence": {},
+    "event": "deeper"
+  }
+]

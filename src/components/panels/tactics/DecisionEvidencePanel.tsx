@@ -245,6 +245,7 @@ function DecisionReport({
   const selected = report.moves.find((item) => item.moveUci === move);
   const episode = report.mistake?.tacticalEpisode;
   const mate = report.mistake?.mateConsequence;
+  const recovery = report.mistake?.tacticalRecovery;
   const mistakeComparison = report.mistake?.promotion ?? episode;
   const rookPressure = report.mistake?.rookPressure;
   const pawnStructure = report.mistake?.pawnStructure;
@@ -269,6 +270,7 @@ function DecisionReport({
   for (const [comparison, detail] of [
     [rookPressure, "rook comparison"],
     [pawnStructure, "pawn structure"],
+    [recovery, "tactical recovery"],
   ] as const) {
     if (!comparison) continue;
     const played = lineSan(report.fen, comparison.playedLineUci);
@@ -284,6 +286,16 @@ function DecisionReport({
         label: hasOtherComparison ? `Better line for ${detail}` : "Better line",
         san: better,
       });
+  }
+  if (recovery) {
+    for (const [label, line] of [
+      ["Separate reply after better move", recovery.confirmedBetterLineUci],
+      ["Separate reply after played move", recovery.confirmedPlayedLineUci],
+    ] as const) {
+      const san = lineSan(report.fen, line);
+      if (!mistakeLines.some((existing) => existing.san === san))
+        mistakeLines.push({ label, san });
+    }
   }
   const contrast = report.position.tacticalContrast;
   const checkpoint = report.position.preparedCheckpoint;

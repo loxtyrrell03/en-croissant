@@ -1,0 +1,32 @@
+{
+  "researchReplay": {
+    "matchedGames": 65,
+    "localRecovery": 2,
+    "settledMaterial": 1,
+    "settledQuiet": 1,
+    "deeperReruns": 2,
+    "deeperWithLocalRecovery": 1
+  },
+  "appWorker": {
+    "inputs": 101,
+    "unchangedIgnoringVersion": 100,
+    "unclearToTactical": [
+      "exchange-karlstad-dd622ad81f48cc4a-44"
+    ],
+    "freshControls": 34,
+    "freshControlsChanged": 0,
+    "freshEligiblePositives": 0,
+    "freshControlScope": {
+      "failedComparableLossFrame": 30,
+      "noSharedCapture": 4
+    },
+    "addedEngineSearches": 0
+  },
+  "archiveReplay": {
+    "inputs": 1051,
+    "validReports": 1050,
+    "playedComparisons": 317,
+    "reportsWithMistakeAssessment": 178,
+    "unchangedIgnoringVersion": 1051
+  }
+}

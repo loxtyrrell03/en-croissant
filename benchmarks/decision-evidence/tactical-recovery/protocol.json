@@ -1,0 +1,85 @@
+{
+  "baseline": "f0d82946",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "options": {
+    "Threads": 1,
+    "Hash": 64
+  },
+  "pairedRootBudget": [
+    600000,
+    2400000,
+    9600000
+  ],
+  "replyBudget": [
+    1000000,
+    4000000
+  ],
+  "deeperBudgetPerSearch": 8000000,
+  "seed": "joint-capture-resource-0",
+  "samplingQuota": {
+    "escape-square": 7,
+    "unpin": 7,
+    "ordinary": 4
+  },
+  "sources": {
+    "india": {
+      "games": 88,
+      "pool": {
+        "escape-square": 31,
+        "unpin": 6,
+        "ordinary": 88
+      },
+      "picked": {
+        "escape-square": 7,
+        "unpin": 6,
+        "ordinary": 4
+      },
+      "sha256": "27fd794e1c20d292da71b958c7210a92ef1e7cbc3e107511b42f95dc262fcd1e",
+      "source": "https://lichess.org/broadcast/51st-indian-womens-chess-championship-2025/round-1/TkAUKLnN",
+      "pgn": "https://lichess.org/api/broadcast/14Yi2WNC.pgn",
+      "category": "standard",
+      "timeControl": "90 min / 40 moves + 30 min + 30 sec / move"
+    },
+    "wroclaw-r1": {
+      "games": 53,
+      "pool": {
+        "escape-square": 14,
+        "unpin": 3,
+        "ordinary": 53
+      },
+      "picked": {
+        "escape-square": 7,
+        "unpin": 2,
+        "ordinary": 4
+      },
+      "sha256": "acc7c2efcbedc6ec26b73e18b0e9cd43cd10859887059bc94db8633ce9fdb7f9",
+      "source": "https://lichess.org/broadcast/wroclaw-chess-festival-2025-open-a/round-1/BeBrP9J2",
+      "pgn": "https://lichess.org/api/broadcast/round/BeBrP9J2.pgn",
+      "category": "standard",
+      "timeControl": "90 min + 30 sec"
+    },
+    "argentina-r1": {
+      "games": 5,
+      "pool": {
+        "escape-square": 0,
+        "unpin": 0,
+        "ordinary": 4
+      },
+      "picked": {
+        "escape-square": 0,
+        "unpin": 0,
+        "ordinary": 4
+      },
+      "sha256": "8a8fdfe740758a25f4cfa2b3613a6d8b1b4da480478a5a250f8b24affde3836c",
+      "source": "https://lichess.org/broadcast/campeonatos-argentinos-amateur-2025-villa-carlos-paz-sub2300/round-1/q7oRU5Tr",
+      "pgn": "https://lichess.org/api/broadcast/round/q7oRU5Tr.pgn",
+      "category": "standard",
+      "timeControl": "60 min + 30 seg"
+    }
+  },
+  "frozenInputsSha256": {
+    "controls.json": "b07ae4c6ad2ee7970ce76566a93f23870f57731997eac99a3b008f164ce432a8",
+    "deeper.json": "9901f7b68bfc7f4f93887a09e64a29f8b1ec9a496eedc0479bb8cb9d35009f98"
+  }
+}
