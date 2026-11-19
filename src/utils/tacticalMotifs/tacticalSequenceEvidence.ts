@@ -281,6 +281,42 @@ export function extractTacticalSequenceWitnesses(
             }
         }
 
+        // Defender removal can enable a later combination, rather than the
+        // very next capture. Keep the target and attacking piece identities
+        // unchanged until that later use; intervening replacements invalidate
+        // this causal link. The legal recapture duty is tested before removal.
+        if (first.capture > 0) {
+            for (let k = i + 4; k < Math.min(steps.length, i + 9); k += 2) {
+                const payoff = steps[k];
+                const target = first.before.board.get(payoff.move.to);
+                if (
+                    !payoff.capture ||
+                    payoff.before.turn !== side ||
+                    !target ||
+                    target.color === side ||
+                    first.move.to === payoff.move.to ||
+                    steps
+                        .slice(i, k)
+                        .some(
+                            (step) =>
+                                step.move.from === payoff.move.to ||
+                                step.move.to === payoff.move.to ||
+                                step.move.from === payoff.move.from ||
+                                step.move.to === payoff.move.from,
+                        ) ||
+                    !canRecapture(first.before, payoff.move, first.move.to, side)
+                )
+                    continue;
+                push(
+                    "capturingDefender",
+                    i,
+                    k,
+                    [first.move.to, payoff.move.to],
+                    `${first.san} removes the defender on ${makeSquare(first.move.to)}. At ply ${k + 1}, ${payoff.san} uses a capture that this defender could legally have recaptured on before its removal. The intervening moves are part of this combination.`,
+                );
+            }
+        }
+
         const king = first.after.board.kingOf(opposite(side));
         if (king !== undefined && first.after.isCheck()) {
             for (const square of first.after.kingAttackers(

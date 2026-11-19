@@ -254,6 +254,62 @@ this investigation, so no experiment here uses that unavailable reference set.
 The public independent sample follows the documented premove convention and
 CC0 terms. [Lichess database](https://database.lichess.org/#puzzles)
 
+## Strategic trajectories and analysis-cost experiment
+
+Candidate v7 adds root-linked strategic effects: a tracked pawn advance or lock,
+piece reach outside opposing pawn attacks, restrictions of an opposing piece,
+and an exchange by the root piece that removes the opposing bishop pair. Reach
+is geometric and explicitly not legal/safe mobility; pins and other attackers
+still matter. A captured root pawn cannot donate its identity to a replacement
+pawn. These are board facts, not asserted evaluation contributions.
+
+The architecture now admits a concrete persistent effect corroborated by a
+separate best-reply search even when equally good strategic alternatives exist.
+General space/activity interpretations require an early balanced-material
+window while the feature persists. Specific structural transformations can be
+the compensation for a sacrifice; requiring equal material would exclude those
+mixed decisions. The window and heuristic status remain in the evidence. A
+capture at the end of a longer PV cannot erase an earlier strategic window.
+Mistake attribution still compares the actual played move separately.
+
+The deeper-search experiment adaptively raises root nodes from 0.6 million to
+2.4 million, then at most 9.6 million until depth 18. All 60 development roots
+reached depths 18–23. Root searches requested 163.2 million nodes and took 184
+aggregate engine seconds, with a median 3.34 seconds per position, excluding
+reply probes and other searches. Increased depth alone made v8's development
+agreement worse: tactical 9/39, positional 2/29, mixed 0/11. This is evidence
+against treating deeper search alone as a classifier fix.
+
+| Provisional course development agreement | Tactical / 39 | Positional / 29 | Mixed / 11 |
+|---|---:|---:|---:|
+| Existing root output, same deeper inputs | 2 | 0 | 0 |
+| v7 root-linked effects, original budget | 10 | 3 | 1 |
+| v8 separate reply persistence, original budget | 10 | 3 | 1 |
+| v8, deeper root budget only | 9 | 2 | 0 |
+| v9 explicit feature windows, deeper budget | 9 | 11 | 1 |
+| v10 delayed defender removal / structural compensation | 11 | 13 | 2 |
+
+All these runs have zero detections on just three reviewed tactical negatives;
+there are no reviewed positional negatives. Precision remains inadequately
+identified. The reference was source-assisted agent review after development,
+not independent expert adjudication. Some source/root-engine move disagreements
+and incomplete side variations remain. These numbers do not establish broad
+accuracy or acceptance. Validation is still sealed.
+
+The delayed defender-removal witness follows an unchanged target and attacker
+through intervening moves and checks the removed piece's legal prior recapture
+duty. This recovers a combination after an inserted check without inventing a
+root fork: the fork retains its later ply and the removal retains the root ply.
+One current mixed example is a knight fork whose eventual exchange removes the
+bishop pair. Defensive prophylaxis, king safety and broader positional meaning
+remain incompletely covered. Named motifs beyond the sequence vocabulary still
+depend on the existing bounded proof library or remain unresolved.
+
+Use `--minimum-depth 18 --maximum-root-nodes 9600000` for the cost experiment,
+write to a fresh private cache, and set `DECISION_ENGINE_PROFILE=v2deep` for its
+audit. The default profile stays `v2`; source/engine identities and actual
+adaptive attempts are recorded. Never overwrite earlier evidence to rerun it.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and

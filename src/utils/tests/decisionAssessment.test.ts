@@ -3,6 +3,7 @@ import { makeFen } from "chessops/fen";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
+import { corroboratePositionalEffects } from "../tacticalMotifs/positionalTransitions";
 
 const fen = "3r4/4k2p/8/8/1N6/8/7P/6K1 w - - 0 1";
 // Synthetic score payloads exercise the evidence contract. They are not an
@@ -89,6 +90,36 @@ test("a lasting structural change records what changed, not an assumed cause", (
         }),
     );
     expect(changes.every((item) => !("evaluationContribution" in item))).toBe(true);
+    // Rook for minor/pawn changes the material balance by -0.8 points. That
+    // must not erase the separately confirmed structural compensation.
+    expect(corroboratePositionalEffects(position, line, line)).toContainEqual(
+        expect.objectContaining({
+            feature: "pawn-stable-minor",
+            comparison: "separate-reply-search",
+            interpretation: "heuristic",
+        }),
+    );
+});
+
+test("a later capture does not erase a bounded strategic window", () => {
+    const root = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    const line = {
+        fen: root,
+        depth: 18,
+        cp: 30,
+        pvUci: ["e2e4", "e7e5", "g1f3", "b8c6", "b1c3", "g8f6", "a2a3", "a7a6", "f3e5"],
+    };
+    const factors = corroboratePositionalEffects(root, line, line);
+    expect(factors).toContainEqual(
+        expect.objectContaining({ feature: "pawn-space", materialWindowPlies: 6 }),
+    );
+    expect(corroboratePositionalEffects(root, line, { ...line, fen })).toEqual([]);
+    expect(corroboratePositionalEffects(root, line, { ...line, depth: 8 })).toEqual([]);
+    // Without a separate reliable reply search the full assessor must not
+    // upgrade this observation merely because its geometric feature is clear.
+    expect(
+        assessChessDecision({ fen: root, candidates: [line] })?.moves[0].positional.support,
+    ).toBe("unestablished");
 });
 
 test("incoherent root evidence cannot produce a report", () => {

@@ -68,14 +68,16 @@ def atomic_json(path, value):
 
 
 def inspect(task):
-    row, executable, output, engine_hash = task
+    row, executable, output, engine_hash, minimum_depth, maximum_root_nodes = task
     if not re.fullmatch(r'[a-zA-Z0-9_-]+', row['id']):
         raise ValueError('Invalid case identifier')
     path = Path(output) / (row['id'] + '.json')
     identity = dict(protocol=PROTOCOL, engine_sha256=engine_hash, fen=row['fen'],
                     nodes=[60000, 600000, 300000], threads=1, hash_mb=64)
+    if minimum_depth:
+        identity.update(minimum_depth=minimum_depth, maximum_root_nodes=maximum_root_nodes)
     if row.get('playedMoveUci'):
-        identity.update(played_move=row['playedMoveUci'], comparison_nodes=600000)
+        identity.update(played_move=row['playedMoveUci'], comparison_nodes='Final adaptive root budget' if minimum_depth else 600000)
     if path.exists():
         cached = json.loads(path.read_text(encoding='utf-8'))
         if cached.get('identity') != identity:
@@ -105,17 +107,24 @@ def inspect(task):
 
         shallow = search(board, 60000)
         deep = search(board, 600000)
+        attempts = [dict(nodes=600000, depth=deep[0]['depth'], searchMs=deep[0]['searchMs'])]
+        budget = 600000
+        while minimum_depth and deep[0]['depth'] < minimum_depth and budget < maximum_root_nodes:
+            budget = min(budget * 4, maximum_root_nodes)
+            deep = search(board, budget)
+            attempts.append(dict(nodes=budget, depth=deep[0]['depth'], searchMs=deep[0]['searchMs']))
         played = row.get('playedMoveUci') or deep[-1]['pvUci'][0]
         if chess.Move.from_uci(played) not in board.legal_moves:
             raise ValueError('The recorded played move is not legal on the supplied board')
         comparison = None
         if row.get('playedMoveUci'):
             selected_roots = list(dict.fromkeys([deep[0]['pvUci'][0], played]))
-            comparison = search(board, 600000, [chess.Move.from_uci(move) for move in selected_roots])
+            comparison = search(board, budget, [chess.Move.from_uci(move) for move in selected_roots])
         reached = board.copy()
         reached.push_uci(played)
         reply = search(reached, 300000) if not reached.is_game_over() else []
         result = dict(identity=identity, id=row['id'], shallow=shallow, deep=deep, played=played, reply=reply)
+        result['rootAttempts'] = attempts
         if comparison is not None:
             result['comparison'] = comparison
         atomic_json(path, result)
@@ -129,6 +138,8 @@ def main():
     parser.add_argument('output', type=Path)
     parser.add_argument('--split', choices=['development', 'validation'], default='development')
     parser.add_argument('--workers', type=int, default=4, choices=range(1, 5))
+    parser.add_argument('--minimum-depth', type=int, default=0, choices=[0,16,18,20])
+    parser.add_argument('--maximum-root-nodes', type=int, default=9600000, choices=[600000,2400000,9600000])
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[2]
     output = args.output.resolve()
@@ -140,7 +151,7 @@ def main():
         raise ValueError('Sample must contain distinct cases for the selected split')
     engine_hash = hashlib.sha256(args.engine.read_bytes()).hexdigest()
     output.mkdir(parents=True, exist_ok=True)
-    tasks = [(row, str(args.engine.resolve()), str(output), engine_hash) for row in selected]
+    tasks = [(row, str(args.engine.resolve()), str(output), engine_hash, args.minimum_depth, args.maximum_root_nodes) for row in selected]
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as pool:
         for index, _ in enumerate(pool.map(inspect, tasks)):
             if (index + 1) % 10 == 0:
@@ -148,7 +159,8 @@ def main():
     atomic_json(output / 'receipt.json', dict(protocol=PROTOCOL, engine_sha256=engine_hash,
         sample_sha256=hashlib.sha256(args.sample.read_bytes()).hexdigest(), split=args.split,
         positions=len(selected), nodes=[60000, 600000, 300000], threads=1, hash_mb=64,
-        comparison_nodes_per_recorded_move=600000,
+        comparison_nodes_per_recorded_move='Final adaptive root budget' if args.minimum_depth else 600000,
+        minimum_depth=args.minimum_depth, maximum_root_nodes=args.maximum_root_nodes,
         category_scope='Source categories and existing labels require independent review'))
 
 

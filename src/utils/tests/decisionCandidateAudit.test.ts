@@ -7,6 +7,8 @@ import { measureDecisionLine } from "../tacticalMotifs/decisionEvidence";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
 import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
 import { classifyMistakeReviewNature } from "../mistakeReview";
+import { extractStrategicRootEffects } from "../tacticalMotifs/strategicRootEffects";
+import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
 
 const directory = process.env.DECISION_EVIDENCE_AUDIT;
 test.skipIf(!directory)(
@@ -19,6 +21,8 @@ test.skipIf(!directory)(
             throw new Error("Invalid cohort");
         const protocol = process.env.DECISION_ENGINE_PROTOCOL ?? "2";
         if (!["1", "2"].includes(protocol)) throw new Error("Invalid engine protocol");
+        const profile = process.env.DECISION_ENGINE_PROFILE ?? "v2";
+        if (!/^[a-z0-9-]+$/.test(profile)) throw new Error("Invalid engine profile");
         const sample = JSON.parse(readFileSync(join(directory!, `${cohort}-sample.json`), "utf8"));
         const name = process.env.DECISION_AUDIT_NAME ?? "decision-candidate-v3";
         if (!/^[a-z0-9-]+$/.test(name)) throw new Error("Invalid audit name");
@@ -31,7 +35,7 @@ test.skipIf(!directory)(
                     join(
                         directory!,
                         protocol === "2"
-                            ? `${cohort}-engine-v2`
+                            ? `${cohort}-engine-${profile}`
                             : cohort === "course"
                               ? "engine-reproducible"
                               : `${cohort}-engine`,
@@ -45,7 +49,7 @@ test.skipIf(!directory)(
                     join(
                         directory!,
                         protocol === "2"
-                            ? `${cohort}-probes-v2`
+                            ? `${cohort}-probes-${profile}`
                             : cohort === "course"
                               ? "reply-probes"
                               : `${cohort}-probes`,
@@ -114,6 +118,8 @@ test.skipIf(!directory)(
                 engineIdentity: engine.identity,
                 probeIdentity: probes.identity,
                 witnesses,
+                strategicEffects: extractStrategicRootEffects(row.fen, engine.deep[0]),
+                structuralTransitions: extractPositionalTransitions(row.fen, engine.deep[0]),
                 assessment,
                 baseline,
                 baselineMistake,
@@ -127,6 +133,7 @@ test.skipIf(!directory)(
                 "decisionAssessment.ts",
                 "tacticalSequenceEvidence.ts",
                 "positionalTransitions.ts",
+                "strategicRootEffects.ts",
                 "decisionEvidence.ts",
                 "positionalEvidence.ts",
                 "liveTactics.ts",
@@ -145,6 +152,7 @@ test.skipIf(!directory)(
                 {
                     scope: "Development candidate, not held-out accuracy",
                     engineProtocol: protocol,
+                    engineProfile: profile,
                     cohort,
                     sourceHashes,
                     results,

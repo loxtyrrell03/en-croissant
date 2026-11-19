@@ -89,3 +89,11 @@ test("bound or wrong-position evidence cannot donate a mechanism", () => {
         extractTacticalSequenceWitnesses(fen, { ...line, fen: fen.replace("0 1", "2 5") }),
     ).toEqual([]);
 });
+
+test("removing a defender can support a later fork after an intervening check", () => {
+    const fen = "3r2k1/p2n4/8/1B2p3/8/5N2/P7/K6R w - - 0 1";
+    const moves = ["b5d7", "d8d7", "h1h8", "g8f7", "f3e5", "f7g7", "e5d7", "g7f7"];
+    const witnesses = inspect(fen, moves);
+    expect(witnesses).toContainEqual(expect.objectContaining({ mechanism: "capturingDefender", mechanismPly: 1, payoffPly: 5, rootMoveInvolved: true }));
+    expect(witnesses).toContainEqual(expect.objectContaining({ mechanism: "fork", mechanismPly: 5, payoffPly: 7, rootMoveInvolved: false }));
+});

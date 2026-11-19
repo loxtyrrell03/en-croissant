@@ -3,6 +3,7 @@ import type { Color } from "chessops/types";
 import { replayTacticalLine } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import { extractPositionalBoardFacts, type SidePositionalFacts } from "./positionalEvidence";
+import { extractStrategicRootEffects, type StrategicRootEffect } from "./strategicRootEffects";
 
 export type PositionalTransition = {
     feature:
@@ -73,7 +74,7 @@ function observations(facts: SidePositionalFacts, side: Color): ObservedFeature[
             : []),
     ];
 }
-const key = (feature: ObservedFeature) =>
+const key = (feature: { side: Color; feature: string; squareOrFile: string }) =>
     `${feature.side}:${feature.feature}:${feature.squareOrFile}`;
 
 /** Actual feature changes and their consecutive duration. Presence or duration
@@ -117,12 +118,109 @@ export function extractPositionalTransitions(
     return found;
 }
 
-export type ComparativePositionalEvidence = PositionalTransition & {
-    comparisonMoveUci: string;
-    comparisonGapCp: number;
-    supportInComparison: boolean;
+export type ComparativePositionalEvidence = (PositionalTransition | StrategicRootEffect) & {
+    comparisonMoveUci: string | null;
+    comparisonGapCp: number | null;
+    supportInComparison: boolean | null;
+    comparison: "alternative-choice" | "separate-reply-search";
+    materialWindowPlies?: number;
     interpretation: "heuristic";
 };
+
+function rootFeatures(
+    fen: string,
+    line: DecisionEngineLine,
+): Array<PositionalTransition | StrategicRootEffect> {
+    const side: Color = fen.split(" ")[1] === "b" ? "black" : "white";
+    return [
+        ...extractPositionalTransitions(fen, line).filter(
+            (item) =>
+                item.firstPly === 1 &&
+                item.lastConsecutivePly >= 6 &&
+                (item.side === side
+                    ? !["isolated-pawn", "doubled-pawn"].includes(item.feature)
+                    : ["isolated-pawn", "doubled-pawn"].includes(item.feature)),
+        ),
+        ...extractStrategicRootEffects(fen, line),
+    ];
+}
+
+/** A good strategic move need not beat another plausible plan by 30 cp. Check
+ * whether its concrete root effect survives an independently searched best
+ * response. This is still an interpretation of a verified feature, not an
+ * engine attribution. Use a bounded window while the feature exists rather
+ * than allowing an unrelated late PV capture to erase earlier evidence. */
+export function corroboratePositionalEffects(
+    fen: string,
+    rootLine: DecisionEngineLine,
+    separatelySearchedBestReply: DecisionEngineLine | undefined,
+): ComparativePositionalEvidence[] {
+    if (!separatelySearchedBestReply) return [];
+    const root = measureDecisionLine(fen, rootLine);
+    const reply = measureDecisionLine(fen, separatelySearchedBestReply);
+    if (
+        !root ||
+        !reply ||
+        root.drawnEnding ||
+        reply.drawnEnding ||
+        rootLine.depth < 16 ||
+        separatelySearchedBestReply.depth < 16 ||
+        rootLine.mate != null ||
+        separatelySearchedBestReply.mate != null ||
+        rootLine.pvUci[0] !== separatelySearchedBestReply.pvUci[0]
+    )
+        return [];
+    const other = rootFeatures(fen, separatelySearchedBestReply);
+    const materialWindow = (
+        line: DecisionEngineLine,
+        feature: PositionalTransition | StrategicRootEffect,
+    ) => {
+        for (
+            let ply = Math.max(6, feature.firstPly + 4);
+            ply <= Math.min(12, feature.lastConsecutivePly);
+            ply++
+        ) {
+            const measured = measureDecisionLine(fen, { ...line, pvUci: line.pvUci.slice(0, ply) });
+            if (
+                measured &&
+                !measured.drawnEnding &&
+                measured.quietEndingPlies >= 2 &&
+                measured.endingMaterialRangeCp[0] === measured.endingMaterialRangeCp[1] &&
+                Math.abs(measured.materialChangeCp) <= 50
+            )
+                return ply;
+        }
+        return null;
+    };
+    return rootFeatures(fen, rootLine).flatMap((item): ComparativePositionalEvidence[] => {
+        const corresponding = other.find((effect) => key(effect) === key(item));
+        if (!corresponding) return [];
+        const rootWindow = materialWindow(rootLine, item),
+            replyWindow = materialWindow(separatelySearchedBestReply, corresponding);
+        // A persistent structural change can be the compensation for a
+        // sacrifice or the purpose of a combination. Requiring equal
+        // material would systematically exclude precisely those mixed
+        // decisions. General activity/space still needs the neutral window;
+        // all interpretations remain explicitly heuristic, not score causes.
+        const generalActivity = ["pawn-space", "piece-reach", "piece-restriction"].includes(
+            item.feature,
+        );
+        if (generalActivity && (!rootWindow || !replyWindow)) return [];
+        return [
+            {
+                ...item,
+                comparisonMoveUci: null,
+                comparisonGapCp: null,
+                supportInComparison: true,
+                comparison: "separate-reply-search",
+                interpretation: "heuristic",
+                ...(rootWindow && replyWindow
+                    ? { materialWindowPlies: Math.max(rootWindow, replyWindow) }
+                    : {}),
+            },
+        ];
+    });
+}
 
 /** Compare legal choices rather than labelling every quiet continuation
  * positional. These matched observations remain heuristic interpretations:
@@ -141,14 +239,7 @@ export function comparePositionalTransitions(
         best.mate != null
     )
         return [];
-    const side: Color = fen.split(" ")[1] === "b" ? "black" : "white";
-    const preferable = (item: PositionalTransition) =>
-        item.side === side
-            ? !["isolated-pawn", "doubled-pawn"].includes(item.feature)
-            : ["isolated-pawn", "doubled-pawn"].includes(item.feature);
-    const candidates = extractPositionalTransitions(fen, best).filter(
-        (item) => item.firstPly === 1 && item.lastConsecutivePly >= 6 && preferable(item),
-    );
+    const candidates = rootFeatures(fen, best);
     const result: ComparativePositionalEvidence[] = [];
     for (const alternative of alternatives) {
         const evidence = measureDecisionLine(fen, alternative);
@@ -176,7 +267,10 @@ export function comparePositionalTransitions(
             Math.abs(bestEvidence.materialChangeCp - evidence.materialChangeCp) > 50
         )
             continue;
-        const alternativeChanges = extractPositionalTransitions(fen, alternative);
+        const alternativeChanges = [
+            ...extractPositionalTransitions(fen, alternative),
+            ...extractStrategicRootEffects(fen, alternative),
+        ];
         for (const item of candidates) {
             const occurs = alternativeChanges.some(
                 (other) =>
@@ -191,6 +285,7 @@ export function comparePositionalTransitions(
                 comparisonMoveUci: alternative.pvUci[0],
                 comparisonGapCp: best.cp - alternative.cp,
                 supportInComparison: false,
+                comparison: "alternative-choice",
                 interpretation: "heuristic",
             });
         }

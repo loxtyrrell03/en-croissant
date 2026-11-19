@@ -7,6 +7,7 @@ import {
 } from "./decisionEvidence";
 import {
     comparePositionalTransitions,
+    corroboratePositionalEffects,
     type ComparativePositionalEvidence,
 } from "./positionalTransitions";
 import {
@@ -169,19 +170,32 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
         witnessedBranches.flatMap((branch) => branch.witnesses),
     );
     const factors = comparePositionalTransitions(input.fen, line, input.candidates);
+    if (corroborated)
+        for (const item of corroboratePositionalEffects(input.fen, line, branches[0])) {
+            if (
+                !factors.some(
+                    (other) =>
+                        other.feature === item.feature &&
+                        other.side === item.side &&
+                        other.squareOrFile === item.squareOrFile,
+                )
+            )
+                factors.push(item);
+        }
     result.mechanisms = witnesses;
     result.positionalFactors = factors;
     if (factors.length) {
         result.positional = {
             support: "supported",
             basis: "heuristic",
-            reasons: factors.map(
-                (item) =>
-                    `${item.description} This persists through ply ${item.lastConsecutivePly} in the better line and is absent from the compared choice (${item.comparisonMoveUci}).`,
+            reasons: factors.map((item) =>
+                item.comparison === "alternative-choice"
+                    ? `${item.description} This persists through ply ${item.lastConsecutivePly} in the better line and is absent from the compared choice (${item.comparisonMoveUci}).`
+                    : `${item.description} The same effect persists in the root search and the separate search of the opponent's best reply.${item.materialWindowPlies ? ` Material remains balanced within the first ${item.materialWindowPlies} plies; this does not describe every later consequence.` : ""}`,
             ),
         };
         result.limitations.push(
-            "The structural changes are verified board facts. Their importance is a heuristic interpretation; the engine does not assign its score to individual features.",
+            "The feature changes are verified board facts. Their strategic importance is a heuristic interpretation; the engine does not assign its score to individual features.",
         );
     }
     if (witnesses.length) {
