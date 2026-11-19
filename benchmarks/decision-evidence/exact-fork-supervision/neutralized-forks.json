@@ -1,0 +1,376 @@
+[
+  {
+    "reference": {
+      "id": "fork-hvar-3b5a7754c97a1562-33",
+      "event": "hvar",
+      "moveUci": "e5d4",
+      "fork": false,
+      "rationale": "Bxd4 neutralizes the pawn without cost. Bf2 would allow dxc3 by choice."
+    },
+    "root": [
+      {
+        "fen": "r3rbk1/ppnq1ppn/2pp3p/4pP2/2PPP3/2N1B2P/PP1N2P1/R2Q1RK1 b - - 0 17",
+        "cp": -12,
+        "mate": null,
+        "depth": 24,
+        "nodes": 1770866,
+        "pvUci": [
+          "e5d4",
+          "e3d4",
+          "b7b5",
+          "c4b5",
+          "c6c5",
+          "d4f2",
+          "c7b5",
+          "d1a4",
+          "a8b8",
+          "f2h4",
+          "d7b7",
+          "a1b1",
+          "h7g5",
+          "f5f6",
+          "e8e6",
+          "a4c4",
+          "b5c3",
+          "b2c3",
+          "b7c7",
+          "f6g7",
+          "f8g7",
+          "h4g5",
+          "h6g5",
+          "c4d3",
+          "b8b1",
+          "f1b1",
+          "g7f6",
+          "d2c4",
+          "c7c6",
+          "d3d5",
+          "c6d5",
+          "e4d5",
+          "e6e2",
+          "g1f1",
+          "e2a2",
+          "c4d6",
+          "f6c3",
+          "d6e4",
+          "c3d4"
+        ],
+        "wdl": [
+          7,
+          972,
+          21
+        ],
+        "searchMs": 2420.7434999989346
+      }
+    ],
+    "replies": [
+      {
+        "fen": "r3rbk1/ppnq1ppn/2pp3p/5P2/2PpP3/2N1B2P/PP1N2P1/R2Q1RK1 w - - 0 18",
+        "cp": 0,
+        "mate": null,
+        "depth": 17,
+        "nodes": 300304,
+        "pvUci": [
+          "e3d4",
+          "b7b5",
+          "c4b5",
+          "c7b5",
+          "c3b5",
+          "c6b5",
+          "d1g4",
+          "a8c8",
+          "g4g3",
+          "d7d8",
+          "a1d1"
+        ],
+        "wdl": [
+          12,
+          976,
+          12
+        ],
+        "searchMs": 320.2426999923773
+      },
+      {
+        "fen": "r3rbk1/ppnq1ppn/2pp3p/5P2/2PpP3/2N1B2P/PP1N2P1/R2Q1RK1 w - - 0 18",
+        "cp": -745,
+        "mate": null,
+        "depth": 17,
+        "nodes": 300304,
+        "pvUci": [
+          "e3f2",
+          "d4c3",
+          "b2c3",
+          "c7a6",
+          "f2d4",
+          "a6c5",
+          "d1g4",
+          "b7b6",
+          "f1e1",
+          "f7f6",
+          "d4c5",
+          "b6c5"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 320.2426999923773
+      },
+      {
+        "fen": "r3rbk1/ppnq1ppn/2pp3p/5P2/2PpP3/2N1B2P/PP1N2P1/R2Q1RK1 w - - 0 18",
+        "cp": -760,
+        "mate": null,
+        "depth": 17,
+        "nodes": 300304,
+        "pvUci": [
+          "e3f4",
+          "d4c3",
+          "b2c3",
+          "g8h8",
+          "d1g4",
+          "c7a6",
+          "f1e1",
+          "h7f6",
+          "g4h4",
+          "d7d8",
+          "a1d1"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 320.2426999923773
+      }
+    ],
+    "supportingMechanism": {
+      "fen": "r3rbk1/ppnq1ppn/2pp3p/4pP2/2PPP3/2N1B2P/PP1N2P1/R2Q1RK1 b - - 0 17",
+      "mechanism": "fork",
+      "actor": "black",
+      "mechanismPly": 1,
+      "payoffPly": 3,
+      "squares": [
+        "d4",
+        "c3",
+        "e3"
+      ],
+      "support": "legal-continuation",
+      "rootMoveInvolved": true,
+      "lineUci": [
+        "e5d4",
+        "e3f2",
+        "d4c3",
+        "b2c3",
+        "c7a6",
+        "f2d4",
+        "a6c5"
+      ],
+      "description": "exd4 attacks both c3 and e3. The engine's best reply Bxd4 removes the attacker. After Bf2, dxc3 wins material in the separate continuation."
+    }
+  },
+  {
+    "reference": {
+      "id": "fork-hvar-b18c8c0c7f1076e3-66",
+      "event": "hvar",
+      "moveUci": "c4b6",
+      "fork": false,
+      "rationale": "Nxb6 removes the knight and keeps the original targets."
+    },
+    "root": [
+      {
+        "fen": "r5k1/1p2bp2/1nb3pp/2pn4/P1N1pN1P/1P2P3/4BPPB/3R2K1 w - - 9 34",
+        "cp": 24,
+        "mate": null,
+        "depth": 24,
+        "nodes": 2022997,
+        "pvUci": [
+          "f4d5",
+          "b6d5",
+          "d1d2",
+          "d5c3",
+          "e2f1",
+          "a8d8",
+          "d2d8",
+          "e7d8",
+          "h2e5",
+          "c3a2",
+          "c4d6",
+          "c6d5",
+          "f1c4",
+          "d5c4",
+          "b3c4",
+          "d8c7",
+          "e5f4",
+          "c7d6",
+          "f4d6",
+          "b7b6",
+          "g1f1",
+          "a2c3",
+          "f1e1",
+          "c3a4",
+          "d6c7"
+        ],
+        "wdl": [
+          18,
+          981,
+          1
+        ],
+        "searchMs": 2162.289800005965
+      },
+      {
+        "fen": "r5k1/1p2bp2/1nb3pp/2pn4/P1N1pN1P/1P2P3/4BPPB/3R2K1 w - - 9 34",
+        "cp": -10,
+        "mate": null,
+        "depth": 24,
+        "nodes": 2022997,
+        "pvUci": [
+          "c4b6",
+          "d5b6",
+          "h2g3",
+          "g8f8",
+          "d1c1",
+          "a8d8",
+          "a4a5",
+          "b6d7",
+          "a5a6",
+          "b7a6",
+          "e2a6",
+          "d7e5",
+          "f4e6",
+          "f7e6",
+          "g3e5",
+          "c6d5",
+          "a6c4",
+          "e7h4",
+          "e5c7",
+          "d8d7",
+          "c4d5",
+          "d7d5",
+          "c7b6"
+        ],
+        "wdl": [
+          3,
+          989,
+          8
+        ],
+        "searchMs": 2162.289800005965
+      }
+    ],
+    "replies": [
+      {
+        "fen": "r5k1/1p2bp2/1Nb3pp/2pn4/P3pN1P/1P2P3/4BPPB/3R2K1 b - - 0 34",
+        "cp": 18,
+        "mate": null,
+        "depth": 16,
+        "nodes": 189778,
+        "pvUci": [
+          "d5b6",
+          "d1c1",
+          "g8f8",
+          "e2f1",
+          "h6h5",
+          "h2g3",
+          "a8d8",
+          "a4a5",
+          "b6d7",
+          "c1a1",
+          "e7f6",
+          "a1a2",
+          "d8a8"
+        ],
+        "wdl": [
+          12,
+          986,
+          2
+        ],
+        "searchMs": 274.10400001099333
+      },
+      {
+        "fen": "r5k1/1p2bp2/1Nb3pp/2pn4/P3pN1P/1P2P3/4BPPB/3R2K1 b - - 0 34",
+        "cp": -594,
+        "mate": null,
+        "depth": 16,
+        "nodes": 189778,
+        "pvUci": [
+          "d5f4",
+          "h2f4",
+          "a8d8",
+          "f4c7",
+          "d8d1",
+          "e2d1",
+          "g8g7",
+          "c7e5",
+          "g7g8",
+          "d1c2",
+          "e7d8"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 274.10400001099333
+      },
+      {
+        "fen": "r5k1/1p2bp2/1Nb3pp/2pn4/P3pN1P/1P2P3/4BPPB/3R2K1 b - - 0 34",
+        "cp": -680,
+        "mate": null,
+        "depth": 16,
+        "nodes": 189778,
+        "pvUci": [
+          "d5c3",
+          "b6a8",
+          "c3d1",
+          "e2d1",
+          "e7d8",
+          "f4e2",
+          "b7b5",
+          "h2c7",
+          "c5c4",
+          "c7d8",
+          "c4b3",
+          "d1b3",
+          "c6a8",
+          "e2c3",
+          "a8d5",
+          "c3d5",
+          "b5a4",
+          "d5f6",
+          "g8g7"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 274.10400001099333
+      }
+    ],
+    "supportingMechanism": {
+      "fen": "r5k1/1p2bp2/1nb3pp/2pn4/P1N1pN1P/1P2P3/4BPPB/3R2K1 w - - 9 34",
+      "mechanism": "fork",
+      "actor": "white",
+      "mechanismPly": 1,
+      "payoffPly": 3,
+      "squares": [
+        "b6",
+        "a8",
+        "d5"
+      ],
+      "support": "legal-continuation",
+      "rootMoveInvolved": true,
+      "lineUci": [
+        "c4b6",
+        "d5c3",
+        "b6a8",
+        "c3d1",
+        "e2d1",
+        "e7d8",
+        "f4e2",
+        "b7b5"
+      ],
+      "description": "Nxb6 attacks both a8 and d5. The engine's best reply Nxb6 removes the attacker. After Nc3, Nxa8 wins material in the separate continuation."
+    }
+  }
+]

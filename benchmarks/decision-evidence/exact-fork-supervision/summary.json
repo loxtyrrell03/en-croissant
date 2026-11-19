@@ -1,0 +1,669 @@
+{
+  "counts": {
+    "train": 2135,
+    "test": 424,
+    "validation": 422,
+    "classical": 88
+  },
+  "featuresPerReply": 558,
+  "meanFeaturesMs": 1.430333040077476,
+  "meanBatchedModelMs": 0.009733105238263656,
+  "fits": [
+    {
+      "seed": 17,
+      "validationLogLoss": 0.034492168575525284,
+      "bestEpoch": 40,
+      "parameters": 14029
+    },
+    {
+      "seed": 59,
+      "validationLogLoss": 0.0338292196393013,
+      "bestEpoch": 40,
+      "parameters": 14029
+    },
+    {
+      "seed": 97,
+      "validationLogLoss": 0.04853871464729309,
+      "bestEpoch": 40,
+      "parameters": 14029
+    }
+  ],
+  "scores": {
+    "quick-payoff": {
+      "test": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 70,
+          "negatives": 1,
+          "uncertain": 35
+        },
+        "ap": 0.99845070672633,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "classical": {
+        "positions": 88,
+        "available": {
+          "positives": 4,
+          "negatives": 31,
+          "uncertain": 53
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 18
+        },
+        "ap": 1.0
+      },
+      "manual": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 5,
+          "negatives": 2,
+          "uncertain": 15
+        },
+        "ap": 0.7466666666666667
+      },
+      "manualUnresolved": {
+        "positions": 82,
+        "available": {
+          "positives": 3,
+          "negatives": 60,
+          "uncertain": 19
+        },
+        "quarterBudget": 20,
+        "picks": {
+          "positives": 2,
+          "negatives": 5,
+          "uncertain": 13
+        },
+        "ap": 0.49206349206349204
+      }
+    },
+    "quick-evaluation": {
+      "test": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 34,
+          "negatives": 0,
+          "uncertain": 72
+        },
+        "ap": 0.9936523125996813,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "classical": {
+        "positions": 88,
+        "available": {
+          "positives": 4,
+          "negatives": 31,
+          "uncertain": 53
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 18
+        },
+        "ap": 1.0
+      },
+      "manual": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 6,
+          "negatives": 5,
+          "uncertain": 11
+        },
+        "ap": 0.8044217687074828
+      },
+      "manualUnresolved": {
+        "positions": 82,
+        "available": {
+          "positives": 3,
+          "negatives": 60,
+          "uncertain": 19
+        },
+        "quarterBudget": 20,
+        "picks": {
+          "positives": 3,
+          "negatives": 6,
+          "uncertain": 11
+        },
+        "ap": 0.8333333333333333
+      }
+    },
+    "root-logistic": {
+      "test": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 51,
+          "negatives": 2,
+          "uncertain": 53
+        },
+        "ap": 0.9614640517791269,
+        "brier": 0.0463506302660492,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 0.9761904761904762
+        }
+      },
+      "classical": {
+        "positions": 88,
+        "available": {
+          "positives": 4,
+          "negatives": 31,
+          "uncertain": 53
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 4,
+          "negatives": 3,
+          "uncertain": 15
+        },
+        "ap": 1.0,
+        "brier": 0.09755337485031812
+      },
+      "manual": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 6,
+          "negatives": 8,
+          "uncertain": 8
+        },
+        "ap": 0.7495180258338152,
+        "brier": 0.11353248307726066
+      },
+      "manualUnresolved": {
+        "positions": 82,
+        "available": {
+          "positives": 3,
+          "negatives": 60,
+          "uncertain": 19
+        },
+        "quarterBudget": 20,
+        "picks": {
+          "positives": 2,
+          "negatives": 12,
+          "uncertain": 6
+        },
+        "ap": 0.4740740740740741,
+        "brier": 0.11825948924340829
+      }
+    },
+    "reply-logistic": {
+      "test": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 70,
+          "negatives": 0,
+          "uncertain": 36
+        },
+        "ap": 1.0,
+        "brier": 0.0022676727096038254,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "classical": {
+        "positions": 88,
+        "available": {
+          "positives": 4,
+          "negatives": 31,
+          "uncertain": 53
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 17
+        },
+        "ap": 1.0,
+        "brier": 0.020339774482871484
+      },
+      "manual": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 7,
+          "negatives": 6,
+          "uncertain": 9
+        },
+        "ap": 0.8404761904761904,
+        "brier": 0.05197876529734907
+      },
+      "manualUnresolved": {
+        "positions": 82,
+        "available": {
+          "positives": 3,
+          "negatives": 60,
+          "uncertain": 19
+        },
+        "quarterBudget": 20,
+        "picks": {
+          "positives": 3,
+          "negatives": 6,
+          "uncertain": 11
+        },
+        "ap": 0.5555555555555556,
+        "brier": 0.05082669638489303
+      }
+    },
+    "reply-network": {
+      "test": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 67,
+          "negatives": 0,
+          "uncertain": 39
+        },
+        "ap": 1.0,
+        "brier": 0.010523404869046987,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "classical": {
+        "positions": 88,
+        "available": {
+          "positives": 4,
+          "negatives": 31,
+          "uncertain": 53
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 4,
+          "negatives": 2,
+          "uncertain": 16
+        },
+        "ap": 1.0,
+        "brier": 0.028663290994797568
+      },
+      "manual": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 5,
+          "negatives": 8,
+          "uncertain": 9
+        },
+        "ap": 0.7578571428571428,
+        "brier": 0.07936041620065498
+      },
+      "manualUnresolved": {
+        "positions": 82,
+        "available": {
+          "positives": 3,
+          "negatives": 60,
+          "uncertain": 19
+        },
+        "quarterBudget": 20,
+        "picks": {
+          "positives": 2,
+          "negatives": 10,
+          "uncertain": 8
+        },
+        "ap": 0.44155844155844154,
+        "brier": 0.08298571081243247
+      }
+    }
+  },
+  "incumbentCommit": "52f650c2f4b157fd0fdc1d81d28fa8d0e473ee0d",
+  "liveAnalysis": {
+    "total": {
+      "liveMotif": {
+        "truePositive": 4,
+        "falsePositive": 0,
+        "falseNegative": 3,
+        "trueNegative": 60,
+        "unknownReported": 2,
+        "unknown": 19
+      },
+      "decisionEvidence": {
+        "truePositive": 5,
+        "falsePositive": 0,
+        "falseNegative": 2,
+        "trueNegative": 60,
+        "unknownReported": 2,
+        "unknown": 19
+      },
+      "decisionWithReplyFork": {
+        "truePositive": 5,
+        "falsePositive": 0,
+        "falseNegative": 2,
+        "trueNegative": 60,
+        "unknownReported": 2,
+        "unknown": 19
+      }
+    },
+    "groups": {
+      "tsaghkadzor": {
+        "liveMotif": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 17,
+          "unknownReported": 1,
+          "unknown": 5
+        },
+        "decisionEvidence": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 17,
+          "unknownReported": 1,
+          "unknown": 5
+        },
+        "decisionWithReplyFork": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 17,
+          "unknownReported": 1,
+          "unknown": 5
+        }
+      },
+      "eight-square": {
+        "liveMotif": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 11,
+          "unknownReported": 0,
+          "unknown": 2
+        },
+        "decisionEvidence": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 11,
+          "unknownReported": 0,
+          "unknown": 2
+        },
+        "decisionWithReplyFork": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 11,
+          "unknownReported": 0,
+          "unknown": 2
+        }
+      },
+      "arco": {
+        "liveMotif": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 20,
+          "unknownReported": 0,
+          "unknown": 4
+        },
+        "decisionEvidence": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 20,
+          "unknownReported": 0,
+          "unknown": 4
+        },
+        "decisionWithReplyFork": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 20,
+          "unknownReported": 0,
+          "unknown": 4
+        }
+      },
+      "private": {
+        "liveMotif": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 2,
+          "trueNegative": 12,
+          "unknownReported": 1,
+          "unknown": 8
+        },
+        "decisionEvidence": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 12,
+          "unknownReported": 1,
+          "unknown": 8
+        },
+        "decisionWithReplyFork": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 12,
+          "unknownReported": 1,
+          "unknown": 8
+        }
+      }
+    }
+  },
+  "untouchedReserve": {
+    "total": {
+      "liveMotif": {
+        "truePositive": 5,
+        "falsePositive": 0,
+        "falseNegative": 1,
+        "trueNegative": 19,
+        "unknownReported": 1,
+        "unknown": 4
+      },
+      "decisionEvidence": {
+        "truePositive": 5,
+        "falsePositive": 2,
+        "falseNegative": 1,
+        "trueNegative": 17,
+        "unknownReported": 1,
+        "unknown": 4
+      },
+      "decisionWithReplyFork": {
+        "truePositive": 5,
+        "falsePositive": 2,
+        "falseNegative": 1,
+        "trueNegative": 17,
+        "unknownReported": 1,
+        "unknown": 4
+      }
+    },
+    "groups": {
+      "hvar": {
+        "liveMotif": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 5,
+          "unknownReported": 0,
+          "unknown": 3
+        },
+        "decisionEvidence": {
+          "truePositive": 2,
+          "falsePositive": 2,
+          "falseNegative": 0,
+          "trueNegative": 3,
+          "unknownReported": 0,
+          "unknown": 3
+        },
+        "decisionWithReplyFork": {
+          "truePositive": 2,
+          "falsePositive": 2,
+          "falseNegative": 0,
+          "trueNegative": 3,
+          "unknownReported": 0,
+          "unknown": 3
+        }
+      },
+      "stockholm": {
+        "liveMotif": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 9,
+          "unknownReported": 0,
+          "unknown": 0
+        },
+        "decisionEvidence": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 9,
+          "unknownReported": 0,
+          "unknown": 0
+        },
+        "decisionWithReplyFork": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "trueNegative": 9,
+          "unknownReported": 0,
+          "unknown": 0
+        }
+      },
+      "halloween": {
+        "liveMotif": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 5,
+          "unknownReported": 1,
+          "unknown": 1
+        },
+        "decisionEvidence": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 5,
+          "unknownReported": 1,
+          "unknown": 1
+        },
+        "decisionWithReplyFork": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "falseNegative": 1,
+          "trueNegative": 5,
+          "unknownReported": 1,
+          "unknown": 1
+        }
+      }
+    }
+  },
+  "trainingTeacher": {
+    "fingerprint": {
+      "schema": 1,
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "quickNodes": 6000,
+      "proofNodes": 120000,
+      "maxReplies": 2,
+      "horizon": 8,
+      "protocolFile": "02123e34541d16a7089cbc5e4ca83665fdf2661521a05650622a9b8b8315ffb9"
+    },
+    "sampleSha256": "9f3d2bdf595a3eac9f1d4f049f3937c03248bfa5595e3c4709f6b6ee30f1fee0",
+    "durationSeconds": 74.22986060002586,
+    "perSplit": {
+      "test": {
+        "fork-target-retained": 76,
+        "best-defence-neutralizes-material": 145,
+        "unresolved-payoff": 163,
+        "game-ends-at-root": 22,
+        "opponent-forces-mate": 18
+      },
+      "train": {
+        "fork-target-retained": 378,
+        "best-defence-neutralizes-material": 754,
+        "unresolved-payoff": 835,
+        "game-ends-at-root": 76,
+        "opponent-forces-mate": 92
+      },
+      "validation": {
+        "fork-target-retained": 71,
+        "unresolved-payoff": 176,
+        "best-defence-neutralizes-material": 140,
+        "opponent-forces-mate": 15,
+        "game-ends-at-root": 20
+      }
+    },
+    "uniqueGames": {
+      "train": 1200,
+      "test": 240,
+      "validation": 240
+    }
+  },
+  "reserveMaterials": {
+    "engine": "377a6342e4907a29d9e9a18b71cf2edfa3b142d668b4ad8186df07583ae7a5f7",
+    "extraRequestedNodes": 22800000
+  },
+  "developmentMaterials": {
+    "engine": "d5bd88b8241a352146416a7d18607851d6668ae19448d8035f58d1f2cbdc743d",
+    "extraRequestedNodes": 74400000,
+    "publicPositions": 64,
+    "privatePositions": 24
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "primary": "A fresh manually reviewed exact-move fork associated with the actual recorded decision, two non-pawn targets including king. Review sees board, paired suggested/played Stockfish roots and the separately searched replies before any model scores.",
+  "scope": "Geometry-matched played moves only. A legal fork that secures a draw or is one contributor to the tactic may count when the target consequence is concrete. Unclear cases consume nomination slots and stay outside AP.",
+  "budget": "Top quarter of rows for each cohort, focused primary analysis on cases unresolved by the app verifier. Every route uses two quick 6,000-node replies. The separate exact-ply teacher uses up to two replies at 120,000 nodes.",
+  "transferGate": "At least two more independently reviewed new fork positives than the best simple control at the same primary budget, without added reviewed negatives. Report exact match if baseline saturates. Model adds no labels automatically.",
+  "puzzleEndpoints": "Game- and mirrored-board-disjoint average precision on known teacher labels, additional verified payoff yield at a quarter budget, and correctly ordered directly compared root/alternative pairs.",
+  "sampling": "One exact fork candidate per game in classical transfer. Public Tsaghkadzor Open, Eight Square Chennai and Citt\u00e0 di Arco Group A. User's private classical games are assessed separately in aggregates and never included in Git."
+}

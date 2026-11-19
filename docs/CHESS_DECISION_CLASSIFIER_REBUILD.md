@@ -3430,3 +3430,104 @@ Then run `decision-evidence-motif-sequence.py` and
 python-chess 1.999, PyTorch 2.10.0 CPU, NumPy 2.5.5 and
 scikit-learn 1.9.1 were used. The private course inputs, training
 sample, weights and feature cache stay outside Git.
+
+## Exact-move fork supervision and classical transfer
+
+The follow-up trains on one exact geometry candidate per puzzle
+game and, where available, a different legal double attack from the
+same board. The sampler prefers an alternative of the same piece
+type with matching check and capture status. The game and
+color-normalized position stay in one partition. Training sees
+the first two complete Stockfish replies from a 6,000-node search.
+Labels come from a separate 120,000-node search with cleared hash.
+
+The supervised target is a narrow payoff. A piece creates two
+non-pawn threats and takes an original stationary target by the
+fifth ply. The two strongest searched defences must retain material
+in the bounded replay. The evaluation must also support the
+attacker. A clear countercapture, forced mate against the attacker,
+or a terminal root can supply a negative. Other candidates remain
+unknown. This definition can miss forks that save draws, whose
+benefit lies in an exchange, or whose payoff arrives later. It is
+an engine-derived training target with a separate human review.
+
+| Equal-budget ranking | Held-out puzzle payoffs in 106 slots | Missed reviewed classical forks in 20 slots | Reviewed classical negatives in those slots |
+| --- | ---: | ---: | ---: |
+| Shallow legal payoff cue | 70 | 2 | 5 |
+| Shallow Stockfish evaluation | 34 | 3 | 6 |
+| Root-only logistic regression | 51 | 2 | 12 |
+| Two-reply logistic regression | 70 | 3 | 6 |
+| Shared-branch neural network | 67 | 2 | 10 |
+
+The 424-candidate puzzle test has 76 teacher positives, 185
+negatives and 163 uncertain cases. Both reply models reach AP 1.0
+on the known teacher labels and correctly order all 42 same-game
+pairs with opposite labels. The untrained payoff cue also orders
+all 42. This indicates considerable agreement between shallow
+features and the deeper training definition. It gives limited
+evidence for learning exact tactical concepts.
+
+The classical transfer consists of 64 played moves from three
+public tournaments plus 24 moves from the owner's classical
+games. Each move is taken from a different game. One reviewer read
+the board and independently searched replies before opening the
+predictions. There are seven positive, 60 negative and 21 uncertain
+reviews. The live motif replay finds four positives and no
+reviewed false alarms, leaving three reviewed positives in the
+unresolved set. The neural model finds two of these in 20 slots
+against three for each of the stronger simple rankers. Among
+known cases, its unresolved average precision is .442, against
+.556 for the two-reply regression and .833 for shallow evaluation.
+The three independently seeded neural fits have 14,029 parameters
+each. The measured result keeps this route offline.
+
+### Two verified analysis paths
+
+Decision Evidence replays the legal responses separately, raising
+exact-fork recognition from four to five of seven here. One of the
+owner's missed badges, `...Ne5`, already has a root fork witness
+in Decision Evidence. Different replies allow `...Nxf3+` or
+`...Nxc6`. `Bc6` still lacks an explanation. Its principal reply
+can delay `Bxd7` by a full move, and the second useful defensive
+line collected the target at a different ply. A promotion fork
+also remains without the precise fork label, although the app
+shows the promotion.
+
+A test-only two-reply proof tried following the actual fork piece
+to a later collection, and verifying the price of disarming a
+promotion where a target takes the promoted piece. Both replies
+must belong to the exact move. Screens check a legal new attack,
+distinct replies and retained material. Existing and candidate
+results use identical reply searches. A separate 30-game
+Hvar, Stockholm and Halloween reserve has six reviewed positives,
+19 negatives and five uncertain cases. The reply proof adds zero
+on development and reserve. The deeper comparison requested
+97.2 million additional offline nodes across both samples.
+
+Decision Evidence records five of six reserve positives. It also
+uses two additional conditional forks noticed only against weaker
+defences. In both, the best reply takes the fork piece without
+conceding the threatened material. The alternative lines are
+genuine conditional evidence. Promoting them to a supported move
+verdict for this benchmark overstates the role of the fork.
+Preserve conditional continuations while measuring their role in
+the main decision independently. The replay keeps any pawn-only
+fork witness outside the two-non-pawn-target audit.
+
+**Reproduction.** The protocol, the public samples/references and
+the comparative scores are under
+`benchmarks/decision-evidence/exact-fork-supervision`. Run
+`decision-evidence-fork-payoff.py --nominate` on the frozen
+November puzzle sample. Select classical inputs with
+`decision-evidence-fork-classical-sample.py`. Generate the exact
+paired Stockfish 19 frames with `decision-evidence-engine.py` at
+minimum depth 18 and maximum root budget 2.4M. Use
+`decision-evidence-fork-replies.py` to fill reply frames at depth
+16 where possible. The test `decisionExactForkAudit.test.ts` takes
+`DECISION_EXACT_FORK_INPUT` and `DECISION_EXACT_FORK_OUTPUT`.
+Run `decision-evidence-fork-payoff-audit.py` on those outputs, and
+`decision-evidence-fork-payoff-model.py` for the equal-budget
+comparison. The model's incumbent input maps case IDs to whether
+the live replay supplied a root fork badge. The private records,
+weights and engine caches stay
+outside Git.

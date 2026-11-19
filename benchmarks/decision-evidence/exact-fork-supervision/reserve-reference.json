@@ -1,0 +1,215 @@
+{
+  "scope": "Single engine-assisted exact-move fork review before candidate results",
+  "cases": [
+    {
+      "id": "fork-hvar-810e87f672f9275a-43",
+      "event": "hvar",
+      "moveUci": "a4c3",
+      "fork": false,
+      "rationale": "bxc3 removes the knight and preserves the attacking side's original targets."
+    },
+    {
+      "id": "fork-hvar-df6ef53f898d7299-59",
+      "event": "hvar",
+      "moveUci": "c4e4",
+      "fork": false,
+      "rationale": "f3 or Kg1 keeps the rook, with the queen leaving the attack."
+    },
+    {
+      "id": "fork-hvar-dcea340934dc09f6-63",
+      "event": "hvar",
+      "moveUci": "e3f2",
+      "fork": null,
+      "rationale": "Qf2+ gives check and attacks the f3 bishop, but both separate lines introduce Rd3 and a secondary mechanism."
+    },
+    {
+      "id": "fork-hvar-da96dfde275c285f-76",
+      "event": "hvar",
+      "moveUci": "a4d7",
+      "fork": true,
+      "rationale": "Qd7+ checks the king to take the g7 bishop. Kc5 allows Qxg7; Kc4 loses g7 to Bxg7 after a forcing exchange."
+    },
+    {
+      "id": "fork-hvar-04e6c69bfc0d0a45-61",
+      "event": "hvar",
+      "moveUci": "h5f4",
+      "fork": true,
+      "rationale": "Nf4 attacks queen e2 and knight d3, which the replies separate. Nxf4 permits Bxe2; Qc2 loses d3 in the exchange sequence."
+    },
+    {
+      "id": "fork-hvar-d7e3f241bf839149-44",
+      "event": "hvar",
+      "moveUci": "c3e3",
+      "fork": false,
+      "rationale": "Qxe3 fxe3 is an even queen exchange and the attacked knight survives."
+    },
+    {
+      "id": "fork-hvar-3b5a7754c97a1562-33",
+      "event": "hvar",
+      "moveUci": "e5d4",
+      "fork": false,
+      "rationale": "Bxd4 neutralizes the pawn without cost. Bf2 would allow dxc3 by choice."
+    },
+    {
+      "id": "fork-hvar-a9c8a10f89ba9b63-59",
+      "event": "hvar",
+      "moveUci": "g6g3",
+      "fork": null,
+      "rationale": "The two attacking branches develop kingside and back-rank tactics. The separate role of the two attacked pieces is unclear."
+    },
+    {
+      "id": "fork-hvar-b18c8c0c7f1076e3-66",
+      "event": "hvar",
+      "moveUci": "c4b6",
+      "fork": false,
+      "rationale": "Nxb6 removes the knight and keeps the original targets."
+    },
+    {
+      "id": "fork-hvar-866dab292b7d63e2-52",
+      "event": "hvar",
+      "moveUci": "g4f4",
+      "fork": null,
+      "rationale": "Nf5 forces a knight exchange and the eventual winning plan goes via the c-file and queen. An exact fork payoff is unclear."
+    },
+    {
+      "id": "fork-stockholm-f7414fb87e745bf6-63",
+      "event": "stockholm",
+      "moveUci": "d5e4",
+      "fork": false,
+      "rationale": "Bxe4 removes the queen and keeps the other bishop."
+    },
+    {
+      "id": "fork-stockholm-c016cb64bd2f9493-76",
+      "event": "stockholm",
+      "moveUci": "d5c5",
+      "fork": false,
+      "rationale": "Both principal defences admit an equal queen exchange rather than loss of a target."
+    },
+    {
+      "id": "fork-stockholm-eb469f36bd982437-75",
+      "event": "stockholm",
+      "moveUci": "c1e1",
+      "fork": false,
+      "rationale": "Qxe1 safely removes the rook, and the attacked queen is kept."
+    },
+    {
+      "id": "fork-stockholm-6d714e5110eb8039-57",
+      "event": "stockholm",
+      "moveUci": "b7g7",
+      "fork": false,
+      "rationale": "Bxg7 takes the queen and prevents its fork from gaining material."
+    },
+    {
+      "id": "fork-stockholm-429190fb73477d5f-51",
+      "event": "stockholm",
+      "moveUci": "e8e1",
+      "fork": false,
+      "rationale": "After Kh2 the relevant continuation starts with Qxd4 by the queen. The checking rook's d1 attack does not secure a gain."
+    },
+    {
+      "id": "fork-stockholm-685ee11a03b674df-29",
+      "event": "stockholm",
+      "moveUci": "c3f3",
+      "fork": false,
+      "rationale": "Qxe2 is answered by an equal recapture in both leading branches. The bishop attack does not win material."
+    },
+    {
+      "id": "fork-stockholm-7e45292b45a3092d-74",
+      "event": "stockholm",
+      "moveUci": "d3e4",
+      "fork": false,
+      "rationale": "The bishop is captured by queen or bishop and Qxd8+ saves by perpetual. The original fork geometry is incidental."
+    },
+    {
+      "id": "fork-stockholm-f3f7902598a4baef-58",
+      "event": "stockholm",
+      "moveUci": "c5d7",
+      "fork": true,
+      "rationale": "Nd7+ attacks king and queen. Both king moves allow Nxb8 and Rxb8, winning the queen for a knight."
+    },
+    {
+      "id": "fork-stockholm-ea6e5d2fcf4e856e-27",
+      "event": "stockholm",
+      "moveUci": "f5g3",
+      "fork": false,
+      "rationale": "Either pawn recapture removes the forking knight and keeps both original attacked pieces."
+    },
+    {
+      "id": "fork-stockholm-80f7dee8b5c08f79-50",
+      "event": "stockholm",
+      "moveUci": "d7b7",
+      "fork": false,
+      "rationale": "Rb8 and Rc7 hold the apparent threats. The queen moves without a collection."
+    },
+    {
+      "id": "fork-halloween-b4f008f5772b242b-26",
+      "event": "halloween",
+      "moveUci": "e2d4",
+      "fork": false,
+      "rationale": "Either knight takes d4; repeated exchanges settle without material gain."
+    },
+    {
+      "id": "fork-halloween-ab3b924101ec0be5-35",
+      "event": "halloween",
+      "moveUci": "c4a3",
+      "fork": true,
+      "rationale": "Na3 attacks the b1 rook and c2 queen. Rxa3 Bxa3 loses the exchange; Qb2 Nxb1 also loses the exchange."
+    },
+    {
+      "id": "fork-halloween-81e728da2fa96926-48",
+      "event": "halloween",
+      "moveUci": "b7c5",
+      "fork": false,
+      "rationale": "Nxc5 simply removes the knight. The lower ranked lines may lose material by choice."
+    },
+    {
+      "id": "fork-halloween-bd2d0033b26e20e1-48",
+      "event": "halloween",
+      "moveUci": "c2c7",
+      "fork": null,
+      "rationale": "Qc7 attacks the a5 knight and d8 rook, but Nc6 and its interleaved checks leave a profitable second arm unestablished."
+    },
+    {
+      "id": "fork-halloween-7616ea8af55f1592-43",
+      "event": "halloween",
+      "moveUci": "c8c2",
+      "fork": false,
+      "rationale": "Qxc2 or Nxc2 removes the rook. Bxd4 or Bxb2 belongs to a different piece and mechanism."
+    },
+    {
+      "id": "fork-halloween-203495efbab8d4cc-27",
+      "event": "halloween",
+      "moveUci": "e7d5",
+      "fork": false,
+      "rationale": "Nxd5 removes the attacker in the strongest reply. Nxf4 trades a piece for a piece when allowed."
+    },
+    {
+      "id": "fork-halloween-5494b783466cc75c-96",
+      "event": "halloween",
+      "moveUci": "f4e6",
+      "fork": true,
+      "rationale": "Ne6+ checks the king and attacks the f8 rook. Both king moves allow Nxf8 Kxf8, winning a rook for the knight."
+    },
+    {
+      "id": "fork-halloween-ee615e101ba922e0-62",
+      "event": "halloween",
+      "moveUci": "c5e3",
+      "fork": false,
+      "rationale": "Ng5 creates a king attack and the nominal fork loses its material value."
+    },
+    {
+      "id": "fork-halloween-d53941b1a5ad36e0-112",
+      "event": "halloween",
+      "moveUci": "d5f6",
+      "fork": true,
+      "rationale": "Nf6 threatens the e8 rook and e4 bishop. The Bxc6 line includes the delayed Nxe8; the f-pawn move allows Nxe8 immediately."
+    },
+    {
+      "id": "fork-halloween-e49fc424f8651c84-54",
+      "event": "halloween",
+      "moveUci": "f1f6",
+      "fork": null,
+      "rationale": "Ngf4 leads to captures by several pieces while Ngf8 avoids the knight payoff. The initial fork's role is unclear."
+    }
+  ]
+}

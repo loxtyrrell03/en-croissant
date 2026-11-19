@@ -1,0 +1,26 @@
+[
+  {
+    "sha256": "02123e34541d16a7089cbc5e4ca83665fdf2661521a05650622a9b8b8315ffb9",
+    "file": "decision-evidence-fork-payoff.py"
+  },
+  {
+    "sha256": "c679ab9a2957c5eb2b8741237de013f7f99211c03fb1208590dc8ffb39c0ddec",
+    "file": "decision-evidence-fork-payoff-model.py"
+  },
+  {
+    "sha256": "c539c3188e5f1c9387ebe5962d8bf04f1499dd9d79a6ee28afb81ed219c6bffe",
+    "file": "decision-evidence-fork-classical-sample.py"
+  },
+  {
+    "sha256": "267d5ee3aaa744654e560dae9588039c00a7cbd9ab14fbbae7d4fabd13745d99",
+    "file": "classical.json"
+  },
+  {
+    "sha256": "62f741860bc913d658b8c0e5fa48556e318e77bb8d15bc17abb6de7d8b17b9a0",
+    "file": "reference.json"
+  },
+  {
+    "sha256": "8a7f56008c6e7de62201c7a5f5b432f571579ca01d605b6654f0fc3106f0bfd1",
+    "file": "protocol.json"
+  }
+]

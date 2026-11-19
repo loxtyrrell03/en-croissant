@@ -1,0 +1,453 @@
+{
+  "scope": "Tactically meaningful fork attributable to the exact recorded move, with two non-pawn targets. Single blinded review of board and Stockfish branches.",
+  "cases": [
+    {
+      "id": "fork-tsaghkadzor-fb918ad95ff0bd1d-61",
+      "event": "tsaghkadzor",
+      "moveUci": "f5f4",
+      "fork": false,
+      "rationale": "Qxf4 wins the forking pawn and preserves the knight."
+    },
+    {
+      "id": "fork-tsaghkadzor-72929ba2cb701d28-27",
+      "event": "tsaghkadzor",
+      "moveUci": "a6b4",
+      "fork": false,
+      "rationale": "Nxb4 exchanges the forker at no material cost; the other attacked piece escapes."
+    },
+    {
+      "id": "fork-tsaghkadzor-a0218c9ca0877ca8-50",
+      "event": "tsaghkadzor",
+      "moveUci": "d6f7",
+      "fork": null,
+      "rationale": "Nxf7+ wins via Qxe5 or a mating attack after Rxf7. The separate value of the threat to h6 is unclear."
+    },
+    {
+      "id": "fork-tsaghkadzor-878bba05002ffef5-39",
+      "event": "tsaghkadzor",
+      "moveUci": "a5c3",
+      "fork": false,
+      "rationale": "Qxc3 meets the double attack with an even queen exchange."
+    },
+    {
+      "id": "fork-tsaghkadzor-6adf06d46b38478a-70",
+      "event": "tsaghkadzor",
+      "moveUci": "c8c7",
+      "fork": false,
+      "rationale": "Rxa7 trades rooks and does not retain the attacked knight."
+    },
+    {
+      "id": "fork-tsaghkadzor-6fcbc87f6af7e00b-37",
+      "event": "tsaghkadzor",
+      "moveUci": "b7e4",
+      "fork": false,
+      "rationale": "Qc3 or Qd2 preserves material. The later Bxf3 is an even exchange."
+    },
+    {
+      "id": "fork-tsaghkadzor-d46fe4670576e00b-51",
+      "event": "tsaghkadzor",
+      "moveUci": "h4f2",
+      "fork": false,
+      "rationale": "Qe1 allows an equal queen exchange without losing either original target."
+    },
+    {
+      "id": "fork-tsaghkadzor-b29c5a69a04a30e7-56",
+      "event": "tsaghkadzor",
+      "moveUci": "e4c6",
+      "fork": false,
+      "rationale": "Either rook captures the queen and avoids a profitable second arm."
+    },
+    {
+      "id": "fork-tsaghkadzor-d5835431f17c923e-52",
+      "event": "tsaghkadzor",
+      "moveUci": "d3f3",
+      "fork": false,
+      "rationale": "Nf6 saves the knight and Qf4 offers an even queen exchange. The piece on f8 never falls for a gain."
+    },
+    {
+      "id": "fork-tsaghkadzor-79ac1f78ca4c01de-48",
+      "event": "tsaghkadzor",
+      "moveUci": "e5d7",
+      "fork": null,
+      "rationale": "Nxf6+ is recaptured after Rfc8; Nxd7 instead permits Rxd7 and Rxd5. The second arm has unclear net value."
+    },
+    {
+      "id": "fork-tsaghkadzor-16bc538845657eaa-88",
+      "event": "tsaghkadzor",
+      "moveUci": "c7a6",
+      "fork": false,
+      "rationale": "Best defence Nxa6 removes the forker and avoids material loss; Kc8 would lose the knight."
+    },
+    {
+      "id": "fork-tsaghkadzor-67774434de86b270-45",
+      "event": "tsaghkadzor",
+      "moveUci": "e7b4",
+      "fork": false,
+      "rationale": "Qb3 initiates a favourable queen exchange before either target can be won."
+    },
+    {
+      "id": "fork-tsaghkadzor-68bfa177f7d44d74-38",
+      "event": "tsaghkadzor",
+      "moveUci": "h3h8",
+      "fork": null,
+      "rationale": "Bf8 avoids Qxg7, which wins after Kd7. The best blocking reply leaves the relevance of the rook threat unclear."
+    },
+    {
+      "id": "fork-tsaghkadzor-51ac634b6266b054-41",
+      "event": "tsaghkadzor",
+      "moveUci": "e5f3",
+      "fork": null,
+      "rationale": "Nf3+ may induce Nxd4, but best separate Kh1 uses Nfh4 and leaves the second arm unresolved."
+    },
+    {
+      "id": "fork-tsaghkadzor-7f5adac69fd5fbec-77",
+      "event": "tsaghkadzor",
+      "moveUci": "f6f5",
+      "fork": null,
+      "rationale": "Qxf5 pivots to b1 promotion. Nd2 allows Qxb1 and the rook reply. How much the attacks on f3 and d5 matter is unclear."
+    },
+    {
+      "id": "fork-tsaghkadzor-10cdfd8b30d40ce0-126",
+      "event": "tsaghkadzor",
+      "moveUci": "f1f2",
+      "fork": false,
+      "rationale": "Rxf2+ gives up the fork piece to reach b7 by either capture. The actual fork targets do not drive the pawn race."
+    },
+    {
+      "id": "fork-tsaghkadzor-828842faf0dbc521-63",
+      "event": "tsaghkadzor",
+      "moveUci": "f6d4",
+      "fork": false,
+      "rationale": "Rxf8+ is the counterattack. Neither e3 nor b6 is won at a material profit in the principal replies."
+    },
+    {
+      "id": "fork-tsaghkadzor-fac52c757c5739a7-80",
+      "event": "tsaghkadzor",
+      "moveUci": "d7d8q",
+      "fork": true,
+      "rationale": "Promotion gives check and attacks a8. Kh7 allows Qxa8; Rxd8 gives up a rook to Rxd8+."
+    },
+    {
+      "id": "fork-tsaghkadzor-1274e5ae532539f9-29",
+      "event": "tsaghkadzor",
+      "moveUci": "e7e5",
+      "fork": false,
+      "rationale": "Bxa7 or Nxd5 avoids an effective collection of c3 or e3."
+    },
+    {
+      "id": "fork-tsaghkadzor-b5620eeba97d881e-27",
+      "event": "tsaghkadzor",
+      "moveUci": "b6c4",
+      "fork": null,
+      "rationale": "Bxc4 exchanges the fork piece; Qf2 allows Nxe3 Qxe3. The trade may have positional value, but no retained fork payoff is clear."
+    },
+    {
+      "id": "fork-tsaghkadzor-25ae760c89f01718-42",
+      "event": "tsaghkadzor",
+      "moveUci": "e1e8",
+      "fork": false,
+      "rationale": "Rxe8 by the other rook is an even exchange. Bf8 concedes that rook, but is substantially weaker."
+    },
+    {
+      "id": "fork-tsaghkadzor-264cd9c278bb4de8-67",
+      "event": "tsaghkadzor",
+      "moveUci": "e8c8",
+      "fork": false,
+      "rationale": "Qxf7 interrupts the queen's attack and does not concede the two original targets."
+    },
+    {
+      "id": "fork-tsaghkadzor-1b2ef874ab09e36a-53",
+      "event": "tsaghkadzor",
+      "moveUci": "d4d2",
+      "fork": false,
+      "rationale": "Qxg7 forces an exchange without losing the attacked minor pieces."
+    },
+    {
+      "id": "fork-tsaghkadzor-2c10a24d76fa3add-48",
+      "event": "tsaghkadzor",
+      "moveUci": "f1f3",
+      "fork": false,
+      "rationale": "Rxf3+ trades off the attacker without paying for either threatened target."
+    },
+    {
+      "id": "fork-eight-square-9c56403e3c43fd9f-30",
+      "event": "eight-square",
+      "moveUci": "a4b6",
+      "fork": true,
+      "rationale": "Nb6+ displaces the king and collects the rook on d7. Kb8 requires Nxd7+ Nxd7; Kc7 allows a further capture on f8."
+    },
+    {
+      "id": "fork-eight-square-491bb3f32c84d0bf-35",
+      "event": "eight-square",
+      "moveUci": "d8d2",
+      "fork": false,
+      "rationale": "Rxd2 or Kxd2 removes the rook without material gain from the original targets."
+    },
+    {
+      "id": "fork-eight-square-05e56eb18d4c6320-31",
+      "event": "eight-square",
+      "moveUci": "d4e2",
+      "fork": false,
+      "rationale": "Qxe2 and Bxe2 remove the knight. No other attacked piece is lost."
+    },
+    {
+      "id": "fork-eight-square-87ccde3cb08ccfe9-64",
+      "event": "eight-square",
+      "moveUci": "f3e5",
+      "fork": true,
+      "rationale": "Ne5+ checks the king and attacks g4. Kd8 and Ke8 both allow Nxg4."
+    },
+    {
+      "id": "fork-eight-square-977f76293104b55b-76",
+      "event": "eight-square",
+      "moveUci": "g1h2",
+      "fork": false,
+      "rationale": "Rxg2+ escapes the king's apparent double attack and gives Black the winning initiative."
+    },
+    {
+      "id": "fork-eight-square-d9e208222e6d3fc5-89",
+      "event": "eight-square",
+      "moveUci": "f3f5",
+      "fork": false,
+      "rationale": "Qxf5 and Rxf5 exchange queens; Ke2 allows a worse direct capture but is unnecessary."
+    },
+    {
+      "id": "fork-eight-square-5c31f94a7f39a007-66",
+      "event": "eight-square",
+      "moveUci": "e7f7",
+      "fork": false,
+      "rationale": "Rxf7 and Kxf7 take the forking rook. The compensating activity is elsewhere."
+    },
+    {
+      "id": "fork-eight-square-cab1569b87c21e58-53",
+      "event": "eight-square",
+      "moveUci": "g5e3",
+      "fork": null,
+      "rationale": "The best continuations after Qxe3+ are Qg5 and Bg6. The suggested threat of Qxd2 is not established as a separately profitable branch."
+    },
+    {
+      "id": "fork-eight-square-876f69a8f8351971-71",
+      "event": "eight-square",
+      "moveUci": "f6b2",
+      "fork": false,
+      "rationale": "Qxb2 Bxb2 exchanges the fork piece; the c1 rook survives."
+    },
+    {
+      "id": "fork-eight-square-1260c831c85f8e09-47",
+      "event": "eight-square",
+      "moveUci": "f6d4",
+      "fork": true,
+      "rationale": "Bd4+ attacks c5 and the king. Both king moves allow Bxc5 for an exchange gain even if Nxc5 follows."
+    },
+    {
+      "id": "fork-eight-square-5688f959f2be539f-85",
+      "event": "eight-square",
+      "moveUci": "d6d1",
+      "fork": null,
+      "rationale": "Rd1+ induces a queen concession with Qe1, but the explicit c1 rook attack is not collected by the best lines."
+    },
+    {
+      "id": "fork-eight-square-45fa46a6d22a6414-66",
+      "event": "eight-square",
+      "moveUci": "g6f7",
+      "fork": false,
+      "rationale": "Bxf7 trades bishops off; the line where Kg7 allows Bxe6 is an avoidable loss."
+    },
+    {
+      "id": "fork-eight-square-ad866f9fd929c40e-60",
+      "event": "eight-square",
+      "moveUci": "f4h5",
+      "fork": false,
+      "rationale": "Nd5 saves the knight, and Nxf6 Bxf6 in the c3 line is an even exchange."
+    },
+    {
+      "id": "fork-eight-square-298832a51a0592ee-33",
+      "event": "eight-square",
+      "moveUci": "d8c8",
+      "fork": false,
+      "rationale": "Qxc8 or Qc2 trades queens. The check does not win a second target."
+    },
+    {
+      "id": "fork-eight-square-ca7b58ef6914c6d5-31",
+      "event": "eight-square",
+      "moveUci": "c6d4",
+      "fork": false,
+      "rationale": "Nxd4 Bxd4 is an ordinary knight exchange with no retained second arm."
+    },
+    {
+      "id": "fork-eight-square-cc6d67da66ab2682-56",
+      "event": "eight-square",
+      "moveUci": "f3e5",
+      "fork": false,
+      "rationale": "Bxe5 neutralizes the forker and the Rxd7 recapture sequence loses material; the checkless counterattack also survives."
+    },
+    {
+      "id": "fork-arco-cb6ee814d5719118-54",
+      "event": "arco",
+      "moveUci": "e3d5",
+      "fork": false,
+      "rationale": "exd5 removes the knight and entirely prevents collection of the original targets."
+    },
+    {
+      "id": "fork-arco-b4e441ac7d902090-44",
+      "event": "arco",
+      "moveUci": "d2d6",
+      "fork": false,
+      "rationale": "Qxd6 Rxd6 is an equal exchange; the alternative Qxb6 trades queens as well."
+    },
+    {
+      "id": "fork-arco-a6db7c35aff52aac-63",
+      "event": "arco",
+      "moveUci": "b3d1",
+      "fork": null,
+      "rationale": "Qxd1+ has already made its root capture. Bf1 permits Qxf3 but Kh2 plans b4 and no capture of f3."
+    },
+    {
+      "id": "fork-arco-e3aac5ff70242c12-52",
+      "event": "arco",
+      "moveUci": "c5d6",
+      "fork": false,
+      "rationale": "Rxd6 removes the queen without losing either rook. Qxd8 in the second line does not make the fork unavoidable."
+    },
+    {
+      "id": "fork-arco-af9046a6ef3735ec-54",
+      "event": "arco",
+      "moveUci": "e8f8",
+      "fork": false,
+      "rationale": "The actual fork develops at Ne6 in both replies. Rxf8+ clears the way."
+    },
+    {
+      "id": "fork-arco-62d871a2c6bee88e-30",
+      "event": "arco",
+      "moveUci": "h6g7",
+      "fork": false,
+      "rationale": "Bxg7+ is a sacrifice to expose the king. Kxg7 is forced in the search and removed the alleged fork piece."
+    },
+    {
+      "id": "fork-arco-705e3ad64e0aea90-51",
+      "event": "arco",
+      "moveUci": "c7e5",
+      "fork": false,
+      "rationale": "Qxe5 Rxe5 is an even exchange; Qxc3 Nxc3 is the same liquidation."
+    },
+    {
+      "id": "fork-arco-419f92e425f79b36-73",
+      "event": "arco",
+      "moveUci": "f3e4",
+      "fork": false,
+      "rationale": "Best Qxe4 dxe4 trades queens. The knight attack never secures a gain against it."
+    },
+    {
+      "id": "fork-arco-249e4be4f268465f-52",
+      "event": "arco",
+      "moveUci": "f3d4",
+      "fork": false,
+      "rationale": "Nxd4 or coordinated rook defence neutralises the double attack without losing material."
+    },
+    {
+      "id": "fork-arco-a0183431a9ec632b-50",
+      "event": "arco",
+      "moveUci": "f5e7",
+      "fork": null,
+      "rationale": "The two independent replies lead to Qh6 and Rxe4. The route via Nxg8 may be relevant, but the original c8 and d5 targets lack a clean payoff."
+    },
+    {
+      "id": "fork-arco-c5ea8eebb824928e-47",
+      "event": "arco",
+      "moveUci": "f8f4",
+      "fork": false,
+      "rationale": "Neither b4 nor Nfd2 concedes a material capture of an original target."
+    },
+    {
+      "id": "fork-arco-6628ae5c1665c9d2-52",
+      "event": "arco",
+      "moveUci": "d4d8",
+      "fork": false,
+      "rationale": "Rxd8 removes the forker with an even exchange. The queen capture alternative keeps the struggle on other squares."
+    },
+    {
+      "id": "fork-arco-421134bd7243b7e1-49",
+      "event": "arco",
+      "moveUci": "c6f6",
+      "fork": false,
+      "rationale": "g5 offers an equal queen exchange and Ne5 addresses the other queen retreat. The fork wins no target."
+    },
+    {
+      "id": "fork-arco-b88c9aaef9a9e4bf-35",
+      "event": "arco",
+      "moveUci": "d8d1",
+      "fork": false,
+      "rationale": "Either recapture removes the forking rook. The later Nxe8 is a distinct action."
+    },
+    {
+      "id": "fork-arco-5cc32fae61bba64f-41",
+      "event": "arco",
+      "moveUci": "b3c4",
+      "fork": false,
+      "rationale": "Rxc4 removes the overextended queen. Re1 allows a much worse queen-for-rook trade but is avoidable."
+    },
+    {
+      "id": "fork-arco-221747eeb1010b1a-48",
+      "event": "arco",
+      "moveUci": "c2c7",
+      "fork": null,
+      "rationale": "Rc7 puts pressure on f7 and b7, but after best Raf8 the gain comes on a7 instead. Other candidate captures trade rooks."
+    },
+    {
+      "id": "fork-arco-a7a8f0f07adbcbe0-34",
+      "event": "arco",
+      "moveUci": "d5b7",
+      "fork": false,
+      "rationale": "Qxc7 gives the opponent a rook and counters Bxa8. The resulting exchange falls well below the better root evaluation."
+    },
+    {
+      "id": "fork-arco-1083da3840800421-45",
+      "event": "arco",
+      "moveUci": "f6f5",
+      "fork": false,
+      "rationale": "Re4 and Qb1 or Nf4 coordinate the targets without losing material."
+    },
+    {
+      "id": "fork-arco-d4c2df900eb37385-72",
+      "event": "arco",
+      "moveUci": "d4b6",
+      "fork": false,
+      "rationale": "Nxb6 and Rxb6 both remove the queen with no profitable remaining attack by it."
+    },
+    {
+      "id": "fork-arco-005e03251882adf3-56",
+      "event": "arco",
+      "moveUci": "a4d4",
+      "fork": false,
+      "rationale": "Rf6 and Rb6 remove the attacked rook. Neither line wins the other target through the attacked rook's move."
+    },
+    {
+      "id": "fork-arco-d7b3d33c197c535d-38",
+      "event": "arco",
+      "moveUci": "d2e4",
+      "fork": false,
+      "rationale": "dxe4 wins the tactical initiative and neutralizes the knight, leaving none of the apparent targets lost."
+    },
+    {
+      "id": "fork-arco-df866cff1d1673dc-69",
+      "event": "arco",
+      "moveUci": "f6g4",
+      "fork": null,
+      "rationale": "Rf4 allows Nxh2 but Rhxh2 replies, while Nxg4 is also sound. The precise value of the double attack is unclear."
+    },
+    {
+      "id": "fork-arco-e95a810562676e61-63",
+      "event": "arco",
+      "moveUci": "g4f5",
+      "fork": false,
+      "rationale": "Queen retreats save the queen and the knight stays soundly defended."
+    },
+    {
+      "id": "fork-arco-9ad287c36d592652-53",
+      "event": "arco",
+      "moveUci": "d6d4",
+      "fork": false,
+      "rationale": "Qxd4+ cxd4 trades queens even under the check. Kg2 gives concessions by choice."
+    }
+  ]
+}

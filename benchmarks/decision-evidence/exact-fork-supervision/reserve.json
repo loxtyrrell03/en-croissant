@@ -1,0 +1,348 @@
+{
+  "sources": {
+    "hvar": {
+      "sha256": "8bbea58a784f9117ffa141d8402bb4c0e6e7187d50ac00d4081f2010495967aa",
+      "eligibleGames": 113
+    },
+    "stockholm": {
+      "sha256": "73db2ecd3b605f9b8dd2274616ac0f8c5f18bdc292ad4ca80bcf51596c89cd7c",
+      "eligibleGames": 32
+    },
+    "halloween": {
+      "sha256": "6ba07fa0952709cf7e08453c88e2712f0e70402b3ae133e899e544706f6e34c9",
+      "eligibleGames": 20
+    }
+  },
+  "cases": [
+    {
+      "id": "fork-hvar-810e87f672f9275a-43",
+      "game": "810e87f672f9275ad295f25fb3395f5ce1fdf22a4546d8e3df07218eb6f66cd1",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "r1r3k1/p2b2b1/3q1pp1/1p1Pp3/n3P2Q/2N2R2/PPBN2PP/1K1R4 b - - 3 22",
+      "boardKey": "1k1r4/ppbn2pp/2n2r2/N3p2q/1P1pP3/3Q1PP1/P2B2B1/R1R3K1 w - -",
+      "move": "a4c3",
+      "origin": "played",
+      "ply": 43
+    },
+    {
+      "id": "fork-hvar-df6ef53f898d7299-59",
+      "game": "df6ef53f898d729963f88dbf0a11215cbe7f9f42b2232e7aaa710135656a85f3",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "2r3k1/5pp1/4p2p/3p4/2q5/P2R2P1/3QPPKP/8 b - - 0 30",
+      "boardKey": "2r3k1/5pp1/4p2p/3p4/2q5/P2R2P1/3QPPKP/8 b - -",
+      "move": "c4e4",
+      "origin": "played",
+      "ply": 59
+    },
+    {
+      "id": "fork-hvar-dcea340934dc09f6-63",
+      "game": "dcea340934dc09f672c73a9983ebf77f72ee565b07ea3456b553665bc249dc95",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "3r2k1/5pp1/1p2p2p/1Pb1P3/5P2/1P2qBP1/3p2KP/1R1Q4 b - - 1 32",
+      "boardKey": "1r1q4/3P2kp/1p2Qbp1/5p2/1pB1p3/1P2P2P/5PP1/3R2K1 w - -",
+      "move": "e3f2",
+      "origin": "played",
+      "ply": 63
+    },
+    {
+      "id": "fork-hvar-da96dfde275c285f-76",
+      "game": "da96dfde275c285f3b9093c28ce98dc39981667ba1f1b7865a873368da67a955",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "1r6/6b1/1P4pp/3krp2/Q7/2P3B1/1P4PP/1K6 w - - 0 39",
+      "boardKey": "1k6/1p4pp/2p3b1/q7/3KRP2/1p4PP/6B1/1R6 b - -",
+      "move": "a4d7",
+      "origin": "played",
+      "ply": 76
+    },
+    {
+      "id": "fork-hvar-04e6c69bfc0d0a45-61",
+      "game": "04e6c69bfc0d0a450881f7a49df6de5c53fef860d7a747b9b3c030e53830af79",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "r2q1r2/2p2p1k/b1Pp2pb/3Pp2n/4P1Np/2RN1P2/4Q1PP/3B1RK1 b - - 6 31",
+      "boardKey": "3b1rk1/4q1pp/2rn1p2/4p1nP/3pP2N/B1pP2PB/2P2P1K/R2Q1R2 w - -",
+      "move": "h5f4",
+      "origin": "played",
+      "ply": 61
+    },
+    {
+      "id": "fork-hvar-d7e3f241bf839149-44",
+      "game": "d7e3f241bf839149430ae7b1c4d441c7827db4a145ca7ebcef764c5cfe1c8ad6",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "5rk1/pp2p2p/3p2p1/2n5/2P2q2/1PQ4P/P4PK1/R4R2 w - - 2 23",
+      "boardKey": "5rk1/pp2p2p/3p2p1/2n5/2P2q2/1PQ4P/P4PK1/R4R2 w - -",
+      "move": "c3e3",
+      "origin": "played",
+      "ply": 44
+    },
+    {
+      "id": "fork-hvar-3b5a7754c97a1562-33",
+      "game": "3b5a7754c97a156238385858df94e009b8e30209a87f2790b34921d21d2977eb",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "r3rbk1/ppnq1ppn/2pp3p/4pP2/2PPP3/2N1B2P/PP1N2P1/R2Q1RK1 b - - 0 17",
+      "boardKey": "r2q1rk1/pp1n2p1/2n1b2p/2ppp3/4Pp2/2PP3P/PPNQ1PPN/R3RBK1 w - -",
+      "move": "e5d4",
+      "origin": "played",
+      "ply": 33
+    },
+    {
+      "id": "fork-hvar-a9c8a10f89ba9b63-59",
+      "game": "a9c8a10f89ba9b63a968d81e3f08c83e04dc7928ca8023708efdc5efcd9393e6",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "3r1r1k/2p3b1/p1b3q1/1pQ4p/7n/2PpN1NP/PP1B2P1/R3R1K1 b - - 3 30",
+      "boardKey": "3r1r1k/2p3b1/p1b3q1/1pQ4p/7n/2PpN1NP/PP1B2P1/R3R1K1 b - -",
+      "move": "g6g3",
+      "origin": "played",
+      "ply": 59
+    },
+    {
+      "id": "fork-hvar-b18c8c0c7f1076e3-66",
+      "game": "b18c8c0c7f1076e33b65c3a604ee79f940bdd5658b168f173cc443e9f3493c45",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "r5k1/1p2bp2/1nb3pp/2pn4/P1N1pN1P/1P2P3/4BPPB/3R2K1 w - - 9 34",
+      "boardKey": "3r2k1/4bppb/1p2p3/p1n1Pn1p/2PN4/1NB3PP/1P2BP2/R5K1 b - -",
+      "move": "c4b6",
+      "origin": "played",
+      "ply": 66
+    },
+    {
+      "id": "fork-hvar-866dab292b7d63e2-52",
+      "game": "866dab292b7d63e21fadc66a79fab7ea09286ee77768d5c715e9acda16ca3e53",
+      "split": "classical",
+      "event": "hvar",
+      "fen": "2B2nk1/7p/1p1Np1p1/p1q1P3/6Q1/4nNP1/PP3b2/R6K w - - 2 27",
+      "boardKey": "2B2nk1/7p/1p1Np1p1/p1q1P3/6Q1/4nNP1/PP3b2/R6K w - -",
+      "move": "g4f4",
+      "origin": "played",
+      "ply": 52
+    },
+    {
+      "id": "fork-stockholm-f7414fb87e745bf6-63",
+      "game": "f7414fb87e745bf6489d2a33c053587e9141a47c94617fae0b1d10450a75cc2c",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "1r2n1k1/R5pp/4p3/3q2P1/3BQP2/pr2P2P/6BK/8 b - - 0 32",
+      "boardKey": "1r2n1k1/R5pp/4p3/3q2P1/3BQP2/pr2P2P/6BK/8 b - -",
+      "move": "d5e4",
+      "origin": "played",
+      "ply": 63
+    },
+    {
+      "id": "fork-stockholm-c016cb64bd2f9493-76",
+      "game": "c016cb64bd2f949353c6f3cf51d80d83803b5d05131c29d7ebe222bd39393c45",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "5r1k/N6p/6p1/3Q4/1P6/8/1bq2PpP/4R1K1 w - - 0 39",
+      "boardKey": "4r1k1/1BQ2pPp/8/1p6/3q4/6P1/n6P/5R1K b - -",
+      "move": "d5c5",
+      "origin": "played",
+      "ply": 76
+    },
+    {
+      "id": "fork-stockholm-eb469f36bd982437-75",
+      "game": "eb469f36bd982437279079fe14d1c5d15aaf0167dfb4ad46501ad29950461ad4",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "8/p5pk/4Q3/7p/5q2/1P4PP/P4P2/2r1R1K1 b - - 0 38",
+      "boardKey": "2R1r1k1/p4p2/1p4pp/5Q2/7P/4q3/P5PK/8 w - -",
+      "move": "c1e1",
+      "origin": "played",
+      "ply": 75
+    },
+    {
+      "id": "fork-stockholm-6d714e5110eb8039-57",
+      "game": "6d714e5110eb803963d3bd37e496ea183a43afd42e34a7ff0e79e0d7686e2cf3",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "5rk1/pq4R1/1p2p2p/4B2Q/5P2/8/P6P/2r2BK1 b - - 0 29",
+      "boardKey": "2R2bk1/p6p/8/5p2/4b2q/1P2P2P/PQ4r1/5RK1 w - -",
+      "move": "b7g7",
+      "origin": "played",
+      "ply": 57
+    },
+    {
+      "id": "fork-stockholm-429190fb73477d5f-51",
+      "game": "429190fb73477d5f1c9c9e4d64cb31102aaa1f79c8db78f2e96ded6e3a369e0b",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "1r2r1k1/5ppp/1q6/1p1P1b2/3Q4/1P4PP/R4PB1/3R2K1 b - - 0 26",
+      "boardKey": "1r2r1k1/5ppp/1q6/1p1P1b2/3Q4/1P4PP/R4PB1/3R2K1 b - -",
+      "move": "e8e1",
+      "origin": "played",
+      "ply": 51
+    },
+    {
+      "id": "fork-stockholm-685ee11a03b674df-29",
+      "game": "685ee11a03b674dfecfcbb1a6a94e89e322d134f79683fc1217d5668e19e2577",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "r1b1k2r/pp2bpp1/2p4p/4P3/2B1p1P1/P1q3BP/2P1QP2/R4RK1 b kq - 3 15",
+      "boardKey": "r1b1k2r/pp2bpp1/2p4p/4P3/2B1p1P1/P1q3BP/2P1QP2/R4RK1 b kq -",
+      "move": "c3f3",
+      "origin": "played",
+      "ply": 29
+    },
+    {
+      "id": "fork-stockholm-7e45292b45a3092d-74",
+      "game": "7e45292b45a3092d5a2b6f230f4cdf8acd1d4ccbcce199b897e8cb475ce2e599",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "3r2k1/pq3p1p/4p1p1/P1b1P3/2P2P2/1P1B2P1/3Q3P/1R1R1K1b w - - 3 38",
+      "boardKey": "1r1r1k1B/3q3p/1p1b2p1/2p2p2/p1B1p3/4P1P1/PQ3P1P/3R2K1 b - -",
+      "move": "d3e4",
+      "origin": "played",
+      "ply": 74
+    },
+    {
+      "id": "fork-stockholm-f3f7902598a4baef-58",
+      "game": "f3f7902598a4baef753d3d2fdaf8c0fe5a392b7e372f7f62a301874ddfea313a",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "bqr5/5p1p/2p2kp1/1pN1p3/pP1P4/P3P1P1/5PBP/5RK1 w - - 0 30",
+      "boardKey": "5rk1/5pbp/p3p1p1/Pp1p4/1Pn1P3/2P2KP1/5P1P/BQR5 b - -",
+      "move": "c5d7",
+      "origin": "played",
+      "ply": 58
+    },
+    {
+      "id": "fork-stockholm-ea6e5d2fcf4e856e-27",
+      "game": "ea6e5d2fcf4e856e7e5134eaae04499fec1d34d2c1f068d1ff79b0a544b8964a",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "r3kb1r/p4pp1/Bqp1b2p/3N1n2/8/6B1/PPP1QPPP/2KR3R b kq - 0 14",
+      "boardKey": "2kr3r/ppp1qppp/6b1/8/3n1N2/bQP1B2P/P4PP1/R3KB1R w KQ -",
+      "move": "f5g3",
+      "origin": "played",
+      "ply": 27
+    },
+    {
+      "id": "fork-stockholm-80f7dee8b5c08f79-50",
+      "game": "80f7dee8b5c08f798240305cd5d6bd95ffd05233ec6384b39f58a3ec7368b21e",
+      "split": "classical",
+      "event": "stockholm",
+      "fen": "3r2k1/3Q2pp/p1rbpq2/3p4/1n1P4/2N2N2/1P2RPPP/1R4K1 w - - 4 26",
+      "boardKey": "1r4k1/1p2rppp/2n2n2/1N1p4/3P4/P1RBPQ2/3q2PP/3R2K1 b - -",
+      "move": "d7b7",
+      "origin": "played",
+      "ply": 50
+    },
+    {
+      "id": "fork-halloween-b4f008f5772b242b-26",
+      "game": "b4f008f5772b242ba778b9ee187291436120d4545bec3e54b68997ca5dc12ef6",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "1rbr2k1/ppq2pbp/2npp1p1/5n2/2Pp4/PP2PNP1/1BQ1NPBP/R4RK1 w - - 0 14",
+      "boardKey": "1rbr2k1/ppq2pbp/2npp1p1/5n2/2Pp4/PP2PNP1/1BQ1NPBP/R4RK1 w - -",
+      "move": "e2d4",
+      "origin": "played",
+      "ply": 26
+    },
+    {
+      "id": "fork-halloween-ab3b924101ec0be5-35",
+      "game": "ab3b924101ec0be503876cd2f1344594dd77db082657a791d78dbc377ca9f229",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "2rq1rk1/4bppp/b1p1p3/p2pP3/P1n1P3/2B3P1/2QN1PBP/RR4K1 b - - 1 18",
+      "boardKey": "2rq1rk1/4bppp/b1p1p3/p2pP3/P1n1P3/2B3P1/2QN1PBP/RR4K1 b - -",
+      "move": "c4a3",
+      "origin": "played",
+      "ply": 35
+    },
+    {
+      "id": "fork-halloween-81e728da2fa96926-48",
+      "game": "81e728da2fa96926bd77967a3e7b262610a54d2bbcc246e96792fb88c97f704d",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "1r4k1/1Np1nppp/p1B1r3/1p1p4/3Pn3/Pq2P3/1PR1QPPP/2R3K1 w - - 1 25",
+      "boardKey": "1r4k1/1Np1nppp/p1B1r3/1p1p4/3Pn3/Pq2P3/1PR1QPPP/2R3K1 w - -",
+      "move": "b7c5",
+      "origin": "played",
+      "ply": 48
+    },
+    {
+      "id": "fork-halloween-bd2d0033b26e20e1-48",
+      "game": "bd2d0033b26e20e173b1beb835f5e96384088e2173e1a4b61834b6448237bdb0",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "3r3k/pp3Bpp/3P1q2/n7/8/5P2/PPQ4P/1K1R4 w - - 1 25",
+      "boardKey": "1k1r4/ppq4p/5p2/8/N7/3p1Q2/PP3bPP/3R3K b - -",
+      "move": "c2c7",
+      "origin": "played",
+      "ply": 48
+    },
+    {
+      "id": "fork-halloween-7616ea8af55f1592-43",
+      "game": "7616ea8af55f15920a98a7c93f89b8343e511de4d4acb57281d3a3d92d9ec10f",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "2rr2k1/pb3p1p/1p1q1bp1/1B5P/3N4/8/PBR1QPP1/4R1K1 b - - 0 22",
+      "boardKey": "2rr2k1/pb3p1p/1p1q1bp1/1B5P/3N4/8/PBR1QPP1/4R1K1 b - -",
+      "move": "c8c2",
+      "origin": "played",
+      "ply": 43
+    },
+    {
+      "id": "fork-halloween-203495efbab8d4cc-27",
+      "game": "203495efbab8d4ccb8bde47b332824c6250f5e1fc3e514b898ae071ea86b0c17",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "r1bqk2r/1p2nnpp/p3pp2/3P4/5B2/2N5/PP1QBPPP/R3K2R b KQkq - 0 14",
+      "boardKey": "r1bqk2r/1p2nnpp/p3pp2/3P4/5B2/2N5/PP1QBPPP/R3K2R b KQkq -",
+      "move": "e7d5",
+      "origin": "played",
+      "ply": 27
+    },
+    {
+      "id": "fork-halloween-5494b783466cc75c-96",
+      "game": "5494b783466cc75ce1d372fa66d06841e60cea1e48062c55ef0a18938d0c2375",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "r4r2/6k1/8/1p1p1p1p/2b1pNp1/P1R1P1P1/5P1P/2R4K w - - 0 49",
+      "boardKey": "2r4k/5p1p/p1r1p1p1/2B1PnP1/1P1P1P1P/8/6K1/R4R2 b - -",
+      "move": "f4e6",
+      "origin": "played",
+      "ply": 96
+    },
+    {
+      "id": "fork-halloween-ee615e101ba922e0-62",
+      "game": "ee615e101ba922e09e95a730d3430bc003e4043a8902315ccb90bbdf4953146f",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "4r1k1/5pp1/p6p/2Q1p3/4n3/1P3qPP/PB3P2/4R1K1 w - - 4 32",
+      "boardKey": "4r1k1/5pp1/p6p/2Q1p3/4n3/1P3qPP/PB3P2/4R1K1 w - -",
+      "move": "c5e3",
+      "origin": "played",
+      "ply": 62
+    },
+    {
+      "id": "fork-halloween-d53941b1a5ad36e0-112",
+      "game": "d53941b1a5ad36e08d932e3521aa84f45b85d3c1ab978d0c71b8152adecf97bd",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "2k1r3/8/pBPR4/3N4/2P1bp2/7P/P5p1/6K1 w - - 1 57",
+      "boardKey": "2k1r3/8/pBPR4/3N4/2P1bp2/7P/P5p1/6K1 w - -",
+      "move": "d5f6",
+      "origin": "played",
+      "ply": 112
+    },
+    {
+      "id": "fork-halloween-e49fc424f8651c84-54",
+      "game": "e49fc424f8651c847b31e2b506e0f49d0427ec7cf6acec3f7291d3503cd9b5e9",
+      "split": "classical",
+      "event": "halloween",
+      "fen": "r5k1/8/2p1nqnp/p5p1/2P1B3/1P2p1P1/PB2P2P/5RK1 w - - 0 28",
+      "boardKey": "5rk1/pb2p2p/1p2P1p1/2p1b3/P5P1/2P1NQNP/8/R5K1 b - -",
+      "move": "f1f6",
+      "origin": "played",
+      "ply": 54
+    }
+  ]
+}

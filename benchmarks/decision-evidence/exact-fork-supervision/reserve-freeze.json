@@ -1,0 +1,17 @@
+{
+  "gate": "One new reviewed exact-move fork, no known false report, current Decision Evidence comparison uses the same deep reply frame",
+  "files": [
+    {
+      "file": "decisionForkReplies.ts",
+      "sha256": "a7c89f596d753f815d8889233286c6ffc17d1078d01d2a2265dd97bd22ab8a6d"
+    },
+    {
+      "file": "reserve.json",
+      "sha256": "a6f2f402f2c2f9d5d28a408ff1c47ee286dd8a98c985468ccdbe27fe79880fa9"
+    },
+    {
+      "file": "reserve-reference.json",
+      "sha256": "9feec03b52dc4918da2355826ff09252a21b4d18a086826ca54ae95cb639c327"
+    }
+  ]
+}
