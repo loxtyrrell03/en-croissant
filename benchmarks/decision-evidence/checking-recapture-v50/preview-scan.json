@@ -1,0 +1,49 @@
+{
+  "sources": {
+    "formentera-a-2025": {
+      "url": "https://lichess.org/api/broadcast/0AV3NvOQ.pgn",
+      "classical": "https://ajedrezenmadrid.com/torneos/2025/25_sunwayformentera.pdf"
+    },
+    "aeroflot-round3-2026": {
+      "url": "https://lichess.org/api/broadcast/round/J0DJMlD3.pgn",
+      "classical": "https://aeroflotopen.ru/en/international-chess-festival"
+    },
+    "abu-dhabi-masters-round1-2025": {
+      "url": "https://lichess.org/api/broadcast/round/lTgYQkNI.pgn",
+      "classical": "https://calendar.fide.com/event_files/3299/31st_Abu_Dhabi_Chess_Festival_Regulations.pdf"
+    }
+  },
+  "prescreenedDecisions": {
+    "formentera-a-2025": {
+      "sha256": "45b78fb178fe98a72be3cd3d34a9e10de2d0b954fb070f0b7a35743ec4ede47a",
+      "previewed": {
+        "preview-loss": 85,
+        "preview-control": 13
+      }
+    },
+    "aeroflot-round3-2026": {
+      "sha256": "9fb3d4f8795451372a6f3a3b5ba62b474685678335009a1c015d88f6db1421ed",
+      "previewed": {}
+    },
+    "abu-dhabi-masters-round1-2025": {
+      "sha256": "9ba33fb4525968a5c1a60e3e828b45dcb96b41e08743f7558deeeb45a318f0f6",
+      "previewed": {
+        "preview-loss": 81,
+        "preview-control": 11
+      }
+    }
+  },
+  "passes": [
+    {
+      "nodes": 60000,
+      "multiPv": 1,
+      "results": 0
+    },
+    {
+      "nodes": 1000000,
+      "multiPv": 3,
+      "results": 0
+    }
+  ],
+  "eventNote": "Aeroflot PGN lacked evaluation annotations needed by the preview filter."
+}

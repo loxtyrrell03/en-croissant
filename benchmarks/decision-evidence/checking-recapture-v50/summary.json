@@ -1,0 +1,811 @@
+{
+  "comparator": "7727eb619ca513248145294031e51bd70c4748e3",
+  "decision": "Retain the candidate for further independent testing. One development gain and no fresh positive test.",
+  "implementation": "The same recapture is corroborated in both played lines. A shared engine reply verifies the same capture exchange in the stronger line where the intermediate move is no longer check.",
+  "candidateFrozenSha256": "7da82c1456b26d985d44c995c92fa8eeec997d78808e6f727984b50a341122ce",
+  "groups": {
+    "historical-development": {
+      "cases": 226,
+      "events": 26,
+      "before": {
+        "tactical": {
+          "tp": 21,
+          "fp": 1,
+          "fn": 27,
+          "tn": 127,
+          "unknownReference": 50,
+          "precision": {
+            "value": 0.9545454545454546,
+            "numerator": 21,
+            "denominator": 22,
+            "interval95": [
+              0.7820195416134267,
+              0.991930572378736
+            ]
+          },
+          "recall": {
+            "value": 0.4375,
+            "numerator": 21,
+            "denominator": 48,
+            "interval95": [
+              0.30701269040654244,
+              0.5772498258017222
+            ]
+          },
+          "specificity": {
+            "value": 0.9921875,
+            "numerator": 127,
+            "denominator": 128,
+            "interval95": [
+              0.9570737405611394,
+              0.9986195681071257
+            ]
+          },
+          "agreement": {
+            "value": 0.8409090909090909,
+            "numerator": 148,
+            "denominator": 176,
+            "interval95": [
+              0.7796770082722366,
+              0.8875773655907038
+            ]
+          }
+        },
+        "positional": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 48,
+          "tn": 129,
+          "unknownReference": 39,
+          "precision": {
+            "value": 1.0,
+            "numerator": 10,
+            "denominator": 10,
+            "interval95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "recall": {
+            "value": 0.1724137931034483,
+            "numerator": 10,
+            "denominator": 58,
+            "interval95": [
+              0.09644292662938801,
+              0.2890825650932622
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 129,
+            "denominator": 129,
+            "interval95": [
+              0.9710823800431216,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.7433155080213903,
+            "numerator": 139,
+            "denominator": 187,
+            "interval95": [
+              0.6762521878905288,
+              0.8005834041361461
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 7,
+          "tn": 147,
+          "unknownReference": 70,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.2222222222222222,
+            "numerator": 2,
+            "denominator": 9,
+            "interval95": [
+              0.06322510711784671,
+              0.5474110308930111
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 147,
+            "denominator": 147,
+            "interval95": [
+              0.9745331366407661,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.9551282051282052,
+            "numerator": 149,
+            "denominator": 156,
+            "interval95": [
+              0.9102836178517977,
+              0.9780966625064529
+            ]
+          }
+        }
+      },
+      "after": {
+        "tactical": {
+          "tp": 21,
+          "fp": 1,
+          "fn": 27,
+          "tn": 127,
+          "unknownReference": 50,
+          "precision": {
+            "value": 0.9545454545454546,
+            "numerator": 21,
+            "denominator": 22,
+            "interval95": [
+              0.7820195416134267,
+              0.991930572378736
+            ]
+          },
+          "recall": {
+            "value": 0.4375,
+            "numerator": 21,
+            "denominator": 48,
+            "interval95": [
+              0.30701269040654244,
+              0.5772498258017222
+            ]
+          },
+          "specificity": {
+            "value": 0.9921875,
+            "numerator": 127,
+            "denominator": 128,
+            "interval95": [
+              0.9570737405611394,
+              0.9986195681071257
+            ]
+          },
+          "agreement": {
+            "value": 0.8409090909090909,
+            "numerator": 148,
+            "denominator": 176,
+            "interval95": [
+              0.7796770082722366,
+              0.8875773655907038
+            ]
+          }
+        },
+        "positional": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 48,
+          "tn": 129,
+          "unknownReference": 39,
+          "precision": {
+            "value": 1.0,
+            "numerator": 10,
+            "denominator": 10,
+            "interval95": [
+              0.7224672001371107,
+              0.9999999999999999
+            ]
+          },
+          "recall": {
+            "value": 0.1724137931034483,
+            "numerator": 10,
+            "denominator": 58,
+            "interval95": [
+              0.09644292662938801,
+              0.2890825650932622
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 129,
+            "denominator": 129,
+            "interval95": [
+              0.9710823800431216,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.7433155080213903,
+            "numerator": 139,
+            "denominator": 187,
+            "interval95": [
+              0.6762521878905288,
+              0.8005834041361461
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 7,
+          "tn": 147,
+          "unknownReference": 70,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.2222222222222222,
+            "numerator": 2,
+            "denominator": 9,
+            "interval95": [
+              0.06322510711784671,
+              0.5474110308930111
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 147,
+            "denominator": 147,
+            "interval95": [
+              0.9745331366407661,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.9551282051282052,
+            "numerator": 149,
+            "denominator": 156,
+            "interval95": [
+              0.9102836178517977,
+              0.9780966625064529
+            ]
+          }
+        }
+      },
+      "changedPositionReports": 0,
+      "changedMoveReports": 0,
+      "workerMedianMs": {
+        "before": 74.88625000000047,
+        "after": 74.4814000000024
+      },
+      "changes": [],
+      "additionalSharedReplyWitnesses": [],
+      "worstCaseAdditionalLiveRequestedNodes": 0
+    },
+    "v49-development": {
+      "cases": 48,
+      "events": 4,
+      "before": {
+        "tactical": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 10,
+          "tn": 24,
+          "unknownReference": 12,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.16666666666666666,
+            "numerator": 2,
+            "denominator": 12,
+            "interval95": [
+              0.04696514218385378,
+              0.4480308622529734
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 24,
+            "denominator": 24,
+            "interval95": [
+              0.8620237953250198,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.7222222222222222,
+            "numerator": 26,
+            "denominator": 36,
+            "interval95": [
+              0.5600751000260289,
+              0.841516620598654
+            ]
+          }
+        },
+        "positional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 13,
+          "tn": 23,
+          "unknownReference": 11,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.07142857142857142,
+            "numerator": 1,
+            "denominator": 14,
+            "interval95": [
+              0.012722215247890939,
+              0.31468704424151117
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 23,
+            "denominator": 23,
+            "interval95": [
+              0.8568833815495731,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.6486486486486487,
+            "numerator": 24,
+            "denominator": 37,
+            "interval95": [
+              0.4875902312255084,
+              0.7817439286607287
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "tn": 24,
+          "unknownReference": 20,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 4,
+            "interval95": [
+              0.0,
+              0.4898908364545973
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 24,
+            "denominator": 24,
+            "interval95": [
+              0.8620237953250198,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8571428571428571,
+            "numerator": 24,
+            "denominator": 28,
+            "interval95": [
+              0.685101978364747,
+              0.9430099468025059
+            ]
+          }
+        }
+      },
+      "after": {
+        "tactical": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 9,
+          "tn": 24,
+          "unknownReference": 12,
+          "precision": {
+            "value": 1.0,
+            "numerator": 3,
+            "denominator": 3,
+            "interval95": [
+              0.4385029682449546,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.25,
+            "numerator": 3,
+            "denominator": 12,
+            "interval95": [
+              0.08894166839405471,
+              0.5323053349335657
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 24,
+            "denominator": 24,
+            "interval95": [
+              0.8620237953250198,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.75,
+            "numerator": 27,
+            "denominator": 36,
+            "interval95": [
+              0.5892954623327166,
+              0.8624952233700517
+            ]
+          }
+        },
+        "positional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 13,
+          "tn": 23,
+          "unknownReference": 11,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.07142857142857142,
+            "numerator": 1,
+            "denominator": 14,
+            "interval95": [
+              0.012722215247890939,
+              0.31468704424151117
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 23,
+            "denominator": 23,
+            "interval95": [
+              0.8568833815495731,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.6486486486486487,
+            "numerator": 24,
+            "denominator": 37,
+            "interval95": [
+              0.4875902312255084,
+              0.7817439286607287
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "tn": 24,
+          "unknownReference": 20,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 4,
+            "interval95": [
+              0.0,
+              0.4898908364545973
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 24,
+            "denominator": 24,
+            "interval95": [
+              0.8620237953250198,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8571428571428571,
+            "numerator": 24,
+            "denominator": 28,
+            "interval95": [
+              0.685101978364747,
+              0.9430099468025059
+            ]
+          }
+        }
+      },
+      "changedPositionReports": 0,
+      "changedMoveReports": 0,
+      "workerMedianMs": {
+        "before": 85.52324999999928,
+        "after": 83.5262500000008
+      },
+      "changes": [
+        {
+          "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+          "reference": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null
+          },
+          "before": [],
+          "after": [
+            "tactical"
+          ],
+          "promotion": null
+        }
+      ],
+      "additionalSharedReplyWitnesses": [
+        "mistake-fall-nyc-norms-2026-d617317c7afc176f-77"
+      ],
+      "worstCaseAdditionalLiveRequestedNodes": 1000000
+    },
+    "formentera-control": {
+      "cases": 1,
+      "events": 1,
+      "before": {
+        "tactical": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1,
+          "unknownReference": 0,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1,
+          "unknownReference": 0,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1,
+          "unknownReference": 0,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          }
+        }
+      },
+      "after": {
+        "tactical": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1,
+          "unknownReference": 0,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1,
+          "unknownReference": 0,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1,
+          "unknownReference": 0,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          }
+        }
+      },
+      "changedPositionReports": 0,
+      "changedMoveReports": 0,
+      "workerMedianMs": {
+        "before": 298.85300000000007,
+        "after": 301.9872000000005
+      },
+      "changes": [],
+      "additionalSharedReplyWitnesses": [],
+      "worstCaseAdditionalLiveRequestedNodes": 0
+    }
+  },
+  "candidateTests": {
+    "files": 2,
+    "passing": 26
+  }
+}

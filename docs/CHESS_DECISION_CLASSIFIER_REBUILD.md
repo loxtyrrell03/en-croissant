@@ -3178,8 +3178,7 @@ none of the five policies nominated. Across all 22 and 264 million
 requested nodes, the worker still added just one tactical diagnosis.
 The two deeper branches took a median of about 9.8 combined seconds
 on this machine during the concurrent experiments. The immediate
-opportunity is evidence extraction from the existing legal lines,
-rather than spending that budget across all unclear decisions.
+opportunity is better evidence extraction from the existing legal lines.
 
 The Benidorm counterfactual records a separate remaining mechanism.
 After the same legal sequence following either knight capture on d5,
@@ -3199,3 +3198,48 @@ Replay that manifest, then use the `score` command to assemble the
 five equal-budget outcomes. Keep the committed tactical core fixed
 through the replays. The exhaustive complement is a separate diagnostic
 based on the eligible games outside the nomination union.
+
+
+## Iteration 50 — verify a check inserted before recapture
+
+The NYC replay suggests a lower-cost follow-up. In both weaker branches
+the White rook goes to f6 and Black captures it with the bishop. White
+can legally recapture immediately and instead gives `Qd3+` first.
+White recaptures on f6 after either king reply. The same `Rf6 Bxf6`
+exchange is legal after the better `...Kg8`, where `Qd3` gives no check.
+A separately searched `Rf6` reply after `...Kg8` scores −7.74 for
+White, compared with +4.84 for White after `...Qe6` in the separate
+original reply search. The control establishes that the same exchange
+has sharply different outcomes. The legal replay shows exactly which
+checking tempo the king move removes.
+
+The candidate reuses the current app's allocation for one shared
+opponent reply. It needs the exact early exchange and delayed recapture
+in both weaker branches, the absent check in the alternative replay,
+and a coherent Stockfish score for the forced control. The NYC case
+takes one targeted one-million-node query in the normal workflow
+when that reply is missing from the cached branches. The v49 approach
+spent 12 million nodes extending both replies. The forced comparison
+also identifies the check that the alternative avoids.
+
+The candidate recovered this one tactical diagnosis on the 48
+development replays and changed none of the earlier 226 reports.
+The Formentera recorded control produced no diagnosis in either
+version. A fresh preview across 190 annotated decisions from the
+Formentera and Abu Dhabi tournaments found no qualifying variations,
+first at 60,000 nodes and then at one million nodes. Aeroflot round 3
+had no eligible evaluation annotations for the preview. The model
+and rule experiments establish limited coverage for this search
+pattern. The rule remains a replayable prototype while independent
+positive evidence is pending.
+
+**Reproduction.** Use the exact NYC frames in
+`benchmarks/decision-evidence/mistake-search-budget-v49/nyc-intermezzo.json`.
+Apply `checking-recapture.patch` with `git apply --unidiff-zero`
+against the recorded revision in
+`benchmarks/decision-evidence/checking-recapture-v50/summary.json`.
+The patch includes a positive replay and checks for an incomplete
+continuation, an inadequate score contrast, a missing control and a
+check that applies after both choices. The public-game preview uses
+`decision-evidence-intermezzo-preview.py` and the source list in
+`preview-scan.json`.

@@ -1,0 +1,14 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "recapture-formentera-a-2025-96d0f901af4294ca-72",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5g4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Ng4 is the preferred engine move. The recorded check before a recapture belongs to a continuation from a comparable position, without an established error on the played root."
+    }
+  ]
+}

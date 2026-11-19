@@ -1,0 +1,130 @@
+diff --git a/src/utils/tacticalMotifs/decisionSharedReply.ts b/src/utils/tacticalMotifs/decisionSharedReply.ts
+index 63dabede..68db7329 100644
+--- a/src/utils/tacticalMotifs/decisionSharedReply.ts
++++ b/src/utils/tacticalMotifs/decisionSharedReply.ts
+@@ -18 +18,4 @@ import type { TacticalMistakeEpisode } from "./tacticalMistakeEpisode";
+-import type { TacticalSequenceWitness } from "./tacticalSequenceEvidence";
++import {
++    extractTacticalSequenceWitnesses,
++    type TacticalSequenceWitness,
++} from "./tacticalSequenceEvidence";
+@@ -248,0 +252,42 @@ export function compareExposedPieceTrap(
++function checkingRecaptureContrast(
++    played: DecisionEngineLine,
++    opponent: DecisionEngineLine,
++    actual: TacticalReplayStep,
++    choice: TacticalReplayStep,
++) {
++    const opening = opponent.pvUci.slice(0, 5);
++    if (
++        opening.length !== 5 ||
++        [0, 1, 2, 4].some((index) => opening[index] !== played.pvUci[index + 1])
++    )
++        return null;
++    const fen = makeFen(actual.after.toSetup());
++    const actualExchange = replayTacticalLine(fen, opening.slice(0, 3));
++    const controlExchange = replayTacticalLine(
++        makeFen(choice.after.toSetup()),
++        opening.slice(0, 3),
++    );
++    if (
++        actualExchange.length !== 3 ||
++        controlExchange.length !== 3 ||
++        !actualExchange[1].capture ||
++        !controlExchange[1].capture ||
++        actualExchange[1].capture !== controlExchange[1].capture ||
++        !actualExchange[2].after.isCheck() ||
++        controlExchange[2].after.isCheck()
++    )
++        return null;
++    const witness = (pvUci: string[]) =>
++        extractTacticalSequenceWitnesses(fen, { ...opponent, pvUci }).find(
++            (item) => item.mechanism === "intermezzo" && item.mechanismPly === 3,
++        );
++    const observed = witness(opening);
++    if (!observed || !witness(played.pvUci.slice(1, 6))) return null;
++    return {
++        witness: observed,
++        captureUci: opening[1],
++        checkUci: opening[2],
++        checkSan: actualExchange[2].san,
++    };
++}
++
+@@ -281 +326,5 @@ function sharedReplyContext(
+-    return attack || captures.length ? { actual, reply, choice, control, attack, captures } : null;
++    const recapture =
++        attack || captures.length ? null : checkingRecaptureContrast(played, opponent, actual, choice);
++    return attack || captures.length || recapture
++        ? { actual, reply, choice, control, attack, captures, recapture }
++        : null;
+@@ -318 +367 @@ export function compareSharedReply(
+-    const { actual, reply, choice, control, attack, captures } = context;
++    const { actual, reply, choice, control, attack, captures, recapture } = context;
+@@ -342,0 +392,13 @@ export function compareSharedReply(
++    if (
++        recapture &&
++        answer.uci === recapture.captureUci &&
++        checked.pvUci.length >= recapture.witness.payoffPly &&
++        checked.pvUci[2] !== recapture.checkUci
++    )
++        return {
++            ...episode(
++                recapture.witness.payoffPly,
++                `${recapture.witness.description} After ${choice.san} the same ${reply.san} ${answer.san} exchange leaves ${recapture.checkSan.replace(/[+#]$/, "")} without check. Stockfish evaluates that opponent reply much less favourably.`,
++            ),
++            mechanisms: [recapture.witness],
++        };
+diff --git a/src/utils/tests/decisionSharedReply.test.ts b/src/utils/tests/decisionSharedReply.test.ts
+index 6ee455dd..e13b1b57 100644
+--- a/src/utils/tests/decisionSharedReply.test.ts
++++ b/src/utils/tests/decisionSharedReply.test.ts
+@@ -9 +9 @@ import type { DecisionEngineLine } from "../tacticalMotifs/decisionEvidence";
+-import { compareSharedReply } from "../tacticalMotifs/decisionSharedReply";
++import { compareSharedReply, nominateSharedReply } from "../tacticalMotifs/decisionSharedReply";
+@@ -73,0 +74,45 @@ test("a control from another board or without a meaningful difference gives no p
++const checkingRecapture = study(
++    "4r3/4r1bk/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 b - - 3 39",
++    ["h7g8 f1d1 a5a4 d1d5 b6b5 e2d3 b5c4 d3c4 c6e6", -34],
++    ["c6e6 f5f6 g7f6 e2d3 h7h8 f1f6 e7g7 f6e6 e8e6", -490],
++    ["f1d1 a5a4 d1d5 b6b5 e2d3 b5c4 d3c4 c6e6 c4d3", 23],
++    ["f5f6 g7f6 e2d3 h7g8 f1f6 e6d7 f6d6 d7c8 d6g6", 484],
++    ["f5f6 g7f6 f1f5 a5a4 g2g3 f6g7 f5f1 e8d8 f1d1", -774],
++);
++
++test("a legal recapture contrast explains the inserted check without a deeper paired search", () => {
++    const [better, played] = checkingRecapture.candidates;
++    const reply = checkingRecapture.replyProbes![1].lines[0];
++    expect(nominateSharedReply(checkingRecapture.fen, better, played, reply)?.replyUci).toBe("f5f6");
++    const episode = assessChessDecision(checkingRecapture)?.mistake?.tacticalEpisode;
++    expect(episode?.explanation).toContain("Qd3+ inserts a check before Rxf6");
++    expect(episode?.mechanisms.map((item) => item.mechanism)).toEqual(["intermezzo"]);
++    expect(episode?.betterLineUci).toEqual(["h7g8", "f5f6", "g7f6", "f1f5", "a5a4", "g2g3"]);
++});
++
++test("a check-before-recapture needs corroboration and a scored control", () => {
++    const { fen, candidates: [better, played], sharedReply } = checkingRecapture;
++    const reply = checkingRecapture.replyProbes![1].lines[0];
++    const different = { ...played, pvUci: played.pvUci.slice(0, 5) };
++    expect(nominateSharedReply(fen, better, different, reply)).toBeNull();
++    const favourableControl = { ...sharedReply!, line: { ...sharedReply!.line, cp: 420 } };
++    expect(compareSharedReply(fen, better, played, reply, favourableControl)).toBeNull();
++    expect(compareSharedReply(fen, better, played, reply, undefined)).toBeNull();
++});
++
++test("the same check after both choices cannot explain the evaluation difference", () => {
++    const { fen, candidates: [, played], replyProbes } = checkingRecapture;
++    const reply = replyProbes![1].lines[0];
++    const sequence = reply.pvUci.slice(0, 5);
++    const alternative = { ...checkingRecapture.candidates[0], pvUci: ["c6c7", ...sequence] };
++    const after = replayTacticalLine(fen, ["c6c7"])[0].after;
++    const line = { ...reply, fen: makeFen(after.toSetup()), pvUci: sequence, cp: -250 };
++    expect(replayTacticalLine(line.fen, sequence)[2]?.after.isCheck()).toBe(true);
++    const episode = compareSharedReply(fen, alternative, played, reply, {
++        betterMoveUci: "c6c7",
++        playedMoveUci: played.pvUci[0],
++        line,
++    });
++    expect(episode?.mechanisms.some((item) => item.mechanism === "intermezzo")).toBeFalsy();
++});
++
