@@ -1,0 +1,278 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer. Ordinary root variations and played-move probes reviewed before neural rankings or extra-choice evidence. No consensus adjudication."
+  ],
+  "cases": [
+    {
+      "id": "tournament-english-open-2026-9d2486608ef2621a-41",
+      "scope": "position-character",
+      "moveUci": "f8c8",
+      "gameMoveUci": "f8f1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "C-file activity is the common issue. Rfc8, Rxf1+ followed by Rc8, and Ba6 all reach near-equal rook exchanges."
+    },
+    {
+      "id": "tournament-english-open-2026-04a6d354f7978a32-36",
+      "scope": "position-character",
+      "moveUci": "d1d2",
+      "gameMoveUci": "h1h5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rd2 and Rhf1 bring the second rook into play and Kb1 secures the king. The tested Rh5 stays viable, so the sacrifices do not establish a tactical requirement."
+    },
+    {
+      "id": "tournament-english-open-2026-f4fd452b8b7b595d-72",
+      "scope": "position-character",
+      "moveUci": "c8e8",
+      "gameMoveUci": "c8e8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxe8 forces mate. The queen and rook exchanges after Rc1+ and Qc8 give a concrete mating route. Rxc6 wins a different material sequence."
+    },
+    {
+      "id": "tournament-english-open-2026-537c6dbf58a859b2-64",
+      "scope": "position-character",
+      "moveUci": "h7e7",
+      "gameMoveUci": "h3h4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's active rook and central king control Black's pawn advance across Re7+, Rc7 and Kc3. The displayed lines offer no clear tactical contrast."
+    },
+    {
+      "id": "tournament-english-open-2026-82701d1c3b319497-56",
+      "scope": "position-character",
+      "moveUci": "e3f2",
+      "gameMoveUci": "e3f2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Kf2 limits the immediate attack. Ke2 and Ke4 allow Qg2+ and Re8+ before White can coordinate queen and rook."
+    },
+    {
+      "id": "tournament-english-open-2026-16cdda558877e43a-63",
+      "scope": "position-character",
+      "moveUci": "c7c1",
+      "gameMoveUci": "c7c1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qc1+ gains the initiative and opens Qd2. Taking the knight instead permits f6+ and a sustained king attack."
+    },
+    {
+      "id": "tournament-english-open-2026-dea0af7c270a00b3-41",
+      "scope": "position-character",
+      "moveUci": "h5d5",
+      "gameMoveUci": "c7b6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The queen's raid on b4 runs into Rb8 and the d-file exchange. Qb6 lets White remove e4 immediately. Other lines do not settle on a single long-term advantage."
+    },
+    {
+      "id": "tournament-english-open-2026-321fc5d6770e354b-50",
+      "scope": "position-character",
+      "moveUci": "f1d1",
+      "gameMoveUci": "f1d1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "White has to remove the d1 rook. Qh6 allows Rxf1+ and Be5, while the two captures on d1 leave materially different but defensible lines."
+    },
+    {
+      "id": "tournament-english-open-2026-ec8c12bde51b03d7-55",
+      "scope": "position-character",
+      "moveUci": "c7b8",
+      "gameMoveUci": "d6d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can relocate the queen to support rook activity or advance the d-pawn. Comparable scores and different captures give insufficient evidence of a required forcing sequence."
+    },
+    {
+      "id": "tournament-english-open-2026-91af6633e7e09a82-51",
+      "scope": "position-character",
+      "moveUci": "b8b6",
+      "gameMoveUci": "b8b6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The sacrifice on h6 allows immediate queen and rook captures, and e3 still lets White take b8 with check. Removing the b6 rook is the recurring urgent issue."
+    },
+    {
+      "id": "tournament-english-open-2026-13f3597c15e57bed-67",
+      "scope": "position-character",
+      "moveUci": "a6b5",
+      "gameMoveUci": "a6b5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "axb5 changes the position immediately. Kc7 allows Bxc5 and a pawn break, and Kb7 exposes the bishop on d6 to Rxd6 with check resources for Black."
+    },
+    {
+      "id": "tournament-english-open-2026-b1b67c9eddfc636c-64",
+      "scope": "position-character",
+      "moveUci": "h3e3",
+      "gameMoveUci": "a4c3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can centralize the queen and improve the knight or change the heavy-piece alignment along the open files. The played Nc3 stays close in value and the reply evidence differs."
+    },
+    {
+      "id": "tournament-english-open-2026-0f63e6bd3e6c98f8-100",
+      "scope": "position-character",
+      "moveUci": "e3f2",
+      "gameMoveUci": "c5c6",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Rook checks and attacks on a4 preserve approximate equality. The defensive placements manage the pawn targets through several viable move orders."
+    },
+    {
+      "id": "tournament-english-open-2026-75588325ed14e120-71",
+      "scope": "position-character",
+      "moveUci": "c5g1",
+      "gameMoveUci": "c5f2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White's active king and bishop place pressure on two pawn fronts. Black has several similar methods of restraining White's kingside pawns and none changes the assessment sharply."
+    },
+    {
+      "id": "tournament-english-open-2026-2e8e15a5e23e9abc-48",
+      "scope": "position-character",
+      "moveUci": "g1f2",
+      "gameMoveUci": "g1f2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can centralize the king or advance f5. The open c-file and access to better bishop squares matter across equivalent lines."
+    },
+    {
+      "id": "tournament-cappelle-open-54e5485d7745602b-72",
+      "scope": "position-character",
+      "moveUci": "b5b1",
+      "gameMoveUci": "b5b1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White improves the rooks and keeps pressure on the advanced f-pawn. Nd3 repeatedly hits the f4 rook but the independent variants do not establish a lost or won piece."
+    },
+    {
+      "id": "tournament-cappelle-open-73226dc723717fe8-108",
+      "scope": "position-character",
+      "moveUci": "d7d6",
+      "gameMoveUci": "d7d4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can defend through several rook placements while keeping the king active against the opposing rook. The checks and temporary pawn targets preserve equality."
+    },
+    {
+      "id": "tournament-cappelle-open-22c025cc325b9d36-32",
+      "scope": "position-character",
+      "moveUci": "f4e5",
+      "gameMoveUci": "f4e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "fxe5 changes the central pawn structure immediately. Be3 permits b4 with tempo against the knight, and Bxe5 gives Black the active Qb7 and bishop exchanges."
+    },
+    {
+      "id": "tournament-cappelle-open-66112f61c9d88430-46",
+      "scope": "position-character",
+      "moveUci": "a3b4",
+      "gameMoveUci": "a3b4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The capture on b4 changes the queenside structure. The alternative cxb4 allows Rxa3 and Bxf2+ as a concrete answer to Bxe5."
+    },
+    {
+      "id": "tournament-cappelle-open-d997cbdfead6faa9-37",
+      "scope": "position-character",
+      "moveUci": "c7e7",
+      "gameMoveUci": "c7d7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black must develop and manage the king while White retains the f-pawn advance. The viable candidates reorganize the queen and bishop without confirming one forcing answer."
+    },
+    {
+      "id": "tournament-cappelle-open-3dde0cbdf13761d2-59",
+      "scope": "position-character",
+      "moveUci": "e6g4",
+      "gameMoveUci": "d6f8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bg4 meets kingside pressure by attacking the d1 rook. Bd7 allows another order with Bxc4 and Bxd1, while Qf8 favours queenside pawn counterplay."
+    },
+    {
+      "id": "tournament-cappelle-open-f09a785c1467d89f-100",
+      "scope": "position-character",
+      "moveUci": "h5d5",
+      "gameMoveUci": "c2e3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rb7+ repeatedly forces Ka2 and gives Black access to f2. The rook exchanges or checks depend on White's specific first move."
+    },
+    {
+      "id": "tournament-cappelle-open-1acd3d19117c0a8e-44",
+      "scope": "position-character",
+      "moveUci": "c4f7",
+      "gameMoveUci": "c4f7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The forcing capture on f7 and then g6 changes the fate of the knights. Be3 permits Re7 and Nd5 as a materially different defensive line."
+    },
+    {
+      "id": "tournament-cappelle-open-4cca2a11c1be8a12-57",
+      "scope": "position-character",
+      "moveUci": "g5c1",
+      "gameMoveUci": "g5c1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bxc1 removes the bishop pair and lets Nf6 restrain the passer. The other moves allow the bishops to take better squares. The immediate tactical mechanism is unclear."
+    },
+    {
+      "id": "tournament-cappelle-open-15af8e8cb50fff00-43",
+      "scope": "position-character",
+      "moveUci": "g6h5",
+      "gameMoveUci": "a5a4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Both sides are choosing where to advance on opposite wings. Black's a-pawn can pull White's queenside apart while White's h-pawn displaces the bishop."
+    },
+    {
+      "id": "tournament-cappelle-open-fc3bcc630935161d-33",
+      "scope": "position-character",
+      "moveUci": "c7b6",
+      "gameMoveUci": "c7b6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "cxb6 eliminates the advanced pawn and makes Qxd3 answerable by e4 against the knight. The other viable lines balance the c7 promotion threat with central counterplay."
+    },
+    {
+      "id": "tournament-cappelle-open-4e9ec7e919286f8e-55",
+      "scope": "position-character",
+      "moveUci": "f5e4",
+      "gameMoveUci": "f5e4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "fxe4 preserves the rook on d8 from capture. dxe4 opens that file to Rxd8, and Qxe4 leaves fewer useful forcing options."
+    },
+    {
+      "id": "tournament-cappelle-open-5663183cea23ed74-66",
+      "scope": "position-character",
+      "moveUci": "a8g8",
+      "gameMoveUci": "a8g8",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rxg8 reduces the kingside pressure. Qe2 and Qf3 allow specific rook invasion and exchange sequences on g2 or g1 with the king exposed."
+    },
+    {
+      "id": "tournament-cappelle-open-244411ebd35f9695-61",
+      "scope": "position-character",
+      "moveUci": "e7d6",
+      "gameMoveUci": "h8h3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Bxd6+ removes the knight with tempo. The two alternatives permit Kf4, and only Rh3+ creates a concrete forcing continuation after the knight takes f5."
+    },
+    {
+      "id": "tournament-cappelle-open-42948d5e2f81bd21-77",
+      "scope": "position-character",
+      "moveUci": "d5d4",
+      "gameMoveUci": "g8g7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Advancing the d-pawn restricts the king and permits d2+ followed by Rxg3. The other move orders coordinate the rook and king at the cost of giving White time to advance h5."
+    }
+  ]
+}

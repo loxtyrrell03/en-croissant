@@ -1824,3 +1824,86 @@ v32 breadth and candidate files with `--old-candidates`, then
 run `decisionQuickNominationAudit.test.ts`. The held-out result
 supports a narrow tactical improvement. Broad positional and
 mixed diagnosis still need evidence beyond this extra reply.
+
+## Iteration 34 — train on verified refutations
+
+The Maia experiment ranked likely human moves. This experiment learns which
+candidate will yield an independently corroborated tactical refutation. All six
+methods see the same legal Stockfish shortlist at 90k nodes and nominate one
+move outside the original three. The learned inputs describe the current board,
+shallow score and rank, and the captures, material changes, checks and piece
+attacks in the first six plies. The network only ranks the moves. The existing
+1.2M-node comparison and independent 1M-node reply decide whether to supply
+evidence, and the position receives an additional tactical label only when
+the ordinary report has no such evidence.
+
+Two small, regularized, two-layer networks compare ordered plies with coarser
+summaries of the same line. Each is the average of three fixed seeds. A
+logistic model, shallow tree, explicit shallow-reply rule and current Stockfish
+ranking are controls. The training data contain 672 candidate moves on 217
+previously used positions across 14 events. The verifier accepted 52 moves on
+40 positions. A positive therefore means the particular verifier found a
+concrete refutation within its search and attribution limits. Some grouped
+neural fits reached the 400-iteration cap.
+
+| One extra candidate | Development refutations, one event held out at a time | Fresh general refutations | Fresh tactical TP / FP |
+| --- | ---: | ---: | ---: |
+| Stockfish shortlist order | 12 | 2 | 6 / 0 |
+| Shallow score and reply rule | 22 | 1 | 5 / 0 |
+| Logistic, ordered plies | 26 | 1 | 4 / 0 |
+| Shallow tree, ordered plies | 25 | 2 | 4 / 0 |
+| Neural, pooled plies | 23 | 1 | 5 / 0 |
+| Neural, ordered plies | 23 | 1 | 4 / 0 |
+
+The primary holdout has 30 games from two events. One position had no
+eligible extra search. Seventeen positions have positive tactical references,
+five have negative references and eight are uncertain. All routes had two
+positional true positives and zero mixed true positives, with zero false
+positives on either axis. There are five reviewed mixed positives. The
+separate 12-game passed-pawn challenge had no admissible refutation from any
+shortlisted move. It measures the limits of this verifier on those positions.
+Both cohorts were reviewed from the ordinary Stockfish lines and played-move
+replies before seeing the new rankings or proof outcomes. They have one
+engine-assisted reviewer and contain few reviewed negatives.
+[English Championship round 5](https://lichess.org/broadcast/english-chess-championships-2026-open-classical/round-5/NnatVMOS)
+[Cappelle Open round 6](https://lichess.org/broadcast/42e-open-international-de-cappelle/round-6/nB4RvHlB)
+[British Championship round 5](https://lichess.org/broadcast/2026-british-chess-championships-championship/round-5/CetqRZ1r)
+[Hastings Masters round 7](https://lichess.org/broadcast/hastings-international-chess-congress-2025-masters/round-7/3tbqgj4g)
+
+Searching every extra candidate from the frozen shortlist establishes five
+verified refutation positions, three with positive tactical references.
+The baseline before extra moves has four true positives. Perfect
+selection would take it to seven, one above the current Stockfish ranking.
+For example, in Cappelle position `22c025cc325b9d36-32`, Stockfish nominates
+`Bg1` and both searches find `...exf4`. `fxe5` prevents the capture.
+The ordered network nominates `Nb5`, which yields no corroborated proof.
+The ordered network's only test proof was on a position with an uncertain
+tactical reference. Its replay uses the same 47.54M additional requested
+engine nodes as Stockfish on the general cohort.
+
+The frozen promotion gate required two additional reviewed tactical
+positives with no extra reviewed false positives. This candidate missed
+that gate, and the exhaustive result gives a ceiling below the gate for
+any ranker over these same moves. The event holdouts in development
+overstated transfer to this small future-game sample. The result supports
+keeping the trained models in research. Learning the class of verifier
+proofs studied here also provides no evidence of improved positional or
+mixed explanations.
+
+**Reproduction.** Use the public manifests, independently saved reference
+labels, freeze and compact result receipt under
+`benchmarks/decision-evidence/neural-refutation-v34`. The production evaluator
+for this experiment is `a29025d9`. Reproduce the v32 breadth roots, the v33
+ordinary roots and all six-choice nomination caches. Use
+`decision-evidence-refutation-candidates.py` to consolidate the development
+inputs, run `decisionRefutationRankerAudit.test.ts` with
+`DECISION_REFUTATION_SEARCH` and `DECISION_REFUTATION_LABELS`, and give the
+result to `decision-evidence-refutation-ranker.py`. Give the ranker only
+the `--shortlist-only` holdout input and freeze its nominations before scoring
+test proof outcomes. Rerun the collector with independent searches enabled,
+use the same audit to label their results and run
+`decision-evidence-refutation-score.py` against the ordinary v33 candidate
+audit with extra choice disabled. Development and holdout proofs replay
+byte-for-byte after formatting the audit source. Exact file hashes use the
+original line endings. Run the Python benchmark with python-chess 1.999
+and scikit-learn 1.9.1. Engine caches and trained models stay outside Git.

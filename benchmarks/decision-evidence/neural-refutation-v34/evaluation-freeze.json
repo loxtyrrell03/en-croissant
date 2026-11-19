@@ -1,0 +1,45 @@
+{
+  "protocol": 1,
+  "productionCommit": "a29025d9037ae264a8828af13756064950bda6fe",
+  "development": {
+    "positions": 217,
+    "source": "v28-v33 completed experiments, including focused challenges",
+    "fold": "leave one whole event out"
+  },
+  "holdout": {
+    "general": 30,
+    "passerChallenge": 12,
+    "primary": "general",
+    "split": "disjoint normalized board, game and event identity"
+  },
+  "inputs": {
+    "development-search.json": "0aae51ceab5c1b00475b50030ac6950dfe1e33d9bd587964083716005db4b788",
+    "development-labels.json": "5fcc11f3af59d34dc4ab9dcf73671d4c7564eda7931baf461334f20ab92596d1",
+    "holdout-inputs.json": "78398c8687d9bbb0348ea497dbb2dfc700ba043e9975a355575eaf8be385ea77",
+    "general-reference.json": "2e6ab8eff472ab0e03e29a2fa4eb2bcaf5576847f004ce4ea859d21250130de2",
+    "passer-reference.json": "010ff3343225852eebefe1325fb013ef7ad5fa2de903405a1174003bbb1f4a67"
+  },
+  "manifests": {
+    "general": "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "passerChallenge": "576b7c36c809e86ede526fff49ed3148dce5e4426066f3b20cc10ee4a005b269"
+  },
+  "source": {
+    "scripts/benchmarks/decision-evidence-refutation-candidates.py": "8cf35ecd75e799484ada4fd68b313789731228ef2eb4bc4a48feb78cc3493fee",
+    "scripts/benchmarks/decision-evidence-refutation-ranker.py": "b496bd13b6a3ff6e7e884b50738e795fe873c5559b30c63c21b227882e2b1d90",
+    "src/utils/tests/decisionRefutationRankerAudit.test.ts": "43d63d66a5d8526f0e4a948591b193b2291d90e08bc6bd04b9f695d922a758a5"
+  },
+  "nominees": 1,
+  "arms": [
+    "stockfish",
+    "shallow_reply",
+    "logistic_ordered",
+    "tree_ordered",
+    "neural_pooled",
+    "neural_ordered"
+  ],
+  "primaryArm": "neural_ordered",
+  "baseline": "current 90k-node Stockfish shortlist order",
+  "metrics": "Verified refutations and independent agreement on position tactical and mixed axes at equal nominations. Explicit uncertainty and verification cost.",
+  "attribution": "Position-level addition only when ordinary v33 tactical evidence is unresolved. Raw proof rates reported separately.",
+  "decision": "A runtime candidate needs at least two net additional tactical true positives with no additional tactical false positives on the general set, and must have at least as many strict verifier hits as v33. Ordinal and pooled neural comparisons, simple controls and the passer challenge are reported without selecting a replacement using the test."
+}

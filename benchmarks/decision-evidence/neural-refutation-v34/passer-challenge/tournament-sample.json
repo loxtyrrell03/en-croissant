@@ -1,0 +1,164 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "passer-hastings-masters-795747a809cd76a6-83",
+      "event": "hastings-masters",
+      "stratum": "resolved-early",
+      "fen": "3r4/1p3R1p/8/p1pP2P1/P3k1KP/1P4P1/3pr3/3R4 b - - 6 42",
+      "ply": 83,
+      "playedMoveUci": "e4d3",
+      "sourceGroup": "795747a809cd76a6bb2aa34822c742fbae8a73310de8cbc063d8a87433ece45b",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-british-championship-2026-6e8ea031b18df210-71",
+      "event": "british-championship-2026",
+      "stratum": "resolved-early",
+      "fen": "8/7p/3p4/5kp1/8/1P1p1P2/P3r1PP/3R2K1 b - - 0 36",
+      "ply": 71,
+      "playedMoveUci": "e2a2",
+      "sourceGroup": "6e8ea031b18df2103a6a3773691bde20401dcc8b7912ef097af251fa3ea9d5e7",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-hastings-masters-8f742339067a31ea-124",
+      "event": "hastings-masters",
+      "stratum": "resolved-early",
+      "fen": "8/7k/3P2pp/2q5/3r2P1/2pQ3P/2R4K/8 w - - 1 63",
+      "ply": 124,
+      "playedMoveUci": "d3c3",
+      "sourceGroup": "8f742339067a31eabc4f93a9be157e7bdc164b4abd43fd074fcb41c412a63ac8",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-hastings-masters-491c1681de304c10-54",
+      "event": "hastings-masters",
+      "stratum": "resolved-early",
+      "fen": "4r3/pp4k1/2pb1n2/3p2p1/P2P4/3B1Pp1/1PP3K1/R3B3 w - - 0 28",
+      "ply": 54,
+      "playedMoveUci": "e1g3",
+      "sourceGroup": "491c1681de304c1047650d4fd8eae9fe90c1be72c5f9eb9d68a01c879db9bd35",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-british-championship-2026-97dd1db2606370e5-51",
+      "event": "british-championship-2026",
+      "stratum": "resolved-early",
+      "fen": "1r4k1/5p1p/P1Bbp1p1/8/P2B4/1b2P1P1/5P1P/R5K1 b - - 0 26",
+      "ply": 51,
+      "playedMoveUci": "b3d5",
+      "sourceGroup": "97dd1db2606370e53339a26a280818eff7e0759d1b3f1901136f27d3ce47d0ee",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-hastings-masters-749f247b43e3d277-88",
+      "event": "hastings-masters",
+      "stratum": "resolved-early",
+      "fen": "8/4k3/3pP1p1/p1p3r1/Pp2Bb2/5K2/2P5/5R2 w - - 0 45",
+      "ply": 88,
+      "playedMoveUci": "f3f4",
+      "sourceGroup": "749f247b43e3d2770ecdca293f91515284bf710f9c2626e3b333302fc63a7174",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-british-championship-2026-3341b841650a8673-64",
+      "event": "british-championship-2026",
+      "stratum": "persisted",
+      "fen": "r2r2k1/1p3R1R/1p6/3P2pp/1P5P/P2p4/5PP1/6K1 w - - 7 33",
+      "ply": 64,
+      "playedMoveUci": "f7g7",
+      "sourceGroup": "3341b841650a86735a263fcdcc2d376a05d1e0f1ce686c3c44c9305a09b9f055",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-british-championship-2026-c15323309c1f1fe2-61",
+      "event": "british-championship-2026",
+      "stratum": "persisted",
+      "fen": "5k2/2q2Ppp/8/1Q6/8/P7/2P3PP/3r1R1K b - - 2 31",
+      "ply": 61,
+      "playedMoveUci": "d1f1",
+      "sourceGroup": "c15323309c1f1fe2780600ab231fe5157008041e28ee0e96cc2a322e601af57c",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-british-championship-2026-dde2e4e214cd4059-84",
+      "event": "british-championship-2026",
+      "stratum": "persisted",
+      "fen": "8/p5B1/r6P/3p4/2kP2P1/1rP5/p7/R5K1 w - - 0 43",
+      "ply": 84,
+      "playedMoveUci": "h6h7",
+      "sourceGroup": "dde2e4e214cd40592279f01aaa0784472f5ca01f573f4c5fe51ad2fd67609cce",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-hastings-masters-49a019be621ef694-58",
+      "event": "hastings-masters",
+      "stratum": "persisted",
+      "fen": "4r2k/3q2p1/3P3p/1p1Q1p2/p3r3/6RP/P4PP1/3R2K1 w - - 1 30",
+      "ply": 58,
+      "playedMoveUci": "g3c3",
+      "sourceGroup": "49a019be621ef6941027248590231114cca3b6f4d573b333b4b73b844f8ac823",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-british-championship-2026-deced7f1de3a91e7-105",
+      "event": "british-championship-2026",
+      "stratum": "persisted",
+      "fen": "2R5/8/8/3k3p/5p1P/pr1P1P2/3K4/8 b - - 1 53",
+      "ply": 105,
+      "playedMoveUci": "b3b1",
+      "sourceGroup": "deced7f1de3a91e70d6dd64b2cda631017237dc0b5e41fd63ffeb36dec7395e5",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-hastings-masters-3e84bc73c265214e-78",
+      "event": "hastings-masters",
+      "stratum": "persisted",
+      "fen": "r7/PR4pk/5p1p/4p3/3pP2P/1P6/1KP3r1/4R3 w - - 5 40",
+      "ply": 78,
+      "playedMoveUci": "e1a1",
+      "sourceGroup": "3e84bc73c265214e42a566cea1f7d2d35598ee877ffc348c4f680027d709eee5",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "events": {
+    "british-championship-2026": "2cba83d6f233b4dc419975296c895d9c786e831053bd6ce1a3a75c19a662fbf7",
+    "hastings-masters": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4"
+  },
+  "exclusions": [
+    "6a5ebc28997d5668b0f13c8c28fdcaab4e34a052889d680b1799712400f9ab73",
+    "7e495b652759e5f74b4b9a912c1daf2048cfdb4f154748275c1f74f96e011183",
+    "a75c08a3ea2b7e185d69dc0651422cae9597e06736194348cffd8ef68f7300fb",
+    "75616e3f5a43ec8bfa39a4235ce8515d005c1f0a185a69ceb353cd4cc67b0deb",
+    "44c4e4e424cf1bc0a0cc62751ab631064252576b4c2e94285fee285655a7e6b7",
+    "d9ce8d6b574b0ee6f8f8e3bfaf7abe1822a32f36f5bf8cafff4d77bdf212acfb",
+    "f27f65d0172ab375e9494feac432a68a2c17d4279665690604163794c3589512",
+    "95130b3d85718c70ef90cb3bae3bffd658a6801a9be720d3be345a53f848d5de",
+    "8fe1fee913009c0217355e302b8540d9967827452752ba14317383655b788549",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341",
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "6469b24fde897597dc44f73a5b2071d601887663858d4746305d5c7eef4cfdf8",
+    "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66"
+  ],
+  "scope": "Both sides retain a rook and at least one pawn is an advanced passer. Recorded persistence or resolution selects the sample; it does not supply the label."
+}

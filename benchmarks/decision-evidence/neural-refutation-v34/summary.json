@@ -1,0 +1,506 @@
+{
+  "rankingsSha256": "4a8814137997a03d6a1f038162be35cf0c6bc1328a76649e40c346abf8307add",
+  "freezeSha256": "5239575b8d3c338be7d8c177f53cbb0d4e23db6e46c1d48cb252a18744e9594a",
+  "development": {
+    "positions": 217,
+    "eligible": 216,
+    "availableProofPositions": 40,
+    "arms": {
+      "stockfish": {
+        "choices": 215,
+        "proofs": 12
+      },
+      "shallow_reply": {
+        "choices": 215,
+        "proofs": 22
+      },
+      "logistic_ordered": {
+        "choices": 215,
+        "proofs": 26
+      },
+      "tree_ordered": {
+        "choices": 215,
+        "proofs": 25
+      },
+      "neural_pooled": {
+        "choices": 215,
+        "proofs": 23
+      },
+      "neural_ordered": {
+        "choices": 215,
+        "proofs": 23
+      }
+    }
+  },
+  "holdout": {
+    "general": {
+      "positions": 30,
+      "eligible": 29,
+      "availableProofPositions": 5,
+      "arms": {
+        "stockfish": {
+          "choices": 29,
+          "proofs": 2,
+          "app": {
+            "additionalNodes": 47540000,
+            "verifiedExtraChoices": 2,
+            "additionalProofs": [
+              {
+                "id": "tournament-cappelle-open-22c025cc325b9d36-32",
+                "move": "d4g1"
+              },
+              {
+                "id": "tournament-cappelle-open-66112f61c9d88430-46",
+                "move": "c3c4"
+              }
+            ],
+            "axes": {
+              "tactical": {
+                "tp": 6,
+                "fp": 0,
+                "fn": 11,
+                "tn": 5,
+                "unknown": 8
+              },
+              "positional": {
+                "tp": 2,
+                "fp": 0,
+                "fn": 16,
+                "tn": 4,
+                "unknown": 8
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 5,
+                "tn": 9,
+                "unknown": 16
+              }
+            }
+          }
+        },
+        "shallow_reply": {
+          "choices": 29,
+          "proofs": 1,
+          "app": {
+            "additionalNodes": 47540000,
+            "verifiedExtraChoices": 1,
+            "additionalProofs": [
+              {
+                "id": "tournament-cappelle-open-66112f61c9d88430-46",
+                "move": "c3c4"
+              }
+            ],
+            "axes": {
+              "tactical": {
+                "tp": 5,
+                "fp": 0,
+                "fn": 12,
+                "tn": 5,
+                "unknown": 8
+              },
+              "positional": {
+                "tp": 2,
+                "fp": 0,
+                "fn": 16,
+                "tn": 4,
+                "unknown": 8
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 5,
+                "tn": 9,
+                "unknown": 16
+              }
+            }
+          }
+        },
+        "logistic_ordered": {
+          "choices": 29,
+          "proofs": 1,
+          "app": {
+            "additionalNodes": 47540000,
+            "verifiedExtraChoices": 1,
+            "additionalProofs": [
+              {
+                "id": "tournament-cappelle-open-4cca2a11c1be8a12-57",
+                "move": "d8c7"
+              }
+            ],
+            "axes": {
+              "tactical": {
+                "tp": 4,
+                "fp": 0,
+                "fn": 13,
+                "tn": 5,
+                "unknown": 8
+              },
+              "positional": {
+                "tp": 2,
+                "fp": 0,
+                "fn": 16,
+                "tn": 4,
+                "unknown": 8
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 5,
+                "tn": 9,
+                "unknown": 16
+              }
+            }
+          }
+        },
+        "tree_ordered": {
+          "choices": 29,
+          "proofs": 2,
+          "app": {
+            "additionalNodes": 47540000,
+            "verifiedExtraChoices": 2,
+            "additionalProofs": [
+              {
+                "id": "tournament-cappelle-open-54e5485d7745602b-72",
+                "move": "f4e4"
+              },
+              {
+                "id": "tournament-cappelle-open-4cca2a11c1be8a12-57",
+                "move": "d8c7"
+              }
+            ],
+            "axes": {
+              "tactical": {
+                "tp": 4,
+                "fp": 0,
+                "fn": 13,
+                "tn": 5,
+                "unknown": 8
+              },
+              "positional": {
+                "tp": 2,
+                "fp": 0,
+                "fn": 16,
+                "tn": 4,
+                "unknown": 8
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 5,
+                "tn": 9,
+                "unknown": 16
+              }
+            }
+          }
+        },
+        "neural_pooled": {
+          "choices": 29,
+          "proofs": 1,
+          "app": {
+            "additionalNodes": 46540000,
+            "verifiedExtraChoices": 1,
+            "additionalProofs": [
+              {
+                "id": "tournament-cappelle-open-66112f61c9d88430-46",
+                "move": "c3c4"
+              }
+            ],
+            "axes": {
+              "tactical": {
+                "tp": 5,
+                "fp": 0,
+                "fn": 12,
+                "tn": 5,
+                "unknown": 8
+              },
+              "positional": {
+                "tp": 2,
+                "fp": 0,
+                "fn": 16,
+                "tn": 4,
+                "unknown": 8
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 5,
+                "tn": 9,
+                "unknown": 16
+              }
+            }
+          }
+        },
+        "neural_ordered": {
+          "choices": 29,
+          "proofs": 1,
+          "app": {
+            "additionalNodes": 47540000,
+            "verifiedExtraChoices": 1,
+            "additionalProofs": [
+              {
+                "id": "tournament-cappelle-open-4cca2a11c1be8a12-57",
+                "move": "d8c7"
+              }
+            ],
+            "axes": {
+              "tactical": {
+                "tp": 4,
+                "fp": 0,
+                "fn": 13,
+                "tn": 5,
+                "unknown": 8
+              },
+              "positional": {
+                "tp": 2,
+                "fp": 0,
+                "fn": 16,
+                "tn": 4,
+                "unknown": 8
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 5,
+                "tn": 9,
+                "unknown": 16
+              }
+            }
+          }
+        }
+      },
+      "reviewedBaselineTactical": 4,
+      "reviewedTacticalWithAnyExtraChoice": 7
+    },
+    "passer": {
+      "positions": 12,
+      "eligible": 12,
+      "availableProofPositions": 0,
+      "arms": {
+        "stockfish": {
+          "choices": 12,
+          "proofs": 0,
+          "app": {
+            "additionalNodes": 19190000,
+            "verifiedExtraChoices": 0,
+            "additionalProofs": [],
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 8,
+                "tn": 3,
+                "unknown": 0
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 9,
+                "tn": 1,
+                "unknown": 1
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 4,
+                "unknown": 1
+              }
+            }
+          }
+        },
+        "shallow_reply": {
+          "choices": 12,
+          "proofs": 0,
+          "app": {
+            "additionalNodes": 20190000,
+            "verifiedExtraChoices": 0,
+            "additionalProofs": [],
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 8,
+                "tn": 3,
+                "unknown": 0
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 9,
+                "tn": 1,
+                "unknown": 1
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 4,
+                "unknown": 1
+              }
+            }
+          }
+        },
+        "logistic_ordered": {
+          "choices": 12,
+          "proofs": 0,
+          "app": {
+            "additionalNodes": 20190000,
+            "verifiedExtraChoices": 0,
+            "additionalProofs": [],
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 8,
+                "tn": 3,
+                "unknown": 0
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 9,
+                "tn": 1,
+                "unknown": 1
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 4,
+                "unknown": 1
+              }
+            }
+          }
+        },
+        "tree_ordered": {
+          "choices": 12,
+          "proofs": 0,
+          "app": {
+            "additionalNodes": 20190000,
+            "verifiedExtraChoices": 0,
+            "additionalProofs": [],
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 8,
+                "tn": 3,
+                "unknown": 0
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 9,
+                "tn": 1,
+                "unknown": 1
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 4,
+                "unknown": 1
+              }
+            }
+          }
+        },
+        "neural_pooled": {
+          "choices": 12,
+          "proofs": 0,
+          "app": {
+            "additionalNodes": 21190000,
+            "verifiedExtraChoices": 0,
+            "additionalProofs": [],
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 8,
+                "tn": 3,
+                "unknown": 0
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 9,
+                "tn": 1,
+                "unknown": 1
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 4,
+                "unknown": 1
+              }
+            }
+          }
+        },
+        "neural_ordered": {
+          "choices": 12,
+          "proofs": 0,
+          "app": {
+            "additionalNodes": 21190000,
+            "verifiedExtraChoices": 0,
+            "additionalProofs": [],
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 8,
+                "tn": 3,
+                "unknown": 0
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 9,
+                "tn": 1,
+                "unknown": 1
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 4,
+                "unknown": 1
+              }
+            }
+          }
+        }
+      },
+      "reviewedBaselineTactical": 1,
+      "reviewedTacticalWithAnyExtraChoice": 1
+    }
+  },
+  "training": {
+    "sklearn": "1.9.1",
+    "trainingExamples": 672,
+    "trainingProofs": 52,
+    "developmentEvents": [
+      "4ncl-division2",
+      "amateur-u1700-2026",
+      "british-championship-2025",
+      "british-major-open",
+      "british-major-open-2026",
+      "club-cup-2025",
+      "dutch-open-2026",
+      "european-individual",
+      "european-women-2026",
+      "grand-swiss-open",
+      "london-classical",
+      "prague-open-2026",
+      "reykjavik-2026",
+      "world-amateur-w2000-2026"
+    ],
+    "seeds": [
+      19,
+      73,
+      113
+    ]
+  },
+  "formattedVerifierAuditSha256": "7eb233f0d5cbc2447faa81514bd25915311f657192ee0b07748ed57e8bcb625f",
+  "sameProofOutputsAfterFormatting": true,
+  "fitAndRankMillisecondsOneRun": 653.5088999662548
+}

@@ -1,0 +1,116 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer. Ordinary root variations and played-move probes reviewed before neural rankings or extra-choice evidence. No consensus adjudication."
+  ],
+  "cases": [
+    {
+      "id": "passer-hastings-masters-795747a809cd76a6-83",
+      "scope": "position-character",
+      "moveUci": "e4d3",
+      "gameMoveUci": "e4d3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The d-pawn and active king hold the rook pair in place. Rxd2+ Rxd2 and the c-pawn break show the immediate race."
+    },
+    {
+      "id": "passer-british-championship-2026-6e8ea031b18df210-71",
+      "scope": "position-character",
+      "moveUci": "f5e5",
+      "gameMoveUci": "e2a2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black reaches the same drawn rook ending by Ke5 or Rxa2. The king's route and active rook compensate for the loss of the passer."
+    },
+    {
+      "id": "passer-hastings-masters-8f742339067a31ea-124",
+      "scope": "position-character",
+      "moveUci": "d3c3",
+      "gameMoveUci": "d3c3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qxc3 is the precise defence. After Qe3, Qxd6+ followed by Rd2+ converts the attack into a forced exchange with a decisive material difference."
+    },
+    {
+      "id": "passer-hastings-masters-491c1681de304c10-54",
+      "scope": "position-character",
+      "moveUci": "e1g3",
+      "gameMoveUci": "e1g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxg3 safely removes the passer. White's other plans must calculate the h-file and the knight's route through h5 and f4."
+    },
+    {
+      "id": "passer-british-championship-2026-97dd1db2606370e5-51",
+      "scope": "position-character",
+      "moveUci": "b8c8",
+      "gameMoveUci": "b3d5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White's a-pawn and rook activity dominate. Black's different rook placements give up similar positional ground, with no clear forcing choice among them."
+    },
+    {
+      "id": "passer-hastings-masters-749f247b43e3d277-88",
+      "scope": "position-character",
+      "moveUci": "f3f4",
+      "gameMoveUci": "f3f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kxf4 must deal with the bishop immediately. The later e-pawn loss changes rook activity. c4 leaves the bishop alive and allows a much stronger attack."
+    },
+    {
+      "id": "passer-british-championship-2026-3341b841650a8673-64",
+      "scope": "position-character",
+      "moveUci": "h7g7",
+      "gameMoveUci": "f7g7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The rook checks hold the position while the d-pawn threatens promotion. Kh2 retains the checking resource even after d2."
+    },
+    {
+      "id": "passer-british-championship-2026-c15323309c1f1fe2-61",
+      "scope": "position-character",
+      "moveUci": "d1f1",
+      "gameMoveUci": "d1f1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxf1+ forces a rook exchange before the f7 pawn can advance. Moving to d7 allows a forcing sequence of queen and rook exchanges on f7."
+    },
+    {
+      "id": "passer-british-championship-2026-dde2e4e214cd4059-84",
+      "scope": "position-character",
+      "moveUci": "g1h2",
+      "gameMoveUci": "h6h7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The two opposing passers drive the position. Rb1 gains the required rook tempo and promotion can come with check, even after White queens first."
+    },
+    {
+      "id": "passer-hastings-masters-49a019be621ef694-58",
+      "scope": "position-character",
+      "moveUci": "g3c3",
+      "gameMoveUci": "g3c3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re1+ forces the rook exchange and changes access to the d-pawn. White's rook placements determine which side can contain it afterwards."
+    },
+    {
+      "id": "passer-british-championship-2026-deced7f1de3a91e7-105",
+      "scope": "position-character",
+      "moveUci": "b3b2",
+      "gameMoveUci": "b3b1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "A rook check or the immediate a-pawn advance can transpose. Both sides manage the passer and rook activity through several equal choices."
+    },
+    {
+      "id": "passer-hastings-masters-3e84bc73c265214e-78",
+      "scope": "position-character",
+      "moveUci": "b2b1",
+      "gameMoveUci": "e1a1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White's a-pawn ties the rook to the queenside. Black's d- and e-pawn counterplay and the Rxc2+ sequence require concrete calculation."
+    }
+  ]
+}
