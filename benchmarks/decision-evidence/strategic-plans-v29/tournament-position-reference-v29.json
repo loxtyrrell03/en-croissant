@@ -1,0 +1,299 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "mistake-european-individual-d64ac96b49283f8b-62",
+      "scope": "position-character",
+      "moveUci": "d1d3",
+      "gameMoveUci": "b3b4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White must manage the d4 passer and Black\u2019s bishop pressure. The d-file blockade is durable, and the Rc7 and Bxd1 lines show a separate forcing exchange threat."
+    },
+    {
+      "id": "mistake-european-individual-d64ac96b49283f8b-34",
+      "scope": "position-character",
+      "moveUci": "h4f5",
+      "gameMoveUci": "e4f6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The central white knights can take on f6 and g7 in different orders and win h5. The alternative f3 plan avoids the exchange; durable strategic differences beyond the exposed king are less clear."
+    },
+    {
+      "id": "mistake-european-individual-c5e909d33e962ce8-35",
+      "scope": "position-character",
+      "moveUci": "f8c8",
+      "gameMoveUci": "h4g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The knights and ...hxg3 expose the white king, with different exchanges in the leading lines. ...Rfc8 controls the open c-file and uses it in the forced rook exchange independently of which pawn capture comes first."
+    },
+    {
+      "id": "mistake-european-individual-c5e909d33e962ce8-29",
+      "scope": "position-character",
+      "moveUci": "c8d7",
+      "gameMoveUci": "a5b4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Several move orders create the same ...Ra3 and ...b5 plan. The a-file incursion and queenside pawn expansion matter even when the exchange on b4 changes order."
+    },
+    {
+      "id": "mistake-european-individual-25a75af79f5b3375-46",
+      "scope": "position-character",
+      "moveUci": "e8f8",
+      "gameMoveUci": "g2e4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "An advanced white rook is attacked from several directions. Rf8, Nxc7 and Be4+ lead to distinct concrete trades or threats, including skewer possibilities on the king."
+    },
+    {
+      "id": "mistake-european-individual-25a75af79f5b3375-33",
+      "scope": "position-character",
+      "moveUci": "e7d6",
+      "gameMoveUci": "f8e8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Both ...Bd6 and the rook moves target the open e-file and shape pressure on White\u2019s d5 passer. The resulting queen or bishop swaps leave a durable structural choice."
+    },
+    {
+      "id": "mistake-european-individual-125107747783814e-43",
+      "scope": "position-character",
+      "moveUci": "d7e8",
+      "gameMoveUci": "d5e4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can reroute the bishop to e8, g4 or c8 while preparing to meet exd5. The isolated queenside pawns and opposing rook use of c-file pressure persist even after a central exchange."
+    },
+    {
+      "id": "mistake-european-individual-125107747783814e-51",
+      "scope": "position-character",
+      "moveUci": "a7c7",
+      "gameMoveUci": "a7c7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "...Qc7 and ...Qa7 answer the advanced white rook and produce a repeating threat. ...Rxa2 changes the immediate capture sequence. The strategic value of the doubled rooks beyond this defence remains unclear."
+    },
+    {
+      "id": "mistake-european-individual-649d5b166a2b3060-36",
+      "scope": "position-character",
+      "moveUci": "c1c3",
+      "gameMoveUci": "c1c3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxc3 simply takes the exposed queen. The leading alternatives leave the queen free to move and lose the opportunity."
+    },
+    {
+      "id": "mistake-european-individual-649d5b166a2b3060-56",
+      "scope": "position-character",
+      "moveUci": "d5e6",
+      "gameMoveUci": "d5e6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rook checks require calculation after dxe6+ and Rxc8. Black\u2019s a3 passer ties down White independently of the choice of exchange or check."
+    },
+    {
+      "id": "mistake-european-individual-ac193f5775f8d143-67",
+      "scope": "position-character",
+      "moveUci": "g8g7",
+      "gameMoveUci": "e6e5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Black has to calculate around the rook on h7 and the f7 sacrifice. ...Rg7 and ...Rh8 lead to different forcing exchanges near the king."
+    },
+    {
+      "id": "mistake-european-individual-ac193f5775f8d143-37",
+      "scope": "position-character",
+      "moveUci": "h8f6",
+      "gameMoveUci": "h8f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Bxf6 contests the f6 pawn and leaves a different h-file structure after gxh5. Dark-square pressure and the advanced pawn structure survive while both sides calculate the knight and bishop exchanges."
+    },
+    {
+      "id": "mistake-european-individual-a3bcac097c0f824b-45",
+      "scope": "position-character",
+      "moveUci": "h4h3",
+      "gameMoveUci": "h6e3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The h-pawn and the bishop on h6 create immediate checks and capture threats. ...h3 threatens hxg2, while ...Be3+ is much less effective against the waiting king retreat."
+    },
+    {
+      "id": "mistake-european-individual-a3bcac097c0f824b-75",
+      "scope": "position-character",
+      "moveUci": "h5f4",
+      "gameMoveUci": "h5f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Nf4+ and rook checks can sustain repetition. White\u2019s doubled rooks and the d5/e4 pawns give separate durable incentives after a quiet king move."
+    },
+    {
+      "id": "mistake-european-individual-ad7e06ab6cc371e0-38",
+      "scope": "position-character",
+      "moveUci": "c1d2",
+      "gameMoveUci": "f4c7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White has to account for ...e3 and ...e2 in the concrete rook-exchange sequence. The e4 passer also restricts the king in the leading lines. The queenside pawn moves play against that confinement."
+    },
+    {
+      "id": "mistake-european-individual-ad7e06ab6cc371e0-68",
+      "scope": "position-character",
+      "moveUci": "c3b4",
+      "gameMoveUci": "f4e3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The active king, rook route and b-pawn promotion race govern the position. Several quiet approaches can reach comparable pressure without an urgent material tactic."
+    },
+    {
+      "id": "mistake-british-major-open-3db79eb810b2d256-58",
+      "scope": "position-character",
+      "moveUci": "h5g6",
+      "gameMoveUci": "g4g5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "hxg6 and Rh1 create concrete forcing lines against the king. Black can use the c-file to trade for the bishop only through immediate exchanges. A separate durable gain is unclear."
+    },
+    {
+      "id": "mistake-british-major-open-3db79eb810b2d256-66",
+      "scope": "position-character",
+      "moveUci": "f1d1",
+      "gameMoveUci": "f1d1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rxd1 and Bxc8 both need exact recapture and checking calculation against the exposed kings. The material snapshot alone cannot explain why both hold."
+    },
+    {
+      "id": "mistake-british-major-open-6b5fdbbc6e4633e5-31",
+      "scope": "position-character",
+      "moveUci": "f7f5",
+      "gameMoveUci": "f7f6",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...f5 changes the direct attacking sequence. ...f6 allows Bxg6 hxg6 Qxg6+ and sustained checks from White."
+    },
+    {
+      "id": "mistake-british-major-open-6b5fdbbc6e4633e5-29",
+      "scope": "position-character",
+      "moveUci": "f7f5",
+      "gameMoveUci": "h4e7",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...f5 and ...Be7 can transpose into the same defence against Qh6 and Ng5. ...Be8 gives White that attack with fewer effective replies."
+    },
+    {
+      "id": "mistake-british-major-open-3cad333232327aaf-45",
+      "scope": "position-character",
+      "moveUci": "c4d2",
+      "gameMoveUci": "b4c6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Trading one knight changes White\u2019s dark-square bishop and kingside pawn leverage. The best lines preserve different pawn structures around the open files, even with equal material."
+    },
+    {
+      "id": "mistake-british-major-open-3cad333232327aaf-47",
+      "scope": "position-character",
+      "moveUci": "d5c4",
+      "gameMoveUci": "d5c4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...dxc4 takes the knight that White left on c4. The other leading candidates miss the concrete material opportunity."
+    },
+    {
+      "id": "mistake-british-major-open-10f4e5c0512dee06-59",
+      "scope": "position-character",
+      "moveUci": "c8c7",
+      "gameMoveUci": "b6c5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The b7 bishop and d6 knight interact in concrete captures. ...Rc7 changes the recapture while White\u2019s c-pawn and Black\u2019s d-pawn remain long-term promotion threats."
+    },
+    {
+      "id": "mistake-british-major-open-10f4e5c0512dee06-63",
+      "scope": "position-character",
+      "moveUci": "h8d4",
+      "gameMoveUci": "h8d4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The passed pawn can immediately take the c2 rook. ...Bd4+ changes the order, and ...Rxd8 takes the knight after the first exchange. The pawn is exchanged in those lines."
+    },
+    {
+      "id": "mistake-british-major-open-5f86a1f9081b133a-41",
+      "scope": "position-character",
+      "moveUci": "a8e8",
+      "gameMoveUci": "d7d8",
+      "tactical": true,
+      "positional": null,
+      "rationale": "...Rae8 and ...Bd8 allow different forcing rook and queen routes against the white king. The relative contribution of a durable strategic advantage is unclear."
+    },
+    {
+      "id": "mistake-british-major-open-5f86a1f9081b133a-27",
+      "scope": "position-character",
+      "moveUci": "f8e7",
+      "gameMoveUci": "e5f4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "...Be7 develops to castle while ...Rc8 contests the c-file. The f4/e5 pawn tension and knight placement remain the main durable differences."
+    },
+    {
+      "id": "mistake-british-major-open-d0f2c6b61cbf1443-79",
+      "scope": "position-character",
+      "moveUci": "c3c2",
+      "gameMoveUci": "d2b2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...c2 creates an immediate promotion threat. The queen moves fail to match that resource, and Qb2 permits a concrete capture and queening sequence."
+    },
+    {
+      "id": "mistake-british-major-open-d0f2c6b61cbf1443-50",
+      "scope": "position-character",
+      "moveUci": "g4f3",
+      "gameMoveUci": "g4f3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White and Black contest the c-file around the c4 pawn. Rdc1 or Rc8 changes rook occupation, and the e5 pawn and black knight affect the pressure over several moves."
+    },
+    {
+      "id": "mistake-british-major-open-eaef48c9e312725a-67",
+      "scope": "position-character",
+      "moveUci": "d4e3",
+      "gameMoveUci": "e8e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...dxe3 wins a bishop and creates an advanced e-pawn that reaches e2. ...Rxe3 takes the same bishop but leaves a less dangerous pawn structure."
+    },
+    {
+      "id": "mistake-british-major-open-eaef48c9e312725a-43",
+      "scope": "position-character",
+      "moveUci": "g6g5",
+      "gameMoveUci": "g6g5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "...g5, ...gxf5 and ...b6 define different pawn structures and knight plans. The legal exchanges in the leading lines do not show a near-term forced material gain."
+    },
+    {
+      "id": "mistake-british-major-open-8f29114fa34f9550-66",
+      "scope": "position-character",
+      "moveUci": "b5b6",
+      "gameMoveUci": "d2b3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The b6 passer, dark-square pressure and black centre remain important after the queen and knight trades. Whether the check threats make this a tactical decision is uncertain."
+    },
+    {
+      "id": "mistake-british-major-open-8f29114fa34f9550-72",
+      "scope": "position-character",
+      "moveUci": "c4b5",
+      "gameMoveUci": "c4b5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Taking on b5 creates a distant passer while g3 or Rb2 favours rook pressure and king activation. The resulting rook and pawn roles are the durable contrast."
+    }
+  ],
+  "limitations": [
+    "One engine-assisted reviewer examined the legal boards, leading lines and ordinary played-move probes before inspecting classifier outputs or optional position replies.",
+    "Tactical labels require a concrete material, mating or defensive calculation. Positional labels require an identifiable durable structure or activity consideration. Unknown denotes insufficient or ambiguous evidence.",
+    "Broadcast losses and controls were sampled in pairs from separate games within the two events. This stratification does not estimate prevalence across all classical positions.",
+    "The legacy position-character proxy scores a supported motif on the engine first choice and has no independent positional axis."
+  ]
+}

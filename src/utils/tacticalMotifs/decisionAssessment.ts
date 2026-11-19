@@ -39,8 +39,13 @@ import {
 } from "./decisionSharedReply";
 import { comparePawnEpisodes } from "./decisionPawnEpisode";
 import { confirmPositionRefutation, nominatePositionRefutation } from "./decisionPositionContrast";
+import {
+    findPositionStrategicPlan,
+    qualifyPositionFactors,
+    type PositionStrategicPlan,
+} from "./decisionPositionPlans";
 
-export const DECISION_ASSESSMENT_VERSION = 10;
+export const DECISION_ASSESSMENT_VERSION = 11;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -95,6 +100,7 @@ export type ChessDecisionReport = {
         legalChoices: number;
         rejectedChoices: number;
         tacticalContrast?: TacticalMistakeEpisode;
+        strategicPlan?: PositionStrategicPlan;
     };
     moves: Array<
         DecisionAssessment & { moveUci: string; evaluationCp: number | null; depth: number }
@@ -432,16 +438,47 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 move.depth === first.depth &&
                 move.evaluationCp >= first.cp - 50),
     );
-    const tactical = viable.find((move) => move.tactical.support === "supported");
-    const positional = viable.find((move) => move.positional.support === "supported");
+    const tactical = viable.find(
+        (move) =>
+            move.tactical.support === "supported" &&
+            (move.tactical.basis === "bounded-proof" ||
+                move.conditionalResources.length > 0 ||
+                move.mechanisms.length === 0 ||
+                move.mechanisms.some(
+                    (witness) =>
+                        witness.mechanism !== "tacticalPreparation" || witness.payoffPly <= 5,
+                )),
+    );
     if (tactical) position.tactical = tactical.tactical;
-    if (positional) position.positional = positional.positional;
     position.mechanisms = tactical?.mechanisms ?? [];
     position.verifiedMotifs = tactical?.verifiedMotifs ?? [];
     position.localProofs = tactical?.localProofs ?? [];
     position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
     position.conditionalResources = tactical?.conditionalResources ?? [];
-    position.positionalFactors = positional?.positionalFactors ?? [];
+    for (const move of viable) {
+        const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;
+        const factors = qualifyPositionFactors(input.fen, line, move.positionalFactors);
+        if (!factors.length) continue;
+        position.positional = {
+            ...move.positional,
+            reasons: move.positional.reasons.filter((_, index) =>
+                factors.includes(move.positionalFactors[index]),
+            ),
+        };
+        position.positionalFactors = factors;
+        break;
+    }
+    if (position.positional.support === "unestablished" && !rejectedChoices) {
+        const plan = findPositionStrategicPlan(input.fen, input.candidates);
+        if (plan) {
+            position.strategicPlan = plan;
+            position.positional = {
+                support: "supported",
+                basis: "heuristic",
+                reasons: [plan.description],
+            };
+        }
+    }
     const nomination =
         rejectedChoices === 0 && (input.positionReply || input.replyProbes?.length)
             ? nominatePositionRefutation(input.fen, input.candidates)

@@ -1286,3 +1286,86 @@ with `DECISION_AUDIT_POSITION_CHOICES=1`,
 `DECISION_PROBE_PROFILE=v28-position`. The same-board comparator
 uses the assessment module from `fb55be9c`. Use another disjoint set
 for any held-out claim based on changes derived from these results.
+
+## Iteration 29 — strategic plans across viable moves
+
+Position character now checks whether the engine's leading legal
+choices return to the same strategic objective. Two distinct root
+moves with similar evaluations must both act on the same passed pawn,
+occupy the same pawn-supported outpost, or penetrate on the same rook
+file. The analysis follows the original pawn or piece through the
+continuation. It compares matched, settled material windows within
+the first twelve plies. The positional interpretation remains a
+heuristic tied to the displayed board facts. **Show evidence** shows
+the two SAN lines.
+
+Inherited position evidence also requires more than its visible
+feature. A newly occupied file needs a quiet rook entry to the fifth
+rank or beyond. Bishop-pair removal requires a settled material-
+balanced branch. Incidental reach after a capture and a newly passed
+pawn still in the rear ranks provide too little evidence on their
+own. A late preparation witness alone also provides too little
+evidence of immediate tactical demand at position level. The
+decision report continues to use the original evidence when it
+examines what an individual move achieves.
+
+**Development replay.** The 36 v28 decisions are now development
+data. A first version requiring simultaneous persistent activity
+found 6/22 positional cases with zero false positives on nine reviewed
+negatives. Adding continued control of a blockading square and balanced
+rook exchanges yielded 7/22 with zero false positives, versus 6/22
+and four false positives for v28. Tactical detection stayed at 6/20
+and the false call was removed. The mixed count went from 2/6 to 1/6
+while false mixed calls went from two to zero. In the `Rg3` case,
+the new g-file square does not establish positional activity. The
+verified exchange threat after `Qf1` supplies the tactical explanation.
+In a different position, `...Be6` and `...Bg6` both allow `Rc8`
+and the same rook exchange on c7. The report identifies that file
+contest even though the penetrating rook is eventually exchanged.
+
+**Fresh evaluation.** Thirty-two played decisions from 16 previously
+unused games came from the [European Individual Chess Championship
+2022 round 6](https://lichess.org/broadcast/european-individual-chess-championship/round-6/7j8EXyxe)
+and the [2025 British Major Open round
+7](https://lichess.org/broadcast/2025-british-chess-championships--major-open/round-7/24d5UjWS).
+The game-grouped loss/control stratification and review procedure
+match v28. The single reviewer saved the labels without seeing
+classifier or optional position-reply output. The v28 comparator used
+the same engine data and optional queries.
+
+| Position character | Reviewed positives / negatives | Legacy TP / FP | Same-board v28 TP / FP | v29 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical | 22 / 5 | 4 / 0 | 8 / 0 | 8 / 0 |
+| Positional | 18 / 9 | 0 / 0 | 7 / 3 | 7 / 3 |
+| Mixed | 8 / 14 | 0 / 0 | 2 / 1 | 1 / 1 |
+
+The shared-plan evidence adds three correct positional calls. After
+`Kd2`, `Be3` establishes a blockade of Black's e4 passer. After
+`a3`, `Re3` performs the same job. Another case shows Black using
+the a-file with `...Ra3` in both move orders. The stricter file
+qualification discards three genuinely strategic examples. In one,
+`...Rfc8` uses the file to exchange on c1 rather than staying on an
+advanced square. The aggregate result is a precision gain in
+development and a change in which fresh cases are detected, with a
+mixed-recall loss. Remaining false positional calls include a pawn
+push that solely stops a direct attack, a checking outpost serving
+an immediate combination, and a pawn advance with an immediate
+promotion threat. These cases show why even a persistent board fact
+can provide insufficient evidence of a separate positional purpose.
+
+The strategic comparison adds no engine requests. The existing
+position-refutation nomination on one fresh board reused a reply
+already searched for the played move. Median additional classifier
+time was 27 ms excluding the engine and legacy extraction. The
+frozen scores were reproduced with the committed tactical engine
+and a wording refinement to the plan description. 119 focused tests
+passed, with one existing skip, plus TypeScript and scoped lint.
+An isolated browser build verified position analysis, both plans and
+keyboard expansion at 320, 390 and 900 px using recorded searches.
+
+Copy the manifests from `benchmarks/decision-evidence/strategic-plans-v29`
+to an exterior working directory. Follow the v28 engine and audit
+procedure with the `v29` cache profile for all caches and with
+`--position-choices` for the reply generation. The predecessor
+assessment is at `1c660d43`. Use new game groups for any held-out
+claims from work informed by the failure cases above.

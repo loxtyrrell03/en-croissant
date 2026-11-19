@@ -172,17 +172,26 @@ function DecisionReport({
   const episode = report.mistake?.tacticalEpisode;
   const mate = report.mistake?.mateConsequence;
   const contrast = report.position.tacticalContrast;
+  const plan = report.position.strategicPlan;
   return (
     <Stack gap="xs">
       <EvidenceSummary
         title="Position character"
         assessment={report.position}
-        comparedLines={
-          contrast && [
-            { label: "Better line", san: lineSan(report.fen, contrast.betterLineUci) },
-            { label: "Refuted choice", san: lineSan(report.fen, contrast.playedLineUci) },
-          ]
-        }
+        comparedLines={[
+          ...(contrast
+            ? [
+                { label: "Better line", san: lineSan(report.fen, contrast.betterLineUci) },
+                { label: "Refuted choice", san: lineSan(report.fen, contrast.playedLineUci) },
+              ]
+            : []),
+          ...(plan
+            ? plan.linesUci.map((moves) => ({
+                label: `Plan after ${lineSan(report.fen, moves.slice(0, 1))}`,
+                san: lineSan(report.fen, moves),
+              }))
+            : []),
+        ]}
       >
         <Text size="xs" c="dimmed">
           {report.position.examinedChoices} candidate moves examined
