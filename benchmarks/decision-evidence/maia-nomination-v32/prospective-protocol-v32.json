@@ -1,0 +1,17 @@
+{
+  "protocol": 1,
+  "searchCommit": "b6171e2b83e940aa9f8bb524af9f074280aab39a",
+  "sourceClassifierCommit": "348f5540",
+  "sampleSha256": "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "modelSha256": "ba14208b2992d85502f5fb501934abf6aaaeb355e9f3fdf90e326911f562524f",
+  "modelCode": "1e13597c42d4858b7cfd7cfdae01e297263364b2",
+  "elo": 1900,
+  "policyMaxRank": 2,
+  "testPositions": 33,
+  "comparator": "original width-three plus independent replies",
+  "referenceInput": "Ordinary root variations and played replies only, written before candidate review",
+  "metrics": "Separate tactical, positional and mixed recall and false positives, plus nomination cost",
+  "exclusions": "Ratings and played moves are never model features; cases were selected before classification",
+  "acceptance": "Consider runtime integration only if at least two additional tactical true positives and no additional tactical false positives. Report all unknowns and mixed changes."
+}

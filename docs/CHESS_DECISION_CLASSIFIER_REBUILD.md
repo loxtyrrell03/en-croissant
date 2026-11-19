@@ -1669,3 +1669,63 @@ PyTorch 2.10.0+cpu and Maia source
 SHA-256 is `ba14208b2992d85502f5fb501934abf6aaaeb355e9f3fdf90e326911f562524f`.
 Generated searches, the model and its environment stay outside
 the repository.
+
+### Prospective 2026 tournament test
+
+The restricted Maia policy and deployment criterion were recorded
+before opening this evaluation. A stable hash selected one
+position per game without scores. The set contains 14 positions
+from the Reykjavik Open, 11 from the Prague IM Open and 8 from
+the World Amateur W2000. The PGN headers verified that all
+games took place in 2026, after the checkpoint training period.
+References used ordinary legal Stockfish lines and independent
+played-move replies before the candidate output was produced.
+[Reykjavik Open round 7](https://lichess.org/broadcast/reykjavik-open-2026/round-7/50qoddPB)
+[Prague IM Open round 7](https://lichess.org/broadcast/prague-open-2026-im-open-a/round-7/BefBmCXr)
+[World Amateur W2000 round 6](https://lichess.org/broadcast/fide-world-amateur-chess-championships-2026-w2000/round-6/s7aCtYoA)
+[Maia-3 checkpoint card](https://huggingface.co/UofTCSSLab/Maia3-5M)
+
+| Route | Extra moves checked | Recorded extra moves retrieved | Tactical TP / FP | Positional TP / FP | Mixed TP / FP |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Original three-line replay | 0 | 0 of 9 | 1 / 0 | 5 / 0 | 0 / 0 |
+| One Stockfish nomination | 33 | 4 of 9 | 6 / 0 | 5 / 0 | 0 / 0 |
+| Maia top-two nomination | 20 | 2 of 9 | 2 / 0 | 5 / 0 | 0 / 0 |
+
+The denominator for verified tactical detection was 18 positives
+and 10 negatives. For positional it was 26 positives and 3
+negatives. For mixed it was 11 positives and 13 negatives. Five,
+four and nine boards, respectively, were uncertain. Review came
+from one engine-assisted reviewer. Among the 20 boards eligible
+for Maia, each nomination method retrieved two recorded moves.
+Stockfish verified two tactical episodes there and Maia verified
+one. Both methods selected `...Kf7` in Prague position
+`df19808cae4b3b87-55`. Stockfish corroborated the material
+consequence of `Nxc8` compared with `...Bd7`.
+
+The nomination search and reply budgets totalled 34M additional
+nodes for Maia and 53.6M for the Stockfish extra-choice route.
+Stockfish also used 55.8M nodes to nominate from an eight-choice
+frame. Per-board median Maia request time was about 65 ms on one
+CPU thread. Analysing all eight deeper lines directly reached
+eight positional true positives and zero false positives at
+223.2M root nodes. It found just one tactical true positive and
+zero mixed. This did not preserve the positional result of the
+development comparison in the same direction.
+
+The frozen neural criterion required two additional tactical
+true positives and zero additional false positives. Maia added
+one. The app keeps v31, and the extra-choice search is an
+experimental alternative. The evidence favors investing in
+cheaper Stockfish nomination and verifying the relevance of
+each refutation to the position before adding a runtime. The
+mixed and positional coverage gaps remain open. A future
+position-level result should review the explanation itself as
+well as its agreement with the tactical axis.
+
+For the prospective comparison use the manifest, reference and
+freeze receipts in `benchmarks/decision-evidence/maia-nomination-v32`.
+The bench uses the production tactical core at `348f5540` and
+the experimental tooling at `b6171e2b`. Reproduce the nomination
+with `--policy-max-rank 2`. The freeze receipts hash the original
+Windows JSON bytes with CRLF line endings. If Git checks out these
+manifests with LF, restore CRLF when verifying the byte hashes.
