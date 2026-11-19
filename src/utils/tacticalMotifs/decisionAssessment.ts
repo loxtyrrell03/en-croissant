@@ -32,6 +32,7 @@ import {
 } from "./tacticalMistakeEpisode";
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
 import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
+import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
 import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
 import {
     findConditionalMate,
@@ -67,7 +68,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 28;
+export const DECISION_ASSESSMENT_VERSION = 29;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -86,6 +87,7 @@ export type DecisionAssessment = {
     conditionalFork?: ConditionalForkEvidence;
     conditionalMate?: DecisionConditionalMate;
     matingLines?: ConfirmedMatingLines;
+    mateDefence?: ImmediateMateDefence;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -715,6 +717,29 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     basis: "engine-supported",
                     reasons: [proof.description],
                 };
+            }
+        }
+    }
+    if (
+        position.tactical.support !== "supported" ||
+        moves[0].tactical.support !== "supported"
+    ) {
+        const mateDefence = findImmediateMateDefence(input.fen, input.candidates);
+        if (mateDefence) {
+            const tacticalEvidence: DecisionDimension = {
+                support: "supported",
+                basis: "bounded-proof",
+                reasons: [mateDefence.description],
+            };
+            if (position.tactical.support !== "supported") {
+                position.mateDefence = mateDefence;
+                position.tactical = tacticalEvidence;
+            }
+            const leader = moves[0];
+            if (leader.tactical.support !== "supported") {
+                leader.mateDefence = mateDefence;
+                leader.tactical = tacticalEvidence;
+                leader.category = category(leader.tactical, leader.positional);
             }
         }
     }

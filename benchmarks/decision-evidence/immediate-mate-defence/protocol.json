@@ -1,0 +1,73 @@
+{
+  "baseline": "897eb626",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "searchProfile": "opened-rook-file/prepare.py default root and reply budgets",
+  "independentReference": "python-chess legal moves with complete verification of mate on the reached boards",
+  "trainingOrCalibration": "development challenge with 23 positions, no parameter fit",
+  "heldOut": "20 Mont positions from games absent from development and previous archives",
+  "sources": {
+    "hongkong-r1": {
+      "roundId": "zCDW4I8p",
+      "roundUrl": "https://lichess.org/broadcast/hong-kong-international-open-chess-championship-2025-open/round-1/zCDW4I8p",
+      "pgn": "https://lichess.org/api/broadcast/round/zCDW4I8p.pgn",
+      "timeControl": "90 min + 30 sec"
+    },
+    "mont-r1": {
+      "roundId": "A2eX7efG",
+      "roundUrl": "https://lichess.org/broadcast/mont-de-marsan-christmas-open-2025/round-1/A2eX7efG",
+      "pgn": "https://lichess.org/api/broadcast/round/A2eX7efG.pgn",
+      "timeControl": "90 min + 30 sec / move"
+    },
+    "mont": {
+      "roundId": "A2eX7efG",
+      "roundUrl": "https://lichess.org/broadcast/mont-de-marsan-christmas-open-2025/round-1/A2eX7efG",
+      "pgn": "https://lichess.org/api/broadcast/7mFFtWgT.pgn",
+      "timeControl": "90 min + 30 sec / move"
+    },
+    "bremer-r1": {
+      "roundId": "PUX3qzCM",
+      "roundUrl": "https://lichess.org/broadcast/bremer-silvester-open-2025-a/round-1/PUX3qzCM",
+      "pgn": "https://lichess.org/api/broadcast/round/PUX3qzCM.pgn",
+      "timeControl": "90 min + 30 sec"
+    }
+  },
+  "sampling": {
+    "development": {
+      "hongkong-r1": {
+        "games": 63,
+        "positions": 4459,
+        "defenceGames": 29,
+        "selectedDefence": 6,
+        "selectedOrdinary": 6,
+        "pgnSha256": "86e4b8415033696e671612e1f90bc8f4b3a0b41b89e9b8be0c4bbf7a9541e5fe"
+      },
+      "mont-r1": {
+        "games": 3,
+        "positions": 112,
+        "defenceGames": 0,
+        "selectedDefence": 0,
+        "selectedOrdinary": 3,
+        "pgnSha256": "c9bdbad38b4bbb8996685d5e6f26c6acf6c92afabfc7e2222e90e79df978a9cc"
+      },
+      "bremer-r1": {
+        "games": 8,
+        "positions": 491,
+        "defenceGames": 2,
+        "selectedDefence": 2,
+        "selectedOrdinary": 6,
+        "pgnSha256": "884bf5415baf7bd76ac834487fbf7433fe8a585f4f63d6810e22323306fed02f"
+      }
+    },
+    "mont-reserve": {
+      "mont": {
+        "games": 24,
+        "positions": 1581,
+        "defenceGames": 9,
+        "selectedDefence": 8,
+        "selectedOrdinary": 12,
+        "pgnSha256": "7db17a589bd089971b17da6096eb4585f74dfafd05193c530607594c6f20d217"
+      }
+    }
+  }
+}

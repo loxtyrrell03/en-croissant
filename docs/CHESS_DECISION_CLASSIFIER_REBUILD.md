@@ -3684,3 +3684,16 @@ positives against 4/4 for both tree queues. These are nominations.
 No arm clears the same-budget promotion screen. The comparison adds
 zero Stockfish nodes and introduces no diagnostic verdicts.
 [Experiment, results and reproduction](../benchmarks/decision-evidence/leela-counterfactual-probe/README.md)
+
+## Defence against immediate mate
+
+Decision assessment v29 checks the price of ignoring an existing mate
+threat even if every leading Stockfish candidate defends. A legal example
+must allow the same mate in one, and the selected non-checking move must
+allow no immediate mate. This retrieves five previously missed tactical
+positions in development and seven in the separate Mont-de-Marsan
+selection, including one mixed case. The app presents the ignored threat
+and, when it remains a legal check, the answering defence. The worker
+and evidence panel use the existing searches. All 317 valid archived
+played-mistake assessments agree with v28.
+[Benchmark and reproduction](../benchmarks/decision-evidence/immediate-mate-defence/README.md)

@@ -1,0 +1,450 @@
+[
+  {
+    "id": "mate-defence-hongkong-r1-83431a5d1da8adc2-47",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "c6g6",
+      "exampleLineUci": [
+        "c6f3",
+        "g4g7"
+      ],
+      "exampleWasSearched": false,
+      "description": "Qg6 prevents immediate mate. For example, Qf3 allows Qxg7#."
+    }
+  },
+  {
+    "id": "mate-defence-hongkong-r1-7d9d4f2ee3523501-61",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "d6d5",
+      "exampleLineUci": [
+        "a6a5",
+        "e4b7"
+      ],
+      "exampleWasSearched": false,
+      "description": "d5 prevents immediate mate. For example, a5 allows Qxb7#."
+    }
+  },
+  {
+    "id": "mate-defence-hongkong-r1-df2081c451f62943-119",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": false,
+    "reason": "no-finite-leading-evaluation",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-hongkong-r1-44b16f166ea2ea7d-58",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "d1e2",
+      "exampleLineUci": [
+        "a1b1",
+        "f7f1"
+      ],
+      "exampleWasSearched": false,
+      "description": "Be2 prevents immediate mate. For example, Rb1 allows Qf1#."
+    }
+  },
+  {
+    "id": "mate-defence-hongkong-r1-6940bcbf6da492e5-43",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "h7h6",
+      "exampleLineUci": [
+        "a2a1",
+        "h5h7"
+      ],
+      "exampleWasSearched": false,
+      "description": "h6 prevents immediate mate. For example, Qa1 allows Qxh7#."
+    }
+  },
+  {
+    "id": "mate-defence-hongkong-r1-138365168f9fb24d-47",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "b4e7",
+      "exampleLineUci": [
+        "b4d2",
+        "f4f7"
+      ],
+      "exampleWasSearched": false,
+      "description": "Qe7 prevents immediate mate. For example, Qd2 allows Qxf7#."
+    }
+  },
+  {
+    "id": "mate-defence-hongkong-r1-52e54e9adff21030-70",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-hongkong-r1-11eb93b9e2e564f9-85",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-hongkong-r1-4a58ee112e1bdd8d-31",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-hongkong-r1-05f79cbaf32d05a2-56",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-hongkong-r1-c3c15a85eabfa9f3-46",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-hongkong-r1-ac9006c2b4db289c-103",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-r1-8161208de3d0626c-49",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-r1-1b7ddaf46632e76c-45",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-r1-47bb1eb4016b6da9-35",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-bremer-r1-0f22334e824b38ec-52",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "f4g4",
+      "exampleLineUci": [
+        "a2a3",
+        "c1g1"
+      ],
+      "exampleWasSearched": false,
+      "description": "Rxg4 prevents immediate mate. For example, a3 allows Rxg1#."
+    }
+  },
+  {
+    "id": "mate-defence-bremer-r1-e5f53bb3dfa33f06-80",
+    "cohort": "development",
+    "sourceStratum": "recorded-defence",
+    "eligible": false,
+    "reason": "no-finite-leading-evaluation",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-bremer-r1-5d5f6efd4260d9fa-33",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-bremer-r1-233abb9e6ab75d2d-62",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-bremer-r1-73eb5cdb97027c23-42",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-bremer-r1-d6ef050872cff23d-60",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "checking-or-illegal-leader",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-bremer-r1-c5c264b42aaee156-21",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-bremer-r1-02722892db491837-28",
+    "cohort": "development",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-04c87c699c8316d1-76",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": false,
+    "reason": "checking-or-illegal-leader",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-b51c38b7f6580541-62",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "d1h5",
+      "exampleLineUci": [
+        "a2a3",
+        "d5d1"
+      ],
+      "exampleWasSearched": false,
+      "description": "Qh5 prevents immediate mate. For example, a3 allows Qxd1#."
+    }
+  },
+  {
+    "id": "mate-defence-mont-7e542861303024c4-40",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "f1f5",
+      "exampleLineUci": [
+        "a2a3",
+        "f5f1"
+      ],
+      "exampleWasSearched": false,
+      "description": "Rxf5 prevents immediate mate. For example, a3 allows Rxf1#."
+    }
+  },
+  {
+    "id": "mate-defence-mont-99708f2e62403077-77",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "g7f6",
+      "exampleLineUci": [
+        "e7f5",
+        "b5e8"
+      ],
+      "exampleWasSearched": false,
+      "description": "Bxf6 prevents immediate mate. For example, Nf5 allows Qe8#."
+    }
+  },
+  {
+    "id": "mate-defence-mont-c59061ca5280e537-72",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "d2d1",
+      "exampleLineUci": [
+        "d2a2",
+        "b1h1"
+      ],
+      "exampleWasSearched": false,
+      "description": "Rd1 prevents immediate mate. For example, Ra2 allows Rh1#."
+    }
+  },
+  {
+    "id": "mate-defence-mont-6fe19af9c7589d8b-97",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "f6e4",
+      "exampleLineUci": [
+        "h6h5",
+        "a7e7"
+      ],
+      "exampleWasSearched": false,
+      "description": "Ne4 prevents immediate mate. For example, h5 allows Re7#."
+    }
+  },
+  {
+    "id": "mate-defence-mont-efff0a98fe8bbcd5-62",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "e3e2",
+      "exampleLineUci": [
+        "e3e1",
+        "b3b2"
+      ],
+      "exampleWasSearched": false,
+      "description": "Qe2 prevents immediate mate. For example, Qe1 allows Qxb2#."
+    }
+  },
+  {
+    "id": "mate-defence-mont-c4dc0ffd95b705f1-52",
+    "cohort": "mont-reserve",
+    "sourceStratum": "recorded-defence",
+    "eligible": true,
+    "reason": "checked-all-legal-branches",
+    "newWitness": {
+      "defenceUci": "e5d5",
+      "exampleLineUci": [
+        "f1a1",
+        "d5g2"
+      ],
+      "exampleWasSearched": false,
+      "description": "Qxd5 prevents immediate mate. For example, Ra1 allows Qxg2#."
+    }
+  },
+  {
+    "id": "mate-defence-mont-ee1d1d5979e2962c-35",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-1d451e72d55f7aa5-45",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-21df0c68af0dc5a1-27",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "checking-or-illegal-leader",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-623b797f3354ea66-52",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-ddf1d4dedf43eb36-37",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-8a5f1f049f729573-65",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-418f141b7a67d144-53",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-293624d7bcacd4a8-38",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-77cb4c58b5abae10-51",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-1c3d2bca4b1ddaae-26",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-7a6f2c08f11c2478-51",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  },
+  {
+    "id": "mate-defence-mont-1c346c37040aa5d4-22",
+    "cohort": "mont-reserve",
+    "sourceStratum": "ordinary",
+    "eligible": false,
+    "reason": "no-existing-mate",
+    "newWitness": null
+  }
+]

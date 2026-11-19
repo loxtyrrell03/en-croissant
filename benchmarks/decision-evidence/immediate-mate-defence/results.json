@@ -1,0 +1,48 @@
+{
+  "cohorts": {
+    "development": {
+      "cases": 23,
+      "exactTargets": 6,
+      "oldTacticalAmongTargets": 1,
+      "searchedOnlyWitnesses": 0,
+      "wideWitnesses": 6,
+      "addedTactical": 5,
+      "resultingMixed": 0,
+      "falsePositiveWitnesses": 0
+    },
+    "mont-reserve": {
+      "cases": 20,
+      "exactTargets": 7,
+      "oldTacticalAmongTargets": 0,
+      "searchedOnlyWitnesses": 0,
+      "wideWitnesses": 7,
+      "addedTactical": 7,
+      "resultingMixed": 1,
+      "falsePositiveWitnesses": 0
+    }
+  },
+  "archivedCompatibility": {
+    "total": 1051,
+    "null": 1,
+    "mistake": 317,
+    "changedPosition": 3,
+    "changedMove": 3,
+    "changedCategory": 3,
+    "mixed": 2,
+    "other": 0
+  },
+  "archiveIndependentPositionCases": 261,
+  "archiveIndependentNewWitnesses": 0,
+  "candidateRuntimeMsOn261": {
+    "median": 0.0566,
+    "p95": 0.0864
+  },
+  "newStockfishSearches": 0,
+  "typeAndLint": "passed",
+  "focusedTests": 35,
+  "renderedEvidenceWidthsPx": [
+    320,
+    390,
+    900
+  ]
+}

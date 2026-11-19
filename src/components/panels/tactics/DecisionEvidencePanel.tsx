@@ -84,6 +84,7 @@ function EvidenceSummary({
   const conditionalFork = assessment.conditionalFork;
   const conditionalMate = assessment.conditionalMate;
   const matingLines = assessment.matingLines;
+  const mateDefence = assessment.mateDefence;
   return (
     <Paper withBorder p="xs">
       <Stack gap={6}>
@@ -153,6 +154,24 @@ function EvidenceSummary({
               {san}
             </Text>
           ))}
+        {expanded && mateDefence && (
+          <Stack gap={4}>
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">
+                Move that allows mate.{" "}
+              </Text>
+              {lineSan(mateDefence.fen, mateDefence.exampleLineUci)}
+            </Text>
+            {mateDefence.defendedLineUci && (
+              <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+                <Text component="span" fw={600} size="xs">
+                  How the mate is stopped.{" "}
+                </Text>
+                {lineSan(mateDefence.fen, mateDefence.defendedLineUci)}
+              </Text>
+            )}
+          </Stack>
+        )}
         {expanded && matingLines && (
           <Stack gap={4}>
             <Text size="xs" style={{ overflowWrap: "anywhere" }}>
@@ -196,6 +215,7 @@ function EvidenceSummary({
           !!conditionalFork ||
           !!conditionalMate ||
           !!matingLines ||
+          !!mateDefence ||
           !!comparedLines?.length ||
           assessment.limitations.length > 0 ||
           assessment.verifiedMotifs.length > 0) && (

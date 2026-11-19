@@ -601,7 +601,7 @@ export function filterCompensatedRootCaptures(
     });
 }
 
-function legalMoves(pos: Chess): NormalMove[] {
+export function legalMoves(pos: Chess): NormalMove[] {
     const result: NormalMove[] = [];
     for (const [from, dests] of pos.allDests()) {
         for (const to of dests) {
