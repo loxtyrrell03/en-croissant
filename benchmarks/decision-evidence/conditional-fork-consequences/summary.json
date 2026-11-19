@@ -1,0 +1,938 @@
+{
+  "baseline": "f634b7cf9a6a337eecc78bf2e6ebbecc7134f341",
+  "version": 25,
+  "selection": "One legal played root per game, across eight events, screened before either classifier",
+  "review": "One engine-assisted reviewer. The three uncertain reserve decisions are outside known-positive and known-negative totals.",
+  "releaseHashes": {
+    "src/utils/tacticalMotifs/conditionalForkEvidence.ts": "3f77a4eec079d671155727eaee8f834567e12cb0b315dddbaa96c798e0220a49",
+    "src/components/panels/tactics/DecisionEvidencePanel.tsx": "3bc1a577740acd7a27a3b76c9c133893b1587dc9924abc0aba4a3d38748ca33a"
+  },
+  "scopedAssessmentSha256": "e1d28ebd05a6e69e90448182d3340e5a08ce397f222fd11b0e713400767cf280",
+  "replayFrameSha256": "3e11ef840703da744d52c4613205e1519c7fbd682e33b05018ce15a89b4c7b42",
+  "benchmarkExtraRequestedNodes": 14400000,
+  "unchangedAlternativeLinesInDemotedFreshNegatives": 10,
+  "runtimeAdditionalSearches": 0,
+  "exactMove": {
+    "development": {
+      "sizes": {
+        "True": 7,
+        "False": 60,
+        "None": 21
+      },
+      "scores": {
+        "Baseline": {
+          "liveMotif": {
+            "truePositive": 4,
+            "falsePositive": 0,
+            "falseNegative": 3,
+            "trueNegative": 60,
+            "unknownReported": 2,
+            "unknown": 19
+          },
+          "decisionEvidence": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 2,
+            "trueNegative": 60,
+            "unknownReported": 2,
+            "unknown": 19
+          },
+          "decisionWithReplyFork": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 2,
+            "trueNegative": 60,
+            "unknownReported": 2,
+            "unknown": 19
+          }
+        },
+        "Candidate": {
+          "liveMotif": {
+            "truePositive": 4,
+            "falsePositive": 0,
+            "falseNegative": 3,
+            "trueNegative": 60,
+            "unknownReported": 2,
+            "unknown": 19
+          },
+          "decisionEvidence": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 2,
+            "trueNegative": 60,
+            "unknownReported": 2,
+            "unknown": 19
+          },
+          "decisionWithReplyFork": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 2,
+            "trueNegative": 60,
+            "unknownReported": 2,
+            "unknown": 19
+          }
+        }
+      },
+      "changes": []
+    },
+    "previousReserve": {
+      "sizes": {
+        "True": 6,
+        "False": 19,
+        "None": 5
+      },
+      "scores": {
+        "Baseline": {
+          "liveMotif": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 1,
+            "trueNegative": 19,
+            "unknownReported": 1,
+            "unknown": 4
+          },
+          "decisionEvidence": {
+            "truePositive": 5,
+            "falsePositive": 2,
+            "falseNegative": 1,
+            "trueNegative": 17,
+            "unknownReported": 1,
+            "unknown": 4
+          },
+          "decisionWithReplyFork": {
+            "truePositive": 5,
+            "falsePositive": 2,
+            "falseNegative": 1,
+            "trueNegative": 17,
+            "unknownReported": 1,
+            "unknown": 4
+          }
+        },
+        "Candidate": {
+          "liveMotif": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 1,
+            "trueNegative": 19,
+            "unknownReported": 1,
+            "unknown": 4
+          },
+          "decisionEvidence": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 1,
+            "trueNegative": 19,
+            "unknownReported": 1,
+            "unknown": 4
+          },
+          "decisionWithReplyFork": {
+            "truePositive": 5,
+            "falsePositive": 0,
+            "falseNegative": 1,
+            "trueNegative": 19,
+            "unknownReported": 1,
+            "unknown": 4
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "fork-hvar-3b5a7754c97a1562-33",
+          "expected": false,
+          "moveUci": "e5d4",
+          "before": "mixed",
+          "after": "positional",
+          "previousPosition": {
+            "category": "tactical",
+            "tactical": "supported",
+            "positional": "unestablished"
+          },
+          "newPosition": {
+            "category": "unclear",
+            "tactical": "unestablished",
+            "positional": "unestablished"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-hvar-b18c8c0c7f1076e3-66",
+          "expected": false,
+          "moveUci": "c4b6",
+          "before": "tactical",
+          "after": "unclear",
+          "previousPosition": {
+            "category": "tactical",
+            "tactical": "supported",
+            "positional": "unestablished"
+          },
+          "newPosition": {
+            "category": "unclear",
+            "tactical": "unestablished",
+            "positional": "unestablished"
+          },
+          "alternativeWasRetained": true
+        }
+      ],
+      "conditional": [
+        {
+          "id": "fork-hvar-3b5a7754c97a1562-33",
+          "expected": false,
+          "moveUci": "e5d4",
+          "alternative": [
+            "e5d4",
+            "e3f2",
+            "d4c3",
+            "b2c3",
+            "c7a6",
+            "f2d4",
+            "a6c5"
+          ],
+          "best": [
+            "e5d4",
+            "e3d4",
+            "b7b5",
+            "c4b5",
+            "c7b5",
+            "c3b5",
+            "c6b5",
+            "d1g4",
+            "a8c8"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-hvar-b18c8c0c7f1076e3-66",
+          "expected": false,
+          "moveUci": "c4b6",
+          "alternative": [
+            "c4b6",
+            "d5c3",
+            "b6a8",
+            "c3d1",
+            "e2d1",
+            "e7d8",
+            "f4e2",
+            "b7b5"
+          ],
+          "best": [
+            "c4b6",
+            "d5b6",
+            "d1c1",
+            "g8f8",
+            "e2f1",
+            "h6h5",
+            "h2g3",
+            "a8d8",
+            "a4a5"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-halloween-ab3b924101ec0be5-35",
+          "expected": true,
+          "moveUci": "c4a3",
+          "alternative": [
+            "c4a3",
+            "c2b2",
+            "a3b1",
+            "a1b1",
+            "a6d3",
+            "b1c1",
+            "c8b8"
+          ],
+          "best": [
+            "c4a3",
+            "a1a3",
+            "e7a3",
+            "d2b3",
+            "a3b4",
+            "c3b4",
+            "a5b4",
+            "c2c5",
+            "a6d3"
+          ],
+          "paid": null
+        }
+      ]
+    },
+    "freshReserve": {
+      "sizes": {
+        "True": 4,
+        "False": 17,
+        "None": 3
+      },
+      "scores": {
+        "Baseline": {
+          "liveMotif": {
+            "truePositive": 2,
+            "falsePositive": 0,
+            "falseNegative": 2,
+            "trueNegative": 17,
+            "unknownReported": 0,
+            "unknown": 3
+          },
+          "decisionEvidence": {
+            "truePositive": 3,
+            "falsePositive": 10,
+            "falseNegative": 1,
+            "trueNegative": 7,
+            "unknownReported": 1,
+            "unknown": 2
+          },
+          "decisionWithReplyFork": {
+            "truePositive": 3,
+            "falsePositive": 10,
+            "falseNegative": 1,
+            "trueNegative": 7,
+            "unknownReported": 1,
+            "unknown": 2
+          }
+        },
+        "Candidate": {
+          "liveMotif": {
+            "truePositive": 2,
+            "falsePositive": 0,
+            "falseNegative": 2,
+            "trueNegative": 17,
+            "unknownReported": 0,
+            "unknown": 3
+          },
+          "decisionEvidence": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 1,
+            "trueNegative": 17,
+            "unknownReported": 0,
+            "unknown": 3
+          },
+          "decisionWithReplyFork": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 1,
+            "trueNegative": 17,
+            "unknownReported": 0,
+            "unknown": 3
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "fork-benasque-bef2b608e25a22e0-26",
+          "expected": false,
+          "moveUci": "g5e7",
+          "before": "mixed",
+          "after": "positional",
+          "previousPosition": {
+            "category": "mixed",
+            "tactical": "supported",
+            "positional": "supported"
+          },
+          "newPosition": {
+            "category": "positional",
+            "tactical": "unestablished",
+            "positional": "supported"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-benasque-99b1628b4e6cd306-33",
+          "expected": false,
+          "moveUci": "f5e4",
+          "before": "mixed",
+          "after": "positional",
+          "previousPosition": {
+            "category": "mixed",
+            "tactical": "supported",
+            "positional": "supported"
+          },
+          "newPosition": {
+            "category": "positional",
+            "tactical": "unestablished",
+            "positional": "supported"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-dubai-f3497f36289a4f07-31",
+          "expected": false,
+          "moveUci": "a5b3",
+          "before": "mixed",
+          "after": "positional",
+          "previousPosition": {
+            "category": "mixed",
+            "tactical": "supported",
+            "positional": "supported"
+          },
+          "newPosition": {
+            "category": "positional",
+            "tactical": "unestablished",
+            "positional": "supported"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-dubai-d97d569d25fd990f-34",
+          "expected": false,
+          "moveUci": "d4b6",
+          "before": "tactical",
+          "after": "unclear",
+          "previousPosition": {
+            "category": "tactical",
+            "tactical": "supported",
+            "positional": "unestablished"
+          },
+          "newPosition": {
+            "category": "unclear",
+            "tactical": "unestablished",
+            "positional": "unestablished"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-sahel-9c2acff57c2267e7-51",
+          "expected": false,
+          "moveUci": "h5g4",
+          "before": "mixed",
+          "after": "positional",
+          "previousPosition": {
+            "category": "mixed",
+            "tactical": "supported",
+            "positional": "supported"
+          },
+          "newPosition": {
+            "category": "positional",
+            "tactical": "unestablished",
+            "positional": "supported"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-sahel-f2923cb35580af9f-36",
+          "expected": false,
+          "moveUci": "c5d6",
+          "before": "tactical",
+          "after": "unclear",
+          "previousPosition": {
+            "category": "tactical",
+            "tactical": "supported",
+            "positional": "unestablished"
+          },
+          "newPosition": {
+            "category": "unclear",
+            "tactical": "unestablished",
+            "positional": "unestablished"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-magdeburg-000f5cc6a72c34b2-44",
+          "expected": false,
+          "moveUci": "a5d2",
+          "before": "tactical",
+          "after": "unclear",
+          "previousPosition": {
+            "category": "tactical",
+            "tactical": "supported",
+            "positional": "unestablished"
+          },
+          "newPosition": {
+            "category": "unclear",
+            "tactical": "unestablished",
+            "positional": "unestablished"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-benidorm-9caa1d4307f43a3a-38",
+          "expected": false,
+          "moveUci": "a4c6",
+          "before": "mixed",
+          "after": "positional",
+          "previousPosition": {
+            "category": "mixed",
+            "tactical": "supported",
+            "positional": "supported"
+          },
+          "newPosition": {
+            "category": "positional",
+            "tactical": "unestablished",
+            "positional": "supported"
+          },
+          "alternativeWasRetained": true
+        },
+        {
+          "id": "fork-aruba-62ec44a99176a16d-29",
+          "expected": false,
+          "moveUci": "e4d2",
+          "before": "tactical",
+          "after": "unclear",
+          "previousPosition": {
+            "category": "tactical",
+            "tactical": "supported",
+            "positional": "unestablished"
+          },
+          "newPosition": {
+            "category": "unclear",
+            "tactical": "unestablished",
+            "positional": "unestablished"
+          },
+          "alternativeWasRetained": true
+        }
+      ],
+      "conditional": [
+        {
+          "id": "fork-benasque-bef2b608e25a22e0-26",
+          "expected": false,
+          "moveUci": "g5e7",
+          "alternative": [
+            "g5e7",
+            "d8b8",
+            "e7b4",
+            "f8e8",
+            "f3e5"
+          ],
+          "best": [
+            "g5e7",
+            "d8e7",
+            "a2a3",
+            "b4d5",
+            "f3e5",
+            "f8d8",
+            "c3d5",
+            "b6d5",
+            "d1d2"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-benasque-99b1628b4e6cd306-33",
+          "expected": false,
+          "moveUci": "f5e4",
+          "alternative": [
+            "f5e4",
+            "d3e2",
+            "e4f3",
+            "e2e6",
+            "g8h8",
+            "d4d5",
+            "d8g5"
+          ],
+          "best": [
+            "f5e4",
+            "d3e4",
+            "d8f6",
+            "b2c3",
+            "f6f5",
+            "d1e1",
+            "f8f6",
+            "c3d2",
+            "h7h6"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-dubai-388405e71fb84bbb-39",
+          "expected": true,
+          "moveUci": "d5c4",
+          "alternative": [
+            "d5c4",
+            "b3c3",
+            "c4d3",
+            "e2e4",
+            "c6c5"
+          ],
+          "best": [
+            "d5c4",
+            "d3c4",
+            "b5c4",
+            "e2c4",
+            "c7a7",
+            "e1f2",
+            "c6c5",
+            "c4f7",
+            "h8e8"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-dubai-f3497f36289a4f07-31",
+          "expected": false,
+          "moveUci": "a5b3",
+          "alternative": [
+            "a5b3",
+            "d2b4",
+            "b3c1",
+            "b4f8",
+            "h8f8",
+            "a1c1",
+            "a8d8",
+            "b2b3",
+            "d7b5"
+          ],
+          "best": [
+            "a5b3",
+            "a2b3",
+            "f8e7",
+            "c1c7",
+            "e7d6",
+            "c7b7",
+            "d7c6",
+            "b7b6",
+            "e8d7"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-dubai-d97d569d25fd990f-34",
+          "expected": false,
+          "moveUci": "d4b6",
+          "alternative": [
+            "d4b6",
+            "a8b8",
+            "b6b4",
+            "f6e5",
+            "b4e7",
+            "f8f7",
+            "e7a3",
+            "g7f8"
+          ],
+          "best": [
+            "d4b6",
+            "d7b6",
+            "h4f2",
+            "b6c4",
+            "f2c5",
+            "a6a5",
+            "c5e7",
+            "f6e5",
+            "e7f8"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-sitges-4412ec3b9eadf95b-84",
+          "expected": true,
+          "moveUci": "d6e8",
+          "alternative": [
+            "d6e8",
+            "f6f7",
+            "e8c7",
+            "e7c7",
+            "e5c7",
+            "f7c7",
+            "b4b5",
+            "g8f7",
+            "c4c5"
+          ],
+          "best": [
+            "d6e8",
+            "e7e8",
+            "e5f6",
+            "c7e7",
+            "d3c3",
+            "a4a3",
+            "g1a1",
+            "f5f4",
+            "a1a3"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-sahel-9c2acff57c2267e7-51",
+          "expected": false,
+          "moveUci": "h5g4",
+          "alternative": [
+            "h5g4",
+            "h3g3",
+            "g4f3",
+            "d2h6",
+            "h8h6",
+            "f1f3",
+            "c8b7",
+            "g3b8",
+            "e8f7",
+            "b8f4"
+          ],
+          "best": [
+            "h5g4",
+            "h3g4",
+            "h6h5",
+            "f1f2",
+            "d7c7",
+            "d2f4",
+            "c7e7",
+            "b2b4",
+            "d4d3"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-sahel-f2923cb35580af9f-36",
+          "expected": false,
+          "moveUci": "c5d6",
+          "alternative": [
+            "c5d6",
+            "d5d4",
+            "d6c7",
+            "c8c7",
+            "d2d4",
+            "b8c8",
+            "c3b5",
+            "c7c2"
+          ],
+          "best": [
+            "c5d6",
+            "e7d6",
+            "f4d5",
+            "f6d5",
+            "g3d6",
+            "c8d8",
+            "d6c7",
+            "d5c7",
+            "d2b2"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-magdeburg-000f5cc6a72c34b2-44",
+          "expected": false,
+          "moveUci": "a5d2",
+          "alternative": [
+            "a5d2",
+            "f4c7",
+            "d2e2",
+            "d7d5",
+            "e2d2"
+          ],
+          "best": [
+            "a5d2",
+            "f4d2",
+            "d1d2",
+            "e2a6",
+            "c2c3",
+            "d7d5",
+            "a4c2",
+            "d5e4",
+            "d2d8"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-magdeburg-30a2d20db3d5007c-46",
+          "expected": null,
+          "moveUci": "d4e6",
+          "alternative": [
+            "d4e6",
+            "d8e7",
+            "e6c7",
+            "e7c7",
+            "d1d5",
+            "f7d5",
+            "f3d5",
+            "g8h8",
+            "c5c6",
+            "f8e8"
+          ],
+          "best": [
+            "d4e6",
+            "f7e6",
+            "f3d5",
+            "e6d5",
+            "d1d5",
+            "c7c6",
+            "c1d2",
+            "d8c8",
+            "d5d6"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-benidorm-8a61419e7412ecb2-83",
+          "expected": false,
+          "moveUci": "f4d3",
+          "alternative": [
+            "f4d3",
+            "b4d2",
+            "d3c1",
+            "d1c1",
+            "b8b3",
+            "e5e6",
+            "a7e7",
+            "c1e1"
+          ],
+          "best": [
+            "f4d3",
+            "d1d3",
+            "b8b4",
+            "e5e6",
+            "b4e4",
+            "e6f7",
+            "g8f7",
+            "g1h1",
+            "a7e7"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-benidorm-9caa1d4307f43a3a-38",
+          "expected": false,
+          "moveUci": "a4c6",
+          "alternative": [
+            "a4c6",
+            "a8b8",
+            "c6e8",
+            "d8e8",
+            "f3g5",
+            "a5c4",
+            "a3a4"
+          ],
+          "best": [
+            "a4c6",
+            "a5c6",
+            "d3d2",
+            "a8c8",
+            "f1e1",
+            "c6a5",
+            "d2f4",
+            "e7f8",
+            "h6f8"
+          ],
+          "paid": null
+        },
+        {
+          "id": "fork-aruba-62ec44a99176a16d-29",
+          "expected": false,
+          "moveUci": "e4d2",
+          "alternative": [
+            "e4d2",
+            "d4d5",
+            "d2f1",
+            "b1f1",
+            "e6d5",
+            "c4d5",
+            "c6d5",
+            "d3f5",
+            "e8g8",
+            "e3e4",
+            "d5f7"
+          ],
+          "best": [
+            "e4d2",
+            "c2d2",
+            "e8g8",
+            "b1e1",
+            "d8d7",
+            "c4c5",
+            "b6c5",
+            "e3e4",
+            "f5f4"
+          ],
+          "paid": null
+        }
+      ]
+    }
+  },
+  "engineeringReplays": {
+    "mistakes": {
+      "positions": 318,
+      "recordsIdenticalExceptVersion": 316,
+      "changes": [
+        {
+          "id": "mistake-maia-u2000-23a087934b624ffb-32",
+          "sections": [
+            "position",
+            "moves"
+          ],
+          "position": [
+            [
+              "tactical",
+              "supported",
+              "unestablished"
+            ],
+            [
+              "unclear",
+              "unestablished",
+              "unestablished"
+            ]
+          ],
+          "moveChanges": [
+            {
+              "move": "e5d6",
+              "before": [
+                "mixed",
+                "supported",
+                "supported"
+              ],
+              "after": [
+                "positional",
+                "unestablished",
+                "supported"
+              ],
+              "hasConditional": true
+            }
+          ],
+          "mistake": [
+            null,
+            null
+          ]
+        },
+        {
+          "id": "structure-arco-open-2026-a5f813a280cd60da-23",
+          "sections": [
+            "position",
+            "moves"
+          ],
+          "position": [
+            [
+              "tactical",
+              "supported",
+              "unestablished"
+            ],
+            [
+              "unclear",
+              "unestablished",
+              "unestablished"
+            ]
+          ],
+          "moveChanges": [
+            {
+              "move": "d5e4",
+              "before": [
+                "tactical",
+                "supported",
+                "unestablished"
+              ],
+              "after": [
+                "unclear",
+                "unestablished",
+                "unestablished"
+              ],
+              "hasConditional": true
+            }
+          ],
+          "mistake": [
+            null,
+            null
+          ]
+        }
+      ],
+      "reportedWorkerMedianMs": [
+        89.44130000000177,
+        88.29915000000256
+      ],
+      "mistakeStatusChanges": 0,
+      "priorExtraSearchesIdentical": true
+    },
+    "ordinary": {
+      "positions": 259,
+      "recordsIdenticalExceptVersion": 259,
+      "changes": [],
+      "reportedWorkerMedianMs": [
+        88.65080000000034,
+        88.78219999999965
+      ],
+      "mistakeStatusChanges": 0,
+      "priorExtraSearchesIdentical": true
+    }
+  }
+}

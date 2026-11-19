@@ -1,0 +1,148 @@
+{
+  "cases": [
+    {
+      "id": "fork-benasque-bef2b608e25a22e0-26",
+      "fen": "r2q1rk1/pp1bbppp/1n2p3/6B1/1n1P4/2N2N2/PP2BPPP/R2Q1RK1 w - - 6 14",
+      "split": "validation",
+      "playedMoveUci": "g5e7"
+    },
+    {
+      "id": "fork-benasque-33df5acd4741d529-71",
+      "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+      "split": "validation",
+      "playedMoveUci": "c7c2"
+    },
+    {
+      "id": "fork-benasque-b45d1667f1306e88-48",
+      "fen": "1r2qrk1/3b1pp1/pNp4p/3p3n/3N4/3RP2P/PPQ2PP1/2R3K1 w - - 5 25",
+      "split": "validation",
+      "playedMoveUci": "b6d7"
+    },
+    {
+      "id": "fork-benasque-be6163bf8c9ae84a-27",
+      "fen": "r4rk1/pbqn1ppp/1p2p3/3pP3/3PN1P1/2PB1Q2/PP5P/R1B1K2R b KQ - 0 14",
+      "split": "validation",
+      "playedMoveUci": "d5e4"
+    },
+    {
+      "id": "fork-benasque-99b1628b4e6cd306-33",
+      "fen": "r2q1rk1/2p3pp/pn1bp3/1p3p2/1P1PP3/P2Q1N2/1B3PPP/R2R2K1 b - - 0 17",
+      "split": "validation",
+      "playedMoveUci": "f5e4"
+    },
+    {
+      "id": "fork-dubai-2a27ab9a1a05b1c4-43",
+      "fen": "5r2/pp4kp/3q1pp1/n1rb4/3RP3/1N4P1/P4P1P/Q4RK1 b - - 2 22",
+      "split": "validation",
+      "playedMoveUci": "a5b3"
+    },
+    {
+      "id": "fork-dubai-388405e71fb84bbb-39",
+      "fen": "2kr3r/2qbbppp/p1p5/1p1pP3/2P2P2/1R1B4/PP2Q1PP/2KRB3 b - - 0 20",
+      "split": "validation",
+      "playedMoveUci": "d5c4"
+    },
+    {
+      "id": "fork-dubai-f3497f36289a4f07-31",
+      "fen": "r3kb1r/3b1ppp/p3p3/n7/1p2P3/1B3N2/PP1B1PPP/R1R3K1 b kq - 3 16",
+      "split": "validation",
+      "playedMoveUci": "a5b3"
+    },
+    {
+      "id": "fork-dubai-d97d569d25fd990f-34",
+      "fen": "r4rk1/1b1np1bp/pq3pp1/3pP3/1n1Q1P1B/1BN2N2/1PP3PP/R4RK1 w - - 1 18",
+      "split": "validation",
+      "playedMoveUci": "d4b6"
+    },
+    {
+      "id": "fork-sitges-4412ec3b9eadf95b-84",
+      "fen": "6k1/2r1q2p/3Nprp1/4Qp2/pPPP4/3K4/4R3/6R1 w - - 4 43",
+      "split": "validation",
+      "playedMoveUci": "d6e8"
+    },
+    {
+      "id": "fork-sahel-9c2acff57c2267e7-51",
+      "fen": "2b1kn1r/p2q2p1/1p5r/2p2P1p/3pP1P1/5N1Q/PP1B3P/4RRK1 b - - 2 26",
+      "split": "validation",
+      "playedMoveUci": "h5g4"
+    },
+    {
+      "id": "fork-sahel-f2923cb35580af9f-36",
+      "fen": "1rr1q1k1/ppn1bbp1/3p1n1p/2Pp1p1P/1P2pN2/2N1P1B1/P2QBPP1/R4RK1 w - - 0 19",
+      "split": "validation",
+      "playedMoveUci": "c5d6"
+    },
+    {
+      "id": "fork-sahel-c1a6f67b2a2a9e39-54",
+      "fen": "5k2/pb3ppp/4p3/b2pP3/1r1N1P2/1B4PK/PP5P/2R5 w - - 3 28",
+      "split": "validation",
+      "playedMoveUci": "d4c6"
+    },
+    {
+      "id": "fork-sahel-c83d250d0a876495-43",
+      "fen": "2r2rk1/2q1bppp/p2p1n2/n2Pp3/P7/3Q4/B2N1PPP/R1B1R1K1 b - - 2 22",
+      "split": "validation",
+      "playedMoveUci": "c7c3"
+    },
+    {
+      "id": "fork-magdeburg-000f5cc6a72c34b2-44",
+      "fen": "3r4/p2pkp2/4pp2/Q1p3r1/B3Pq1p/P4P1P/P1P1b1PR/3R3K w - - 4 23",
+      "split": "validation",
+      "playedMoveUci": "a5d2"
+    },
+    {
+      "id": "fork-magdeburg-30a2d20db3d5007c-46",
+      "fen": "3q1rk1/2r2bpp/p2ppp2/2Pn4/3N4/1P3B1P/P1R2PP1/2QR2K1 w - - 1 24",
+      "split": "validation",
+      "playedMoveUci": "d4e6"
+    },
+    {
+      "id": "fork-benidorm-f904a0004f5e4c50-46",
+      "fen": "3r2k1/pb1q1pbp/1p4p1/8/1P2PP2/6P1/P1p2BBP/2RR2K1 w - - 0 24",
+      "split": "validation",
+      "playedMoveUci": "d1d7"
+    },
+    {
+      "id": "fork-benidorm-5238ef15adb12a13-26",
+      "fen": "r2q1rk1/pp1nbppp/2p1b3/3pP1B1/P2Q4/2N4P/1PP1BPP1/R3K2R w KQ - 1 14",
+      "split": "validation",
+      "playedMoveUci": "g5e7"
+    },
+    {
+      "id": "fork-benidorm-8a61419e7412ecb2-83",
+      "fen": "1r4k1/q4p2/2p3p1/p1PpPpPp/PB3n2/1P1R4/7P/2RQ2K1 b - - 1 42",
+      "split": "validation",
+      "playedMoveUci": "f4d3"
+    },
+    {
+      "id": "fork-benidorm-57e6de48d3d097e0-29",
+      "fen": "2rqk2r/pb2bppp/1pn1p3/2n1P3/3P1B2/5N2/PPBNQPPP/R3R1K1 b k - 0 15",
+      "split": "validation",
+      "playedMoveUci": "c6d4"
+    },
+    {
+      "id": "fork-benidorm-9caa1d4307f43a3a-38",
+      "fen": "r2qr1k1/4bp1p/p1b1p1pB/n2pP3/B2P4/P1PQ1N2/5PPP/R4RK1 w - - 4 20",
+      "split": "validation",
+      "playedMoveUci": "a4c6"
+    },
+    {
+      "id": "fork-mona-karff-5b2dcf4ea2205002-34",
+      "fen": "rn3rk1/p4pp1/2p1p3/1pP1q3/1np3B1/8/PPQN1PPP/R4RK1 w - - 1 18",
+      "split": "validation",
+      "playedMoveUci": "c2c3"
+    },
+    {
+      "id": "fork-aruba-e0fc28fdb2a19cbb-40",
+      "fen": "2r1r1k1/3b2p1/p1pb3p/1p1p2q1/3Pp3/PQ2P2P/1P1N1PP1/1BR2RK1 w - - 2 21",
+      "split": "validation",
+      "playedMoveUci": "d2e4"
+    },
+    {
+      "id": "fork-aruba-62ec44a99176a16d-29",
+      "fen": "r2qk2r/p1p5/1pbppn1p/5pp1/2PPn3/2PBPPB1/P1QN2PP/1R3RK1 b kq - 0 15",
+      "split": "validation",
+      "playedMoveUci": "e4d2"
+    }
+  ]
+}

@@ -1,0 +1,372 @@
+{
+  "previewBudget": 12000,
+  "sources": {
+    "benasque": {
+      "pgnSha256": "2eb82ed355a551bc5f56e6a4ae7cdd707c95bf7217d7d1a38d1c278b0f3734ef",
+      "candidates": 839,
+      "triggered": 11
+    },
+    "dubai": {
+      "pgnSha256": "4df1be0903df973ca277321ec66480cedaf777a53132d82c40f1b0fc03515d5e",
+      "candidates": 307,
+      "triggered": 4
+    },
+    "sitges": {
+      "pgnSha256": "2111c1db4badf17bceacb55d199e5cbc8a1cfa7ebb8ab07623f55de5f9d7740b",
+      "candidates": 179,
+      "triggered": 1
+    },
+    "sahel": {
+      "pgnSha256": "acc3f50a613b823c80a4077dd1f267a35007b473bb8c345a82a737e9e978705e",
+      "candidates": 349,
+      "triggered": 4
+    },
+    "magdeburg": {
+      "pgnSha256": "dbc19de7be316f7a0134ad589bb5507c0bc3727d12042c3a6a234225bc0ef737",
+      "candidates": 114,
+      "triggered": 2
+    },
+    "benidorm": {
+      "pgnSha256": "7fe0fabdffa65a0c38938eb106e53148cb4c953d7bd0d677dea4595f91ded527",
+      "candidates": 627,
+      "triggered": 12
+    },
+    "mona-karff": {
+      "pgnSha256": "7fa631a108b2c3aed6de441d34432ccc593564832c466e9ccdd5de8d0a62a50e",
+      "candidates": 122,
+      "triggered": 1
+    },
+    "aruba": {
+      "pgnSha256": "7fd0982cd73dd27687b5fde61275a623d10cbde845d8adf500830fe0a18088dc",
+      "candidates": 101,
+      "triggered": 2
+    }
+  },
+  "exclusions": {
+    "classical.json": [
+      "267d5ee3aaa744654e560dae9588039c00a7cbd9ab14fbbae7d4fabd13745d99"
+    ],
+    "reserve.json": [
+      "a6f2f402f2c2f9d5d28a408ff1c47ee286dd8a98c985468ccdbe27fe79880fa9"
+    ],
+    "tournament-sample.json": [
+      "24c66cf7f43277b47be941e6f59b242103404e14630f68c5f1535e2a0a961ed3",
+      "10bee309ee117de43ea5b7fb42473edfe3b048d9d4df53badf574a906d960939",
+      "93640cfb2a2d2a7791ca68b7264b27c2789e1957a4e35afe4071d9a4cf86ce93"
+    ]
+  },
+  "cases": [
+    {
+      "id": "fork-benasque-bef2b608e25a22e0-26",
+      "game": "bef2b608e25a22e0c4eab2f02bc29e8d1bf28c5cc3e573acd2d63a5a5aae72e0",
+      "split": "classical",
+      "event": "benasque",
+      "fen": "r2q1rk1/pp1bbppp/1n2p3/6B1/1n1P4/2N2N2/PP2BPPP/R2Q1RK1 w - - 6 14",
+      "boardKey": "r2q1rk1/pp1bbppp/1n2p3/6B1/1n1P4/2N2N2/PP2BPPP/R2Q1RK1 w - -",
+      "move": "g5e7",
+      "origin": "played",
+      "ply": 26,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-benasque-33df5acd4741d529-71",
+      "game": "33df5acd4741d529b86cb8e7553a351e15468bb667521c351d8700511e1dfb0f",
+      "split": "classical",
+      "event": "benasque",
+      "fen": "b4bk1/2r1np2/1q2p1p1/4P1Qp/3P4/1p2R1PP/1B1N1P2/1B4K1 b - - 1 36",
+      "boardKey": "1b4k1/1b1n1p2/1P2r1pp/3p4/4p1qP/1Q2P1P1/2R1NP2/B4BK1 w - -",
+      "move": "c7c2",
+      "origin": "played",
+      "ply": 71,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-benasque-b45d1667f1306e88-48",
+      "game": "b45d1667f1306e88d06c297a881c021d27f7df024011f73e3c93c72b66f5274c",
+      "split": "classical",
+      "event": "benasque",
+      "fen": "1r2qrk1/3b1pp1/pNp4p/3p3n/3N4/3RP2P/PPQ2PP1/2R3K1 w - - 5 25",
+      "boardKey": "1r2qrk1/3b1pp1/pNp4p/3p3n/3N4/3RP2P/PPQ2PP1/2R3K1 w - -",
+      "move": "b6d7",
+      "origin": "played",
+      "ply": 48,
+      "stratum": "alternative-fork",
+      "preview": 12
+    },
+    {
+      "id": "fork-benasque-be6163bf8c9ae84a-27",
+      "game": "be6163bf8c9ae84aabd43bd50bc08a8c348cd79b460a9bbb36070837dd585244",
+      "split": "classical",
+      "event": "benasque",
+      "fen": "r4rk1/pbqn1ppp/1p2p3/3pP3/3PN1P1/2PB1Q2/PP5P/R1B1K2R b KQ - 0 14",
+      "boardKey": "r1b1k2r/pp5p/2pb1q2/3pn1p1/3Pp3/1P2P3/PBQN1PPP/R4RK1 w kq -",
+      "move": "d5e4",
+      "origin": "played",
+      "ply": 27,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-benasque-99b1628b4e6cd306-33",
+      "game": "99b1628b4e6cd306019fcecb8da53295f563700267def76e7da9cbece461947a",
+      "split": "classical",
+      "event": "benasque",
+      "fen": "r2q1rk1/2p3pp/pn1bp3/1p3p2/1P1PP3/P2Q1N2/1B3PPP/R2R2K1 b - - 0 17",
+      "boardKey": "r2q1rk1/2p3pp/pn1bp3/1p3p2/1P1PP3/P2Q1N2/1B3PPP/R2R2K1 b - -",
+      "move": "f5e4",
+      "origin": "played",
+      "ply": 33,
+      "stratum": "alternative-fork",
+      "preview": 10
+    },
+    {
+      "id": "fork-dubai-2a27ab9a1a05b1c4-43",
+      "game": "2a27ab9a1a05b1c4846cb20b75a27bfbfa7c063d5c455b6bfaaa2837ffff2345",
+      "split": "classical",
+      "event": "dubai",
+      "fen": "5r2/pp4kp/3q1pp1/n1rb4/3RP3/1N4P1/P4P1P/Q4RK1 b - - 2 22",
+      "boardKey": "5r2/pp4kp/3q1pp1/n1rb4/3RP3/1N4P1/P4P1P/Q4RK1 b - -",
+      "move": "a5b3",
+      "origin": "played",
+      "ply": 43,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-dubai-388405e71fb84bbb-39",
+      "game": "388405e71fb84bbb02330adce23a6b58b9ca89bfba170f8f607db56172f06679",
+      "split": "classical",
+      "event": "dubai",
+      "fen": "2kr3r/2qbbppp/p1p5/1p1pP3/2P2P2/1R1B4/PP2Q1PP/2KRB3 b - - 0 20",
+      "boardKey": "2kr3r/2qbbppp/p1p5/1p1pP3/2P2P2/1R1B4/PP2Q1PP/2KRB3 b - -",
+      "move": "d5c4",
+      "origin": "played",
+      "ply": 39,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-dubai-f3497f36289a4f07-31",
+      "game": "f3497f36289a4f07d591c626e24c3bf06ddeb104d6b95d2b4a3a2327709aec3e",
+      "split": "classical",
+      "event": "dubai",
+      "fen": "r3kb1r/3b1ppp/p3p3/n7/1p2P3/1B3N2/PP1B1PPP/R1R3K1 b kq - 3 16",
+      "boardKey": "r1r3k1/pp1b1ppp/1b3n2/1P2p3/N7/P3P3/3B1PPP/R3KB1R w KQ -",
+      "move": "a5b3",
+      "origin": "played",
+      "ply": 31,
+      "stratum": "alternative-fork",
+      "preview": 12
+    },
+    {
+      "id": "fork-dubai-d97d569d25fd990f-34",
+      "game": "d97d569d25fd990fe6dc4e5ccb0f94ef14fa948cbff0d19590b37fca688b1fb8",
+      "split": "classical",
+      "event": "dubai",
+      "fen": "r4rk1/1b1np1bp/pq3pp1/3pP3/1n1Q1P1B/1BN2N2/1PP3PP/R4RK1 w - - 1 18",
+      "boardKey": "r4rk1/1b1np1bp/pq3pp1/3pP3/1n1Q1P1B/1BN2N2/1PP3PP/R4RK1 w - -",
+      "move": "d4b6",
+      "origin": "played",
+      "ply": 34,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-sitges-4412ec3b9eadf95b-84",
+      "game": "4412ec3b9eadf95b4694e197a6bab774b83f09e05e67a001e9d7e979540697b7",
+      "split": "classical",
+      "event": "sitges",
+      "fen": "6k1/2r1q2p/3Nprp1/4Qp2/pPPP4/3K4/4R3/6R1 w - - 4 43",
+      "boardKey": "6k1/2r1q2p/3Nprp1/4Qp2/pPPP4/3K4/4R3/6R1 w - -",
+      "move": "d6e8",
+      "origin": "played",
+      "ply": 84,
+      "stratum": "alternative-fork",
+      "preview": 12
+    },
+    {
+      "id": "fork-sahel-9c2acff57c2267e7-51",
+      "game": "9c2acff57c2267e7022b19d413779c5ba65b9f077c179f4f651643e5884a5f6d",
+      "split": "classical",
+      "event": "sahel",
+      "fen": "2b1kn1r/p2q2p1/1p5r/2p2P1p/3pP1P1/5N1Q/PP1B3P/4RRK1 b - - 2 26",
+      "boardKey": "2b1kn1r/p2q2p1/1p5r/2p2P1p/3pP1P1/5N1Q/PP1B3P/4RRK1 b - -",
+      "move": "h5g4",
+      "origin": "played",
+      "ply": 51,
+      "stratum": "alternative-fork",
+      "preview": 10
+    },
+    {
+      "id": "fork-sahel-f2923cb35580af9f-36",
+      "game": "f2923cb35580af9f52b7e300ea006f5810b5ccd0c19340b6e47d02dd9ab5155c",
+      "split": "classical",
+      "event": "sahel",
+      "fen": "1rr1q1k1/ppn1bbp1/3p1n1p/2Pp1p1P/1P2pN2/2N1P1B1/P2QBPP1/R4RK1 w - - 0 19",
+      "boardKey": "1rr1q1k1/ppn1bbp1/3p1n1p/2Pp1p1P/1P2pN2/2N1P1B1/P2QBPP1/R4RK1 w - -",
+      "move": "c5d6",
+      "origin": "played",
+      "ply": 36,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-sahel-c1a6f67b2a2a9e39-54",
+      "game": "c1a6f67b2a2a9e39d0f744d62767d9ade80b95acef7996c775ae1bfb4318240a",
+      "split": "classical",
+      "event": "sahel",
+      "fen": "5k2/pb3ppp/4p3/b2pP3/1r1N1P2/1B4PK/PP5P/2R5 w - - 3 28",
+      "boardKey": "2r5/pp5p/1b4pk/1R1n1p2/B2Pp3/4P3/PB3PPP/5K2 b - -",
+      "move": "d4c6",
+      "origin": "played",
+      "ply": 54,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-sahel-c83d250d0a876495-43",
+      "game": "c83d250d0a8764956f8a017d7dfcfe54060289a8c734f2bdbb0f5111551524e5",
+      "split": "classical",
+      "event": "sahel",
+      "fen": "2r2rk1/2q1bppp/p2p1n2/n2Pp3/P7/3Q4/B2N1PPP/R1B1R1K1 b - - 2 22",
+      "boardKey": "2r2rk1/2q1bppp/p2p1n2/n2Pp3/P7/3Q4/B2N1PPP/R1B1R1K1 b - -",
+      "move": "c7c3",
+      "origin": "played",
+      "ply": 43,
+      "stratum": "alternative-fork",
+      "preview": 9
+    },
+    {
+      "id": "fork-magdeburg-000f5cc6a72c34b2-44",
+      "game": "000f5cc6a72c34b23e5e45916e45aeb6ae320fafbaa090356df19a316b70be6c",
+      "split": "classical",
+      "event": "magdeburg",
+      "fen": "3r4/p2pkp2/4pp2/Q1p3r1/B3Pq1p/P4P1P/P1P1b1PR/3R3K w - - 4 23",
+      "boardKey": "3r3k/p1p1B1pr/p4p1p/b3pQ1P/q1P3R1/4PP2/P2PKP2/3R4 b - -",
+      "move": "a5d2",
+      "origin": "played",
+      "ply": 44,
+      "stratum": "alternative-fork",
+      "preview": 11
+    },
+    {
+      "id": "fork-magdeburg-30a2d20db3d5007c-46",
+      "game": "30a2d20db3d5007c528fff35b8bca95a7a71e80579fb084f9a28a44f7313d44d",
+      "split": "classical",
+      "event": "magdeburg",
+      "fen": "3q1rk1/2r2bpp/p2ppp2/2Pn4/3N4/1P3B1P/P1R2PP1/2QR2K1 w - - 1 24",
+      "boardKey": "2qr2k1/p1r2pp1/1p3b1p/3n4/2pN4/P2PPP2/2R2BPP/3Q1RK1 b - -",
+      "move": "d4e6",
+      "origin": "played",
+      "ply": 46,
+      "stratum": "alternative-fork",
+      "preview": 12
+    },
+    {
+      "id": "fork-benidorm-f904a0004f5e4c50-46",
+      "game": "f904a0004f5e4c50a158907a68458aed26bb750574cdcf274acb6ce02aeb8e5b",
+      "split": "classical",
+      "event": "benidorm",
+      "fen": "3r2k1/pb1q1pbp/1p4p1/8/1P2PP2/6P1/P1p2BBP/2RR2K1 w - - 0 24",
+      "boardKey": "2rr2k1/p1P2bbp/6p1/1p2pp2/8/1P4P1/PB1Q1PBP/3R2K1 b - -",
+      "move": "d1d7",
+      "origin": "played",
+      "ply": 46,
+      "stratum": "alternative-fork",
+      "preview": 10
+    },
+    {
+      "id": "fork-benidorm-5238ef15adb12a13-26",
+      "game": "5238ef15adb12a13208143453a7fd7acf0b1a1afde6985c39613fb362e13523c",
+      "split": "classical",
+      "event": "benidorm",
+      "fen": "r2q1rk1/pp1nbppp/2p1b3/3pP1B1/P2Q4/2N4P/1PP1BPP1/R3K2R w KQ - 1 14",
+      "boardKey": "r2q1rk1/pp1nbppp/2p1b3/3pP1B1/P2Q4/2N4P/1PP1BPP1/R3K2R w KQ -",
+      "move": "g5e7",
+      "origin": "played",
+      "ply": 26,
+      "stratum": "alternative-fork",
+      "preview": 10
+    },
+    {
+      "id": "fork-benidorm-8a61419e7412ecb2-83",
+      "game": "8a61419e7412ecb2a49f52a0a58ad7d1daaaf768592cca017b2bcca8cd5d684f",
+      "split": "classical",
+      "event": "benidorm",
+      "fen": "1r4k1/q4p2/2p3p1/p1PpPpPp/PB3n2/1P1R4/7P/2RQ2K1 b - - 1 42",
+      "boardKey": "1r4k1/q4p2/2p3p1/p1PpPpPp/PB3n2/1P1R4/7P/2RQ2K1 b - -",
+      "move": "f4d3",
+      "origin": "played",
+      "ply": 83,
+      "stratum": "alternative-fork",
+      "preview": 12
+    },
+    {
+      "id": "fork-benidorm-57e6de48d3d097e0-29",
+      "game": "57e6de48d3d097e086432f60eb3b1b58462a2228cdbde921c6c7d81829f2c15f",
+      "split": "classical",
+      "event": "benidorm",
+      "fen": "2rqk2r/pb2bppp/1pn1p3/2n1P3/3P1B2/5N2/PPBNQPPP/R3R1K1 b k - 0 15",
+      "boardKey": "2rqk2r/pb2bppp/1pn1p3/2n1P3/3P1B2/5N2/PPBNQPPP/R3R1K1 b k -",
+      "move": "c6d4",
+      "origin": "played",
+      "ply": 29,
+      "stratum": "alternative-fork",
+      "preview": 11
+    },
+    {
+      "id": "fork-benidorm-9caa1d4307f43a3a-38",
+      "game": "9caa1d4307f43a3a2a81e53b2e657c8746cf8ff2173986e5c40322ec9db319b8",
+      "split": "classical",
+      "event": "benidorm",
+      "fen": "r2qr1k1/4bp1p/p1b1p1pB/n2pP3/B2P4/P1PQ1N2/5PPP/R4RK1 w - - 4 20",
+      "boardKey": "r2qr1k1/4bp1p/p1b1p1pB/n2pP3/B2P4/P1PQ1N2/5PPP/R4RK1 w - -",
+      "move": "a4c6",
+      "origin": "played",
+      "ply": 38,
+      "stratum": "alternative-fork",
+      "preview": 10
+    },
+    {
+      "id": "fork-mona-karff-5b2dcf4ea2205002-34",
+      "game": "5b2dcf4ea2205002882252349fc44f98a939931c7d9e1ef244daed1ed26de9d7",
+      "split": "classical",
+      "event": "mona-karff",
+      "fen": "rn3rk1/p4pp1/2p1p3/1pP1q3/1np3B1/8/PPQN1PPP/R4RK1 w - - 1 18",
+      "boardKey": "r4rk1/ppqn1ppp/8/1NP3b1/1Pp1Q3/2P1P3/P4PP1/RN3RK1 b - -",
+      "move": "c2c3",
+      "origin": "played",
+      "ply": 34,
+      "stratum": "alternative-fork",
+      "preview": 11
+    },
+    {
+      "id": "fork-aruba-e0fc28fdb2a19cbb-40",
+      "game": "e0fc28fdb2a19cbbf8c6f7094e5e0e52cdbefe527130f56dac9a3515191df6dd",
+      "split": "classical",
+      "event": "aruba",
+      "fen": "2r1r1k1/3b2p1/p1pb3p/1p1p2q1/3Pp3/PQ2P2P/1P1N1PP1/1BR2RK1 w - - 2 21",
+      "boardKey": "1br2rk1/1p1n1pp1/pq2p2p/3pP3/1P1P2Q1/P1PB3P/3B2P1/2R1R1K1 b - -",
+      "move": "d2e4",
+      "origin": "played",
+      "ply": 40,
+      "stratum": "alternative-fork",
+      "preview": 8
+    },
+    {
+      "id": "fork-aruba-62ec44a99176a16d-29",
+      "game": "62ec44a99176a16d0aa19d40f57c75696eed82e4e4563ca3854e4d1bca51f851",
+      "split": "classical",
+      "event": "aruba",
+      "fen": "r2qk2r/p1p5/1pbppn1p/5pp1/2PPn3/2PBPPB1/P1QN2PP/1R3RK1 b kq - 0 15",
+      "boardKey": "1r3rk1/p1qn2pp/2pbppb1/2ppN3/5PP1/1PBPPN1P/P1P5/R2QK2R w KQ -",
+      "move": "e4d2",
+      "origin": "played",
+      "ply": 29,
+      "stratum": "alternative-fork",
+      "preview": 9
+    }
+  ]
+}

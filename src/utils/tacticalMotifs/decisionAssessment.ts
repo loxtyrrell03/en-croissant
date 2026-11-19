@@ -31,7 +31,7 @@ import {
     type TacticalMistakeEpisode,
 } from "./tacticalMistakeEpisode";
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
-import { findConditionalFork } from "./conditionalForkEvidence";
+import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
 import {
     findConditionalMate,
     findRecoveringFork,
@@ -62,7 +62,7 @@ import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisi
 import { compareRookPressure, type RookPressureEvidence } from "./decisionRookPressure";
 import { comparePawnStructure, type PawnStructureEvidence } from "./decisionPawnStructure";
 
-export const DECISION_ASSESSMENT_VERSION = 24;
+export const DECISION_ASSESSMENT_VERSION = 25;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -78,6 +78,7 @@ export type DecisionAssessment = {
     localProofs: DecisionLocalProof[];
     episodeOutcomes: TacticalEpisodeOutcome[];
     conditionalResources: ConditionalTacticalResource[];
+    conditionalFork?: ConditionalForkEvidence;
     conditionalMate?: DecisionConditionalMate;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
@@ -250,18 +251,18 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
         witnessedBranches.flatMap((branch) => branch.witnesses),
     );
     const factors = comparePositionalTransitions(input.fen, line, input.candidates);
-    if (corroborated)
-        for (const item of corroboratePositionalEffects(input.fen, line, branches[0])) {
-            if (
-                !factors.some(
-                    (other) =>
-                        other.feature === item.feature &&
-                        other.side === item.side &&
-                        other.squareOrFile === item.squareOrFile,
-                )
+    const corroboratedFactors = corroborated ? corroboratePositionalEffects(input.fen, line, branches[0]) : [];
+    for (const item of corroboratedFactors) {
+        if (
+            !factors.some(
+                (other) =>
+                    other.feature === item.feature &&
+                    other.side === item.side &&
+                    other.squareOrFile === item.squareOrFile,
             )
-                factors.push(item);
-        }
+        )
+            factors.push(item);
+    }
     result.mechanisms = witnesses;
     result.positionalFactors = factors;
     if (factors.length) {
@@ -347,21 +348,18 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
         }
     }
     const conditionalFork = corroborated
-        ? findConditionalFork(input.fen, line, probe!.lines)
+        ? findConditionalFork(input.fen, line, probe!.lines, corroboratedFactors)
         : null;
-    if (conditionalFork) {
-        result.mechanisms = mergeTacticalSequenceWitnesses([...result.mechanisms, conditionalFork]);
+    if (conditionalFork) result.conditionalFork = conditionalFork;
+    if (conditionalFork?.defenceConsequence) {
         result.tactical = {
             support: "supported",
             basis: "engine-supported",
             reasons: [
-                conditionalFork.description,
+                conditionalFork.defenceConsequence.description,
                 ...result.tactical.reasons.filter((reason) => !reason.startsWith("No relevant")),
             ],
         };
-        result.limitations.push(
-            "The fork is demonstrated against the shown alternative reply. The principal continuation avoids that material loss.",
-        );
     }
     if (corroborated && result.tactical.support !== "supported") {
         const recovery = findRecoveringFork(input.fen, line, branches[0]);
@@ -502,6 +500,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.localProofs = tactical?.localProofs ?? [];
     position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
     position.conditionalResources = tactical?.conditionalResources ?? [];
+    if (tactical?.conditionalFork) position.conditionalFork = tactical.conditionalFork;
     if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
     for (const move of viable) {
         const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;

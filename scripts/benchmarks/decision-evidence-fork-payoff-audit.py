@@ -39,7 +39,8 @@ def score(sample, reference, results):
             raise ValueError(f"Wrong exact move for {key}")
         decision = result.get("decision") or {}
         badge = "fork" in result["rootMotifs"]
-        evidence = ("fork" in decision.get("rootMotifs", []) or bool(scoped_witnesses(row, result)))
+        evidence = ("fork" in decision.get("rootMotifs", []) or bool(scoped_witnesses(row, result))
+                    or bool((decision.get("conditionalFork") or {}).get("defenceConsequence")))
         extra = bool(result.get("replyFork"))
         truth = reference["fork"]
         event = row["event"]

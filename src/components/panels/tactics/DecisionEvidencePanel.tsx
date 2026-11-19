@@ -80,6 +80,7 @@ function EvidenceSummary({
       : value.reasons.map((reason) => ({ label, reason, basis: basisLabels[value.basis] })),
   );
   const resources = assessment.conditionalResources;
+  const conditionalFork = assessment.conditionalFork;
   const conditionalMate = assessment.conditionalMate;
   return (
     <Paper withBorder p="xs">
@@ -125,6 +126,22 @@ function EvidenceSummary({
               {witness.description} {lineSan(witness.fen, witness.lineUci)}
             </Text>
           ))}
+        {expanded && conditionalFork && (
+          <Stack gap={4}>
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">
+                Fork if {conditionalFork.weakerReplySan}.{" "}
+              </Text>
+              {lineSan(conditionalFork.fen, conditionalFork.lineUci)}
+            </Text>
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">
+                Stockfish’s best reply.{" "}
+              </Text>
+              {lineSan(conditionalFork.fen, conditionalFork.bestReplyLineUci)}
+            </Text>
+          </Stack>
+        )}
         {expanded &&
           comparedLines?.map(({ label, san }) => (
             <Text key={label} size="xs" style={{ overflowWrap: "anywhere" }}>
@@ -156,6 +173,7 @@ function EvidenceSummary({
           ))}
         {(reasons.length > 2 ||
           resources.length > 0 ||
+          !!conditionalFork ||
           !!conditionalMate ||
           !!comparedLines?.length ||
           assessment.limitations.length > 0 ||

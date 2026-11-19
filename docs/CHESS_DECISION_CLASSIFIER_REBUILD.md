@@ -3531,3 +3531,72 @@ comparison. The model's incumbent input maps case IDs to whether
 the live replay supplied a root fork badge. The private records,
 weights and engine caches stay
 outside Git.
+
+## Conditional forks and their consequences
+
+A quiet fork can be real in one reply and be neutralized in the
+main line. The old Decision Evidence report added the conditional
+witness to the main mechanisms and promoted it to a supported
+tactical reason. In Hvar, `...exd4 Bf2 ...dxc3` and
+`Nxb6 ...Nc3 Nxa8` are legal, meaningful alternative lines. The
+strongest replies `Bxd4` and `...Nxb6` remove the forker without
+paying for the threatened material.
+
+Decision Evidence now records the weaker fork and the best reply
+together under Show evidence. The weaker line remains available
+for practice. It contributes a tactical justification to the
+verdict when the independently checked best defence has a linked
+consequence. The current proof covers a recapture that retains an
+exchange gain in both searches and the independently corroborated
+rook-file access created by a pawn recapture. Both searches must
+show the same exchange. A pawn captured before the fork defence
+cannot count again as a cost of answering it. Other material and
+positional evidence continues to enter the assessment independently.
+
+The synthetic `Qb4 Qxb4 cxb4` fixture stays mixed. The queen
+threatens both pieces, and answering with the queen exchange lets
+the c-pawn vacate the file for the rook. The best reply in each
+Hvar case now appears alongside its weaker alternative. Neither
+weaker fork determines the move verdict.
+
+The public test froze a 24-position reserve drawn from eight
+classical tournaments. A cheap Stockfish preview selected likely
+fork alternatives without using either classifier. The subsequent
+review read the exact root and separately searched legal reply
+frames before opening any predictions. Results refer to the
+fork's contribution to the played move, within this targeted sample.
+
+| Replayed sample | Previously supported reviewed forks | Revised supported reviewed forks | Previously overclaimed | Revised overclaims |
+| --- | ---: | ---: | ---: | ---: |
+| Fresh 24-position reserve | 3 / 4 | 3 / 4 | 10 / 17 | 0 / 17 |
+| Earlier 30-position reserve | 5 / 6 | 5 / 6 | 2 / 19 | 0 / 19 |
+| Earlier 88 played moves | 5 / 7 | 5 / 7 | 0 / 60 | 0 / 60 |
+
+All ten demoted fresh-reserve forks remain available under
+evidence with the same legal alternatives. The evaluations and
+search inputs match for both systems. Three fresh reference cases
+were uncertain. An unclassified `...Rc2` remains a mixed
+challenge involving a rook offer and the recapture `...bxc2`.
+The present proof covers neither that passed-pawn compensation
+nor all the ways a secondary threat can influence a defence.
+
+Across the 259 ordinary source replays, all report content matches
+apart from the version. Across 318 mistake replays, two position
+and move summaries lose support from a neutralized fork. Their
+mistake diagnoses and all other mistake reports match. The extra
+search selections match and this feature requests no engine work.
+The changes pass focused regressions. The source-built panel opens
+both lines with keyboard and mouse at widths of 320, 390 and 900
+pixels, and the examples display the expected distinct verdicts.
+Installed app verification is pending.
+
+**Reproduction.** See `benchmarks/decision-evidence/conditional-fork-consequences`
+for the public reserve, reviewed references, parameters and
+before/after results. Use `decision-evidence-conditional-fork-sample.py`
+with the recorded event archives and exclusion manifests. Search
+both arms on the same paired root and defence frames using
+`decision-evidence-engine.py` and
+`decision-evidence-fork-replies.py`. Run
+`decisionExactForkAudit.test.ts` followed by
+`decision-evidence-fork-payoff-audit.py`. Ordinary and mistake
+library replays use the existing release manifests.

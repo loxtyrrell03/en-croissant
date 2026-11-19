@@ -35,11 +35,17 @@ test.runIf(input && output)("reads exact-fork evidence in the live and decision 
             id: row.id,
             rootMotifs: rootMotifs.map(motif => motif.id),
             replyFork: findForkInReplies(row.fen, line, row.withReplies[0]?.lines ?? []),
+            position: decision && {
+                category: decision.position.category,
+                tactical: decision.position.tactical.support,
+                positional: decision.position.positional.support,
+            },
             decision: move && {
                 category: move.category,
                 tactical: move.tactical.support,
                 positional: move.positional.support,
                 rootMotifs: move.verifiedMotifs.map(motif => motif.id),
+                conditionalFork: move.conditionalFork,
                 mechanisms: move.mechanisms.filter(mechanism => mechanism.rootMoveInvolved && mechanism.mechanismPly === 1),
             },
         };

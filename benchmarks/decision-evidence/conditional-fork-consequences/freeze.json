@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "file": "conditionalForkEvidence.ts",
+      "sha256": "5ce257026bf58db52dc1c03981408ce79aa87ccd4c0a2666359ef6f5e3abbae2"
+    },
+    {
+      "file": "decisionAssessment.ts",
+      "sha256": "1cf5ffd65d0e0995eb29ad1d82776485cac75f8ea633c4ad99071eae5dc09408"
+    },
+    {
+      "file": "reserve.json",
+      "sha256": "77b4fab7e0efd6f3e56f26e115f5df6aa9290084596711baed067d10cd3246b4"
+    },
+    {
+      "file": "reserve-input.json",
+      "sha256": "3e11ef840703da744d52c4613205e1519c7fbd682e33b05018ce15a89b4c7b42"
+    },
+    {
+      "file": "reference.json",
+      "sha256": "a1bd2aaaf9a4611fda00901c5bcae3c2e76b626ee5459e110ce392d80ab30cad"
+    }
+  ],
+  "gate": "Remove at least one known conditional overclaim with no loss of any previously supported positive or newly supported reviewed negative. Retain alternative evidence. Preserve the known mixed queen exchange. Use identical Stockfish replies."
+}

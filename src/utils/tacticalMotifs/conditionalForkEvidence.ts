@@ -1,18 +1,82 @@
 import { makeFen } from "chessops/fen";
 import { makeSquare } from "chessops/util";
-import { replayTacticalLine, tacticalExchangeGain } from "./causalTactics";
+import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
+import type { ComparativePositionalEvidence } from "./positionalTransitions";
 import type { TacticalSequenceWitness } from "./tacticalSequenceEvidence";
 
-/** The best response can neutralise a threat so completely that no gain
- * appears in its PV. Show a fork only when another searched reply really
- * permits one of the threatened captures, and the best reply answers the
- * threats. This witness describes that branch, not an inevitable win. */
+type ForkDefenceConsequence = {
+    kind: "material" | "rook-file";
+    description: string;
+};
+
+export type ConditionalForkEvidence = TacticalSequenceWitness & {
+    bestReplyLineUci: string[];
+    weakerReplySan: string;
+    defenceConsequence: ForkDefenceConsequence | null;
+};
+
+function defenceConsequence(
+    fen: string,
+    root: DecisionEngineLine,
+    best: DecisionEngineLine,
+    targets: number[],
+    corroboratedFactors: readonly ComparativePositionalEvidence[],
+): ForkDefenceConsequence | null {
+    const bestLine = [root.pvUci[0], ...best.pvUci];
+    const steps = replayTacticalLine(fen, bestLine.slice(0, 9));
+    const [fork, answer, recapture] = steps;
+    if (
+        !answer || !recapture?.capture ||
+        !targets.includes(answer.move.from) ||
+        recapture.move.to !== fork.move.to ||
+        !bestLine.slice(0, 3).every((move, index) => root.pvUci[index] === move)
+    )
+        return null;
+    const prefix = `The best reply ${answer.san} removes the fork piece.`;
+    const gain = recapture.balance - fork.balance;
+    if (gain >= 90) {
+        const settles = (replay: TacticalReplayStep[]) =>
+            replay.some((step, index) =>
+                index >= 4 &&
+                step.balance >= fork.balance + gain &&
+                replay[index - 2].balance === step.balance &&
+                replay.slice(2, index + 1).every(ply => ply.balance >= recapture.balance) &&
+                replay.slice(index - 1, index + 1).every(ply =>
+                    !ply.capture && !ply.move.promotion && !ply.after.isCheck(),
+                ),
+            );
+        if (settles(replayTacticalLine(fen, root.pvUci.slice(0, 9))) && settles(steps)) {
+            return {
+                kind: "material",
+                description: `${prefix} The recapture ${recapture.san} leaves the attacker ${gain / 100} material points ahead in the exchange in both searches.`,
+            };
+        }
+    }
+    const file = makeSquare(recapture.move.from)[0];
+    if (
+        recapture.before.board.get(recapture.move.from)?.role === "pawn" &&
+        corroboratedFactors.some(factor =>
+            factor.feature === "rook-file-access" && factor.side === fork.before.turn &&
+            factor.squareOrFile === file && factor.firstPly === 3 && factor.rookUsedOpenedFile,
+        )
+    ) {
+        return {
+            kind: "rook-file",
+            description: `${prefix} The recapture ${recapture.san} opens the ${file}-file for the rook in the main continuation.`,
+        };
+    }
+    return null;
+}
+
+/** Keep a legal fork from a weaker reply distinct from the consequence of
+ * answering its threats in the strongest searched line. */
 export function findConditionalFork(
     fen: string,
     root: DecisionEngineLine,
     replies: DecisionEngineLine[],
-): TacticalSequenceWitness | null {
+    corroboratedFactors: readonly ComparativePositionalEvidence[] = [],
+): ConditionalForkEvidence | null {
     const rootStep = replayTacticalLine(fen, root.pvUci.slice(0, 1))[0];
     const best = replies[0];
     if (
@@ -108,7 +172,10 @@ export function findConditionalFork(
                 support: "legal-continuation",
                 rootMoveInvolved: true,
                 lineUci: line,
-                description: `${rootStep.san} attacks both ${makeSquare(payoff.move.to)} and ${makeSquare(other)}. The engine's best reply ${mainReply.san} removes the attacker. After ${defence.san}, ${payoff.san} wins material in the separate continuation.`,
+                description: `${rootStep.san} attacks both ${makeSquare(payoff.move.to)} and ${makeSquare(other)}. After ${defence.san}, ${payoff.san} collects one of the targets.`,
+                bestReplyLineUci: [rootStep.uci, ...best.pvUci.slice(0, 8)],
+                weakerReplySan: defence.san,
+                defenceConsequence: defenceConsequence(fen, root, best, targets, corroboratedFactors),
             };
         }
     }

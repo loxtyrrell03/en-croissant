@@ -1,0 +1,173 @@
+{
+  "scope": "The exact played fork contributes a grounded tactical justification, including a verified principal concession. One reviewer read only engine frames before classifications.",
+  "cases": [
+    {
+      "id": "fork-benasque-bef2b608e25a22e0-26",
+      "event": "benasque",
+      "moveUci": "g5e7",
+      "fork": false,
+      "rationale": "Qxe7 exchanges the bishop that just captured on e7. The stronger defence leaves no fork-specific loss."
+    },
+    {
+      "id": "fork-benasque-33df5acd4741d529-71",
+      "event": "benasque",
+      "moveUci": "c7c2",
+      "fork": true,
+      "rationale": "Rc2 offers a rook to put its b-pawn on c2. The second reply Rxb3 permits Rxd2 and Qxb3. The fork backs a passed-pawn concession in the best line."
+    },
+    {
+      "id": "fork-benasque-b45d1667f1306e88-48",
+      "event": "benasque",
+      "moveUci": "b6d7",
+      "fork": false,
+      "rationale": "Nxd7 first takes a bishop. Qxd7 trades it for a knight; the subsequent Nxc6 with the other knight is a separate capture."
+    },
+    {
+      "id": "fork-benasque-be6163bf8c9ae84a-27",
+      "event": "benasque",
+      "moveUci": "d5e4",
+      "fork": false,
+      "rationale": "Bxe4 removes the pawn that already took a knight. The later Nd3+ is a separate tactical action."
+    },
+    {
+      "id": "fork-benasque-99b1628b4e6cd306-33",
+      "event": "benasque",
+      "moveUci": "f5e4",
+      "fork": false,
+      "rationale": "Qxe4 exchanges the pawn for the pawn captured on e4. The alternative gxf3 win is avoidable."
+    },
+    {
+      "id": "fork-dubai-2a27ab9a1a05b1c4-43",
+      "event": "dubai",
+      "moveUci": "a5b3",
+      "fork": false,
+      "rationale": "axb3 makes a knight-for-knight exchange. The later captures follow another line of play."
+    },
+    {
+      "id": "fork-dubai-388405e71fb84bbb-39",
+      "event": "dubai",
+      "moveUci": "d5c4",
+      "fork": true,
+      "rationale": "The attacked bishop takes on c4. The other pawn recaptures it, retaining bishop for pawn even after Qxc4. The positional or material value of the junction is independent of the weak defence."
+    },
+    {
+      "id": "fork-dubai-f3497f36289a4f07-31",
+      "event": "dubai",
+      "moveUci": "a5b3",
+      "fork": false,
+      "rationale": "axb3 exchanges the bishop and knight without further concession. The tempting Bxb4 allows a separate exchange loss."
+    },
+    {
+      "id": "fork-dubai-d97d569d25fd990f-34",
+      "event": "dubai",
+      "moveUci": "d4b6",
+      "fork": false,
+      "rationale": "Nxb6 completes the queen trade. The wing bishop's plan begins after the fork is already gone."
+    },
+    {
+      "id": "fork-sitges-4412ec3b9eadf95b-84",
+      "event": "sitges",
+      "moveUci": "d6e8",
+      "fork": true,
+      "rationale": "Ne8 threatens the c7 and f6 rooks. The best Qxe8 removes the knight but drops protection of f6, allowing Qxf6. Rf7 allows Nxc7."
+    },
+    {
+      "id": "fork-sahel-9c2acff57c2267e7-51",
+      "event": "sahel",
+      "moveUci": "h5g4",
+      "fork": false,
+      "rationale": "Qxg4 completes an equal pawn exchange. The apparent loss of f3 occurs only after a much weaker queen move."
+    },
+    {
+      "id": "fork-sahel-f2923cb35580af9f-36",
+      "event": "sahel",
+      "moveUci": "c5d6",
+      "fork": false,
+      "rationale": "Bxd6 removes the pawn. The later even exchanges on d5 and c7 do not pay for the original threat."
+    },
+    {
+      "id": "fork-sahel-c1a6f67b2a2a9e39-54",
+      "event": "sahel",
+      "moveUci": "d4c6",
+      "fork": null,
+      "rationale": "Bxc6 Rxc6 trades minors and gives White rook activity on a6. Whether blocking the fork itself required a meaningful positional concession is unclear."
+    },
+    {
+      "id": "fork-sahel-c83d250d0a876495-43",
+      "event": "sahel",
+      "moveUci": "c7c3",
+      "fork": null,
+      "rationale": "Qxc3 Rxc3 is an even queen exchange with the rook advancing. The lasting importance of that rook access is unclear."
+    },
+    {
+      "id": "fork-magdeburg-000f5cc6a72c34b2-44",
+      "event": "magdeburg",
+      "moveUci": "a5d2",
+      "fork": false,
+      "rationale": "Qxd2 Rxd2 trades queens and retains the original forked pieces other than the queen. Later gains run through a different exchange."
+    },
+    {
+      "id": "fork-magdeburg-30a2d20db3d5007c-46",
+      "event": "magdeburg",
+      "moveUci": "d4e6",
+      "fork": null,
+      "rationale": "Bxe6 removes the knight, and the later d5 exchange gives White something tangible. The exact link between neutralizing the fork and that later payoff is unclear."
+    },
+    {
+      "id": "fork-benidorm-f904a0004f5e4c50-46",
+      "event": "benidorm",
+      "moveUci": "d1d7",
+      "fork": false,
+      "rationale": "Rxd7 initially takes a queen. The best Rxd7 neutralizes any subsequent fork; the original queen capture remains a separate tactical reason."
+    },
+    {
+      "id": "fork-benidorm-5238ef15adb12a13-26",
+      "event": "benidorm",
+      "moveUci": "g5e7",
+      "fork": false,
+      "rationale": "Qxe7 completes an even exchange of the bishops without further fork gain."
+    },
+    {
+      "id": "fork-benidorm-8a61419e7412ecb2-83",
+      "event": "benidorm",
+      "moveUci": "f4d3",
+      "fork": false,
+      "rationale": "Qxd3 removes the knight and trades the rook the knight already captured. Rxb4 is a separate continuation."
+    },
+    {
+      "id": "fork-benidorm-57e6de48d3d097e0-29",
+      "event": "benidorm",
+      "moveUci": "c6d4",
+      "fork": false,
+      "rationale": "Nxd4 Qxd4 exchanges the knights. The queen's later pawn capture belongs to a different mechanism."
+    },
+    {
+      "id": "fork-benidorm-9caa1d4307f43a3a-38",
+      "event": "benidorm",
+      "moveUci": "a4c6",
+      "fork": false,
+      "rationale": "Nxc6 trades the bishop for a knight. The strongest continuation does not concede one of the threatened rooks or bishops."
+    },
+    {
+      "id": "fork-mona-karff-5b2dcf4ea2205002-34",
+      "event": "mona-karff",
+      "moveUci": "c2c3",
+      "fork": false,
+      "rationale": "Qxc3 bxc3 exchanges queens. The best line keeps a major advantage for Black and shows no supported strategic concession for White."
+    },
+    {
+      "id": "fork-aruba-e0fc28fdb2a19cbb-40",
+      "event": "aruba",
+      "moveUci": "d2e4",
+      "fork": true,
+      "rationale": "Rxe4 Bxe4 concedes a rook for the knight. Qe7 allows Nxd6 in the separate line. Both continuations explain the double attack on the queen and bishop."
+    },
+    {
+      "id": "fork-aruba-62ec44a99176a16d-29",
+      "event": "aruba",
+      "moveUci": "e4d2",
+      "fork": false,
+      "rationale": "Qxd2 removes the knight after a minor-piece capture. The later Nxf1 in the weak line is avoidable."
+    }
+  ]
+}

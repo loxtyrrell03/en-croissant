@@ -1,0 +1,18 @@
+{
+  "protocol": 2,
+  "engine_sha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "sample_sha256": "a6818cdf24c45f24c42e9be3673d97fc2542c948c4617b572b9e85f393fd585e",
+  "split": "validation",
+  "positions": 24,
+  "nodes": [
+    60000,
+    600000,
+    300000
+  ],
+  "threads": 1,
+  "hash_mb": 64,
+  "comparison_nodes_per_recorded_move": "Final adaptive root budget",
+  "minimum_depth": 18,
+  "maximum_root_nodes": 2400000,
+  "category_scope": "Source categories and existing labels require independent review"
+}
