@@ -417,6 +417,87 @@ These safeguards pass two new freeze checks and 15 total Python checks, full
 TypeScript and scoped lint. They do not themselves supply reference accuracy,
 expert review or held-out results.
 
+## Frozen candidate evaluation
+
+The v13 freeze at `768f2006` covers 124 positions and 137 reviewed questions.
+Reference notes for all cases were saved before classification, using legal
+Stockfish continuations and, where available, the source exercises. These are
+single-reviewer results. The independent collection is puzzle enriched and
+classical errors were sampled alongside near-best moves. Uncertain labels
+are excluded. Exact input, source, engine and reference hashes are retained
+with the private reports.
+
+| Reviewed question and dimension | Positives | Old TP / FP | v13 TP / FP |
+|---|---:|---:|---:|
+| Course move, tactical | 35 | 7 / 1 | 18 / 1 |
+| Course move, positional | 24 | 0 / 0 | 4 / 3 |
+| Course move, mixed | 9 | 0 / 0 | 0 / 2 |
+| Independent puzzle move, tactical | 47 | 27 / 0 | 26 / 0 |
+| Independent puzzle move, positional | 6 | 0 / 0 | 0 / 3 |
+| Independent puzzle move, mixed | 5 | 0 / 0 | 0 / 3 |
+| Classical mistake, tactical | 6 | 1 / 0 | 1 / 0 |
+| Classical mistake, positional | 6 | 0 / 0 | 0 / 0 |
+| Classical mistake, mixed | 1 | 0 / 0 | 0 / 0 |
+
+On the reviewed course moves, tactical recall went from 20% to 51%, with
+precision 7/8 and 18/19 respectively. There were nine reviewed tactical
+negatives. The independent puzzle slice has no reviewed tactical negatives,
+so it supplies recall evidence and cannot establish false positive control.
+The small course position-character subset detected 1/4 tactical positives
+and 3/13 positional positives, with no reviewed negatives. It offers limited
+evidence about the independent position dimensions.
+
+Root motif checks were selective. The candidate recovered the course's
+reviewed discovered attack and skewer (1/1 each, baseline 0/1), missed two
+clearances and one root deflection, and produced one fork false positive.
+Independent fork recall improved from 4/7 to 5/7 with zero false positives
+on 25 reviewed fork negatives. Independent discovered attacks stayed 2/2,
+between-move insertions stayed 1/2, and three deflections, two back-rank-mate
+mechanisms, one pin and one skewer remained missed. Per-motif precision with
+few or no explicit negatives remains poorly measured.
+
+Root search consumed 357.7 aggregate engine seconds, with cohort medians of
+2.53 to 3.24 seconds per position. Separate replies consumed 452.6 seconds
+over 290 searches and targeted captures added 15.4 seconds over 19 searches.
+Root totals exclude the shallow comparison baseline and extra played-move
+searches. Baseline classifier medians ranged from 56 to 139 milliseconds;
+candidate analysis added another 30 to 39 milliseconds. These timings use
+up to four one-thread engines in parallel and do not represent app latency.
+
+The held-out audit runs in Vitest's Node environment. The browser-simulated
+default test environment resolves the freeze module's import URL incorrectly.
+Set `DECISION_AUDIT_SPLIT=validation`, `DECISION_ENGINE_PROFILE=v13heldout`,
+the cohort, exact freeze and reference, and run the audit with
+`vitest run --environment node`. Rerun the scorer on the matching saved
+reference bytes. Once these results are used to improve the design, further
+accuracy claims require fresh game groups.
+
+## Tactics panel integration
+
+The existing Tactics panel adds **Analyse position** and **Analyse last
+move**. The latter searches the board before the move and explicitly compares
+its actual result with the engine's choice. The result shows position
+character, move justification and any measured mistake, with SAN lines in
+expanded evidence. The current board stays in place. The tactical scan and
+its existing motif previews remain available because the frozen candidate
+has uneven results across cohorts and incomplete mixed and mistake coverage.
+
+The deeper check is on demand and uses bounded one-thread searches. It checks
+the exact board, legal line and search identity, preserving the available game
+history and refusing losing claims across a known repetition boundary. Separate
+reply and targeted capture searches only run within the session budget.
+Aborting, changing the board or changing engines releases the owned search and
+worker. The currently mounted board and engine reuse completed results for
+the same move. Saved review data is independent of this exploratory report.
+
+Browser verification at 320, 390 and 900 px exercised the rendered results,
+cancel, evidence expansion, keyboard help and last-move analysis. A legal
+Stockfish evidence fixture verified the actual worker and displayed the
+conditional `axb5 Qxe2#` refutation. This verification used an isolated
+search adapter for the browser. Native routing and engine lifetime are covered
+by the existing transport and the new mocked lifecycle checks; installed
+native-window delivery remains unverified.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and

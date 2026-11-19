@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { IconCpu, IconRefresh } from "@tabler/icons-react";
 import { TacticalEndgameResult } from "./TacticalEndgameResult";
+import { DecisionEvidencePanel } from "./DecisionEvidencePanel";
 import { makeUci } from "chessops";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
@@ -564,6 +565,23 @@ function TacticalClassifierPanel({
         }
         size="xs"
       />
+
+      {selectedEngine && (
+        (state.status === "complete" && state.scan.fen === position.fen) ||
+        (state.status === "finished" && position.previousFen && position.previousMoveUci)
+      ) && (
+        <DecisionEvidencePanel
+          key={JSON.stringify([activeTab, scanCacheKey, selectedEngine.path, selectedEngine.settings])}
+          engine={selectedEngine}
+          current={state.status === "complete" ? { fen: position.fen, history: tacticalHistory } : undefined}
+          previous={position.previousFen && position.previousMoveUci ? {
+            fen: position.previousFen,
+            playedMoveUci: position.previousMoveUci,
+            history: tacticalHistory ? { fen: tacticalHistory.fen, moves: tacticalHistory.moves.slice(0, -1) } : undefined,
+          } : undefined}
+          previousSan={position.lastMoveSan}
+        />
+      )}
 
       {localEngines.length === 0 ? (
         <Alert color="orange" title="A local engine is required">
