@@ -30,8 +30,9 @@ import {
     type TacticalMistakeEpisode,
 } from "./tacticalMistakeEpisode";
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
+import { findConditionalFork } from "./conditionalForkEvidence";
 
-export const DECISION_ASSESSMENT_VERSION = 3;
+export const DECISION_ASSESSMENT_VERSION = 4;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -294,6 +295,23 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             };
             result.limitations.push(result.conditionalResources[0].limitation);
         }
+    }
+    const conditionalFork = corroborated
+        ? findConditionalFork(input.fen, line, probe!.lines)
+        : null;
+    if (conditionalFork) {
+        result.mechanisms = mergeTacticalSequenceWitnesses([...result.mechanisms, conditionalFork]);
+        result.tactical = {
+            support: "supported",
+            basis: "engine-supported",
+            reasons: [
+                conditionalFork.description,
+                ...result.tactical.reasons.filter((reason) => !reason.startsWith("No relevant")),
+            ],
+        };
+        result.limitations.push(
+            "The fork is demonstrated against the shown alternative reply. The principal continuation avoids that material loss.",
+        );
     }
     const certificates =
         input.rootCertificates

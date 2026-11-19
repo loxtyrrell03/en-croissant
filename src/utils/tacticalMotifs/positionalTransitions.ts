@@ -278,6 +278,12 @@ export function corroboratePositionalEffects(
     return rootFeatures(fen, rootLine).flatMap((item): ComparativePositionalEvidence[] => {
         const corresponding = other.find((effect) => key(effect) === key(item));
         if (!corresponding) return [];
+        if (
+            item.feature === "rook-file-access" &&
+            !item.rookUsedOpenedFile &&
+            !(corresponding.feature === "rook-file-access" && corresponding.rookUsedOpenedFile)
+        )
+            return [];
         const rootWindow = materialWindow(rootLine, item),
             replyWindow = materialWindow(separatelySearchedBestReply, corresponding);
         // A persistent structural change can be the compensation for a
@@ -291,7 +297,9 @@ export function corroboratePositionalEffects(
         if (generalActivity && (!rootWindow || !replyWindow)) return [];
         return [
             {
-                ...item,
+                ...(item.feature === "rook-file-access" && !item.rookUsedOpenedFile
+                    ? corresponding
+                    : item),
                 comparisonMoveUci: null,
                 comparisonGapCp: null,
                 supportInComparison: true,
@@ -322,7 +330,9 @@ export function comparePositionalTransitions(
         best.mate != null
     )
         return [];
-    const candidates = rootFeatures(fen, best);
+    const candidates = rootFeatures(fen, best).filter(
+        (item) => item.feature !== "rook-file-access" || item.rookUsedOpenedFile,
+    );
     const result: ComparativePositionalEvidence[] = [];
     for (const alternative of alternatives) {
         const evidence = measureDecisionLine(fen, alternative);

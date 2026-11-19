@@ -577,6 +577,33 @@ rose to 2/8 with no detections on the 15 reviewed positional negatives.
 The original v17 held-out result above stays frozen. The replay cannot be
 used as a new independent estimate.
 
+## Tactical choices with lasting gains
+
+The best reply can remove the piece creating a fork and avoid all material
+loss. The candidate checks whether two material targets became newly
+available to the moved piece, whether the best reply takes that piece, and
+whether a separate worse reply actually permits one of the legal captures.
+The threatened target must survive local exchange analysis. The material gain
+must persist through the bounded aftermath. This reuses MultiPV reply
+evidence from the existing search budget.
+
+A quiet queen move can induce a queen exchange and a pawn recapture that
+clears a rook file. Both searches must show the same structural consequence,
+and a rook must actually use the opened file in at least one. A separate
+feature follows an advanced passed pawn that persists in a middlegame with
+several pieces. Short pawn races and promotions inside the evidence window
+do not qualify as this positional feature.
+
+On the v13 development replay, the paired fork and rook-file rule recovers
+Qb4 as mixed. The best reply trades queens and opens the c-file; the separate
+...Rd6 branch permits Qxa5. The d7 advance also becomes mixed by pairing the
+concrete king attack with a lasting passer. v21 finds 19/35 tactical,
+6/24 positional and 2/9 mixed course positives. False positives on the
+reviewed labels remain 1, 3 and 2 respectively. The original v13 held-out
+results remain separate. The 40-position course reserve is independently
+sampled with unique identified player pairs, excluding all previous pairs
+and exact roots. See `decision-evidence-course-reserve.mjs`.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and

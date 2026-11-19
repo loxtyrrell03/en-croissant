@@ -209,6 +209,7 @@ test.skipIf(!directory)(
                 "conditionalTacticalResources.ts",
                 "tacticalMistakeEpisode.ts",
                 "decisionMateConsequence.ts",
+                "conditionalForkEvidence.ts",
                 "tacticalSequenceEvidence.ts",
                 "positionalTransitions.ts",
                 "strategicRootEffects.ts",

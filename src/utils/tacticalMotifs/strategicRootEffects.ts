@@ -12,7 +12,9 @@ export type StrategicRootEffect = {
         | "piece-reach"
         | "piece-restriction"
         | "pawn-lock"
-        | "bishop-pair-removal";
+        | "bishop-pair-removal"
+        | "passed-pawn-progress"
+        | "rook-file-access";
     side: Color;
     squareOrFile: string;
     description: string;
@@ -22,7 +24,9 @@ export type StrategicRootEffect = {
     /** Exact observed units; these are not engine score contributions. */
     before: number;
     after: number;
-    unit: "squares" | "relative-rank" | "locked-pawn-pairs" | "bishop-colours";
+    unit: "squares" | "relative-rank" | "locked-pawn-pairs" | "bishop-colours" | "files";
+    /** A rook occupies the opened file in this actual continuation. */
+    rookUsedOpenedFile?: boolean;
 };
 
 /** Geometric reach excludes friendly occupancy and opposing pawn attacks.
@@ -93,6 +97,76 @@ export function extractStrategicRootEffects(
         .diff(root.before.board.pawn)
         .diff(root.before.board.king)
         .size();
+    const isPassed = (position: Chess, square: Square) =>
+        ![...position.board.pawn.intersect(position.board[opposite(side)])].some(
+            (other) =>
+                Math.abs((other % 8) - (square % 8)) <= 1 && rank(other, side) > rank(square, side),
+        );
+    if (
+        piece.role === "pawn" &&
+        rank(root.move.to, side) >= 6 &&
+        nonPawnPieces >= 4 &&
+        isPassed(root.after, root.move.to)
+    ) {
+        add({
+            feature: "passed-pawn-progress",
+            side,
+            squareOrFile: makeSquare(root.move.to)[0],
+            description: `${root.san} advances a passed pawn to the ${rank(root.move.to, side)}th rank. The same pawn stays advanced and passed in the ensuing position.`,
+            before: rank(root.move.from, side),
+            after: rank(root.move.to, side),
+            unit: "relative-rank",
+            lastConsecutivePly: lasting(
+                root.move.to,
+                (position, square) =>
+                    rank(square, side) >= rank(root.move.to, side) && isPassed(position, square),
+            ),
+        });
+    }
+    // The original queen move can trigger an exchange whose pawn recapture
+    // opens a file. Record only the exact file vacated by the recapturing pawn
+    // and a rook actually using it, not any later change in pawn structure.
+    const [, reply, recapture] = steps;
+    if (
+        piece.role === "queen" &&
+        !root.capture &&
+        reply?.capture === 900 &&
+        reply.move.to === root.move.to &&
+        recapture?.capture === 900 &&
+        recapture.move.to === root.move.to &&
+        recapture.before.board.get(recapture.move.from)?.role === "pawn"
+    ) {
+        const file = recapture.move.from % 8;
+        let last = 2;
+        let used = false;
+        for (let index = 2; index < Math.min(10, steps.length); index++) {
+            const position = steps[index].after;
+            if (
+                [...position.board.pawn.intersect(position.board[side])].some(
+                    (pawn) => pawn % 8 === file,
+                )
+            )
+                break;
+            used ||= [...position.board.rook.intersect(position.board[side])].some(
+                (rook) => rook % 8 === file,
+            );
+            last = index + 1;
+        }
+        if (last >= 6 && !root.after.board.rook.intersect(root.after.board[side]).isEmpty())
+            result.push({
+                feature: "rook-file-access",
+                side,
+                squareOrFile: makeSquare(recapture.move.from)[0],
+                description: `After ${root.san} ${reply.san} ${recapture.san}, the pawn vacates the ${makeSquare(recapture.move.from)[0]}-file.${used ? " A rook uses it in the continuation." : ""}`,
+                firstPly: 3,
+                lastConsecutivePly: last,
+                before: 0,
+                after: 1,
+                unit: "files",
+                support: "board-fact",
+                rookUsedOpenedFile: used,
+            });
+    }
     if (
         piece.role === "pawn" &&
         root.capture === 0 &&
