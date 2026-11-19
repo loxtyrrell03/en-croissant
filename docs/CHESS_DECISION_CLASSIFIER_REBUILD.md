@@ -1931,3 +1931,93 @@ neither the tactical nor positional reference. This positional change
 remains experimental because the frozen evaluation established no
 gain. The shortlist findings point to the limited set of explanations
 that search can verify given its current branches and checks.
+
+## Iteration 35 — material recovery and mating replies
+
+The earlier verifier expected a short tactic to leave a material gain
+or appear in the principal reply. That can hide two different reasons
+to calculate a move. A fork can recover a piece after an apparent loss.
+A check can force an accurate evasion even when the best reply prevents
+mate. Both evidence paths now reuse the ordinary root and reply searches.
+
+- **Recovery after a capture.** The root and independent reply searches
+  must show the same capture, fork and payoff. The verifier checks that a
+  direct recapture would not already recover the piece, then accounts for
+  the opponent's recapture on the fork target. It retains the fork on
+  its actual ply and describes recovery. It does not credit the opening
+  move with winning a new piece or infer an unrelated mistake.
+- **Mate after an evasion.** The checker requires a legal root check and
+  a separately searched reply frame with a finite best reply. A weaker
+  legal evasion must have a complete mating line. The local proof checks
+  the mating attack against every legal answer to its first move. The
+  report identifies the evasion and the safer engine reply and shows the
+  mating continuation under Show evidence.
+
+In a reviewed development game from Cappelle, `...cxb6 Qxd3 ...e4`
+forks the queen and knight. After either queen retreat in the two
+searches, `...exf3` takes White's knight and `Qxf3` returns the pawn.
+A second development game recovered a mate after `...Bxd6+ Kg2`
+that the main line avoids with `Rxd6`. The new tactical position evidence
+covered both previously missed examples in a 78-board development
+scan. No held-out board supplied a recovering fork through the new rule.
+
+| Frozen position cohort | Boards | Reviewed tactical positives | v33 tactical TP / FP | v35 tactical TP / FP | Positional TP / FP, both | Mixed TP / FP, both |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Ordinary classical games | 32 | 14 | 10 / 1 | 10 / 1 | 7 / 0 | 0 / 0 |
+| Recorded checks with two to five evasions | 12 | 8 | 4 / 0 | 4 / 0 | 1 / 0 | 0 / 0 |
+| Broadcast-annotation evasion sample | 11 | 8 | 3 / 0 | 5 / 0 | 1 / 0 | 1 / 0 |
+| Independent legal mate branches and controls | 20 | 17 | 9 / 0 | 12 / 0 | 0 / 0 | 0 / 0 |
+
+The 32 ordinary boards came from Bavarian Open and Trois Vallées.
+The 12-board challenge uses one recorded check per game from the
+Polish semifinal, with a stable hash choosing among checks allowing
+two to five legal evasions. Two supplementary cohorts came from
+the European Youth Girls U18 and Bengbu Open. The first selected one
+finite-to-mate annotation and ten stable-evaluation evasions. The
+second used an independent python-chess enumeration to select ten
+boards where a recorded check has a short checking mate after one
+evasion and at least one defence outside that proof, and ten boards
+without a checking mate within two. Samples were kept disjoint by
+game and selected board. These targeted sets measure conditional mating
+branches, and their class frequencies differ from ordinary play.
+[Bavarian Open](https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-6/lPRvr2du)
+[Trois Vallées](https://lichess.org/broadcast/tournoi-des-trois-vallees-2026/round-4/ZKsR0tLj)
+[Polish semifinal](https://lichess.org/broadcast/pofinay-indywidualnych-mistrzostw-polski-2026-open/round-4/uMqzNaDV)
+[European Youth Girls U18](https://lichess.org/api/broadcast/EQTA1dP9.pgn)
+[Bengbu Open](https://lichess.org/api/broadcast/3yQeQYED.pgn)
+
+References came from one engine-assisted review saved before the
+candidate output, using ordinary root lines and recorded replies.
+The independent selector supplied challenge cases and controls,
+with tactical and positional labels reviewed separately.
+The supplementary sets added five reviewed tactical positives with
+zero added false positives. For example, in a Girls U18 queen ending,
+`...Qh7+ Kg4` allows mate in two starting with `...f5+`, whereas the
+engine prefers `Kg2`. The move report also retains a mating branch for
+some played checks outside the position's competitive band, such as
+`...h2+ Kxh2 ...Qh3+` in Bengbu. The overall position category does
+not use that weaker root choice. Mistake reports matched the baseline
+in all 75 positions. Positional and mixed coverage still need work.
+
+No new engine queries are required. The added proof avoided 11.74M
+requested optional nodes over the 31 supplementary positions.
+Median classifier time on the ordinary set was 26.5 ms for v33
+and 27.7 ms for v35, excluding engine searches. The committed tactical
+core reproduced the assessments on the 44 initial boards. The
+source panel and worker replayed the recovery and mating examples in
+Chrome at 320, 390 and 900 pixels and verified keyboard access to both
+evidence lines. Installed desktop verification is pending.
+
+**Reproduction.** Samples, separately reviewed references, freeze
+receipts and a compact report are under
+`benchmarks/decision-evidence/defensive-resources-v35`. Use the
+ordinary root, reply, shared-reply and six-choice nomination commands
+from v33 with profile `v35`. Run the candidate audit with all three
+optional verification flags enabled, scoring both the candidate and
+the v33 comparator on those same searches. The two supplementary
+manifests come from `decision-evidence-mating-defence-sample.py`, with
+`--legal-witness` for the independent sample. Input file hashes use
+the original bytes. The two Python sampler tests and four new
+classifier regressions cover branch legality, the missing independent
+proof, and unavailable mating evidence. The focused TypeScript suite
+passed 133 tests with one existing skip.

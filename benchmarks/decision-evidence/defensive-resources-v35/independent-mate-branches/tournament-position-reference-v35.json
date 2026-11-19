@@ -1,0 +1,188 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "Focused check-evasion sample. Strata select cases and do not assign the reference. Single engine-assisted reviewer used ordinary root and played replies before seeing the candidate outputs."
+  ],
+  "cases": [
+    {
+      "id": "mating-defence-bengbu-a-2026-7b4a93d487ff2edd-66",
+      "scope": "position-character",
+      "moveUci": "e4f6",
+      "gameMoveUci": "e4f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nf6+ exchanges the knight with tempo before the queen and rooks can reorganize. The two quieter queen choices allow damaging checks or a queen exchange. The g3 passer shapes all routes."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-ca225767d101ad59-47",
+      "scope": "position-character",
+      "moveUci": "b6c4",
+      "gameMoveUci": "g6g2",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The rook and queen attack the king in the two higher-rated capture lines. The played Rxg2+ allows Kxg2 and yields a substantially weaker attack with a different defence."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-8571812d462ab6e7-41",
+      "scope": "position-character",
+      "moveUci": "d8d6",
+      "gameMoveUci": "d8d1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxd1+ is competitive and demands a particular answer to the check. Exchanging rooks buys queen activity, while the other leading moves keep the rook active on the d-file."
+    },
+    {
+      "id": "mating-defence-european-youth-g18-2026-5ab4c705e4c91856-117",
+      "scope": "position-character",
+      "moveUci": "g7f8",
+      "gameMoveUci": "c2h7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qh7+ and Qc2+ keep the queen active against the king and control the advancing b-pawn. Kg2 is the reliable defence in the competitive checking line."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-d2f2c413aa498f31-55",
+      "scope": "position-character",
+      "moveUci": "c6g6",
+      "gameMoveUci": "c6g6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rg6+ displaces the king before the rooks invade the second rank. Rxc4 or Re6 allows a rook exchange or a different defensive formation without the same invasion."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-b962de4603eed2e4-61",
+      "scope": "position-character",
+      "moveUci": "f5g3",
+      "gameMoveUci": "f5g3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Nxg3+ gives Black a forcing recovery after Rxg3, while the queen checks alone let White retain the better-coordinated attack."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-1cff1d8d0e9dfd34-83",
+      "scope": "position-character",
+      "moveUci": "c3d2",
+      "gameMoveUci": "h3h2",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The two leading moves require calculation against the bishop checks and the pawn on g2. The worse queen move fails to answer the threat on d7."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-18001e8391ddfa54-83",
+      "scope": "position-character",
+      "moveUci": "h3f3",
+      "gameMoveUci": "e5g4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rf3+ displaces the king and supports the d-pawn promotion sequence. The alternative king or knight move changes how the passer is covered."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-b2699d5d8d90fe90-79",
+      "scope": "position-character",
+      "moveUci": "d6d3",
+      "gameMoveUci": "d6d3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rd3+ restricts the king and enables the passed pawn advance through more checks. Pushing c3 immediately is also viable. Kf5 allows White to liquidate the passer."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-be5b7d0330b414b4-51",
+      "scope": "position-character",
+      "moveUci": "d1e1",
+      "gameMoveUci": "d1e1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rxe1+ forces a king move before taking the other bishop on b1. Capturing on b1 first or moving the king lets White preserve more counterplay."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-b635f5a1e45d2b29-51",
+      "scope": "position-character",
+      "moveUci": "a8c8",
+      "gameMoveUci": "e5f4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Black needs a concrete answer to threats against the uncastled king and bishop. Rc8 applies pressure to c4, while Qf4+ still allows the queen's invasion."
+    },
+    {
+      "id": "mating-defence-european-youth-g18-2026-def552003ee6b040-41",
+      "scope": "position-character",
+      "moveUci": "f4e2",
+      "gameMoveUci": "f4e2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Ne2+ creates the knight entry to c3 with tempo. Nb6 or b5 instead allows White heavy-piece tactics on the b-file."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-d92f209748af4047-100",
+      "scope": "position-character",
+      "moveUci": "g4g8",
+      "gameMoveUci": "g4g8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rg8+ restrains the king before Ra8 defends the a-pawn from behind. The other moves let Black take the passer and hold much more easily."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-1068eb57680fe47f-102",
+      "scope": "position-character",
+      "moveUci": "g3h3",
+      "gameMoveUci": "g3h3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rh3+ coordinates the bishop and rook against the opposing rook and pawn structure. The comparably rated bishop moves have different continuations and no specific short tactic is established."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-857490cab237f1af-58",
+      "scope": "position-character",
+      "moveUci": "h7h8",
+      "gameMoveUci": "h7h8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The rook check, king improvement and a-pawn push reach comparable lines. White's targets are g6 and the weak queenside squares."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-e6147db647fe1d20-59",
+      "scope": "position-character",
+      "moveUci": "c5f2",
+      "gameMoveUci": "c5f2",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Bxf2+ wins the rook with check and keeps the bishop. Rxf2 instead allows Bd6 and a concrete exchange sequence, with a much smaller advantage."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-bc1ea282fd51e391-62",
+      "scope": "position-character",
+      "moveUci": "f4f7",
+      "gameMoveUci": "f4f7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qf7+ forces the queen exchange and gives the rook access to the seventh rank. Delaying it allows Black to take on a4 and defend differently."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-28977eda96c06a92-97",
+      "scope": "position-character",
+      "moveUci": "a6a2",
+      "gameMoveUci": "a6a2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The black king supports the central passers. Ra2+, Ra5 and Ra7 give similar positions through king activity and rook control."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-3d2969e30be50c43-51",
+      "scope": "position-character",
+      "moveUci": "e6f5",
+      "gameMoveUci": "e6f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qxf5+ exchanges queens with tempo and reorganizes the bishop and rooks. Rg5 permits Qxe6+ and loses the exchange by force."
+    },
+    {
+      "id": "mating-defence-european-youth-g18-2026-97625b6eaebaaff4-62",
+      "scope": "position-character",
+      "moveUci": "d4d8",
+      "gameMoveUci": "d4d8",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rd8+ and Bd5+ force the knight exchange before the rook takes on d5. The quiet rook or bishop moves give Black more freedom to reorganize."
+    }
+  ]
+}

@@ -31,6 +31,11 @@ import {
 } from "./tacticalMistakeEpisode";
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
 import { findConditionalFork } from "./conditionalForkEvidence";
+import {
+    findConditionalMate,
+    findRecoveringFork,
+    type DecisionConditionalMate,
+} from "./conditionalDecisionResources";
 import { compareExposedForcingAttack } from "./decisionForcingConsequence";
 import {
     compareExposedPieceTrap,
@@ -51,7 +56,7 @@ import {
     type PositionStrategicPlan,
 } from "./decisionPositionPlans";
 
-export const DECISION_ASSESSMENT_VERSION = 14;
+export const DECISION_ASSESSMENT_VERSION = 15;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -67,6 +72,7 @@ export type DecisionAssessment = {
     localProofs: DecisionLocalProof[];
     episodeOutcomes: TacticalEpisodeOutcome[];
     conditionalResources: ConditionalTacticalResource[];
+    conditionalMate?: DecisionConditionalMate;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -347,6 +353,30 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             "The fork is demonstrated against the shown alternative reply. The principal continuation avoids that material loss.",
         );
     }
+    if (corroborated && result.tactical.support !== "supported") {
+        const recovery = findRecoveringFork(input.fen, line, branches[0]);
+        if (recovery) {
+            result.mechanisms = mergeTacticalSequenceWitnesses([...result.mechanisms, recovery]);
+            result.tactical = {
+                support: "supported",
+                basis: "engine-supported",
+                reasons: [recovery.description],
+            };
+            result.limitations.push(
+                "Both searches show the recovery after the same capture. Other replies may lead to different exchanges.",
+            );
+        } else {
+            const mate = findConditionalMate(input.fen, line, probe!.lines);
+            if (mate) {
+                result.conditionalMate = mate;
+                result.tactical = {
+                    support: "supported",
+                    basis: "bounded-proof",
+                    reasons: [mate.explanation],
+                };
+            }
+        }
+    }
     const certificates =
         input.rootCertificates
             ?.find((item) => item.fen === input.fen && item.moveUci === line.pvUci[0])
@@ -462,6 +492,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.localProofs = tactical?.localProofs ?? [];
     position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
     position.conditionalResources = tactical?.conditionalResources ?? [];
+    if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
     for (const move of viable) {
         const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;
         const qualified = qualifyPositionFactors(
@@ -656,6 +687,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                           .flatMap((witness) => [witness, ...(witness.alternatives ?? [])])
                           .filter(
                               (w) =>
+                                  w.rootMoveInvolved &&
                                   w.lineUci.every(
                                       (uci, index) => comparedBest.pvUci[index] === uci,
                                   ) &&

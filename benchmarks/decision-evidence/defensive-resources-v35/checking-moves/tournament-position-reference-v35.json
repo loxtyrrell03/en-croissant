@@ -1,0 +1,116 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "Single engine-assisted reviewer used ordinary root and played replies before assessing outputs. Uncertain labels are retained. One position per source game."
+  ],
+  "cases": [
+    {
+      "id": "check-polish-open-2026-1bcee01fcd9b8784-38",
+      "scope": "position-character",
+      "moveUci": "h4g5",
+      "gameMoveUci": "h4g5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qxg5+ forces Qg7 in the leading line and secures equality. The quieter queen moves let Black use the d-file immediately."
+    },
+    {
+      "id": "check-polish-open-2026-fe9c97ad44317b41-51",
+      "scope": "position-character",
+      "moveUci": "e4b1",
+      "gameMoveUci": "e4e1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qb1+ or Qe1+ gets checking tempo against the king to contain the e5 pawn. A quiet a6 allows Qxb6 and a materially different defence."
+    },
+    {
+      "id": "check-polish-open-2026-7a79fc3a0934d49e-67",
+      "scope": "position-character",
+      "moveUci": "f7f6",
+      "gameMoveUci": "e5e1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black's rook and queen placements sustain kingside pawn pressure. The rook check leads to a trade, but the better queen move keeps more possibilities and the tactical distinction is unclear."
+    },
+    {
+      "id": "check-polish-open-2026-77db0d6532b6c248-105",
+      "scope": "position-character",
+      "moveUci": "h2g2",
+      "gameMoveUci": "h2g2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rg2+ moves the exposed rook with tempo before Nd8. Nd8 first lets White capture the rook, and protecting the d-file and the active rooks matters in the continuation."
+    },
+    {
+      "id": "check-polish-open-2026-047479de7b12ee9b-54",
+      "scope": "position-character",
+      "moveUci": "g1g7",
+      "gameMoveUci": "g1g7",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxg7+ forces the Black king out and enables the next rook check and Nxd7+. Queen exchange or a rook retreat loses the concrete attack."
+    },
+    {
+      "id": "check-polish-open-2026-67bc8713b40d2a07-54",
+      "scope": "position-character",
+      "moveUci": "e4d5",
+      "gameMoveUci": "e4d5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Bd5+ forces a queen interposition and the follow-up exchanges win the rook on c8. The other bishop moves produce materially different lines."
+    },
+    {
+      "id": "check-polish-open-2026-e816577a4527cf68-88",
+      "scope": "position-character",
+      "moveUci": "g4g5",
+      "gameMoveUci": "g4g5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "g5+ wins space and improves the bishop and king position against the knight. The displayed alternatives differ chiefly in pawn structure and king access."
+    },
+    {
+      "id": "check-polish-open-2026-31b8dcc387e1fa02-96",
+      "scope": "position-character",
+      "moveUci": "e8e7",
+      "gameMoveUci": "e8e7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Re7+ gives the tempo to take the rook on h7. The passive rook moves leave Black able to coordinate the rook pair around the f-pawn."
+    },
+    {
+      "id": "check-polish-open-2026-6ec8f6bdba051bca-85",
+      "scope": "position-character",
+      "moveUci": "d1g1",
+      "gameMoveUci": "d1e1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The queen checks displace the king while preserving Black's passer. Qb1 and c2 remain a threat, and Nxg6 depends on exact checking order."
+    },
+    {
+      "id": "check-polish-open-2026-c2a7c1ef8f770924-35",
+      "scope": "position-character",
+      "moveUci": "c5e3",
+      "gameMoveUci": "c5e3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bxe3+ trades the bishop and lets Black use the a-file without allowing the same rook checks. The alternatives offer materially comparable counterplay, with a specific forcing mechanism unclear."
+    },
+    {
+      "id": "check-polish-open-2026-aded830c407a16fa-83",
+      "scope": "position-character",
+      "moveUci": "e3e2",
+      "gameMoveUci": "e3e2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxe2+ forces the king to h3 in the leading reply and Rh2+ diverts it before Qxf1. The other choices retain different forcing attacks."
+    },
+    {
+      "id": "check-polish-open-2026-94da6ae58560d812-62",
+      "scope": "position-character",
+      "moveUci": "g2g3",
+      "gameMoveUci": "a3b2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Kg3 and Bb2+ coordinate the bishop, rook and king against the same pawn structure. The similar scores and differing replies give insufficient support for a decisive tactic."
+    }
+  ]
+}

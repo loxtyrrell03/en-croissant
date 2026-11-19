@@ -1,0 +1,338 @@
+{
+  "productionBaseline": "8e99f3cf",
+  "selectorSha256": "590dac6bfe3ac4b00d02f2b64e5a1a5e566507e22161a851d2cf3fd206ee21ba",
+  "cohorts": {
+    "general": {
+      "positions": 32,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 10,
+            "fp": 1,
+            "fn": 4,
+            "tn": 6,
+            "unknown": 11
+          },
+          "positional": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 20,
+            "tn": 3,
+            "unknown": 2
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 9,
+            "tn": 10,
+            "unknown": 13
+          }
+        },
+        "medianClassifierMs": 26.464150000000245,
+        "extraPositionSearchNodes": 40670000,
+        "conditionalMatingMoveExplanations": 0
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 10,
+            "fp": 1,
+            "fn": 4,
+            "tn": 6,
+            "unknown": 11
+          },
+          "positional": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 20,
+            "tn": 3,
+            "unknown": 2
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 9,
+            "tn": 10,
+            "unknown": 13
+          }
+        },
+        "medianClassifierMs": 27.698449999999866,
+        "extraPositionSearchNodes": 40670000,
+        "conditionalMatingMoveExplanations": 0
+      },
+      "categoryChanges": [],
+      "changedMistakeReports": 0,
+      "cleanCausalReplayMatchesAll": true
+    },
+    "checking-moves": {
+      "positions": 12,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 4,
+            "tn": 1,
+            "unknown": 3
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 4,
+            "unknown": 1
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 3,
+            "tn": 5,
+            "unknown": 4
+          }
+        },
+        "medianClassifierMs": 37.61019999999985,
+        "extraPositionSearchNodes": 17320000,
+        "conditionalMatingMoveExplanations": 0
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 4,
+            "tn": 1,
+            "unknown": 3
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 6,
+            "tn": 4,
+            "unknown": 1
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 3,
+            "tn": 5,
+            "unknown": 4
+          }
+        },
+        "medianClassifierMs": 41.72505000000024,
+        "extraPositionSearchNodes": 17320000,
+        "conditionalMatingMoveExplanations": 1
+      },
+      "categoryChanges": [],
+      "changedMistakeReports": 0,
+      "cleanCausalReplayMatchesAll": true
+    },
+    "broadcast-evasion": {
+      "positions": 11,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 5,
+            "tn": 1,
+            "unknown": 2
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 4,
+            "tn": 3,
+            "unknown": 3
+          },
+          "mixed": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 1,
+            "tn": 4,
+            "unknown": 5
+          }
+        },
+        "medianClassifierMs": 27.491100000000188,
+        "extraPositionSearchNodes": 15320000,
+        "conditionalMatingMoveExplanations": 0
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 3,
+            "tn": 1,
+            "unknown": 2
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 4,
+            "tn": 3,
+            "unknown": 3
+          },
+          "mixed": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 1,
+            "tn": 4,
+            "unknown": 5
+          }
+        },
+        "medianClassifierMs": 28.9384,
+        "extraPositionSearchNodes": 10740000,
+        "conditionalMatingMoveExplanations": 3
+      },
+      "categoryChanges": [
+        {
+          "id": "mating-defence-bengbu-a-2026-fe4adfa18d369ca0-67",
+          "independentTactical": true,
+          "original": "unclear",
+          "candidate": "tactical",
+          "conditionalMate": {
+            "fen": "2r5/k1r3p1/4p2p/1R1pP2P/6P1/b2K4/8/1R6 b - - 0 34",
+            "lineUci": [
+              "c7c3",
+              "d3d4",
+              "c8c4"
+            ],
+            "mateIn": 1,
+            "explanation": "After Rc3+, Kd4 allows mate in 1 starting with R8c4#. Stockfish prefers Ke2."
+          }
+        },
+        {
+          "id": "mating-defence-european-youth-g18-2026-fa11b6c11c0c0d1c-69",
+          "independentTactical": true,
+          "original": "unclear",
+          "candidate": "tactical",
+          "conditionalMate": {
+            "fen": "2n2rk1/2p4p/2p5/2Pp4/3Q2p1/1P6/PBq2RP1/5K2 b - - 5 35",
+            "lineUci": [
+              "c2b1",
+              "d4d1",
+              "b1d1"
+            ],
+            "mateIn": 1,
+            "explanation": "After Qb1+, Qd1 allows mate in 1 starting with Qxd1#. Stockfish prefers Ke2."
+          }
+        }
+      ],
+      "changedMistakeReports": 0
+    },
+    "independent-mate-branches": {
+      "positions": 20,
+      "baseline": {
+        "axes": {
+          "tactical": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 8,
+            "tn": 2,
+            "unknown": 1
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 11,
+            "tn": 2,
+            "unknown": 7
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 8,
+            "tn": 4,
+            "unknown": 8
+          }
+        },
+        "medianClassifierMs": 35.3759,
+        "extraPositionSearchNodes": 25770000,
+        "conditionalMatingMoveExplanations": 0
+      },
+      "candidate": {
+        "axes": {
+          "tactical": {
+            "tp": 12,
+            "fp": 0,
+            "fn": 5,
+            "tn": 2,
+            "unknown": 1
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 11,
+            "tn": 2,
+            "unknown": 7
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 8,
+            "tn": 4,
+            "unknown": 8
+          }
+        },
+        "medianClassifierMs": 28.254750000000513,
+        "extraPositionSearchNodes": 18610000,
+        "conditionalMatingMoveExplanations": 8
+      },
+      "categoryChanges": [
+        {
+          "id": "mating-defence-bengbu-a-2026-8571812d462ab6e7-41",
+          "independentTactical": true,
+          "original": "unclear",
+          "candidate": "tactical",
+          "conditionalMate": {
+            "fen": "3r2k1/1pq2pp1/p4b1p/8/1P2n3/1QP1BN1P/1P3PP1/3R2K1 b - - 2 21",
+            "lineUci": [
+              "d8d1",
+              "f3e1",
+              "d1e1"
+            ],
+            "mateIn": 1,
+            "explanation": "After Rxd1+, Ne1 allows mate in 1 starting with Rxe1#. Stockfish prefers Qxd1."
+          }
+        },
+        {
+          "id": "mating-defence-european-youth-g18-2026-5ab4c705e4c91856-117",
+          "independentTactical": true,
+          "original": "unclear",
+          "candidate": "tactical",
+          "conditionalMate": {
+            "fen": "8/5pk1/4p3/3p2p1/1P1P1p2/2P2PPK/2q5/4Q3 b - - 2 59",
+            "lineUci": [
+              "c2h7",
+              "h3g4",
+              "f7f5",
+              "g4g5",
+              "h7h6"
+            ],
+            "mateIn": 2,
+            "explanation": "After Qh7+, Kg4 allows mate in 2 starting with f5+. Stockfish prefers Kg2."
+          }
+        },
+        {
+          "id": "mating-defence-bengbu-a-2026-d2f2c413aa498f31-55",
+          "independentTactical": true,
+          "original": "unclear",
+          "candidate": "tactical",
+          "conditionalMate": {
+            "fen": "6k1/p4pp1/1pr4p/8/2P2P2/1R2PR2/PP2r2P/6K1 b - - 4 28",
+            "lineUci": [
+              "c6g6",
+              "g1h1",
+              "e2e1",
+              "f3f1",
+              "e1f1"
+            ],
+            "mateIn": 2,
+            "explanation": "After Rg6+, Kh1 allows mate in 2 starting with Re1+. Stockfish prefers Kf1."
+          }
+        }
+      ],
+      "changedMistakeReports": 0
+    }
+  }
+}

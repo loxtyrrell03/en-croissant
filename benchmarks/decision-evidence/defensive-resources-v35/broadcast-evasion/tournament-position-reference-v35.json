@@ -1,0 +1,107 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "Focused check-evasion sample. Strata select cases and do not assign the reference. Single engine-assisted reviewer used ordinary root and played replies before seeing the candidate outputs."
+  ],
+  "cases": [
+    {
+      "id": "mating-defence-bengbu-a-2026-fe4adfa18d369ca0-67",
+      "scope": "position-character",
+      "moveUci": "c7c3",
+      "gameMoveUci": "c7c3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rc3+ forces the king away and the follow-up rook checks can win b1. The quieter moves let White challenge the king on the a- and b-files."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-5b0237ab3994e372-80",
+      "scope": "position-character",
+      "moveUci": "f6d8",
+      "gameMoveUci": "f6d8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qd8+ forces Qg8 and Qf6+ repeats. The nonchecking queen moves fail to preserve that tactical draw."
+    },
+    {
+      "id": "mating-defence-european-youth-g18-2026-fa11b6c11c0c0d1c-69",
+      "scope": "position-character",
+      "moveUci": "c2b1",
+      "gameMoveUci": "c2b1",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qb1+ draws through repeated checks. Rxf2+ also holds through a forcing sequence. Qxf2+ gives White a materially different queen-exchange ending."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-a350a683958c2989-101",
+      "scope": "position-character",
+      "moveUci": "c4c3",
+      "gameMoveUci": "c4c3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rc3+ drives back the king before Black brings its king forward. The checking tempo allows the active rook to handle the c7 pawn without giving up its own counterplay."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-6b25cdd607f78f05-67",
+      "scope": "position-character",
+      "moveUci": "b8b1",
+      "gameMoveUci": "b8b1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rxb1+ wins material with tempo. Bxb1 allows Bxa6, while taking the bishop on c8 allows White to recover d3 instead."
+    },
+    {
+      "id": "mating-defence-european-youth-g18-2026-79d8be2122de0de7-114",
+      "scope": "position-character",
+      "moveUci": "e2f1",
+      "gameMoveUci": "h7h8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bf1 or the rook checks reorganize White against the knight and Black's advanced pawns. The continuations share the same pieces and pawn targets."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-c99a5b0fa2dd7f3e-73",
+      "scope": "position-character",
+      "moveUci": "g4d1",
+      "gameMoveUci": "g4d1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qxd1+ lets the knight hit f2 and subsequently take d1. White's counterplay depends on responding to that threat before it reaches the rook."
+    },
+    {
+      "id": "mating-defence-european-youth-g18-2026-c8616bfa265b96de-119",
+      "scope": "position-character",
+      "moveUci": "h2f2",
+      "gameMoveUci": "h2f2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rf2+ drives the king away before Rf6. The other moves allow Rxe6 with stronger counterplay. Central pawn activity and the active rook persist as strategic factors."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-c67163c3a6287058-69",
+      "scope": "position-character",
+      "moveUci": "b8b1",
+      "gameMoveUci": "b8b1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Taking on b1 or retaining queens gives comparable scores. The minor pieces want different squares depending on the pawn tension, and the short capture on b1 leads to an equal queen trade."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-639ce132d60ee8cb-47",
+      "scope": "position-character",
+      "moveUci": "d6d5",
+      "gameMoveUci": "c8c1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "d5 opens the centre while preserving the queenside push. The game took the other route of trading rooks and then playing d5, with different candidate timings."
+    },
+    {
+      "id": "mating-defence-bengbu-a-2026-c859bc9b59bf219b-94",
+      "scope": "position-character",
+      "moveUci": "g8g3",
+      "gameMoveUci": "g8h8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The queen checks expose the rook and king to Bh3+. The best quiet queen move keeps a different decisive checking sequence."
+    }
+  ]
+}

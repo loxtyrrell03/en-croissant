@@ -1,0 +1,168 @@
+{
+  "protocol": 1,
+  "events": {
+    "european-youth-g18-2026": {
+      "sha256": "9a631a6c690d782eb644198322b9bb2a0dd21e8e92edeba462d78c2ad26073b1",
+      "eligibleGames": 43
+    },
+    "bengbu-a-2026": {
+      "sha256": "fa82c881f49a5cdd3b945698e7404ce3c48986ffd77d5f8d0baaad5605c1f2fe",
+      "eligibleGames": 91
+    }
+  },
+  "exclusions": [
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53",
+    "6469b24fde897597dc44f73a5b2071d601887663858d4746305d5c7eef4cfdf8",
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "576b7c36c809e86ede526fff49ed3148dce5e4426066f3b20cc10ee4a005b269",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "aa2dd1f97e2c0a6c44b083e6595c3914f3c3401d323779fc9a7822052744e9b4"
+  ],
+  "cases": [
+    {
+      "fen": "2r5/k1r3p1/4p2p/1R1pP2P/6P1/b2K4/8/1R6 b - - 0 34",
+      "ply": 67,
+      "playedMoveUci": "c7c3",
+      "playedEvasionUci": "d3d4",
+      "stratum": "broadcast-short-mate-after-evasion",
+      "id": "mating-defence-bengbu-a-2026-fe4adfa18d369ca0-67",
+      "sourceGroup": "fe4adfa18d369ca0f85a429bd94132f9d24c4be5c0a85cd03b541dac70e8748d",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "7k/5pqp/p4Q2/1p5p/7P/2P2PP1/1Pr5/5K2 w - - 2 41",
+      "ply": 80,
+      "playedMoveUci": "f6d8",
+      "playedEvasionUci": "g7g8",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-bengbu-a-2026-5b0237ab3994e372-80",
+      "sourceGroup": "5b0237ab3994e3721c7b339d22e6e77e3e07a00c04d3e21f13270aec89ac5cbf",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2n2rk1/2p4p/2p5/2Pp4/3Q2p1/1P6/PBq2RP1/5K2 b - - 5 35",
+      "ply": 69,
+      "playedMoveUci": "c2b1",
+      "playedEvasionUci": "f1e2",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-european-youth-g18-2026-fa11b6c11c0c0d1c-69",
+      "sourceGroup": "fa11b6c11c0c0d1c95735ef890affcea2f9f0c1ed0dc595c264cf4eaa372115e",
+      "event": "european-youth-g18-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/2P1R3/5p2/4pk2/2r5/5K2/8/8 b - - 1 51",
+      "ply": 101,
+      "playedMoveUci": "c4c3",
+      "playedEvasionUci": "f3e2",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-bengbu-a-2026-a350a683958c2989-101",
+      "sourceGroup": "a350a683958c2989a74d2c9f22b7775c52e45d18993db562e7f615ade2b2d622",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "1rB5/3R1p1p/p3pkp1/P7/7P/3b2P1/5P2/1R4K1 b - - 0 34",
+      "ply": 67,
+      "playedMoveUci": "b8b1",
+      "playedEvasionUci": "g1h2",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-bengbu-a-2026-6b25cdd607f78f05-67",
+      "sourceGroup": "6b25cdd607f78f055474057a9586afc55139b08ffb7da670d509d14f5a0764c7",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "3k4/2p4R/1p1p4/1P1Pp3/2P1Pp2/2n2P2/4BK2/2r5 w - - 6 58",
+      "ply": 114,
+      "playedMoveUci": "h7h8",
+      "playedEvasionUci": "d8d7",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-european-youth-g18-2026-79d8be2122de0de7-114",
+      "sourceGroup": "79d8be2122de0de7c2af014c967ed2f176905b21254bbb01c7c4493c6c43eb27",
+      "event": "european-youth-g18-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2r5/2rb2pk/1p5p/3pPp2/pB1Pn1qP/P2BP3/1P6/1K1Q1R1R b - - 6 37",
+      "ply": 73,
+      "playedMoveUci": "g4d1",
+      "playedEvasionUci": "f1d1",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-bengbu-a-2026-c99a5b0fa2dd7f3e-73",
+      "sourceGroup": "c99a5b0fa2dd7f3eea7f6ee7311ce039c26753e0082a2ef076dc42db491322ce",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2B5/8/4p2R/3pk3/7p/5Kb1/7r/8 b - - 5 60",
+      "ply": 119,
+      "playedMoveUci": "h2f2",
+      "playedEvasionUci": "f3g4",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-european-youth-g18-2026-c8616bfa265b96de-119",
+      "sourceGroup": "c8616bfa265b96deb70e8ce12dd8c699967576d5aab5506edc62c31590aa4f2e",
+      "event": "european-youth-g18-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "1q5k/5pb1/p1n1n1pp/2pNp3/P1P1P3/6BP/3N1PP1/1Q4K1 b - - 0 35",
+      "ply": 69,
+      "playedMoveUci": "b8b1",
+      "playedEvasionUci": "d2b1",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-bengbu-a-2026-c67163c3a6287058-69",
+      "sourceGroup": "c67163c3a6287058f6ccbcd462d31cc8cc4fe3fdccda053205f7c26c3cd87330",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r1r3k1/3bbpp1/3p1n2/1q2p3/pp1PP2p/3NBP1P/PP1RNQP1/1KR5 b - - 6 24",
+      "ply": 47,
+      "playedMoveUci": "c8c1",
+      "playedEvasionUci": "d3c1",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-bengbu-a-2026-639ce132d60ee8cb-47",
+      "sourceGroup": "639ce132d60ee8cb65b5f56cdf0372061ba6378630e5aa6438b51ee8cf5d53f4",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "6Q1/8/p4p1k/8/2n4r/8/5KB1/8 w - - 14 48",
+      "ply": 94,
+      "playedMoveUci": "g8h8",
+      "playedEvasionUci": "h6g5",
+      "stratum": "broadcast-stable-evasion",
+      "id": "mating-defence-bengbu-a-2026-c859bc9b59bf219b-94",
+      "sourceGroup": "c859bc9b59bf219b36b9910feceaf7a61fd72a0404c4c1a8c9bdcc808e21c267",
+      "event": "bengbu-a-2026",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "strata": {
+    "broadcast-short-mate-after-evasion": 1,
+    "broadcast-stable-evasion": 10
+  },
+  "scope": "Completed classical games. A recorded check has two or three legal evasions. Broadcast scores select the variation to review, not the reference."
+}

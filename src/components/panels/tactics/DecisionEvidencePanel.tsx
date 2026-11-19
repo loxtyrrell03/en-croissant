@@ -80,6 +80,7 @@ function EvidenceSummary({
       : value.reasons.map((reason) => ({ label, reason, basis: basisLabels[value.basis] })),
   );
   const resources = assessment.conditionalResources;
+  const conditionalMate = assessment.conditionalMate;
   return (
     <Paper withBorder p="xs">
       <Stack gap={6}>
@@ -133,6 +134,12 @@ function EvidenceSummary({
               {san}
             </Text>
           ))}
+        {expanded && conditionalMate && (
+          <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+            <Text component="span" fw={600} size="xs">Mating line. </Text>
+            {lineSan(conditionalMate.fen, conditionalMate.lineUci)}
+          </Text>
+        )}
         {expanded &&
           assessment.verifiedMotifs.map((motif) => (
             <Badge key={motif.id} size="sm" variant="light" color="orange" w="fit-content">
@@ -147,6 +154,7 @@ function EvidenceSummary({
           ))}
         {(reasons.length > 2 ||
           resources.length > 0 ||
+          !!conditionalMate ||
           !!comparedLines?.length ||
           assessment.limitations.length > 0 ||
           assessment.verifiedMotifs.length > 0) && (

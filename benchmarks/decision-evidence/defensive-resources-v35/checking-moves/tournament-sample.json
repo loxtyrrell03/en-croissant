@@ -1,0 +1,158 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "check-polish-open-2026-1bcee01fcd9b8784-38",
+      "sourceGroup": "1bcee01fcd9b87842280567a42ba34fd89c1e1d16931ed923a362826f6861cc4",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "r1br1qk1/pp3p2/2n1pn2/6p1/3P3Q/1BN5/PP3PPP/3RR1K1 w - - 0 20",
+      "ply": 38,
+      "playedMoveUci": "h4g5"
+    },
+    {
+      "id": "check-polish-open-2026-fe9c97ad44317b41-51",
+      "sourceGroup": "fe9c97ad44317b41b122d6960d8723ed435d247c41f49f5af382f15e14ce5985",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "5rk1/p1R2p1p/1p4p1/4P3/4q2P/1Q4P1/PP3P2/6K1 b - - 0 26",
+      "ply": 51,
+      "playedMoveUci": "e4e1"
+    },
+    {
+      "id": "check-polish-open-2026-7a79fc3a0934d49e-67",
+      "sourceGroup": "7a79fc3a0934d49ec30c2b02e888e59efa10c77ed8762ddd32ce8982babf71af",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "3r2k1/5q2/pQ2p3/1p2rpbp/6p1/1BP5/PP6/1K2R2R b - - 3 34",
+      "ply": 67,
+      "playedMoveUci": "e5e1"
+    },
+    {
+      "id": "check-polish-open-2026-77db0d6532b6c248-105",
+      "sourceGroup": "77db0d6532b6c2489501e7e96658f9643ac45c54981d7bb335d57ecd70d1e989",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "8/1n2r1k1/2R5/pR2p1p1/PpN1PnP1/1P1B1P2/7r/6K1 b - - 4 53",
+      "ply": 105,
+      "playedMoveUci": "h2g2"
+    },
+    {
+      "id": "check-polish-open-2026-047479de7b12ee9b-54",
+      "sourceGroup": "047479de7b12ee9b05d4af1beaf5b15a247c75c701ac2ff41f543a5f70ed1cf2",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "r5k1/1b1r1ppp/p3p3/4N3/1ppqPP2/4Q3/1R5P/1B2K1R1 w - - 0 28",
+      "ply": 54,
+      "playedMoveUci": "g1g7"
+    },
+    {
+      "id": "check-polish-open-2026-67bc8713b40d2a07-54",
+      "sourceGroup": "67bc8713b40d2a07930eb1e4f58d67a40fd5fef27f4c7246a856de9a8c4c5d74",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "2r3k1/3q3p/p2p1Q2/4pb2/1p2B3/2N3P1/PPP4P/7K w - - 0 28",
+      "ply": 54,
+      "playedMoveUci": "e4d5"
+    },
+    {
+      "id": "check-polish-open-2026-e816577a4527cf68-88",
+      "sourceGroup": "e816577a4527cf682835acc6d6d9a38f5a0976f2edccd2aa61f7a2e6aa3ef364",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "8/8/1pp2kp1/2n5/1p1K1PP1/1P6/1P3P2/3B4 w - - 5 45",
+      "ply": 88,
+      "playedMoveUci": "g4g5"
+    },
+    {
+      "id": "check-polish-open-2026-31b8dcc387e1fa02-96",
+      "sourceGroup": "31b8dcc387e1fa028daedd8a8e96edf388396b196e3944a751e418e13701d8f2",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "4R3/2p2k1r/p4Pr1/8/PP1B2p1/2P5/6K1/8 w - - 6 49",
+      "ply": 96,
+      "playedMoveUci": "e8e7"
+    },
+    {
+      "id": "check-polish-open-2026-6ec8f6bdba051bca-85",
+      "sourceGroup": "6ec8f6bdba051bca298504d0ca763421cb699c9111e985107bcf9a07e502f505",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "5r2/4Rpk1/3pb1p1/6Q1/P5PN/2p2PK1/8/3q4 b - - 3 43",
+      "ply": 85,
+      "playedMoveUci": "d1e1"
+    },
+    {
+      "id": "check-polish-open-2026-c2a7c1ef8f770924-35",
+      "sourceGroup": "c2a7c1ef8f770924e7c7747128ad05944fdccf7ad42566eb1cd548b2672e35be",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "r1r5/2kn1ppp/2p1p3/2bpP3/5P2/1R1BB3/P1PK2PP/1R6 b - - 1 18",
+      "ply": 35,
+      "playedMoveUci": "c5e3"
+    },
+    {
+      "id": "check-polish-open-2026-aded830c407a16fa-83",
+      "sourceGroup": "aded830c407a16fa83ba957f76376695eb509a51fb11cc4108665a4c90fa2052",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "8/1p3p1k/3p3p/p2P1pPR/2P5/3qr1P1/P3N1K1/5Q2 b - - 0 42",
+      "ply": 83,
+      "playedMoveUci": "e3e2"
+    },
+    {
+      "id": "check-polish-open-2026-94da6ae58560d812-62",
+      "sourceGroup": "94da6ae58560d8128688f4d2b2891e3f93e2b2b2c198a4ca485c703e388c9ac5",
+      "event": "polish-open-2026",
+      "stratum": "checking-move",
+      "category": "public-classical-broadcast",
+      "split": "validation",
+      "fen": "2r5/pp3nkp/2rp4/5pP1/7P/BP3P2/P2R2K1/4R3 w - - 5 32",
+      "ply": 62,
+      "playedMoveUci": "a3b2"
+    }
+  ],
+  "events": {
+    "polish-open-2026": {
+      "sha256": "c4c2596b0720ccf2ad7db20908e25af19674e4e4575404673392bcaca93760bb"
+    }
+  },
+  "exclusions": [
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "576b7c36c809e86ede526fff49ed3148dce5e4426066f3b20cc10ee4a005b269",
+    "6469b24fde897597dc44f73a5b2071d601887663858d4746305d5c7eef4cfdf8",
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53"
+  ],
+  "scope": "One recorded check per game with two to five legal evasions, selected by stable hash. No engine scores used."
+}

@@ -1,0 +1,296 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "Single engine-assisted reviewer used ordinary root and played replies before assessing outputs. Uncertain labels are retained. One position per source game."
+  ],
+  "cases": [
+    {
+      "id": "tournament-bavarian-open-2026-80b1b72bda3bf4e8-68",
+      "scope": "position-character",
+      "moveUci": "b3b4",
+      "gameMoveUci": "b3b4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Several similarly rated choices improve White's activity and mobilize the queenside majority. The depicted exchanges do not force a different result."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-bc538aa5a3845ac0-63",
+      "scope": "position-character",
+      "moveUci": "c6d6",
+      "gameMoveUci": "c6c3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Nxf7 draws the king onto f7 and the checks or captures on the d-file expose Black's coordination. The better and played replies offer different exact versions."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-1bb1409d740ec893-49",
+      "scope": "position-character",
+      "moveUci": "e4d4",
+      "gameMoveUci": "e4d4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rxd4 wins the bishop and answers Nxf5 with Rxd1+ before exf5. The order of the captures is the concrete distinction."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-0a0b6754a3a4ccf6-62",
+      "scope": "position-character",
+      "moveUci": "h7f7",
+      "gameMoveUci": "h7f7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxf7 wins material while retaining the knight resources against the d-pawn advance. The less effective choices let Black push the passer with tempo."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-bef27c1a51dbc163-60",
+      "scope": "position-character",
+      "moveUci": "b3e6",
+      "gameMoveUci": "b3e6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White is materially worse and several near-equivalent moves seek rook activity and king safety against Black's c-pawn. The lines give insufficient evidence of one tactical requirement."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-1b71c8ebd931f44a-62",
+      "scope": "position-character",
+      "moveUci": "d5d6",
+      "gameMoveUci": "e3e4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can advance the d-pawn or improve the other pieces first. Rook activity, the passed pawn and the Black bishop's route persist across viable lines."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-fddcb9266192ebf9-26",
+      "scope": "position-character",
+      "moveUci": "d3f1",
+      "gameMoveUci": "d3f1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bf1 preserves a bishop central to White's shelter while Black organizes b6 or f5. The candidate lines vary too much to establish a common tactical mechanism."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-6d753ca08e92123f-89",
+      "scope": "position-character",
+      "moveUci": "g6g5",
+      "gameMoveUci": "b6b2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The b7 pawn ties the queen to promotion control. Qb2 allows Rd8 before the queen can stop promotion without exchanging for the bishop. Kingside pawn play matters in the leading lines."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-da112b9b3d9952dc-31",
+      "scope": "position-character",
+      "moveUci": "d8c7",
+      "gameMoveUci": "d8c7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The queen's placement opens coordination on the d-file or gives White an entry there. The displayed exchanges do not isolate an urgent tactical difference."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-c75a2f657492e7bc-75",
+      "scope": "position-character",
+      "moveUci": "b8e8",
+      "gameMoveUci": "b8e8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Re8 and Qb2 each force a short mate through distinct queen and rook routes. The essential calculation is the mating sequence against the exposed king."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-7fd7174139f4a12d-41",
+      "scope": "position-character",
+      "moveUci": "b7g2",
+      "gameMoveUci": "b7g2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black must improve coordination around the exposed king and manage White's queenside majority. The leading candidates give comparable scores through different exchanges and defensive formations."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-88c53f9041b0dfe5-65",
+      "scope": "position-character",
+      "moveUci": "b6b1",
+      "gameMoveUci": "b6b1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qxb1+ gains the tempo needed to answer the advanced d-pawn. Qf6 and Rxc8 allow forcing exchanges ending in promotion or a rook sacrifice."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-23f7be71b6252a5f-81",
+      "scope": "position-character",
+      "moveUci": "g8f7",
+      "gameMoveUci": "d3e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The rook contains the a7 pawn while Nc7 threatens the rook and Nxe6+ recovers pawns in several lines. Black's king activity determines whether that fork changes the conversion."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-aa05452eec1f9b19-102",
+      "scope": "position-character",
+      "moveUci": "a5d5",
+      "gameMoveUci": "d4e3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Several equivalent king or rook placements handle the same f6 break. The recurring issue is maintaining king activity and pawn structure in a drawn rook ending."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-af8f09f32b10d05b-94",
+      "scope": "position-character",
+      "moveUci": "g4f2",
+      "gameMoveUci": "c2h2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "White can seek activity with checks or improve king and knight placement. The shown exchanges are part of Black's conversion and the root choices remain close."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-2d3455df8e10cc42-55",
+      "scope": "position-character",
+      "moveUci": "b5d4",
+      "gameMoveUci": "b5d4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nxd4 exchanges the central knight before the rooks trade. Qc8 exposes the knight on b5 to Nxb5. Qd7 preserves the central pawn tension with a viable knight retreat."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-7c5c1b650534eafa-51",
+      "scope": "position-character",
+      "moveUci": "e5e4",
+      "gameMoveUci": "e5e4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The quiet e4 forces mate by taking away the queen's useful defences. Qxe4+ loses the queen and White's f-pawn cannot stop Qg2#."
+    },
+    {
+      "id": "tournament-bavarian-open-2026-e8e93145967817d3-61",
+      "scope": "position-character",
+      "moveUci": "h7f8",
+      "gameMoveUci": "h7f8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nf8 protects the kingside by moving the knight away from gxh7. The advanced g-pawn and White's control of the g-file persist after the defence."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-aadd4c2d5b9c1ea7-67",
+      "scope": "position-character",
+      "moveUci": "e6d6",
+      "gameMoveUci": "e6d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxd6 brings the second rook to the back rank with check. Retreating instead gives White immediate captures on f5 or h6, with the rook activity deciding how the pawns can be defended."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-08327fa63447d888-27",
+      "scope": "position-character",
+      "moveUci": "c5d4",
+      "gameMoveUci": "c5d4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The c- and e-pawn captures change the central structure and piece activity. The lower-rated alternative loses tempo on the queenside, with insufficient support for a specific tactic."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-1fe6b40a1d4e888c-51",
+      "scope": "position-character",
+      "moveUci": "h4g3",
+      "gameMoveUci": "h4g3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black chooses when to exchange the h-pawn and where to place the knights. The nearby scores and continued positional manoeuvres offer no concrete tactical distinction."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-eac687f98995da41-57",
+      "scope": "position-character",
+      "moveUci": "f4d3",
+      "gameMoveUci": "f4d3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Nd3+ forks the king and queen. The other leading moves allow White to keep the queen and bring the bishops into the attack."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-b447cd104ce509a6-64",
+      "scope": "position-character",
+      "moveUci": "d1a1",
+      "gameMoveUci": "d4d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Ra1 removes an invading rook before expanding in the centre. Other moves preserve activity but invite pressure on the second rank, without a clear decisive forcing reply."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-85502307109bd9dd-66",
+      "scope": "position-character",
+      "moveUci": "d7d5",
+      "gameMoveUci": "d7h7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rook placement and central king activity govern the defence against Black's two active rooks. The candidate scores and responses do not identify a single tactical requirement."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-aa0324e96171da4a-32",
+      "scope": "position-character",
+      "moveUci": "f1b1",
+      "gameMoveUci": "f1b1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Both rook moves use the b-file against the castled king. The alternative knight advance gives a different attack, with no clearly decisive short continuation."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-b05c69a8e9b8fcf8-68",
+      "scope": "position-character",
+      "moveUci": "b4b6",
+      "gameMoveUci": "h4f4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's rooks coordinate on the sixth and seventh ranks against the queen. Different pawn targets and rook placements hold the advantage. The late queen trade is just one continuation."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-ae97f0f9ff72872b-45",
+      "scope": "position-character",
+      "moveUci": "a7a5",
+      "gameMoveUci": "a7a5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black can activate the rook or advance the a-pawn while giving up h7. The leading choices preserve similar evaluations through the same queenside plan."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-0a644dd23bd8ee33-32",
+      "scope": "position-character",
+      "moveUci": "d3d4",
+      "gameMoveUci": "d3d4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "d4 changes the central structure and alters the black knight's targets. c3 allows Ne3 and Nxf1 after exchanges, while the d4 line can challenge the knight directly."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-a9101a1b69ebb694-27",
+      "scope": "position-character",
+      "moveUci": "f8e8",
+      "gameMoveUci": "f8e8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black places a rook centrally and prepares c5. Several move orders give similar central counterplay, with clear strategic continuity."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-e4ba11b5f4379012-36",
+      "scope": "position-character",
+      "moveUci": "d1g4",
+      "gameMoveUci": "d1e2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qg4 uses the uncastled king to force Nd6+ and Qxe6+. The b3 and Qe2 choices develop while applying different pressure to the centre and king."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-b860a53ddeaad957-31",
+      "scope": "position-character",
+      "moveUci": "c8d7",
+      "gameMoveUci": "d4f5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Bd7, Rb8 and Nf5 preserve the same rook activity and can transpose. The equal choices share control of the centre and queenside."
+    },
+    {
+      "id": "tournament-trois-vallees-2026-cc7ed61c10c2ba2a-30",
+      "scope": "position-character",
+      "moveUci": "a5a6",
+      "gameMoveUci": "a5a6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "a6 and Bxd6 can transpose into a similar struggle over the queenside pawn. The bishop exchange and rook placement shape the position, with little verified immediate tactical contrast."
+    }
+  ]
+}
