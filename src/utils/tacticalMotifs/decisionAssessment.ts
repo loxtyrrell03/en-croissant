@@ -24,8 +24,12 @@ import {
     findConditionalCaptureResources,
     type ConditionalTacticalResource,
 } from "./conditionalTacticalResources";
+import {
+    compareTacticalMistakeEpisode,
+    type TacticalMistakeEpisode,
+} from "./tacticalMistakeEpisode";
 
-export const DECISION_ASSESSMENT_VERSION = 1;
+export const DECISION_ASSESSMENT_VERSION = 2;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -93,6 +97,7 @@ export type ChessDecisionReport = {
               mechanisms: TacticalSequenceWitness[];
               missed: TacticalSequenceWitness[];
               allowed: TacticalSequenceWitness[];
+              tacticalEpisode?: TacticalMistakeEpisode;
           })
         | null;
 };
@@ -211,7 +216,7 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             basis: "heuristic",
             reasons: factors.map((item) =>
                 item.comparison === "alternative-choice"
-                    ? `${item.description} This persists through ply ${item.lastConsecutivePly} in the better line and is absent from the compared choice (${item.comparisonMoveUci}).`
+                    ? `${item.description} The effect is present in the better line and absent after ${item.comparisonMoveUci} at the same ${item.materialWindowPlies}-ply comparison point.`
                     : `${item.description} The same effect persists in the root search and the separate search of the opponent's best reply.${item.materialWindowPlies ? ` Material remains balanced within the first ${item.materialWindowPlies} plies; this does not describe every later consequence.` : ""}`,
             ),
         };
@@ -473,10 +478,11 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                           )
                     : [];
             let allowed: TacticalSequenceWitness[] = [];
+            let tacticalEpisode: TacticalMistakeEpisode | null = null;
             const playedProbe = input.replyProbes?.find(
                 (item) => item.moveUci === playedLine.pvUci[0],
             );
-            if (settled(bestMeasured) && corroboratingReply(input.fen, playedLine, playedProbe)) {
+            if (corroboratingReply(input.fen, playedLine, playedProbe)) {
                 const opponent = playedProbe!.lines[0];
                 const playedBranch = measureDecisionLine(input.fen, {
                     ...opponent,
@@ -487,15 +493,27 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 });
                 const firstBest = replayTacticalLine(input.fen, [comparedBest.pvUci[0]])[0];
                 const bestReplyFen = makeFen(firstBest.after.toSetup());
-                const betterReplyWitnesses = extractTacticalSequenceWitnesses(bestReplyFen, {
+                const betterReply = {
                     ...comparedBest,
                     fen: bestReplyFen,
                     cp: comparedBest.cp === null ? null : -comparedBest.cp,
                     mate: comparedBest.mate == null ? null : -comparedBest.mate,
                     pvUci: comparedBest.pvUci.slice(1),
-                });
+                };
+                const betterReplyWitnesses = extractTacticalSequenceWitnesses(
+                    bestReplyFen,
+                    betterReply,
+                );
+                tacticalEpisode = compareTacticalMistakeEpisode(
+                    input.fen,
+                    comparedBest,
+                    playedLine,
+                    opponent,
+                    betterReply,
+                );
                 if (
                     playedBranch &&
+                    settled(bestMeasured) &&
                     settled(playedBranch) &&
                     bestMeasured.materialChangeCp - playedBranch.materialChangeCp >= 90
                 ) {
@@ -509,7 +527,12 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 }
             }
             const assessment = emptyAssessment();
-            if (missed.length || allowed.length)
+            if (tacticalEpisode)
+                allowed = mergeTacticalSequenceWitnesses([
+                    ...allowed,
+                    ...tacticalEpisode.mechanisms,
+                ]);
+            if (missed.length || allowed.length || tacticalEpisode)
                 assessment.tactical = {
                     support: "supported",
                     basis: "engine-supported",
@@ -522,6 +545,11 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                             (item) =>
                                 `The opponent can use ${item.mechanism} after the played move. This mechanism is absent from the compared better line, which retains more material. ${item.description}`,
                         ),
+                        ...(tacticalEpisode
+                            ? [
+                                  `${tacticalEpisode.explanation} The played line retains ${tacticalEpisode.materialDifferencePoints.toFixed(1)} fewer material points after ${tacticalEpisode.throughPly} plies of both compared lines.`,
+                              ]
+                            : []),
                     ],
                 };
             const certificate = input.mistakeCertificate;
@@ -567,6 +595,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 mechanisms: [...allowed, ...missed],
                 missed,
                 allowed,
+                ...(tacticalEpisode ? { tacticalEpisode } : {}),
             };
         }
     }

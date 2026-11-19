@@ -4,6 +4,7 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
 import { corroboratePositionalEffects } from "../tacticalMotifs/positionalTransitions";
+import { comparePositionalTransitions } from "../tacticalMotifs/positionalTransitions";
 
 const fen = "3r4/4k2p/8/8/1N6/8/7P/6K1 w - - 0 1";
 // Synthetic score payloads exercise the evidence contract. They are not an
@@ -25,6 +26,38 @@ const probe = {
     moveUci: best.pvUci[0],
     lines: [{ fen: after, depth: 18, cp: -200, pvUci: best.pvUci.slice(1) }],
 };
+
+test("strategic comparisons use equivalent early windows before unrelated late captures", () => {
+    const position = "1rbq2k1/5ppp/p7/8/8/8/PP3PPP/R1BQ2K1 w - - 0 1";
+    const space = {
+        fen: position,
+        depth: 18,
+        cp: 80,
+        pvUci: ["a2a4", "c8b7", "d1e2", "b7d5", "g2g3", "h7h6", "a4a5", "b8b2"],
+    };
+    const quiet = {
+        fen: position,
+        depth: 18,
+        cp: 0,
+        pvUci: ["h2h3", "d8e7", "d1e2", "g7g6", "g2g3", "h7h6", "b2b3", "c8b7"],
+    };
+    expect(comparePositionalTransitions(position, space, [quiet])).toContainEqual(
+        expect.objectContaining({
+            feature: "pawn-space",
+            squareOrFile: "a4",
+            materialWindowPlies: 6,
+        }),
+    );
+    const transposes = {
+        ...quiet,
+        pvUci: ["h2h3", "d8e7", "a2a4", "g7g6", "g2g3", "h7h6", "b2b3", "c8b7"],
+    };
+    expect(
+        comparePositionalTransitions(position, space, [transposes]).some(
+            (item) => item.feature === "pawn-space",
+        ),
+    ).toBe(false);
+});
 
 test("a legal pattern needs separately corroborated replies and a connected outcome", () => {
     const withoutProbe = assessChessDecision({ fen, candidates: [best, other] })!;

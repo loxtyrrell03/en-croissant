@@ -57,10 +57,12 @@ function EvidenceSummary({
   title,
   assessment,
   children,
+  comparedLines,
 }: {
   title: string;
   assessment: DecisionAssessment;
   children?: React.ReactNode;
+  comparedLines?: Array<{ label: string; san: string }>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const dimensions = [
@@ -118,6 +120,15 @@ function EvidenceSummary({
             </Text>
           ))}
         {expanded &&
+          comparedLines?.map(({ label, san }) => (
+            <Text key={label} size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">
+                {label}.{" "}
+              </Text>
+              {san}
+            </Text>
+          ))}
+        {expanded &&
           assessment.verifiedMotifs.map((motif) => (
             <Badge key={motif.id} size="sm" variant="light" color="orange" w="fit-content">
               {motif.label}
@@ -131,6 +142,7 @@ function EvidenceSummary({
           ))}
         {(reasons.length > 2 ||
           resources.length > 0 ||
+          !!comparedLines?.length ||
           assessment.limitations.length > 0 ||
           assessment.verifiedMotifs.length > 0) && (
           <Button
@@ -157,6 +169,7 @@ function DecisionReport({
 }) {
   const [move, setMove] = useState(report.moves[0]?.moveUci);
   const selected = report.moves.find((item) => item.moveUci === move);
+  const episode = report.mistake?.tacticalEpisode;
   return (
     <Stack gap="xs">
       <EvidenceSummary title="Position character" assessment={report.position}>
@@ -189,6 +202,14 @@ function DecisionReport({
         <EvidenceSummary
           title={playedSan ? `What ${playedSan} missed or allowed` : "Mistake mechanism"}
           assessment={report.mistake}
+          comparedLines={
+            episode
+              ? [
+                  { label: "Played line", san: lineSan(report.fen, episode.playedLineUci) },
+                  { label: "Better line", san: lineSan(report.fen, episode.betterLineUci) },
+                ]
+              : undefined
+          }
         >
           <Text size="xs" c="dimmed">
             Engine evaluation loss {(report.mistake.evaluationLossCp / 100).toFixed(2)} pawns

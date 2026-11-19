@@ -91,7 +91,7 @@ def main():
     args = parser.parse_args()
     reference_bytes = args.reference.read_bytes()
     outputs = json.loads(args.candidate.read_bytes())
-    if outputs.get('split') == 'validation' and hashlib.sha256(reference_bytes).hexdigest() != outputs.get('referenceSha256'):
+    if outputs.get('split') in ['validation', 'reviewed-validation'] and hashlib.sha256(reference_bytes).hexdigest() != outputs.get('referenceSha256'):
         raise ValueError('The held-out reference differs from the one saved before classification')
     report = evaluate(json.loads(reference_bytes), outputs)
     with args.output.open('x', encoding='utf-8') as stream:

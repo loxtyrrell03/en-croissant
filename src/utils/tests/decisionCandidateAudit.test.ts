@@ -12,7 +12,7 @@ import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransi
 
 const directory = process.env.DECISION_EVIDENCE_AUDIT;
 test.skipIf(!directory)(
-    "audit sequence nominations on the sealed development partition",
+    "audit decision evidence against an explicit development or validation partition",
     async () => {
         const { privateReportPath } =
             await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
@@ -28,7 +28,8 @@ test.skipIf(!directory)(
         const sampleBytes = readFileSync(join(directory!, `${cohort}-sample.json`));
         const sample = JSON.parse(sampleBytes.toString("utf8"));
         const split = process.env.DECISION_AUDIT_SPLIT ?? "development";
-        if (!["development", "validation"].includes(split)) throw new Error("Invalid split");
+        if (!["development", "validation", "reviewed-validation"].includes(split))
+            throw new Error("Invalid split");
         let frozen: {
             engineSha256: string;
             search: { minimumDepth: number; maximumRootNodes: number };
@@ -36,7 +37,7 @@ test.skipIf(!directory)(
         let freezeSha256: string | null = null;
         let referenceSha256: string | null = null;
         let rows = sample.cases.filter((r: { split: string }) => r.split === split);
-        if (split === "validation") {
+        if (split !== "development") {
             const { assertFrozenFiles, selectFrozenValidation, sha256 } =
                 await import("../../../scripts/benchmarks/decision-evidence-freeze.mjs");
             const freezePath = process.env.DECISION_FREEZE_PATH;
@@ -47,7 +48,7 @@ test.skipIf(!directory)(
                 );
             const freezeBytes = readFileSync(freezePath);
             frozen = JSON.parse(freezeBytes.toString("utf8"));
-            assertFrozenFiles(process.cwd(), frozen);
+            if (split === "validation") assertFrozenFiles(process.cwd(), frozen);
             rows = selectFrozenValidation(sampleBytes, cohort, frozen);
             const referenceBytes = readFileSync(referencePath);
             const reviewed = new Set(
@@ -61,6 +62,20 @@ test.skipIf(!directory)(
                 );
             freezeSha256 = sha256(freezeBytes);
             referenceSha256 = sha256(referenceBytes);
+            if (split === "reviewed-validation") {
+                const path = process.env.DECISION_PRIOR_RESULT_PATH;
+                if (!path) throw new Error("A replay requires the original held-out result");
+                const prior = JSON.parse(readFileSync(path, "utf8"));
+                if (
+                    prior.split !== "validation" ||
+                    prior.freezeSha256 !== freezeSha256 ||
+                    prior.referenceSha256 !== referenceSha256 ||
+                    prior.cohort !== cohort ||
+                    prior.engineProfile !== profile ||
+                    prior.probeProfile !== probeProfile
+                )
+                    throw new Error("The original held-out result does not match this replay");
+            }
         }
         const name = process.env.DECISION_AUDIT_NAME ?? "decision-candidate-v3";
         if (!/^[a-z0-9-]+$/.test(name)) throw new Error("Invalid audit name");
@@ -192,6 +207,7 @@ test.skipIf(!directory)(
                 "decisionAssessment.ts",
                 "decisionProofAdapter.ts",
                 "conditionalTacticalResources.ts",
+                "tacticalMistakeEpisode.ts",
                 "tacticalSequenceEvidence.ts",
                 "positionalTransitions.ts",
                 "strategicRootEffects.ts",
@@ -214,7 +230,9 @@ test.skipIf(!directory)(
                     scope:
                         split === "validation"
                             ? "Frozen held-out candidate; accuracy requires reviewed reference scoring"
-                            : "Development candidate, not held-out accuracy",
+                            : split === "reviewed-validation"
+                              ? "Development replay of previously reviewed validation cases"
+                              : "Development candidate, not held-out accuracy",
                     split,
                     freezeSha256,
                     referenceSha256,

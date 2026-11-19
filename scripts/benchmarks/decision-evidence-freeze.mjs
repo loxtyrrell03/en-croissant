@@ -42,11 +42,22 @@ export function selectFrozenValidation(sampleBytes, cohort, manifest) {
 }
 
 async function main() {
-  const [directory, engine, destination] = process.argv.slice(2);
+  const [directory, engine, destination, candidate = "v13-conditional", ...selected] =
+    process.argv.slice(2);
   if (!destination)
     throw new Error("Provide private evidence directory, engine and new private freeze file");
-  const groupBytes = readFileSync(join(directory, "course-group-audit-final.json"));
-  const groups = JSON.parse(groupBytes);
+  if (!/^v[0-9]+-[a-z0-9-]+$/.test(candidate)) throw new Error("Use a versioned candidate name");
+  const profile = candidate.split("-")[0];
+  const cohorts = selected.length ? selected : ["course", "independent", "classical"];
+  if (
+    new Set(cohorts).size !== cohorts.length ||
+    cohorts.some((name) => !["course", "independent", "classical"].includes(name))
+  )
+    throw new Error("Unknown or duplicated evidence cohort");
+  const groupBytes = cohorts.includes("course")
+    ? readFileSync(join(directory, "course-group-audit-final.json"))
+    : null;
+  const groups = groupBytes ? JSON.parse(groupBytes) : null;
   const paths = [
     ...filesBelow(join(repo, "src/utils/tacticalMotifs")).filter((path) => /\.(ts|js)$/.test(path)),
     ...[
@@ -69,7 +80,7 @@ async function main() {
   );
   const datasets = {};
   const seen = new Set();
-  for (const cohort of ["course", "independent", "classical"]) {
+  for (const cohort of cohorts) {
     const bytes = readFileSync(join(directory, `${cohort}-sample.json`));
     const sample = JSON.parse(bytes);
     if (cohort === "course" && groups.sampleSha256 !== sha256(bytes))
@@ -94,11 +105,11 @@ async function main() {
   }
   const manifest = {
     version: 1,
-    candidate: "v13-conditional",
+    candidate,
     createdAt: new Date().toISOString(),
     commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim(),
     sourceHashes,
-    groupAuditSha256: sha256(groupBytes),
+    groupAuditSha256: groupBytes ? sha256(groupBytes) : null,
     datasets,
     engineSha256: sha256(readFileSync(engine)),
     search: {
@@ -126,7 +137,7 @@ async function main() {
       manifest,
     );
     writeFileSync(
-      privateReportPath(join(directory, `${cohort}-validation-v13-sample.json`)),
+      privateReportPath(join(directory, `${cohort}-validation-${profile}-sample.json`)),
       JSON.stringify({ freeze: resolve(destination), cases: rows }, null, 2),
       { flag: "wx" },
     );

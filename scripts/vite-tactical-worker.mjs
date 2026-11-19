@@ -5,9 +5,12 @@ import { build, normalizePath } from "vite";
 /** The verifier is already bundled in production. Serve the same isolated
  * module shape in development, without serial HTTP dependency discovery on
  * every short-lived worker. No prebuilt file can silently go stale.
+ * @param {string} workerPath The source path served by Vite's module worker request.
  * @returns {import("vite").Plugin}
  */
-export function tacticalWorkerDevelopmentPlugin() {
+export function tacticalWorkerDevelopmentPlugin(
+  workerPath = "/src/utils/tacticalMotifs/liveTactics.worker.ts",
+) {
   let server;
   let entry;
   let generation = 0;
@@ -100,11 +103,11 @@ export function tacticalWorkerDevelopmentPlugin() {
   }
 
   return {
-    name: "tactical-verifier-development-bundle",
+    name: `tactical-verifier-development-bundle:${workerPath}`,
     apply: "serve",
     async configureServer(instance) {
       server = instance;
-      entry = resolve(server.config.root, "src/utils/tacticalMotifs/liveTactics.worker.ts");
+      entry = resolve(server.config.root, `.${workerPath}`);
       dependencies.add(normalizePath(entry));
       const changed = (event, file) => {
         if (!["add", "change", "unlink"].includes(event)) return;
@@ -127,7 +130,7 @@ export function tacticalWorkerDevelopmentPlugin() {
         const url = new URL(request.url ?? "/", "http://localhost");
         if (
           request.method !== "GET" ||
-          url.pathname !== "/src/utils/tacticalMotifs/liveTactics.worker.ts" ||
+          url.pathname !== workerPath ||
           !url.searchParams.has("worker_file") ||
           url.searchParams.get("type") !== "module"
         )

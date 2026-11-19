@@ -261,22 +261,64 @@ export function comparePositionalTransitions(
         const settled = (measurement: typeof evidence) =>
             measurement.quietEndingPlies >= 2 &&
             measurement.endingMaterialRangeCp[0] === measurement.endingMaterialRangeCp[1];
-        if (
-            !settled(bestEvidence) ||
-            !settled(evidence) ||
-            Math.abs(bestEvidence.materialChangeCp - evidence.materialChangeCp) > 50
-        )
-            continue;
         const alternativeChanges = [
             ...extractPositionalTransitions(fen, alternative),
             ...extractStrategicRootEffects(fen, alternative),
         ];
+        // A different move order can reach the same plan before the chosen
+        // comparison point. Record effects initiated by the next two moves
+        // of the original side, without assigning them to the root.
+        const alternativeSteps = replayTacticalLine(fen, alternative.pvUci.slice(0, 4));
+        for (const offset of [2, 4]) {
+            if (alternativeSteps.length < offset || alternative.pvUci.length < offset + 6) continue;
+            const laterFen = makeFen(alternativeSteps[offset - 1].after.toSetup());
+            alternativeChanges.push(
+                ...extractStrategicRootEffects(laterFen, {
+                    ...alternative,
+                    fen: laterFen,
+                    pvUci: alternative.pvUci.slice(offset),
+                }).map((item) => ({
+                    ...item,
+                    firstPly: item.firstPly + offset,
+                    lastConsecutivePly: item.lastConsecutivePly + offset,
+                })),
+            );
+        }
         for (const item of candidates) {
+            let comparableWindow: number | undefined;
+            for (
+                let ply = Math.max(6, item.firstPly + 4);
+                ply <=
+                Math.min(12, item.lastConsecutivePly, best.pvUci.length, alternative.pvUci.length);
+                ply++
+            ) {
+                const bestWindow = measureDecisionLine(fen, {
+                    ...best,
+                    pvUci: best.pvUci.slice(0, ply),
+                });
+                const otherWindow = measureDecisionLine(fen, {
+                    ...alternative,
+                    pvUci: alternative.pvUci.slice(0, ply),
+                });
+                if (
+                    !bestWindow ||
+                    !otherWindow ||
+                    bestWindow.drawnEnding ||
+                    otherWindow.drawnEnding ||
+                    !settled(bestWindow) ||
+                    !settled(otherWindow) ||
+                    Math.abs(bestWindow.materialChangeCp - otherWindow.materialChangeCp) > 50
+                )
+                    continue;
+                comparableWindow = ply;
+                break;
+            }
+            if (comparableWindow === undefined) continue;
             const occurs = alternativeChanges.some(
                 (other) =>
                     key(other) === key(item) &&
-                    other.firstPly <= 3 &&
-                    other.lastConsecutivePly >= 6,
+                    other.firstPly <= comparableWindow &&
+                    other.lastConsecutivePly >= comparableWindow,
             );
             if (occurs) continue;
             if (result.some((other) => key(other) === key(item))) continue;
@@ -286,6 +328,7 @@ export function comparePositionalTransitions(
                 comparisonGapCp: best.cp - alternative.cp,
                 supportInComparison: false,
                 comparison: "alternative-choice",
+                materialWindowPlies: comparableWindow,
                 interpretation: "heuristic",
             });
         }

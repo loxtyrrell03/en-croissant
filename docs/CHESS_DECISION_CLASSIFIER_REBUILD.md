@@ -498,6 +498,45 @@ search adapter for the browser. Native routing and engine lifetime are covered
 by the existing transport and the new mocked lifecycle checks; installed
 native-window delivery remains unverified.
 
+## Matched early comparisons
+
+The first held-out set identified a failure in the mistake path. The
+classifier compared settled material at the ends of different-length
+variations. A later unrelated exchange could erase the earlier cost. The
+revised path compares the same number of plies after each choice. It requires
+a separately corroborated reply, a witnessed opponent mechanism within the
+early sequence or an immediately available capture whose local exchange
+differs on the better board, and settled net material loss. Both lines are
+available in expanded evidence; the resulting material difference is not a
+claim about every defence.
+
+In the development replay of the original 24 classical positions, calibration
+moved tactical mistake recall from 1/6 to 2/6 with 0/14 false positives. One
+recovered example has an opponent rook fork after a queen exchange. The fork
+stays at its actual third ply after the played move. The strategic comparison
+uses matched early windows too. It checks whether another move order reaches
+the same tracked effect before the comparison point. This eliminated a false
+attribution to an early pawn advance that both paths actually played.
+It found 1/6 reviewed positional mistakes with 0/14 false positives. The
+mixed classical mistake remained unresolved. These are development replays,
+even though the source was originally held out.
+
+Two additional candidates attempted to infer positional purpose from the
+opponent's pawn recapture. Both introduced an additional positional false
+positive on the courses and recovered no additional reviewed positive.
+Duplicating the recapture in the reply search still observed the same
+incidental structure. This feature was dropped. The resulting v17 preserved
+the v13 course and independent dimensions reported above. A fresh 32-position
+classical reserve was selected from 16 games excluded from both prior
+partitions. Its test results are separate from the development replays.
+
+The decision verifier now shares the development worker bundler used by the
+tactical scan. It serves a self-contained worker with dependency invalidation,
+avoiding per-job discovery of the classifier's modules in development.
+The real development worker endpoint and the worker dependency recovery
+tests pass. The focused frontend suite passes 120 checks with one opt-in
+audit skipped, alongside 15 Python checks, full TypeScript and scoped lint.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and

@@ -18,6 +18,7 @@ export default defineConfig({
     publicDir: usesHomePhoneServer ? false : "public",
     plugins: [
         tacticalWorkerDevelopmentPlugin(),
+        tacticalWorkerDevelopmentPlugin("/src/components/panels/tactics/decisionReport.worker.ts"),
         rootStylePreloadGuard(),
         tanstackRouter({
             target: "react",
