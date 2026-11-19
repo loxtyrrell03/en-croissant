@@ -6,6 +6,7 @@ import type { Square } from "chessops/types";
 import { makeSquare, makeUci } from "chessops/util";
 import {
     MIN_TACTICAL_CAPTURE_GAIN,
+    proveTrappedMaterial,
     replayTacticalLine,
     tacticalCaptureGain,
     tacticalExchangeGain,
@@ -13,6 +14,7 @@ import {
 } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import type { TacticalMistakeEpisode } from "./tacticalMistakeEpisode";
+import type { TacticalSequenceWitness } from "./tacticalSequenceEvidence";
 
 export type DecisionSharedReplyProbe = {
     betterMoveUci: string;
@@ -84,6 +86,56 @@ function captureResources(better: Chess, played: Chess, target: number) {
         resources.push(makeUci(move));
     }
     return resources;
+}
+
+/** The searches may choose different retreats. A bounded check of all legal
+ * defences can establish the same trap without requiring identical PVs. */
+function trapWitness(
+    reply: TacticalReplayStep,
+    square: Square,
+    line: TacticalReplayStep[],
+): { witness: TacticalSequenceWitness; checkedReplies: number } | null {
+    const victim = reply.after.board.get(square);
+    const retreat = line[1];
+    const take = line[2];
+    if (
+        reply.capture ||
+        !victim ||
+        victim.role === "pawn" ||
+        victim.role === "king" ||
+        retreat?.move.from !== square ||
+        take?.move.to !== retreat.move.to ||
+        !take.capture
+    )
+        return null;
+    const previousCapture = { from: reply.move.from, to: square };
+    if (reply.before.isLegal(previousCapture)) {
+        const previous = tacticalExchangeGain(reply.before, previousCapture);
+        if (previous >= MIN_TACTICAL_CAPTURE_GAIN || previous <= -20000) return null;
+    }
+    const proof = proveTrappedMaterial(reply, square);
+    if (
+        !proof?.branches.some(
+            (branch) => branch.replyUci === retreat.uci && branch.answerUci === take.uci,
+        )
+    )
+        return null;
+    const target = makeSquare(square);
+    return {
+        checkedReplies: proof.branches.length,
+        witness: {
+            fen: makeFen(reply.before.toSetup()),
+            mechanism: "trappedPiece",
+            actor: reply.before.turn,
+            mechanismPly: 1,
+            payoffPly: 3,
+            squares: [target],
+            description: `The ${victim.role} is captured after ${retreat.san}.`,
+            support: "legal-continuation",
+            rootMoveInvolved: true,
+            lineUci: [reply.uci, retreat.uci, take.uci],
+        },
+    };
 }
 
 function sharedReplyContext(
@@ -210,6 +262,19 @@ export function compareSharedReply(
     const square = actual.move.to;
     const piece = actual.after.board.get(square)!;
     const shown = replayTacticalLine(opponent.fen, opponent.pvUci.slice(0, 5));
+    if (attack.countercaptures === null) {
+        const trap = trapWitness(reply, square, shown);
+        if (trap)
+            return {
+                ...episode(
+                    trap.witness.payoffPly,
+                    `${reply.san} traps the ${piece.role} on ${makeSquare(square)}. The local search finds a material gain against all ${trap.checkedReplies} legal replies. After ${choice.san}, the same ${control.san} gives that attacker no profitable capture of the ${piece.role}.`,
+                ),
+                kind: "trap",
+                checkedReplies: trap.checkedReplies,
+                mechanisms: [trap.witness],
+            };
+    }
     let escapeIndex = -1;
     for (const [index, step] of shown.entries()) {
         if (step.uci !== played.pvUci[index + 1]) break;

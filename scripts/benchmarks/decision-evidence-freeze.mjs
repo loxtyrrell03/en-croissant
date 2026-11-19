@@ -72,6 +72,7 @@ async function main() {
       "scripts/benchmarks/decision-evidence-evaluate.py",
       "scripts/benchmarks/decision-evidence-model-pilot.py",
       "scripts/benchmarks/decision-evidence-tournament.py",
+      "scripts/benchmarks/decision-evidence-trap-sample.py",
       "scripts/benchmarks/decision-evidence-rank-probes.py",
       "scripts/benchmarks/decision-evidence-shared-reply.py",
       "scripts/benchmarks/decision-evidence-reply-ranker.py",

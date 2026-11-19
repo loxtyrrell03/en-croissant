@@ -1,0 +1,230 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "trap-00BSo",
+      "scope": "mistake-mechanism",
+      "moveUci": "d3c5",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "...Bb4 skewers the knight on c5 in front of the rook. Na4 or Ne6 saves the knight at the cost of ...Bxe7."
+    },
+    {
+      "id": "trap-00IUT",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "...c5 forks the rook and queen. The rook can retreat to d1 and then ...cxb4 wins the queen."
+    },
+    {
+      "id": "trap-00KO5",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5h2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Rh1 catches the queen on h2. Qxh1 Rxh1 gives up the queen for a rook. Qc2+ also loses the queen despite the possible rook liquidation."
+    },
+    {
+      "id": "trap-00Xr8",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5e3",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "Bc1 attacks the queen on e3 and the bishop behind it on h6. Qe2 saves the queen and Bxh6 wins the bishop instead."
+    },
+    {
+      "id": "trap-00aME",
+      "scope": "mistake-mechanism",
+      "moveUci": "d3b5",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Ba6 cuts off the queen on b5. Qxa6 is the least costly retreat, giving up the queen for the bishop and later rook with Bxa6."
+    },
+    {
+      "id": "trap-00dWq",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5f4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Bh6 catches the queen on f4. Qg5 loses the queen, Qxh6 allows the attack on a2, and Qe3 or Qd2 allows mate."
+    },
+    {
+      "id": "trap-00piA",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8e5",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": false
+      },
+      "rationale": "Ng4 forks rook and queen. ...Re6 saves the rook and Nxf6+ takes the queen instead."
+    },
+    {
+      "id": "trap-00zI4",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5b3",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Qc2 threatens mate on h7 and attacks the knight on b3. Every knight retreat allows immediate mate; a defence against mate loses the knight."
+    },
+    {
+      "id": "trap-015BC",
+      "scope": "mistake-mechanism",
+      "moveUci": "d8d6",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": null
+      },
+      "rationale": "Ne4 leaves Black with multiple severe threats. Qd8 preserves the queen for the checked horizon while Qxf8+ wins the rook. Attribution of the full loss to a queen trap alone is unclear."
+    },
+    {
+      "id": "trap-016MG",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5e4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Bf5 attacks the queen on e4 and restricts its exits. Rxd8 Bxe4 Rxf8+ limits the loss. Qd5 Rxd5 also loses the queen."
+    },
+    {
+      "id": "trap-02A3t",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7a7",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Bc5 leaves the queen on a7 with no safe retreat. Qxc5 Qxc5 gives up the queen for a bishop."
+    },
+    {
+      "id": "trap-02FSn",
+      "scope": "mistake-mechanism",
+      "moveUci": "b3b7",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Na5 traps the queen on b7. Qxa8 Qxa8 or Qb4 Bxb4 axb4 are material concessions."
+    },
+    {
+      "id": "trap-09JhC",
+      "scope": "mistake-mechanism",
+      "moveUci": "h2b2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Ra2 catches the queen on b2. After ...Qxa2 Qxa2 the rook is the maximum immediate return."
+    },
+    {
+      "id": "trap-0AEKr",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6b2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Na4 catches the queen on b2; ...Qxa1 Qxa1 exchanges the queen for a rook, and ...Qe5 also loses the queen."
+    },
+    {
+      "id": "trap-0AkeU",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6b2",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Na4 catches the queen on b2. ...Qxa3 Rxa3 Bxa3 and ...Qxa1 Qxa1 both concede the queen."
+    },
+    {
+      "id": "trap-0B2wJ",
+      "scope": "mistake-mechanism",
+      "moveUci": "f4c4",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Na5 catches the queen on c4. Moving to d5, a4 or b5 loses it. Pushing d4 or Nd5 leaves it on c4 to be captured."
+    },
+    {
+      "id": "trap-0DE1S",
+      "scope": "mistake-mechanism",
+      "moveUci": "b3b7",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Nc5 catches the queen on b7. Qxa8 Qxa8 is the best salvage. After the prior bishop capture, the loss from the pre-mistake board is smaller than the cost of the retreat."
+    },
+    {
+      "id": "trap-0EJSn",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1f3",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Bg4 attacks and catches the queen on f3. Qxg4 Nxg4 and Qd1 Bxd1 lose it. d6 allows Bxf3 and counterplay with dxe7."
+    },
+    {
+      "id": "trap-0EYB6",
+      "scope": "mistake-mechanism",
+      "moveUci": "c3g7",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "...Be5 catches the queen on g7. Qxh8+ Bxh8 is best salvage and also opens a later capture on a1."
+    },
+    {
+      "id": "trap-0H767",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5b3",
+      "tactical": true,
+      "positional": null,
+      "motifs": {
+        "trappedPiece": true
+      },
+      "rationale": "Bc4 catches the queen on b3. ...Qxc4 Qxc4 trades the queen for a bishop. ...Bc5+ first is a checking intermezzo in the engine line."
+    }
+  ],
+  "limitations": [
+    "One engine-assisted review. Paired root lines, unrestricted replies, and searches forcing each legal retreat of the attacked piece were checked before examining any classifier outputs.",
+    "A trap requires the attacked piece to have no viable retreat, including concessions caused by a mating threat. A viable escape with an unrelated piece loss is a different mechanism.",
+    "The capture-based retrieval filter intentionally overrepresents tactical errors. The reviewed trap negatives are other tactical mechanisms, and the positional axis was outside this reference scope."
+  ]
+}

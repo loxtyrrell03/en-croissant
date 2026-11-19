@@ -23,6 +23,7 @@ export type TacticalMistakeEpisode = {
     | { kind: "comparative"; materialDifferencePoints: number }
     | { kind: "concession"; materialConcededPoints: number }
     | { kind: "forcing-attack" }
+    | { kind: "trap"; checkedReplies: number }
 );
 
 function capturedSquare(step: TacticalReplayStep) {

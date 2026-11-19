@@ -25,6 +25,7 @@ export type TacticalSequenceWitness = {
         | "skewer"
         | "intermezzo"
         | "attraction"
+        | "trappedPiece"
         | "tacticalPreparation";
     actor: Color;
     mechanismPly: number;

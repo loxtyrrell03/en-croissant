@@ -35,7 +35,7 @@ import { compareExposedForcingAttack } from "./decisionForcingConsequence";
 import { compareSharedReply, type DecisionSharedReplyProbe } from "./decisionSharedReply";
 import { comparePawnEpisodes } from "./decisionPawnEpisode";
 
-export const DECISION_ASSESSMENT_VERSION = 7;
+export const DECISION_ASSESSMENT_VERSION = 8;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -616,7 +616,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             if (missed.length || allowed.length || tacticalEpisode)
                 assessment.tactical = {
                     support: "supported",
-                    basis: "engine-supported",
+                    basis: tacticalEpisode?.kind === "trap" ? "bounded-proof" : "engine-supported",
                     reasons: [
                         ...missed.map(
                             (item) =>

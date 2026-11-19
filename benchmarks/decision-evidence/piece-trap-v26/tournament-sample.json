@@ -1,0 +1,502 @@
+{
+  "protocol": 1,
+  "source": "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+  "license": "CC0-1.0",
+  "sourceHeaders": {
+    "Content-Length": "309751173",
+    "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT",
+    "ETag": "\"6ae6f0f4-12766d85\""
+  },
+  "rowsScanned": 27564,
+  "excludedSampleHashes": [
+    {
+      "name": "independent-sample.json",
+      "sha256": "7e495b652759e5f74b4b9a912c1daf2048cfdb4f154748275c1f74f96e011183"
+    },
+    {
+      "name": "course-sample.json",
+      "sha256": "6a5ebc28997d5668b0f13c8c28fdcaab4e34a052889d680b1799712400f9ab73"
+    },
+    {
+      "name": "classical-sample.json",
+      "sha256": "a75c08a3ea2b7e185d69dc0651422cae9597e06736194348cffd8ef68f7300fb"
+    },
+    {
+      "name": "classical-sample.json",
+      "sha256": "75616e3f5a43ec8bfa39a4235ce8515d005c1f0a185a69ceb353cd4cc67b0deb"
+    },
+    {
+      "name": "course-sample.json",
+      "sha256": "44c4e4e424cf1bc0a0cc62751ab631064252576b4c2e94285fee285655a7e6b7"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "d9ce8d6b574b0ee6f8f8e3bfaf7abe1822a32f36f5bf8cafff4d77bdf212acfb"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "f27f65d0172ab375e9494feac432a68a2c17d4279665690604163794c3589512"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "95130b3d85718c70ef90cb3bae3bffd658a6801a9be720d3be345a53f848d5de"
+    },
+    {
+      "name": "tournament-sample.json",
+      "sha256": "8fe1fee913009c0217355e302b8540d9967827452752ba14317383655b788549"
+    },
+    {
+      "name": "real-puzzle-development.json",
+      "sha256": "8b536c5c45a82a871af3452de0f5cd7bd88e1daec27233d1b4654e0e92ccead2"
+    },
+    {
+      "name": "real-puzzle-judgement.json",
+      "sha256": "56f184afca71c6f2798e49a382cfc71f8253902e69bee70fc6ea658af23918cf"
+    }
+  ],
+  "stratumCounts": {
+    "trap-tag": 10,
+    "similar-capture": 10
+  },
+  "selection": "First 10 game-hash-gated legal candidates per stratum. A quiet reply attacks the just-moved piece and the source line captures it.",
+  "limitation": "Targeted diagnostic; puzzle tags are retrieval cues and the sample cannot estimate game-wide prevalence.",
+  "cases": [
+    {
+      "id": "trap-00BSo",
+      "split": "validation",
+      "sourceGroup": "game:SjQSgSG9",
+      "sourceUrl": "https://lichess.org/game/SjQSgSG9#49",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "2r3k1/4R1pp/p1p2p2/2p5/2P5/1PbN3P/P4PP1/6K1 w - - 0 25",
+      "playedMoveUci": "d3c5",
+      "sourceUci": [
+        "c3b4",
+        "e7a7",
+        "b4c5"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "endgame",
+        "short"
+      ]
+    },
+    {
+      "id": "trap-00IUT",
+      "split": "validation",
+      "sourceGroup": "game:93xXeKdX",
+      "sourceUrl": "https://lichess.org/game/93xXeKdX#37",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "1r2r1k1/ppp1q1pp/4b3/4P3/1Q1p1P2/8/P5PP/R1BR2K1 w - - 6 19",
+      "playedMoveUci": "d1d4",
+      "sourceUci": [
+        "c7c5",
+        "b4a3",
+        "c5d4"
+      ],
+      "weakSourceThemes": [
+        "crushing",
+        "fork",
+        "long",
+        "middlegame"
+      ]
+    },
+    {
+      "id": "trap-00KO5",
+      "split": "validation",
+      "sourceGroup": "game:jUnUTglG",
+      "sourceUrl": "https://lichess.org/game/jUnUTglG/black#44",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "2r2rk1/3p1ppp/p3p3/1p2q3/6P1/3Q4/PP5P/1K2RR2 b - - 0 22",
+      "playedMoveUci": "e5h2",
+      "sourceUci": [
+        "f1h1",
+        "h2c2",
+        "d3c2"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "endgame",
+        "long"
+      ]
+    },
+    {
+      "id": "trap-00Xr8",
+      "split": "validation",
+      "sourceGroup": "game:mvexWrte",
+      "sourceUrl": "https://lichess.org/game/mvexWrte/black#50",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "6k1/pp1n3p/2p1bppb/2q1p3/2P1P3/1PQN1PPP/PB4BK/8 b - - 5 25",
+      "playedMoveUci": "c5e3",
+      "sourceUci": [
+        "b2c1",
+        "e3d4",
+        "c3d4"
+      ],
+      "weakSourceThemes": [
+        "crushing",
+        "long",
+        "middlegame"
+      ]
+    },
+    {
+      "id": "trap-00aME",
+      "split": "validation",
+      "sourceGroup": "game:16LXTr5C",
+      "sourceUrl": "https://lichess.org/game/16LXTr5C#27",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "r1b2rk1/2qnbppp/3p1n2/1pp5/4PP2/1PNQ1N2/P3B1PP/1RB2RK1 w - - 0 14",
+      "playedMoveUci": "d3b5",
+      "sourceUci": [
+        "c8a6",
+        "b5a6",
+        "a8a6"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "middlegame",
+        "short"
+      ]
+    },
+    {
+      "id": "trap-00dWq",
+      "split": "validation",
+      "sourceGroup": "game:sRKDDbRV",
+      "sourceUrl": "https://lichess.org/game/sRKDDbRV#55",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "2r1kb2/5p1p/p3p3/1p2P1Q1/1Pq5/P1p3P1/2P4P/2KR1R2 w - - 0 28",
+      "playedMoveUci": "g5f4",
+      "sourceUci": [
+        "f8h6",
+        "c1b1",
+        "h6f4"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "endgame",
+        "pin",
+        "short"
+      ]
+    },
+    {
+      "id": "trap-00piA",
+      "split": "validation",
+      "sourceGroup": "game:1B30ZVJt",
+      "sourceUrl": "https://lichess.org/game/1B30ZVJt/black#46",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "r3r1k1/pp3pp1/2p2q1p/3pP3/P3bP2/2P1N1P1/1P1Q1K1P/R3R3 b - - 0 23",
+      "playedMoveUci": "e8e5",
+      "sourceUci": [
+        "e3g4",
+        "f6f5",
+        "g4e5"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "fork",
+        "middlegame",
+        "short"
+      ]
+    },
+    {
+      "id": "trap-00zI4",
+      "split": "validation",
+      "sourceGroup": "game:z6EaD3I9",
+      "sourceUrl": "https://lichess.org/game/z6EaD3I9/black#26",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "r2q1rk1/pb3ppp/1p2p3/2nn4/8/P1N1PN2/1P1Q1PPP/1BR1K2R b K - 1 13",
+      "playedMoveUci": "c5b3",
+      "sourceUci": [
+        "d2c2",
+        "g7g6",
+        "c2b3"
+      ],
+      "weakSourceThemes": [
+        "crushing",
+        "opening",
+        "short"
+      ]
+    },
+    {
+      "id": "trap-015BC",
+      "split": "validation",
+      "sourceGroup": "game:0YIbmrPb",
+      "sourceUrl": "https://lichess.org/game/0YIbmrPb/black#48",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "r2qkr2/npp2pQ1/p1b1pP1B/3n4/1P6/P1N5/5PPP/R4RK1 b q - 1 24",
+      "playedMoveUci": "d8d6",
+      "sourceUci": [
+        "c3e4",
+        "e8c8",
+        "e4d6"
+      ],
+      "weakSourceThemes": [
+        "crushing",
+        "middlegame",
+        "short"
+      ]
+    },
+    {
+      "id": "trap-016MG",
+      "split": "validation",
+      "sourceGroup": "game:AJs536up",
+      "sourceUrl": "https://lichess.org/game/AJs536up#37",
+      "event": "Lichess puzzles",
+      "stratum": "similar-capture",
+      "category": "independent-puzzle",
+      "fen": "3r1rk1/2pb1pp1/1pn4p/3Q4/4p1q1/2P3P1/PP2PPBP/R1BR2K1 w - - 1 19",
+      "playedMoveUci": "d5e4",
+      "sourceUci": [
+        "d7f5",
+        "d1d8",
+        "f5e4"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "long",
+        "middlegame"
+      ]
+    },
+    {
+      "id": "trap-02A3t",
+      "split": "validation",
+      "sourceGroup": "game:c57wHyeI",
+      "sourceUrl": "https://lichess.org/game/c57wHyeI#59",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "2q2bk1/4Q2p/p5p1/1p3pB1/8/5N1P/PP3PP1/6K1 w - - 1 30",
+      "playedMoveUci": "e7a7",
+      "sourceUci": [
+        "f8c5",
+        "a7c5",
+        "c8c5"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "endgame",
+        "short",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-02FSn",
+      "split": "validation",
+      "sourceGroup": "game:Yc1JzevW",
+      "sourceUrl": "https://lichess.org/game/Yc1JzevW#25",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r2qk2r/1pp3p1/p1nbbn1p/3p1p2/3P4/PQN1PN1P/1PPB1P2/R3KB1R w KQkq - 0 13",
+      "playedMoveUci": "b3b7",
+      "sourceUci": [
+        "c6a5",
+        "b7a8",
+        "d8a8"
+      ],
+      "weakSourceThemes": [
+        "crushing",
+        "master",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-09JhC",
+      "split": "validation",
+      "sourceGroup": "game:oFr955pe",
+      "sourceUrl": "https://lichess.org/game/oFr955pe/black#40",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r4rk1/3p1ppp/pp6/1p1QP3/8/2P2KP1/1P5q/RN2R3 b - - 0 20",
+      "playedMoveUci": "h2b2",
+      "sourceUci": [
+        "a1a2",
+        "b2a2",
+        "d5a2"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "master",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-0AEKr",
+      "split": "validation",
+      "sourceGroup": "game:erkf2In5",
+      "sourceUrl": "https://lichess.org/game/erkf2In5/black#16",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r1b1k2r/pp1p1ppp/1qn1pn2/8/4P3/P1N1PN2/1PP3PP/R2QKB1R b KQkq - 0 8",
+      "playedMoveUci": "b6b2",
+      "sourceUci": [
+        "c3a4",
+        "b2a1",
+        "d1a1"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "opening",
+        "short",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-0AkeU",
+      "split": "validation",
+      "sourceGroup": "game:LeCmHcET",
+      "sourceUrl": "https://lichess.org/game/LeCmHcET/black#20",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "rnb2rk1/pp5p/1qpb1pp1/3p1p2/3P1P2/P1NBP1N1/1PP3PP/R2QK2R b KQ - 0 10",
+      "playedMoveUci": "b6b2",
+      "sourceUci": [
+        "c3a4",
+        "b2a1",
+        "d1a1"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-0B2wJ",
+      "split": "validation",
+      "sourceGroup": "game:T9Ad5yaA",
+      "sourceUrl": "https://lichess.org/game/T9Ad5yaA#35",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r3k2r/pp1bq3/1bn2n1p/5pp1/5Q2/2NP1N2/PP1BBPPP/2R2RK1 w kq - 0 18",
+      "playedMoveUci": "f4c4",
+      "sourceUci": [
+        "c6a5",
+        "c3d5",
+        "a5c4"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "long",
+        "middlegame",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-0DE1S",
+      "split": "validation",
+      "sourceGroup": "game:4utkgPUz",
+      "sourceUrl": "https://lichess.org/game/4utkgPUz#29",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r2q1rk1/1bpp1pp1/n1p4p/p3P3/2B1P3/PQ6/1PP3PP/RN3RK1 w - - 1 15",
+      "playedMoveUci": "b3b7",
+      "sourceUci": [
+        "a6c5",
+        "b7a8",
+        "d8a8"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-0EJSn",
+      "split": "validation",
+      "sourceGroup": "game:B5EBQsl4",
+      "sourceUrl": "https://lichess.org/game/B5EBQsl4#25",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r2q1rk1/pp2bppp/5n2/3Ppb2/8/2N1B1P1/PPP2PBP/R2Q1RK1 w - - 1 13",
+      "playedMoveUci": "d1f3",
+      "sourceUci": [
+        "f5g4",
+        "d5d6",
+        "g4f3"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "long",
+        "middlegame",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-0EYB6",
+      "split": "validation",
+      "sourceGroup": "game:9m4vC1Z0",
+      "sourceUrl": "https://lichess.org/game/9m4vC1Z0#29",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r3k2r/pbq2pp1/2pb4/P2n2B1/B3p3/2QP4/P1P2PPP/RN2K2R w KQkq - 1 15",
+      "playedMoveUci": "c3g7",
+      "sourceUci": [
+        "d6e5",
+        "g7h8",
+        "e5h8"
+      ],
+      "weakSourceThemes": [
+        "crushing",
+        "fork",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ]
+    },
+    {
+      "id": "trap-0H767",
+      "split": "validation",
+      "sourceGroup": "game:d8Eh6R8t",
+      "sourceUrl": "https://lichess.org/game/d8Eh6R8t/black#30",
+      "event": "Lichess puzzles",
+      "stratum": "trap-tag",
+      "category": "independent-puzzle",
+      "fen": "r3kb1r/1b3ppp/p3pn2/3q4/Pp3P2/1PPB4/1B2Q1PP/RN2R1K1 b kq - 0 15",
+      "playedMoveUci": "d5b3",
+      "sourceUci": [
+        "d3c4",
+        "b4c3",
+        "c4b3"
+      ],
+      "weakSourceThemes": [
+        "advantage",
+        "master",
+        "opening",
+        "short",
+        "trappedPiece"
+      ]
+    }
+  ]
+}

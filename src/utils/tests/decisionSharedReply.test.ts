@@ -6,6 +6,7 @@ import {
     type DecisionAssessmentInput,
 } from "../tacticalMotifs/decisionAssessment";
 import type { DecisionEngineLine } from "../tacticalMotifs/decisionEvidence";
+import { compareSharedReply } from "../tacticalMotifs/decisionSharedReply";
 
 function study(
     fen: string,
@@ -115,4 +116,39 @@ test("the passer does not explain the score loss if separate searches reverse th
         replyProbes: [{ ...probes[0], lines: [{ ...probes[0].lines[0], cp: 500 }] }, probes[1]],
     });
     expect(report?.mistake?.positional.support).toBe("unestablished");
+});
+
+const trapFen = "r1b2rk1/ppnpnpp1/4p1qp/2P4P/4P1P1/1N6/PP2QP2/R1B1KB1R b KQ - 0 15";
+const trap = (fen: string) =>
+    study(
+        fen,
+        ["g6h7 f2f3 b7b6", -372],
+        ["g6f6 e4e5 f6f4 c1f4", -973],
+        ["f2f3 b7b6 e2h2", 356],
+        ["e4e5 f6g6 h5g6 b7b6", 985],
+        ["e4e5 b7b6 f1g2 c8a6", 0],
+    );
+
+test("different queen retreats still support the same verified trap", () => {
+    const mistake = assessChessDecision(trap(trapFen))?.mistake;
+    expect(mistake?.tactical.support).toBe("supported");
+    expect(mistake?.tactical.basis).toBe("bounded-proof");
+    expect(mistake?.allowed).toContainEqual(
+        expect.objectContaining({
+            mechanism: "trappedPiece",
+            squares: ["f6"],
+            lineUci: ["e4e5", "f6g6", "h5g6"],
+        }),
+    );
+    expect(mistake?.tacticalEpisode).toMatchObject({ kind: "trap", checkedReplies: 29 });
+    expect(mistake?.tacticalEpisode?.explanation).toContain("29 legal replies");
+});
+
+test("one captured queen in the PV does not prove a trap when another retreat escapes", () => {
+    const fen = trapFen.replace("R1B1KB1R", "R3KB1R");
+    const input = trap(fen);
+    const [better, played] = input.candidates;
+    const retreat = { ...played, pvUci: ["g6f6", "e4e5", "f6f4", "f1g2"] };
+    const opponent = input.replyProbes![1].lines[0];
+    expect(compareSharedReply(fen, better, retreat, opponent, input.sharedReply)).toBeNull();
 });

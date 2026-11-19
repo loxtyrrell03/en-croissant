@@ -1077,3 +1077,74 @@ stored outside the checkout. Post-freeze safety and wording refinement
 was checked on a replay of the same sealed cases. The broader classifier
 goal remains open, including independent position character and mixed
 recall beyond these mechanisms.
+
+## Iteration 26 — piece traps with different retreats
+
+Two searches can identify the same trap while choosing completely different
+retreats. Requiring identical continuations missed `...Qf6 e5` when one
+search showed `...Qf4 Bxf4` and the other showed `...Qg6 hxg6`.
+
+Mistake analysis now checks a suspected trap with the existing bounded
+material prover. The opponent's quiet move must create a profitable attack
+on the piece that just moved. The independently searched continuation must
+show that piece retreating and being taken by an answer inside the proof.
+The same opponent reply after the better choice must lack the profitable
+attack on that piece and score materially worse for the attacker in the
+controlled Stockfish search. The explanation shows both lines and how
+many legal defences passed the local material check. A regression removes
+the bishop that covers f4 in the example and confirms that the surviving
+retreat prevents a trap label even when the engine line shows a capture.
+
+The earlier evaluation of 36 played decisions becomes development data for this
+change. Tactical labels on those boards improve from 2/9 to 3/9, with
+zero false positives among 17 reviewed negatives. The extra detection
+is `...Qf6 e5`, with all 29 legal defensive branches checked. Positional
+remains 1/8 and mixed remains 0/2, both with zero reviewed false positives.
+
+**Fresh targeted evaluation.** A streamed sample from the [Lichess puzzle
+database](https://database.lichess.org/#puzzles) contributes 20 pre-mistake
+positions from 20 distinct games. Ten are tagged `trappedPiece` and ten
+have a similar attack-and-capture shape. The reviewer assessed the legal
+lines and ran Stockfish searches forcing each legal retreat before seeing
+classifier outputs. Fifteen traps, four alternative mechanisms and one
+uncertain attribution were recorded. All 20 are tactical mistakes. The
+sample tests whether the system can distinguish traps from similar tactics.
+
+| Question | Reviewed positives / negatives | Legacy TP / FP | Same-board v25 TP / FP | v26 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical mistake | 20 / 0 | 7 / 0 | 14 / 0 | 14 / 0 |
+| Trapped-piece mechanism | 15 / 4 | Unavailable | 0 / 0 | 2 / 0 |
+
+The two verified traps are `...Qxb2 Ra2` (31 defences) and
+`Qxg7 ...Be5` (43 defences). Both already received a tactical diagnosis
+from v25. The new evidence explains why the attacked queen has no safe
+escape. In the negative examples `...Bb4` skewers a knight and rook and
+`...c5` forks the queen and rook. The attacked piece can escape at the
+cost of another piece, and the trap label is withheld. The measured
+trap recall is 13% (2/15). The reviewed negative sample is too small to
+estimate a reliable false-positive rate. Thirteen misses include pieces
+left in place, retreats rejected by a mating threat, and alternatives
+that lack a comparable shared reply. The tactical metric has no negatives
+here, and positional and mixed questions were unreviewed.
+
+Classifier time on this sample was about 44 ms median, excluding legacy
+motif extraction and engine work. The existing nomination policy used 11
+restricted queries (11M requested nodes, 10.8 aggregate engine-seconds).
+The trap proof makes no new Stockfish request. A replay with the committed
+motif engine in place of the concurrent worktree edits matched all 20
+mistake reports. The 75 decision tests and 36 existing trap tests passed,
+with one existing skipped test. TypeScript and scoped lint passed.
+This is source-level verification.
+
+**Reproduction.** Copy the two public manifests from
+`benchmarks/decision-evidence/piece-trap-v26` to a new working directory
+outside the checkout. The sample SHA-256 starts with `eab50232` and the
+reference SHA-256 starts with `7cc5bd66`. Run the adaptive root and reply
+benchmarks documented above with the `v26` cache profile and the same
+Stockfish 19 engine. Use `decision-evidence-shared-reply.py` for the shared
+reply cache. Freeze and audit under the `tournament` runner profile with
+`DECISION_AUDIT_SHARED_REPLIES=1`, then run `decision-evidence-evaluate.py`
+against the saved reference. The raw corpus was streamed and not saved.
+The exact v25 comparator used both its assessment and shared-reply
+modules from `1495c533` and the same engine inputs and query nominations.
+Use a new sample for any future held-out result.
