@@ -1,0 +1,305 @@
+{
+  "lichess-05nJe": {
+    "played": "e4d2",
+    "comparison": [
+      {
+        "fen": "r4k1N/p1p2Bpp/1b6/2p3q1/4n3/5P2/PP5P/R3QK1R b - - 5 24",
+        "cp": 563,
+        "mate": null,
+        "depth": 18,
+        "nodes": 1340913,
+        "pvUci": [
+          "e4d2",
+          "f1e2",
+          "c5c4",
+          "e1d2",
+          "g5g2",
+          "e2e1",
+          "g2h1",
+          "e1e2",
+          "h1g2",
+          "e2d1",
+          "g2f3",
+          "d1e1",
+          "f3h1",
+          "e1e2",
+          "h1h2",
+          "e2d1",
+          "h2h1",
+          "d1e2",
+          "h1e4",
+          "e2d1",
+          "e4f3",
+          "d1e1",
+          "b6e3",
+          "d2b4"
+        ],
+        "wdl": [
+          1000,
+          0,
+          0
+        ],
+        "searchMs": 1737.3500000103377
+      }
+    ],
+    "reply": [
+      {
+        "fen": "r4k1N/p1p2Bpp/1b6/2p3q1/8/5P2/PP1n3P/R3QK1R w - - 6 25",
+        "cp": -401,
+        "mate": null,
+        "depth": 13,
+        "nodes": 300204,
+        "pvUci": [
+          "f1e2",
+          "c5c4",
+          "e1d2",
+          "g5g2",
+          "e2e1",
+          "g2h1",
+          "e1e2",
+          "h1g2",
+          "e2d1",
+          "g2f3",
+          "d1c2",
+          "f3e4",
+          "c2d1",
+          "a8b8",
+          "f7d5",
+          "e4g4",
+          "d1c1",
+          "b8d8",
+          "h8f7",
+          "b6e3",
+          "d2e3",
+          "d8d5",
+          "b2b3",
+          "f8f7"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 238.15920000197366
+      },
+      {
+        "fen": "r4k1N/p1p2Bpp/1b6/2p3q1/8/5P2/PP1n3P/R3QK1R w - - 6 25",
+        "cp": -722,
+        "mate": null,
+        "depth": 13,
+        "nodes": 300204,
+        "pvUci": [
+          "e1d2",
+          "g5d2",
+          "f7c4",
+          "d2d4",
+          "f1g2",
+          "d4b2",
+          "g2g3",
+          "a8d8",
+          "a1d1",
+          "b2e5",
+          "g3f2"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 238.15920000197366
+      },
+      {
+        "fen": "r4k1N/p1p2Bpp/1b6/2p3q1/8/5P2/PP1n3P/R3QK1R w - - 6 25",
+        "cp": -1377,
+        "mate": null,
+        "depth": 13,
+        "nodes": 300204,
+        "pvUci": [
+          "f1f2",
+          "c5c4",
+          "f2e2",
+          "a8d8",
+          "e2d1",
+          "d2f3",
+          "d1c2",
+          "f3e1",
+          "a1e1",
+          "g5g2",
+          "c2c1",
+          "b6d4",
+          "e1e8",
+          "d8e8",
+          "f7d5",
+          "g2b2",
+          "c1d1",
+          "b2b1",
+          "d1d2",
+          "b1a2",
+          "d2d1",
+          "a2b1",
+          "d1d2",
+          "b1d3",
+          "d2c1"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 238.15920000197366
+      }
+    ]
+  },
+  "lichess-0fRpS": {
+    "played": "c5d4",
+    "comparison": [
+      {
+        "fen": "3r2kr/pp3p1p/1q4p1/2b1Q3/1P6/P2P4/5PPP/RN3RK1 b - - 0 23",
+        "cp": 713,
+        "mate": null,
+        "depth": 20,
+        "nodes": 600126,
+        "pvUci": [
+          "c5d4",
+          "e5e4",
+          "d4a1",
+          "b1d2",
+          "a1f6",
+          "h2h4",
+          "g8g7",
+          "h4h5",
+          "h8e8",
+          "e4f3",
+          "f6d4",
+          "d2b3",
+          "g7g8",
+          "f3f4",
+          "d4e5",
+          "f4f3",
+          "b6d6",
+          "b3c5",
+          "b7b6"
+        ],
+        "wdl": [
+          1000,
+          0,
+          0
+        ],
+        "searchMs": 524.5407000184059
+      }
+    ],
+    "reply": [
+      {
+        "fen": "3r2kr/pp3p1p/1q4p1/4Q3/1P1b4/P2P4/5PPP/RN3RK1 w - - 1 24",
+        "cp": -732,
+        "mate": null,
+        "depth": 13,
+        "nodes": 300234,
+        "pvUci": [
+          "e5g3",
+          "d4a1",
+          "b1d2",
+          "b6f6",
+          "g3c7",
+          "g8g7",
+          "d2e4",
+          "f6e5",
+          "c7b7",
+          "d8d3"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 228.0218999949284
+      },
+      {
+        "fen": "3r2kr/pp3p1p/1q4p1/4Q3/1P1b4/P2P4/5PPP/RN3RK1 w - - 1 24",
+        "cp": -741,
+        "mate": null,
+        "depth": 13,
+        "nodes": 300234,
+        "pvUci": [
+          "e5f4",
+          "d4a1",
+          "b1d2",
+          "a1d4",
+          "d2c4",
+          "b6f6",
+          "f4c7",
+          "b7b6",
+          "c4d2",
+          "g8g7"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 228.0218999949284
+      },
+      {
+        "fen": "3r2kr/pp3p1p/1q4p1/4Q3/1P1b4/P2P4/5PPP/RN3RK1 w - - 1 24",
+        "cp": -745,
+        "mate": null,
+        "depth": 13,
+        "nodes": 300234,
+        "pvUci": [
+          "e5e1",
+          "d4a1",
+          "b1c3",
+          "a1c3",
+          "e1c3",
+          "h7h6",
+          "h2h4",
+          "h8h7",
+          "f1e1",
+          "h7g7",
+          "c3e5"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 228.0218999949284
+      }
+    ]
+  },
+  "lichess-01kad": {
+    "id": "lichess-01kad",
+    "fen": "1r5k/p4q1p/2Q2p2/4pN2/Pr2P3/1P1n3P/K1P2P2/1R5R b - - 6 27",
+    "game": "GJLzmM4C",
+    "labels": {
+      "fork": false
+    },
+    "line": [
+      "b4b3",
+      "b1b3",
+      "d3b4",
+      "a2b2",
+      "b4c6",
+      "b3b8",
+      "c6b8",
+      "h1g1",
+      "f7f8",
+      "c2c3",
+      "b8c6",
+      "g1g7",
+      "f8g7",
+      "f5g7",
+      "h8g7",
+      "b2b3",
+      "g7f8",
+      "b3c4",
+      "f8e7",
+      "c4b5",
+      "c6b8",
+      "f2f3"
+    ],
+    "depth": 20,
+    "cp": 629,
+    "mate": null
+  }
+}

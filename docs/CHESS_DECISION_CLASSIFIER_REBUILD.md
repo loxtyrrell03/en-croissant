@@ -3318,3 +3318,115 @@ Apply the experimental patch to the recorded baseline with
 `comparePawnStructure` to `"linked"`, `"wider"`,
 `"linked-settled"` or `"wider-settled"`. Score using
 `decision-evidence-ordinary-replay-score.py --mistakes`.
+
+## Neural motif transfer and fork localization
+
+The earlier neural rankers learned on a few hundred played decisions.
+This experiment trained on a separate, larger source with a more
+specific objective. It streams 13,680 tagged Lichess puzzles, with
+10,800 for training and 1,440 each for validation and test. The
+sampler keeps one puzzle per source game, rejects duplicate boards
+including color mirrors, and excludes the existing transfer samples.
+It stratifies on 11 tactical motifs and a background group. The
+resulting theme frequencies describe this sample. Lichess tags cover
+the solution and their absence is only a weak negative for training.
+[Lichess puzzle database](https://database.lichess.org/#puzzles)
+
+Each input replays a legal continuation and encodes attacks, defended
+squares, the pieces involved, check, pins, discovered rays, material
+and the relationship between adjacent plies. The neural model learns
+from ten plies. A shared per-ply encoder and a five-ply convolution
+combine local features. A differentiable pooling operation fits the
+tags on the whole solution without assigning them to a move. The
+linear and dense controls use the same line features. The first-ply
+linear control sees only the first move and no reply features.
+
+| Method | Mean average precision across 11 held-out source tags |
+| --- | ---: |
+| First-ply logistic regression | .459 |
+| Full-line logistic regression | .796 |
+| Full-line dense neural network | .853 |
+| Temporal neural network | .888 |
+
+The temporal ensemble is three fits of 12,475 parameters. Warm CPU
+inference averaged 0.59 ms per position after feature extraction.
+Feature extraction averaged 0.41 ms on the 40-position audit. These
+timings exclude Stockfish, start-up, and app integration.
+
+### Transfer to reviewed moves
+
+The score-only transfer uses 44 independent puzzle moves and
+34 Woodpecker moves with selective reviewed motif labels. The exact
+move is kept in each Stockfish frame. The broad sequence model
+nominated two of four originally annotated missed forks in ten
+review slots. Rechecking the stronger replies corrected an old
+reference. In `...Nd2+` the targets are Kf1 and the pawn on f3. The
+queen on e1 can capture the knight and is outside its attack. The
+reviewed target at e1 was wrong. The model finds one of the three
+remaining positives and nine explicit negatives at ten slots.
+`...Bd4` really does attack Qe5 and Ra1. Three separate Stockfish
+queen retreats allow `...Bxa1`. In another nomination, `...Rxb3`
+prepares the real fork `...Nb4+`, which belongs to a later move.
+
+The new audit contains 40 unused puzzle games, including moves with
+credible root fork geometry and moves whose genuine fork comes
+later. A single reviewer read the exact board and Stockfish
+variations before opening the new predictions. The audit asks for
+a meaningful fork on two non-pawn targets, with the king counting
+as a target. It excludes incidental mate geometry. Three cases are
+uncertain. The current live verifier reported nine of 14 reviewed
+forks with zero false positives across 23 reviewed negatives.
+
+| Nominations among cases the live verifier left unresolved | Reviewed forks | Reviewed negatives | Uncertain |
+| --- | ---: | ---: | ---: |
+| Geometry plus collection in the engine line | 5 | 4 | 3 |
+| Temporal neural network | 2 | 10 | 0 |
+| Temporal model's first-ply score | 1 | 8 | 3 |
+| Geometry plus the temporal first-ply score | 5 | 4 | 3 |
+
+Each row uses the same twelve review slots. These are nominations
+and reviewed labels, before any proposed automatic proof. The
+network's first-ply score still reflects a nearby sequence and
+weak line-level supervision. It offers no demonstrated improvement
+in this exact-move task. The curated sample and one reviewer limit
+claims about prevalence or game-wide precision.
+
+### Transfer to played mistakes
+
+The played-move triage compares the missed best move, the opponent's
+reply to the recorded move, and the reply to the better move. The
+separate branches keep a missed opportunity distinct from an allowed
+tactic. The score-only benchmark uses 199 historical decisions and
+20 newer decisions with both reply frames. Ranked by Stockfish loss,
+reviewers find 30 historical tactical mistakes in 49 unresolved
+review slots and three newer mistakes in five. Whole-line temporal
+ranking finds 21 and zero at the same budgets. It nominates six versus
+five historical mixed mistakes, then zero versus two on the newer
+sample. These are review yields. The setup contains no learned
+positional head and adds no verified app diagnoses.
+
+This experiment stays offline. Whole-solution tags support training
+a motif ranker. A model for app explanations needs labels tied to the
+exact first move or refutation, a genuine nearby negative, and a legal
+payoff or defensive branch. The current verifier and simple search
+controls set the baseline for that test.
+
+**Reproduction.** See `benchmarks/decision-evidence/neural-motif-transfer`
+for the source ETag, split hashes, exact public reference, amendment,
+engine receipt and detailed results. Run
+`decision-evidence-motif-corpus.py` with the independent, course,
+classical and two checking-tempo sample manifests excluded. Use
+`decision-evidence-fork-audit-sample.py` with the frozen corpus and
+the original transfer input. Give the published `fork-engine-input.json`
+to `decision-evidence-engine.py --split validation --minimum-depth 18
+--maximum-root-nodes 2400000` for the 40 cases and two witness positions. Use the published fork reference
+and amendment with `decision-evidence-motif-transfer-inputs.py`.
+The exercise inputs use the v13 holdout sources and the original
+worker replays supply the played decisions. Set
+`DECISION_MOTIF_TRANSFER_INPUT` and `DECISION_MOTIF_TRANSFER_OUTPUT`
+for `decisionMotifTransferReplay.test.ts` on the recorded baseline.
+Then run `decision-evidence-motif-sequence.py` and
+`decision-evidence-motif-transfer-score.py`. Python 3.13,
+python-chess 1.999, PyTorch 2.10.0 CPU, NumPy 2.5.5 and
+scikit-learn 1.9.1 were used. The private course inputs, training
+sample, weights and feature cache stay outside Git.

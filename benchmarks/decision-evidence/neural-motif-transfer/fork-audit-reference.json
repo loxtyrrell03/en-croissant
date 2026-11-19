@@ -1,0 +1,245 @@
+{
+  "scope": "Move justification: tactically meaningful fork on the exact first move, two non-pawn targets including king, excluding unused geometry; independent Stockfish branches plus single reviewer.",
+  "cases": [
+    {
+      "id": "lichess-4bDK0",
+      "moveUci": "f3e5",
+      "fork": null,
+      "rationale": "Nxe5 attacks the queen and defended c6 knight. Both standard replies are met by Rxd5. Independent lines do not establish a profitable second fork arm."
+    },
+    {
+      "id": "lichess-4bGBs",
+      "moveUci": "h3h2",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4bGDE",
+      "moveUci": "d5e3",
+      "fork": true,
+      "rationale": "Ne3+ attacks the g2 king and d1 rook; Kf2, Kg1 and Kh3 allow Nxd1."
+    },
+    {
+      "id": "lichess-4bGTn",
+      "moveUci": "c3c2",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bGaa",
+      "moveUci": "d5f6",
+      "fork": false,
+      "rationale": "Nf6+ and Nxh5 check and win a pawn. This audit is restricted to forks on two non-pawn targets (king counts)."
+    },
+    {
+      "id": "lichess-4bGea",
+      "moveUci": "f2f1",
+      "fork": true,
+      "rationale": "Qf1+ forces Kh2. The rook remains tied to e2 and Qxe2+ wins it after Bb5 in the separately searched line."
+    },
+    {
+      "id": "lichess-4bHHE",
+      "moveUci": "e5f3",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bHkU",
+      "moveUci": "d8d2",
+      "fork": true,
+      "rationale": "Rxd2+ threatens Rxe2 if the king moves away (Kb3 and Kc1); Kxd2 avoids it but allows Be1+ and Qxg5."
+    },
+    {
+      "id": "lichess-4bIJV",
+      "moveUci": "b3b1",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bIxF",
+      "moveUci": "c3b5",
+      "fork": true,
+      "rationale": "Nxb5 hits Qc7 and Bd4. Bxb2 allows Nxc7; moving the queen permits Nxd4."
+    },
+    {
+      "id": "lichess-4bJG6",
+      "moveUci": "a1a6",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bJs8",
+      "moveUci": "d8a5",
+      "fork": true,
+      "rationale": "Qa5+ and Qxe5+ win the knight after Bd2 or b4. After c3, Bxe5 collects the same knight instead."
+    },
+    {
+      "id": "lichess-4bLQb",
+      "moveUci": "b5f5",
+      "fork": true,
+      "rationale": "Qf5+ attacks the c8 king and g4 knight; Kb8 and Rd7 allow Qxg4."
+    },
+    {
+      "id": "lichess-4bNQQ",
+      "moveUci": "c8d8",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bPiH",
+      "moveUci": "b8a8",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bPnm",
+      "moveUci": "d3f2",
+      "fork": true,
+      "rationale": "Nf2+ attacks the e4 king and h3 rook; Kxd4, Ke3 and Kf5 allow Nxh3."
+    },
+    {
+      "id": "lichess-4bQnY",
+      "moveUci": "h5f7",
+      "fork": false,
+      "rationale": "Qf7 is immediate mate; the geometric attack on f6 never supplies a second threat."
+    },
+    {
+      "id": "lichess-4bRN3",
+      "moveUci": "f6b6",
+      "fork": true,
+      "rationale": "Rb6+ wins the b7 bishop. Ka3 and Kc2 permit Rxb7 now; Ka4 delays it with Rb4+."
+    },
+    {
+      "id": "lichess-4bRUF",
+      "moveUci": "c6c5",
+      "fork": true,
+      "rationale": "Qc5+ checks and hits the e7 rook. Kg2, Kf1 and Kh2 all allow Qxe7."
+    },
+    {
+      "id": "lichess-4bRgu",
+      "moveUci": "c3d5",
+      "fork": null,
+      "rationale": "Nd5 threatens the queen and defended bishop. The separate replies support Nxe7 after Kd7, but Qf7 is met by Rb3. The second arm is unclear."
+    },
+    {
+      "id": "lichess-4bS2l",
+      "moveUci": "h4e7",
+      "fork": null,
+      "rationale": "Qxe7 hits a defended rook and bishop. The leading replies give Qxc7 or development rather than collecting either, with Qxd7 only after a weaker reply."
+    },
+    {
+      "id": "lichess-4bTlR",
+      "moveUci": "d5f6",
+      "fork": true,
+      "rationale": "Nf6+ checks and attacks Qd7. A king move allows Nxd7; either capture of the knight allows Qxd7. The sacrifice and fork support one another."
+    },
+    {
+      "id": "lichess-4bUMJ",
+      "moveUci": "d5d4",
+      "fork": true,
+      "rationale": "d4 threatens c3 and e3. With Bg5 or a3, dxc3 wins a piece; Bxd4 loses the bishop to Qxd4."
+    },
+    {
+      "id": "lichess-4bUT1",
+      "moveUci": "d5c7",
+      "fork": false,
+      "rationale": "Nxc7 is mate; the geometric attack on a8 never supplies a second threat."
+    },
+    {
+      "id": "lichess-4bUaI",
+      "moveUci": "e3f1",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bV3Q",
+      "moveUci": "f2g2",
+      "fork": false,
+      "rationale": "Qxg2+ is a forced queen sacrifice for mate. Its apparent second attack on Rg1 is never used or available as an alternative."
+    },
+    {
+      "id": "lichess-4bVA9",
+      "moveUci": "b3b4",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bVyx",
+      "moveUci": "g3g4",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4bY7K",
+      "moveUci": "h6g7",
+      "fork": false,
+      "rationale": "The first checking move has no second non-pawn target on the inspected board."
+    },
+    {
+      "id": "lichess-4bYWi",
+      "moveUci": "d4c6",
+      "fork": true,
+      "rationale": "Nc6 attacks Qa5 and Rd8. Rxd1 allows Nxa5; Qc5 and Qd5 allow Nxd8."
+    },
+    {
+      "id": "lichess-4bbXB",
+      "moveUci": "f5d5",
+      "fork": true,
+      "rationale": "Qd5+ checks the king and attacks Rc4. e4, Kg1 and Qf3 all permit Qxc4."
+    },
+    {
+      "id": "lichess-4bhj9",
+      "moveUci": "c4f7",
+      "fork": true,
+      "rationale": "Bxf7+ checks and attacks Qh5. Kd8 allows Bxh5; Qxf7 avoids that capture but permits Rxe5+."
+    },
+    {
+      "id": "lichess-4cPvi",
+      "moveUci": "h7f6",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4cSiK",
+      "moveUci": "f5f7",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4cVCL",
+      "moveUci": "g3h3",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4cpQw",
+      "moveUci": "c3e4",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4cv7C",
+      "moveUci": "f1e1",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4d3L2",
+      "moveUci": "g7b2",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4dCqM",
+      "moveUci": "g5g6",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    },
+    {
+      "id": "lichess-4dRMt",
+      "moveUci": "d1d7",
+      "fork": false,
+      "rationale": "The first move does not attack two non-pawn targets with its moved piece. The later fork is a distinct event."
+    }
+  ]
+}

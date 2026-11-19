@@ -1,0 +1,2040 @@
+{
+  "baselineCommit": "4fc572c44825db41960c85c563ea93fe721203cc",
+  "splitSizes": {
+    "train": 10800,
+    "validation": 1440,
+    "test": 1440
+  },
+  "themes": [
+    "fork",
+    "pin",
+    "skewer",
+    "discoveredAttack",
+    "deflection",
+    "attraction",
+    "capturingDefender",
+    "intermezzo",
+    "interference",
+    "clearance",
+    "trappedPiece"
+  ],
+  "corpusSha256": "9f3d2bdf595a3eac9f1d4f049f3937c03248bfa5595e3c4709f6b6ee30f1fee0",
+  "predictionLabelAudit": {
+    "originalReference": {
+      "root-logistic": {
+        "reviewedPositive": 1,
+        "reviewedNegative": 7,
+        "uncertain": 2,
+        "slots": 10,
+        "ap": 0.21830065359477124,
+        "availablePositive": 4,
+        "availableNegative": 50
+      },
+      "line-logistic": {
+        "reviewedPositive": 0,
+        "reviewedNegative": 7,
+        "uncertain": 3,
+        "slots": 10,
+        "ap": 0.10324763471822296,
+        "availablePositive": 4,
+        "availableNegative": 50
+      },
+      "line-mlp": {
+        "reviewedPositive": 0,
+        "reviewedNegative": 7,
+        "uncertain": 3,
+        "slots": 10,
+        "ap": 0.10392867291844274,
+        "availablePositive": 4,
+        "availableNegative": 50
+      },
+      "temporal-net": {
+        "reviewedPositive": 2,
+        "reviewedNegative": 8,
+        "uncertain": 0,
+        "slots": 10,
+        "ap": 0.15449657869012706,
+        "availablePositive": 4,
+        "availableNegative": 50
+      }
+    },
+    "correctedReference": {
+      "root-logistic": {
+        "reviewedPositive": 1,
+        "reviewedNegative": 7,
+        "uncertain": 2,
+        "slots": 10,
+        "ap": 0.21459694989106753,
+        "availablePositive": 3,
+        "availableNegative": 51
+      },
+      "line-logistic": {
+        "reviewedPositive": 0,
+        "reviewedNegative": 7,
+        "uncertain": 3,
+        "slots": 10,
+        "ap": 0.06991087344028521,
+        "availablePositive": 3,
+        "availableNegative": 51
+      },
+      "line-mlp": {
+        "reviewedPositive": 0,
+        "reviewedNegative": 7,
+        "uncertain": 3,
+        "slots": 10,
+        "ap": 0.06356919579425974,
+        "availablePositive": 3,
+        "availableNegative": 51
+      },
+      "temporal-net": {
+        "reviewedPositive": 1,
+        "reviewedNegative": 9,
+        "uncertain": 0,
+        "slots": 10,
+        "ap": 0.08514173998044966,
+        "availablePositive": 3,
+        "availableNegative": 51
+      },
+      "temporal-first-ply": {
+        "reviewedPositive": 0,
+        "reviewedNegative": 8,
+        "uncertain": 2,
+        "slots": 10,
+        "ap": 0.08364950316169828,
+        "availablePositive": 3,
+        "availableNegative": 51
+      }
+    }
+  },
+  "motifMetrics": {
+    "root-logistic": {
+      "validationMacroAP": 0.4447924352636383,
+      "test": {
+        "macroAP": 0.45940299203673124,
+        "byMotif": {
+          "fork": {
+            "ap": 0.5018980833742075,
+            "sourcePositives": 234,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 108
+            },
+            "fixedThreshold": {
+              "threshold": 0.31036892533302307,
+              "tagged": 112,
+              "untagged": 117,
+              "missedTag": 122
+            }
+          },
+          "pin": {
+            "ap": 0.5079092400391865,
+            "sourcePositives": 186,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 93
+            },
+            "fixedThreshold": {
+              "threshold": 0.1957027018070221,
+              "tagged": 91,
+              "untagged": 107,
+              "missedTag": 95
+            }
+          },
+          "skewer": {
+            "ap": 0.61014752309176,
+            "sourcePositives": 136,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 94
+            },
+            "fixedThreshold": {
+              "threshold": 0.1341513693332672,
+              "tagged": 95,
+              "untagged": 127,
+              "missedTag": 41
+            }
+          },
+          "discoveredAttack": {
+            "ap": 0.6871946880681502,
+            "sourcePositives": 166,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 122
+            },
+            "fixedThreshold": {
+              "threshold": 0.1202865019440651,
+              "tagged": 122,
+              "untagged": 88,
+              "missedTag": 44
+            }
+          },
+          "deflection": {
+            "ap": 0.30827511149953674,
+            "sourcePositives": 173,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 73
+            },
+            "fixedThreshold": {
+              "threshold": 0.232657328248024,
+              "tagged": 73,
+              "untagged": 141,
+              "missedTag": 100
+            }
+          },
+          "attraction": {
+            "ap": 0.5220928877627754,
+            "sourcePositives": 152,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 90
+            },
+            "fixedThreshold": {
+              "threshold": 0.2140510082244873,
+              "tagged": 90,
+              "untagged": 127,
+              "missedTag": 62
+            }
+          },
+          "capturingDefender": {
+            "ap": 0.49171510637256755,
+            "sourcePositives": 122,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 91
+            },
+            "fixedThreshold": {
+              "threshold": 0.17735423147678375,
+              "tagged": 93,
+              "untagged": 134,
+              "missedTag": 29
+            }
+          },
+          "intermezzo": {
+            "ap": 0.3233820514348572,
+            "sourcePositives": 138,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 66
+            },
+            "fixedThreshold": {
+              "threshold": 0.16292746365070343,
+              "tagged": 67,
+              "untagged": 168,
+              "missedTag": 71
+            }
+          },
+          "interference": {
+            "ap": 0.19345493004633146,
+            "sourcePositives": 120,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 43
+            },
+            "fixedThreshold": {
+              "threshold": 0.15628089010715485,
+              "tagged": 42,
+              "untagged": 160,
+              "missedTag": 78
+            }
+          },
+          "clearance": {
+            "ap": 0.30825469704796254,
+            "sourcePositives": 129,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 62
+            },
+            "fixedThreshold": {
+              "threshold": 0.15750829875469208,
+              "tagged": 61,
+              "untagged": 147,
+              "missedTag": 68
+            }
+          },
+          "trappedPiece": {
+            "ap": 0.5991085936667091,
+            "sourcePositives": 123,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 91
+            },
+            "fixedThreshold": {
+              "threshold": 0.1762426793575287,
+              "tagged": 88,
+              "untagged": 117,
+              "missedTag": 35
+            }
+          }
+        }
+      },
+      "transfers": {
+        "independent-source": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.5646422820335864
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "independent-engine": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.5646422820335864
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "woodpecker-source": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.2
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "woodpecker-engine": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.2
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "historical-missed": {},
+        "historical-played": {},
+        "historical-control": {},
+        "newer-missed": {},
+        "newer-played": {},
+        "newer-control": {},
+        "fork-audit-engine": {
+          "fork": {
+            "positive": 14,
+            "negative": 23,
+            "ap": 0.9222042663219132
+          }
+        }
+      }
+    },
+    "line-logistic": {
+      "validationMacroAP": 0.7789118230151917,
+      "test": {
+        "macroAP": 0.7958915570039384,
+        "byMotif": {
+          "fork": {
+            "ap": 0.7534326025504222,
+            "sourcePositives": 234,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 152
+            },
+            "fixedThreshold": {
+              "threshold": 0.44978317618370056,
+              "tagged": 157,
+              "untagged": 74,
+              "missedTag": 77
+            }
+          },
+          "pin": {
+            "ap": 0.7309067743419446,
+            "sourcePositives": 186,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 133
+            },
+            "fixedThreshold": {
+              "threshold": 0.3210434317588806,
+              "tagged": 129,
+              "untagged": 73,
+              "missedTag": 57
+            }
+          },
+          "skewer": {
+            "ap": 0.9643783138797934,
+            "sourcePositives": 136,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 133
+            },
+            "fixedThreshold": {
+              "threshold": 0.030779659748077393,
+              "tagged": 134,
+              "untagged": 90,
+              "missedTag": 2
+            }
+          },
+          "discoveredAttack": {
+            "ap": 0.9469907157686484,
+            "sourcePositives": 166,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 161
+            },
+            "fixedThreshold": {
+              "threshold": 0.07627072930335999,
+              "tagged": 161,
+              "untagged": 58,
+              "missedTag": 5
+            }
+          },
+          "deflection": {
+            "ap": 0.612928184321405,
+            "sourcePositives": 173,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 124
+            },
+            "fixedThreshold": {
+              "threshold": 0.2757008373737335,
+              "tagged": 126,
+              "untagged": 100,
+              "missedTag": 47
+            }
+          },
+          "attraction": {
+            "ap": 0.9411826216960947,
+            "sourcePositives": 152,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 145
+            },
+            "fixedThreshold": {
+              "threshold": 0.04635944217443466,
+              "tagged": 146,
+              "untagged": 76,
+              "missedTag": 6
+            }
+          },
+          "capturingDefender": {
+            "ap": 0.8130779203088527,
+            "sourcePositives": 122,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 110
+            },
+            "fixedThreshold": {
+              "threshold": 0.08589060604572296,
+              "tagged": 110,
+              "untagged": 96,
+              "missedTag": 12
+            }
+          },
+          "intermezzo": {
+            "ap": 0.7337031558393373,
+            "sourcePositives": 138,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 107
+            },
+            "fixedThreshold": {
+              "threshold": 0.16324912011623383,
+              "tagged": 107,
+              "untagged": 112,
+              "missedTag": 31
+            }
+          },
+          "interference": {
+            "ap": 0.6905617847193107,
+            "sourcePositives": 120,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 106
+            },
+            "fixedThreshold": {
+              "threshold": 0.11621246486902237,
+              "tagged": 106,
+              "untagged": 117,
+              "missedTag": 14
+            }
+          },
+          "clearance": {
+            "ap": 0.7321457031273769,
+            "sourcePositives": 129,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 110
+            },
+            "fixedThreshold": {
+              "threshold": 0.1326793134212494,
+              "tagged": 109,
+              "untagged": 103,
+              "missedTag": 20
+            }
+          },
+          "trappedPiece": {
+            "ap": 0.8354993504901367,
+            "sourcePositives": 123,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 109
+            },
+            "fixedThreshold": {
+              "threshold": 0.07748570293188095,
+              "tagged": 108,
+              "untagged": 102,
+              "missedTag": 15
+            }
+          }
+        }
+      },
+      "transfers": {
+        "independent-source": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.7324346405228758
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "independent-engine": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.3994657288668178
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "woodpecker-source": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.16666666666666666
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "woodpecker-engine": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.14285714285714285
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "historical-missed": {},
+        "historical-played": {},
+        "historical-control": {},
+        "newer-missed": {},
+        "newer-played": {},
+        "newer-control": {},
+        "fork-audit-engine": {
+          "fork": {
+            "positive": 14,
+            "negative": 23,
+            "ap": 0.6119572678249582
+          }
+        }
+      }
+    },
+    "line-mlp": {
+      "validationMacroAP": 0.8490537457265844,
+      "test": {
+        "macroAP": 0.8526315257923556,
+        "byMotif": {
+          "fork": {
+            "ap": 0.839307115249871,
+            "sourcePositives": 234,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 168
+            },
+            "fixedThreshold": {
+              "threshold": 0.42062127590179443,
+              "tagged": 177,
+              "untagged": 57,
+              "missedTag": 57
+            }
+          },
+          "pin": {
+            "ap": 0.8003119902519911,
+            "sourcePositives": 186,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 140
+            },
+            "fixedThreshold": {
+              "threshold": 0.30075985193252563,
+              "tagged": 136,
+              "untagged": 70,
+              "missedTag": 50
+            }
+          },
+          "skewer": {
+            "ap": 0.9733921509976382,
+            "sourcePositives": 136,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 133
+            },
+            "fixedThreshold": {
+              "threshold": 0.031740184873342514,
+              "tagged": 133,
+              "untagged": 92,
+              "missedTag": 3
+            }
+          },
+          "discoveredAttack": {
+            "ap": 0.9620267924025698,
+            "sourcePositives": 166,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 161
+            },
+            "fixedThreshold": {
+              "threshold": 0.06061093509197235,
+              "tagged": 161,
+              "untagged": 65,
+              "missedTag": 5
+            }
+          },
+          "deflection": {
+            "ap": 0.7434640179399297,
+            "sourcePositives": 173,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 130
+            },
+            "fixedThreshold": {
+              "threshold": 0.2559506595134735,
+              "tagged": 132,
+              "untagged": 95,
+              "missedTag": 41
+            }
+          },
+          "attraction": {
+            "ap": 0.9533226499745464,
+            "sourcePositives": 152,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 145
+            },
+            "fixedThreshold": {
+              "threshold": 0.05933161824941635,
+              "tagged": 146,
+              "untagged": 79,
+              "missedTag": 6
+            }
+          },
+          "capturingDefender": {
+            "ap": 0.8728791613456184,
+            "sourcePositives": 122,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 114
+            },
+            "fixedThreshold": {
+              "threshold": 0.08596988767385483,
+              "tagged": 114,
+              "untagged": 87,
+              "missedTag": 8
+            }
+          },
+          "intermezzo": {
+            "ap": 0.7809387532282309,
+            "sourcePositives": 138,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 114
+            },
+            "fixedThreshold": {
+              "threshold": 0.14154449105262756,
+              "tagged": 116,
+              "untagged": 117,
+              "missedTag": 22
+            }
+          },
+          "interference": {
+            "ap": 0.8081390100934064,
+            "sourcePositives": 120,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 110
+            },
+            "fixedThreshold": {
+              "threshold": 0.10126112401485443,
+              "tagged": 111,
+              "untagged": 113,
+              "missedTag": 9
+            }
+          },
+          "clearance": {
+            "ap": 0.7944438253466594,
+            "sourcePositives": 129,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 117
+            },
+            "fixedThreshold": {
+              "threshold": 0.13043873012065887,
+              "tagged": 117,
+              "untagged": 96,
+              "missedTag": 12
+            }
+          },
+          "trappedPiece": {
+            "ap": 0.8507213168854495,
+            "sourcePositives": 123,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 109
+            },
+            "fixedThreshold": {
+              "threshold": 0.06769431382417679,
+              "tagged": 110,
+              "untagged": 112,
+              "missedTag": 13
+            }
+          }
+        }
+      },
+      "transfers": {
+        "independent-source": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.7235449735449735
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "independent-engine": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.4527777777777778
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "woodpecker-source": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.09090909090909091
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "woodpecker-engine": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.09090909090909091
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "historical-missed": {},
+        "historical-played": {},
+        "historical-control": {},
+        "newer-missed": {},
+        "newer-played": {},
+        "newer-control": {},
+        "fork-audit-engine": {
+          "fork": {
+            "positive": 14,
+            "negative": 23,
+            "ap": 0.5767228207290055
+          }
+        }
+      }
+    },
+    "temporal-net": {
+      "validationMacroAP": 0.8911517650150033,
+      "test": {
+        "macroAP": 0.8875976528764482,
+        "byMotif": {
+          "fork": {
+            "ap": 0.9408808607433395,
+            "sourcePositives": 234,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 195
+            },
+            "fixedThreshold": {
+              "threshold": 0.5246121287345886,
+              "tagged": 195,
+              "untagged": 22,
+              "missedTag": 39
+            }
+          },
+          "pin": {
+            "ap": 0.8288031865770424,
+            "sourcePositives": 186,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 145
+            },
+            "fixedThreshold": {
+              "threshold": 0.21661119163036346,
+              "tagged": 145,
+              "untagged": 63,
+              "missedTag": 41
+            }
+          },
+          "skewer": {
+            "ap": 0.9867599541852479,
+            "sourcePositives": 136,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 134
+            },
+            "fixedThreshold": {
+              "threshold": 0.02459317073225975,
+              "tagged": 134,
+              "untagged": 77,
+              "missedTag": 2
+            }
+          },
+          "discoveredAttack": {
+            "ap": 0.9829626339890224,
+            "sourcePositives": 166,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 165
+            },
+            "fixedThreshold": {
+              "threshold": 0.05506883189082146,
+              "tagged": 165,
+              "untagged": 52,
+              "missedTag": 1
+            }
+          },
+          "deflection": {
+            "ap": 0.8272385005894874,
+            "sourcePositives": 173,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 143
+            },
+            "fixedThreshold": {
+              "threshold": 0.26431161165237427,
+              "tagged": 152,
+              "untagged": 81,
+              "missedTag": 21
+            }
+          },
+          "attraction": {
+            "ap": 0.9824930341823799,
+            "sourcePositives": 152,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 148
+            },
+            "fixedThreshold": {
+              "threshold": 0.021573951467871666,
+              "tagged": 150,
+              "untagged": 80,
+              "missedTag": 2
+            }
+          },
+          "capturingDefender": {
+            "ap": 0.9545336665576583,
+            "sourcePositives": 122,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 122
+            },
+            "fixedThreshold": {
+              "threshold": 0.03171704709529877,
+              "tagged": 122,
+              "untagged": 76,
+              "missedTag": 0
+            }
+          },
+          "intermezzo": {
+            "ap": 0.7481106314008924,
+            "sourcePositives": 138,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 113
+            },
+            "fixedThreshold": {
+              "threshold": 0.14386938512325287,
+              "tagged": 112,
+              "untagged": 96,
+              "missedTag": 26
+            }
+          },
+          "interference": {
+            "ap": 0.8370490965363196,
+            "sourcePositives": 120,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 115
+            },
+            "fixedThreshold": {
+              "threshold": 0.06223384663462639,
+              "tagged": 114,
+              "untagged": 98,
+              "missedTag": 6
+            }
+          },
+          "clearance": {
+            "ap": 0.7817455761547167,
+            "sourcePositives": 129,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 121
+            },
+            "fixedThreshold": {
+              "threshold": 0.11504869908094406,
+              "tagged": 119,
+              "untagged": 86,
+              "missedTag": 10
+            }
+          },
+          "trappedPiece": {
+            "ap": 0.8929970407248254,
+            "sourcePositives": 123,
+            "atBudget": {
+              "slots": 216,
+              "sourceTagged": 118
+            },
+            "fixedThreshold": {
+              "threshold": 0.0558185800909996,
+              "tagged": 118,
+              "untagged": 113,
+              "missedTag": 5
+            }
+          }
+        }
+      },
+      "transfers": {
+        "independent-source": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.6917600373482726
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "independent-engine": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.6077653283535637
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "woodpecker-source": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.07142857142857142
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 0.5
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "woodpecker-engine": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.05263157894736842
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "historical-missed": {},
+        "historical-played": {},
+        "historical-control": {},
+        "newer-missed": {},
+        "newer-played": {},
+        "newer-control": {},
+        "fork-audit-engine": {
+          "fork": {
+            "positive": 14,
+            "negative": 23,
+            "ap": 0.5147420664172102
+          }
+        }
+      }
+    },
+    "temporal-first-ply": {
+      "transfers": {
+        "independent-source": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.24616013071895426
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "independent-engine": {
+          "fork": {
+            "positive": 6,
+            "negative": 26,
+            "ap": 0.2344322344322344
+          },
+          "pin": {
+            "positive": 1,
+            "negative": 0
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 2,
+            "negative": 0
+          },
+          "deflection": {
+            "positive": 3,
+            "negative": 0
+          },
+          "intermezzo": {
+            "positive": 2,
+            "negative": 0
+          },
+          "trappedPiece": {
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        "woodpecker-source": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.047619047619047616
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "woodpecker-engine": {
+          "fork": {
+            "positive": 1,
+            "negative": 25,
+            "ap": 0.05
+          },
+          "pin": {
+            "positive": 0,
+            "negative": 1
+          },
+          "skewer": {
+            "positive": 1,
+            "negative": 0
+          },
+          "discoveredAttack": {
+            "positive": 1,
+            "negative": 1,
+            "ap": 1.0
+          },
+          "deflection": {
+            "positive": 1,
+            "negative": 0
+          },
+          "clearance": {
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        "historical-missed": {},
+        "historical-played": {},
+        "historical-control": {},
+        "newer-missed": {},
+        "newer-played": {},
+        "newer-control": {},
+        "fork-audit-engine": {
+          "fork": {
+            "positive": 14,
+            "negative": 23,
+            "ap": 0.38620983472440357
+          }
+        }
+      }
+    }
+  },
+  "inference": {
+    "root-logistic": {
+      "trainingSeconds": 0.28853859996888787,
+      "meanSingleInferenceMs": 0.545823333474497,
+      "fits": [
+        {
+          "parameters": 583,
+          "maxIterations": 63
+        }
+      ]
+    },
+    "line-logistic": {
+      "trainingSeconds": 2.6037484999978915,
+      "meanSingleInferenceMs": 0.6253975002133908,
+      "fits": [
+        {
+          "parameters": 7260,
+          "maxIterations": 193
+        }
+      ]
+    },
+    "line-mlp": {
+      "trainingSeconds": 5.105582799995318,
+      "meanSingleInferenceMs": 0.1958983334285828,
+      "fits": [
+        {
+          "seed": 31,
+          "bestEpoch": 27,
+          "validationLogLoss": 0.1275704801082611,
+          "parameters": 44683
+        },
+        {
+          "seed": 73,
+          "bestEpoch": 22,
+          "validationLogLoss": 0.12842798233032227,
+          "parameters": 44683
+        },
+        {
+          "seed": 109,
+          "bestEpoch": 22,
+          "validationLogLoss": 0.13018456101417542,
+          "parameters": 44683
+        }
+      ]
+    },
+    "temporal-net": {
+      "trainingSeconds": 15.72123249998549,
+      "meanSingleInferenceMs": 0.8231050000176765,
+      "fits": [
+        {
+          "seed": 31,
+          "bestEpoch": 32,
+          "validationLogLoss": 0.10583613067865372,
+          "parameters": 12475
+        },
+        {
+          "seed": 73,
+          "bestEpoch": 32,
+          "validationLogLoss": 0.09806088358163834,
+          "parameters": 12475
+        },
+        {
+          "seed": 109,
+          "bestEpoch": 32,
+          "validationLogLoss": 0.10246620327234268,
+          "parameters": 12475
+        }
+      ]
+    }
+  },
+  "scores": {
+    "motifs": {
+      "incumbent": {
+        "independent-source": {
+          "fork": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 2,
+            "tn": 26
+          },
+          "pin": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "skewer": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "discoveredAttack": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "tn": 0
+          },
+          "deflection": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 3,
+            "tn": 0
+          },
+          "intermezzo": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "trappedPiece": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 0
+          }
+        },
+        "independent-engine": {
+          "fork": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 2,
+            "tn": 26
+          },
+          "pin": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "skewer": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "discoveredAttack": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "tn": 0
+          },
+          "deflection": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 3,
+            "tn": 0
+          },
+          "intermezzo": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "trappedPiece": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 0
+          }
+        },
+        "woodpecker-source": {
+          "fork": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 25
+          },
+          "pin": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "skewer": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "discoveredAttack": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 1
+          },
+          "deflection": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "clearance": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 2,
+            "tn": 0
+          }
+        },
+        "woodpecker-engine": {
+          "fork": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 25
+          },
+          "pin": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "skewer": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "discoveredAttack": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 1
+          },
+          "deflection": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0
+          },
+          "clearance": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 2,
+            "tn": 0
+          }
+        },
+        "fork-audit-engine": {
+          "fork": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 5,
+            "tn": 23
+          }
+        }
+      },
+      "medianVerifierMs": {
+        "independent-source": 32.66769999999974,
+        "independent-engine": 34.738900000000285,
+        "woodpecker-source": 63.13239999999996,
+        "woodpecker-engine": 54.07759999999962,
+        "fork-audit-engine": 59.74825000000055
+      },
+      "combinedUnresolvedFork": {
+        "root-logistic": {
+          "reviewedPositive": 1,
+          "reviewedNegative": 7,
+          "uncertain": 2,
+          "slots": 10,
+          "ap": 0.21459694989106753,
+          "availablePositive": 3,
+          "availableNegative": 51
+        },
+        "line-logistic": {
+          "reviewedPositive": 0,
+          "reviewedNegative": 7,
+          "uncertain": 3,
+          "slots": 10,
+          "ap": 0.06991087344028521,
+          "availablePositive": 3,
+          "availableNegative": 51
+        },
+        "line-mlp": {
+          "reviewedPositive": 0,
+          "reviewedNegative": 7,
+          "uncertain": 3,
+          "slots": 10,
+          "ap": 0.06356919579425974,
+          "availablePositive": 3,
+          "availableNegative": 51
+        },
+        "temporal-net": {
+          "reviewedPositive": 1,
+          "reviewedNegative": 9,
+          "uncertain": 0,
+          "slots": 10,
+          "ap": 0.08514173998044966,
+          "availablePositive": 3,
+          "availableNegative": 51
+        },
+        "temporal-first-ply": {
+          "reviewedPositive": 0,
+          "reviewedNegative": 8,
+          "uncertain": 2,
+          "slots": 10,
+          "ap": 0.08364950316169828,
+          "availablePositive": 3,
+          "availableNegative": 51
+        }
+      }
+    },
+    "classical": {
+      "historical": {
+        "tactical": {
+          "evaluation-loss": {
+            "reviewedPositive": 30,
+            "reviewedNegative": 5,
+            "uncertain": 14,
+            "slots": 49,
+            "ap": 0.9040444637648166,
+            "availablePositive": 43,
+            "availableNegative": 46
+          },
+          "root-logistic": {
+            "reviewedPositive": 17,
+            "reviewedNegative": 12,
+            "uncertain": 20,
+            "slots": 49,
+            "ap": 0.6267335849864022,
+            "availablePositive": 43,
+            "availableNegative": 46
+          },
+          "line-logistic": {
+            "reviewedPositive": 12,
+            "reviewedNegative": 14,
+            "uncertain": 23,
+            "slots": 49,
+            "ap": 0.4621593299997562,
+            "availablePositive": 43,
+            "availableNegative": 46
+          },
+          "line-mlp": {
+            "reviewedPositive": 14,
+            "reviewedNegative": 15,
+            "uncertain": 20,
+            "slots": 49,
+            "ap": 0.467593022126235,
+            "availablePositive": 43,
+            "availableNegative": 46
+          },
+          "temporal-net": {
+            "reviewedPositive": 21,
+            "reviewedNegative": 6,
+            "uncertain": 22,
+            "slots": 49,
+            "ap": 0.7407562690085957,
+            "availablePositive": 43,
+            "availableNegative": 46
+          },
+          "temporal-first-ply": {
+            "reviewedPositive": 15,
+            "reviewedNegative": 11,
+            "uncertain": 23,
+            "slots": 49,
+            "ap": 0.5680730529782181,
+            "availablePositive": 43,
+            "availableNegative": 46
+          }
+        },
+        "mixed": {
+          "evaluation-loss": {
+            "reviewedPositive": 5,
+            "reviewedNegative": 18,
+            "uncertain": 26,
+            "slots": 49,
+            "ap": 0.29098304795357965,
+            "availablePositive": 14,
+            "availableNegative": 67
+          },
+          "root-logistic": {
+            "reviewedPositive": 4,
+            "reviewedNegative": 12,
+            "uncertain": 33,
+            "slots": 49,
+            "ap": 0.2825191413833442,
+            "availablePositive": 14,
+            "availableNegative": 67
+          },
+          "line-logistic": {
+            "reviewedPositive": 1,
+            "reviewedNegative": 18,
+            "uncertain": 30,
+            "slots": 49,
+            "ap": 0.15423230924454406,
+            "availablePositive": 14,
+            "availableNegative": 67
+          },
+          "line-mlp": {
+            "reviewedPositive": 2,
+            "reviewedNegative": 17,
+            "uncertain": 30,
+            "slots": 49,
+            "ap": 0.1635327765842808,
+            "availablePositive": 14,
+            "availableNegative": 67
+          },
+          "temporal-net": {
+            "reviewedPositive": 6,
+            "reviewedNegative": 14,
+            "uncertain": 29,
+            "slots": 49,
+            "ap": 0.23906392967719667,
+            "availablePositive": 14,
+            "availableNegative": 67
+          },
+          "temporal-first-ply": {
+            "reviewedPositive": 2,
+            "reviewedNegative": 12,
+            "uncertain": 35,
+            "slots": 49,
+            "ap": 0.22395704219649396,
+            "availablePositive": 14,
+            "availableNegative": 67
+          }
+        }
+      },
+      "newer": {
+        "tactical": {
+          "evaluation-loss": {
+            "reviewedPositive": 3,
+            "reviewedNegative": 0,
+            "uncertain": 2,
+            "slots": 5,
+            "ap": 0.9266666666666666,
+            "availablePositive": 5,
+            "availableNegative": 3
+          },
+          "root-logistic": {
+            "reviewedPositive": 2,
+            "reviewedNegative": 0,
+            "uncertain": 3,
+            "slots": 5,
+            "ap": 0.885,
+            "availablePositive": 5,
+            "availableNegative": 3
+          },
+          "line-logistic": {
+            "reviewedPositive": 0,
+            "reviewedNegative": 2,
+            "uncertain": 3,
+            "slots": 5,
+            "ap": 0.4859523809523809,
+            "availablePositive": 5,
+            "availableNegative": 3
+          },
+          "line-mlp": {
+            "reviewedPositive": 0,
+            "reviewedNegative": 2,
+            "uncertain": 3,
+            "slots": 5,
+            "ap": 0.46928571428571425,
+            "availablePositive": 5,
+            "availableNegative": 3
+          },
+          "temporal-net": {
+            "reviewedPositive": 0,
+            "reviewedNegative": 1,
+            "uncertain": 4,
+            "slots": 5,
+            "ap": 0.5059523809523809,
+            "availablePositive": 5,
+            "availableNegative": 3
+          },
+          "temporal-first-ply": {
+            "reviewedPositive": 2,
+            "reviewedNegative": 0,
+            "uncertain": 3,
+            "slots": 5,
+            "ap": 0.7892857142857144,
+            "availablePositive": 5,
+            "availableNegative": 3
+          }
+        },
+        "mixed": {
+          "evaluation-loss": {
+            "reviewedPositive": 2,
+            "reviewedNegative": 0,
+            "uncertain": 3,
+            "slots": 5,
+            "ap": 1.0,
+            "availablePositive": 2,
+            "availableNegative": 3
+          },
+          "root-logistic": {
+            "reviewedPositive": 0,
+            "reviewedNegative": 0,
+            "uncertain": 5,
+            "slots": 5,
+            "ap": 0.8333333333333333,
+            "availablePositive": 2,
+            "availableNegative": 3
+          },
+          "line-logistic": {
+            "reviewedPositive": 0,
+            "reviewedNegative": 2,
+            "uncertain": 3,
+            "slots": 5,
+            "ap": 0.3666666666666667,
+            "availablePositive": 2,
+            "availableNegative": 3
+          },
+          "line-mlp": {
+            "reviewedPositive": 0,
+            "reviewedNegative": 1,
+            "uncertain": 4,
+            "slots": 5,
+            "ap": 0.325,
+            "availablePositive": 2,
+            "availableNegative": 3
+          },
+          "temporal-net": {
+            "reviewedPositive": 0,
+            "reviewedNegative": 1,
+            "uncertain": 4,
+            "slots": 5,
+            "ap": 0.41666666666666663,
+            "availablePositive": 2,
+            "availableNegative": 3
+          },
+          "temporal-first-ply": {
+            "reviewedPositive": 1,
+            "reviewedNegative": 0,
+            "uncertain": 4,
+            "slots": 5,
+            "ap": 0.7,
+            "availablePositive": 2,
+            "availableNegative": 3
+          }
+        }
+      }
+    },
+    "forkAudit": {
+      "incumbent": {
+        "tp": 9,
+        "fp": 0,
+        "fn": 5,
+        "tn": 23
+      },
+      "byRoute": {
+        "geometry": {
+          "reviewedPositive": 5,
+          "reviewedNegative": 4,
+          "uncertain": 3,
+          "slots": 12,
+          "ap": 0.625,
+          "availablePositive": 5,
+          "availableNegative": 23
+        },
+        "geometry-plus-collection": {
+          "reviewedPositive": 5,
+          "reviewedNegative": 4,
+          "uncertain": 3,
+          "slots": 12,
+          "ap": 0.85,
+          "availablePositive": 5,
+          "availableNegative": 23
+        },
+        "root-logistic": {
+          "reviewedPositive": 5,
+          "reviewedNegative": 5,
+          "uncertain": 2,
+          "slots": 12,
+          "ap": 0.8444444444444443,
+          "availablePositive": 5,
+          "availableNegative": 23
+        },
+        "line-logistic": {
+          "reviewedPositive": 3,
+          "reviewedNegative": 9,
+          "uncertain": 0,
+          "slots": 12,
+          "ap": 0.3187154950312845,
+          "availablePositive": 5,
+          "availableNegative": 23
+        },
+        "line-mlp": {
+          "reviewedPositive": 3,
+          "reviewedNegative": 7,
+          "uncertain": 2,
+          "slots": 12,
+          "ap": 0.2791358641358641,
+          "availablePositive": 5,
+          "availableNegative": 23
+        },
+        "temporal-net": {
+          "reviewedPositive": 2,
+          "reviewedNegative": 10,
+          "uncertain": 0,
+          "slots": 12,
+          "ap": 0.22361416361416364,
+          "availablePositive": 5,
+          "availableNegative": 23
+        },
+        "temporal-first-ply": {
+          "reviewedPositive": 1,
+          "reviewedNegative": 8,
+          "uncertain": 3,
+          "slots": 12,
+          "ap": 0.26308428413691576,
+          "availablePositive": 5,
+          "availableNegative": 23
+        },
+        "geometry-plus-temporal-first-ply": {
+          "reviewedPositive": 5,
+          "reviewedNegative": 4,
+          "uncertain": 3,
+          "slots": 12,
+          "ap": 0.8761904761904762,
+          "availablePositive": 5,
+          "availableNegative": 23
+        }
+      }
+    }
+  }
+}

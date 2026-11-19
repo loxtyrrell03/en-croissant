@@ -1,0 +1,22 @@
+[
+  {
+    "file": "decision-evidence-fork-audit-sample.py",
+    "sha256": "24a464deaf37d231f5d51cb995b06b6ea94ebfd94723ddb160d8c199b5958975"
+  },
+  {
+    "file": "decision-evidence-motif-sequence.py",
+    "sha256": "81ef5b64bf10fd29224723073c29bec731d5e0cad996d7884055fb291b6a9b4c"
+  },
+  {
+    "file": "fork-audit.json",
+    "sha256": "d4e064a8304bde0f811e4f674effe51b73fdd1f05196ce31855df47e35940b97"
+  },
+  {
+    "file": "fork-audit-reference.json",
+    "sha256": "f06acf7562735cfe12a0c83a5bcf759245710cf86f478e14f25f750c0312bbbb"
+  },
+  {
+    "file": "transfer-audit.json",
+    "sha256": "8fae1c53f58fef23bbaeab141aa60f0dc8680afaade1d1388e15aee017e6ad99"
+  }
+]

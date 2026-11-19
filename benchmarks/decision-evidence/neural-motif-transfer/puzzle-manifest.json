@@ -1,0 +1,99 @@
+{
+  "source": "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+  "sourceHeaders": {
+    "Content-Length": "309751173",
+    "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT",
+    "ETag": "\"6ae6f0f4-12766d85\""
+  },
+  "rowsScanned": 459545,
+  "scanLimit": 1100000,
+  "themes": [
+    "fork",
+    "pin",
+    "skewer",
+    "discoveredAttack",
+    "deflection",
+    "attraction",
+    "capturingDefender",
+    "intermezzo",
+    "interference",
+    "clearance",
+    "trappedPiece"
+  ],
+  "quotaPerStratum": {
+    "train": 900,
+    "validation": 120,
+    "test": 120
+  },
+  "exclusionHashes": [
+    {
+      "file": "independent-sample.json",
+      "sha256": "7e495b652759e5f74b4b9a912c1daf2048cfdb4f154748275c1f74f96e011183"
+    },
+    {
+      "file": "course-sample.json",
+      "sha256": "6a5ebc28997d5668b0f13c8c28fdcaab4e34a052889d680b1799712400f9ab73"
+    },
+    {
+      "file": "classical-sample.json",
+      "sha256": "a75c08a3ea2b7e185d69dc0651422cae9597e06736194348cffd8ef68f7300fb"
+    },
+    {
+      "file": "tournament-sample.json",
+      "sha256": "93640cfb2a2d2a7791ca68b7264b27c2789e1957a4e35afe4071d9a4cf86ce93"
+    },
+    {
+      "file": "tournament-sample.json",
+      "sha256": "50462ce992450d979935e6dbdec18b201a44daf96c44749a63aa761413842ab4"
+    }
+  ],
+  "exclusions": {
+    "games": 151,
+    "boards": 295
+  },
+  "strata": {
+    "train": {
+      "fork": 900,
+      "pin": 900,
+      "skewer": 900,
+      "discoveredAttack": 900,
+      "deflection": 900,
+      "attraction": 900,
+      "capturingDefender": 900,
+      "intermezzo": 900,
+      "interference": 900,
+      "clearance": 900,
+      "trappedPiece": 900,
+      "other": 900
+    },
+    "validation": {
+      "fork": 120,
+      "pin": 120,
+      "skewer": 120,
+      "discoveredAttack": 120,
+      "deflection": 120,
+      "attraction": 120,
+      "capturingDefender": 120,
+      "intermezzo": 120,
+      "interference": 120,
+      "clearance": 120,
+      "trappedPiece": 120,
+      "other": 120
+    },
+    "test": {
+      "fork": 120,
+      "pin": 120,
+      "skewer": 120,
+      "discoveredAttack": 120,
+      "deflection": 120,
+      "attraction": 120,
+      "capturingDefender": 120,
+      "intermezzo": 120,
+      "interference": 120,
+      "clearance": 120,
+      "trappedPiece": 120,
+      "other": 120
+    }
+  },
+  "corpusSha256": "9f3d2bdf595a3eac9f1d4f049f3937c03248bfa5595e3c4709f6b6ee30f1fee0"
+}

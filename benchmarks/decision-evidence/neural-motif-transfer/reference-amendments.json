@@ -1,0 +1,14 @@
+[
+  {
+    "groups": [
+      "independent-source",
+      "independent-engine"
+    ],
+    "id": "lichess-05nJe",
+    "moveUci": "e4d2",
+    "motif": "fork",
+    "previous": true,
+    "revised": false,
+    "rationale": "Nd2+ attacks king f1 and pawn f3. The queen on e1 is not a target of the knight. Independent Stockfish continuation uses ...c4 and ...Qg2+ to attack; Qxd2 is a defence, not capture of a fork victim."
+  }
+]

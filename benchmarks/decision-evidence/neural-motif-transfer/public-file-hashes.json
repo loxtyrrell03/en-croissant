@@ -1,0 +1,17 @@
+[
+  {
+    "file": "fork-audit.json",
+    "originalSha256": "d4e064a8304bde0f811e4f674effe51b73fdd1f05196ce31855df47e35940b97",
+    "repositoryLfSha256": "8eaf580e44ee98a11d3cc57db92aa490b6780f36d872b760c9ed8cd59d8633d7"
+  },
+  {
+    "file": "fork-audit-reference.json",
+    "originalSha256": "f06acf7562735cfe12a0c83a5bcf759245710cf86f478e14f25f750c0312bbbb",
+    "repositoryLfSha256": "b67181c0e9cafb344e5c6133dfaaf0702eae702daba769dfe6d668deb76880fe"
+  },
+  {
+    "file": "fork-engine-input.json",
+    "originalSha256": "28d00bcc1b731bda868df0ae0904652193b96b2f1c0bd9d1bf4b9e440bc4a819",
+    "repositoryLfSha256": "545997d68beabfec6c6b0fa8aa0cbc4aac2d03604645a030c37bf3dd6f863d73"
+  }
+]

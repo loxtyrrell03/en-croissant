@@ -1,0 +1,17 @@
+{
+  "task": "Weakly supervised legal-line motif nomination",
+  "puzzlePrimary": "Macro AP on source-tag labels from 1,440 held-out games. Use one row per source game, mirrored-board deduplication, no holdout tuning.",
+  "models": "Root-only logistic; same 10-ply features for line logistic and dense MLP; masked local temporal neural network. Three fixed seeds for each neural arm.",
+  "annotations": "The source entries are weak labels. A missing theme is a noisy negative only for puzzle fitting and source-tag metrics. Unknown manual motif labels are excluded.",
+  "transferPrimary": "Root-linked selective human reviews on matched engine continuations from independent puzzles and Woodpecker. Compare per-theme AP and missed reviewed exact-move fork positives at a fixed ten-question budget across the two sources. Historical and newer classical played-move triage use independent replies and separate missed/allowed scores, never root motifs as ground truth for whole mistakes.",
+  "classicalPolicy": "On unresolved decisions, rank by max of the strongest missed-branch score and largest motif-score increase in opponent reply over the control. Compare each model to engine-loss ordering at quarter-budget per cohort. Report tactical and mixed manually reviewed labels as review yield, not verified classifier improvements.",
+  "decisionGate": "A stronger app result requires independently legal and counterfactual evidence for proposed motifs on fresh classical games and no added false reports. Pilot distinguishes a useful nomination signal from output ready for the app. Neural-specific promise requires at least .03 higher tag macro AP or two extra reviewed positives at fixed budget without a higher number of reviewed negatives, then at least a match on separately reviewed transfer.",
+  "freshAudit": {
+    "source": "Same November CC0 snapshot beyond the streamed training prefix, no source-game or mirrored-board overlap",
+    "sample": "40 decisions from 40 previously unused puzzle games across four source/geometry strata. Exact source moves retained under independent Stockfish 19 search.",
+    "scope": "First move has a meaningful fork on two non-pawn targets (king counts). Pure mate geometry is excluded. Uncertain labels occupy review slots if picked and are omitted from AP.",
+    "selection": "Single reviewer annotated the exact root and separate opponent MultiPV. Three uncertain labels. References and localization model hashed before opening results.",
+    "arms": "Current committed root verifier, geometric cues, line/capture cue, four original rankings, local first-ply neural output and first-ply neural within geometry",
+    "budget": 12
+  }
+}
