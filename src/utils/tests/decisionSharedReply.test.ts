@@ -1,0 +1,118 @@
+import { expect, test } from "vitest";
+import { makeFen } from "chessops/fen";
+import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import {
+    assessChessDecision,
+    type DecisionAssessmentInput,
+} from "../tacticalMotifs/decisionAssessment";
+import type { DecisionEngineLine } from "../tacticalMotifs/decisionEvidence";
+
+function study(
+    fen: string,
+    better: [string, number],
+    played: [string, number],
+    defence: [string, number],
+    attack: [string, number],
+    control?: [string, number],
+): DecisionAssessmentInput {
+    const line = (board: string, [moves, cp]: [string, number]): DecisionEngineLine => ({
+        fen: board,
+        pvUci: moves.split(" "),
+        cp,
+        depth: 20,
+    });
+    const after = (uci: string) => makeFen(replayTacticalLine(fen, [uci])[0].after.toSetup());
+    const choices = [line(fen, better), line(fen, played)];
+    const [betterMoveUci, playedMoveUci] = choices.map((item) => item.pvUci[0]);
+    return {
+        fen,
+        candidates: choices,
+        playedMoveUci,
+        replyProbes: [
+            { moveUci: betterMoveUci, lines: [line(after(betterMoveUci), defence)] },
+            { moveUci: playedMoveUci, lines: [line(after(playedMoveUci), attack)] },
+        ],
+        sharedReply: control && {
+            betterMoveUci,
+            playedMoveUci,
+            line: line(after(betterMoveUci), control),
+        },
+    };
+}
+
+const tempo = study(
+    "5k2/1p3r2/3R2p1/7n/P6P/1P3n2/1K3R2/8 w - - 1 32",
+    ["d6d3 f3e5 f2f7 f8f7 d3d5 f7e6 d5b5 e6d6", 420],
+    ["d6g6 h5f4 g6d6 f3h4 d6d8 f8g7 b2a3 h4g6", 50],
+    ["f3e5 f2f7 f8f7 d3d5 f7e6 d5b5 h5f4 b5b7", -377],
+    ["h5f4 g6d6 f3h4 d6d8 f8e7 f2d2 e7e6 d8d6", -44],
+    ["h5f4 d3f3 f4d3 f3d3 f7f2 b2a3 f8e7 d3d4", -444],
+);
+
+test("a shared knight reply gains tempo only against the played rook square", () => {
+    const mistake = assessChessDecision(tempo)?.mistake;
+    expect(mistake?.tacticalEpisode?.betterLineUci).toEqual(["d6d3", "h5f4", "d3f3"]);
+    expect(mistake?.tacticalEpisode?.explanation).toContain("Nf4 attacks the rook on g6");
+    expect(mistake?.tacticalEpisode?.explanation).toContain("Rdxf3");
+});
+
+test("a control from another board or without a meaningful difference gives no proof", () => {
+    for (const bad of [{ fen: tempo.fen }, { cp: -45 }]) {
+        expect(
+            assessChessDecision({
+                ...tempo,
+                sharedReply: {
+                    ...tempo.sharedReply!,
+                    line: { ...tempo.sharedReply!.line, ...bad },
+                },
+            })?.mistake?.tacticalEpisode,
+        ).toBeUndefined();
+    }
+});
+
+const queen = study(
+    "1r1q4/1P3ppk/2Qpb3/3Np3/4P2p/6P1/5P1P/1R4K1 b - - 4 38",
+    ["e6d5 c6d5 h4g3 h2g3 d8c7 d5b3 h7g8 g1f1", -30],
+    ["h4h3 c6c7 e6d5 c7d8 b8d8 e4d5 d8b8 f2f4", -238],
+    ["c6d5 h4g3 h2g3 d8c7 g1g2 h7g8 d5b3 g8f8", 25],
+    ["c6c7 e6d5 c7d8 b8d8 e4d5 d8b8 f2f4 e5e4", 239],
+    ["c6c7 d8c7 e4d5 h4h3 g1f1 c7c2 f2f4 c2b1", -1936],
+);
+
+test("the earlier removal of a knight makes the same queen capture profitable", () => {
+    const episode = assessChessDecision(queen)?.mistake?.tacticalEpisode;
+    expect(episode?.betterLineUci).toEqual(["e6d5", "c6c7", "d8c7", "e4d5"]);
+    expect(episode?.explanation).toContain("Qxc7, a profitable capture");
+    expect(episode?.explanation).toContain("can recapture with Nxc7");
+});
+
+const enPassant = study(
+    "2r5/2r1p3/3p2p1/4p3/Rp2PkP1/1P1R1P2/2P5/2K5 w - - 14 41",
+    ["d3d2 c8b8 d2d3 g6g5 c1b2 b8c8 d3d2 f4e3", -299],
+    ["c2c4 b4c3 a4a2 c8h8 a2e2 h8h1 c1c2 h1f1", -446],
+    ["c7b7 d2d3 g6g5 c1b2 f4g3 a4a1 b7c7 a1g1", 442],
+    ["b4c3 a4a3 c8h8 b3b4 h8h1 c1c2 h1h2 c2c1", 469],
+);
+
+test("a direct en passant concession and a lasting passer are separate mixed evidence", () => {
+    const mistake = assessChessDecision(enPassant)?.mistake;
+    expect(mistake?.category).toBe("mixed");
+    expect(mistake?.positionalFactors).toContainEqual(
+        expect.objectContaining({
+            side: "black",
+            feature: "passed-pawn",
+            squareOrFile: "c",
+            comparisonMoveUci: "d3d2",
+        }),
+    );
+    expect(mistake?.positional.reasons.join(" ")).toContain("advanced passer on c3");
+});
+
+test("the passer does not explain the score loss if separate searches reverse the move order", () => {
+    const probes = enPassant.replyProbes!;
+    const report = assessChessDecision({
+        ...enPassant,
+        replyProbes: [{ ...probes[0], lines: [{ ...probes[0].lines[0], cp: 500 }] }, probes[1]],
+    });
+    expect(report?.mistake?.positional.support).toBe("unestablished");
+});

@@ -16,6 +16,10 @@ import type {
 } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import {
+    nominateSharedReply,
+    type DecisionSharedReplyProbe,
+} from "@/utils/tacticalMotifs/decisionSharedReply";
+import {
     advanceTacticalRepetitionContext,
     readTacticalRepetitionContext,
     tacticalRepetitionClaim,
@@ -389,6 +393,47 @@ export async function gatherDecisionEvidence(
         }
         replyProbes.push(probe);
     }
+    let sharedReply: DecisionSharedReplyProbe | undefined;
+    const pairedBest = comparison?.[0];
+    const opponent =
+        played && replyProbes.find((probe) => probe.moveUci === played.pvUci[0])?.lines[0];
+    if (played && opponent && pairedBest?.pvUci[0] === best.pvUci[0]) {
+        const request = nominateSharedReply(fen, pairedBest, played, opponent);
+        if (request) {
+            const cached = replyProbes
+                .find((probe) => probe.moveUci === request.betterMoveUci)
+                ?.lines.find((line) => line.depth >= 16 && line.pvUci[0] === request.replyUci);
+            const lines = cached
+                ? [cached]
+                : await searchPosition(
+                      engine,
+                      request.fen,
+                      1_000_000,
+                      signal,
+                      Math.min(sessionEnd, Date.now() + 3_000),
+                      history
+                          ? { fen: history.fen, moves: [...history.moves, request.betterMoveUci] }
+                          : undefined,
+                      [request.replyUci],
+                  ).catch(() => {
+                      signal.throwIfAborted();
+                      return [];
+                  });
+            if (lines[0])
+                sharedReply = {
+                    betterMoveUci: request.betterMoveUci,
+                    playedMoveUci: request.playedMoveUci,
+                    line: lines[0],
+                };
+        }
+    }
     signal.throwIfAborted();
-    return { fen, candidates, playedMoveUci, comparisonCandidates: comparison, replyProbes };
+    return {
+        fen,
+        candidates,
+        playedMoveUci,
+        comparisonCandidates: comparison,
+        replyProbes,
+        sharedReply,
+    };
 }

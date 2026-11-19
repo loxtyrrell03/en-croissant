@@ -32,8 +32,10 @@ import {
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
 import { findConditionalFork } from "./conditionalForkEvidence";
 import { compareExposedForcingAttack } from "./decisionForcingConsequence";
+import { compareSharedReply, type DecisionSharedReplyProbe } from "./decisionSharedReply";
+import { comparePawnEpisodes } from "./decisionPawnEpisode";
 
-export const DECISION_ASSESSMENT_VERSION = 6;
+export const DECISION_ASSESSMENT_VERSION = 7;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -65,6 +67,7 @@ export type DecisionAssessmentInput = {
      * root. Useful when the human move is outside the global top three. */
     comparisonCandidates?: DecisionEngineLine[];
     replyProbes?: DecisionReplyProbe[];
+    sharedReply?: DecisionSharedReplyProbe;
     rootCertificates?: Array<{ fen: string; moveUci: string; motifs: TacticalMotifEvidence[] }>;
     mistakeCertificate?: {
         fen: string;
@@ -131,9 +134,7 @@ function category(tactical: DecisionDimension, positional: DecisionDimension): D
     return t && p ? "mixed" : t ? "tactical" : p ? "positional" : "unclear";
 }
 
-/** Validate a separate search of the opponent's replies. This is engine
- * corroboration at a finite horizon, not exhaustive tactical proof. */
-function corroboratingReply(
+function validReplyFrame(
     fen: string,
     line: DecisionEngineLine,
     probe: DecisionReplyProbe | undefined,
@@ -152,6 +153,18 @@ function corroboratingReply(
         probe.lines.some((item, index) => index > 0 && item.cp! > probe.lines[index - 1].cp!)
     )
         return false;
+    return true;
+}
+
+/** Validate a separate search of the opponent's replies. This is engine
+ * corroboration at a finite horizon, not exhaustive tactical proof. */
+function corroboratingReply(
+    fen: string,
+    line: DecisionEngineLine,
+    probe: DecisionReplyProbe | undefined,
+) {
+    if (!validReplyFrame(fen, line, probe)) return false;
+    const reply = probe!.lines[0];
     // Finite score convergence is a reliability gate, not a motif classifier.
     if (line.mate != null) return line.mate > 0 && reply.mate != null && reply.mate < 0;
     return (
@@ -584,12 +597,20 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     );
                 }
                 if (!tacticalEpisode && !missed.length && !allowed.length)
-                    tacticalEpisode = compareExposedForcingAttack(
-                        input.fen,
-                        comparedBest,
-                        playedLine,
-                        playedProbe!.lines,
-                    );
+                    tacticalEpisode =
+                        compareExposedForcingAttack(
+                            input.fen,
+                            comparedBest,
+                            playedLine,
+                            playedProbe!.lines,
+                        ) ??
+                        compareSharedReply(
+                            input.fen,
+                            comparedBest,
+                            playedLine,
+                            opponent,
+                            input.sharedReply,
+                        );
             }
             const assessment = emptyAssessment();
             if (missed.length || allowed.length || tacticalEpisode)
@@ -647,16 +668,41 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 )
             )
                 factors.push(lostOutpost);
-            if (factors.length) {
+            const betterProbe = input.replyProbes?.find(
+                (item) => item.moveUci === comparedBest.pvUci[0],
+            );
+            const pawnEpisodes =
+                validReplyFrame(input.fen, comparedBest, betterProbe) &&
+                validReplyFrame(input.fen, playedLine, playedProbe)
+                    ? comparePawnEpisodes(
+                          input.fen,
+                          comparedBest,
+                          playedLine,
+                          betterProbe!.lines[0],
+                          playedProbe!.lines[0],
+                      ).filter(
+                          (item) =>
+                              !factors.some(
+                                  (other) =>
+                                      item.feature === other.feature &&
+                                      item.side === other.side &&
+                                      item.squareOrFile === other.squareOrFile,
+                              ),
+                      )
+                    : [];
+            if (factors.length || pawnEpisodes.length) {
                 assessment.positional = {
                     support: "supported",
                     basis: "heuristic",
-                    reasons: factors.map(
-                        (item) =>
-                            `${item.description} The feature is absent from the played line in the compared window.`,
-                    ),
+                    reasons: [
+                        ...factors.map(
+                            (item) =>
+                                `${item.description} The feature is absent from the played line in the compared window.`,
+                        ),
+                        ...pawnEpisodes.map((item) => item.description),
+                    ],
                 };
-                assessment.positionalFactors = factors;
+                assessment.positionalFactors = [...factors, ...pawnEpisodes];
             }
             assessment.category = category(assessment.tactical, assessment.positional);
             assessment.limitations = [

@@ -9,9 +9,14 @@ import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
 import { classifyMistakeReviewNature } from "../mistakeReview";
 import { extractStrategicRootEffects } from "../tacticalMotifs/strategicRootEffects";
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
+import {
+    nominateSharedReply,
+    type DecisionSharedReplyProbe,
+} from "../tacticalMotifs/decisionSharedReply";
 
 const directory = process.env.DECISION_EVIDENCE_AUDIT;
 const rankReplies = process.env.DECISION_AUDIT_RANK_REPLIES === "1";
+const sharedReplies = process.env.DECISION_AUDIT_SHARED_REPLIES === "1";
 
 type ReplyQuery = {
     moveUci: string;
@@ -115,7 +120,11 @@ test.skipIf(!directory)(
             throw new Error("Invalid split");
         let frozen: {
             engineSha256: string;
-            search: { minimumDepth: number; maximumRootNodes: number };
+            search: {
+                minimumDepth: number;
+                maximumRootNodes: number;
+                sharedReplyBudgetNodes?: number;
+            };
         } | null = null;
         let freezeSha256: string | null = null;
         let referenceSha256: string | null = null;
@@ -131,7 +140,11 @@ test.skipIf(!directory)(
                 );
             const freezeBytes = readFileSync(freezePath);
             frozen = JSON.parse(freezeBytes.toString("utf8"));
-            if (split === "validation") assertFrozenFiles(process.cwd(), frozen);
+            if (split === "validation") {
+                assertFrozenFiles(process.cwd(), frozen);
+                if (Boolean(frozen?.search.sharedReplyBudgetNodes) !== sharedReplies)
+                    throw new Error("Shared reply use must match the frozen search plan");
+            }
             rows = selectFrozenValidation(sampleBytes, cohort, frozen);
             const referenceBytes = readFileSync(referencePath);
             const reviewed = new Set(
@@ -178,20 +191,18 @@ test.skipIf(!directory)(
             );
             const engine = JSON.parse(engineBytes.toString("utf8"));
             const engineHash = createHash("sha256").update(engineBytes).digest("hex");
-            const probes = JSON.parse(
-                readFileSync(
-                    join(
-                        directory!,
-                        protocol === "2"
-                            ? `${cohort}-probes-${probeProfile}`
-                            : cohort === "course"
-                              ? "reply-probes"
-                              : `${cohort}-probes`,
-                        `${row.id}.json`,
-                    ),
-                    "utf8",
+            const probeBytes = readFileSync(
+                join(
+                    directory!,
+                    protocol === "2"
+                        ? `${cohort}-probes-${probeProfile}`
+                        : cohort === "course"
+                          ? "reply-probes"
+                          : `${cohort}-probes`,
+                    `${row.id}.json`,
                 ),
             );
+            const probes = JSON.parse(probeBytes.toString("utf8"));
             if (
                 frozen &&
                 (engine.identity.protocol !== 2 ||
@@ -257,6 +268,42 @@ test.skipIf(!directory)(
                     motifs: variation.motifs,
                 })),
             };
+            let sharedReplyNodes: number | undefined;
+            let sharedReplyMs: number | undefined;
+            if (sharedReplies) {
+                const opponent = probes.replyProbes.find(
+                    (item: { moveUci: string }) => item.moveUci === engine.played,
+                )?.lines[0];
+                if (played && opponent && engine.deep[0].pvUci[0] === compared[0].pvUci[0]) {
+                    const request = nominateSharedReply(row.fen, compared[0], played, opponent);
+                    if (request) {
+                        const cached = JSON.parse(
+                            readFileSync(
+                                join(directory!, `${cohort}-shared-${profile}`, `${row.id}.json`),
+                                "utf8",
+                            ),
+                        );
+                        const evidence: DecisionSharedReplyProbe | null = cached.sharedReply;
+                        if (
+                            cached.identity.rootSha256 !== engineHash ||
+                            cached.identity.probeSha256 !==
+                                createHash("sha256").update(probeBytes).digest("hex") ||
+                            cached.identity.budget !== 1_000_000 ||
+                            cached.identity.engineSha256 !== engine.identity.engine_sha256 ||
+                            (evidence &&
+                                (evidence.betterMoveUci !== request.betterMoveUci ||
+                                    evidence.playedMoveUci !== request.playedMoveUci ||
+                                    evidence.line.pvUci[0] !== request.replyUci))
+                        )
+                            throw new Error(
+                                "Shared reply evidence differs from the nominated exact query",
+                            );
+                        input.sharedReply = evidence ?? undefined;
+                        sharedReplyNodes = cached.requestedNodes;
+                        sharedReplyMs = cached.milliseconds;
+                    }
+                }
+            }
             const assessment = assessChessDecision(input);
             const milliseconds = performance.now() - started - baselineMs;
             const rootOnlyAssessment =
@@ -273,6 +320,8 @@ test.skipIf(!directory)(
                 structuralTransitions: extractPositionalTransitions(row.fen, engine.deep[0]),
                 assessment,
                 rootOnlyAssessment,
+                sharedReplyNodes,
+                sharedReplyMs,
                 replyRanking: rankReplies
                     ? auditRankedReplies(
                           join(directory!, `${cohort}-rank-probes-${profile}`, `${row.id}.json`),
@@ -314,6 +363,8 @@ test.skipIf(!directory)(
                 "tacticalMistakeEpisode.ts",
                 "decisionMateConsequence.ts",
                 "decisionForcingConsequence.ts",
+                "decisionSharedReply.ts",
+                "decisionPawnEpisode.ts",
                 "conditionalForkEvidence.ts",
                 "tacticalSequenceEvidence.ts",
                 "positionalTransitions.ts",

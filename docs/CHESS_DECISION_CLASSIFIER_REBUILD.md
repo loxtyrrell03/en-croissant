@@ -987,3 +987,93 @@ The preceding implementation comparator loads the three changed modules
 from `94144454` and runs them against the same v24 engine inputs and legacy
 certificates. The source manifest captures the shared checkout's exact
 dependencies. Use this cohort for development following this report.
+
+## Shared replies and advancing passed pawns (v25)
+
+The same opponent move can be legal under both choices while serving a
+different purpose. The verifier now nominates one shared reply when it
+finds an attack on the moved piece or a material-winning capture available
+after the better choice. The query reuses a complete matching reply
+frame when available. Otherwise it runs the exact reply after the better
+move with one million requested nodes, a three-second local deadline and
+the existing 28-second session cap. The search retains the better move's
+game history. A failed optional query still returns the main analysis.
+
+The classifier requires a legal paired line, a corroborated played reply
+and a material difference in the local exchange or a verified attack
+that changes the piece's response. The exact shared reply must score
+substantially less well after the better choice. The score checks
+relevance, and the legal replies establish the mechanism. When the better move removes a piece
+that could legally recapture in the played branch, the explanation names
+the piece, its square and the recapture. The displayed paths show both
+choices with the same reply.
+
+The new positional evidence follows a pawn across its legal moves.
+A pawn recapture can create an advanced passer for either side after the
+original move. The same pawn must gain and retain that status in paired
+and independently searched lines. Both contrasting lines must lack the
+same advanced passer over the compared window. The independent searches
+must preserve the ordering of the choices, although their gap can change.
+The pawn-structure observation is a verified board fact. Its relevance
+to the evaluation is a strategic interpretation.
+
+On the v24 boards, now used for development, the tactical count rose
+from 3/11 to 7/11. Positional rose from 0/12 to 2/12 and mixed from 0/3
+to 2/3. Each dimension retained zero false positives. One example was
+`Rd3 ...Nf4 Rdxf3`: `...Nf4` attacks the rook in both lines, and the
+rook can capture a knight while escaping only from d3. After `Rxg6`,
+the same `...Nf4` is met by `Rd6` in both searches. In a separate
+example, `c4 ...bxc3` costs a pawn immediately and leaves a persistent
+black passer on c3. The two findings support a mixed diagnosis.
+
+**Fresh evaluation.** Thirty-six decisions from 18 distinct games came
+from the [European Team Championship Open round 4](https://lichess.org/broadcast/european-team-chess-championship-2025-open/round-4/ZobBYM5c)
+and the [4NCL Easter Congress U2000 round 5](https://lichess.org/broadcast/4ncl-easter-congress-2025-u2000/round-5/sE0VJ1IX).
+The review used one engine-assisted reviewer, legal paired lines and
+unrestricted replies. Labels were sealed before reading classifier or
+restricted-query output. The preceding implementation was then run on
+the same inputs using its assessment module from `729f962d`.
+
+| Played-move mistake | Reviewed positives / negatives | Legacy TP / FP | Same-board v24 TP / FP | v25 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical | 9 / 17 | 1 / 0 | 1 / 0 | 2 / 0 |
+| Positional | 8 / 18 | 0 / 0 | 0 / 0 | 1 / 0 |
+| Mixed | 2 / 20 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+The new tactical hit compares the same knight reply on c6. `Bxd7`
+removes the recapturing bishop so that `Bxc6` gains material. The new
+positional hit follows an advanced d6 passer created by en passant.
+The tactical component of that en passant mistake remains unresolved by
+the classifier, so the output still misses the full mixed label. The
+queen trap after `...Qf6 e5` also remains a miss. Stockfish's two
+continuations move the queen to different retreat squares, which the
+shared-reply verifier currently declines to conflate.
+
+A development-only follow-up exercised the existing bounded trap prover at
+the opponent's reply. After `...Qf6 e5` it established at least 5.7 local
+material points across 29 defensive branches. The tool abstained after
+the control `...Qh7 e5`. This suggests reusing reply-level trap proofs
+when Stockfish takes different routes to the same tactical result. The
+probe transcript is `queen-trap-development-v25.json`.
+
+The application's nomination policy selected six boards in the 48-board
+development replay, with one cached reply and five extra queries
+(5.3 aggregate engine-seconds). It selected two additional searches on
+the 36 fresh boards (2.7 aggregate engine-seconds). Median additional
+classifier time in the full fresh audit was 38.5 ms before engine time.
+The research cache precomputes broadly legal candidates, while these
+figures count the queries the product policy selected. This validates
+two additional individual detections on a small reserve.
+
+**Reproduction.** Use the task's `classifier-rework/shared-reply-transfer`
+directory, the two round exports and the eight earlier sample exclusions
+recorded in its sample. The events each contribute nine games under
+`--mistake-event`. Run the ordinary adaptive root and reply searches,
+then use `decision-evidence-shared-reply.py` on both caches. Set
+`DECISION_AUDIT_SHARED_REPLIES=1` in the freeze and audit steps. The audit
+takes only queries nominated by the application and verifies their root,
+reply and engine hashes before using them. References and results are
+stored outside the checkout. Post-freeze safety and wording refinement
+was checked on a replay of the same sealed cases. The broader classifier
+goal remains open, including independent position character and mixed
+recall beyond these mechanisms.

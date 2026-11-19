@@ -109,3 +109,58 @@ test("capture nominations allow en passant and reject an ordinary defended-piece
     ]);
     expect(decisionCaptureChoices("1q3rk1/2N2ppp/8/7Q/8/3B4/8/R5K1 w - - 0 1", "a1a8")).toEqual([]);
 });
+
+test("one restricted query uses the better move's history and can fail independently", async () => {
+    const start = "5k2/1p3r2/3R2p1/7n/P6P/1P3n2/1K3R2/8 w - - 1 32";
+    const best = ["d6d3", "f3e5", "f2f7"];
+    const played = ["d6g6", "h5f4", "g6d6"];
+    let failControl = false;
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) => {
+        if (options.searchMoves?.[0] === "h5f4")
+            return failControl
+                ? Promise.reject(new Error("Engine rejected the optional query"))
+                : Promise.resolve([100, lines([["h5f4", "d3f3"]], [444])]);
+        if (options.moves[0] === played[0])
+            return Promise.resolve([
+                100,
+                lines([played.slice(1), ["f8e7"], ["f7f5"]], [44, 100, 300]),
+            ]);
+        if (options.moves[0] === best[0])
+            return Promise.resolve([
+                100,
+                lines([best.slice(1), ["b7b6"], ["f7f5"]], [377, 400, 450]),
+            ]);
+        return Promise.resolve([
+            100,
+            options.searchMoves
+                ? lines([best, played], [420, 50])
+                : lines([best, played, ["a4a5"]], [420, 50, 20]),
+        ]);
+    });
+    const result = await gatherDecisionEvidence(
+        engine,
+        { fen: start, playedMoveUci: played[0], history: { fen: start, moves: [] } },
+        new AbortController().signal,
+        vi.fn(),
+    );
+    expect(result.sharedReply).toMatchObject({
+        betterMoveUci: "d6d3",
+        playedMoveUci: "d6g6",
+        line: { cp: -444, pvUci: ["h5f4", "d3f3"] },
+    });
+    const matches = native.getBestMoves.mock.calls.filter(
+        (call) => call[3].searchMoves?.[0] === "h5f4",
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0][2]).toEqual({ t: "Nodes", c: 1_000_000 });
+    expect(matches[0][3]).toMatchObject({ fen: start, moves: ["d6d3"] });
+    failControl = true;
+    const fallback = await gatherDecisionEvidence(
+        engine,
+        { fen: start, playedMoveUci: played[0], history: { fen: start, moves: [] } },
+        new AbortController().signal,
+        vi.fn(),
+    );
+    expect(fallback.sharedReply).toBeUndefined();
+    expect(fallback.replyProbes).toEqual(result.replyProbes);
+});

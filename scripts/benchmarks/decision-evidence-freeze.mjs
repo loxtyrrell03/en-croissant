@@ -64,6 +64,7 @@ async function main() {
       "src/utils/pawnStructureDetector.ts",
       "src/utils/mistakeReview.ts",
       "src/utils/engineSettingsOptions.ts",
+      "src/components/panels/tactics/decisionSearch.ts",
       "pnpm-lock.yaml",
       "scripts/benchmarks/decision-evidence-engine.py",
       "scripts/benchmarks/decision-evidence-probes.py",
@@ -72,6 +73,7 @@ async function main() {
       "scripts/benchmarks/decision-evidence-model-pilot.py",
       "scripts/benchmarks/decision-evidence-tournament.py",
       "scripts/benchmarks/decision-evidence-rank-probes.py",
+      "scripts/benchmarks/decision-evidence-shared-reply.py",
       "scripts/benchmarks/decision-evidence-reply-ranker.py",
       "scripts/benchmarks/decision-evidence-freeze.mjs",
       "src/utils/tests/decisionCandidateAudit.test.ts",
@@ -123,6 +125,9 @@ async function main() {
       replyBudgets: [1000000, 4000000],
       captureResources: true,
       captureLimit: 3,
+      ...(process.env.DECISION_AUDIT_SHARED_REPLIES === "1"
+        ? { sharedReplyBudgetNodes: 1_000_000 }
+        : {}),
       threadsPerEngine: 1,
       hashMb: 64,
     },
