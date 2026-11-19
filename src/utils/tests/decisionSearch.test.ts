@@ -77,6 +77,41 @@ test("a decision search keeps candidate, unrestricted reply and capture evidence
     expect(new Set(native.getBestMoves.mock.calls.map((call) => call[1])).size).toBe(3);
 });
 
+test("an exact mate in one skips the paired and played-reply searches", async () => {
+    const before = "6k1/p4ppp/8/8/8/8/7P/4R2K b - - 0 1";
+    const originalReplies = [
+        ["h7h6", "e1e8", "g8h7"],
+        ["g7g6", "e1e8", "g8g7"],
+        ["f7f6", "e1e8", "g8f7"],
+    ];
+    const defensiveReplies = [
+        ["e1e8", "g8h7"],
+        ["h1g2", "h6h5"],
+        ["e1e4", "a7a6"],
+    ];
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) =>
+        Promise.resolve([
+            100,
+            options.moves.length
+                ? lines(defensiveReplies, [290, 280, 250])
+                : lines(originalReplies, [290, 300, 330]),
+        ]),
+    );
+    const evidence = await gatherDecisionEvidence(
+        engine,
+        { fen: before, playedMoveUci: "a7a6", history: { fen: before, moves: [] } },
+        new AbortController().signal,
+        vi.fn(),
+    );
+    expect(evidence.comparisonCandidates).toBeUndefined();
+    expect(native.getBestMoves.mock.calls.map((call) => call[3].moves)).toEqual([[], ["h7h6"]]);
+    expect(native.getBestMoves.mock.calls.every((call) => !call[3].searchMoves?.length)).toBe(true);
+    expect(assessChessDecision(evidence)?.mistake?.mateConsequence?.lineUci).toEqual([
+        "a7a6",
+        "e1e8",
+    ]);
+});
+
 test("an exact frame is required and a reply from a cancelled startup is cleaned up", async () => {
     const controller = new AbortController();
     const removed = vi.fn();

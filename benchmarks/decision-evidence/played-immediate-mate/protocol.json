@@ -1,0 +1,131 @@
+{
+  "baseline": "ee308917",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "sources": {
+    "johor-all": {
+      "source": "https://lichess.org/broadcast/johor-chess-festival-2025-international-open/round-1/ydanqrtt",
+      "pgn": "https://lichess.org/api/broadcast/t9Le0Cig.pgn",
+      "timeControl": "90 minutes plus 30 seconds increment per move",
+      "category": "standard"
+    },
+    "zamenhof-all": {
+      "source": "https://lichess.org/broadcast/xliv-memoria-szachowy-ludwika-zamenhofa-2025-grupa-a/runda-1/lXd9UXnZ",
+      "pgn": "https://lichess.org/api/broadcast/0aLwxMic.pgn",
+      "timeControl": "90'+30\"",
+      "category": "standard"
+    },
+    "wittelsbach-all": {
+      "source": "https://lichess.org/broadcast/12-wittelsbacher-weihnachtsopen-2025/round-1/igvaoEA5",
+      "pgn": "https://lichess.org/api/broadcast/HZiLSTfG.pgn",
+      "timeControl": "90 min + 15 min + 30 sec/move",
+      "category": "standard"
+    },
+    "jesenik-all": {
+      "source": "https://lichess.org/broadcast/xmas-jesenik-open-2025-main/round-1/ItsEiujn",
+      "pgn": "https://lichess.org/api/broadcast/KPzs5969.pgn",
+      "timeControl": "50 min + 30 sec / move",
+      "category": "standard"
+    }
+  },
+  "sampling": {
+    "development": {
+      "hongkong-r1": {
+        "games": 51,
+        "positions": 3903,
+        "populations": {
+          "recorded-mate": 2,
+          "unavoidable": 1,
+          "ordinary": 51
+        },
+        "selected": {
+          "recorded-mate": 2,
+          "unavoidable": 1,
+          "ordinary": 7
+        },
+        "pgnSha256": "86e4b8415033696e671612e1f90bc8f4b3a0b41b89e9b8be0c4bbf7a9541e5fe"
+      },
+      "mont": {
+        "games": 4,
+        "positions": 279,
+        "populations": {
+          "recorded-mate": 0,
+          "unavoidable": 0,
+          "ordinary": 4
+        },
+        "selected": {
+          "recorded-mate": 0,
+          "unavoidable": 0,
+          "ordinary": 4
+        },
+        "pgnSha256": "7db17a589bd089971b17da6096eb4585f74dfafd05193c530607594c6f20d217"
+      }
+    },
+    "reserve": {
+      "johor-all": {
+        "games": 101,
+        "positions": 7215,
+        "populations": {
+          "recorded-mate": 2,
+          "unavoidable": 0,
+          "ordinary": 101
+        },
+        "selected": {
+          "recorded-mate": 2,
+          "unavoidable": 0,
+          "ordinary": 5
+        },
+        "pgnSha256": "508acf9e25e85ab812a9587cdf3b1d38d959e1022655e8a6f57bcbcd36c1ff92"
+      },
+      "zamenhof-all": {
+        "games": 210,
+        "positions": 15337,
+        "populations": {
+          "recorded-mate": 4,
+          "unavoidable": 4,
+          "ordinary": 201
+        },
+        "selected": {
+          "recorded-mate": 4,
+          "unavoidable": 3,
+          "ordinary": 5
+        },
+        "pgnSha256": "87ff137dae821da14a0e3734f65b2b9abf7e575dc4f2d14d729e99472ef0800d"
+      },
+      "wittelsbach-all": {
+        "games": 56,
+        "positions": 2883,
+        "populations": {
+          "recorded-mate": 2,
+          "unavoidable": 1,
+          "ordinary": 54
+        },
+        "selected": {
+          "recorded-mate": 2,
+          "unavoidable": 1,
+          "ordinary": 5
+        },
+        "pgnSha256": "8d30ffd55cd602172778f229250f49fbd3907db48611549d03bf923ca03a9020"
+      },
+      "jesenik-all": {
+        "games": 102,
+        "positions": 5725,
+        "populations": {
+          "recorded-mate": 10,
+          "unavoidable": 12,
+          "ordinary": 95
+        },
+        "selected": {
+          "recorded-mate": 8,
+          "unavoidable": 3,
+          "ordinary": 5
+        },
+        "pgnSha256": "35b3e794d6b342085de0a480ae88d0b1e90d7a71f9fc94caf472f6661313f35f"
+      }
+    }
+  },
+  "development": "Earlier public defence tournaments, excluding sampled games and boards.",
+  "holdout": "Four disjoint public classical event families, selected by actual game move and legal mate reply, before scored classifier outputs.",
+  "replayBudget": "standard root and reply budgets drawn from opened-rook-file/prepare.py. The paired search uses the last root node cap.",
+  "reference": "Independent python-chess checks of the recorded move, all immediate mating replies, best-move alternative and terminal boundaries. Scope requires an exact finite leading score at depth 16 or above."
+}

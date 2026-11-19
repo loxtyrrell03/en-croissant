@@ -15,6 +15,7 @@ import type {
     DecisionReplyProbe,
 } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
+import { findAllowedImmediateMate } from "@/utils/tacticalMotifs/decisionMateConsequence";
 import {
     compareExtraPositionMove,
     nominatePositionRefutation,
@@ -401,8 +402,11 @@ export async function gatherDecisionEvidence(
     const best = candidates[0];
     const sameBest =
         playedMoveUci && afterMove(fen, playedMoveUci) === afterMove(fen, best.pvUci[0]);
+    // A legal mate on the next move needs no scored played line. The worker
+    // replays the same proof, while the usual search of the best reply continues.
+    const immediateMate = !sameBest && findAllowedImmediateMate(fen, best, playedMoveUci, history);
     let comparison: DecisionEngineLine[] | undefined;
-    if (playedMoveUci && !sameBest) {
+    if (playedMoveUci && !sameBest && !immediateMate) {
         progress("Checking the move played…");
         comparison = await searchPosition(
             engine,

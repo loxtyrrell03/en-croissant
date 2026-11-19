@@ -254,7 +254,17 @@ function DecisionReport({
         { label: "Better line", san: lineSan(report.fen, mistakeComparison.betterLineUci) },
       ]
     : mate
-      ? [{ label: "Mating line", san: lineSan(report.fen, mate.lineUci) }]
+      ? [
+          { label: "Mating line", san: lineSan(report.fen, mate.lineUci) },
+          ...(mate.avoidingMoveUci
+            ? [
+                {
+                  label: "Move that avoids immediate mate",
+                  san: lineSan(report.fen, [mate.avoidingMoveUci]),
+                },
+              ]
+            : []),
+        ]
       : [];
   for (const [comparison, detail] of [
     [rookPressure, "rook comparison"],

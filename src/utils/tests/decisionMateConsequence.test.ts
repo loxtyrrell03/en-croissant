@@ -2,7 +2,10 @@ import { expect, test } from "vitest";
 import { makeFen } from "chessops/fen";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
-import { compareMateConsequence } from "../tacticalMotifs/decisionMateConsequence";
+import {
+    compareMateConsequence,
+    findAllowedImmediateMate,
+} from "../tacticalMotifs/decisionMateConsequence";
 import type { DecisionEngineLine } from "../tacticalMotifs/decisionEvidence";
 
 const fen = "6k1/p4ppp/8/8/8/8/7P/4R2K b - - 0 1";
@@ -79,4 +82,52 @@ test("a missed mate in two converts the reply distance to the original mover's p
         lineUci: mating.pvUci,
     });
     expect(compareMateConsequence(position, mating, played, { ...reply, mate: -2 })).toBeNull();
+});
+
+test("mate in one after the actual move can be verified from the leader's frame alone", () => {
+    const report = assessChessDecision({ fen, candidates: [escape], playedMoveUci: "a7a6" });
+    expect(report?.mistakeStatus).toBe("assessed");
+    expect(report?.mistake).toMatchObject({
+        category: "tactical",
+        evaluationLossCp: null,
+        tactical: { basis: "bounded-proof" },
+        mateConsequence: {
+            kind: "allowed",
+            mateIn: 1,
+            lineUci: ["a7a6", "e1e8"],
+            avoidingMoveUci: "h7h6",
+        },
+    });
+});
+
+test("a played move can create a new mating threat", () => {
+    const before = "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2";
+    const better = { fen: before, cp: -80, depth: 18, pvUci: ["g2g3"] };
+    expect(findAllowedImmediateMate(before, better, "g2g4")).toMatchObject({
+        avoidingMoveUci: "g2g3",
+        lineUci: ["g2g4", "d8h4"],
+    });
+});
+
+test("bad FEN identity, checkmated alternatives and already forced mate abstain", () => {
+    for (const bad of [
+        { ...escape, pvUci: ["a7a5"] },
+        { ...escape, cp: null, mate: -3 },
+        { ...escape, depth: 12 },
+        { ...escape, fen: after },
+        { ...escape, upperbound: true },
+    ]) {
+        expect(findAllowedImmediateMate(fen, bad, "a7a6")).toBeNull();
+    }
+    expect(findAllowedImmediateMate(fen, escape, "a8a6")).toBeNull();
+});
+
+test("an automatic draw on the played move takes precedence over a later mate", () => {
+    const origin = "6k1/5ppp/8/1n6/8/8/7P/4R2K w - - 1 23";
+    const cycle = ["e1e2", "b5a7", "e2e1", "a7b5"];
+    const moves = [...cycle, ...cycle, ...cycle, ...cycle.slice(0, 3)];
+    const root = makeFen(replayTacticalLine(origin, moves).at(-1)!.after.toSetup());
+    const better = { ...escape, fen: root };
+    expect(findAllowedImmediateMate(root, better, "a7b5")?.mateIn).toBe(1);
+    expect(findAllowedImmediateMate(root, better, "a7b5", { fen: origin, moves })).toBeNull();
 });

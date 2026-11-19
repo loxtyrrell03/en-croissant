@@ -30,7 +30,12 @@ import {
     compareTacticalMistakeEpisode,
     type TacticalMistakeEpisode,
 } from "./tacticalMistakeEpisode";
-import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
+import {
+    compareMateConsequence,
+    findAllowedImmediateMate,
+    type DecisionMateConsequence,
+} from "./decisionMateConsequence";
+import type { TacticalGameHistory } from "./gameHistory";
 import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
 import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
 import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
@@ -68,7 +73,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 29;
+export const DECISION_ASSESSMENT_VERSION = 30;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -99,6 +104,7 @@ export type DecisionReplyProbe = {
 };
 export type DecisionAssessmentInput = {
     fen: string;
+    history?: TacticalGameHistory;
     candidates: DecisionEngineLine[];
     /** Paired same-search evaluations of the global best root and actual played
      * root. Useful when the human move is outside the global top three. */
@@ -781,7 +787,11 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         comparisonMeasured?.lines.length === comparison.length
     )
         mistakeStatus = "best-supplied-choice";
+    let mateConsequence = findAllowedImmediateMate(
+        input.fen, first, input.playedMoveUci, input.history,
+    );
     if (
+        !mateConsequence &&
         playedIndex > 0 &&
         comparisonMeasured?.lines.length === comparison.length &&
         comparedBest.pvUci[0] === first.pvUci[0]
@@ -789,35 +799,35 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         const played = comparison[playedIndex];
         const replyFor = (choice: DecisionEngineLine) =>
             input.replyProbes?.find((probe) => probe.moveUci === choice.pvUci[0])?.lines[0];
-        const mateConsequence = compareMateConsequence(
+        mateConsequence = compareMateConsequence(
             input.fen,
             comparedBest,
             played,
             replyFor(comparedBest),
             replyFor(played),
         );
-        if (mateConsequence) {
-            mistakeStatus = "assessed";
-            mistake = {
-                ...emptyAssessment(),
-                category: "tactical",
-                tactical: {
-                    support: "supported",
-                    basis:
-                        mateConsequence.kind === "missed" && mateConsequence.mateIn === 1
-                            ? "bounded-proof"
-                            : "engine-supported",
-                    reasons: [mateConsequence.explanation],
-                },
-                evaluationLossCp: null,
-                missed: [],
-                allowed: [],
-                mateConsequence,
-                limitations: ["This is a measured mating consequence in the supplied search."],
-            };
-        }
+    }
+    if (mateConsequence) {
+        mistakeStatus = "assessed";
+        mistake = {
+            ...emptyAssessment(),
+            category: "tactical",
+            tactical: {
+                support: "supported",
+                basis: mateConsequence.mateIn === 1 ? "bounded-proof" : "engine-supported",
+                reasons: [mateConsequence.explanation],
+            },
+            evaluationLossCp: null,
+            missed: [],
+            allowed: [],
+            mateConsequence,
+            limitations: [mateConsequence.avoidingMoveUci
+                ? "This compares mate on the very next move."
+                : "This is a measured mating consequence in the supplied search."],
+        };
     }
     if (
+        !mateConsequence &&
         playedIndex > 0 &&
         comparisonMeasured?.bestSecondGapCp !== null &&
         comparisonMeasured &&

@@ -3697,3 +3697,17 @@ and, when it remains a legal check, the answering defence. The worker
 and evidence panel use the existing searches. All 317 valid archived
 played-mistake assessments agree with v28.
 [Benchmark and reproduction](../benchmarks/decision-evidence/immediate-mate-defence/README.md)
+
+## Immediate mate after the played move
+
+Decision assessment v30 checks the recorded branch for immediate
+checkmate and checks that the engine's exact finite-score choice
+avoids every mate in one. The actual mating reply needs no engine
+evaluation. The worker replays both choices and the search skips the
+paired and played-reply searches for this case. The full v29 search
+and the short v30 search agree on all eight eligible cases in a
+43-game independent classical sample. At the shorter budget,
+v29 identifies zero. The 35 controls have zero false direct proofs.
+Position, move and mistake verdicts agree on 1,050 valid archived
+requests. Longer mating sequences retain the existing proof standard.
+[Benchmark and reproduction](../benchmarks/decision-evidence/played-immediate-mate/README.md)

@@ -20,10 +20,9 @@ function played(position: Chess, move: NormalMove) {
     return next;
 }
 
-function mateInOne(position: Chess) {
-    return legalMoves(position).filter(
-        (move) => mayGiveCheck(position, move) && played(position, move).isCheckmate(),
-    );
+export function* legalImmediateMates(position: Chess): Generator<NormalMove, void> {
+    for (const move of legalMoves(position))
+        if (mayGiveCheck(position, move) && played(position, move).isCheckmate()) yield move;
 }
 
 /** After a real legal alternative, the same pre-existing threat must still
@@ -62,8 +61,9 @@ export function findImmediateMateDefence(
     const opposingTurn = root.clone();
     opposingTurn.turn = opposite(root.turn);
     opposingTurn.epSquare = undefined;
-    const threats = mateInOne(opposingTurn);
-    if (!threats.length || defence.after.isEnd() || mateInOne(defence.after).length) return null;
+    const threats = [...legalImmediateMates(opposingTurn)];
+    if (!threats.length || defence.after.isEnd() || !legalImmediateMates(defence.after).next().done)
+        return null;
 
     const certificate = (
         alternative: NormalMove,

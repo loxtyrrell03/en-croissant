@@ -1,13 +1,64 @@
 import { makeFen } from "chessops/fen";
+import { makeSan } from "chessops/san";
+import { makeUci } from "chessops/util";
 import { replayTacticalLine } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
+import { legalImmediateMates } from "./decisionMateDefence";
+import type { TacticalGameHistory } from "./gameHistory";
+import {
+    advanceTacticalRepetitionContext,
+    readTacticalRepetitionContext,
+} from "./repetitionHistory";
 
 export type DecisionMateConsequence = {
     kind: "allowed" | "missed";
     mateIn: number;
     lineUci: string[];
+    avoidingMoveUci?: string;
     explanation: string;
 };
+
+/** The recorded move and its exact legal mating reply form the losing line.
+ * The validated engine choice must leave no immediate mate for the opponent.
+ * No played-move evaluation or hypothetical change of turn is required. */
+export function findAllowedImmediateMate(
+    fen: string,
+    better: DecisionEngineLine,
+    playedMove: string | undefined,
+    history?: TacticalGameHistory,
+): DecisionMateConsequence | null {
+    if (
+        !playedMove ||
+        playedMove === better.pvUci[0] ||
+        better.depth < 16 ||
+        better.cp === null ||
+        better.mate != null
+    )
+        return null;
+    const [actual] = replayTacticalLine(fen, [playedMove]);
+    if (!actual || actual.after.isEnd() || actual.after.halfmoves >= 100) return null;
+    const mate = legalImmediateMates(actual.after).next().value;
+    if (!mate) return null;
+    const [avoiding] = replayTacticalLine(fen, better.pvUci.slice(0, 1));
+    if (
+        !avoiding ||
+        !measureDecisionLine(fen, better) ||
+        !legalImmediateMates(avoiding.after).next().done
+    )
+        return null;
+    const repetition = readTacticalRepetitionContext(fen, history);
+    if (repetition) {
+        const reached = advanceTacticalRepetitionContext(repetition, playedMove);
+        if (!reached || reached.endedAtPly !== undefined) return null;
+    }
+    return {
+        kind: "allowed",
+        mateIn: 1,
+        lineUci: [actual.uci, makeUci(mate)],
+        avoidingMoveUci: avoiding.uci,
+        explanation: `${actual.san} allows ${makeSan(actual.after, mate)}. ${avoiding.san} avoids mate on the next move.`,
+    };
+}
 
 /** A mate evaluation and a finite centipawn evaluation are different kinds of
  * evidence. Require a legal mating witness and independent confirmation for

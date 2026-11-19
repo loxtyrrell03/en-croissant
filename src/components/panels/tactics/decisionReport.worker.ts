@@ -64,6 +64,7 @@ function classify(
     }
     return assessChessDecision({
         ...input,
+        history: tacticalHistory ?? input.history,
         rootCertificates: scan.variations.map((line) => ({
             fen: input.fen,
             moveUci: line.lineUci[0],

@@ -1,0 +1,64 @@
+{
+  "cohorts": {
+    "development": {
+      "cases": 14,
+      "eligible": 0,
+      "knownAlreadyLostToMate": 3,
+      "baselineFull": {
+        "truePositive": 0,
+        "falsePositive": 0
+      },
+      "baselinePartial": {
+        "truePositive": 0,
+        "falsePositive": 0
+      },
+      "candidateFull": {
+        "truePositive": 0,
+        "falsePositive": 0
+      },
+      "candidatePartial": {
+        "truePositive": 0,
+        "falsePositive": 0
+      },
+      "observedNodesInSkippedSearches": 0
+    },
+    "holdout": {
+      "cases": 43,
+      "eligible": 8,
+      "knownAlreadyLostToMate": 15,
+      "baselineFull": {
+        "truePositive": 8,
+        "falsePositive": 0
+      },
+      "baselinePartial": {
+        "truePositive": 0,
+        "falsePositive": 0
+      },
+      "candidateFull": {
+        "truePositive": 8,
+        "falsePositive": 0
+      },
+      "candidatePartial": {
+        "truePositive": 8,
+        "falsePositive": 0
+      },
+      "observedNodesInSkippedSearches": 17460412
+    }
+  },
+  "archivedCompatibility": {
+    "requests": 1051,
+    "valid": 1050,
+    "played": 317,
+    "changedMistakeProofs": 0,
+    "changedPositionVerdicts": 0
+  },
+  "targetedTests": 46,
+  "benchmarkTests": 1,
+  "typeAndLint": "passed",
+  "renderedEvidenceWidthsPx": [
+    320,
+    390,
+    900
+  ],
+  "newEngineSearches": 0
+}
