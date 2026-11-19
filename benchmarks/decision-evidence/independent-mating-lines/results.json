@@ -1,0 +1,754 @@
+{
+  "sourceBaseline": "334634e2",
+  "analysisVersion": 28,
+  "positions": {
+    "classicalAudit": {
+      "cases": 203,
+      "valid": 203,
+      "changedReports": {
+        "position": 3,
+        "moves": 3,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "changedPositionCategories": [
+        {
+          "case": "tournament-korea-ba7cd2c219d81f2e-54",
+          "previous": "unclear",
+          "candidate": "tactical",
+          "evidence": {
+            "fen": "6k1/4ppbp/2q3p1/p1p1p3/P2rP3/2P1BP1P/1R3P1K/R7 w - - 0 28",
+            "winner": "white",
+            "mateIn": 5,
+            "rootLineUci": [
+              "b2b8",
+              "g7f8",
+              "e3h6",
+              "d4d8",
+              "b8d8",
+              "c6c8",
+              "d8c8",
+              "c5c4",
+              "c8f8"
+            ],
+            "replyLineUci": [
+              "b2b8",
+              "d4d8",
+              "b8d8",
+              "g7f8",
+              "e3h6",
+              "c6c8",
+              "d8c8",
+              "c5c4",
+              "c8f8"
+            ]
+          }
+        }
+      ],
+      "v27": {
+        "tactical": {
+          "TP": 28,
+          "FP": 0,
+          "FN": 98,
+          "TN": 29,
+          "uncertain": 48,
+          "uncertainCalled": 0
+        },
+        "positional": {
+          "TP": 37,
+          "FP": 0,
+          "FN": 134,
+          "TN": 14,
+          "uncertain": 16,
+          "uncertainCalled": 2
+        },
+        "mixed": {
+          "TP": 3,
+          "FP": 0,
+          "FN": 92,
+          "TN": 43,
+          "uncertain": 65,
+          "uncertainCalled": 0
+        }
+      },
+      "v28": {
+        "tactical": {
+          "TP": 29,
+          "FP": 0,
+          "FN": 97,
+          "TN": 29,
+          "uncertain": 48,
+          "uncertainCalled": 0
+        },
+        "positional": {
+          "TP": 37,
+          "FP": 0,
+          "FN": 134,
+          "TN": 14,
+          "uncertain": 16,
+          "uncertainCalled": 2
+        },
+        "mixed": {
+          "TP": 3,
+          "FP": 0,
+          "FN": 92,
+          "TN": 43,
+          "uncertain": 65,
+          "uncertainCalled": 0
+        }
+      }
+    },
+    "freshTournaments": {
+      "cases": 40,
+      "valid": 40,
+      "changedReports": {
+        "position": 1,
+        "moves": 1,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "changedPositionCategories": [
+        {
+          "case": "tournament-voivodina-1a1ed933edc5b880-72",
+          "previous": "unclear",
+          "candidate": "tactical",
+          "evidence": {
+            "fen": "1r4k1/6p1/p7/2P3PQ/3R3P/4B3/PP1K1P2/5q2 w - - 1 37",
+            "winner": "white",
+            "mateIn": 8,
+            "rootLineUci": [
+              "g5g6",
+              "b8b2",
+              "d2c3",
+              "b2b3",
+              "c3b3",
+              "f1b1",
+              "b3a3",
+              "b1b4",
+              "d4b4",
+              "g8f8",
+              "h5f5",
+              "f8e7",
+              "f5f7",
+              "e7d8",
+              "b4b8"
+            ],
+            "replyLineUci": [
+              "g5g6",
+              "b8b2",
+              "d2c3",
+              "b2b3",
+              "c3b3",
+              "f1b5",
+              "b3c2",
+              "b5e8",
+              "h5g5",
+              "g8f8",
+              "d4d8",
+              "a6a5",
+              "g5d5",
+              "f8e7",
+              "d5d6"
+            ]
+          }
+        }
+      ],
+      "v27": {
+        "tactical": {
+          "TP": 5,
+          "FP": 0,
+          "FN": 21,
+          "TN": 10,
+          "uncertain": 4,
+          "uncertainCalled": 0
+        },
+        "positional": {
+          "TP": 8,
+          "FP": 0,
+          "FN": 29,
+          "TN": 2,
+          "uncertain": 1,
+          "uncertainCalled": 0
+        },
+        "mixed": {
+          "TP": 0,
+          "FP": 0,
+          "FN": 23,
+          "TN": 12,
+          "uncertain": 5,
+          "uncertainCalled": 0
+        }
+      },
+      "v28": {
+        "tactical": {
+          "TP": 6,
+          "FP": 0,
+          "FN": 20,
+          "TN": 10,
+          "uncertain": 4,
+          "uncertainCalled": 0
+        },
+        "positional": {
+          "TP": 8,
+          "FP": 0,
+          "FN": 29,
+          "TN": 2,
+          "uncertain": 1,
+          "uncertainCalled": 0
+        },
+        "mixed": {
+          "TP": 0,
+          "FP": 0,
+          "FN": 23,
+          "TN": 12,
+          "uncertain": 5,
+          "uncertainCalled": 0
+        }
+      }
+    },
+    "mateChallenge": {
+      "cases": 18,
+      "valid": 18,
+      "changedReports": {
+        "position": 0,
+        "moves": 0,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "changedPositionCategories": [],
+      "v27": {
+        "tactical": {
+          "TP": 2,
+          "FP": 0,
+          "FN": 11,
+          "TN": 2,
+          "uncertain": 3,
+          "uncertainCalled": 0
+        },
+        "positional": {
+          "TP": 3,
+          "FP": 0,
+          "FN": 12,
+          "TN": 0,
+          "uncertain": 3,
+          "uncertainCalled": 0
+        },
+        "mixed": {
+          "TP": 0,
+          "FP": 0,
+          "FN": 10,
+          "TN": 2,
+          "uncertain": 6,
+          "uncertainCalled": 0
+        }
+      },
+      "v28": {
+        "tactical": {
+          "TP": 2,
+          "FP": 0,
+          "FN": 11,
+          "TN": 2,
+          "uncertain": 3,
+          "uncertainCalled": 0
+        },
+        "positional": {
+          "TP": 3,
+          "FP": 0,
+          "FN": 12,
+          "TN": 0,
+          "uncertain": 3,
+          "uncertainCalled": 0
+        },
+        "mixed": {
+          "TP": 0,
+          "FP": 0,
+          "FN": 10,
+          "TN": 2,
+          "uncertain": 6,
+          "uncertainCalled": 0
+        }
+      }
+    },
+    "compatibility": {
+      "cases": 472,
+      "valid": 472,
+      "changedReports": {
+        "position": 12,
+        "moves": 13,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "changedPositionCategories": []
+    },
+    "pairedMistakes": {
+      "cases": 318,
+      "valid": 317,
+      "changedReports": {
+        "position": 0,
+        "moves": 2,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "changedPositionCategories": []
+    },
+    "mateChallengeWider": {
+      "case": "tournament-freiburg-87c2197a2689de1d-52",
+      "previous": "unclear",
+      "candidate": "tactical",
+      "lines": {
+        "fen": "2r5/1p1b1pkr/p3p3/q2pPPp1/5RP1/P7/1PP5/1KQ4R w - - 0 27",
+        "winner": "white",
+        "mateIn": 8,
+        "rootLineUci": [
+          "f5f6",
+          "g7g8",
+          "h1h7",
+          "a5c7",
+          "f4f2",
+          "c7e5",
+          "c1h1",
+          "e5e1",
+          "h1e1",
+          "d7a4",
+          "e1h1",
+          "a4c2",
+          "f2c2",
+          "c8c4",
+          "h7h8"
+        ],
+        "replyLineUci": [
+          "f5f6",
+          "g7g8",
+          "h1h7",
+          "a5c7",
+          "f4f2",
+          "c7e5",
+          "c1h1",
+          "e5e1",
+          "h1e1",
+          "c8c2",
+          "e1h1",
+          "c2c1",
+          "b1c1",
+          "d7b5",
+          "h7h8"
+        ]
+      }
+    }
+  },
+  "replyCoverage": {
+    "classicalAudit": {
+      "leadingOnly": {
+        "finalAttempts": 0,
+        "additionalNodes": 0,
+        "counts": {
+          "tactical": {
+            "TP": 28,
+            "FP": 0,
+            "FN": 98,
+            "TN": 29,
+            "uncertain": 48,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 37,
+            "FP": 0,
+            "FN": 134,
+            "TN": 14,
+            "uncertain": 16,
+            "uncertainCalled": 2
+          },
+          "mixed": {
+            "TP": 3,
+            "FP": 0,
+            "FN": 92,
+            "TN": 43,
+            "uncertain": 65,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "currentRefutation": {
+        "finalAttempts": 1,
+        "additionalNodes": 4000142,
+        "counts": {
+          "tactical": {
+            "TP": 28,
+            "FP": 0,
+            "FN": 98,
+            "TN": 29,
+            "uncertain": 48,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 37,
+            "FP": 0,
+            "FN": 134,
+            "TN": 14,
+            "uncertain": 16,
+            "uncertainCalled": 2
+          },
+          "mixed": {
+            "TP": 3,
+            "FP": 0,
+            "FN": 92,
+            "TN": 43,
+            "uncertain": 65,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "runnerUp": {
+        "finalAttempts": 170,
+        "additionalNodes": 224055684,
+        "counts": {
+          "tactical": {
+            "TP": 29,
+            "FP": 1,
+            "FN": 97,
+            "TN": 28,
+            "uncertain": 47,
+            "uncertainCalled": 1
+          },
+          "positional": {
+            "TP": 46,
+            "FP": 0,
+            "FN": 125,
+            "TN": 14,
+            "uncertain": 16,
+            "uncertainCalled": 2
+          },
+          "mixed": {
+            "TP": 4,
+            "FP": 0,
+            "FN": 91,
+            "TN": 43,
+            "uncertain": 65,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "allAlternatives": {
+        "finalAttempts": 309,
+        "additionalNodes": 402100024,
+        "counts": {
+          "tactical": {
+            "TP": 29,
+            "FP": 2,
+            "FN": 97,
+            "TN": 27,
+            "uncertain": 47,
+            "uncertainCalled": 1
+          },
+          "positional": {
+            "TP": 49,
+            "FP": 0,
+            "FN": 122,
+            "TN": 14,
+            "uncertain": 16,
+            "uncertainCalled": 2
+          },
+          "mixed": {
+            "TP": 4,
+            "FP": 0,
+            "FN": 91,
+            "TN": 43,
+            "uncertain": 65,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "ownAndOpponentEvidence": {
+        "confirmedReply": {
+          "tactical": {
+            "TP": 31,
+            "FP": 0,
+            "FN": 95,
+            "TN": 29,
+            "uncertain": 48,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 39,
+            "FP": 0,
+            "FN": 132,
+            "TN": 14,
+            "uncertain": 16,
+            "uncertainCalled": 2
+          },
+          "mixed": {
+            "TP": 4,
+            "FP": 0,
+            "FN": 91,
+            "TN": 43,
+            "uncertain": 65,
+            "uncertainCalled": 0
+          }
+        },
+        "repeatedRoot": {
+          "tactical": {
+            "TP": 29,
+            "FP": 0,
+            "FN": 97,
+            "TN": 29,
+            "uncertain": 48,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 39,
+            "FP": 0,
+            "FN": 132,
+            "TN": 14,
+            "uncertain": 16,
+            "uncertainCalled": 2
+          },
+          "mixed": {
+            "TP": 4,
+            "FP": 0,
+            "FN": 91,
+            "TN": 43,
+            "uncertain": 65,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "bothAxisWitnesses": [
+        {
+          "case": "tournament-team-open-fcef8c95fc3409fe-43",
+          "tactical": {
+            "linesUci": [
+              [
+                "g7f7",
+                "e6d8",
+                "b8d8",
+                "a1d1",
+                "f7e6",
+                "b2a3"
+              ],
+              [
+                "g7f6",
+                "e6d8",
+                "f8d8",
+                "a1d1",
+                "f6e6",
+                "d1d5"
+              ]
+            ],
+            "description": "After Kf7, Nxd8+ wins material in the ensuing exchange. The same tactical reply also works after Kf6."
+          },
+          "positional": {
+            "linesUci": [
+              [
+                "g7f7",
+                "e6d8",
+                "b8d8",
+                "a1d1",
+                "f7e6",
+                "b2a3"
+              ],
+              [
+                "g7f6",
+                "e6d8",
+                "f8d8",
+                "a1d1",
+                "f6e6",
+                "d1d5"
+              ]
+            ],
+            "description": "After Kf7 or Kf6, opposing rooks contest the d-file. The rooks line up behind and against the pawn on d6."
+          }
+        }
+      ]
+    },
+    "freshTournaments": {
+      "leadingOnly": {
+        "finalAttempts": 0,
+        "additionalNodes": 0,
+        "counts": {
+          "tactical": {
+            "TP": 5,
+            "FP": 0,
+            "FN": 21,
+            "TN": 10,
+            "uncertain": 4,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 29,
+            "TN": 2,
+            "uncertain": 1,
+            "uncertainCalled": 0
+          },
+          "mixed": {
+            "TP": 0,
+            "FP": 0,
+            "FN": 23,
+            "TN": 12,
+            "uncertain": 5,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "currentRefutation": {
+        "finalAttempts": 0,
+        "additionalNodes": 0,
+        "counts": {
+          "tactical": {
+            "TP": 5,
+            "FP": 0,
+            "FN": 21,
+            "TN": 10,
+            "uncertain": 4,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 29,
+            "TN": 2,
+            "uncertain": 1,
+            "uncertainCalled": 0
+          },
+          "mixed": {
+            "TP": 0,
+            "FP": 0,
+            "FN": 23,
+            "TN": 12,
+            "uncertain": 5,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "runnerUp": {
+        "finalAttempts": 33,
+        "additionalNodes": 45010091,
+        "counts": {
+          "tactical": {
+            "TP": 5,
+            "FP": 0,
+            "FN": 21,
+            "TN": 10,
+            "uncertain": 4,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 10,
+            "FP": 0,
+            "FN": 27,
+            "TN": 2,
+            "uncertain": 1,
+            "uncertainCalled": 0
+          },
+          "mixed": {
+            "TP": 0,
+            "FP": 0,
+            "FN": 23,
+            "TN": 12,
+            "uncertain": 5,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "allAlternatives": {
+        "finalAttempts": 61,
+        "additionalNodes": 85020157,
+        "counts": {
+          "tactical": {
+            "TP": 5,
+            "FP": 0,
+            "FN": 21,
+            "TN": 10,
+            "uncertain": 4,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 11,
+            "FP": 0,
+            "FN": 26,
+            "TN": 2,
+            "uncertain": 1,
+            "uncertainCalled": 0
+          },
+          "mixed": {
+            "TP": 0,
+            "FP": 0,
+            "FN": 23,
+            "TN": 12,
+            "uncertain": 5,
+            "uncertainCalled": 0
+          }
+        }
+      },
+      "ownAndOpponentEvidence": {
+        "confirmedReply": {
+          "tactical": {
+            "TP": 5,
+            "FP": 0,
+            "FN": 21,
+            "TN": 10,
+            "uncertain": 4,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 29,
+            "TN": 2,
+            "uncertain": 1,
+            "uncertainCalled": 0
+          },
+          "mixed": {
+            "TP": 0,
+            "FP": 0,
+            "FN": 23,
+            "TN": 12,
+            "uncertain": 5,
+            "uncertainCalled": 0
+          }
+        },
+        "repeatedRoot": {
+          "tactical": {
+            "TP": 5,
+            "FP": 0,
+            "FN": 21,
+            "TN": 10,
+            "uncertain": 4,
+            "uncertainCalled": 0
+          },
+          "positional": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 29,
+            "TN": 2,
+            "uncertain": 1,
+            "uncertainCalled": 0
+          },
+          "mixed": {
+            "TP": 0,
+            "FP": 0,
+            "FN": 23,
+            "TN": 12,
+            "uncertain": 5,
+            "uncertainCalled": 0
+          }
+        }
+      }
+    }
+  },
+  "extraEngineSearchesAtRuntime": 0,
+  "sourceWorkerPanelWidthsPx": [
+    320,
+    390,
+    900
+  ],
+  "replaySha256": {
+    "full-v27.json": "4416bd394cc1df220291b29dc6db042c4efebe48b5dae9f5dfa79b27a9a3647c",
+    "full-v28.json": "6ec0fca00d7f84e7f70c4e0ed443bf6f578f3b835ebd46b9c37c06af603b9285",
+    "coverage-compound.json": "66da6e7251223d0144dbb7ad363fa22814f3aeeb5c1b6be58b46833a303f257a",
+    "coverage-fresh.json": "8e83badbafc70e4ff04fae18a66dc86d381708ab0dd5c1770254be8f51ee5c78",
+    "wide-v27.json": "4534f4bf9e5dc694b58901305ae2ebcdf6d7829032548cb186fa1258cd3c5429",
+    "wide-v28.json": "b555365fca187c1ce16cd98f1d9947f33dbffc4dbe9b7596eb3fe799a9dccf0e"
+  }
+}

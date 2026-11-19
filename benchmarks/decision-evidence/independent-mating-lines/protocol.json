@@ -1,0 +1,67 @@
+{
+  "sources": {
+    "voivodina": "https://lichess.org/broadcast/2026-serbian-second-league-group-voivodina/round-11/XlJpbbhn",
+    "witney": "https://lichess.org/broadcast/witney-congress-2026-open/round-4/vuoKpoey",
+    "kazakhstan": "https://lichess.org/broadcast/kazakhstan-national-team-championships-2026-championship/round-1/oVtExI9J",
+    "lagos": "https://lichess.org/broadcast/iv-open-internacional-xadrez-cidade-de-lagos/round-2/eLA6BN8F",
+    "bihar": "https://lichess.org/broadcast/bihar-state-senior-fide-rating-chess-championship-2026/round-2/HssN8XRr",
+    "freiburg": "https://lichess.org/broadcast/1-freiburger-bogoljubow-open-a-turnier/round-8/49pIMbqu",
+    "almaty-masters": "https://lichess.org/broadcast/kazchess-masters-almaty-2026/round-7/rvfmsKJc",
+    "poland-semifinal": "https://lichess.org/broadcast/pofinay-indywidualnych-mistrzostw-polski-2026-open/round-1/13gfX0Qh"
+  },
+  "fresh": {
+    "voivodina": {
+      "cases": 10,
+      "pgnSha256": "eb6b9b01e89e3ad843dcc8759b73dab580a5ad0cf6924c97ce3f432ed7aafde2"
+    },
+    "witney": {
+      "cases": 10,
+      "pgnSha256": "25c9f2bf4fe8887f14026ee1ed598a7964f58338f7ffd43248935f3cfa914a63"
+    },
+    "kazakhstan": {
+      "cases": 10,
+      "pgnSha256": "ac99eade5fc9ca5e74ce37d17e1839ebe3e0f10e9243725d9baab26af901b4ea"
+    },
+    "lagos": {
+      "cases": 10,
+      "pgnSha256": "b06717044893b418a81e70f41c7b9a6646229281b1ea795ea68e99829fb0c280"
+    }
+  },
+  "matingChallenge": {
+    "bihar": {
+      "positions": 6,
+      "pgnSha256": "9e1af486c69fc4509f480062e933c1b38ebc2194f8c10db5727cb8645477a41c"
+    },
+    "freiburg": {
+      "positions": 4,
+      "pgnSha256": "5b02cb31a3673fb370e0cc9cfb6b13680f1cecf43e8fb1c6698ca15808a27afa"
+    },
+    "almaty-masters": {
+      "positions": 1,
+      "pgnSha256": "9899377bcffcebb0175212aed51e9708d11ced39a2602af337aa6bbe05cbec6d"
+    },
+    "poland-semifinal": {
+      "positions": 7,
+      "pgnSha256": "2c9872e348d5da05d83d675f429fe05ee9e34e20ec1e6c0bc3801ca0dd28cff7"
+    }
+  },
+  "freeze": {
+    "sha256": {
+      "fresh-sample.json": "6d95c25b801590aee9b818226ad5d23dd60a89ff6d2ca166d5b1361fb76fe4a4",
+      "fresh-labels.txt": "07d6eaf21cfb494e7413eb25ccd4575a4c9f910dcc6e1fab9cfdab65971b588b",
+      "fresh-input.json": "87352163d9a8bd1550709159907fe35e157cd24e871a840c32df4a3a87b13ffc",
+      "opponent-candidate.ts": "ee93a4555e4a173fffdb7fee23880aa5d64ff06d556ea88aeeb83341ed78fe3d",
+      "opponent-replay.bench.ts": "0e8ac253272fde736fb217516929e4d8ad7f0fa655945cac1e1fee282be642c0"
+    },
+    "scope": "Forty complete games, one position each. Source families excluded from development. Reference review preceded the first candidate prediction.",
+    "gate": "Prefer both-axis corroboration when it adds two witnessed position positives in distinct games, including an extra mixed positive if a mixed claim is made, with no new false positional or tactical claim."
+  },
+  "challengeFreeze": {
+    "mate-holdout-input.json": "c83264a9f8f01de057dadcbc2311b23da2c97500b0387d03a0fd8a97f8110329",
+    "mate-holdout-labels.txt": "67fe1963abbb2bddbc1fdbad0ccf87f128e1160f196d15d0cfe20bb856733ed7",
+    "mate-holdout-sample.json": "1c83d322c430b10a24b41d94bfbb2e920ce350d8c8bbfec084234cb40047558d",
+    "clean-decisionAssessment.ts": "5a2b96ea3c655637ab0c4927f656e8e8032199405cdf7512db518f6b9e6530d5",
+    "decisionMatingLines.ts": "e17655715b19fc8a1bd54b28f73ee7532fcc4503a09d553d7e1b64c7dbf40a2d"
+  },
+  "challengeExtraBudgetNodesPerSearch": 20000000
+}

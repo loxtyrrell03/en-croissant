@@ -31,6 +31,7 @@ import {
     type TacticalMistakeEpisode,
 } from "./tacticalMistakeEpisode";
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
+import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
 import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
 import {
     findConditionalMate,
@@ -66,7 +67,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 27;
+export const DECISION_ASSESSMENT_VERSION = 28;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -84,6 +85,7 @@ export type DecisionAssessment = {
     conditionalResources: ConditionalTacticalResource[];
     conditionalFork?: ConditionalForkEvidence;
     conditionalMate?: DecisionConditionalMate;
+    matingLines?: ConfirmedMatingLines;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -460,11 +462,26 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             "The local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.",
         );
     }
+    const matingLines =
+        line.mate != null && (corroborated || validReplyFrame(input.fen, line, probe))
+            ? corroborateMatingLines(input.fen, line, probe?.lines[0])
+            : null;
     if (measured.checkmate && measured.plies === 1) {
         result.tactical = {
             support: "supported",
             basis: "bounded-proof",
             reasons: ["The first move legally checkmates. There is no legal reply."],
+        };
+    } else if (matingLines) {
+        result.matingLines = matingLines;
+        const winner = matingLines.winner === "white" ? "White" : "Black";
+        result.tactical = {
+            support: "supported",
+            basis: "engine-supported",
+            reasons: [
+                `Stockfish finds mate in ${matingLines.mateIn} for ${winner}. Both searches reach legal checkmate.`,
+                ...result.tactical.reasons.filter((reason) => !reason.startsWith("No relevant")),
+            ],
         };
     } else if (
         corroborated &&
@@ -539,7 +556,8 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     const tactical = viable.find(
         (move) =>
             move.tactical.support === "supported" &&
-            (move.tactical.basis === "bounded-proof" ||
+            (move.matingLines ||
+                move.tactical.basis === "bounded-proof" ||
                 move.conditionalResources.length > 0 ||
                 move.mechanisms.length === 0 ||
                 move.mechanisms.some(
@@ -555,6 +573,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.conditionalResources = tactical?.conditionalResources ?? [];
     if (tactical?.conditionalFork) position.conditionalFork = tactical.conditionalFork;
     if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
+    if (tactical?.matingLines) position.matingLines = tactical.matingLines;
     for (const move of viable) {
         const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;
         const qualified = qualifyPositionFactors(

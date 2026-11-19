@@ -83,6 +83,7 @@ function EvidenceSummary({
   const resources = assessment.conditionalResources;
   const conditionalFork = assessment.conditionalFork;
   const conditionalMate = assessment.conditionalMate;
+  const matingLines = assessment.matingLines;
   return (
     <Paper withBorder p="xs">
       <Stack gap={6}>
@@ -152,6 +153,24 @@ function EvidenceSummary({
               {san}
             </Text>
           ))}
+        {expanded && matingLines && (
+          <Stack gap={4}>
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">
+                Engine line.{" "}
+              </Text>
+              {lineSan(matingLines.fen, matingLines.rootLineUci)}
+            </Text>
+            {matingLines.rootLineUci.join(" ") !== matingLines.replyLineUci.join(" ") && (
+              <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+                <Text component="span" fw={600} size="xs">
+                  Separate reply search.{" "}
+                </Text>
+                {lineSan(matingLines.fen, matingLines.replyLineUci)}
+              </Text>
+            )}
+          </Stack>
+        )}
         {expanded && conditionalMate && (
           <Text size="xs" style={{ overflowWrap: "anywhere" }}>
             <Text component="span" fw={600} size="xs">
@@ -176,6 +195,7 @@ function EvidenceSummary({
           resources.length > 0 ||
           !!conditionalFork ||
           !!conditionalMate ||
+          !!matingLines ||
           !!comparedLines?.length ||
           assessment.limitations.length > 0 ||
           assessment.verifiedMotifs.length > 0) && (
