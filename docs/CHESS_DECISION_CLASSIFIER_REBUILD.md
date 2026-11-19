@@ -698,3 +698,114 @@ with mixed/uncertain evidence and adaptive cached search. Freeze the winning
 candidate before opening validation. Integrate the full pipeline and UI,
 verify real workflows and deliver only after the completion evidence above is
 satisfied. The rebuild remains active.
+## Tournament transfer and probe ranking (v22)
+
+The course-trained model was frozen and checked on 41 distinct games from four
+classical broadcasts. One decision per game was sampled before any engine
+search or classifier score was available. The 33 ordinary moves were selected
+by a stable hash from plies 26–119 with at least five legal moves. Eight separate
+challenge moves were quiet decisions in the presence of an absolute pin. The
+four events contributed 19, 12, 7 and 3 games. Earlier sampled board identities
+were excluded at game level. Broadcast coverage and the deliberate challenge
+stratum limit any estimate of the prevalence of tactics in tournament play.
+
+The round exports were [4NCL Division 2 round 4](https://lichess.org/broadcast/4ncl-division-2-2025-2026/round-4/SEBFDJVY),
+[Calvià Amateur Open round 4](https://lichess.org/broadcast/xxii-calvia-amateur-open/round-4/MoEmZRWG),
+[Victorian Championship Reserves round 4](https://lichess.org/broadcast/2025-victorian-championship-reserves/round-4/GmSA3pnC)
+and [South Carolina State Championship round 3](https://lichess.org/broadcast/2025-south-carolina-state-championship/round-3/EpvSOHnS).
+The sampler verifies finished standard-chess PGNs and legal recorded moves.
+Each tournament is wholly outside the course training data.
+
+The reference contains 123 questions across the three decision scopes. One
+engine-assisted reviewer inspected legal paired lines and replies blind to
+classifier and model outputs, then saved the labels including uncertain ones.
+Reviewed negatives are specific to the question and searched comparison.
+Only four root motif checks were explicitly labelled for this sample.
+
+| Decision and dimension | Reviewed positives / negatives | Legacy TP / FP | Verified rebuild TP / FP |
+| --- | ---: | ---: | ---: |
+| Move tactical | 16 / 16 | 6 / 0 | 8 / 0 |
+| Move positional | 22 / 10 | 0 / 0 | 5 / 2 |
+| Move mixed | 2 / 25 | 0 / 0 | 0 / 1 |
+| Position tactical | 23 / 8 | 7 / 0 | 9 / 0 |
+| Position positional | 26 / 8 | 0 / 0 | 9 / 2 |
+| Position mixed | 9 / 16 | 0 / 0 | 0 / 1 |
+| Mistake tactical | 3 / 31 | 0 / 0 | 0 / 0 |
+| Mistake positional | 5 / 27 | 0 / 0 | 1 / 0 |
+
+The old root preview supplies a tactical proxy for position character. It
+offers no comparable independent positional or mixed move/position axes.
+The legal verifier found the rook fork on e3 and emitted no pin label in two
+explicitly reviewed pin negatives. It found the check and forcing follow-up
+after Qe5+, but missed the knight fork on f6. It found the tactical purpose
+of the quiet advance ...d3 only after the reply search, without identifying
+its independent passed-pawn purpose. All three reviewed tactical mistake
+mechanisms remained missed. Several separate motifs and late strategic effects
+remain unscored or unrecognised.
+
+**External transfer of the course-trained models.** All learned heads used the
+same 112 course training moves and the fixed 0.5 decision threshold. No event
+identity or reference label entered features. TP/FP below exclude uncertain
+references.
+
+| Method | Tactical TP / FP | Positional TP / FP | Mixed TP / FP | Tactical balanced accuracy |
+| --- | ---: | ---: | ---: | ---: |
+| Verified rebuild | 8 / 0 | 5 / 2 | 0 / 1 | 75% |
+| Logistic | 13 / 8 | 21 / 7 | 1 / 13 | 66% |
+| Small boosted tree | 14 / 3 | 20 / 7 | 1 / 8 | 84% |
+| 16-unit neural net, all three seeds | 11 / 6 | 20 / 7 | 1 / 9 | 66% |
+
+The neural net went from 24/24 tactical positives on the previously reviewed
+course reserve to 11/16 on the tournament sample. Its tactical average
+precision was 0.768 here, versus 0.872 for the boosted tree. On the descriptive
+zero-false-positive ranking envelope, the neural net and logistic model each
+ranked only three verified positives before their first reviewed negative.
+The tree ranked two. The verifier made eight zero-false-positive detections.
+This envelope uses evaluation labels to describe the ranking and does not
+establish a threshold for future games.
+
+**Ranking before verification.** The intervention replay used the same verifier
+and root evidence throughout. Each ranker chose which boards received their
+already cached extra reply branches. The root-only verifier found six tactical
+and zero positional positives. Giving every board the extra searches raised
+that to eight tactical and five positional positives. At ten boards, the
+simple gap between the top two Stockfish root scores recovered both additional
+tactical positives, using 26.0M extra nodes versus 28.0M for logistic or the
+neural net and 32.0M for the tree. The fixed hash order recovered neither at
+ten boards. This measures coverage at equal numbers of completed board probes
+and reports their observed costs; it does not simulate an exact node cutoff or
+an interactive search scheduler. There were only two additional tactical
+positives to recover. The experiment does not establish that big score gaps
+are a sufficient way to prioritise positional or mistake-mechanism evidence.
+
+Root and paired search took 252.2 engine-seconds in aggregate. Optional replies
+took 136.8 engine-seconds and targeted captures took 1.2 more, or 97.0M extra
+nodes in total. The legacy classifier took a median 44.5ms per position. The
+additional verifier and measurements took a median 25.8ms before the measured
+engine cost. This is an offline benchmark with four concurrent one-thread
+Stockfish processes.
+
+**Reproduction.** The task's `classifier-rework/otb-transfer` directory has the
+four round exports, preregistration, exact engine and source manifest,
+classifier-blind review notes, labels and both reports. Rebuild the sample
+with `decision-evidence-tournament.py`, using event IDs and ordinary/challenge
+limits `4ncl-d2 14/5`, `calvia-amateur 9/3`,
+`victoria-reserves 9/3` and `south-carolina 3/0`, in that order. Pass the
+original course, independent and classical samples plus the v17 and v21
+reserve samples as exclusions. Freeze the `tournament` cohort, then run
+the v22 adaptive minimum-depth-18 search and reply probes. The source and
+sample hashes are checked before auditing. Use the saved labels with
+`decision-evidence-evaluate.py` and the original two course training sets with
+`decision-evidence-model-pilot.py --tournament-transfer <registered-plan>`.
+The SHA-256 of the original reference is
+`1b8ceadbf830027f131d72cef73a75c26907fb502356828a96d22f7d43903ebb`.
+
+The result gives no reason to introduce a neural runtime into En Croissant.
+The tree is the stronger learned tactical baseline on this cohort, with a
+substantial remaining precision versus recall trade-off. A future ranker
+should be trained on which legal comparison adds a useful, verified
+explanation, then tested within a fixed search cost on previously untouched
+events. The selective-probe experiment here is evidence for that next
+measurement, not for deploying a learned label. This v22 sample is open for
+development after this report. No product classifier, runtime or profile was
+changed by the experiment.

@@ -51,7 +51,7 @@ async function main() {
   const cohorts = selected.length ? selected : ["course", "independent", "classical"];
   if (
     new Set(cohorts).size !== cohorts.length ||
-    cohorts.some((name) => !["course", "independent", "classical"].includes(name))
+    cohorts.some((name) => !["course", "independent", "classical", "tournament"].includes(name))
   )
     throw new Error("Unknown or duplicated evidence cohort");
   const groupBytes = cohorts.includes("course")
@@ -69,6 +69,8 @@ async function main() {
       "scripts/benchmarks/decision-evidence-probes.py",
       "scripts/benchmarks/decision-evidence-score.py",
       "scripts/benchmarks/decision-evidence-evaluate.py",
+      "scripts/benchmarks/decision-evidence-model-pilot.py",
+      "scripts/benchmarks/decision-evidence-tournament.py",
       "scripts/benchmarks/decision-evidence-freeze.mjs",
       "src/utils/tests/decisionCandidateAudit.test.ts",
     ].map((path) => join(repo, path)),

@@ -17,7 +17,7 @@ test.skipIf(!directory)(
         const { privateReportPath } =
             await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
         const cohort = process.env.DECISION_AUDIT_COHORT ?? "course";
-        if (!["course", "independent", "classical"].includes(cohort))
+        if (!["course", "independent", "classical", "tournament"].includes(cohort))
             throw new Error("Invalid cohort");
         const protocol = process.env.DECISION_ENGINE_PROTOCOL ?? "2";
         if (!["1", "2"].includes(protocol)) throw new Error("Invalid engine protocol");
@@ -167,7 +167,7 @@ test.skipIf(!directory)(
             });
             const baselineMs = performance.now() - started;
             const witnesses = extractTacticalSequenceWitnesses(row.fen, engine.deep[0]);
-            const assessment = assessChessDecision({
+            const input: Parameters<typeof assessChessDecision>[0] = {
                 fen: row.fen,
                 candidates: engine.deep,
                 replyProbes: probes.replyProbes,
@@ -185,7 +185,13 @@ test.skipIf(!directory)(
                     moveUci: variation.lineUci[0],
                     motifs: variation.motifs,
                 })),
-            });
+            };
+            const assessment = assessChessDecision(input);
+            const milliseconds = performance.now() - started - baselineMs;
+            const rootOnlyAssessment =
+                cohort === "tournament"
+                    ? assessChessDecision({ ...input, replyProbes: [] })
+                    : undefined;
             return {
                 id: row.id,
                 category: row.category,
@@ -195,11 +201,30 @@ test.skipIf(!directory)(
                 strategicEffects: extractStrategicRootEffects(row.fen, engine.deep[0]),
                 structuralTransitions: extractPositionalTransitions(row.fen, engine.deep[0]),
                 assessment,
+                rootOnlyAssessment,
                 baseline,
                 baselineMistake,
                 baselineMs,
                 measurements: measureDecisionLine(row.fen, engine.deep[0]),
-                milliseconds: performance.now() - started - baselineMs,
+                milliseconds,
+                probeNodes:
+                    cohort === "tournament"
+                        ? probes.replyProbes.reduce(
+                              (
+                                  nodes: number,
+                                  probe: {
+                                      attempts: { nodes: number }[];
+                                      targetedCaptures: { attempts: { nodes: number }[] }[];
+                                  },
+                              ) =>
+                                  nodes +
+                                  [
+                                      ...probe.attempts,
+                                      ...probe.targetedCaptures.flatMap((r) => r.attempts),
+                                  ].reduce((sum, attempt) => sum + attempt.nodes, 0),
+                              0,
+                          )
+                        : undefined,
             };
         });
         const sourceHashes = Object.fromEntries(
