@@ -1,0 +1,81 @@
+{
+  "baseline": "70417a54",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "options": {
+    "Threads": 1,
+    "Hash": 64
+  },
+  "seed": "conditional-capture-holdout-v1",
+  "rootBudgets": [
+    600000,
+    2400000,
+    9600000
+  ],
+  "selectedOpponentReplyBudgets": [
+    1000000,
+    4000000
+  ],
+  "sources": {
+    "irish-championship": {
+      "games": 167,
+      "picks": {
+        "recapture": 18,
+        "countercapture": 18,
+        "ordinary": 6
+      },
+      "population": {
+        "recapture": 153,
+        "countercapture": 64,
+        "ordinary": 167
+      },
+      "sha256": "c6206cecc5be314d1582cc9a58b77fee8b26b745d5a07e900016e5de54b58239",
+      "category": "standard",
+      "timeControl": "90+30 with 30 mins added after 40 moves",
+      "broadcast": "https://lichess.org/broadcast/irish-championship-2025-main-event/round-1/5BD62SDR",
+      "pgn": "https://lichess.org/api/broadcast/CsOVOYLT.pgn"
+    },
+    "icelandic-open": {
+      "games": 176,
+      "picks": {
+        "recapture": 18,
+        "countercapture": 18,
+        "ordinary": 6
+      },
+      "population": {
+        "recapture": 160,
+        "countercapture": 68,
+        "ordinary": 176
+      },
+      "sha256": "6ff1afae6a26aac05e6e6356be60afe357cf1f4588fb5e760e1a4a12065126b7",
+      "category": "standard",
+      "timeControl": "90 min / 40 moves + 15 min + 30 sec / move",
+      "broadcast": "https://lichess.org/broadcast/icelandic-open-2025/round-1/6YEfiELC",
+      "pgn": "https://lichess.org/api/broadcast/UbqecSi6.pgn"
+    },
+    "reykjavik-r1": {
+      "games": 43,
+      "picks": {
+        "recapture": 18,
+        "countercapture": 4,
+        "ordinary": 6
+      },
+      "population": {
+        "recapture": 41,
+        "countercapture": 12,
+        "ordinary": 43
+      },
+      "sha256": "6f58004f593f277a128bac909c4c23b86c96bbbc6a2d858b81fd4f6d27df718c",
+      "category": "standard",
+      "timeControl": "90 min / 40 moves + 30 min / rest + 30 sec / move",
+      "broadcast": "https://lichess.org/broadcast/reykjavik-open-2025/round-1/O7v0W1b7",
+      "pgn": "https://lichess.org/api/broadcast/round/O7v0W1b7.pgn"
+    }
+  },
+  "frozenPositions": 112,
+  "controlledPairs": 15,
+  "frozenInputsSha256": {
+    "positions.json": "82ad94ed1d53785daa26f5e6b1febd26f9f48369aa1ad78555ef5abefb251d2b",
+    "controlled-searches.json": "a653535c1eeac60ba0c732420b7d88491e926c7307ab87b889ff2aad2287f3c7"
+  }
+}

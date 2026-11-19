@@ -11,6 +11,7 @@ import type {
   DecisionAssessment,
   DecisionCategory,
 } from "@/utils/tacticalMotifs/decisionAssessment";
+import type { DecisionTacticalRecovery } from "@/utils/tacticalMotifs/decisionTacticalRecovery";
 import {
   DECISION_SEARCH_SESSION_MS,
   gatherDecisionEvidence,
@@ -57,6 +58,27 @@ function lineSan(fen: string, moves: string[]) {
     board.value.play(move);
   }
   return san.join(" ");
+}
+
+function recoveryLines(
+  fen: string,
+  recovery: DecisionTacticalRecovery | undefined,
+  alternative: "played move" | "alternative",
+  hasComparison = false,
+) {
+  if (!recovery) return [];
+  const alternativeLabel = alternative === "played move" ? "Played line" : "Alternative line";
+  const detail = hasComparison ? " for tactical recovery" : "";
+  const lines = [
+    [alternativeLabel + detail, recovery.playedLineUci],
+    ["Better line" + detail, recovery.betterLineUci],
+    [`Separate reply after ${alternative}`, recovery.confirmedPlayedLineUci],
+    ["Separate reply after better move", recovery.confirmedBetterLineUci],
+  ] as const;
+  const evidence = lines.map(([label, line]) => ({ label, san: lineSan(fen, line) }));
+  return evidence.filter(
+    ({ san }, index) => san && evidence.findIndex((item) => item.san === san) === index,
+  );
 }
 
 function EvidenceSummary({
@@ -270,7 +292,6 @@ function DecisionReport({
   for (const [comparison, detail] of [
     [rookPressure, "rook comparison"],
     [pawnStructure, "pawn structure"],
-    [recovery, "tactical recovery"],
   ] as const) {
     if (!comparison) continue;
     const played = lineSan(report.fen, comparison.playedLineUci);
@@ -287,16 +308,8 @@ function DecisionReport({
         san: better,
       });
   }
-  if (recovery) {
-    for (const [label, line] of [
-      ["Separate reply after better move", recovery.confirmedBetterLineUci],
-      ["Separate reply after played move", recovery.confirmedPlayedLineUci],
-    ] as const) {
-      const san = lineSan(report.fen, line);
-      if (!mistakeLines.some((existing) => existing.san === san))
-        mistakeLines.push({ label, san });
-    }
-  }
+  for (const line of recoveryLines(report.fen, recovery, "played move", mistakeLines.length > 0))
+    if (!mistakeLines.some(({ san }) => san === line.san)) mistakeLines.push(line);
   const contrast = report.position.tacticalContrast;
   const checkpoint = report.position.preparedCheckpoint;
   const plan = report.position.strategicPlan;
@@ -323,6 +336,7 @@ function DecisionReport({
                 { label: "Refuted choice", san: lineSan(report.fen, contrast.playedLineUci) },
               ]
             : []),
+          ...recoveryLines(report.fen, report.position.tacticalRecovery, "alternative"),
           ...(checkpoint
             ? [
                 { label: "Tactical continuation", san: lineSan(report.fen, checkpoint.lineUci) },

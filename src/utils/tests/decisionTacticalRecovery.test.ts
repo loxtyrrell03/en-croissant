@@ -1,10 +1,14 @@
 import { expect, test } from "vitest";
+import { makeFen } from "chessops/fen";
 import cases from "../../../benchmarks/decision-evidence/compared-exchange-outcomes/input.json";
+import deeper from "../../../benchmarks/decision-evidence/tactical-recovery/deeper.json";
+import notation from "../../../benchmarks/decision-evidence/conditional-recovery/san-variance.json";
 import {
     assessChessDecision,
     type DecisionAssessmentInput,
 } from "../tacticalMotifs/decisionAssessment";
 import { compareTacticalRecovery } from "../tacticalMotifs/decisionTacticalRecovery";
+import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 
 function example(event: "karlstad" | "lorca") {
     const key = event === "karlstad" ? "dd622ad81f48cc4a" : "bbaeca114c6d471d";
@@ -98,4 +102,73 @@ test("attaches the evidence to the played mistake and preserves the position and
     expect(partial?.mistake?.tacticalRecovery).toBeUndefined();
     expect(confirmed?.position).toEqual(partial?.position);
     expect(confirmed?.moves).toEqual(partial?.moves);
+});
+
+test("an independent lower-ranked opponent reply can corroborate the recorded mistake", () => {
+    const input = deeper.find(({ id }) => id.includes("dd622ad81f48cc4a"))!;
+    const better = input.comparisonCandidates[0];
+    const probes = input.replyProbes.map((probe) =>
+        probe.moveUci === better.pvUci[0] ? { ...probe, lines: probe.lines.slice(0, 1) } : probe,
+    );
+    const leaderOnly = assessChessDecision({ ...input, replyProbes: probes });
+    const all = assessChessDecision(input);
+    expect(leaderOnly?.mistake?.tacticalRecovery).toBeUndefined();
+    expect(all?.mistake?.tacticalRecovery?.confirmedBetterLineUci.slice(0, 3)).toEqual([
+        "g2g1",
+        "c2a1",
+        "f3e5",
+    ]);
+    expect(all?.position).toEqual(leaderOnly?.position);
+});
+
+test("the same cached analysis can independently explain the position", () => {
+    const { playedMoveUci, ...input } = deeper.find(({ id }) => id.includes("bbaeca114c6d471d"))!;
+    const report = assessChessDecision(input);
+    expect(report?.position).toMatchObject({
+        category: "tactical",
+        tactical: { basis: "engine-supported" },
+        tacticalRecovery: { explanation: expect.stringContaining("the rook still occupies g8") },
+    });
+    expect(report?.position).toEqual(assessChessDecision({ ...input, playedMoveUci })?.position);
+    expect(report?.mistake).toBeNull();
+});
+
+test("the common capture is shown with check only on the correct board", () => {
+    const { fen, better, alternative, confirmBetter, confirmAlternative } = notation;
+    const evidence = compareTacticalRecovery(
+        fen,
+        better,
+        alternative,
+        confirmBetter,
+        confirmAlternative,
+    );
+    expect(evidence?.explanation).toContain(
+        "Bxf7+ after Kg8 and Bxf7 after Kh8 take the same rook.",
+    );
+});
+
+test("moving the same king to a different square can preserve an equivalent recapture", () => {
+    const fen = "k7/p7/8/8/6b1/8/P3R3/4K3 w - - 0 1";
+    const better = {
+        fen,
+        depth: 20,
+        cp: 0,
+        pvUci: ["e1d1", "g4e2", "d1e2", "a8b7", "e2f3", "b7c6", "f3e4", "a7a5"],
+    };
+    const alternative = {
+        fen,
+        depth: 20,
+        cp: -500,
+        pvUci: ["e1f1", "g4e2", "f1g1", "a7a5", "g1f2", "e2b5", "f2e3", "a8b7"],
+    };
+    const child = (line: typeof better) => ({
+        ...line,
+        fen: makeFen(replayTacticalLine(fen, line.pvUci)[0].after.toSetup()),
+        cp: -line.cp,
+        pvUci: line.pvUci.slice(1),
+    });
+    expect(replayTacticalLine(fen, ["e1f1", "g4e2", "f1e2"])).toHaveLength(3);
+    expect(
+        compareTacticalRecovery(fen, better, alternative, child(better), child(alternative)),
+    ).toBeNull();
 });

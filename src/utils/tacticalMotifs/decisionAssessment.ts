@@ -45,7 +45,11 @@ import {
     type DecisionConditionalMate,
 } from "./conditionalDecisionResources";
 import { compareExposedForcingAttack } from "./decisionForcingConsequence";
-import { compareTacticalRecovery, type DecisionTacticalRecovery } from "./decisionTacticalRecovery";
+import {
+    compareTacticalRecovery,
+    corroborateRecoveryReply,
+    type DecisionTacticalRecovery,
+} from "./decisionTacticalRecovery";
 import {
     compareExposedPieceTrap,
     compareSharedReply,
@@ -74,7 +78,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 31;
+export const DECISION_ASSESSMENT_VERSION = 32;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -136,6 +140,7 @@ export type ChessDecisionReport = {
         legalChoices: number;
         rejectedChoices: number;
         tacticalContrast?: TacticalMistakeEpisode;
+        tacticalRecovery?: DecisionTacticalRecovery;
         preparedCheckpointRequest?: { fen: string; prefix: string[] };
         preparedCheckpoint?: { lineUci: string[]; alternativeUci: string[] };
         strategicPlan?: PositionStrategicPlan;
@@ -751,6 +756,28 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             }
         }
     }
+    if (!rejectedChoices && position.tactical.support !== "supported") {
+        const [better, alternative] = input.candidates;
+        if (alternative) {
+            const probeFor = (line: DecisionEngineLine) =>
+                input.positionReply?.moveUci === line.pvUci[0]
+                    ? input.positionReply
+                    : input.replyProbes?.find((probe) => probe.moveUci === line.pvUci[0]);
+            const betterReply = corroborateRecoveryReply(better, probeFor(better)?.lines ?? []);
+            const alternativeReply = probeFor(alternative)?.lines[0];
+            const recovery = betterReply && alternativeReply
+                ? compareTacticalRecovery(input.fen, better, alternative, betterReply, alternativeReply)
+                : null;
+            if (recovery) {
+                position.tacticalRecovery = recovery;
+                position.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [recovery.explanation],
+                };
+            }
+        }
+    }
     position.category = category(position.tactical, position.positional);
     position.limitations = [
         "The position assessment covers the candidate moves and replies examined in this search.",
@@ -1014,15 +1041,14 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     ],
                 };
             }
+            const recoveryReply = corroborateRecoveryReply(comparedBest, betterProbe?.lines ?? []);
             const recovery =
-                assessment.tactical.support !== "supported" &&
-                betterProbe?.lines[0] &&
-                playedProbe?.lines[0]
+                assessment.tactical.support !== "supported" && recoveryReply && playedProbe?.lines[0]
                     ? compareTacticalRecovery(
                           input.fen,
                           comparedBest,
                           playedLine,
-                          betterProbe.lines[0],
+                          recoveryReply,
                           playedProbe.lines[0],
                       )
                     : null;

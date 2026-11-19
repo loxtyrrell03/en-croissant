@@ -1,0 +1,216 @@
+[
+  {
+    "id": "conditional-irish-championship-b0d509c9599d5dd4-38",
+    "cohort": "irish-championship",
+    "slot": 3,
+    "stratum": "recapture",
+    "strictRoots": true,
+    "better": "f3g5",
+    "weaker": "f4g5",
+    "sameReply": "d7e5",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  },
+  {
+    "id": "conditional-irish-championship-5c074bbe03e4e15e-44",
+    "cohort": "irish-championship",
+    "slot": 3,
+    "stratum": "recapture",
+    "strictRoots": false,
+    "better": "f1a6",
+    "weaker": "d2g2",
+    "sameReply": "a4b3",
+    "oneMillionStatus": "response also legal in played branch",
+    "fourMillionStatus": "response also legal in played branch"
+  },
+  {
+    "id": "conditional-irish-championship-48dbafd7dfde75a6-36",
+    "cohort": "irish-championship",
+    "slot": 3,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "e3d5",
+    "weaker": "e3f5",
+    "sameReply": "e7e6",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  },
+  {
+    "id": "conditional-irish-championship-eb638253378ebb98-54",
+    "cohort": "irish-championship",
+    "slot": 3,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "e3d4",
+    "weaker": "c1d2",
+    "sameReply": "f6e5",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  },
+  {
+    "id": "conditional-irish-championship-d47836d4053bbbc3-39",
+    "cohort": "irish-championship",
+    "slot": 2,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "g7g8",
+    "weaker": "g7h8",
+    "sameReply": "c4f7",
+    "oneMillionStatus": "supported recovery",
+    "fourMillionStatus": "supported recovery",
+    "proof": {
+      "commonReply": "Bxf7+",
+      "commonVictim": "f7",
+      "recovery": "Kxf7",
+      "recoveredVictim": "c4",
+      "horizon": 4,
+      "materialMargin": 560,
+      "lines": [
+        [
+          "Kg8",
+          "Bxf7+",
+          "Kxf7",
+          "Qxc6"
+        ],
+        [
+          "Kg8",
+          "Bxf7+",
+          "Kxf7",
+          "Qxc6"
+        ],
+        [
+          "Kh8",
+          "Bxf7",
+          "Bg7",
+          "Bxg7+"
+        ],
+        [
+          "Kh8",
+          "Bxf7",
+          "Bg7",
+          "Bxg7+"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "conditional-irish-championship-80271a38d0c5d965-28",
+    "cohort": "irish-championship",
+    "slot": 3,
+    "stratum": "countercapture",
+    "strictRoots": false,
+    "better": "d3d2",
+    "weaker": "d3e4",
+    "sameReply": "b5e2",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  },
+  {
+    "id": "conditional-irish-championship-43f17eb9fd4d6b19-62",
+    "cohort": "irish-championship",
+    "slot": 2,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "g1g2",
+    "weaker": "g1h1",
+    "sameReply": "b8b5",
+    "oneMillionStatus": "counterfactual score insufficient",
+    "fourMillionStatus": "response also legal in played branch"
+  },
+  {
+    "id": "conditional-irish-championship-43f17eb9fd4d6b19-62",
+    "cohort": "irish-championship",
+    "slot": 3,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "g1g2",
+    "weaker": "g1f1",
+    "sameReply": "b8b5",
+    "oneMillionStatus": "counterfactual score insufficient",
+    "fourMillionStatus": "response also legal in played branch"
+  },
+  {
+    "id": "conditional-icelandic-open-b0fd74f7adb25579-37",
+    "cohort": "icelandic-open",
+    "slot": 2,
+    "stratum": "recapture",
+    "strictRoots": true,
+    "better": "f7e6",
+    "weaker": "f7f6",
+    "sameReply": "g5g6",
+    "oneMillionStatus": "worse score disagreement",
+    "fourMillionStatus": "worse score disagreement"
+  },
+  {
+    "id": "conditional-icelandic-open-e991356128e59cd3-88",
+    "cohort": "icelandic-open",
+    "slot": 3,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "g3g2",
+    "weaker": "d1d3",
+    "sameReply": "c3e5",
+    "oneMillionStatus": "different reply after worse move",
+    "fourMillionStatus": "different reply after worse move"
+  },
+  {
+    "id": "conditional-icelandic-open-e5fc02604447fe5d-39",
+    "cohort": "icelandic-open",
+    "slot": 3,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "c5d4",
+    "weaker": "a7a5",
+    "sameReply": "c2c4",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  },
+  {
+    "id": "conditional-reykjavik-r1-a1f9c10b334875b0-46",
+    "cohort": "reykjavik-r1",
+    "slot": 2,
+    "stratum": "recapture",
+    "strictRoots": false,
+    "better": "g2f3",
+    "weaker": "d4f3",
+    "sameReply": "e6f5",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  },
+  {
+    "id": "conditional-reykjavik-r1-9926a800f2957c47-52",
+    "cohort": "reykjavik-r1",
+    "slot": 3,
+    "stratum": "recapture",
+    "strictRoots": true,
+    "better": "f4e6",
+    "weaker": "c2e2",
+    "sameReply": "g7g1",
+    "oneMillionStatus": "response also legal in played branch",
+    "fourMillionStatus": "response also legal in played branch"
+  },
+  {
+    "id": "conditional-reykjavik-r1-29742b14e38facb1-47",
+    "cohort": "reykjavik-r1",
+    "slot": 3,
+    "stratum": "recapture",
+    "strictRoots": false,
+    "better": "c8b7",
+    "weaker": "g7h6",
+    "sameReply": "a1a7",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  },
+  {
+    "id": "conditional-reykjavik-r1-76e836898def7910-55",
+    "cohort": "reykjavik-r1",
+    "slot": 3,
+    "stratum": "countercapture",
+    "strictRoots": true,
+    "better": "d5e6",
+    "weaker": "d5b3",
+    "sameReply": "e3d4",
+    "oneMillionStatus": "no attributable material recovery",
+    "fourMillionStatus": "no attributable material recovery"
+  }
+]

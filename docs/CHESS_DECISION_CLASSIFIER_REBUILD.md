@@ -3725,3 +3725,24 @@ candidate adds zero of three reviewed tactical mistakes. It misses
 cases where the better line recovers material after both choices
 commit the same loss. The experiment remains offline.
 [Benchmark, source and reproduction](../benchmarks/decision-evidence/compared-exchange-outcomes/README.md)
+
+## Recovering material after the same capture
+
+Decision assessment v31 checks four searched lines where two choices
+allow the same capture. It can explain a legal response unique to the
+better branch when both of its continuations recover material from
+the same original opposing piece. This uses the existing search.
+The Karlstad replay gained a mistake explanation. The 34 independent
+controls contained no eligible examples.
+[Benchmark and reproduction](../benchmarks/decision-evidence/tactical-recovery/README.md)
+
+Decision assessment v32 can corroborate the shared capture with a
+lower-ranked reply already searched by Stockfish. On deeper inputs,
+this recovers the Karlstad mistake explanation and supplies a
+separate tactical position assessment in Lorca. Piece identity and
+branch-specific notation prevent misleading recovery explanations.
+A separate search-budget experiment found one recovery across 112
+independent classical games. The baseline already caught that case.
+The worker keeps the existing search budget. The 112 fresh decisions
+and 1,050 valid archived decisions preserve their earlier assessments.
+[Benchmark and source](../benchmarks/decision-evidence/conditional-recovery/README.md)

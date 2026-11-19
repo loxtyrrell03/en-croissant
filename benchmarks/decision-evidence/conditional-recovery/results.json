@@ -1,0 +1,31 @@
+{
+  "targetedSearches": {
+    "boardsSelected": 112,
+    "alternativesTested": 15,
+    "positionsWithAlternatives": 14,
+    "independentRecoveries": 1,
+    "previouslyUnexplainedRecoveries": 0,
+    "shortNodes": 45013654,
+    "stabilityNodes": 120009424
+  },
+  "workerReplay": {
+    "fresh": {
+      "inputs": 112,
+      "valid": 112,
+      "unchanged": 112
+    },
+    "knownDeep": {
+      "inputs": 2,
+      "valid": 2,
+      "changed": 2,
+      "positionChanged": 1,
+      "mistakeChanged": 1
+    },
+    "archive": {
+      "inputs": 1051,
+      "valid": 1050,
+      "unchanged": 1051
+    },
+    "additionalEngineRequests": 0
+  }
+}

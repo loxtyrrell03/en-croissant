@@ -19,7 +19,8 @@ const LAST_RECOVERY_PLY = 9;
 
 function captureOrigins(line: TacticalReplayStep[]) {
     const locations = new Map([...line[0].before.board].map(([square]) => [square, square]));
-    const captured = line.map(({ before, move, capture }) => {
+    let afterConcession = new Map<Square, Square>();
+    const captured = line.map(({ before, move, capture }, index) => {
         const origin = locations.get(move.from)!;
         const castle = castlingSide(before, move);
         locations.delete(move.from);
@@ -39,9 +40,10 @@ function captureOrigins(line: TacticalReplayStep[]) {
         const taken = capture ? locations.get(square) : undefined;
         if (capture) locations.delete(square);
         locations.set(move.to, origin);
+        if (index === 1) afterConcession = new Map(locations);
         return taken;
     });
-    return { captured, surviving: new Set(locations.values()) };
+    return { captured, surviving: new Set(locations.values()), afterConcession };
 }
 
 function seenRecovery(captures: (Square | undefined)[]) {
@@ -73,6 +75,17 @@ function replyMatches(
     );
 }
 
+/** Searches can agree on this reply even if a different defence leads the
+ * independent MultiPV frame. A lower-ranked line cannot change the root score. */
+export function corroborateRecoveryReply(
+    better: DecisionEngineLine,
+    replies: DecisionEngineLine[],
+) {
+    return replies.find(
+        (reply) => reply.pvUci[0] === better.pvUci[1] && reply.pvUci[1] === better.pvUci[2],
+    );
+}
+
 function unavailableAfter(
     resource: TacticalReplayStep,
     played: TacticalReplayStep,
@@ -93,7 +106,7 @@ function unavailableAfter(
         !ray(ctx.king, move.from).has(move.to)
     )
         return `After ${played.san} and ${other.san}, the ${piece.role} on ${makeSquare(move.from)} is pinned to the king.`;
-    return `${resource.san} is unavailable after the played move and ${other.san}.`;
+    return `${resource.san} is unavailable after ${played.san} and ${other.san}.`;
 }
 
 /** Compare what both choices concede before either side can recover material.
@@ -149,6 +162,11 @@ export function compareTacticalRecovery(
     const commonVictim = goodTrace.captured[1];
     if (commonVictim === undefined || traced.some(({ captured }) => captured[1] !== commonVictim))
         return null;
+    // A relocated piece may be able to make the same capture or reach the
+    // same square from a different origin. That is still the same resource.
+    const resourceOrigin = goodTrace.afterConcession.get(resource.move.from);
+    const relocated = [...badTrace.afterConcession].find(([, origin]) => origin === resourceOrigin);
+    if (relocated && weaker[1].after.isLegal({ ...resource.move, from: relocated[0] })) return null;
     const recoveredInConfirmation = seenRecovery(confirmedGood.captured);
     for (const [victim, first] of seenRecovery(goodTrace.captured)) {
         const second = recoveredInConfirmation.get(victim);
@@ -177,12 +195,16 @@ export function compareTacticalRecovery(
         )
             continue;
         const piece = preferred.before.board.get(victim)!;
+        const shared =
+            sharedReply.san === weaker[1].san
+                ? `Both choices allow ${sharedReply.san}.`
+                : `${sharedReply.san} after ${preferred.san} and ${weaker[1].san} after ${actual.san} take the same ${preferred.before.board.get(commonVictim)!.role}.`;
         return {
             betterLineUci: better.pvUci.slice(0, endpoint + 1),
             playedLineUci: played.pvUci.slice(0, endpoint + 1),
             confirmedBetterLineUci: [preferred.uci, ...betterReply.pvUci].slice(0, endpoint + 1),
             confirmedPlayedLineUci: [actual.uci, ...playedReply.pvUci].slice(0, endpoint + 1),
-            explanation: `Both choices allow ${sharedReply.san}. After ${preferred.san}, ${resource.san} is legal immediately. In both continuations after ${preferred.san}, taking the ${piece.role} that started on ${makeSquare(victim)} recovers material. ${unavailableAfter(resource, actual, weaker[1])}`,
+            explanation: `${shared} After ${preferred.san}, ${resource.san} is legal immediately. In both continuations after ${preferred.san}, taking the ${piece.role} that started on ${makeSquare(victim)} recovers material. ${unavailableAfter(resource, actual, weaker[1])}`,
         };
     }
     return null;
