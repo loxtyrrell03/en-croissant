@@ -1,0 +1,114 @@
+{
+  "trials": {
+    "reserve": {
+      "games": 34,
+      "reviewedPositive": 3,
+      "reviewedNegative": 20,
+      "uncertain": 11,
+      "arms": {
+        "existing": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "unknownHeldOpen": 1
+        },
+        "addsExchange": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "unknownHeldOpen": 1
+        },
+        "addsCrossChecked": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "unknownHeldOpen": 1
+        },
+        "exchangeEvidence": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "unknownHeldOpen": 0
+        },
+        "crossCheckedEvidence": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "unknownHeldOpen": 0
+        }
+      }
+    },
+    "transfer": {
+      "games": 31,
+      "reviewedPositive": 3,
+      "reviewedNegative": 15,
+      "uncertain": 13,
+      "arms": {
+        "existing": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "unknownHeldOpen": 1
+        },
+        "addsExchange": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "unknownHeldOpen": 1
+        },
+        "addsCrossChecked": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "unknownHeldOpen": 1
+        },
+        "exchangeEvidence": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "unknownHeldOpen": 0
+        },
+        "crossCheckedEvidence": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "unknownHeldOpen": 0
+        }
+      }
+    }
+  },
+  "historicalAudit": {
+    "missedPositionalTacticalLabels": 239,
+    "missedMistakeTacticalLabels": 54,
+    "withCaptureOrExchangeLanguage": {
+      "positions": 153,
+      "mistakes": 27
+    },
+    "devEngineAlternativesChecked": 39,
+    "devEngineReplySearches": 45,
+    "devEngineReplyNodes": 63013191,
+    "archiveArms": {
+      "material": {
+        "position": {
+          "positive": 16,
+          "negative": 0
+        },
+        "mistake": {
+          "positive": 1,
+          "negative": 1
+        }
+      },
+      "delayed": {
+        "position": {
+          "positive": 5,
+          "negative": 0
+        },
+        "mistake": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "contrast": {
+        "position": {
+          "positive": 3,
+          "negative": 0
+        },
+        "mistake": {
+          "positive": 0,
+          "negative": 0
+        }
+      }
+    }
+  },
+  "replaysCompared": 2
+}

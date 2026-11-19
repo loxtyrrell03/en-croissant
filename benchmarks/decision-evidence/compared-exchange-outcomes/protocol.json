@@ -1,0 +1,83 @@
+{
+  "baseline": "beb0a7e0",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "sources": {
+    "junior": {
+      "round": "https://lichess.org/broadcast/north-american-junior-chess-championship-u20-2025-open/round-1/HBSmQgnM",
+      "timeControl": "90 Minutes + 30 Seconds of increment from move 1",
+      "pgn": "https://lichess.org/api/broadcast/round/HBSmQgnM.pgn"
+    },
+    "spain": {
+      "round": "https://lichess.org/broadcast/campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships/round-1/s9Im6L2z",
+      "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+      "pgn": "https://lichess.org/api/broadcast/round/s9Im6L2z.pgn"
+    },
+    "groningen": {
+      "round": "https://lichess.org/broadcast/chessfestival-groningen-2025-open-a/round-1/wK7xPNxp",
+      "timeControl": "90 min / 40 moves + 30 min + 30 sec/move",
+      "pgn": "https://lichess.org/api/broadcast/round/wK7xPNxp.pgn"
+    },
+    "lorca": {
+      "round": "https://lichess.org/broadcast/lorca-chess-festival-a-u2400/round-1/3hiAaCvu",
+      "timeControl": "60+30",
+      "pgn": "https://lichess.org/api/broadcast/OZbWSzqA.pgn"
+    },
+    "karlstad": {
+      "round": "https://lichess.org/broadcast/karlstad-open/round-1/Kl8Qj5tE",
+      "timeControl": "round 1-2: 15 min +5 sec | round 3-8: 90 min +30 sec",
+      "pgn": "https://lichess.org/api/broadcast/U0HF6jfx.pgn"
+    }
+  },
+  "cohorts": {
+    "reserve": {
+      "events": {
+        "junior": {
+          "selectedExchange": 4,
+          "selectedOrdinary": 6,
+          "exchangeGames": 4,
+          "ordinaryGames": 16,
+          "pgnSha256": "0727c67ea1087bf194ba3c2da492f0d8835ce751e31f86055fa0f449cc996cc9"
+        },
+        "spain": {
+          "selectedExchange": 6,
+          "selectedOrdinary": 6,
+          "exchangeGames": 9,
+          "ordinaryGames": 50,
+          "pgnSha256": "d17fade6b8622ba88b353b9cf5cea5aa2a53cd8148ef7e89840b73a5b868153c"
+        },
+        "groningen": {
+          "selectedExchange": 6,
+          "selectedOrdinary": 6,
+          "exchangeGames": 8,
+          "ordinaryGames": 31,
+          "pgnSha256": "9b16580ba50215153da33031effc18928ce2f124b07e668116f7c351fd7eb506"
+        }
+      },
+      "originalReviewSha256": "72d5ce597264351d81fdf0bf1bd15359b9da3d8ac867584bd47109922136fbf2"
+    },
+    "transfer": {
+      "events": {
+        "lorca": {
+          "selectedExchange": 8,
+          "selectedOrdinary": 7,
+          "exchangeGames": 8,
+          "ordinaryGames": 40,
+          "firstRound": null,
+          "pgnSha256": "a75f1ea70ea1635d6ec280f249ee9f37874a917c12eba0f2c49a4201fe8aacbd"
+        },
+        "karlstad": {
+          "selectedExchange": 9,
+          "selectedOrdinary": 7,
+          "exchangeGames": 10,
+          "ordinaryGames": 60,
+          "firstRound": 3,
+          "pgnSha256": "c41d8ce7e9e6f3de657c0347695476ad15fadccfeffbf86e546b3db1e8e13929"
+        }
+      },
+      "originalReviewSha256": "078c446c7c244217950f52ceeb104a62b5378a99fb7d6fa3c2cd6bef1dbb9de3"
+    }
+  },
+  "exposure": "The 34-position first sample was unseen by the first two algorithms. Its failures informed the material inventory arm. A separate event-disjoint 31-position sample tested transfer. A single reviewer froze mechanistic labels before each candidate replay. Unknowns are retained.",
+  "archive": "The historical audit contains 1,051 slot replays from the quiet mate defence compatibility archive. The new exchange search ran only on root pairs shortlisted from those existing frames."
+}

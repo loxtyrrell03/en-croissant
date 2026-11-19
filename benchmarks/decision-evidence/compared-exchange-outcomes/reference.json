@@ -1,0 +1,392 @@
+[
+  {
+    "id": "exchange-junior-bb35554e22e4607f-66",
+    "tacticalExchange": null,
+    "reason": "The same gxf5 starts both variations, but the later material and king-attack paths diverge.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-01f7b1ec924e8c7e-38",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-6e82bade090639f5-78",
+    "tacticalExchange": false,
+    "reason": "The b1 rook move immediately permits Nxa4. This is an immediate capture, with no reviewed delayed cost.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-166c66aabb12afff-43",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-0ed9957661b58f17-34",
+    "tacticalExchange": true,
+    "reason": "Bd3+ and Nc6 expose White to Qb3 and the later exchanges. The second search varies the move order, and Qc3 avoids that queen entry.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-9f7800c46aaae2f3-87",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-2f13170909a6f763-72",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-1232c6a65c5bf3c3-43",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-9b5bfc48f32aafdc-20",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-junior-9f343ca4f30806ed-28",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-1a333a28a00f1a7d-78",
+    "tacticalExchange": false,
+    "reason": "The same queen and rook liquidation occurs after both choices. The later d-pawn loss is due to the king route, after quiet moves.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-bcc0cb0c8f40caa8-107",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-bf6b172851f567c6-44",
+    "tacticalExchange": true,
+    "reason": "Qxf2+, Qxe3 and Nf2+ are followed by Rxf2 Qxf2 Nxf5 Qxf5 in both searches. Pressure on the second rank changes the concrete exchanges.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-b24785fa98b438bf-39",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-0318c04bb310465b-37",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-c7377fc6db65cce6-38",
+    "tacticalExchange": true,
+    "reason": "Bxg2 and Qxf4 persist across both searches after Qb3. Qd2 instead reaches a favourable rook and minor-piece exchange.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-eec2bffd55bc62d1-70",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-60588861a53d439b-22",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-bb97e487aee4b717-32",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-15c6427f0149f428-54",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-751b577e25551268-45",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-spain-55e43612cffa7e92-38",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-352b6425e4325764-46",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-4a7de413801cfdf7-81",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-ec29499d1b10e546-56",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-b2759ba43e6eb180-60",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-825d737ca683155f-48",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-9ebf6586429918fb-31",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-6d4c50303540d4dd-69",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-be8ee2a7099b9453-45",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-fea7a6e2e630a610-54",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-99d6d644b2fbd44d-20",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-698132fd32825180-153",
+    "tacticalExchange": false,
+    "reason": "The played move is the engine’s leading choice.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-groningen-20e18a26a28ba390-43",
+    "tacticalExchange": null,
+    "reason": "The paired lines give no separately reviewed exchange mechanism.",
+    "cohort": "reserve"
+  },
+  {
+    "id": "exchange-lorca-84b102f7dd61c7e9-51",
+    "tacticalExchange": true,
+    "reason": "After Rbf6 both searches confirm Rae1, Ne6+ and Nc7 before the rook-for-knight exchange on e8.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-bbaeca114c6d471d-43",
+    "tacticalExchange": true,
+    "reason": "Bxh6 allows Nxf7+ and the queen trade through Qxf7; Rg6 allows a materially different counter-exchange on f8.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-6f0471e99b250b51-31",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-699a896fcc5b20ef-63",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-4e008d6071a7254c-40",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-e413953a3f3f746e-75",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-fb8e88680547bc3a-57",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-e2bdbbd9b42f9dfd-111",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-74df4b3db482b733-21",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-e487c687050ff6d6-69",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-7798c2d1e6014307-37",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-03da1872889a3841-24",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-bd7350577e30f911-48",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-e541a7526ed1d823-61",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-lorca-90d7a5eeaa67dc77-48",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-58e222e5b4cc8cb8-36",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-e24eb7f5fec83bfa-37",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-42efd7050653e4ae-60",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-85948ed0ba354813-70",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-cc486e37c5fecadb-30",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-001d6b7205b93790-46",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-bf5412b7c5dc20e9-59",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-118a418e7e7cfed2-96",
+    "tacticalExchange": null,
+    "reason": "The shared Rxc3 and later rook checks interact with the passed h-pawn. A distinct material exchange error is uncertain.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-2721f275518a0694-97",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-8605838ca20f9c3a-57",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-dd622ad81f48cc4a-44",
+    "tacticalExchange": true,
+    "reason": "Both choices allow Nxa1. The better branch uses Ne5 and Ngxf7, then Nxd6, to recover material through a separate exchange.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-1571c3b5cb23dcf5-24",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-20289658e983ac55-65",
+    "tacticalExchange": null,
+    "reason": "No specific exchange mechanism was established in the review.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-f0259c8b75557dd7-20",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-b463b4a8044d81a8-26",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  },
+  {
+    "id": "exchange-karlstad-64d55aa816ea311e-20",
+    "tacticalExchange": false,
+    "reason": "The recorded move is the engine’s leading choice.",
+    "cohort": "transfer"
+  }
+]

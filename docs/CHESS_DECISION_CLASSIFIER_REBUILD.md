@@ -3711,3 +3711,17 @@ v29 identifies zero. The 35 controls have zero false direct proofs.
 Position, move and mistake verdicts agree on 1,050 valid archived
 requests. Longer mating sequences retain the existing proof standard.
 [Benchmark and reproduction](../benchmarks/decision-evidence/played-immediate-mate/README.md)
+
+## Comparing the material lost in both branches
+
+The exchange study audits missed historical decisions and tracks the
+original identity of captured pieces along each legal line. A settled
+material difference would add one reviewed false tactical mistake.
+Checking the captured pieces across the paired root and separate reply
+searches raises tactical coverage from 2/3 to 3/3 in a 34-game development
+sample. A separate reply after the better choice removes misleading
+pawn-retention claims. In the event-disjoint 31-game transfer the
+candidate adds zero of three reviewed tactical mistakes. It misses
+cases where the better line recovers material after both choices
+commit the same loss. The experiment remains offline.
+[Benchmark, source and reproduction](../benchmarks/decision-evidence/compared-exchange-outcomes/README.md)
