@@ -66,7 +66,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 26;
+export const DECISION_ASSESSMENT_VERSION = 27;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -219,6 +219,28 @@ function corroboratingReply(
     );
 }
 
+/** A near-best reply may expose the actual purpose of the advancing pawn.
+ * A witnessed fork in which the same pawn immediately wins a piece cannot
+ * establish independent strategic value for keeping these pawns locked. */
+function pawnForkBreaksLock(
+    fen: string,
+    branch: DecisionEngineLine,
+    witnesses: TacticalSequenceWitness[],
+) {
+    const fork = witnesses.find(
+        (witness) =>
+            witness.mechanism === "fork" && witness.mechanismPly === 1 && witness.payoffPly === 3,
+    );
+    if (!fork) return false;
+    const [root, , payoff] = replayTacticalLine(fen, branch.pvUci.slice(0, 3));
+    return Boolean(
+        payoff &&
+        payoff.move.from === root.move.to &&
+        payoff.capture >= 300 &&
+        root.before.board.get(root.move.from)?.role === "pawn",
+    );
+}
+
 function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): DecisionAssessment {
     const result = emptyAssessment();
     const measured = measureDecisionLine(input.fen, line);
@@ -257,7 +279,7 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
     const witnesses = mergeTacticalSequenceWitnesses(
         witnessedBranches.flatMap((branch) => branch.witnesses),
     );
-    const factors = comparePositionalTransitions(input.fen, line, input.candidates);
+    let factors = comparePositionalTransitions(input.fen, line, input.candidates);
     const corroboratedFactors = corroborated ? corroboratePositionalEffects(input.fen, line, branches[0]) : [];
     for (const item of corroboratedFactors) {
         if (
@@ -269,6 +291,30 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             )
         )
             factors.push(item);
+    }
+    const leadingReplyCp = probe?.lines[0]?.cp;
+    if (
+        corroborated &&
+        leadingReplyCp != null &&
+        factors.some((item) => item.feature === "pawn-lock")
+    ) {
+        // These branches are from the same independent reply search. The
+        // projected branch score has the opposite perspective to the reply.
+        const tacticalLock = witnessedBranches.some(
+            ({ line: branch, measured, witnesses }) =>
+                branch.cp !== null &&
+                leadingReplyCp + branch.cp >= 0 &&
+                leadingReplyCp + branch.cp <= 35 &&
+                measured &&
+                !measured.drawnEnding &&
+                pawnForkBreaksLock(input.fen, branch, witnesses),
+        );
+        if (tacticalLock) {
+            factors = factors.filter((item) => item.feature !== "pawn-lock");
+            result.limitations.push(
+                "In a close reply, the pawn leaves the lock to take a piece. This line illustrates the pawn's tactical role.",
+            );
+        }
     }
     result.mechanisms = witnesses;
     result.positionalFactors = factors;

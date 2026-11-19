@@ -1,0 +1,245 @@
+{
+  "baseline": "2c02bb30",
+  "candidateVersion": 27,
+  "classifier": {
+    "development": {
+      "paired": 182,
+      "valid": 182,
+      "changed": {
+        "position": [
+          "tournament-team-open-2a261bb523ca4544-57"
+        ],
+        "moves": [
+          "tournament-team-open-2a261bb523ca4544-57"
+        ],
+        "mistake": [],
+        "mistakeStatus": []
+      },
+      "before": {
+        "tactical": {
+          "TP": 27,
+          "FP": 0,
+          "TN": 32,
+          "FN": 81,
+          "uncertain": 42,
+          "uncertainSupported": 0
+        },
+        "positional": {
+          "TP": 36,
+          "FP": 1,
+          "TN": 15,
+          "FN": 114,
+          "uncertain": 15,
+          "uncertainSupported": 1
+        },
+        "mixed": {
+          "TP": 2,
+          "FP": 1,
+          "TN": 47,
+          "FN": 75,
+          "uncertain": 57,
+          "uncertainSupported": 0
+        }
+      },
+      "after": {
+        "tactical": {
+          "TP": 27,
+          "FP": 0,
+          "TN": 32,
+          "FN": 81,
+          "uncertain": 42,
+          "uncertainSupported": 0
+        },
+        "positional": {
+          "TP": 36,
+          "FP": 0,
+          "TN": 16,
+          "FN": 114,
+          "uncertain": 15,
+          "uncertainSupported": 1
+        },
+        "mixed": {
+          "TP": 2,
+          "FP": 0,
+          "TN": 48,
+          "FN": 75,
+          "uncertain": 57,
+          "uncertainSupported": 0
+        }
+      }
+    },
+    "replyHoldout": {
+      "paired": 34,
+      "valid": 34,
+      "changed": {
+        "position": [],
+        "moves": [],
+        "mistake": [],
+        "mistakeStatus": []
+      },
+      "before": {
+        "tactical": {
+          "TP": 2,
+          "FP": 0,
+          "TN": 5,
+          "FN": 19,
+          "uncertain": 8,
+          "uncertainSupported": 0
+        },
+        "positional": {
+          "TP": 4,
+          "FP": 0,
+          "TN": 1,
+          "FN": 25,
+          "uncertain": 4,
+          "uncertainSupported": 0
+        },
+        "mixed": {
+          "TP": 0,
+          "FP": 0,
+          "TN": 6,
+          "FN": 16,
+          "uncertain": 12,
+          "uncertainSupported": 0
+        }
+      },
+      "after": {
+        "tactical": {
+          "TP": 2,
+          "FP": 0,
+          "TN": 5,
+          "FN": 19,
+          "uncertain": 8,
+          "uncertainSupported": 0
+        },
+        "positional": {
+          "TP": 4,
+          "FP": 0,
+          "TN": 1,
+          "FN": 25,
+          "uncertain": 4,
+          "uncertainSupported": 0
+        },
+        "mixed": {
+          "TP": 0,
+          "FP": 0,
+          "TN": 6,
+          "FN": 16,
+          "uncertain": 12,
+          "uncertainSupported": 0
+        }
+      }
+    },
+    "lockHoldout": {
+      "paired": 20,
+      "valid": 20,
+      "changed": {
+        "position": [],
+        "moves": [],
+        "mistake": [],
+        "mistakeStatus": []
+      },
+      "before": {
+        "tactical": {
+          "TP": 1,
+          "FP": 0,
+          "TN": 2,
+          "FN": 14,
+          "uncertain": 3,
+          "uncertainSupported": 0
+        },
+        "positional": {
+          "TP": 4,
+          "FP": 0,
+          "TN": 0,
+          "FN": 14,
+          "uncertain": 1,
+          "uncertainSupported": 1
+        },
+        "mixed": {
+          "TP": 1,
+          "FP": 0,
+          "TN": 2,
+          "FN": 12,
+          "uncertain": 5,
+          "uncertainSupported": 0
+        }
+      },
+      "after": {
+        "tactical": {
+          "TP": 1,
+          "FP": 0,
+          "TN": 2,
+          "FN": 14,
+          "uncertain": 3,
+          "uncertainSupported": 0
+        },
+        "positional": {
+          "TP": 4,
+          "FP": 0,
+          "TN": 0,
+          "FN": 14,
+          "uncertain": 1,
+          "uncertainSupported": 1
+        },
+        "mixed": {
+          "TP": 1,
+          "FP": 0,
+          "TN": 2,
+          "FN": 12,
+          "uncertain": 5,
+          "uncertainSupported": 0
+        }
+      }
+    },
+    "compatibility": {
+      "paired": 472,
+      "valid": 472,
+      "changed": {
+        "position": [],
+        "moves": [],
+        "mistake": [],
+        "mistakeStatus": []
+      }
+    },
+    "mistakes": {
+      "paired": 318,
+      "valid": 317,
+      "changed": {
+        "position": [],
+        "moves": [],
+        "mistake": [],
+        "mistakeStatus": []
+      }
+    }
+  },
+  "researchReplyArms": {
+    "paired": 34,
+    "ordinary": 24,
+    "challenge": 10,
+    "addedPositional": 0,
+    "additionalEngineNodes": 0,
+    "addedTactical": 0
+  },
+  "replaySha256": {
+    "full-paired-input.json": "cd3b65ff09aa6b3fde0daca26d18b882e1a90287b50e1c08814908f886af4cb5",
+    "full-v26.json": "208093c00cc58c0b10198ef66b07e4e037e2d45a69da06fcaf5a823f33dcad98",
+    "full-v27.json": "cfcd65b2221a66d870a8224fd2cbd5252bffca4ee30d56614c4d4c7d029724c8",
+    "heldout-v2.json": "544ab7ea4c19f9e885568bc204dbdac534827afe4c03af8edc4e61106beabe0d"
+  },
+  "sourcePanel": {
+    "widthsPx": [
+      320,
+      390,
+      900
+    ],
+    "checked": [
+      "real classifier Worker",
+      "position and move verdicts",
+      "fork in expanded move evidence",
+      "keyboard expansion and collapse",
+      "durable lock control",
+      "horizontal overflow"
+    ]
+  }
+}

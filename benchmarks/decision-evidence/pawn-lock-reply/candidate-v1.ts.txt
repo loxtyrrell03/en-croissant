@@ -1,0 +1,184 @@
+import { makeFen } from "chessops/fen";
+import type { Square } from "chessops/types";
+import { makeSquare } from "chessops/util";
+import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
+import { measureDecisionLine, measurePositionDecision, type DecisionEngineLine } from "./decisionEvidence";
+import type { PositionStrategicPlan } from "./decisionPositionPlans";
+import { compareTacticalMistakeEpisode } from "./tacticalMistakeEpisode";
+
+const file = (square: Square) => square % 8;
+const rank = (square: Square, side: "white" | "black") =>
+    side === "white" ? Math.floor(square / 8) + 1 : 8 - Math.floor(square / 8);
+
+function exactReplies(fen: string, lead: DecisionEngineLine, replies: DecisionEngineLine[]) {
+    if (lead.depth < 16 || lead.cp === null || lead.mate != null) return null;
+    const rootLine = measureDecisionLine(fen, lead);
+    const [root] = replayTacticalLine(fen, lead.pvUci.slice(0, 1));
+    const [firstReply] = replies;
+    if (!root || !rootLine || rootLine.drawnEnding || !firstReply || firstReply.depth < 16 ||
+        firstReply.cp === null || firstReply.mate != null || Math.abs(firstReply.cp + lead.cp) > 90)
+        return null;
+    const child = makeFen(root.after.toSetup());
+    const measured = measurePositionDecision(child, replies);
+    if (!measured || measured.lines.length !== replies.length ||
+        replies.some((reply, i) => reply.depth !== firstReply.depth || (i > 0 &&
+            reply.cp !== null && replies[i - 1].cp !== null && reply.cp > replies[i - 1].cp!)))
+        return null;
+    return { root, child, firstReply };
+}
+
+function materialSettles(line: TacticalReplayStep[], through: number) {
+    const tail = line.slice(through - 3, through);
+    return tail.length === 3 && tail.every((step) =>
+        step.balance === tail[0].balance && !step.capture && !step.after.isCheck());
+}
+
+type Route = {
+    pivot: TacticalReplayStep;
+    entry: TacticalReplayStep;
+    end: number;
+};
+
+/** The reply moves the same rook that subsequently invades, or clears the
+ * file by trading a pawn. Track the rook until the invasion is demonstrated. */
+function rookRoute(steps: TacticalReplayStep[], seventhOnly: boolean): Route | null {
+    const [pivot] = steps;
+    if (!pivot) return null;
+    const side = pivot.before.turn;
+    const mover = pivot.before.board.get(pivot.move.from)!;
+    const captured = pivot.before.board.get(pivot.move.to);
+    if (pivot.after.isCheck() || pivot.before.isCheck() || pivot.move.promotion) return null;
+    if (mover.role !== "rook" && (mover.role !== "pawn" || !pivot.capture)) return null;
+    const column = file(mover.role === "rook" ? pivot.move.to : pivot.move.from);
+    if ([...pivot.after.board.pawn.intersect(pivot.after.board[side])].some((sq) => file(sq) === column))
+        return null;
+    if (mover.role === "rook" && captured?.role !== "pawn" && file(pivot.move.from) === column)
+        return null;
+    let tracked = mover.role === "rook" ? pivot.move.to : undefined;
+    const minRank = seventhOnly ? 7 : 6;
+    for (let i = 0; i < Math.min(5, steps.length); i++) {
+        const step = steps[i];
+        if (step.before.turn !== side) {
+            if (step.move.to === tracked) return null;
+            continue;
+        }
+        if (file(step.move.to) !== column) {
+            if (step.move.from === tracked) return null;
+            continue;
+        }
+        if ((i > 0 && tracked !== undefined && step.move.from !== tracked) ||
+            step.before.board.get(step.move.from)?.role !== "rook")
+            continue;
+        tracked = step.move.to;
+        if (step.capture || step.after.isCheck() || rank(tracked, side) < minRank ||
+            rank(tracked, side) <= rank(step.move.from, side)) continue;
+        // The route must leave the rook in place across the next two turns.
+        if (steps.length < i + 4 ||
+            steps.slice(i + 1, i + 4).some((later) =>
+                later.move.from === tracked || later.move.to === tracked)) continue;
+        return { pivot, entry: step, end: i + 4 };
+    }
+    return null;
+}
+
+function compareRookReplies(
+    root: TacticalReplayStep,
+    lead: DecisionEngineLine,
+    child: string,
+    replies: DecisionEngineLine[],
+    seventhOnly: boolean,
+): PositionStrategicPlan | null {
+    if (replies.length < 2) return null;
+    const [first] = replies;
+    const close = replies.filter((line) => line.cp !== null && line.mate == null &&
+        first.cp! - line.cp <= 60 && !measureDecisionLine(child, line)?.drawnEnding);
+    const principal = lead.pvUci.slice(1, 11);
+    const sameReply = close.find((item) => item.pvUci[0] === principal[0]);
+    if (!sameReply) return null;
+    const primary = replayTacticalLine(child, principal);
+    const independent = replayTacticalLine(child, sameReply.pvUci.slice(0, 10));
+    const firstUse = rookRoute(primary, seventhOnly);
+    const confirmedUse = rookRoute(independent, seventhOnly);
+    if (!firstUse || !confirmedUse || firstUse.entry.uci !== confirmedUse.entry.uci)
+        return null;
+    const through = Math.max(firstUse.end, confirmedUse.end);
+    if (!materialSettles(primary, through) || !materialSettles(independent, through) ||
+        primary[through - 1].balance !== independent[through - 1].balance) return null;
+    for (const reply of close) {
+        if (reply === sameReply) continue;
+        const other = replayTacticalLine(child, reply.pvUci.slice(0, through));
+        if (!materialSettles(other, through) ||
+            Math.abs(independent[through - 1].balance - other[through - 1].balance) > 50)
+            continue;
+        const landing = confirmedUse.entry.move.to;
+        const side = root.after.turn;
+        if (other.some((step) =>
+            [...step.after.board.rook.intersect(step.after.board[side])].some((sq) =>
+                file(sq) === file(landing) && rank(sq, side) >= rank(landing, side)))) continue;
+        const action = confirmedUse.pivot.uci === confirmedUse.entry.uci
+            ? confirmedUse.entry.san
+            : confirmedUse.pivot.san + " is followed by " + confirmedUse.entry.san;
+        return {
+            linesUci: [[root.uci, ...sameReply.pvUci.slice(0, through)], [root.uci, ...reply.pvUci.slice(0, through)]],
+            description: "After " + root.san + ", " + action + ". The rook reaches " +
+                makeSquare(landing) + " in both searches. With " + other[0].san +
+                ", the rook stays off that part of the file through the displayed moves.",
+        };
+    }
+    return null;
+}
+
+function lineAfter(fen: string, line: DecisionEngineLine) {
+    const [first] = replayTacticalLine(fen, line.pvUci.slice(0, 1));
+    if (!first || line.cp === null || line.mate != null || line.pvUci.length < 2) return null;
+    return {
+        first,
+        continuation: { ...line, fen: makeFen(first.after.toSetup()), cp: -line.cp, pvUci: line.pvUci.slice(1) },
+    };
+}
+
+/** Test a plausible response to the leading move against the alternative
+ * opponent response. This identifies a tactical danger in the position
+ * rather than claiming the person who played the leading move made an error. */
+function compareReplyRefutation(
+    root: TacticalReplayStep,
+    lead: DecisionEngineLine,
+    child: string,
+    replies: DecisionEngineLine[],
+    requireTempting: boolean,
+): PositionStrategicPlan | null {
+    const [best, candidate] = replies;
+    if (!candidate || best.pvUci[0] !== lead.pvUci[1] ||
+        candidate.cp === null || candidate.mate != null || best.cp! - candidate.cp < 100) return null;
+    const safer = lineAfter(child, best);
+    const dangerous = lineAfter(child, candidate);
+    if (!safer || !dangerous) return null;
+    const move = dangerous.first;
+    if (requireTempting && !move.capture && !move.after.isCheck()) return null;
+    const episode = compareTacticalMistakeEpisode(
+        child, best, candidate, dangerous.continuation, safer.continuation, 6);
+    if (!episode || (episode.materialDifferencePoints ?? episode.materialConcededPoints ?? 0) < 2)
+        return null;
+    return {
+        linesUci: [[root.uci, ...episode.betterLineUci], [root.uci, ...episode.playedLineUci]],
+        description: "After " + root.san + ", " + move.san + " allows a tactical reply. " + episode.explanation,
+    };
+}
+
+export function assessReplyConsequences(
+    fen: string,
+    lead: DecisionEngineLine,
+    replies: DecisionEngineLine[],
+    tacticalNeeded: boolean,
+    positionalNeeded: boolean,
+) {
+    const frame = exactReplies(fen, lead, replies);
+    if (!frame) return null;
+    const { root, child } = frame;
+    return {
+        rookSixth: positionalNeeded ? compareRookReplies(root, lead, child, replies, false) : null,
+        rookSeventh: positionalNeeded ? compareRookReplies(root, lead, child, replies, true) : null,
+        replyRefutation: tacticalNeeded ? compareReplyRefutation(root, lead, child, replies, false) : null,
+        temptingReply: tacticalNeeded ? compareReplyRefutation(root, lead, child, replies, true) : null,
+    };
+}

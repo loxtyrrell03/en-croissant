@@ -1,0 +1,91 @@
+{
+  "replies": {
+    "skakligaen": {
+      "pgnSha256": "198173d09522cb9ef5eb4d7395accc59cefa19a1eedfc3da901f70947c11ec8e",
+      "games": 38
+    },
+    "eliteserien": {
+      "pgnSha256": "be2eacebc7e43c50aa2cdb2ae1d330b84f7593abe0388330b2d172755903d2ac",
+      "games": 30
+    },
+    "asian_para": {
+      "pgnSha256": "fc086f7006491053cda648646f54b6fd700510d08f770f8fd207b749bbc98ab0",
+      "games": 9
+    },
+    "hjorth": {
+      "pgnSha256": "d5c18fadefb93f348816753c700df9269f80f1dc89a9141df2b5842a996f7ea4",
+      "games": 11
+    }
+  },
+  "locks": {
+    "mongolia": {
+      "pgnSha256": "099e4090d942d8dfd9975b3454c1d7e9a59bf6e8d865749af5a73f59a38221bf",
+      "counts": {
+        "attacking": 1,
+        "ordinary": 2
+      }
+    },
+    "baden": {
+      "pgnSha256": "a00c577654bfcd82fcd347368a33604d470553727aec551f237a4ae3f423371b",
+      "counts": {
+        "attacking": 3,
+        "ordinary": 2
+      }
+    },
+    "amazonas": {
+      "pgnSha256": "964710201886c74910327d240105e3383e4be6385ac3d607f6e0570718d93445",
+      "counts": {
+        "attacking": 1,
+        "ordinary": 1
+      }
+    },
+    "kardzhali": {
+      "pgnSha256": "5acebcabf6e875b3dafbcbef6c1a5a954da241a7923ef74204c8a32459d023b6",
+      "counts": {
+        "attacking": 2,
+        "ordinary": 3
+      }
+    },
+    "bundesliga": {
+      "pgnSha256": "60c30732eae8c7c95a93ad0907ab7fdd62a5df0eee8cf4420ba07b47e9515f7c",
+      "counts": {
+        "attacking": 2,
+        "ordinary": 3
+      }
+    }
+  },
+  "sourceRounds": {
+    "skakligaen": "https://lichess.org/broadcast/skakligaen-20262027/round-1/mqrJwMy3",
+    "eliteserien": "https://lichess.org/broadcast/norwegian-team-league-eliteserien-202627/round-3/wRsIccwo",
+    "asian_para": "https://lichess.org/broadcast/4th-asian-chess-championship-for-players-with-disabilities-2026-men-juniors/round-4/frkI5krx",
+    "hjorth": "https://lichess.org/broadcast/2026-greg-hjorth-open/round-1/GcyAs4TL",
+    "mongolia": "https://lichess.org/broadcast/mongolian-national-chess-championship-2026-open/round-11/FFNCdqle",
+    "baden": "https://lichess.org/broadcast/4-int-baden-badener-herbstopen/round-6/Gnpox6xf",
+    "amazonas": "https://lichess.org/broadcast/campeonato-amazonense-de-xadrez-2026-absoluto-e-feminino/round-4/Al6bT35L",
+    "kardzhali": "https://lichess.org/broadcast/international-chess-festival-kardzhali-2026/round-1/YIvZBS7U",
+    "bundesliga": "https://lichess.org/broadcast/german-2nd-bundesliga-north/round-3/KGvu9g0X"
+  },
+  "freeze": {
+    "freeze.json": {
+      "sha256": {
+        "heldout.json": "b514b99c0c5b5601ecbce180d2b14f62ebe5216f47b9b1b77d6f547edd5e7318",
+        "heldout-sample.json": "c3aec828ebf4374d389d82fdc0a398ec1ceef3c626a4ebd4f238a93988f3dc6b",
+        "candidate.ts": "829d484487e370e0f737a1b6b8ec823b2cd27a814131324f46a22b02431d54c6",
+        "candidate-v1.ts": "a66eff9795f8068ee19e391c4423a56da5f212bb456fa47a4c25b2af4af475b6",
+        "manual.txt": "4ddc5b3b9c1225194308ec7c523e32940efb3e9257896c034c47d9a61d839a04"
+      },
+      "scope": "Frozen before first prediction replay. Arms measured separately on ordinary and challenge positions; all additional explanations audited against their actual lines.",
+      "preferred": "Rook seventh with a material-matched window and tempting reply with a concrete two-pawn-or-more consequence.",
+      "deliveryGate": "At least two genuine witnessed position-axis positives on held-out cases from different games, zero verified misleading position explanations, and no changed move or mistake results. Ordinary controls reported separately."
+    },
+    "locks-freeze.json": {
+      "sha256": {
+        "locks-heldout.json": "529f2cd4e398009c2e0da4f1f575edf624450f059a16c84c8c9d8ab2a9bfe715",
+        "locks-sample.json": "87005bd56b727651d34ed82dfe0353769f4afeecd71cdaa649e0d88c8d795708",
+        "pawn-lock-applied.ts": "f466455d48067a20743ace323cb4701cdd357dcee1a5c8c76f224890a1000409",
+        "lock-reviewed.txt": "0644ae59cfd2cf0f62de8e61ddaf1ebd7bd4af58ac91a619a99a97fcc51e4c14"
+      },
+      "scope": "Frozen before the first prediction. Review kept unclear labels when the PVs did not establish an independent axis."
+    }
+  }
+}
