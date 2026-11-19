@@ -2551,3 +2551,102 @@ result receipt is in `benchmarks/decision-evidence/line-model-v41`.
 The pilot reuses Stockfish caches and requests no additional engine
 searches. The model weights and case-level research output stay out
 of the repository.
+
+## Iteration 42 — trace promotion pressure across choices
+
+An advanced pawn can explain a lasting constraint even when the
+immediate calculation concerns a different piece. For position character,
+replay up to 14 legal plies from each of three Stockfish choices and
+trace the same starting pawn through its advances and captures. A
+strategic explanation compares distinct lines with an actual promotion,
+sustained occupation of its promotion square by a blocking piece, or
+observed removal. The comparison includes an immediate recapture when
+the line provides one. Two immediate promotions do not establish
+a continuing plan. Continuations that reach the same board before the
+relevant evidence are treated as a single line.
+
+A separate tactical explanation requires concrete evidence. In the
+current rule, two alternative roots show the same pawn promoting on the
+same square, being captured, and then being traded for the same type of
+opposing piece. A third line shows a sustained blockade. The early
+transaction is supported by Stockfish, and the strategic interpretation
+describes the constraint illustrated by the legal lines. In the North
+American Youth game `a00b09b2aac4793e-64`, `Ra1` gives White access to
+`Re1` against the e-pawn. After `Rxa7` or `Kg2`, Black can promote
+on e1 and obtain the white rook after the recaptures. The panel shows
+three continuations with the longer verified branch replacing its
+shorter duplicate.
+
+| 259 previously reviewed ordinary decisions | Tactical TP / FP | Positional TP / FP | Mixed TP / FP |
+| --- | ---: | ---: | ---: |
+| v40 worker | 53 / 1 | 54 / 1 | 3 / 1 |
+| Initial trajectory comparison | 54 / 1 | 61 / 1 | 8 / 1 |
+| Also recognise resolved blockades and early removal | 54 / 1 | 64 / 1 | 10 / 1 |
+| Also recognise the material cost of removing the pawn | 54 / 1 | 64 / 1 | 10 / 1 |
+
+The second variant was frozen against a further 48 games. Its reports
+matched the baseline in both strata. In a focused miss, Black gave up a
+rook to take the pawn after occupying its promotion square for only
+two plies. The third variant recognised that exchange after the miss
+was reviewed. It recovered that one mixed example on the exposed
+cohort. In the second evaluation, the second and third variants
+performed identically. The less complex second variant is the release
+candidate. [Stjernens Høstturnering](https://lichess.org/api/broadcast/JkAJY6gT.pgn)
+[Tajik President's Cup](https://lichess.org/api/broadcast/7Mp0YNJB.pgn)
+[ArcelorMittal Open](https://lichess.org/api/broadcast/kpCb2J5c.pgn)
+
+| Frozen sample | Positions | Tactical true positives, both | Positional true positives, v40 → v42 | Mixed true positives, v40 → v42 |
+| --- | ---: | ---: | ---: | ---: |
+| First ordinary sample | 32 | 7/19 | 6/27 → 6/27 | 1/14 → 1/14 |
+| First advanced-pawn sample | 16 | 2/13 | 2/13 → 2/13 | 0/10 → 0/10 |
+| Second ordinary sample | 15 | 3/11 | 3/15 → 3/15 | 1/11 → 1/11 |
+| Second advanced-pawn sample | 16 | 3/15 | 3/14 → 4/14 | 0/13 → 1/13 |
+
+Neither evaluated version produced a reviewed false positive in these
+79 games. The ordinary samples contain two positional negatives, and
+the advanced-pawn samples contain one each. The advanced-pawn sampler
+uses the recorded early removal or persistence of the pawn to select
+games. The recorded play does not determine the reference label. The
+first advanced-pawn sample draws 15 of its games from one event. The
+second draws from three. One engine-assisted reviewer saved references
+before reading each candidate replay. These samples establish a narrow
+held-out improvement; ordinary transfer and the additional removal-cost
+rule still lack positive held-out evidence.
+
+In the newly recovered Farsala position `c5e9dbb7d21161f3-29`,
+`Qxb6` removes the pawn before it can advance. The alternative
+`Bxa3` allows `bxa7` and `axb8=R`, with the rook recapture shown.
+The v40 report already established the tactical dimension. The new
+comparison adds the precise pawn trajectory and the strategic
+consequence of removing it early. Control from behind the pawn and
+several cases of promotion after a played move outside the original
+three choices remain outside this comparison.
+[Farsala Open](https://lichess.org/api/broadcast/oDBlBcdo.pgn)
+[NYC Fall Norms](https://lichess.org/api/broadcast/uxynWlhv.pgn)
+[Intercollegiate Classical](https://lichess.org/api/broadcast/Tf2HPVdZ.pgn)
+
+The new position checks use existing frames, with no extra engine
+searches in the replay. Move justifications and mistake reports were
+identical for all evaluated decisions. In the second advanced-pawn
+sample the worker replay medians were 109.1 ms for v40 and 108.9 ms
+for v42. These are concurrent-worker timings with cached engine data.
+The focused suite passed 233 tests with one expected failure and
+18 skipped tests. Type checks, scoped lint and formatting passed.
+The actual worker and panel displayed the blockade, both promotion
+transactions and three distinct continuations with keyboard access
+at 320, 390 and 900 pixels in the isolated browser fixture.
+Installed desktop verification is pending.
+
+**Reproduction.** Use the samples, reviewed references and freeze
+receipts under `benchmarks/decision-evidence/promotion-pressure-v42`.
+Generate the ordinary Stockfish caches with the v40 settings and
+profile `v42`. Rebuild the focused samples with
+`decision-evidence-passer-sample.py --per-stratum 8` and the listed
+board and game exclusions. In the replay manifest, specify
+`strata: ["resolved-early", "persisted"]` for each advanced-pawn
+cohort. Run `decisionOrdinaryReplay.test.ts` on the baseline and the
+candidate and score the resulting worker reports. The replays
+used the committed tactical core because the checkout contains an
+unrelated tactical edit. The initial and removal-cost experiments
+are recorded as patches against this iteration for
+`git apply --unidiff-zero`, with separate results in the summary.

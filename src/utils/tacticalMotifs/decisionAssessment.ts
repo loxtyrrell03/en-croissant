@@ -56,8 +56,9 @@ import {
     type PositionStrategicPlan,
 } from "./decisionPositionPlans";
 import { findSharedStructuralPlan } from "./decisionSharedStructure";
+import { findPromotionPressure } from "./decisionPromotionPressure";
 
-export const DECISION_ASSESSMENT_VERSION = 18;
+export const DECISION_ASSESSMENT_VERSION = 19;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -115,6 +116,7 @@ export type ChessDecisionReport = {
         rejectedChoices: number;
         tacticalContrast?: TacticalMistakeEpisode;
         strategicPlan?: PositionStrategicPlan;
+        promotionTactic?: PositionStrategicPlan;
     };
     moves: Array<
         DecisionAssessment & { moveUci: string; evaluationCp: number | null; depth: number }
@@ -582,6 +584,32 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 ...position.mechanisms,
                 ...contrast.mechanisms,
             ]);
+        }
+    }
+    if (
+        !rejectedChoices &&
+        (position.tactical.support !== "supported" || position.positional.support !== "supported")
+    ) {
+        const promotion = findPromotionPressure(
+            input.fen,
+            input.candidates,
+            position.tactical.support !== "supported",
+        );
+        if (promotion.positional && position.positional.support === "unestablished") {
+            position.strategicPlan = promotion.positional;
+            position.positional = {
+                support: "supported",
+                basis: "heuristic",
+                reasons: [promotion.positional.description],
+            };
+        }
+        if (promotion.tactical) {
+            position.promotionTactic = promotion.tactical;
+            position.tactical = {
+                support: "supported",
+                basis: "engine-supported",
+                reasons: [promotion.tactical.description],
+            };
         }
     }
     position.category = category(position.tactical, position.positional);

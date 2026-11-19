@@ -1,0 +1,296 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used the original Stockfish candidate and played-move comparison lines. Labels were frozen before the candidate or any comparison output was inspected. Uncertain judgments are explicit."
+  ],
+  "cases": [
+    {
+      "id": "tournament-stjernens-2026-f58e444a50cc93c3-26",
+      "scope": "position-character",
+      "moveUci": "a4a5",
+      "gameMoveUci": "a4a5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The a-pawn advance and pressure on b6 recur through distinct development choices with close scores."
+    },
+    {
+      "id": "tournament-stjernens-2026-0935fbd381e8717e-53",
+      "scope": "position-character",
+      "moveUci": "a7a6",
+      "gameMoveUci": "c7b6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can undermine b5 or improve the king and knight. The lines give different rook and pawn positions after the first checks."
+    },
+    {
+      "id": "tournament-stjernens-2026-0c81bf1464adb496-48",
+      "scope": "position-character",
+      "moveUci": "a1e1",
+      "gameMoveUci": "a1e1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rae1 enables Re8+ and the underpromotion on e8. The alternative lines remove the f-pawn in different ways. Its separate long-term contribution is unclear."
+    },
+    {
+      "id": "tournament-stjernens-2026-ffc8fd809fe0c443-27",
+      "scope": "position-character",
+      "moveUci": "e8g8",
+      "gameMoveUci": "a8d8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Castling permits Nxa8 but offers a counterattack on b1. Rd8 changes the bishop and pawn exchanges, as well as Black's king placement."
+    },
+    {
+      "id": "tournament-stjernens-2026-22c739cc823f51d8-33",
+      "scope": "position-character",
+      "moveUci": "a7a5",
+      "gameMoveUci": "a7a5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The choice of a-pawn move changes whether White gets the e4 exchange comfortably and how Black can defend the c-file."
+    },
+    {
+      "id": "tournament-stjernens-2026-7921c945113783a6-93",
+      "scope": "position-character",
+      "moveUci": "b4c4",
+      "gameMoveUci": "e1d3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The king routes toward d4 and the timing of the h-pawn matter across the alternatives. The checks show different playable replies."
+    },
+    {
+      "id": "tournament-stjernens-2026-6dbaf069345aa1b1-51",
+      "scope": "position-character",
+      "moveUci": "g4f3",
+      "gameMoveUci": "g4f3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The g-file capture and subsequent checks require calculation. The e3 pawn also changes the choices after e2 or exf2."
+    },
+    {
+      "id": "tournament-stjernens-2026-ec0427c28c874fef-35",
+      "scope": "position-character",
+      "moveUci": "a8c8",
+      "gameMoveUci": "g4h5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxf3 can prepare Ncxd4 in the rook line. The f6 branches change the centre and which file the black rooks can use."
+    },
+    {
+      "id": "tournament-stjernens-2026-cf9e6cdcefad634c-30",
+      "scope": "position-character",
+      "moveUci": "d1d5",
+      "gameMoveUci": "h1g1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxd5 changes the answer to g6 and enables Bxe6+. The g-pawn lever remains the attacking plan after a different rook placement."
+    },
+    {
+      "id": "tournament-stjernens-2026-bb4ac39a90149802-35",
+      "scope": "position-character",
+      "moveUci": "e5c3",
+      "gameMoveUci": "f8e8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Exchanging on c3 changes White's pawn structure. The quiet alternatives retain the central pawn tension and choose a different king shelter."
+    },
+    {
+      "id": "tournament-stjernens-2026-3e37b039c4ab50e4-65",
+      "scope": "position-character",
+      "moveUci": "g7g6",
+      "gameMoveUci": "g7g6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The kingside pawn moves determine Black's shelter and the queen trade on e2. Parts of the leading continuations transpose."
+    },
+    {
+      "id": "tournament-stjernens-2026-26ab4fb48afb50bd-36",
+      "scope": "position-character",
+      "moveUci": "e1e2",
+      "gameMoveUci": "e1e2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The a-pawn exchange changes both the exposed queenside pawns and Black's rook placement. Its concrete forcing relevance is unclear."
+    },
+    {
+      "id": "tournament-tajik-president-2026-0efb242529c485f6-68",
+      "scope": "position-character",
+      "moveUci": "e3c5",
+      "gameMoveUci": "e3c5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxc5 is answered by Bg6+ and changes which pawn the rook targets. White's b-pawn and kingside pawn activity constrain the alternative lines."
+    },
+    {
+      "id": "tournament-tajik-president-2026-b4f6a259c8acd77e-26",
+      "scope": "position-character",
+      "moveUci": "h2h3",
+      "gameMoveUci": "f2f3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's choices change how the bishops are traded and whether Black can advance f5 and f4 with pressure."
+    },
+    {
+      "id": "tournament-tajik-president-2026-58a0ce37c7c61927-44",
+      "scope": "position-character",
+      "moveUci": "b6a7",
+      "gameMoveUci": "b6a7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "bxa7 makes Black deal with the promotion threat immediately. Choosing the bishop exchange first allows Black to eliminate the original pawn on b6."
+    },
+    {
+      "id": "tournament-tajik-president-2026-fe5720d8f25e4b80-95",
+      "scope": "position-character",
+      "moveUci": "g4f4",
+      "gameMoveUci": "g4f4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Capturing f4 and improving king placement yield different minor-piece coordination. The quieter lines give White access to b8."
+    },
+    {
+      "id": "tournament-tajik-president-2026-7510f04c5bb78752-110",
+      "scope": "position-character",
+      "moveUci": "c5f5",
+      "gameMoveUci": "e3d3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The viable rook and king moves alter access to the fifth rank without an established forcing distinction. The white central pawns remain connected."
+    },
+    {
+      "id": "tournament-tajik-president-2026-9e865d6edc618062-29",
+      "scope": "position-character",
+      "moveUci": "d7c5",
+      "gameMoveUci": "d7c5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Nxc5 takes the queen. Other choices let it escape or trade against the knights, which explains the gap without a further strategic requirement in the sampled lines."
+    },
+    {
+      "id": "tournament-tajik-president-2026-216e2b27de39d3e4-62",
+      "scope": "position-character",
+      "moveUci": "f2f4",
+      "gameMoveUci": "f2f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Immediate Rxf4 changes the available rook and knight liquidation. The other choices leave different rook activity and pressure on d4."
+    },
+    {
+      "id": "tournament-tajik-president-2026-5100ee4a0b0f40bc-83",
+      "scope": "position-character",
+      "moveUci": "c1b1",
+      "gameMoveUci": "c1e1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The early rook entry on b2 changes the king's placement while the other choices let White's rook activate. The tactical choice is less clearly established."
+    },
+    {
+      "id": "tournament-tajik-president-2026-fe4b72310348c949-51",
+      "scope": "position-character",
+      "moveUci": "h7h6",
+      "gameMoveUci": "h7h6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxh8 and Kxh8 have to be calculated. The c3 pawn and bishop placement still constrain the rook and king after the exchange."
+    },
+    {
+      "id": "tournament-tajik-president-2026-aaba4ea980456100-95",
+      "scope": "position-character",
+      "moveUci": "h7h6",
+      "gameMoveUci": "h7h6",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The king choices address the h5 pawn while the knights play around the queenside pawns, with similarly scored routes."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-09584b5736ca21ca-45",
+      "scope": "position-character",
+      "moveUci": "g6f5",
+      "gameMoveUci": "g6f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The f5 pawn can open checks and force a queen trade. Taking it with the pawn or bishop leaves different central control and piece placement."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-d4473a29257f3b97-42",
+      "scope": "position-character",
+      "moveUci": "e3d2",
+      "gameMoveUci": "e3d2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxf3 makes the rook on h1 a concrete target in the alternatives. The different exchanges leave materially and structurally distinct queenless positions."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-4a5ea9cc5386d782-26",
+      "scope": "position-character",
+      "moveUci": "f7g5",
+      "gameMoveUci": "f7g5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The attack on the black king involves different forcing checks and knight attacks. The lines leave the distinct long-term contribution unclear."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-d0771198feca2411-41",
+      "scope": "position-character",
+      "moveUci": "g5h4",
+      "gameMoveUci": "g5h4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qh4+ leads to Qg3 mate. The immediate mating sequence supplies the decisive explanation in the shown position."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-2160b1f84480a30c-67",
+      "scope": "position-character",
+      "moveUci": "h5h4",
+      "gameMoveUci": "h8c8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The timing of h4 and occupation of the c-file change White's pawn cover and the queenside rook entry."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-11146b188947ac8f-28",
+      "scope": "position-character",
+      "moveUci": "d3d4",
+      "gameMoveUci": "c3d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White can calculate liquidation on d4 or the knight exchange on f6. The two routes leave the queenside and kingside pawn breaks in different states."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-b7a0a6b1f79ee103-34",
+      "scope": "position-character",
+      "moveUci": "d1d5",
+      "gameMoveUci": "c3d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black's f-pawn capture with check punishes several moves. The queen exchange and a king retreat leave different shelter and pawn control."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-3643878c6de4afa3-108",
+      "scope": "position-character",
+      "moveUci": "f5f4",
+      "gameMoveUci": "f5e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White must calculate the queen and rook checks. The c-, e- and h-pawns remain the conversion options after different queen exchanges."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-fdceb818f49640e5-46",
+      "scope": "position-character",
+      "moveUci": "h6g5",
+      "gameMoveUci": "h6g5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The queen checks and target on f5 sharply change Black's counterchecks. The search leaves any separate strategic factor unclear."
+    },
+    {
+      "id": "tournament-arcelor-brasil-2026-a602b244cb2b8bb6-56",
+      "scope": "position-character",
+      "moveUci": "d3g6",
+      "gameMoveUci": "d3c4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black's bishop and queen checks change the king's options. Keeping the f7 pawn supported gives White a different threat in the better line."
+    }
+  ]
+}

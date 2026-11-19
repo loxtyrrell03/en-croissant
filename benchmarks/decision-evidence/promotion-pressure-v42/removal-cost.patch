@@ -1,0 +1,79 @@
+diff --git a/src/utils/tacticalMotifs/decisionPromotionPressure.ts b/src/utils/tacticalMotifs/decisionPromotionPressure.ts
+--- a/src/utils/tacticalMotifs/decisionPromotionPressure.ts
++++ b/src/utils/tacticalMotifs/decisionPromotionPressure.ts
+@@ -15 +15,2 @@
+-type Promotion = Event & { square: Square; trade?: Event & { role: Role } };
++type Trade = Event & { role: Role };
++type Promotion = Event & { square: Square; trade?: Trade };
+@@ -19 +20 @@
+-    removes?: Event;
++    removes?: Event & { trade?: Trade };
+@@ -49,0 +51,20 @@
++}
++
++function removalTrade(steps: TacticalReplayStep[], i: number, square: Square): Trade | undefined {
++    const take = steps[i];
++    const retake = immediateCapture(steps, i, square);
++    const role = take.after.board.get(square)?.role;
++    if (
++        !retake ||
++        !role ||
++        role === "pawn" ||
++        role === "king" ||
++        !steps[i + 2] ||
++        immediateCapture(steps, i + 1, square)
++    )
++        return undefined;
++    return {
++        role,
++        through: i + 2,
++        description: `${take.san} ${retake.san} costs ${sideName(take.before.turn)} a ${role} to stop the pawn`,
++    };
+@@ -83,0 +105 @@
++                trade: entry >= 0 ? removalTrade(steps, i, square) : undefined,
+@@ -181,0 +204 @@
++                best.removes?.trade ??
+@@ -189 +212,3 @@
+-            const defensive = !ownerMoves && (alt.promotion || (comparable && alt.blockade));
++            const defensive =
++                !ownerMoves &&
++                (alt.promotion || (comparable && (alt.blockade || alt.removes?.trade)));
+@@ -207 +232,18 @@
+-        if (!needTactics || tactical || ownerMoves || !best.blockade) continue;
++        if (!needTactics || tactical || ownerMoves) continue;
++        const leftTrade = best.removes?.trade;
++        for (let i = 1; leftTrade && !tactical && i < lines.length; i++) {
++            const rightTrade = trajectories[i].removes?.trade;
++            if (
++                rightTrade &&
++                rightTrade.role === leftTrade.role &&
++                viable(lines[0], lines[i]) &&
++                Math.max(leftTrade.through, rightTrade.through) <= 8 &&
++                independent(paths[0], paths[i], leftTrade, rightTrade)
++            ) {
++                tactical = {
++                    description: `${describe(paths[0][0].san, leftTrade)}. ${describe(paths[i][0].san, rightTrade)}.`,
++                    linesUci: pair(paths[0], paths[i], leftTrade, rightTrade),
++                };
++            }
++        }
++        if (tactical || !best.blockade) continue;
+diff --git a/src/utils/tests/decisionPromotionPressure.test.ts b/src/utils/tests/decisionPromotionPressure.test.ts
+--- a/src/utils/tests/decisionPromotionPressure.test.ts
++++ b/src/utils/tests/decisionPromotionPressure.test.ts
+@@ -44,0 +45,15 @@
++    it("separates promotion pressure from the cost of removing a passer in two different lines", () => {
++        const fen = "8/8/p1P1Kp2/8/P6k/5P1p/2R5/3r4 b - - 5 41";
++        const candidates = lines(fen, [
++            [-664, "d1d8 c6c7 d8c8 e6d7 c8c7 c2c7 h4g3 d7e6"],
++            [-686, "d1e1 e6f7 e1b1 c6c7 b1b7 f7f6 b7c7 c2c7 h3h2"],
++            [-786, "h4g3 c6c7 h3h2 c7c8q h2h1q c8c7 g3h3"],
++        ]);
++        const report = assessChessDecision({ fen, candidates });
++        expect(report?.position.category).toBe("mixed");
++        expect(report?.position.promotionTactic?.description).toContain(
++            "Rxc7+ Rxc7 costs Black a rook",
++        );
++        expect(report?.position.strategicPlan?.description).toContain("white pawn starting on c6");
++    });
++

@@ -1,0 +1,152 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used the original Stockfish candidate and played-move comparison lines. Labels were frozen before the candidate or any comparison output was inspected. Uncertain judgments are explicit."
+  ],
+  "cases": [
+    {
+      "id": "passer-tajik-president-2026-773c5061fee739b1-28",
+      "scope": "position-character",
+      "moveUci": "c2e3",
+      "gameMoveUci": "c2e3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Nxe3 can be immediate or delayed while White changes development. The advanced pawn is a strategic constraint but the sampled alternatives give no distinct forcing payoff."
+    },
+    {
+      "id": "passer-tajik-president-2026-cb11442158d8a363-29",
+      "scope": "position-character",
+      "moveUci": "d8e7",
+      "gameMoveUci": "d8e7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The e7 pawn can be removed by different pieces, with lasting effects on coordination. Qd7 allows exf8=Q+ and costs a rook in the promotion transaction."
+    },
+    {
+      "id": "passer-tajik-president-2026-5f3a5df588564352-78",
+      "scope": "position-character",
+      "moveUci": "f1e1",
+      "gameMoveUci": "f1e1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The passed e-pawn can be removed or reach e2. This changes which checks resolve the struggle between White's h-pawn and Black's centre."
+    },
+    {
+      "id": "passer-tajik-president-2026-bc5562114750fe76-81",
+      "scope": "position-character",
+      "moveUci": "d1d8",
+      "gameMoveUci": "h4g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rc8 and Rb7 can eliminate the c-pawn at the cost of a rook. Moving the king permits both pawns to promote. The c-pawn changes the conversion even when the nominal evaluation still favours White."
+    },
+    {
+      "id": "passer-tajik-president-2026-e287bcdc427b8ed9-138",
+      "scope": "position-character",
+      "moveUci": "h2h3",
+      "gameMoveUci": "h2h3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's rook and king can handle h3 in different orders, but the f-pawn and active black king remain constraints across all the lines."
+    },
+    {
+      "id": "passer-tajik-president-2026-ff64fa142a23aeb3-56",
+      "scope": "position-character",
+      "moveUci": "g1g2",
+      "gameMoveUci": "g1g2",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Only Rg2 deals adequately with the threats shown by Qxh2 mate and the forcing rook sacrifices. The e6 pawn is taken in the better line and its independent strategic effect is unclear."
+    },
+    {
+      "id": "passer-tajik-president-2026-38d8d287496d416e-79",
+      "scope": "position-character",
+      "moveUci": "g7g6",
+      "gameMoveUci": "c4c3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The pawn on a6 ties down Black's rook until it is exchanged or the opposing rook is diverted. The exact rook and king recaptures change the pawn ending."
+    },
+    {
+      "id": "passer-tajik-president-2026-16a05779396002f6-82",
+      "scope": "position-character",
+      "moveUci": "d7e8r",
+      "gameMoveUci": "d7e8q",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The immediate checking promotion or knight underpromotion drives the exchanges. The displayed move choices hinge on the transaction on e8."
+    },
+    {
+      "id": "passer-tajik-president-2026-d8662ec99e67a4b7-88",
+      "scope": "position-character",
+      "moveUci": "d1d6",
+      "gameMoveUci": "d1d2",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The linked rook checks on h2 and h1 supply a direct attacking mechanism. The separate influence of the b3 pawn on that choice is unclear in the shown replies."
+    },
+    {
+      "id": "passer-tajik-president-2026-af7c4eaea00a766d-86",
+      "scope": "position-character",
+      "moveUci": "f4f1",
+      "gameMoveUci": "f4f1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The c-pawn promotes in several move orders. After Rf1, the rook liquidation and further recapture on c1 change the exact tactical outcome."
+    },
+    {
+      "id": "passer-tajik-president-2026-3e3894309ae70e05-65",
+      "scope": "position-character",
+      "moveUci": "d3e5",
+      "gameMoveUci": "d3e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The knight exchange and subsequent checks change the chances of containing b7. The advanced b-pawn influences both the rook and knight placements."
+    },
+    {
+      "id": "passer-tajik-president-2026-b7e1df39661b6003-105",
+      "scope": "position-character",
+      "moveUci": "d7e8",
+      "gameMoveUci": "d7e8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black's c-pawn can promote with check or be removed. The bishop and king must still deal with the opposing passed pawns in different orders."
+    },
+    {
+      "id": "passer-tajik-president-2026-c8d3a1be721f61f2-113",
+      "scope": "position-character",
+      "moveUci": "a8e8",
+      "gameMoveUci": "e7b4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The f8 bishop changes the checks White can give. The timing of ...e2 or ...a3 competes with the g- and h-pawn threats."
+    },
+    {
+      "id": "passer-tajik-president-2026-9982e053df0ca8d6-52",
+      "scope": "position-character",
+      "moveUci": "h5h6",
+      "gameMoveUci": "f1e1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can alter the black king's cover or play against the advanced b2 pawn. The forcing consequences within the shown branches are inconclusive."
+    },
+    {
+      "id": "passer-tajik-president-2026-5fa6b990e49a26cc-83",
+      "scope": "position-character",
+      "moveUci": "g7f6",
+      "gameMoveUci": "g7f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kf6 keeps the knight available to take on d7. The other moves use the same knight or trade rooks to restrain the white pieces and passed pawn."
+    },
+    {
+      "id": "passer-stjernens-2026-46f6f63e16fa3162-51",
+      "scope": "position-character",
+      "moveUci": "b2f6",
+      "gameMoveUci": "b8d8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "dxe7 is followed by Qxe7 in the strongest lines. Rd8 admits an exchange and e8=Q+ instead, while the queen's placing controls the conversion."
+    }
+  ]
+}

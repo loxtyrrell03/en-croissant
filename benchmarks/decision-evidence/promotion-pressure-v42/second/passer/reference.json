@@ -1,0 +1,152 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used the original Stockfish candidate and played-move comparison lines. Labels were frozen before the candidate or any comparison output was inspected. Uncertain judgments are explicit."
+  ],
+  "cases": [
+    {
+      "id": "passer-thessaly-open-2026-c5e9dbb7d21161f3-29",
+      "scope": "position-character",
+      "moveUci": "a7b6",
+      "gameMoveUci": "a7b6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qxb6 meets the a7 threat by taking its source. Bxa3 instead admits the underpromotion on b8, while the queenside pawn tension survives after other choices."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-255191993ebe10f5-99",
+      "scope": "position-character",
+      "moveUci": "g8e8",
+      "gameMoveUci": "f3f2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The b-pawn and rook produce forced mating sequences, with the played f2 allowing mate in two. The sampled branches give no distinct strategic plan outside the mating calculation."
+    },
+    {
+      "id": "passer-nyc-norms-2026-c3a6eaae936b8bc5-39",
+      "scope": "position-character",
+      "moveUci": "d7e6",
+      "gameMoveUci": "f8f2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxe6 and Rxf2 change the bishop and rook exchanges. The advanced pawn on e6 and resulting central pawn control shape the quieter continuation."
+    },
+    {
+      "id": "passer-thessaly-open-2026-9bc2265050665900-60",
+      "scope": "position-character",
+      "moveUci": "e6c5",
+      "gameMoveUci": "e6c5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The knight capture or check changes Black's ability to take d6 and trade on b8. White's a-pawn and the rook blockade remain different strategic concerns."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-7b29149789a258c1-84",
+      "scope": "position-character",
+      "moveUci": "e5f6",
+      "gameMoveUci": "e5f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "gxf1=R+ or gxf1=Q+ gives a concrete capture and reply. The black g-pawn continues to restrict White's king and knight across the choices."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-950b50cf4e0c6145-61",
+      "scope": "position-character",
+      "moveUci": "c8c6",
+      "gameMoveUci": "c8c6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Taking immediately on c6 prevents c7. After Nd5 or Qa7, stopping the same pawn takes a different rook and bishop exchange on c7."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-fe64c31183beb4df-39",
+      "scope": "position-character",
+      "moveUci": "c8d8",
+      "gameMoveUci": "f6d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qxd6 allows the queen sacrifice and knight fork. Other moves keep different control of the d-file and can permit the promotion after the rook exchanges."
+    },
+    {
+      "id": "passer-thessaly-open-2026-130a035acb324480-94",
+      "scope": "position-character",
+      "moveUci": "c4c3",
+      "gameMoveUci": "c4c3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Changing the bishop or rook first leads to different first-rank captures. The c3 pawn constrains the rook and affects the resulting bishop-versus-rook position."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-01d389a5f6f2e537-74",
+      "scope": "position-character",
+      "moveUci": "h4h5",
+      "gameMoveUci": "d5d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The a-pawn advances and trades for White's rook in the leading lines. White's rook remains tied to a1 and other pieces must be placed with that restriction in mind."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-9302f6ad65826866-119",
+      "scope": "position-character",
+      "moveUci": "g2a2",
+      "gameMoveUci": "c3e1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Ra2 restrains the pawn from behind, even after the checking move ...f5+. The bishop move allows immediate promotion and the rook can seek checks instead."
+    },
+    {
+      "id": "passer-thessaly-open-2026-cff72d28335433ac-100",
+      "scope": "position-character",
+      "moveUci": "b8b6",
+      "gameMoveUci": "h4g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Exchanges on b8 and f7 allow the black b-pawn to advance. White's rook and queen placement change whether it can promote in the sampled lines."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-3b6ae5b8e62f232f-45",
+      "scope": "position-character",
+      "moveUci": "d5f4",
+      "gameMoveUci": "c7g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nf4 changes the consequence of Qxe3 through Nxh3+. The other preparations shift the support of the advanced e3 pawn and the central file."
+    },
+    {
+      "id": "passer-nacional-juvenil-2026-f6cb208f4b6a473a-46",
+      "scope": "position-character",
+      "moveUci": "c1b2",
+      "gameMoveUci": "c1b1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The queen checks route toward d3 and the rook invasion on c1 provide a forcing threat. The sampled lines leave the distinct contribution of the c6 pawn unclear."
+    },
+    {
+      "id": "passer-nyc-norms-2026-691f503c90dba60e-75",
+      "scope": "position-character",
+      "moveUci": "d8b8",
+      "gameMoveUci": "d8d2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black can block the b-pawn or trade rooks with check, giving materially different sequences. The surviving queenside passers continue to influence the king and rook placement."
+    },
+    {
+      "id": "passer-thessaly-open-2026-bdde651ff3ed0424-65",
+      "scope": "position-character",
+      "moveUci": "g2e3",
+      "gameMoveUci": "c8b7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Taking on h6 leads to a concrete bishop and knight exchange. The quieter black king and rook choices leave the same h-pawn constraining the defence."
+    },
+    {
+      "id": "passer-thessaly-open-2026-7c9b13170d1b6f79-56",
+      "scope": "position-character",
+      "moveUci": "b2a2",
+      "gameMoveUci": "b2a2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The initial b-pawn trade and White's rook placement determine how Black can play against the advanced d-pawn and a-file pawn tension."
+    }
+  ]
+}

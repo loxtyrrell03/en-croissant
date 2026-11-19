@@ -1,0 +1,18 @@
+{
+  "baseline": "f5d38c676d44c3cede90ff2c28c59cd260e0616e",
+  "candidate": {
+    "src/utils/tacticalMotifs/decisionPromotionPressure.ts": "5754e2c95ecef5723b429eb81953770041cb03b41660f2c7e989636ccb90c7cf",
+    "src/utils/tacticalMotifs/decisionAssessment.ts": "b61ea8ed4de6497142c3d7ff658e6b11dcf0ee8cdb4043e67aeed844b106c60b",
+    "src/components/panels/tactics/DecisionEvidencePanel.tsx": "efd7e4e56d96b0fcefe3c62a20b50a34147b230fa479922e591f32ee4103f0a2"
+  },
+  "samples": {
+    "ordinary": "251200a1e666130b12d1a22b3b0a7dd3327d7206733bc501b46663603c00dd37",
+    "passer": "77c668aee84132a11e0865cd42d32f3bad90e3b64a7ce5fff92d6e347e557217"
+  },
+  "references": {
+    "ordinary": "8f24ce4c70a3ecc301f2f360851b2890f49c71c0ef0795551bb845e455caea58",
+    "passer": "53d465239f5b039baea4f60a5383ee635ced93ae8f208143fd931df6ddb4a6a7"
+  },
+  "gate": "At least one additional reviewed positional or mixed true positive in the promotion-pressure cohort. No new reviewed false positives or losses of true positives in either cohort.",
+  "note": "Candidate C adds verified material cost of taking a pawn. FEN and independently saved labels were frozen before either worker output was read."
+}

@@ -19,7 +19,13 @@ import { extractTacticalSequenceWitnesses } from "../tacticalMotifs/tacticalSequ
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
 import * as tacticalScan from "../tacticalMotifs/liveTactics";
 
-type Source = { name: string; profile: string; cache: string; reference: string };
+type Source = {
+    name: string;
+    profile: string;
+    cache: string;
+    reference: string;
+    strata?: string[];
+};
 type Row = {
     id: string;
     event: string;
@@ -71,7 +77,7 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 test.skipIf(!manifest)(
-    "replays ordinary classical cases through the app's classifier worker",
+    "replays sampled classical cases through the app's classifier worker",
     async () => {
         const output = process.env.ORDINARY_REPLAY_OUTPUT;
         if (!output || !manifest)
@@ -129,8 +135,11 @@ test.skipIf(!manifest)(
             )
                 throw new Error("Unmatched shortlists");
             const extraRows = new Map(extras.results.map((row) => [row.id, row]));
+            const strata = source.strata ?? ["ordinary"];
+            if (!sample.cases.some((row) => strata.includes(row.stratum)))
+                throw new Error("No matching cases for " + source.name);
             return sample.cases
-                .filter((row) => row.stratum === "ordinary")
+                .filter((row) => strata.includes(row.stratum))
                 .map((row) => {
                     const label = refs.get(row.id);
                     if (!label || label.scope !== "position-character")

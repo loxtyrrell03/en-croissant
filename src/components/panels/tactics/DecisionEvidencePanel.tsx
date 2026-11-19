@@ -136,7 +136,9 @@ function EvidenceSummary({
           ))}
         {expanded && conditionalMate && (
           <Text size="xs" style={{ overflowWrap: "anywhere" }}>
-            <Text component="span" fw={600} size="xs">Mating line. </Text>
+            <Text component="span" fw={600} size="xs">
+              Mating line.{" "}
+            </Text>
             {lineSan(conditionalMate.fen, conditionalMate.lineUci)}
           </Text>
         )}
@@ -186,6 +188,17 @@ function DecisionReport({
   const mate = report.mistake?.mateConsequence;
   const contrast = report.position.tacticalContrast;
   const plan = report.position.strategicPlan;
+  const promotion = report.position.promotionTactic;
+  const positionLines = [...(plan?.linesUci ?? []), ...(promotion?.linesUci ?? [])];
+  const distinctPositionLines = positionLines.filter(
+    (line, index) =>
+      !positionLines.some(
+        (other, otherIndex) =>
+          otherIndex !== index &&
+          (other.length > line.length || (other.length === line.length && otherIndex < index)) &&
+          line.every((move, ply) => move === other[ply]),
+      ),
+  );
   return (
     <Stack gap="xs">
       <EvidenceSummary
@@ -198,12 +211,10 @@ function DecisionReport({
                 { label: "Refuted choice", san: lineSan(report.fen, contrast.playedLineUci) },
               ]
             : []),
-          ...(plan
-            ? plan.linesUci.map((moves) => ({
-                label: `After ${lineSan(report.fen, moves.slice(0, 1))}`,
-                san: lineSan(report.fen, moves),
-              }))
-            : []),
+          ...distinctPositionLines.map((moves) => ({
+            label: `After ${lineSan(report.fen, moves.slice(0, 1))}`,
+            san: lineSan(report.fen, moves),
+          })),
         ]}
       >
         <Text size="xs" c="dimmed">

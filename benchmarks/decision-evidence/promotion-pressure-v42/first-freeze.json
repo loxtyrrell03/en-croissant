@@ -1,0 +1,18 @@
+{
+  "baseline": "f5d38c676d44c3cede90ff2c28c59cd260e0616e",
+  "candidate": {
+    "src/utils/tacticalMotifs/decisionPromotionPressure.ts": "00d0c19ed02c02f2bf6a8e14ab23fc2ff9c3e1f7ac34a0205818b4a2db9c7dc2",
+    "src/utils/tacticalMotifs/decisionAssessment.ts": "b61ea8ed4de6497142c3d7ff658e6b11dcf0ee8cdb4043e67aeed844b106c60b",
+    "src/components/panels/tactics/DecisionEvidencePanel.tsx": "efd7e4e56d96b0fcefe3c62a20b50a34147b230fa479922e591f32ee4103f0a2"
+  },
+  "sample": {
+    "ordinary": "a8f44219d0967f40677101d585d669655f691e6e059eb89255e50c31914e228f",
+    "passer": "158323fcc542223b2543c28ecdbd1efd32f0a7c9e9986d06020d4e6a4227035c"
+  },
+  "reference": {
+    "ordinary": "7b505d6d75f2470e897c341ddb37c94780cefacce491691e797112a3df94ef8d",
+    "passer": "43b413c7629139e16537f008f4d915d0d9f264e1037b0e9db1beb0ce24b55f98"
+  },
+  "gate": "At least one additional reviewed positional or mixed true positive in the promotion-pressure cohort. No new reviewed false positives or losses of true positives in either cohort.",
+  "study": "One engine-assisted reviewer used original candidate lines. References were saved before reading benchmark predictions. Ordinary and pawn-selected strata are reported separately."
+}

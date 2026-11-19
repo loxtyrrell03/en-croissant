@@ -1,0 +1,224 @@
+{
+  "protocol": 1,
+  "events": {
+    "nyc-norms-2026": {
+      "sha256": "ee9617348c42a804e1f06b00e259eb0d4a643ab6bad13be1d4775451b413059b",
+      "eligibleGames": 85,
+      "ordinaryLimit": 5,
+      "pinLimit": 0,
+      "ordinary": 5,
+      "pinChallenge": 0
+    },
+    "nacional-juvenil-2026": {
+      "sha256": "f08ec984ac6bb359725d679f1b7c86d4e2e098974e0c1d80cabdd6b701333bf5",
+      "eligibleGames": 108,
+      "ordinaryLimit": 5,
+      "pinLimit": 0,
+      "ordinary": 5,
+      "pinChallenge": 0
+    },
+    "thessaly-open-2026": {
+      "sha256": "830d0af1cca132afa487032c747b1746b85b80fc53eceb01d762bd6bab8c8663",
+      "eligibleGames": 83,
+      "ordinaryLimit": 5,
+      "pinLimit": 0,
+      "ordinary": 5,
+      "pinChallenge": 0
+    }
+  },
+  "exclusions": [
+    "158323fcc542223b2543c28ecdbd1efd32f0a7c9e9986d06020d4e6a4227035c",
+    "a8f44219d0967f40677101d585d669655f691e6e059eb89255e50c31914e228f",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "48df231e103c0762290c892b985cb0ac2d432e27d190701af43885d9afcc6898",
+    "213ad8832d2c3144869fc5c489bcc635cb3a90b26bd953f805d8612219810bdb",
+    "708dc00c4cee37d1e5ee19c6c1515d44b0f9f1bc5e01a1ce19d5fd29542a8ce1",
+    "4c50efb41ca7cccc10d27f3732c1ec2aef2d3ac5f7a4721eb530d4371b46347b",
+    "d3cfb52561420c828ff4c8d91f51dc30df11a5f774ed8e3d5da55eef9f9ab571"
+  ],
+  "cases": [
+    {
+      "fen": "3q2k1/pp2b1pp/2b5/3pp1P1/1P1n4/P7/3Q1P1P/2BB1R1K w - - 0 24",
+      "ply": 46,
+      "playedMoveUci": "d2e3",
+      "phase": "middlegame",
+      "id": "tournament-nyc-norms-2026-223147bdfbd01dcf-46",
+      "sourceGroup": "223147bdfbd01dcf059844515873a4b09cdee984d30efbc1f2ee2833433a4b23",
+      "event": "nyc-norms-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/5r2/p5k1/1R3n2/P4Bp1/4P3/5K1P/8 w - - 0 45",
+      "ply": 88,
+      "playedMoveUci": "b5b6",
+      "phase": "late-game",
+      "id": "tournament-nyc-norms-2026-7279c3605de10e1f-88",
+      "sourceGroup": "7279c3605de10e1f8bdf0c6dbc8b5975f439b5d69fed00593b1786cb81358860",
+      "event": "nyc-norms-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r1q1r2k/ppp1npb1/6pp/3Npb2/1PP5/Q3P1P1/P2N1PBP/2RR2K1 b - - 2 18",
+      "ply": 35,
+      "playedMoveUci": "e7g8",
+      "phase": "late-opening",
+      "id": "tournament-nyc-norms-2026-3ea92ab1caaa29f9-35",
+      "sourceGroup": "3ea92ab1caaa29f95aa5d4ae4a1653203148497c38510fcf4c794c17d73ab98a",
+      "event": "nyc-norms-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/8/8/1R2k1p1/5pP1/1P4r1/4K3/8 b - - 5 58",
+      "ply": 115,
+      "playedMoveUci": "e5f6",
+      "phase": "late-game",
+      "id": "tournament-nyc-norms-2026-853c94a65dede514-115",
+      "sourceGroup": "853c94a65dede514369f000732825a8f319a521256c55c346c94c080907bfee9",
+      "event": "nyc-norms-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r3n1k1/r2n1pp1/p1R4p/Pp1NpP1P/1P4PB/5P2/8/3R1K2 b - - 4 38",
+      "ply": 75,
+      "playedMoveUci": "f7f6",
+      "phase": "late-game",
+      "id": "tournament-nyc-norms-2026-a408ee0b2a0f2e10-75",
+      "sourceGroup": "a408ee0b2a0f2e10dfd056faca2b7e162e6eabdf7a623918ff05b42d5de4b09d",
+      "event": "nyc-norms-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "b2r2k1/Q4p1p/p3q1p1/3pP3/BPr4P/P5N1/5P2/4R1K1 w - - 3 33",
+      "ply": 64,
+      "playedMoveUci": "a7e3",
+      "phase": "middlegame",
+      "id": "tournament-nacional-juvenil-2026-d7e38c2da853e506-64",
+      "sourceGroup": "d7e38c2da853e5069d69259fc517762e62f016e93b7c1ad0365282f985622840",
+      "event": "nacional-juvenil-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r7/p2b1kpQ/4p3/1p1pRnP1/2pP1q1P/2P2Pn1/PPB2R2/6K1 w - - 3 28",
+      "ply": 54,
+      "playedMoveUci": "c2f5",
+      "phase": "middlegame",
+      "id": "tournament-nacional-juvenil-2026-733f11a3cd2606cb-54",
+      "sourceGroup": "733f11a3cd2606cb099c110688af21055aa4ad0c11fd3b9eaf6464db0e1f4d87",
+      "event": "nacional-juvenil-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r1b1k3/pp6/1q2pPp1/2bp1p1p/3n1P2/2NBQ3/PP1B2PP/R3K2R w KQq - 2 19",
+      "ply": 36,
+      "playedMoveUci": "e1c1",
+      "phase": "late-opening",
+      "id": "tournament-nacional-juvenil-2026-691b3e4322d15b87-36",
+      "sourceGroup": "691b3e4322d15b87e5793b8e2d45a53582f157eeb02a9cda2a675b44778eadca",
+      "event": "nacional-juvenil-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2r3k1/p3bp1p/1p2p1p1/4P3/q1PQ1P2/P5P1/5N1P/R5K1 b - - 0 30",
+      "ply": 59,
+      "playedMoveUci": "e7c5",
+      "phase": "middlegame",
+      "id": "tournament-nacional-juvenil-2026-f9bfa3c0a385fcf3-59",
+      "sourceGroup": "f9bfa3c0a385fcf3add5143eb7459a441f6521abafbc7e29addf5d0c9fb0a646",
+      "event": "nacional-juvenil-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "1r3rk1/1p1bpp1p/p2p2p1/2pP4/P1P5/R1q1P3/1P2BPPP/5RK1 w - - 0 19",
+      "ply": 36,
+      "playedMoveUci": "b2c3",
+      "phase": "late-opening",
+      "id": "tournament-nacional-juvenil-2026-ba0eab68a126f77f-36",
+      "sourceGroup": "ba0eab68a126f77f2145ba7857ec16081a5c7bd6eb6c2525d3cb201cc323aa1f",
+      "event": "nacional-juvenil-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/8/5p1p/p1k3p1/2P3P1/1K3P1P/8/8 b - - 4 53",
+      "ply": 105,
+      "playedMoveUci": "a5a4",
+      "phase": "late-game",
+      "id": "tournament-thessaly-open-2026-cd16e5dba6f6f8a6-105",
+      "sourceGroup": "cd16e5dba6f6f8a63cb67bb7fa9f34187466298a4a9d1b01dac4dcd685028369",
+      "event": "thessaly-open-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "3r2k1/2p3p1/1pBp1r1p/pP2p1n1/P1P2q2/3PQ2P/5PP1/4RRK1 b - - 5 27",
+      "ply": 53,
+      "playedMoveUci": "d8f8",
+      "phase": "middlegame",
+      "id": "tournament-thessaly-open-2026-ea4753cf3d478b45-53",
+      "sourceGroup": "ea4753cf3d478b45af77912ca0aa9a7a7b1a7de648f4d95be6532a88ee9064f9",
+      "event": "thessaly-open-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/5p1k/1bpq2pp/4p3/2RnP3/rp1PB2P/1Q3PP1/5B1K w - - 0 45",
+      "ply": 88,
+      "playedMoveUci": "b2c1",
+      "phase": "late-game",
+      "id": "tournament-thessaly-open-2026-43e0e1935cdfc242-88",
+      "sourceGroup": "43e0e1935cdfc242b297761fcf966808f2174f6f30c91603a6a3e0f10e22441c",
+      "event": "thessaly-open-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "6r1/1pq1b2k/pnn1p2p/P1p1Ppp1/5P2/2P1N1P1/1P2QB1P/R2R2K1 b - - 0 26",
+      "ply": 51,
+      "playedMoveUci": "b6d7",
+      "phase": "middlegame",
+      "id": "tournament-thessaly-open-2026-46de5471447c5aa4-51",
+      "sourceGroup": "46de5471447c5aa40e957a2b7534ca31ce9bf54e42edbaa5cf3e6f1c72b62a7e",
+      "event": "thessaly-open-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r5k1/1p3p1p/6p1/1pPP2q1/8/2Q3P1/5P1P/2R3K1 w - - 0 31",
+      "ply": 60,
+      "playedMoveUci": "c1d1",
+      "phase": "middlegame",
+      "id": "tournament-thessaly-open-2026-5c37ec7236199312-60",
+      "sourceGroup": "5c37ec7236199312f78159d3be19ffb079190aa8919c3f95ae174a20e7e24f13",
+      "event": "thessaly-open-2026",
+      "stratum": "ordinary",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "scope": "Classical broadcast games. One legal decision per game. Challenge rows are separate; no model or engine evaluations enter selection."
+}

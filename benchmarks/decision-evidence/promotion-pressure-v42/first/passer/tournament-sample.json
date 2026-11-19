@@ -1,0 +1,198 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "passer-tajik-president-2026-773c5061fee739b1-28",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "1rb2rk1/1pqnbppp/p3pn2/2p5/2P2P2/3PpNP1/PPN3BP/R1BQ1RK1 w - - 0 15",
+      "ply": 28,
+      "playedMoveUci": "c2e3",
+      "sourceGroup": "773c5061fee739b1ae3892d0dd6d62f28c70da77b53399618de44a724c80a17b",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-cb11442158d8a363-29",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "r2q1rk1/pb2Pppp/1pp1pnn1/8/3P1B2/2N3P1/PP3PBP/2RQR1K1 b - - 0 15",
+      "ply": 29,
+      "playedMoveUci": "d8e7",
+      "sourceGroup": "cb11442158d8a363e8be2caff62db5501469cf57fb6276daae67b2f8610a3b04",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-5f3a5df588564352-78",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "1r4k1/5p2/2b1p2P/4P1K1/pB6/P3p3/6P1/5R2 w - - 0 40",
+      "ply": 78,
+      "playedMoveUci": "f1e1",
+      "sourceGroup": "5f3a5df588564352e14220fb9e680026289e87adc7c0df8d1e8cf93cd0fc60c6",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-bc5562114750fe76-81",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "8/8/p1P1Kp2/8/P6k/5P1p/2R5/3r4 b - - 5 41",
+      "ply": 81,
+      "playedMoveUci": "h4g3",
+      "sourceGroup": "bc5562114750fe76bb986dd29947986d5ef5476b2ecd555039f085989e23caf6",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-e287bcdc427b8ed9-138",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "8/R7/8/8/8/5p1p/5k1K/3r4 w - - 0 70",
+      "ply": 138,
+      "playedMoveUci": "h2h3",
+      "sourceGroup": "e287bcdc427b8ed93c1ebd7860ec378f4d82171f09805643b536df67b2065830",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-ff64fa142a23aeb3-56",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "4r1k1/3Rb1pp/p2pP2r/3Qp3/1B3p2/5P1q/1P3P1P/6RK w - - 10 29",
+      "ply": 56,
+      "playedMoveUci": "g1g2",
+      "sourceGroup": "ff64fa142a23aeb3bdaddbf76d26a7caa2506b3dfc2553cc16cac8365e7c749a",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-38d8d287496d416e-79",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "8/r5pp/P7/4p3/1kp5/R6P/1P1K2P1/8 b - - 1 40",
+      "ply": 79,
+      "playedMoveUci": "c4c3",
+      "sourceGroup": "38d8d287496d416e27e99b1b3b46379f2b03d6679802bd3cdd5d3e31efb061ef",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-16a05779396002f6-82",
+      "event": "tajik-president-2026",
+      "stratum": "resolved-early",
+      "fen": "4rk2/3P4/p3rN2/1p2p1P1/5n2/2P5/P1P2R2/2K5 w - - 0 42",
+      "ply": 82,
+      "playedMoveUci": "d7e8q",
+      "sourceGroup": "16a05779396002f67ab3fc87e67bcf818d8230571232f5c24e9227944b406f7c",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-d8662ec99e67a4b7-88",
+      "event": "tajik-president-2026",
+      "stratum": "persisted",
+      "fen": "5k2/5p2/3n3p/7r/6R1/1pP5/r6P/1N1R3K w - - 3 45",
+      "ply": 88,
+      "playedMoveUci": "d1d2",
+      "sourceGroup": "d8662ec99e67a4b7d3962568ef67609efe19af33a756efad62c069b271a0a826",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-af7c4eaea00a766d-86",
+      "event": "tajik-president-2026",
+      "stratum": "persisted",
+      "fen": "6k1/p1r2pp1/1r6/3pn2P/3Q1R2/6P1/P1p3K1/8 w - - 0 44",
+      "ply": 86,
+      "playedMoveUci": "f4f1",
+      "sourceGroup": "af7c4eaea00a766d6c33506d02e9ab6e7d100911a45d5202af7d490a236a6580",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-3e3894309ae70e05-65",
+      "event": "tajik-president-2026",
+      "stratum": "persisted",
+      "fen": "8/5kp1/1PN1ppp1/p2r4/2R5/3nPP1P/6P1/6K1 b - - 0 33",
+      "ply": 65,
+      "playedMoveUci": "d3e5",
+      "sourceGroup": "3e3894309ae70e05a7f533181a68b0aa8543995bd55cf108ad8378ad0e7715e5",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-b7e1df39661b6003-105",
+      "event": "tajik-president-2026",
+      "stratum": "persisted",
+      "fen": "1k6/3b4/R4P2/P1P1p3/4P3/r1p1K3/4B3/8 b - - 0 53",
+      "ply": 105,
+      "playedMoveUci": "d7e8",
+      "sourceGroup": "b7e1df39661b60037cb8628bdc8853824a16e216621eb838fb1ecd84221bd559",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-c8d3a1be721f61f2-113",
+      "event": "tajik-president-2026",
+      "stratum": "persisted",
+      "fen": "r7/4b2k/7P/6P1/p2p1BK1/3Pp3/1P5R/8 b - - 0 57",
+      "ply": 113,
+      "playedMoveUci": "e7b4",
+      "sourceGroup": "c8d3a1be721f61f236e1dcc8d4c8e9057d7b05e0abdb3cc6d4f67a5466e3009a",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-9982e053df0ca8d6-52",
+      "event": "tajik-president-2026",
+      "stratum": "persisted",
+      "fen": "1r4k1/p4ppp/1q1p1b2/3Pr2P/Q7/P2B2P1/1p3P2/3R1RK1 w - - 1 27",
+      "ply": 52,
+      "playedMoveUci": "f1e1",
+      "sourceGroup": "9982e053df0ca8d6aefa9b2220cddd0bc98f767505210deef202f81160c137e5",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-tajik-president-2026-5fa6b990e49a26cc-83",
+      "event": "tajik-president-2026",
+      "stratum": "persisted",
+      "fen": "R7/5pk1/Bp1P2p1/2p1n2p/2P2K1P/8/r5P1/8 b - - 4 42",
+      "ply": 83,
+      "playedMoveUci": "g7f6",
+      "sourceGroup": "5fa6b990e49a26cc35ca997f007e7dbbc1af5e2f9df3a8feb727c4b5df76ed37",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "passer-stjernens-2026-46f6f63e16fa3162-51",
+      "event": "stjernens-2026",
+      "stratum": "persisted",
+      "fen": "1r4k1/4nppp/p2P4/8/4B3/7P/1q3PP1/2RQ2K1 b - - 0 26",
+      "ply": 51,
+      "playedMoveUci": "b8d8",
+      "sourceGroup": "46f6f63e16fa3162a990c0b2d9bce4c4bf428fa13f8a4bc6449e28cf8c35d82c",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "events": {
+    "stjernens-2026": "fc0b8ffb59a99fed7e6561f5861945460bb9f20105df7531fd45431a48bcd530",
+    "tajik-president-2026": "d2854b1296d8102331e0128a3b1184f9e61591e5ed92fdd18eeae4c9f6057359",
+    "arcelor-brasil-2026": "c18a845dc3d4a620042d0f8ee7b080ab434b99473fabd88a4b9e438053d89339"
+  },
+  "exclusions": [
+    "a8f44219d0967f40677101d585d669655f691e6e059eb89255e50c31914e228f",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "48df231e103c0762290c892b985cb0ac2d432e27d190701af43885d9afcc6898",
+    "213ad8832d2c3144869fc5c489bcc635cb3a90b26bd953f805d8612219810bdb",
+    "708dc00c4cee37d1e5ee19c6c1515d44b0f9f1bc5e01a1ce19d5fd29542a8ce1",
+    "4c50efb41ca7cccc10d27f3732c1ec2aef2d3ac5f7a4721eb530d4371b46347b",
+    "d3cfb52561420c828ff4c8d91f51dc30df11a5f774ed8e3d5da55eef9f9ab571"
+  ],
+  "scope": "Both sides retain a rook and at least one pawn is an advanced passer. Recorded persistence or resolution selects the sample; it does not supply the label."
+}

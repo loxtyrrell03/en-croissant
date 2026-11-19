@@ -1,0 +1,81 @@
+diff --git a/src/utils/tacticalMotifs/decisionPromotionPressure.ts b/src/utils/tacticalMotifs/decisionPromotionPressure.ts
+--- a/src/utils/tacticalMotifs/decisionPromotionPressure.ts
++++ b/src/utils/tacticalMotifs/decisionPromotionPressure.ts
+@@ -14 +14 @@
+-type Event = { through: number; contextThrough?: number; description: string };
++type Event = { through: number; description: string };
+@@ -47,5 +46,0 @@
+-function immediateCapture(steps: TacticalReplayStep[], i: number, square: Square) {
+-    const next = steps[i + 1];
+-    return next?.move.to === square && next.capture > 0 ? next : undefined;
+-}
+-
+@@ -66 +60,0 @@
+-                const recapture = immediateCapture(steps, i, square);
+@@ -70,2 +64 @@
+-                    contextThrough: recapture ? ply + 1 : ply,
+-                    description: `${sideName(side)} promotes with ${step.san}${recapture ? ` and faces ${recapture.san}` : ""}`,
++                    description: `${sideName(side)} promotes with ${step.san}`,
+@@ -79 +71,0 @@
+-            const recapture = immediateCapture(steps, i, step.move.to);
+@@ -82,2 +74 @@
+-                contextThrough: recapture ? ply + 1 : ply,
+-                description: `${step.san} takes the ${side} pawn${recapture ? ` before ${recapture.san}` : ""}`,
++                description: `${step.san} takes the ${side} pawn`,
+@@ -85,7 +75,0 @@
+-            if (!result.blockade && blockade && ply - blockade.first >= MIN_BLOCKADE - 1) {
+-                result.blockade = {
+-                    through: ply,
+-                    contextThrough: result.removes.contextThrough,
+-                    description: `${sideName(opposite(side))}'s ${blockade.role} on ${makeSquare(blockade.square)} holds the pawn until ${step.san} takes it${recapture ? ` before ${recapture.san}` : ""}`,
+-                };
+-            }
+@@ -132,4 +116,7 @@
+-function independent(a: TacticalReplayStep[], b: TacticalReplayStep[], left: Event, right: Event) {
+-    const boards = new Set(
+-        a.slice(0, left.through).map((step) => tacticalRepetitionKey(step.after)),
+-    );
++function independent(
++    a: TacticalReplayStep[],
++    b: TacticalReplayStep[],
++    left: Event,
++    right: Event,
++) {
++    const boards = new Set(a.slice(0, left.through).map((step) => tacticalRepetitionKey(step.after)));
+@@ -141,2 +128,2 @@
+-        a.slice(0, left.contextThrough ?? left.through).map((step) => step.uci),
+-        b.slice(0, right.contextThrough ?? right.through).map((step) => step.uci),
++        a.slice(0, left.through).map((step) => step.uci),
++        b.slice(0, right.through).map((step) => step.uci),
+@@ -144,6 +130,0 @@
+-}
+-
+-function describe(root: string, event: Event) {
+-    return event.description.startsWith(`${root} `)
+-        ? event.description
+-        : `After ${root}, ${event.description}`;
+@@ -180,7 +161 @@
+-            const stopped =
+-                best.blockade ??
+-                (best.removes &&
+-                (best.removes.through === 1 ||
+-                    (relativeRank(pawn, side) >= 6 && alt.promotion && best.removes.through <= 4))
+-                    ? best.removes
+-                    : undefined);
++            const stopped = best.blockade ?? (best.removes?.through === 1 ? best.removes : undefined);
+@@ -190,3 +165,2 @@
+-            const left = defensive && stopped ? stopped : (best.promotion ?? best.blockade);
+-            const right =
+-                defensive && stopped ? defensive : (alt.promotion ?? alt.blockade ?? alt.advance);
++            const left = defensive && stopped ? stopped : best.promotion ?? best.blockade;
++            const right = defensive && stopped ? defensive : alt.promotion ?? alt.blockade ?? alt.advance;
+@@ -195,5 +169 @@
+-            if (
+-                left === best.promotion &&
+-                right === alt.promotion &&
+-                Math.min(left.through, right.through) < 5
+-            )
++            if (left === best.promotion && right === alt.promotion && Math.min(left.through, right.through) < 5)
+@@ -203 +173 @@
+-                description: `${title} ${describe(paths[0][0].san, left)}. ${describe(paths[i][0].san, right)}.`,
++                description: `${title} After ${paths[0][0].san}, ${left.description}. After ${paths[i][0].san}, ${right.description}.`,

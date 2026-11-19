@@ -1,0 +1,143 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used the original Stockfish candidate and played-move comparison lines. Labels were frozen before the candidate or any comparison output was inspected. Uncertain judgments are explicit."
+  ],
+  "cases": [
+    {
+      "id": "tournament-nyc-norms-2026-223147bdfbd01dcf-46",
+      "scope": "position-character",
+      "moveUci": "f1e1",
+      "gameMoveUci": "d2e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "f4 fxe5 admits Nxg5 in one order. Re1 directs White's pieces toward the centre before committing the f-pawn, leaving different pawn tension."
+    },
+    {
+      "id": "tournament-nyc-norms-2026-7279c3605de10e1f-88",
+      "scope": "position-character",
+      "moveUci": "b5b6",
+      "gameMoveUci": "b5b6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rb6+ uses the check to take a6. The other rook moves leave the black rook active and require different king and pawn preparation."
+    },
+    {
+      "id": "tournament-nyc-norms-2026-3ea92ab1caaa29f9-35",
+      "scope": "position-character",
+      "moveUci": "e5e4",
+      "gameMoveUci": "e7g8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The e4 or ...c6 timing changes pressure on d5 and White's queenside expansion. The lines give similarly evaluated choices without a distinct forcing drawback."
+    },
+    {
+      "id": "tournament-nyc-norms-2026-853c94a65dede514-115",
+      "scope": "position-character",
+      "moveUci": "e5f6",
+      "gameMoveUci": "e5f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rook checks constrain the king and the f-pawn supplies a different counterplay plan after Kd4. The positions shown leave the tactical requirement uncertain."
+    },
+    {
+      "id": "tournament-nyc-norms-2026-a408ee0b2a0f2e10-75",
+      "scope": "position-character",
+      "moveUci": "a7b7",
+      "gameMoveUci": "f7f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nb6 can force Nxb6 and axb6. Rb7 and the king moves change the timing of those exchanges and how Black restrains the advanced pawn."
+    },
+    {
+      "id": "tournament-nacional-juvenil-2026-d7e38c2da853e506-64",
+      "scope": "position-character",
+      "moveUci": "a7e3",
+      "gameMoveUci": "a7e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Black's queen entry creates checks and exchange choices, while e6 and d4 change which central pawn remains after the queen trades."
+    },
+    {
+      "id": "tournament-nacional-juvenil-2026-733f11a3cd2606cb-54",
+      "scope": "position-character",
+      "moveUci": "c2f5",
+      "gameMoveUci": "c2f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White must calculate the checks on h5 and g6 around the knight exchange. The g-pawn and rook access on the kingside persist across defences."
+    },
+    {
+      "id": "tournament-nacional-juvenil-2026-691b3e4322d15b87-36",
+      "scope": "position-character",
+      "moveUci": "e3g3",
+      "gameMoveUci": "e1c1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nc2+ and the played Nb3+ lead to different queen transactions. The advanced f-pawn and the kings' possible placement remain important in the more viable lines."
+    },
+    {
+      "id": "tournament-nacional-juvenil-2026-f9bfa3c0a385fcf3-59",
+      "scope": "position-character",
+      "moveUci": "c8c4",
+      "gameMoveUci": "e7c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Black can take c4 or prepare coordinated rook play on the c-file. The activity after the first captures establishes distinct plans with uncertain additional tactical demand."
+    },
+    {
+      "id": "tournament-nacional-juvenil-2026-ba0eab68a126f77f-36",
+      "scope": "position-character",
+      "moveUci": "b2c3",
+      "gameMoveUci": "b2c3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The queen on c3 requires an immediate answer. The choice of recapture changes White's pawn structure and Black's possible queenside breaks."
+    },
+    {
+      "id": "tournament-thessaly-open-2026-cd16e5dba6f6f8a6-105",
+      "scope": "position-character",
+      "moveUci": "c5d4",
+      "gameMoveUci": "a5a4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The kings and a-pawn can trade roles in diverting the opposing king from c4. The close evaluations and several viable routes limit a separate tactical conclusion."
+    },
+    {
+      "id": "tournament-thessaly-open-2026-ea4753cf3d478b45-53",
+      "scope": "position-character",
+      "moveUci": "g8f8",
+      "gameMoveUci": "d8f8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bd5+ changes how the queen exchange can be completed. The transition and king placement change whose pieces control the e-file and which knights can regroup."
+    },
+    {
+      "id": "tournament-thessaly-open-2026-43e0e1935cdfc242-88",
+      "scope": "position-character",
+      "moveUci": "b2b1",
+      "gameMoveUci": "b2c1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The queen and rook moves change the order of captures on a3 and d4. The b3 pawn gives Black a different persistent threat after the queen exchange."
+    },
+    {
+      "id": "tournament-thessaly-open-2026-46de5471447c5aa4-51",
+      "scope": "position-character",
+      "moveUci": "b6d7",
+      "gameMoveUci": "b6d7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White can exploit ...Nc8 by bringing the knight to b6. The g-file exchanges and White's advanced e-pawn change both the defence and pawn structure."
+    },
+    {
+      "id": "tournament-thessaly-open-2026-5c37ec7236199312-60",
+      "scope": "position-character",
+      "moveUci": "d5d6",
+      "gameMoveUci": "c1d1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The queen and rook choices determine whether the c- or d-pawn can advance and whether it must be restrained by the rook from c8."
+    }
+  ]
+}
