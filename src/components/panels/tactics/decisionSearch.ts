@@ -39,6 +39,7 @@ export type DecisionSearchTarget = {
 const ROOT_BUDGETS = [600_000, 2_400_000, 9_600_000];
 const REPLY_BUDGETS = [1_000_000, 4_000_000];
 export const DECISION_SEARCH_SESSION_MS = 28_000;
+const PREPARED_CHECKPOINT_NODES = 1_400_000;
 const LATE_START_MS = 35_000;
 const PIECE_VALUE: Record<Role, number> = {
     pawn: 100,
@@ -344,6 +345,28 @@ export async function gatherExtraPositionChoice(
         signal.throwIfAborted();
         return;
     }
+}
+
+export async function gatherPreparedCheckpoint(
+    engine: LocalEngine,
+    target: DecisionSearchTarget,
+    request: { fen: string; prefix: string[] },
+    signal: AbortSignal,
+    deadline: number,
+) {
+    return searchPosition(
+        engine,
+        request.fen,
+        PREPARED_CHECKPOINT_NODES,
+        signal,
+        Math.min(deadline, Date.now() + 3_000),
+        target.history
+            ? { fen: target.history.fen, moves: [...target.history.moves, ...request.prefix] }
+            : undefined,
+    ).catch(() => {
+        signal.throwIfAborted();
+        return [];
+    });
 }
 
 export async function gatherDecisionEvidence(

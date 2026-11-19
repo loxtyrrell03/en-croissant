@@ -1,0 +1,784 @@
+{
+  "input": {
+    "id": "tournament-prague-open-2026-33108421dd1c9a4d-65",
+    "fen": "1b3rk1/5p1p/2p1pqP1/8/p1B5/2P5/P3QPP1/3R2K1 b - - 0 33",
+    "candidates": [
+      {
+        "fen": "1b3rk1/5p1p/2p1pqP1/8/p1B5/2P5/P3QPP1/3R2K1 b - - 0 33",
+        "cp": 84,
+        "mate": null,
+        "depth": 22,
+        "nodes": 2165598,
+        "pvUci": [
+          "h7g6",
+          "g2g3",
+          "f6c3",
+          "g1g2",
+          "c3f6",
+          "d1d3",
+          "b8a7",
+          "d3f3",
+          "f6d8",
+          "f3a3",
+          "d8a5",
+          "a3d3",
+          "a5c7",
+          "d3a3",
+          "f8d8",
+          "a3a4",
+          "g8g7",
+          "e2f3",
+          "a7d4",
+          "f3e4",
+          "c7d7"
+        ],
+        "wdl": [
+          298,
+          702,
+          0
+        ],
+        "searchMs": 2082.087299961131
+      },
+      {
+        "fen": "1b3rk1/5p1p/2p1pqP1/8/p1B5/2P5/P3QPP1/3R2K1 b - - 0 33",
+        "cp": -1,
+        "mate": null,
+        "depth": 22,
+        "nodes": 2165598,
+        "pvUci": [
+          "f7g6",
+          "e2e6",
+          "f6e6",
+          "c4e6",
+          "g8h8",
+          "e6d7",
+          "b8a7",
+          "d1d2",
+          "f8f6",
+          "g1f1",
+          "a4a3",
+          "g2g4",
+          "a7c5",
+          "g4g5",
+          "f6f4",
+          "d7c6"
+        ],
+        "wdl": [
+          5,
+          990,
+          5
+        ],
+        "searchMs": 2082.087299961131
+      },
+      {
+        "fen": "1b3rk1/5p1p/2p1pqP1/8/p1B5/2P5/P3QPP1/3R2K1 b - - 0 33",
+        "cp": -6,
+        "mate": null,
+        "depth": 22,
+        "nodes": 2165598,
+        "pvUci": [
+          "f6g6",
+          "g2g3",
+          "h7h5",
+          "g1g2",
+          "g6g4",
+          "d1d4",
+          "g4e2",
+          "c4e2",
+          "a4a3",
+          "d4a4",
+          "h5h4",
+          "g3h4",
+          "b8d6",
+          "a4d4",
+          "d6c5",
+          "d4c4"
+        ],
+        "wdl": [
+          3,
+          990,
+          7
+        ],
+        "searchMs": 2082.087299961131
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "h7g6",
+        "lines": [
+          {
+            "fen": "1b3rk1/5p2/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 16,
+            "cp": -79,
+            "mate": null,
+            "pvUci": [
+              "g2g3",
+              "f6c3",
+              "g1g2",
+              "c3f6",
+              "d1d3",
+              "b8a7"
+            ]
+          },
+          {
+            "fen": "1b3rk1/5p2/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 16,
+            "cp": -152,
+            "mate": null,
+            "pvUci": [
+              "c4d3",
+              "a4a3",
+              "d3e4",
+              "b8e5",
+              "e2a6",
+              "f6h4",
+              "e4c6",
+              "f8b8",
+              "g2g3",
+              "e5g3",
+              "f2g3",
+              "h4g3",
+              "c6g2"
+            ]
+          },
+          {
+            "fen": "1b3rk1/5p2/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 16,
+            "cp": -215,
+            "mate": null,
+            "pvUci": [
+              "e2g4",
+              "b8a7",
+              "g4f3",
+              "f6f3",
+              "g2f3",
+              "f8b8",
+              "d1d2",
+              "g8f8",
+              "g1f1",
+              "b8b1",
+              "f1e2",
+              "b1c1",
+              "c4d3",
+              "c1c3",
+              "d2c2",
+              "c3a3",
+              "d3e4",
+              "c6c5",
+              "e4c6"
+            ]
+          }
+        ]
+      },
+      {
+        "moveUci": "f7g6",
+        "lines": [
+          {
+            "fen": "1b3rk1/7p/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 22,
+            "cp": 7,
+            "mate": null,
+            "pvUci": [
+              "e2e6",
+              "f6e6",
+              "c4e6",
+              "g8h8",
+              "g2g3",
+              "b8a7",
+              "d1d2",
+              "a7c5",
+              "g1g2",
+              "f8e8",
+              "e6c4",
+              "h8g7",
+              "d2d7",
+              "e8e7",
+              "d7d8",
+              "e7b7",
+              "d8c8"
+            ]
+          },
+          {
+            "fen": "1b3rk1/7p/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 22,
+            "cp": 7,
+            "mate": null,
+            "pvUci": [
+              "g2g3",
+              "g8h8",
+              "d1d7",
+              "f6e5",
+              "e2e5",
+              "b8e5",
+              "c4e6",
+              "f8f3",
+              "d7d8",
+              "h8g7",
+              "d8g8",
+              "g7h6",
+              "g8a8",
+              "f3c3",
+              "a8a4",
+              "c6c5",
+              "f2f4",
+              "e5f6"
+            ]
+          },
+          {
+            "fen": "1b3rk1/7p/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 22,
+            "cp": 5,
+            "mate": null,
+            "pvUci": [
+              "d1d7",
+              "f6e5",
+              "e2e5",
+              "b8e5",
+              "c4e6",
+              "g8h8",
+              "g2g3",
+              "f8f3",
+              "g1g2",
+              "f3c3",
+              "f2f4",
+              "e5f6",
+              "d7d2",
+              "c3c1",
+              "d2d6",
+              "c1c2",
+              "g2f3"
+            ]
+          }
+        ]
+      },
+      {
+        "moveUci": "f6g6",
+        "lines": [
+          {
+            "fen": "1b3rk1/5p1p/2p1p1q1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 19,
+            "cp": 12,
+            "mate": null,
+            "pvUci": [
+              "g2g3",
+              "h7h5",
+              "g1g2",
+              "g6g4",
+              "d1d4",
+              "g4e2",
+              "c4e2",
+              "b8e5",
+              "d4a4",
+              "h5h4",
+              "a4g4",
+              "e5g7",
+              "g3h4",
+              "f8a8",
+              "a2a4",
+              "a8a5",
+              "e2d3"
+            ]
+          },
+          {
+            "fen": "1b3rk1/5p1p/2p1p1q1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 19,
+            "cp": 1,
+            "mate": null,
+            "pvUci": [
+              "d1d4",
+              "h7h5",
+              "e2f3",
+              "b8e5",
+              "c4d3",
+              "g6g5",
+              "d4a4",
+              "f8d8",
+              "g2g3",
+              "e5c3",
+              "a4f4",
+              "d8d7",
+              "f4c4",
+              "g5f6",
+              "f3f6",
+              "c3f6",
+              "d3c2",
+              "d7d2",
+              "c4c6"
+            ]
+          },
+          {
+            "fen": "1b3rk1/5p1p/2p1p1q1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+            "depth": 19,
+            "cp": 0,
+            "mate": null,
+            "pvUci": [
+              "d1d7",
+              "g6g5",
+              "e2f3",
+              "g5f4",
+              "f3h5",
+              "f4c4",
+              "h5g5",
+              "g8h8",
+              "g5f6",
+              "h8g8"
+            ]
+          }
+        ]
+      }
+    ],
+    "label": {
+      "tactical": true,
+      "positional": true,
+      "rationale": "Different captures on g6 change whether Qxe6+ forces a queen trade. They also create distinct pawn cover and endgame structures around the two kings."
+    }
+  },
+  "checkedAlternatives": {
+    "g6-good": {
+      "case": "tournament-prague-open-2026-33108421dd1c9a4d-65",
+      "root": "1b3rk1/5p1p/2p1pqP1/8/p1B5/2P5/P3QPP1/3R2K1 b - - 0 33",
+      "prefix": [
+        "hxg6"
+      ],
+      "lines": [
+        {
+          "fen": "1b3rk1/5p2/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 18,
+          "cp": -92,
+          "mate": null,
+          "pvUci": [
+            "g2g3",
+            "f6c3",
+            "g1g2",
+            "c3f6",
+            "d1d3",
+            "b8a7",
+            "d3f3",
+            "f6e7",
+            "e2c2",
+            "a4a3",
+            "c2c3",
+            "f8d8",
+            "c3a3",
+            "e7d7",
+            "a3b2",
+            "a7d4",
+            "b2c2",
+            "c6c5",
+            "a2a4",
+            "d8a8"
+          ]
+        },
+        {
+          "fen": "1b3rk1/5p2/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 18,
+          "cp": -155,
+          "mate": null,
+          "pvUci": [
+            "c4d3",
+            "b8e5",
+            "d3c2",
+            "f8b8",
+            "e2c4",
+            "e5c3",
+            "c4c6",
+            "c3d4",
+            "c6f3",
+            "f6e5",
+            "f3e4",
+            "e5e4",
+            "c2e4",
+            "b8b4",
+            "e4c6",
+            "e6e5",
+            "d1d2",
+            "b4b1",
+            "g1h2",
+            "a4a3",
+            "f2f3",
+            "f7f5",
+            "c6d5",
+            "g8g7",
+            "d2c2",
+            "d4g1",
+            "h2h3",
+            "b1b2",
+            "d5b3"
+          ]
+        },
+        {
+          "fen": "1b3rk1/5p2/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 18,
+          "cp": -202,
+          "mate": null,
+          "pvUci": [
+            "e2f3",
+            "f6f3",
+            "g2f3",
+            "b8e5",
+            "d1d7",
+            "f8a8",
+            "c4d3",
+            "c6c5",
+            "d3e4",
+            "a8a5",
+            "c3c4",
+            "a5a6",
+            "d7d8",
+            "g8g7",
+            "d8a8",
+            "a6b6",
+            "a8a4",
+            "b6b2",
+            "a4a7"
+          ]
+        }
+      ],
+      "attempt": {
+        "nodes": 2400344,
+        "requestedNodes": 2400000,
+        "depth": 18,
+        "milliseconds": 2188.275899970904
+      },
+      "restricted": [
+        {
+          "fen": "1b3rk1/5p2/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "cp": -1528,
+          "mate": null,
+          "depth": 27,
+          "nodes": 1200475,
+          "pvUci": [
+            "e2e6",
+            "f7e6",
+            "f2f3",
+            "f6h4",
+            "c4e6",
+            "g8h8",
+            "g1f1",
+            "h4h1",
+            "f1e2",
+            "h1g2",
+            "e2d3",
+            "f8d8",
+            "d3c4",
+            "g2e2",
+            "c4b4",
+            "d8d1",
+            "c3c4",
+            "e2e6",
+            "b4c5"
+          ]
+        }
+      ]
+    },
+    "g6-bad": {
+      "case": "tournament-prague-open-2026-33108421dd1c9a4d-65",
+      "root": "1b3rk1/5p1p/2p1pqP1/8/p1B5/2P5/P3QPP1/3R2K1 b - - 0 33",
+      "prefix": [
+        "fxg6"
+      ],
+      "lines": [
+        {
+          "fen": "1b3rk1/7p/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 23,
+          "cp": 8,
+          "mate": null,
+          "pvUci": [
+            "g2g3",
+            "g8g7",
+            "g1g2",
+            "f8f7",
+            "c4e6",
+            "f7e7",
+            "d1d7",
+            "e7d7",
+            "e6d7",
+            "f6d6",
+            "d7e6",
+            "h7h5",
+            "e2e3",
+            "d6e5",
+            "e3e5",
+            "b8e5",
+            "e6d7",
+            "g7f8"
+          ]
+        },
+        {
+          "fen": "1b3rk1/7p/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 23,
+          "cp": 5,
+          "mate": null,
+          "pvUci": [
+            "e2e6",
+            "f6e6",
+            "c4e6",
+            "g8h8",
+            "g2g3",
+            "b8a7",
+            "d1d2",
+            "a7c5",
+            "g1g2",
+            "h7h5",
+            "f2f3",
+            "g6g5",
+            "d2e2",
+            "f8e8",
+            "f3f4",
+            "g5f4",
+            "g3f4",
+            "h8g7",
+            "f4f5",
+            "g7f6",
+            "e2e4",
+            "e8d8",
+            "e4c4",
+            "c5e7",
+            "c4a4",
+            "d8d2",
+            "g2f3",
+            "d2d3",
+            "f3e2",
+            "d3c3"
+          ]
+        },
+        {
+          "fen": "1b3rk1/7p/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 23,
+          "cp": 4,
+          "mate": null,
+          "pvUci": [
+            "d1d7",
+            "f6e5",
+            "e2e5",
+            "b8e5",
+            "c4e6",
+            "g8h8",
+            "g2g3",
+            "f8f6",
+            "e6c4",
+            "f6d6",
+            "d7d6",
+            "e5d6",
+            "f2f4",
+            "h8g7",
+            "c4d3",
+            "g7f6",
+            "d3c2",
+            "a4a3",
+            "g1g2"
+          ]
+        }
+      ],
+      "attempt": {
+        "nodes": 2400605,
+        "requestedNodes": 2400000,
+        "depth": 23,
+        "milliseconds": 1849.4341999758035
+      },
+      "restricted": [
+        {
+          "fen": "1b3rk1/7p/2p1pqp1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "cp": 5,
+          "mate": null,
+          "depth": 25,
+          "nodes": 1200339,
+          "pvUci": [
+            "e2e6",
+            "f6e6",
+            "c4e6",
+            "g8h8",
+            "g2g3",
+            "b8e5",
+            "f2f4",
+            "e5c3",
+            "g1g2",
+            "c3b4",
+            "g2f3",
+            "f8e8",
+            "e6c4",
+            "b4c5",
+            "d1d3",
+            "e8e1",
+            "d3d8",
+            "h8g7"
+          ]
+        }
+      ]
+    },
+    "g6-queen": {
+      "case": "tournament-prague-open-2026-33108421dd1c9a4d-65",
+      "root": "1b3rk1/5p1p/2p1pqP1/8/p1B5/2P5/P3QPP1/3R2K1 b - - 0 33",
+      "prefix": [
+        "Qxg6"
+      ],
+      "lines": [
+        {
+          "fen": "1b3rk1/5p1p/2p1p1q1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 22,
+          "cp": 9,
+          "mate": null,
+          "pvUci": [
+            "g2g3",
+            "g6f6",
+            "d1d3",
+            "f8d8",
+            "e2g4",
+            "g8h8",
+            "d3f3",
+            "f6g6",
+            "g4g6",
+            "f7g6",
+            "c4e6",
+            "h8g7",
+            "g1g2",
+            "g7h6",
+            "f3f7"
+          ]
+        },
+        {
+          "fen": "1b3rk1/5p1p/2p1p1q1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 22,
+          "cp": 4,
+          "mate": null,
+          "pvUci": [
+            "d1d4",
+            "h7h5",
+            "c4d3",
+            "g6g5",
+            "e2e4",
+            "g5c1",
+            "d3f1",
+            "c1g5",
+            "e4c6",
+            "a4a3",
+            "c6a4",
+            "f8d8",
+            "a4b5",
+            "g5f6",
+            "b5b6",
+            "d8d4",
+            "c3d4",
+            "f6f4",
+            "b6d8",
+            "g8g7",
+            "g2g3",
+            "f4d6"
+          ]
+        },
+        {
+          "fen": "1b3rk1/5p1p/2p1p1q1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "depth": 22,
+          "cp": -1,
+          "mate": null,
+          "pvUci": [
+            "d1d7",
+            "g6g5",
+            "e2f3",
+            "b8e5",
+            "c4f1",
+            "a4a3",
+            "f3c6",
+            "f8d8",
+            "d7d8",
+            "g5d8",
+            "g2g3",
+            "d8d2",
+            "c6b5",
+            "d2c3",
+            "g1g2",
+            "g8f8",
+            "f1c4",
+            "c3d4"
+          ]
+        }
+      ],
+      "attempt": {
+        "nodes": 2400556,
+        "requestedNodes": 2400000,
+        "depth": 22,
+        "milliseconds": 2028.9386000367813
+      },
+      "restricted": [
+        {
+          "fen": "1b3rk1/5p1p/2p1p1q1/8/p1B5/2P5/P3QPP1/3R2K1 w - - 0 34",
+          "cp": -1209,
+          "mate": null,
+          "depth": 24,
+          "nodes": 1200417,
+          "pvUci": [
+            "e2e6",
+            "f7e6",
+            "c4d3",
+            "g6h5",
+            "d1d2",
+            "b8a7",
+            "d3c4",
+            "h5f5",
+            "g1h2",
+            "f5e4",
+            "h2h3",
+            "e4c4",
+            "g2g3",
+            "c4e4",
+            "a2a3",
+            "e4h1",
+            "h3g4",
+            "h1f3",
+            "g4h4",
+            "f3f6",
+            "h4g4"
+          ]
+        }
+      ]
+    }
+  },
+  "result": {
+    "tactical": {
+      "kind": "forcing-attack",
+      "betterLineUci": [
+        "h7g6",
+        "g2g3",
+        "f6c3",
+        "g1g2"
+      ],
+      "playedLineUci": [
+        "f7g6",
+        "e2e6",
+        "f6e6",
+        "c4e6"
+      ],
+      "controlLineUci": [
+        "h7g6",
+        "e2e6",
+        "f7e6"
+      ],
+      "throughPly": 4,
+      "mechanisms": [],
+      "explanation": "After fxg6, Qxe6+ gives check and the shown reply trades queens with Qxe6 Bxe6+. After hxg6, the same capture gives no check, and fxe6 wins the queen."
+    },
+    "positional": {
+      "linesUci": [
+        [
+          "h7g6",
+          "g2g3",
+          "f6c3",
+          "g1g2",
+          "c3f6",
+          "d1d3",
+          "b8a7"
+        ],
+        [
+          "f7g6",
+          "e2e6",
+          "f6e6",
+          "c4e6",
+          "g8h8",
+          "e6d7",
+          "b8a7"
+        ]
+      ],
+      "description": "hxg6 retains the pawn on f7 beside the king. fxg6 keeps the pawn on h7 instead. These pawn structures persist through the shown continuations."
+    }
+  }
+}

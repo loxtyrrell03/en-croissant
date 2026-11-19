@@ -1,0 +1,562 @@
+[
+  {
+    "id": "recapture-poland-8a65c9af6f0714b4-78",
+    "root": "8/p4rpk/1p6/2pR4/2P1R1p1/1P4p1/Pb3P1P/6K1 w - - 0 40",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-asianwomen-821fe4c6648e2ea1-51",
+    "root": "4rrk1/pp3ppp/2pn2P1/7P/3P3R/2PB4/1P3P2/1K1R4 b - - 0 26",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-arco-28b8b7d6c5e4e109-39",
+    "root": "3rr1k1/p1q1bp1p/4b1P1/2p1p3/1pP1Q3/3B4/PPPB1PP1/1K1RR3 b - - 0 20",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-6b15b53c5ba793a9-44",
+    "root": "2r1r1k1/p2b1p2/3p1qp1/n1pP4/1p2P3/1P1Q2p1/P2N1P1P/2R1RBK1 w - - 0 23",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-slovenian-league-2026-5fe83c7d2801830b-45",
+    "root": "r1r3k1/2nb1p1p/3p2PR/ppnPp3/4P1P1/6N1/PP2BP2/2RNK3 b - - 0 23",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-brazil-women-bc4dc52e8ea7a5f6-49",
+    "root": "2k4r/p1p3p1/1P2pbqr/1b1n1p2/2NPp3/4P1P1/2P1Q1RP/3RBBK1 b - - 0 25",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-world-seniors-50-2026-event-cd0b9cb7a2124a55-49",
+    "root": "1q3rk1/3p1p1p/2b1pnP1/2p5/3bP3/P2B3R/1NQ3PP/1R5K b - - 0 25",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-formentera-6aa55a15d7e8b927-50",
+    "root": "4r2k/pp4pp/2p2r2/3n3q/1P1P4/P4Npb/1R1QPP1P/1R4KB w - - 0 26",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-czech-a-4085297ae73377ce-43",
+    "root": "2kr1r2/pppbn3/1P1qn2p/P2pp1pN/2P3P1/1B1PPN1P/8/R2Q1RK1 b - - 0 22",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-arco-197069592d7bb64e-49",
+    "root": "1n1r2k1/1r2bp1p/4p1P1/pq1pP3/1p1B4/1P1NP1P1/P1Q2P2/2RR2K1 b - - 0 25",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-aeroflot-round3-a799cbb971b1cdb7-58",
+    "root": "r1b2r2/3n4/p3pn2/2P3k1/p1N2R2/6p1/1P3P1P/3R2K1 w - - 0 30",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-fc12158ae1e8244b-57",
+    "root": "5rk1/1pp2ppp/6P1/2q4P/1n1p2Q1/r2P4/4RPB1/4R1K1 b - - 0 29",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-ac6f3c4de105e1f1-62",
+    "root": "4r1k1/2p3p1/1p3r1p/p2Ppq2/P1P1R3/6p1/2P1QP1P/R5K1 w - - 0 32",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-u16-41998ddb83b6a518-33",
+    "root": "1rr3k1/2q1ppbp/p2pbnP1/4n3/Np2P1P1/1N2BP2/PPPQB3/1K1R3R b - - 0 17",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-aeroflot-round3-2b1bb95950baa411-53",
+    "root": "r3rnk1/5ppp/p5P1/1p2qN1P/7Q/P4b2/1PB5/1K4RR b - - 0 27",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-aeroflot-round3-132afa27af2ce8c4-29",
+    "root": "r4rk1/ppqn1pbp/2pp1nP1/4p3/2PPP2N/1Q6/PP1B1PBP/R3R1K1 b - - 0 15",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-olympiad-a0c41842af1f6469-67",
+    "root": "3r2k1/5p1p/4p1P1/1pp5/6P1/2P5/P4P2/4R1K1 b - - 0 34",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-czech-a-347ebf54cc1fc085-25",
+    "root": "r1bq1rk1/1p2ppbp/p2p2P1/n3n3/2PBP3/2N2P2/PP1Q2P1/R1N1KB1R b KQ - 0 13",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-clubwomen-770de9a8a72f03a8-44",
+    "root": "3r1rk1/p1qp2pp/2n1p3/2p5/2P5/2Q3p1/PP1RPPNP/3R2K1 w - - 0 23",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-arco-9c1386faaee7e3f4-74",
+    "root": "2r4k/1pq2p2/p4bp1/P2Q3p/3B4/1P4p1/2P2P1P/7K w - - 0 38",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-poland-eb30b8bd3e822243-36",
+    "root": "r2q1rk1/3bbp1p/4p1pP/2npP3/p2N1P2/1p1BB3/PPP3P1/2KRQ2R w - - 0 19",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-cap-d8c93991329911e1-43",
+    "root": "2rq1rkb/pp3p1p/1n1np1P1/3pN3/3P4/N1PB1Q1P/PP5B/3RR2K b - - 0 22",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-poland-1558e82bda4f8dcb-37",
+    "root": "r4rk1/pb3ppp/1p2n1P1/nqp5/7Q/P4N2/1B2PPBP/2KR2R1 b - - 0 19",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-german-north-2026-5d2fbdb9fe4ebad1-31",
+    "root": "1rr3k1/p3ppbp/3pbnP1/qp6/3BP1P1/P1N2P2/1PPQ4/1K1R1B1R b - - 0 16",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-czech-a-8299b8e7256753e2-50",
+    "root": "2nq1rk1/1Rp3b1/1p1pb1p1/1P2pp2/2P5/2NPP1p1/1BQ2PBP/6K1 w - - 0 26",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-uruguay-b2eacb2c7551bdcf-53",
+    "root": "5bk1/R4p1p/1r4P1/2p5/3p4/3P1B2/4PPKP/8 b - - 0 27",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-arco-040a7f3ababd3ca6-46",
+    "root": "3rr1k1/p2q2b1/1p2p1n1/PR3pp1/2Pp4/B2P2p1/2QNPP1P/4R1K1 w - - 0 24",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-benidorm-298b9e7b0eae8b01-56",
+    "root": "1r2r1k1/R1p2pp1/3b1n2/1p3b1q/3Pp3/1P2P1p1/2Q2PBP/2R1BNK1 w - - 0 29",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-arco-3e1d0c476793a93b-54",
+    "root": "2r4k/7p/1pNq1rpb/1P1Bpn2/3p4/1Q1P2p1/4PP1P/R4RK1 w - - 0 28",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-4eb8bec999071655-41",
+    "root": "r3r1k1/ppp2p1p/6P1/3q4/4p3/2P1R2P/PPP1QP2/2K3R1 b - - 0 21",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-czech-a-10f9e66a11500969-50",
+    "root": "3rr1k1/1p2q3/4bnp1/Q2p1p2/8/P1N1P1p1/1P3PBP/2RR2K1 w - - 0 26",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-czech-a-749b74d0135d1fb5-60",
+    "root": "r3k1r1/1bb2p2/1pN1p3/1PnR4/p1B2qp1/P1Q3p1/1B3P1P/4R1K1 w q - 0 31",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-benidorm-d2e28cb56d21dd3b-33",
+    "root": "r3k2r/p1qp1ppp/1p2P3/2b5/1n6/1P1B4/PBP1Q1PP/R4R1K b kq - 0 17",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-pall-open-r5-bd1747e7d7a0846e-55",
+    "root": "3r3k/p3bp1p/1p2p1P1/4P3/2P1BP2/6R1/Pr4P1/5RK1 b - - 0 28",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-german-north-2026-5f8be267096f5dd7-36",
+    "root": "2rq1rk1/p5p1/bppbpn2/3pNp2/2PP4/1P4p1/PB1QPPBP/R2R2K1 w - - 0 19",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-01025a1990d764f7-47",
+    "root": "2r1r1k1/1p1b1pbp/p5P1/2qP1n2/P7/2NQP3/4NPP1/1R2BK1R b - - 0 24",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-olympiad-c855144f34f7cf4f-55",
+    "root": "3r2k1/pp3p1p/4n1P1/3p4/3P4/P1N1P3/1P4P1/5RK1 b - - 0 28",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-women-f4ac360da8aff103-46",
+    "root": "3r4/pbrqbpk1/1p4p1/3B4/5N2/3QP1p1/PP3P1P/1R1R2K1 w - - 0 24",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-brazil-women-e6c13e8c8c08060c-71",
+    "root": "6k1/p1q2p1p/6PQ/Pp2P3/2p5/2P2r1P/1P2R2K/8 b - - 0 36",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-lugano-78a32f51a53a53b8-43",
+    "root": "r1q3k1/pppnrppp/3p2P1/8/6P1/P2BB1Q1/1PP4P/3R1RK1 b - - 0 22",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-benidorm-ceb9b813ca3564f0-56",
+    "root": "5r2/pb2kp1p/1p2p1q1/8/n2Q4/6p1/P4P1P/4R1K1 w - - 0 29",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-uruguay-c83836c69f341d69-43",
+    "root": "r1r1q1k1/p2n1p1p/1p1BpbP1/2Pb4/3P4/4QNP1/P4PB1/2RR2K1 b - - 0 22",
+    "label": false,
+    "rationale": "A separate restricted Stockfish search confirms Qxe6 is markedly worse than ordinary replies after both captures.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-guernsey-d5e808edb7e47ae3-39",
+    "root": "2r1r1k1/1b3pbp/p3p1P1/1pqn4/8/P1P2N2/1PB1QPP1/R1B1R1K1 b - - 0 20",
+    "label": false,
+    "rationale": "A separate restricted Stockfish search confirms Qxe6 is markedly worse than ordinary replies after both captures.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-german-north-2026-27bfea2162121b56-33",
+    "root": "r1b2rk1/1p3pbp/1q2p1P1/p1npP3/5P2/1BN2N2/PPPQ2P1/2KR3R b - - 0 17",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-world-seniors-50-2026-event-78474403133434e9-28",
+    "root": "r3kbnr/2q5/p1p1bp2/2p1p2p/Q1N1P3/2P1B1p1/PP1N1PPP/R3R1K1 w kq - 0 15",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-misamis-264dc4c9ea911566-67",
+    "root": "4q1k1/2p2pbp/3p2P1/1r1P2P1/1nB1PQ2/1P2KP2/r3N3/1R5R b - - 0 34",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-asianwomen-4b57695cb85da64f-31",
+    "root": "2kr3r/pbp1qp2/1P2p2p/3pP1p1/4nP2/2PBPN2/1P4PP/R2QK2R b KQ - 0 16",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-clubwomen-6710938d320eb4c3-61",
+    "root": "6k1/4rp1p/pp1p2P1/3Pr1b1/2P5/3B4/PP4P1/1K1R3R b - - 0 31",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-clubwomen-7079130cceba5b30-31",
+    "root": "r1b2rk1/2q2pbp/p2ppnP1/8/2pNP3/P1N1B1Q1/1PP3PP/R4RK1 b - - 0 16",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-halloween-5e8535f538b6a9ce-57",
+    "root": "3r2k1/p1R2p1p/1p4P1/3b4/8/8/P4PP1/5BK1 b - - 0 29",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-hvar-f00831125a99532a-39",
+    "root": "2r3k1/2qnbp1p/bp2p1P1/p1rnP1B1/2N1Q3/5NP1/PP3P2/R1R2BK1 b - - 0 20",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-olympiad-b7160523fa0a8433-41",
+    "root": "rnr1q1k1/2p1bp1p/p2pN1P1/3Pp3/b1P5/3QP1P1/P4PB1/1RB2K1R b - - 0 21",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-peace-ef45c073ace34445-45",
+    "root": "2r2bk1/2q2ppp/p2p2P1/1p1nr2P/8/1N4R1/PPPQB3/1K1R4 b - - 0 23",
+    "label": null,
+    "rationale": "Both pawn captures are outside the comparative entry condition in the three searched choices.",
+    "conditionalRootCoverage": false
+  },
+  {
+    "id": "recapture-czech-a-79c3cea7fbad8201-53",
+    "root": "4r1k1/pp3p1p/6P1/3P4/3Nr3/1P2n3/P1P2QBq/1K4R1 b - - 0 27",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-abcb93115e4d5de4-60",
+    "root": "r5r1/2k4p/p1qb4/1p3p2/1P6/1NPR2p1/1P3P1P/R2Q2K1 w - - 0 31",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-83684e7475f2d928-35",
+    "root": "r3r1k1/p1p1qpbp/bnp3P1/4P3/2p5/PP6/1B1NQPP1/2K1RB1R b - - 0 18",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-brazil-women-cef0c3d6bf877661-30",
+    "root": "r3k2r/pp1q1pp1/2p1pb2/5b2/2P5/1Q1PB1p1/PP3PBP/3R1RK1 w kq - 0 16",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-slovenian-league-2026-97d9bd27b2be82ff-30",
+    "root": "r1b2rk1/pp1P1p1p/8/4P2q/1b1N4/2nB2p1/PPQ2P1P/R4RK1 w - - 0 16",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-arco-10062c312f7cdc8b-24",
+    "root": "r1bqk2r/ppp1b1p1/2n5/4pp2/8/1QPP1Np1/P2BPPBP/R2R2K1 w kq - 0 13",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-misamis-af1242a7c805e49f-66",
+    "root": "5k2/4b1p1/4nr2/8/1p2P2p/1p1N3P/P1P3P1/1K2R3 w - - 0 34",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-u16-c7b6d29a73fa0984-50",
+    "root": "1r6/1q2k1p1/1npbbpPr/2p1p2P/2NpP3/Np1P4/PBP1Q3/1K3R1R w - - 0 26",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-czech-a-d1ba7c3e96959cd7-59",
+    "root": "5bk1/1p3p1p/n3p1P1/1q1pP3/1PrP2P1/3NB3/3Q1PK1/3R4 b - - 0 30",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-formentera-3086528c74e56c9d-52",
+    "root": "1qr1r1k1/1b1n1pp1/1p3n2/1N1p4/3P4/QP4p1/3N1PBP/R2R2K1 w - - 0 27",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-olympiad-dd991363b61bd9c7-49",
+    "root": "5rk1/pp2qp1p/6P1/2p3P1/2Pp4/4r3/PPPQ2P1/1K1R1R2 b - - 0 25",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-aeroflot-round3-de96efb3a9ca2850-37",
+    "root": "3r2k1/pppr1pbp/1nn1p1P1/8/3PPP2/PqN1BP2/1P3Q2/2KR1B1R b - - 0 19",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-47c741d780f1597c-71",
+    "root": "2r3k1/5p1p/6P1/3pN3/8/1p1B4/r1p3PP/2B2RK1 b - - 0 36",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-olympiad-ed58342c8480ab51-30",
+    "root": "1r1q1rk1/2p1bpp1/4pn2/p2p1b2/Q2P4/2P2Np1/PP2PPBP/R1B2RK1 w - - 0 16",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-u16-f66085b782acddca-45",
+    "root": "2b1r1k1/2q2pbp/2pRp1P1/p1N1P3/Pr6/1B2Q3/1PP3P1/1K5R b - - 0 23",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-clubwomen-1355f37a419fa2cc-46",
+    "root": "1k1r3r/1pp1b3/p3p3/Pq1nPp2/NnRP3p/1Q4p1/1P1B1PPP/1BR3K1 w - - 0 24",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-grand-07a6cff49a25df92-41",
+    "root": "r3k2r/1b1pbpp1/p3P2n/q3P3/3N3p/1PpB3P/P1P3P1/1K1RQ1BR b kq - 0 21",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-benidorm-129fd879b98cec89-46",
+    "root": "3r2k1/p2q1r1p/1p1p1R2/3Q1p2/3P4/6p1/PP2PP1P/R5K1 w - - 0 24",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-arco-507c14f9e7538ab6-41",
+    "root": "r2qr1k1/pp1n1p1p/3p1bP1/3P4/8/2NQBR2/PP4PP/R5K1 b - - 0 21",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-guernsey-1282b49bb874395d-27",
+    "root": "r1bq1rk1/1p3pbp/2pn1nP1/p2p4/1P1N4/3PP3/P1B3PP/RNBQ1RK1 b - - 0 14",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-olympiad-2b2c88bf8968a396-44",
+    "root": "2b1r1k1/6p1/1pp2p2/3n4/r7/6p1/PPNBPP1P/R3R1K1 w - - 0 23",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-formentera-6de6454f697a3350-34",
+    "root": "1r4nr/p2kb1p1/2n2p2/1ppB4/8/P2P2p1/1PN1PP1P/R1BR2K1 w - - 0 18",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-women-65604f85e714ffb3-50",
+    "root": "5rk1/p1q2pp1/2b1p3/2r5/2P1n3/P3P1p1/1Q2BP1P/1R2BRK1 w - - 0 26",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-arco-8f25ddfef45d7436-47",
+    "root": "4r1k1/p3bp1p/2p1p1PB/1p2P3/3r4/1P4R1/q1P1QPP1/4R1K1 b - - 0 24",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-world-seniors-50-2026-event-2ca709dece8dc7ad-24",
+    "root": "r2qk2r/pp2ppb1/2bp1np1/8/2P1P3/2N1B1p1/PP3PBP/R2Q1RK1 w kq - 0 13",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-world-seniors-50-2026-event-e2454889f276ee02-46",
+    "root": "1rbqr1k1/Rpp2pb1/3p2p1/1P1N4/2Pp4/3P1Bp1/3QPP1P/4R1K1 w - - 0 24",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  },
+  {
+    "id": "recapture-slovenian-league-2026-acc834fa85c1c95a-49",
+    "root": "1r3bk1/2qb1p1p/p1pn2P1/2Bp4/N5P1/1N4QP/PPP5/1K2R3 b - - 0 25",
+    "label": false,
+    "rationale": "No common legal queen capture changes from check to non-check and allows the preserved pawn to take the queen.",
+    "conditionalRootCoverage": true
+  }
+]

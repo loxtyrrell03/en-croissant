@@ -1,0 +1,118 @@
+{
+  "baselineCommit": "d2e2a41d",
+  "cases": {
+    "ordinaryEarlier": 259,
+    "classicalReplay": 33,
+    "recaptureChallenge": 80,
+    "publicExercises": 48,
+    "privateCourse": 52
+  },
+  "reviewedClassicalReplay": {
+    "cases": 33,
+    "tactical": {
+      "positives": 18,
+      "negatives": 10,
+      "uncertain": 5,
+      "beforeTP": 2,
+      "afterTP": 3,
+      "beforeFP": 0,
+      "afterFP": 0
+    },
+    "positional": {
+      "positives": 26,
+      "negatives": 3,
+      "uncertain": 4,
+      "beforeTP": 8,
+      "afterTP": 8,
+      "beforeFP": 0,
+      "afterFP": 0
+    },
+    "mixed": {
+      "positives": 11,
+      "negatives": 13,
+      "uncertain": 9,
+      "beforeTP": 0,
+      "afterTP": 0,
+      "beforeFP": 0,
+      "afterFP": 0
+    }
+  },
+  "preparedSearch": {
+    "requested": 5,
+    "confirmed": 3,
+    "nodesPerSearch": 1400000,
+    "medianSearchMs": 1016.9051000266336,
+    "measurements": [
+      {
+        "depth": 22,
+        "milliseconds": 1016.9051000266336,
+        "requestedNodes": 1400000
+      },
+      {
+        "depth": 17,
+        "milliseconds": 1227.362500037998,
+        "requestedNodes": 1400000
+      },
+      {
+        "depth": 20,
+        "milliseconds": 1294.1867000190541,
+        "requestedNodes": 1400000
+      },
+      {
+        "depth": 20,
+        "milliseconds": 939.4121000077575,
+        "requestedNodes": 1400000
+      },
+      {
+        "depth": 17,
+        "milliseconds": 992.3081999877468,
+        "requestedNodes": 1400000
+      }
+    ]
+  },
+  "changed": [
+    {
+      "id": "tournament-world-amateur-w2000-2026-e8d4d1167eb95372-72",
+      "before": "unclear",
+      "after": "tactical",
+      "positionReference": {
+        "tactical": true,
+        "positional": true,
+        "rationale": "Nd5 forces an exact rook and knight sequence on c6 and e7. Kg1 allows the pawn break ...f4 and changes control of the f-file after exchanges."
+      }
+    },
+    {
+      "id": "tournament-aruba-open-2026-0f4e682858fbc45b-46",
+      "before": "positional",
+      "after": "mixed",
+      "positionReference": {
+        "id": "tournament-aruba-open-2026-0f4e682858fbc45b-46",
+        "scope": "position-character",
+        "moveUci": "a2a4",
+        "gameMoveUci": "f4e2",
+        "tactical": null,
+        "positional": true,
+        "rationale": "The queen and rooks compete for the queenside files around a5 and c4. The candidates offer comparable opportunities to exchange the c-pawn and use the resulting squares."
+      }
+    },
+    {
+      "id": "Private Woodpecker move",
+      "before": "unclear",
+      "after": "tactical",
+      "positionReference": null
+    }
+  ],
+  "mistakeReplay": {
+    "frames": 318,
+    "legallyAssessable": 317,
+    "assessedMistakes": 178,
+    "changedMoveOrMistakeReports": 0,
+    "baselineSha256": "93b4efcf5e2d6ee50b7c968555553c6a81f1c4735a8ea841a7823dc6f3fcd735",
+    "candidateSha256": "96095f19b39a5b37e2d44b1612cef162ecf716486a309f3a70dfd7e2d32ba52c"
+  },
+  "dataNotes": [
+    "Each large case group was previously analyzed. The 33 reference positions were reviewed before this change but after initial project development.",
+    "The W2000 case informed the rule and appears in the 33. Its gain is diagnosed development evidence. The Aruba tactical axis was originally uncertain. The private reference withholds position character and records tactical move justification only.",
+    "Counts exclude rejected or uncertain references when computing true and false positives. This is a complete library replay for the specified cases and not a game-wide prevalence estimate."
+  ]
+}

@@ -1,0 +1,1565 @@
+[
+  {
+    "id": "tournament-world-amateur-w2000-2026-e8d4d1167eb95372-72",
+    "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+    "candidates": [
+      {
+        "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+        "cp": -174,
+        "mate": null,
+        "depth": 18,
+        "nodes": 549184,
+        "pvUci": [
+          "e3d5",
+          "f7f6",
+          "d6c6",
+          "f6c6",
+          "d5e7",
+          "c8c7",
+          "e7c6",
+          "c7c6",
+          "h1g2",
+          "g7g5",
+          "b6e3",
+          "g5g4",
+          "g2f2",
+          "h8g7",
+          "f2e2",
+          "g7f6"
+        ],
+        "wdl": [
+          0,
+          18,
+          982
+        ],
+        "searchMs": 491.0546999890357
+      },
+      {
+        "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+        "cp": -175,
+        "mate": null,
+        "depth": 18,
+        "nodes": 549184,
+        "pvUci": [
+          "h1g1",
+          "f5f4",
+          "g3f4",
+          "f7f4",
+          "b6d4",
+          "h8g8",
+          "h2h3",
+          "c6b5",
+          "e3d5",
+          "f4f7",
+          "b2b3",
+          "h7h6",
+          "d6b6",
+          "c8e8",
+          "c3c4",
+          "e8e4",
+          "d4e3",
+          "b5d7",
+          "b6a6",
+          "f7f3"
+        ],
+        "wdl": [
+          0,
+          17,
+          983
+        ],
+        "searchMs": 491.0546999890357
+      },
+      {
+        "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/7K w - - 1 37",
+        "cp": -333,
+        "mate": null,
+        "depth": 18,
+        "nodes": 549184,
+        "pvUci": [
+          "e3g2",
+          "f7e7",
+          "h1g1",
+          "e7e2",
+          "g2e3",
+          "e2b2",
+          "b6d4",
+          "h8g8",
+          "h2h4",
+          "b2b5",
+          "h4h5",
+          "b5a5",
+          "h5h6",
+          "a5a1",
+          "g1f2",
+          "a1a2",
+          "f2g1",
+          "g7g6"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 491.0546999890357
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "e3d5",
+        "lines": [
+          {
+            "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+            "depth": 17,
+            "cp": 189,
+            "mate": null,
+            "pvUci": [
+              "f5f4",
+              "g3f4",
+              "f7f5",
+              "c3c4",
+              "f5f6",
+              "d6f6",
+              "g7f6",
+              "h1g2",
+              "h8g7",
+              "g2f3",
+              "c6d5",
+              "c4d5",
+              "g7f7",
+              "b2b4",
+              "c8c3",
+              "f3e2",
+              "c3c2",
+              "e2d3",
+              "c2h2",
+              "b4b5",
+              "a6b5",
+              "a5a6"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+            "depth": 17,
+            "cp": 164,
+            "mate": null,
+            "pvUci": [
+              "f7f6",
+              "d6c6",
+              "f6c6",
+              "d5e7",
+              "c8c7",
+              "e7c6",
+              "c7c6",
+              "h1g2",
+              "g7g5",
+              "b6e3",
+              "g5g4",
+              "g2f2",
+              "h8g8",
+              "f2e2",
+              "f5f4",
+              "g3f4",
+              "g8f7",
+              "e3f2",
+              "c6h6",
+              "f2g3",
+              "h6h3",
+              "e2d3"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P2N1p2/8/2P3P1/1P5P/7K b - - 2 37",
+            "depth": 17,
+            "cp": 159,
+            "mate": null,
+            "pvUci": [
+              "f7e7",
+              "h1g1",
+              "e7e2",
+              "d5c7",
+              "c6e4",
+              "b2b4",
+              "h7h6",
+              "d6d7",
+              "e4c6",
+              "d7f7",
+              "h8g8",
+              "f7f5",
+              "c6b7",
+              "b4b5",
+              "a6b5",
+              "a5a6",
+              "e2g2",
+              "g1f1"
+            ]
+          }
+        ]
+      },
+      {
+        "moveUci": "h1g1",
+        "lines": [
+          {
+            "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/6K1 b - - 2 37",
+            "depth": 17,
+            "cp": 144,
+            "mate": null,
+            "pvUci": [
+              "f5f4",
+              "g3f4",
+              "f7f4",
+              "b6d4",
+              "h8g8",
+              "b2b4",
+              "c6b5",
+              "d4c5",
+              "g8f7",
+              "e3d5",
+              "f4e4",
+              "g1f2",
+              "h7h5",
+              "f2f3",
+              "c8e8",
+              "d5c7"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/6K1 b - - 2 37",
+            "depth": 17,
+            "cp": 70,
+            "mate": null,
+            "pvUci": [
+              "h7h6",
+              "b6d4",
+              "h8h7",
+              "e3c4",
+              "f7d7",
+              "b2b4",
+              "d7d8",
+              "g1f2",
+              "c6b5",
+              "d6d8",
+              "c8d8",
+              "c4e5",
+              "g7g5",
+              "h2h4",
+              "d8c8",
+              "h4g5",
+              "h6g5",
+              "e5f7",
+              "h7g6",
+              "f7d6",
+              "c8c6",
+              "d4e5"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P1N1P1/1P5P/6K1 b - - 2 37",
+            "depth": 17,
+            "cp": 60,
+            "mate": null,
+            "pvUci": [
+              "h8g8",
+              "e3d5",
+              "c6d5",
+              "d6d5",
+              "f5f4",
+              "b6d4",
+              "c8e8",
+              "g3f4",
+              "f7f4",
+              "d5d7",
+              "f4g4",
+              "g1f2",
+              "h7h5",
+              "f2f3"
+            ]
+          }
+        ]
+      },
+      {
+        "moveUci": "e3g2",
+        "lines": [
+          {
+            "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P3P1/1P4NP/7K b - - 2 37",
+            "depth": 19,
+            "cp": 416,
+            "mate": null,
+            "pvUci": [
+              "f7e7",
+              "h1g1",
+              "e7e2",
+              "g2e3",
+              "e2b2",
+              "h2h4",
+              "h8g8",
+              "b6d4",
+              "b2a2",
+              "h4h5",
+              "a2a5",
+              "c3c4",
+              "f5f4",
+              "g3f4",
+              "a5h5",
+              "g1f2",
+              "a6a5",
+              "f2g3",
+              "a5a4",
+              "e3d5",
+              "g8f7",
+              "d5b6"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P3P1/1P4NP/7K b - - 2 37",
+            "depth": 19,
+            "cp": 265,
+            "mate": null,
+            "pvUci": [
+              "f5f4",
+              "h1g1",
+              "f4g3",
+              "h2g3",
+              "f7d7",
+              "d6d7",
+              "c6d7",
+              "g2f4",
+              "d7b5",
+              "b6d4",
+              "h8g8",
+              "f4h5",
+              "c8c7",
+              "b2b4",
+              "c7e7",
+              "g1f2",
+              "e7f7",
+              "f2e3"
+            ]
+          },
+          {
+            "fen": "2r4k/5rpp/pBbR4/P4p2/8/2P3P1/1P4NP/7K b - - 2 37",
+            "depth": 19,
+            "cp": 223,
+            "mate": null,
+            "pvUci": [
+              "f7d7",
+              "d6d7",
+              "c6d7",
+              "b6d4",
+              "c8e8",
+              "g2e3",
+              "h8g8",
+              "h1g1",
+              "d7e6",
+              "h2h4",
+              "g8f7"
+            ]
+          }
+        ]
+      }
+    ],
+    "preparedCheckpoint": [
+      {
+        "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+        "depth": 22,
+        "cp": -182,
+        "mate": null,
+        "pvUci": [
+          "d5e7",
+          "c8c7",
+          "e7c6",
+          "c7c6",
+          "h1g2",
+          "g7g5",
+          "b6e3",
+          "g5g4",
+          "h2h4",
+          "h8g7",
+          "g2f2",
+          "c6e6",
+          "f2e2",
+          "f5f4",
+          "g3f4",
+          "g7g6",
+          "b2b4",
+          "e6e4",
+          "e2d3",
+          "g6f5",
+          "c3c4",
+          "g4g3",
+          "b4b5",
+          "g3g2",
+          "e3f2",
+          "a6b5"
+        ]
+      },
+      {
+        "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+        "depth": 22,
+        "cp": -503,
+        "mate": null,
+        "pvUci": [
+          "d5e3",
+          "c6e6",
+          "h1g2",
+          "e6e5",
+          "g2f3",
+          "h8g8",
+          "c3c4",
+          "g8f7",
+          "b2b4",
+          "g7g6",
+          "h2h4",
+          "f7e6",
+          "e3d5",
+          "e5e4",
+          "d5e3",
+          "h7h6",
+          "b4b5",
+          "a6b5",
+          "a5a6"
+        ]
+      },
+      {
+        "fen": "2r4k/6pp/pBr5/P2N1p2/8/2P3P1/1P5P/7K w - - 0 39",
+        "depth": 22,
+        "cp": -553,
+        "mate": null,
+        "pvUci": [
+          "h1g2",
+          "c6d6",
+          "d5e7",
+          "d6d2",
+          "g2f3",
+          "c8e8",
+          "e7f5",
+          "d2b2",
+          "b6d4",
+          "h8g8",
+          "f5g7",
+          "e8e1",
+          "g7f5",
+          "b2h2",
+          "f3f4",
+          "h2a2",
+          "f5h6",
+          "g8f8",
+          "d4c5",
+          "f8e8",
+          "c5b4",
+          "e1f1",
+          "f4e5"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tournament-brazilian-women-2026-09f5b566d05f75dc-40",
+    "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3p3/1P6/2P3BP/R4QNK w - - 0 21",
+    "candidates": [
+      {
+        "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3p3/1P6/2P3BP/R4QNK w - - 0 21",
+        "cp": -27,
+        "mate": null,
+        "depth": 20,
+        "nodes": 1826145,
+        "pvUci": [
+          "a1d1",
+          "d7c7",
+          "g2e4",
+          "c7e5",
+          "e4b7",
+          "a8e8",
+          "b7g2",
+          "g6g5",
+          "g1f3",
+          "e5c3",
+          "f1d3",
+          "c3d3",
+          "d1d3",
+          "g7h5",
+          "d3e3",
+          "h5f4",
+          "h1g1",
+          "e8d8",
+          "g2f1",
+          "g8g7",
+          "h2h4",
+          "g7f6",
+          "h4g5",
+          "h6g5",
+          "g1f2"
+        ],
+        "wdl": [
+          1,
+          977,
+          22
+        ],
+        "searchMs": 2222.964799962938
+      },
+      {
+        "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3p3/1P6/2P3BP/R4QNK w - - 0 21",
+        "cp": -32,
+        "mate": null,
+        "depth": 20,
+        "nodes": 1826145,
+        "pvUci": [
+          "f1e2",
+          "d7d4",
+          "a1d1",
+          "d4e5",
+          "e2e4",
+          "e5e4",
+          "g2e4",
+          "e6f5",
+          "e4b7",
+          "a8b8",
+          "b7f3",
+          "g8f8",
+          "d1d2",
+          "f8e7",
+          "f3d1",
+          "b8b6",
+          "g1f3",
+          "b6d6",
+          "h1g2",
+          "g7h5",
+          "d2d6",
+          "e7d6",
+          "f3d2",
+          "h5f6",
+          "d2c4",
+          "d6d5",
+          "c2c3",
+          "f6e4"
+        ],
+        "wdl": [
+          1,
+          971,
+          28
+        ],
+        "searchMs": 2222.964799962938
+      },
+      {
+        "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3p3/1P6/2P3BP/R4QNK w - - 0 21",
+        "cp": -33,
+        "mate": null,
+        "depth": 20,
+        "nodes": 1826145,
+        "pvUci": [
+          "g2e4",
+          "a8f8",
+          "f1d1",
+          "d7f7",
+          "d1d6",
+          "b7b6",
+          "a4a5",
+          "g7f5",
+          "d6d3",
+          "f5d4",
+          "e4g6",
+          "e6d5",
+          "g6e4",
+          "f7b7",
+          "d3g3",
+          "g8h8",
+          "e4d5",
+          "b7d5",
+          "g3g2",
+          "d5g2",
+          "h1g2",
+          "d4c2",
+          "a1c1",
+          "c2d4",
+          "a5b6",
+          "a7b6",
+          "c1e1",
+          "f8g8",
+          "g2f2"
+        ],
+        "wdl": [
+          1,
+          969,
+          30
+        ],
+        "searchMs": 2222.964799962938
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "a1d1",
+        "lines": [
+          {
+            "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3p3/1P6/2P3BP/3R1QNK b - - 1 21",
+            "depth": 17,
+            "cp": 26,
+            "mate": null,
+            "pvUci": [
+              "d7c7",
+              "g2e4",
+              "c7e5",
+              "e4b7",
+              "a8f8",
+              "f1g2",
+              "g6g5",
+              "a4a5",
+              "g7h5",
+              "g2e2",
+              "e5e2",
+              "g1e2",
+              "f8f2",
+              "d1e1",
+              "e6g4",
+              "e2g3"
+            ]
+          },
+          {
+            "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3p3/1P6/2P3BP/3R1QNK b - - 1 21",
+            "depth": 17,
+            "cp": 24,
+            "mate": null,
+            "pvUci": [
+              "d7e7",
+              "g2e4",
+              "g7f5",
+              "f1d3",
+              "a8e8",
+              "g1f3",
+              "e8f8",
+              "d3b5",
+              "b7b6",
+              "a4a5",
+              "b6a5",
+              "b5a5",
+              "g6g5",
+              "d1e1",
+              "g8g7",
+              "a5c3",
+              "g5g4"
+            ]
+          },
+          {
+            "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3p3/1P6/2P3BP/3R1QNK b - - 1 21",
+            "depth": 17,
+            "cp": 6,
+            "mate": null,
+            "pvUci": [
+              "d7c6",
+              "f1e1",
+              "e6f5",
+              "d1d6",
+              "c6c7",
+              "g2e4",
+              "a8e8",
+              "e4f5",
+              "g7f5",
+              "d6g6",
+              "g8h7",
+              "g6g2",
+              "e8e5",
+              "e1c3",
+              "b7b6"
+            ]
+          }
+        ],
+        "attempts": [
+          {
+            "nodes": 1000296,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 870.8407000522129
+          }
+        ],
+        "targetedCaptures": []
+      },
+      {
+        "moveUci": "g2e4",
+        "lines": [
+          {
+            "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3B3/1P6/2P4P/R4QNK b - - 0 21",
+            "depth": 16,
+            "cp": 51,
+            "mate": null,
+            "pvUci": [
+              "a8f8",
+              "g1f3",
+              "e6g4",
+              "a1d1",
+              "d7f7",
+              "d1d3",
+              "b7b6",
+              "f1g2",
+              "f7f4",
+              "f3d2",
+              "g6g5",
+              "e4d5",
+              "g4e6",
+              "g2e4",
+              "e6d5"
+            ]
+          },
+          {
+            "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3B3/1P6/2P4P/R4QNK b - - 0 21",
+            "depth": 16,
+            "cp": 38,
+            "mate": null,
+            "pvUci": [
+              "e6d5",
+              "f1f3",
+              "d5e4",
+              "f3e4",
+              "a8f8",
+              "a1e1",
+              "f8f2",
+              "e1e2",
+              "f2f5",
+              "e2e3",
+              "g8h7",
+              "e3d3"
+            ]
+          },
+          {
+            "fen": "r5k1/pp1q2n1/4b1pp/2p1P3/P3B3/1P6/2P4P/R4QNK b - - 0 21",
+            "depth": 16,
+            "cp": 26,
+            "mate": null,
+            "pvUci": [
+              "d7d4",
+              "a1e1",
+              "a8f8",
+              "f1g2",
+              "g6g5",
+              "e4b7",
+              "a7a5",
+              "g2e4",
+              "d4d7",
+              "c2c4",
+              "f8f4",
+              "e4c6",
+              "d7c6",
+              "b7c6"
+            ]
+          }
+        ],
+        "attempts": [
+          {
+            "nodes": 1000253,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 800.8059000130743
+          }
+        ],
+        "targetedCaptures": []
+      }
+    ],
+    "preparedCheckpoint": [
+      {
+        "fen": "r5k1/pp4n1/2q3pp/2p1Pb2/P3p3/1P6/2P3BP/3RQ1NK w - - 4 23",
+        "depth": 17,
+        "cp": -52,
+        "mate": null,
+        "pvUci": [
+          "d1d6",
+          "c6c7",
+          "g2e4",
+          "a8e8",
+          "e4d5",
+          "g8h7",
+          "e1c3",
+          "e8e7",
+          "d5g2",
+          "b7b6",
+          "g1f3",
+          "e7d7",
+          "c3d2",
+          "g7e8",
+          "d6d7",
+          "c7d7",
+          "d2e2"
+        ]
+      },
+      {
+        "fen": "r5k1/pp4n1/2q3pp/2p1Pb2/P3p3/1P6/2P3BP/3RQ1NK w - - 4 23",
+        "depth": 17,
+        "cp": -55,
+        "mate": null,
+        "pvUci": [
+          "c2c4",
+          "g8h7",
+          "d1d5",
+          "a8f8",
+          "e1e3",
+          "b7b6",
+          "g1e2",
+          "c6e8",
+          "g2e4",
+          "f5e4",
+          "e3e4",
+          "f8f1",
+          "h1g2",
+          "e8f7",
+          "d5d6",
+          "f7f2",
+          "g2h3"
+        ]
+      },
+      {
+        "fen": "r5k1/pp4n1/2q3pp/2p1Pb2/P3p3/1P6/2P3BP/3RQ1NK w - - 4 23",
+        "depth": 17,
+        "cp": -157,
+        "mate": null,
+        "pvUci": [
+          "e1c3",
+          "a8e8",
+          "g1e2",
+          "c6e6",
+          "c3c5",
+          "e6e5",
+          "c5e5",
+          "e8e5",
+          "h1g1",
+          "e4e3",
+          "e2d4",
+          "f5g4",
+          "g2f3",
+          "g4f3",
+          "d4f3",
+          "e5e7",
+          "d1d5",
+          "g7f5"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tournament-aruba-open-2026-0f4e682858fbc45b-46",
+    "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/2p2N2/1PQ1P1PP/P2N1PB1/2R1R1K1 w - - 0 24",
+    "candidates": [
+      {
+        "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/2p2N2/1PQ1P1PP/P2N1PB1/2R1R1K1 w - - 0 24",
+        "cp": -19,
+        "mate": null,
+        "depth": 20,
+        "nodes": 2334575,
+        "pvUci": [
+          "a2a4",
+          "h7h5",
+          "c3a5",
+          "c8a8",
+          "a5c3",
+          "h5h4",
+          "a4a5",
+          "b6d7",
+          "b3c4",
+          "h4g3",
+          "c4d5",
+          "c7c3",
+          "c1c3",
+          "e6e5",
+          "f4e2",
+          "g3f2",
+          "g1f2",
+          "a6e2",
+          "e1e2",
+          "a8a5",
+          "e3e4",
+          "a5a2"
+        ],
+        "wdl": [
+          4,
+          972,
+          24
+        ],
+        "searchMs": 2376.8070000223815
+      },
+      {
+        "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/2p2N2/1PQ1P1PP/P2N1PB1/2R1R1K1 w - - 0 24",
+        "cp": -25,
+        "mate": null,
+        "depth": 20,
+        "nodes": 2334575,
+        "pvUci": [
+          "c3a5",
+          "c8a8",
+          "a5b4",
+          "d8b8",
+          "b4c3",
+          "c7d8",
+          "b3c4",
+          "b6c4",
+          "c1c2",
+          "h7h6",
+          "d2c4",
+          "a6c4",
+          "e3e4",
+          "a8a2",
+          "e4d5",
+          "a2c2"
+        ],
+        "wdl": [
+          3,
+          966,
+          31
+        ],
+        "searchMs": 2376.8070000223815
+      },
+      {
+        "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/2p2N2/1PQ1P1PP/P2N1PB1/2R1R1K1 w - - 0 24",
+        "cp": -27,
+        "mate": null,
+        "depth": 20,
+        "nodes": 2334575,
+        "pvUci": [
+          "e1d1",
+          "h7h6",
+          "c3a5",
+          "c8a8",
+          "a5b4",
+          "c7a7",
+          "b3c4",
+          "a6c4",
+          "d2c4",
+          "b6c4",
+          "c1c2",
+          "c4a3",
+          "c2c1",
+          "d8c8",
+          "b4e1"
+        ],
+        "wdl": [
+          3,
+          963,
+          34
+        ],
+        "searchMs": 2376.8070000223815
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "a2a4",
+        "lines": [
+          {
+            "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/P1p2N2/1PQ1P1PP/3N1PB1/2R1R1K1 b - - 0 24",
+            "depth": 16,
+            "cp": 11,
+            "mate": null,
+            "pvUci": [
+              "c7d6",
+              "c3a5",
+              "c8a8",
+              "e3e4",
+              "a6b7",
+              "a5c3",
+              "d5e4",
+              "g2e4",
+              "f6e4",
+              "d2e4",
+              "d6d4",
+              "c3d4",
+              "d8d4",
+              "e4c5",
+              "c4b3",
+              "c5b7",
+              "b6a4",
+              "b7c5"
+            ]
+          },
+          {
+            "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/P1p2N2/1PQ1P1PP/3N1PB1/2R1R1K1 b - - 0 24",
+            "depth": 16,
+            "cp": 8,
+            "mate": null,
+            "pvUci": [
+              "h7h6",
+              "c3a5",
+              "c8a8",
+              "e3e4",
+              "d5d4",
+              "d2c4",
+              "a6c4",
+              "a5b4",
+              "c7b8",
+              "a4a5",
+              "b6d7",
+              "c1c4",
+              "b8b4",
+              "c4b4",
+              "a8a5",
+              "b4d4"
+            ]
+          },
+          {
+            "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/P1p2N2/1PQ1P1PP/3N1PB1/2R1R1K1 b - - 0 24",
+            "depth": 16,
+            "cp": 4,
+            "mate": null,
+            "pvUci": [
+              "e6e5",
+              "a4a5",
+              "e5f4",
+              "a5b6",
+              "c7b6",
+              "g3f4",
+              "d5d4",
+              "e3d4",
+              "c4b3",
+              "c3b3",
+              "b6d4",
+              "c1c8",
+              "a6c8",
+              "e1e7",
+              "d8f8",
+              "b3e3",
+              "d4b4",
+              "e7c7",
+              "f6h5",
+              "c7c4",
+              "b4b2"
+            ]
+          }
+        ],
+        "attempts": [
+          {
+            "nodes": 1000580,
+            "requestedNodes": 1000000,
+            "depth": 16,
+            "milliseconds": 988.5004999814555
+          }
+        ],
+        "targetedCaptures": []
+      },
+      {
+        "moveUci": "f4e2",
+        "lines": [
+          {
+            "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/2p5/1PQ1P1PP/P2NNPB1/2R1R1K1 b - - 1 24",
+            "depth": 17,
+            "cp": 47,
+            "mate": null,
+            "pvUci": [
+              "b6d7",
+              "b3c4",
+              "d5c4",
+              "c3a3",
+              "d7e5",
+              "a3a6",
+              "d8d2",
+              "e2d4",
+              "h7h5",
+              "e1e2",
+              "d2e2",
+              "d4e2",
+              "h5h4",
+              "g3h4",
+              "f6d5",
+              "g2e4",
+              "c8b8",
+              "a6a3",
+              "d5f6",
+              "e4g2"
+            ]
+          },
+          {
+            "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/2p5/1PQ1P1PP/P2NNPB1/2R1R1K1 b - - 1 24",
+            "depth": 17,
+            "cp": 34,
+            "mate": null,
+            "pvUci": [
+              "c7d6",
+              "b3c4",
+              "b6c4",
+              "d2c4",
+              "a6c4",
+              "e2d4",
+              "c8a8",
+              "c1c2",
+              "a8a4",
+              "d4f3",
+              "c4a2"
+            ]
+          },
+          {
+            "fen": "2rr2k1/2q2ppp/bn2pn2/3p4/2p5/1PQ1P1PP/P2NNPB1/2R1R1K1 b - - 1 24",
+            "depth": 17,
+            "cp": 32,
+            "mate": null,
+            "pvUci": [
+              "h7h5",
+              "e1d1",
+              "c7d6",
+              "e2d4",
+              "c4b3",
+              "c3b3",
+              "b6c4",
+              "d4f3",
+              "c4d2",
+              "f3d2",
+              "f6d7",
+              "c1c8",
+              "d8c8",
+              "e3e4"
+            ]
+          }
+        ],
+        "attempts": [
+          {
+            "nodes": 1000559,
+            "requestedNodes": 1000000,
+            "depth": 17,
+            "milliseconds": 898.2766999979503
+          }
+        ],
+        "targetedCaptures": []
+      }
+    ],
+    "preparedCheckpoint": [
+      {
+        "fen": "2rr2k1/2q2ppp/bn3n2/P2p4/2p2p2/1PQ1P1PP/3N1PB1/2R1R1K1 w - - 0 26",
+        "depth": 20,
+        "cp": -7,
+        "mate": null,
+        "pvUci": [
+          "a5b6",
+          "c7b6",
+          "g3f4",
+          "d5d4",
+          "e3d4",
+          "c4b3",
+          "c3b3",
+          "b6d4",
+          "c1c8",
+          "a6c8",
+          "d2e4",
+          "f6h5",
+          "b3e3",
+          "d4b4",
+          "e1a1",
+          "b4b8",
+          "a1a8",
+          "b8a8"
+        ]
+      },
+      {
+        "fen": "2rr2k1/2q2ppp/bn3n2/P2p4/2p2p2/1PQ1P1PP/3N1PB1/2R1R1K1 w - - 0 26",
+        "depth": 20,
+        "cp": -442,
+        "mate": null,
+        "pvUci": [
+          "e3f4",
+          "d5d4",
+          "a5b6",
+          "c7b6",
+          "c3f3",
+          "c4c3",
+          "d2c4",
+          "a6c4",
+          "b3c4",
+          "c8c4",
+          "g2f1",
+          "b6c6",
+          "f3c6",
+          "c4c6",
+          "e1d1",
+          "c6c5",
+          "f1d3"
+        ]
+      },
+      {
+        "fen": "2rr2k1/2q2ppp/bn3n2/P2p4/2p2p2/1PQ1P1PP/3N1PB1/2R1R1K1 w - - 0 26",
+        "depth": 20,
+        "cp": -490,
+        "mate": null,
+        "pvUci": [
+          "g3f4",
+          "b6d7",
+          "b3c4",
+          "d5c4",
+          "g2f1",
+          "c7c6",
+          "d2c4",
+          "a6b7",
+          "e3e4",
+          "f6e4",
+          "c3f3",
+          "c6g6",
+          "g1h2",
+          "e4c5",
+          "f3g3",
+          "g6c6",
+          "f1e2",
+          "c6f6",
+          "e2g4",
+          "h7h5",
+          "g4h5",
+          "c5e4",
+          "g3e3",
+          "f6h4",
+          "h5f3",
+          "d7f6",
+          "c4e5",
+          "c8c1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tournament-aq-prime-2026-94c11b67f34ebbed-61",
+    "fen": "6k1/6pp/pp2R3/8/2P2r2/1P6/P5PP/6K1 b - - 0 31",
+    "candidates": [
+      {
+        "fen": "6k1/6pp/pp2R3/8/2P2r2/1P6/P5PP/6K1 b - - 0 31",
+        "cp": -374,
+        "mate": null,
+        "depth": 18,
+        "nodes": 600470,
+        "pvUci": [
+          "f4d4",
+          "e6b6",
+          "d4d1",
+          "g1f2",
+          "d1d2",
+          "f2e3",
+          "d2g2",
+          "b6a6",
+          "g2h2",
+          "c4c5",
+          "g8f7",
+          "b3b4",
+          "h2b2",
+          "a6a7",
+          "f7f6",
+          "a2a3",
+          "b2c2"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 443.72320000547916
+      },
+      {
+        "fen": "6k1/6pp/pp2R3/8/2P2r2/1P6/P5PP/6K1 b - - 0 31",
+        "cp": -464,
+        "mate": null,
+        "depth": 18,
+        "nodes": 600470,
+        "pvUci": [
+          "b6b5",
+          "c4c5",
+          "f4f5",
+          "b3b4",
+          "f5f4",
+          "a2a3",
+          "a6a5",
+          "b4a5",
+          "f4c4",
+          "e6b6",
+          "c4c5",
+          "b6b8",
+          "g8f7",
+          "a5a6",
+          "c5c1",
+          "g1f2",
+          "c1c2",
+          "f2e1",
+          "c2g2"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 443.72320000547916
+      },
+      {
+        "fen": "6k1/6pp/pp2R3/8/2P2r2/1P6/P5PP/6K1 b - - 0 31",
+        "cp": -504,
+        "mate": null,
+        "depth": 18,
+        "nodes": 600470,
+        "pvUci": [
+          "f4f6",
+          "e6f6",
+          "g7f6",
+          "h2h4",
+          "a6a5",
+          "g1f2",
+          "g8f7",
+          "f2e3",
+          "f7e7",
+          "e3e4",
+          "e7d6",
+          "a2a3"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 443.72320000547916
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "f4d4",
+        "lines": [
+          {
+            "fen": "6k1/6pp/pp2R3/8/2Pr4/1P6/P5PP/6K1 w - - 1 32",
+            "depth": 20,
+            "cp": 372,
+            "mate": null,
+            "pvUci": [
+              "e6b6",
+              "d4d1",
+              "g1f2",
+              "d1d2",
+              "f2f3",
+              "d2a2",
+              "b3b4",
+              "g8f7",
+              "c4c5",
+              "h7h5",
+              "h2h4",
+              "f7e8",
+              "g2g3",
+              "a2a4",
+              "b6b7",
+              "e8d8",
+              "b7g7",
+              "a4b4",
+              "g7g5",
+              "b4b3",
+              "f3f4",
+              "b3b4",
+              "f4e5"
+            ]
+          },
+          {
+            "fen": "6k1/6pp/pp2R3/8/2Pr4/1P6/P5PP/6K1 w - - 1 32",
+            "depth": 20,
+            "cp": 328,
+            "mate": null,
+            "pvUci": [
+              "a2a4",
+              "d4d1",
+              "g1f2",
+              "d1d2",
+              "f2f1",
+              "b6b5",
+              "a4b5",
+              "a6b5",
+              "c4b5",
+              "d2d3",
+              "f1e2",
+              "d3b3",
+              "e6e5",
+              "g8f7",
+              "e2d2",
+              "f7f6",
+              "e5c5",
+              "b3b1"
+            ]
+          },
+          {
+            "fen": "6k1/6pp/pp2R3/8/2Pr4/1P6/P5PP/6K1 w - - 1 32",
+            "depth": 20,
+            "cp": 325,
+            "mate": null,
+            "pvUci": [
+              "g1f1",
+              "d4d2",
+              "a2a4",
+              "b6b5",
+              "a4b5",
+              "a6b5",
+              "c4b5",
+              "d2d3",
+              "f1e2",
+              "d3b3",
+              "e6e5",
+              "g8f7",
+              "e2d2",
+              "f7f6",
+              "d2c2",
+              "b3b4",
+              "c2c3",
+              "b4b1",
+              "e5c5",
+              "g7g5"
+            ]
+          }
+        ],
+        "attempts": [
+          {
+            "nodes": 1000237,
+            "requestedNodes": 1000000,
+            "depth": 20,
+            "milliseconds": 697.8668999508955
+          }
+        ],
+        "targetedCaptures": []
+      },
+      {
+        "moveUci": "b6b5",
+        "lines": [
+          {
+            "fen": "6k1/6pp/p3R3/1p6/2P2r2/1P6/P5PP/6K1 w - - 0 32",
+            "depth": 19,
+            "cp": 463,
+            "mate": null,
+            "pvUci": [
+              "c4c5",
+              "f4f5",
+              "b3b4",
+              "f5f4",
+              "a2a3",
+              "a6a5",
+              "b4a5",
+              "g8f7",
+              "e6b6",
+              "f4a4",
+              "b6b5",
+              "f7e6",
+              "c5c6",
+              "e6d6",
+              "b5b7",
+              "a4a3",
+              "b7g7",
+              "d6c6",
+              "g7a7"
+            ]
+          },
+          {
+            "fen": "6k1/6pp/p3R3/1p6/2P2r2/1P6/P5PP/6K1 w - - 0 32",
+            "depth": 19,
+            "cp": 291,
+            "mate": null,
+            "pvUci": [
+              "e6a6",
+              "b5c4",
+              "a6a4",
+              "f4d4",
+              "b3c4",
+              "g8f7",
+              "h2h3",
+              "h7h5",
+              "a4a7",
+              "f7f6",
+              "a7a6",
+              "f6f5",
+              "a6a5",
+              "f5g6"
+            ]
+          },
+          {
+            "fen": "6k1/6pp/p3R3/1p6/2P2r2/1P6/P5PP/6K1 w - - 0 32",
+            "depth": 19,
+            "cp": 181,
+            "mate": null,
+            "pvUci": [
+              "e6c6",
+              "b5c4",
+              "c6c4",
+              "f4f5",
+              "a2a4",
+              "a6a5",
+              "c4c7",
+              "h7h5",
+              "c7b7",
+              "g8f8",
+              "h2h4",
+              "g7g6",
+              "g1h2",
+              "f5f4",
+              "h2h3",
+              "f4d4"
+            ]
+          }
+        ],
+        "attempts": [
+          {
+            "nodes": 1000512,
+            "requestedNodes": 1000000,
+            "depth": 19,
+            "milliseconds": 674.1985999979079
+          }
+        ],
+        "targetedCaptures": []
+      }
+    ],
+    "preparedCheckpoint": [
+      {
+        "fen": "6k1/6pp/pR6/8/2P5/1P6/P4KPP/3r4 b - - 2 33",
+        "depth": 20,
+        "cp": -429,
+        "mate": null,
+        "pvUci": [
+          "d1d2",
+          "f2e3",
+          "d2a2",
+          "b3b4",
+          "g8f7",
+          "g2g3",
+          "g7g5",
+          "b6b7",
+          "f7f6",
+          "b7h7",
+          "a2b2",
+          "e3d4",
+          "b2b4",
+          "h7h6",
+          "f6f5",
+          "h6a6",
+          "b4b2",
+          "a6h6"
+        ]
+      },
+      {
+        "fen": "6k1/6pp/pR6/8/2P5/1P6/P4KPP/3r4 b - - 2 33",
+        "depth": 20,
+        "cp": -537,
+        "mate": null,
+        "pvUci": [
+          "a6a5",
+          "a2a4",
+          "h7h5",
+          "b6b5",
+          "d1d2",
+          "f2f1",
+          "d2b2",
+          "b5h5",
+          "b2b3",
+          "h5a5",
+          "b3c3",
+          "a5c5"
+        ]
+      },
+      {
+        "fen": "6k1/6pp/pR6/8/2P5/1P6/P4KPP/3r4 b - - 2 33",
+        "depth": 20,
+        "cp": -577,
+        "mate": null,
+        "pvUci": [
+          "g8f7",
+          "b6a6",
+          "d1d2",
+          "f2f1",
+          "g7g5",
+          "c4c5",
+          "h7h5",
+          "b3b4",
+          "g5g4",
+          "b4b5",
+          "h5h4",
+          "a6a7",
+          "f7e6",
+          "c5c6",
+          "d2b2",
+          "a2a4",
+          "h4h3",
+          "g2h3"
+        ]
+      }
+    ]
+  }
+]

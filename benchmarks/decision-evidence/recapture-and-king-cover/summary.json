@@ -1,0 +1,10 @@
+{
+  "screenedUniqueGames": 5268,
+  "geometricCandidates": 112,
+  "sampledForDepth": 80,
+  "comparisonCovered": 70,
+  "positives": 0,
+  "negatives": 70,
+  "inconclusive": 10,
+  "candidateConfirmations": 0
+}

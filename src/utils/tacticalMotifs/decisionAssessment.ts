@@ -61,8 +61,12 @@ import { findPromotionPressure } from "./decisionPromotionPressure";
 import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisionPromotionMistake";
 import { compareRookPressure, type RookPressureEvidence } from "./decisionRookPressure";
 import { comparePawnStructure, type PawnStructureEvidence } from "./decisionPawnStructure";
+import {
+    confirmPreparedCheckpoint,
+    nominatePreparedCheckpoint,
+} from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 25;
+export const DECISION_ASSESSMENT_VERSION = 26;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -97,6 +101,7 @@ export type DecisionAssessmentInput = {
     comparisonCandidates?: DecisionEngineLine[];
     replyProbes?: DecisionReplyProbe[];
     positionReply?: DecisionReplyProbe;
+    preparedCheckpoint?: DecisionEngineLine[];
     extraPositionChoice?: ExtraPositionChoice;
     sharedReply?: DecisionSharedReplyProbe;
     rootCertificates?: Array<{ fen: string; moveUci: string; motifs: TacticalMotifEvidence[] }>;
@@ -120,6 +125,8 @@ export type ChessDecisionReport = {
         legalChoices: number;
         rejectedChoices: number;
         tacticalContrast?: TacticalMistakeEpisode;
+        preparedCheckpointRequest?: { fen: string; prefix: string[] };
+        preparedCheckpoint?: { lineUci: string[]; alternativeUci: string[] };
         strategicPlan?: PositionStrategicPlan;
         promotionTactic?: PositionStrategicPlan;
     };
@@ -616,6 +623,34 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 basis: "engine-supported",
                 reasons: [promotion.tactical.description],
             };
+        }
+    }
+    if (
+        !rejectedChoices &&
+        position.tactical.support !== "supported" &&
+        moves[0].tactical.support === "supported"
+    ) {
+        const replies = input.replyProbes?.find((probe) => probe.moveUci === first.pvUci[0]);
+        const preparation = nominatePreparedCheckpoint(input.fen, first, replies?.lines ?? []);
+        if (preparation && input.preparedCheckpoint === undefined)
+            position.preparedCheckpointRequest = { fen: preparation.fen, prefix: preparation.prefix };
+        if (preparation && input.preparedCheckpoint) {
+            const proof = confirmPreparedCheckpoint(preparation, input.preparedCheckpoint);
+            if (proof) {
+                position.preparedCheckpoint = {
+                    lineUci: proof.witness.lineUci,
+                    alternativeUci: proof.alternativeUci,
+                };
+                position.mechanisms = mergeTacticalSequenceWitnesses([
+                    ...position.mechanisms,
+                    proof.witness,
+                ]);
+                position.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [proof.description],
+                };
+            }
         }
     }
     position.category = category(position.tactical, position.positional);

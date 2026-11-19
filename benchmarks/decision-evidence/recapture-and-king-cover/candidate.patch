@@ -1,0 +1,196 @@
+diff --git a/src/utils/tacticalMotifs/decisionPawnRecaptureChoice.ts b/src/utils/tacticalMotifs/decisionPawnRecaptureChoice.ts
+new file mode 100644
+index 00000000..e88481a8
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionPawnRecaptureChoice.ts
+@@ -0,0 +1,190 @@
++import { makeFen } from "chessops/fen";
++import { makeSquare, makeUci } from "chessops/util";
++import { replayTacticalLine, tacticalCaptureGain, type TacticalReplayStep } from "./causalTactics";
++import type { DecisionReplyProbe } from "./decisionAssessment";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import type { PositionStrategicPlan } from "./decisionPositionPlans";
++import type { TacticalMistakeEpisode } from "./tacticalMistakeEpisode";
++
++const HORIZON = 7;
++const MIN_DEPTH = 16;
++
++function rootPair(fen: string, first: DecisionEngineLine, second: DecisionEngineLine) {
++    if (
++        first.depth !== second.depth ||
++        first.depth < MIN_DEPTH ||
++        first.cp === null ||
++        second.cp === null ||
++        first.cp - second.cp > 200 ||
++        first.cp < second.cp ||
++        first.mate != null ||
++        second.mate != null ||
++        !measureDecisionLine(fen, first) ||
++        !measureDecisionLine(fen, second)
++    )
++        return null;
++    const [sa] = replayTacticalLine(fen, first.pvUci.slice(0, 1));
++    const [sb] = replayTacticalLine(fen, second.pvUci.slice(0, 1));
++    const side = sa.before.turn;
++    const king = sa.before.board.kingOf(side);
++    const distance = (a: number, b: number) => Math.abs((a % 8) - (b % 8));
++    if (
++        sa.move.to !== sb.move.to ||
++        sa.move.from === sb.move.from ||
++        sa.before.board.get(sa.move.to)?.role !== "pawn" ||
++        sa.before.board.get(sa.move.from)?.role !== "pawn" ||
++        sb.before.board.get(sb.move.from)?.role !== "pawn" ||
++        king === undefined ||
++        Math.floor(king / 8) !== (side === "white" ? 0 : 7) ||
++        [sa.move.from, sb.move.from].some(
++            (from) =>
++                Math.floor(from / 8) !== (side === "white" ? 1 : 6) || distance(from, king) > 2,
++        ) ||
++        distance(sa.move.to, king) > 1
++    )
++        return null;
++    return [sa, sb] as const;
++}
++
++function confirmedReply(
++    root: TacticalReplayStep,
++    score: number,
++    probe: DecisionReplyProbe | undefined,
++) {
++    const fen = makeFen(root.after.toSetup());
++    const top = probe?.lines[0];
++    if (
++        !top ||
++        top.cp === null ||
++        top.mate != null ||
++        top.depth < MIN_DEPTH ||
++        Math.abs(top.cp + score) > 90 ||
++        !measureDecisionLine(fen, top)
++    )
++        return [];
++    return probe!.lines.filter(
++        (line) =>
++            line.cp !== null &&
++            line.mate == null &&
++            line.depth === top.depth &&
++            line.cp >= top.cp! - 35 &&
++            line.cp <= top.cp! &&
++            measureDecisionLine(fen, line),
++    );
++}
++
++function coverStays(line: TacticalReplayStep[], kept: number, vacated: number) {
++    const side = line[0].before.turn;
++    return (
++        line.length >= HORIZON &&
++        line.every((step) => {
++            const pawn = step.after.board.get(kept);
++            const moved = step.after.board.get(vacated);
++            return (
++                pawn?.role === "pawn" &&
++                pawn.color === side &&
++                (moved?.role !== "pawn" || moved.color !== side)
++            );
++        })
++    );
++}
++
++function quickQueenTrade(steps: TacticalReplayStep[]) {
++    const [, capture, trade, retake] = steps;
++    return (
++        capture?.after.isCheck() &&
++        capture.before.board.get(capture.move.from)?.role === "queen" &&
++        capture.capture === 100 &&
++        trade?.before.board.get(trade.move.from)?.role === "queen" &&
++        trade.move.to === capture.move.to &&
++        trade.capture === 900 &&
++        retake?.move.to === trade.move.to &&
++        retake.capture === 900
++    );
++}
++
++export function nominatePawnRecaptureChoice(fen: string, candidates: DecisionEngineLine[]) {
++    const [best] = candidates;
++    if (!best) return null;
++    for (const alternative of candidates.slice(1, 3)) {
++        const pair = rootPair(fen, best, alternative);
++        if (!pair || best.cp! - alternative.cp! < 60) continue;
++        const steps = replayTacticalLine(fen, alternative.pvUci.slice(0, 4));
++        if (quickQueenTrade(steps)) return { best, alternative, pair };
++    }
++    return null;
++}
++
++export function confirmPawnRecaptureChoice(
++    fen: string,
++    candidates: DecisionEngineLine[],
++    probes: DecisionReplyProbe[],
++): { tactical: TacticalMistakeEpisode; positional?: PositionStrategicPlan } | null {
++    const nominated = nominatePawnRecaptureChoice(fen, candidates);
++    if (!nominated) return null;
++    const {
++        best,
++        alternative,
++        pair: [good, weak],
++    } = nominated;
++    const check = alternative.pvUci[1];
++    const goodReplies = confirmedReply(
++        good,
++        best.cp!,
++        probes.find(({ moveUci }) => moveUci === good.uci),
++    );
++    const badReplies = confirmedReply(
++        weak,
++        alternative.cp!,
++        probes.find(({ moveUci }) => moveUci === weak.uci),
++    );
++    const confirmation = badReplies.find(
++        (reply) =>
++            reply.pvUci[0] === check &&
++            quickQueenTrade(replayTacticalLine(fen, [weak.uci, ...reply.pvUci.slice(0, 3)])),
++    );
++    if (!goodReplies.length || !confirmation || confirmation.cp! - goodReplies[0].cp! < 40)
++        return null;
++    const control = replayTacticalLine(fen, [good.uci, check]);
++    const capture = control[1];
++    if (!capture || capture.after.isCheck() || capture.capture !== 100) return null;
++    const guardRetakes = makeUci({ from: weak.move.from, to: capture.move.to });
++    const retake = replayTacticalLine(fen, [...control.map(({ uci }) => uci), guardRetakes])[2];
++    if (!retake || retake.capture !== 900 || (tacticalCaptureGain(retake, 2048) ?? 0) < 400)
++        return null;
++    const ordinary = [best, alternative].map((line) =>
++        replayTacticalLine(fen, line.pvUci.slice(0, HORIZON)),
++    );
++    const separate = [
++        replayTacticalLine(fen, [good.uci, ...goodReplies[0].pvUci.slice(0, HORIZON - 1)]),
++        replayTacticalLine(fen, [weak.uci, ...confirmation.pvUci.slice(0, HORIZON - 1)]),
++    ];
++    const positional =
++        [ordinary[0], separate[0]].every((steps) =>
++            coverStays(steps, weak.move.from, good.move.from),
++        ) &&
++        [ordinary[1], separate[1]].every((steps) =>
++            coverStays(steps, good.move.from, weak.move.from),
++        )
++            ? {
++                  linesUci: [
++                      ordinary[0].map(({ uci }) => uci),
++                      ordinary[1].map(({ uci }) => uci),
++                  ] as [string[], string[]],
++                  description: `${good.san} retains the pawn on ${makeSquare(weak.move.from)} beside the king. ${weak.san} keeps the pawn on ${makeSquare(good.move.from)} instead. These pawn structures persist through the shown continuations.`,
++              }
++            : undefined;
++    const weakExample = separate[1].slice(0, 4);
++    return {
++        tactical: {
++            kind: "forcing-attack",
++            betterLineUci: best.pvUci.slice(0, 4),
++            playedLineUci: weakExample.map(({ uci }) => uci),
++            controlLineUci: [good.uci, check, guardRetakes],
++            throughPly: 4,
++            mechanisms: [],
++            explanation: `After ${weak.san}, ${weakExample[1].san} gives check and the shown reply trades queens with ${weakExample[2].san} ${weakExample[3].san}. After ${good.san}, the same capture gives no check, and ${retake.san} wins the queen.`,
++        },
++        positional,
++    };
++}

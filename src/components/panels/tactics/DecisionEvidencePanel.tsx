@@ -15,6 +15,7 @@ import {
   DECISION_SEARCH_SESSION_MS,
   gatherDecisionEvidence,
   gatherExtraPositionChoice,
+  gatherPreparedCheckpoint,
   type DecisionSearchTarget,
 } from "./decisionSearch";
 import { classifyDecisionInWorker } from "./decisionReportWorker";
@@ -235,6 +236,7 @@ function DecisionReport({
       });
   }
   const contrast = report.position.tacticalContrast;
+  const checkpoint = report.position.preparedCheckpoint;
   const plan = report.position.strategicPlan;
   const promotion = report.position.promotionTactic;
   const positionLines = [...(plan?.linesUci ?? []), ...(promotion?.linesUci ?? [])];
@@ -257,6 +259,12 @@ function DecisionReport({
             ? [
                 { label: "Better line", san: lineSan(report.fen, contrast.betterLineUci) },
                 { label: "Refuted choice", san: lineSan(report.fen, contrast.playedLineUci) },
+              ]
+            : []),
+          ...(checkpoint
+            ? [
+                { label: "Tactical continuation", san: lineSan(report.fen, checkpoint.lineUci) },
+                { label: "Weaker continuation", san: lineSan(report.fen, checkpoint.alternativeUci) },
               ]
             : []),
           ...distinctPositionLines.map((moves) => ({
@@ -359,6 +367,27 @@ export function DecisionEvidencePanel({
         { input, engineName: engine.name, history: target.history },
         owned.signal,
       );
+      const checkpoint = report.position.preparedCheckpointRequest;
+      if (checkpoint && active() && Date.now() < deadline) {
+        progress("Checking the critical move in the line…");
+        const preparedCheckpoint = await gatherPreparedCheckpoint(
+          engine,
+          target,
+          checkpoint,
+          owned.signal,
+          deadline,
+        );
+        if (active() && preparedCheckpoint.length) {
+          report = await classifyDecisionInWorker(
+            {
+              input: { ...input, preparedCheckpoint },
+              engineName: engine.name,
+              history: target.history,
+            },
+            owned.signal,
+          ).catch(() => report);
+        }
+      }
       if (active() && report.position.tactical.support !== "supported" && Date.now() < deadline) {
         progress("Checking one more candidate…");
         const extraPositionChoice = await gatherExtraPositionChoice(
