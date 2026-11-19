@@ -50,6 +50,22 @@ class TournamentSampleTests(unittest.TestCase):
         self.assertEqual([row['sourceGroup'] for row in result], ['d'])
         self.assertEqual(seen_games, {'a', 'b', 'd'})
 
+    def test_mistake_strata_require_distinct_eligible_boards_in_one_game(self):
+        first = '4k3/1p3p2/8/8/8/5N2/PPP5/4K3 w - - 0 14'
+        second = '4k3/1p3p2/8/8/8/5N2/PPP5/4K3 b - - 0 14'
+        game = [
+            dict(fen=first, ply=30, broadcastLossCp=120),
+            dict(fen=first, ply=34, broadcastLossCp=0),
+            dict(fen=second, ply=35, broadcastLossCp=20),
+        ]
+        seen_boards, seen_games = set(), set()
+        rows = sample.select_mistakes(
+            'event-a', 'development', {'one': game}, 2, seen_boards, seen_games)
+        self.assertEqual([r['ply'] for r in rows], [30, 35])
+        self.assertEqual([r['split'] for r in rows], ['development', 'development'])
+        self.assertEqual(sample.select_mistakes(
+            'event-b', 'validation', {'one': game}, 2, seen_boards, seen_games), [])
+
 
 if __name__ == '__main__':
     unittest.main()

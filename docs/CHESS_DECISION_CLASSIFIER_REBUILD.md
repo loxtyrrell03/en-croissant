@@ -809,3 +809,98 @@ events. The selective-probe experiment here is evidence for that next
 measurement, not for deploying a learned label. This v22 sample is open for
 development after this report. No product classifier, runtime or profile was
 changed by the experiment.
+
+## Learning which reply to verify (v23)
+
+The v22 tournament replay exposed a gap in material attribution. After
+`...Rc3 Rxd1 Rxe3`, Black concedes the knight for a pawn. The better
+`...Nxe3` line contains a different set of forcing trades, which makes its
+total material balance a poor control for that local concession. The updated
+verifier traces the actual victim to its square after the better move and
+checks legal captures, including alternate attacking angles and en passant.
+It requires the same immediate capture in two searches, a matching settled
+cost and no stable recovery in either compared window. It reports the
+played-line cost independently of the better line's aggregate material.
+In the v22 development replay this recovers one tactical mistake, up from
+0/3 to 1/3, with zero false positives on 31 reviewed negatives. Regression
+coverage includes changed refutations and subsequent material recovery.
+
+Four classical U2000 rounds supplied 90 decisions from 45 games. Each game
+provided one recorded loss of at least 120 broadcast centipawns and one
+within 20, with plies restricted to 26–99 and the pre-move broadcast score
+within four pawns. Those broadcast scores select strata. Fresh paired
+Stockfish searches and reviewed legal lines determine the actual evidence.
+The development split is [Hull round 4](https://lichess.org/broadcast/hull-4ncl-congress-2025--u2000/round-4/BWuDgkr1)
+and [Keith Escott round 4](https://lichess.org/broadcast/keith-escott-memorial-congress--u2000/round-4/XGwFKDk8/SR5UZPWO).
+The untouched split covers 34 decisions from 17 games across
+[Maia round 4](https://lichess.org/broadcast/maia-chess-festival-2025--u2000/round-4/vY5HhYTi/7Yzlw9Wo)
+and [Reykjavík round 4](https://lichess.org/broadcast/u2000-mot-tr-2026/round-4/m7Qq4Olp).
+Each entire source game and tournament belongs to one split. The review
+used one engine-assisted reviewer blind to classifier and model results.
+Two tactical and four positional reference labels remain uncertain.
+
+| Played-move mistake | Reviewed positives / negatives | Legacy TP / FP | Rebuild with adaptive replies TP / FP |
+| --- | ---: | ---: | ---: |
+| Tactical | 11 / 21 | 3 / 0 | 4 / 0 |
+| Positional | 5 / 25 | 0 / 0 | 2 / 0 |
+| Mixed | 0 / 29 | 0 / 0 | 0 / 0 |
+
+The additional tactical hit is `...Bf2`, which attacks g3 and e1 after
+Kh1 and the queen trade. The two positional hits include the passed-pawn
+timing after Nc4 and the space gained by answering `...Rhg7` with g4.
+The sample supplies no reviewed mixed positives. Remaining misses include
+king pressure with little early net material change, and a long checking
+sequence after Rxb6 that culminates in a queen-for-rook exchange.
+
+**Controlled reply ranking.** Each eligible board offered Stockfish's
+three highest-ranked replies from a 300K-node unrestricted search. A forced
+1M-node check for each candidate let every ranker face the same conditions.
+At deployment inside this replay, a ranker can only select one check. The
+common baseline is the rebuilt verifier with paired root lines and no
+additional mistake certificate from another reply search. The experiment
+measures newly established tactical mistake evidence, not agreement between
+the ranker and Stockfish's ordering.
+
+Three of 82 development queries actually added evidence to that baseline.
+Training used two denser auxiliary targets: whether the deeper exact
+reply agreed with the paired root score (38 examples) and whether it left
+a settled material loss within 13 plies (22 examples). The 12-unit neural
+network shares a hidden layer between those outcomes. Logistic and shallow
+boosted-tree baselines learn the same outcomes in separate heads. Their
+inputs are legal board and 300K-node search measurements. No deeper query
+outcome, event identity or reviewed label is supplied as a feature.
+
+| Ranking | Extra queries | Tactical hits / false alarms |
+| --- | ---: | ---: |
+| Common baseline, paired root only | 0 | 0 / 0 |
+| Best 300K-node Stockfish reply | 17 | 1 / 0 |
+| Reply in the paired PV or shallow material ranking | 17 each | 1 / 0 |
+| Logistic, tree, three neural seeds and averaged neural scores | 17 each | 1 / 0 |
+| All candidates in the shortlist | 51 | 1 / 0 |
+
+Each single-query ranker spent about 17.0M extra nodes. All 51 checks spent
+51.0M nodes and 68.1 engine-seconds in aggregate, with median 1.30 seconds
+per check. The full adaptive benchmark spent an additional 73.1
+engine-seconds on replies after the 230.4 engine-seconds of root, paired and
+cheap-reply searches. The adaptive classifier had more useful evidence
+available than the restricted one-query experiment. The low ceiling even
+when checking every nominated reply is stronger evidence for improving the
+proof and query types than for fitting a larger ranker to the same target.
+No model enters the app. This audit measures finite-depth evidence and
+transfer to these events only.
+
+**Reproduction.** The saved task directory is
+`classifier-rework/mistake-transfer`. Sample with
+`decision-evidence-tournament.py --mistake-event EVENT PGN SPLIT GAME_LIMIT`
+for Hull and Keith Escott (`development`, 14 games each), Maia
+(`validation`, 13 games) and Reykjavík (`validation`, up to eight games;
+four eligible). Reuse the five pre-v22 exclusion samples and the v22
+tournament sample. Run the v23 standard depth-18 adaptive engine and reply
+searches for each split. Run `decision-evidence-rank-probes.py` against
+each matching root cache. Set `DECISION_AUDIT_RANK_REPLIES=1` for the
+existing tournament audit and register the training audit before opening
+the frozen held-out classifier results. The ranker reads the result and
+the matching sealed reference. The reference SHA-256 is
+`466657c5d4a442b8452f466dcba8ef1b81e7331ea5ea8bb4a73a99605ea0c869`.
+Private artifacts provide the exact input identities and retained raw
+engine evidence. Treat this cohort as development data after publication.

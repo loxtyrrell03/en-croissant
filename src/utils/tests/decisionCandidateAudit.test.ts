@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { extractTacticalSequenceWitnesses } from "../tacticalMotifs/tacticalSequenceEvidence";
-import { measureDecisionLine } from "../tacticalMotifs/decisionEvidence";
+import { measureDecisionLine, type DecisionEngineLine } from "../tacticalMotifs/decisionEvidence";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
 import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
 import { classifyMistakeReviewNature } from "../mistakeReview";
@@ -11,6 +11,87 @@ import { extractStrategicRootEffects } from "../tacticalMotifs/strategicRootEffe
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
 
 const directory = process.env.DECISION_EVIDENCE_AUDIT;
+const rankReplies = process.env.DECISION_AUDIT_RANK_REPLIES === "1";
+
+type ReplyQuery = {
+    moveUci: string;
+    nodes: number;
+    milliseconds: number;
+    line: DecisionEngineLine;
+};
+
+function auditRankedReplies(
+    path: string,
+    engine: {
+        identity: { engine_sha256: string };
+        reply: DecisionEngineLine[];
+        comparison: DecisionEngineLine[];
+    },
+    rootSha256: string,
+    input: Parameters<typeof assessChessDecision>[0],
+) {
+    const {
+        identity,
+        replies,
+    }: {
+        identity: { protocol: number; rootSha256: string; engineSha256: string; nodes: number };
+        replies: ReplyQuery[];
+    } = JSON.parse(readFileSync(path, "utf8"));
+    if (
+        identity.protocol !== 1 ||
+        identity.rootSha256 !== rootSha256 ||
+        identity.engineSha256 !== engine.identity.engine_sha256 ||
+        identity.nodes !== 1_000_000 ||
+        (replies.length !== 0 && replies.length !== engine.reply.length) ||
+        replies.some(
+            (query, index) =>
+                query.moveUci !== engine.reply[index].pvUci[0] ||
+                query.line.pvUci[0] !== query.moveUci,
+        )
+    )
+        throw new Error("Targeted queries must match their exact inexpensive shortlist and budget");
+    const withoutProof = { ...input, replyProbes: [], mistakeCertificate: undefined };
+    const baseline = assessChessDecision(withoutProof)?.mistake;
+    const baselineTactical = baseline?.tactical.support === "supported";
+    const played = engine.comparison.find((line) => line.pvUci[0] === input.playedMoveUci);
+    if (!played) throw new Error("Targeted replies require an independently scored played move");
+    return {
+        baselineTactical,
+        queries: replies.map(({ line, ...query }) => {
+            const mistake = assessChessDecision({
+                ...withoutProof,
+                replyProbes: [{ moveUci: input.playedMoveUci!, lines: [line] }],
+            })?.mistake;
+            const combined = [input.playedMoveUci!, ...line.pvUci];
+            let lastSettledBalance: number | undefined;
+            for (let end = 5; end <= Math.min(13, combined.length); end++) {
+                const prefix = measureDecisionLine(input.fen, {
+                    ...played,
+                    pvUci: combined.slice(0, end),
+                });
+                if (
+                    prefix &&
+                    !prefix.drawnEnding &&
+                    prefix.quietEndingPlies >= 2 &&
+                    prefix.endingMaterialRangeCp[0] === prefix.endingMaterialRangeCp[1]
+                )
+                    lastSettledBalance = prefix.materialChangeCp;
+            }
+            return {
+                ...query,
+                addsTacticalEvidence:
+                    !baselineTactical && mistake?.tactical.support === "supported",
+                corroboratedScore:
+                    line.depth >= 16 &&
+                    line.cp !== null &&
+                    played.cp !== null &&
+                    Math.abs(played.cp + line.cp) <= 90,
+                settledMaterialLoss: (lastSettledBalance ?? 0) <= -90,
+            };
+        }),
+    };
+}
+
 test.skipIf(!directory)(
     "audit decision evidence against an explicit development or validation partition",
     async () => {
@@ -19,6 +100,8 @@ test.skipIf(!directory)(
         const cohort = process.env.DECISION_AUDIT_COHORT ?? "course";
         if (!["course", "independent", "classical", "tournament"].includes(cohort))
             throw new Error("Invalid cohort");
+        if (rankReplies && cohort !== "tournament")
+            throw new Error("Use the tournament cohort for the reply ranking experiment");
         const protocol = process.env.DECISION_ENGINE_PROTOCOL ?? "2";
         if (!["1", "2"].includes(protocol)) throw new Error("Invalid engine protocol");
         const profile = process.env.DECISION_ENGINE_PROFILE ?? "v2";
@@ -82,20 +165,19 @@ test.skipIf(!directory)(
         const output = privateReportPath(join(directory!, `${name}.json`));
         expect(existsSync(output)).toBe(false);
         const results = rows.map((row: { id: string; fen: string; category: string }) => {
-            const engine = JSON.parse(
-                readFileSync(
-                    join(
-                        directory!,
-                        protocol === "2"
-                            ? `${cohort}-engine-${profile}`
-                            : cohort === "course"
-                              ? "engine-reproducible"
-                              : `${cohort}-engine`,
-                        `${row.id}.json`,
-                    ),
-                    "utf8",
+            const engineBytes = readFileSync(
+                join(
+                    directory!,
+                    protocol === "2"
+                        ? `${cohort}-engine-${profile}`
+                        : cohort === "course"
+                          ? "engine-reproducible"
+                          : `${cohort}-engine`,
+                    `${row.id}.json`,
                 ),
             );
+            const engine = JSON.parse(engineBytes.toString("utf8"));
+            const engineHash = createHash("sha256").update(engineBytes).digest("hex");
             const probes = JSON.parse(
                 readFileSync(
                     join(
@@ -118,18 +200,7 @@ test.skipIf(!directory)(
                     engine.identity.maximum_root_nodes !== frozen.search.maximumRootNodes ||
                     probes.identity.engine_sha256 !== frozen.engineSha256 ||
                     probes.identity.capture_resource_limit !== 3 ||
-                    probes.identity.root_sha256 !==
-                        createHash("sha256")
-                            .update(
-                                readFileSync(
-                                    join(
-                                        directory!,
-                                        `${cohort}-engine-${profile}`,
-                                        `${row.id}.json`,
-                                    ),
-                                ),
-                            )
-                            .digest("hex"))
+                    probes.identity.root_sha256 !== engineHash)
             )
                 throw new Error("Held-out search evidence does not match the frozen policy");
             const started = performance.now();
@@ -202,6 +273,14 @@ test.skipIf(!directory)(
                 structuralTransitions: extractPositionalTransitions(row.fen, engine.deep[0]),
                 assessment,
                 rootOnlyAssessment,
+                replyRanking: rankReplies
+                    ? auditRankedReplies(
+                          join(directory!, `${cohort}-rank-probes-${profile}`, `${row.id}.json`),
+                          engine,
+                          engineHash,
+                          input,
+                      )
+                    : undefined,
                 baseline,
                 baselineMistake,
                 baselineMs,

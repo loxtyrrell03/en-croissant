@@ -32,7 +32,7 @@ import {
 import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
 import { findConditionalFork } from "./conditionalForkEvidence";
 
-export const DECISION_ASSESSMENT_VERSION = 4;
+export const DECISION_ASSESSMENT_VERSION = 5;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -604,7 +604,9 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                         ),
                         ...(tacticalEpisode
                             ? [
-                                  `${tacticalEpisode.explanation} The played line retains ${tacticalEpisode.materialDifferencePoints.toFixed(1)} fewer material points after ${tacticalEpisode.throughPly} plies of both compared lines.`,
+                                  tacticalEpisode.kind === "comparative"
+                                      ? `${tacticalEpisode.explanation} The played line retains ${tacticalEpisode.materialDifferencePoints.toFixed(1)} fewer material points after ${tacticalEpisode.throughPly} plies of both compared lines.`
+                                      : `${tacticalEpisode.explanation} Both searches show a net loss of ${tacticalEpisode.materialConcededPoints.toFixed(1)} material points after ${tacticalEpisode.throughPly} plies of the played line.`,
                               ]
                             : []),
                     ],

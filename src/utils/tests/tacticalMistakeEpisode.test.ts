@@ -76,3 +76,102 @@ test("an ordinary capture available on both boards does not establish the cause"
         compareTacticalMistakeEpisode(unchanged, good, bad, replyFor(bad), replyFor(good)),
     ).toBeNull();
 });
+
+const exchangeRoot = "2r2rk1/p6p/1q1pnp2/Np1B1p2/5P1P/PP2P1P1/3Q4/R2n2K1 b - - 0 30";
+const saveKnight = {
+    fen: exchangeRoot,
+    depth: 26,
+    cp: 653,
+    pvUci: [
+        "d1e3",
+        "d5e6",
+        "g8h8",
+        "e6c8",
+        "f8c8",
+        "a1c1",
+        "e3g4",
+        "g1h1",
+        "c8c1",
+        "d2c1",
+        "b6f2",
+        "c1g1",
+        "f2f3",
+    ],
+};
+const concedeKnight = {
+    fen: exchangeRoot,
+    depth: 26,
+    cp: 372,
+    pvUci: [
+        "c8c3",
+        "a1d1",
+        "c3e3",
+        "g1h2",
+        "g8h8",
+        "d1e1",
+        "e3e1",
+        "d2e1",
+        "f8e8",
+        "d5c6",
+        "e8e7",
+        "c6d5",
+        "b6c5",
+    ],
+};
+const exchangeAfter = (line: typeof saveKnight) => ({
+    ...line,
+    fen: makeFen(replayTacticalLine(exchangeRoot, [line.pvUci[0]])[0].after.toSetup()),
+    cp: -line.cp,
+    pvUci: line.pvUci.slice(1),
+});
+const exchangeReply = { ...exchangeAfter(concedeKnight), depth: 19, cp: -403 };
+
+test("reports the local concession when a different trade distorts the better branch's material count", () => {
+    const report = assessChessDecision({
+        fen: exchangeRoot,
+        candidates: [saveKnight, concedeKnight],
+        playedMoveUci: concedeKnight.pvUci[0],
+        replyProbes: [{ moveUci: concedeKnight.pvUci[0], lines: [exchangeReply] }],
+    });
+    expect(report?.mistake?.tacticalEpisode).toMatchObject({
+        kind: "concession",
+        materialConcededPoints: 2.2,
+        throughPly: 6,
+        betterLineUci: saveKnight.pvUci.slice(0, 6),
+        playedLineUci: concedeKnight.pvUci.slice(0, 6),
+    });
+    expect(report?.mistake?.tactical.reasons[0]).toContain("Rxd1 takes the knight on d1");
+    expect(report?.mistake?.tactical.reasons[0]).toContain("Both searches");
+});
+
+test("does not reuse a local material claim when the paired search has a different refutation", () => {
+    const different = {
+        ...concedeKnight,
+        pvUci: ["c8c3", "d5e6", "g8h8", "a1d1", "c3e3", "g1h2", "f8e8", "d2f2"],
+    };
+    expect(
+        compareTacticalMistakeEpisode(
+            exchangeRoot,
+            saveKnight,
+            different,
+            exchangeReply,
+            exchangeAfter(saveKnight),
+        ),
+    ).toBeNull();
+});
+
+test("a later settled recovery in either search disqualifies the earlier net loss", () => {
+    const recovers = {
+        ...concedeKnight,
+        pvUci: [...concedeKnight.pvUci.slice(0, 8), "b6a5", "d5c6", "f8e8", "h2h3", "a5c3"],
+    };
+    expect(
+        compareTacticalMistakeEpisode(
+            exchangeRoot,
+            saveKnight,
+            recovers,
+            exchangeReply,
+            exchangeAfter(saveKnight),
+        ),
+    ).toBeNull();
+});

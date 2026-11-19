@@ -71,6 +71,8 @@ async function main() {
       "scripts/benchmarks/decision-evidence-evaluate.py",
       "scripts/benchmarks/decision-evidence-model-pilot.py",
       "scripts/benchmarks/decision-evidence-tournament.py",
+      "scripts/benchmarks/decision-evidence-rank-probes.py",
+      "scripts/benchmarks/decision-evidence-reply-ranker.py",
       "scripts/benchmarks/decision-evidence-freeze.mjs",
       "src/utils/tests/decisionCandidateAudit.test.ts",
     ].map((path) => join(repo, path)),

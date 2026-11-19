@@ -26,20 +26,22 @@ def board_key(fen):
     return ' '.join(fen.split()[:4])
 
 
-def read_games(path, excluded_boards):
+def read_games(path, excluded_boards, *, broadcast_loss=False):
     games = {}
     with path.open(encoding='utf-8-sig') as stream:
         while game := chess.pgn.read_game(stream):
             board = game.board()
             if game.errors or type(board) is not chess.Board or not board.is_valid():
                 continue
-            moves = list(game.mainline_moves())
+            nodes = list(game.mainline())
+            moves = [node.move for node in nodes]
             if len(moves) < 28 or game.headers.get('Result') not in {'1-0', '0-1', '1/2-1/2'}:
                 continue
             game_key = digest((board_key(board.fen()) + ' ' + ' '.join(move.uci() for move in moves)).encode())
             pool = []
             overlap = False
-            for move in moves:
+            for node in nodes:
+                move = node.move
                 fen = board.fen()
                 ply = board.ply()
                 overlap |= board_key(fen) in excluded_boards
@@ -53,6 +55,13 @@ def read_games(path, excluded_boards):
                         'phase': 'late-opening' if ply < 38 else 'middlegame' if ply < 68 else 'late-game',
                         'pinChallenge': quiet and has_pin,
                     })
+                    if broadcast_loss:
+                        before, after = node.parent.eval(), node.eval()
+                        if before and after:
+                            prior_cp = before.pov(board.turn).score()
+                            next_cp = after.pov(board.turn).score()
+                            if prior_cp is not None and next_cp is not None and abs(prior_cp) <= 400:
+                                pool[-1]['broadcastLossCp'] = prior_cp - next_cp
                 board.push(move)
             if not overlap and pool:
                 games[game_key] = pool
@@ -84,11 +93,45 @@ def select_event(event, games, ordinary_limit, pin_limit, seen_boards, seen_game
     return rows
 
 
+def select_mistakes(event, split, games, limit, seen_boards, seen_games):
+    """Select two disjoint positions per game using annotation scores only."""
+    rows = []
+    for game in sorted(games, key=order):
+        if len(rows) >= 2 * limit:
+            break
+        if game in seen_games:
+            continue
+        pool = [row for row in games[game]
+                if row['ply'] <= 99 and 'broadcastLossCp' in row
+                and board_key(row['fen']) not in seen_boards]
+        errors = [row for row in pool if row['broadcastLossCp'] >= 120]
+        controls = [row for row in pool if abs(row['broadcastLossCp']) <= 20]
+        if not errors or not controls:
+            continue
+        error = min(errors, key=lambda row: order(f'{game}:{row["ply"]}'))
+        controls = [row for row in controls if board_key(row['fen']) != board_key(error['fen'])]
+        if not controls:
+            continue
+        control = min(controls, key=lambda row: order(f'{game}:{row["ply"]}'))
+        for stratum, selected in [('broadcast-loss', error), ('broadcast-control', control)]:
+            row = {key: val for key, val in selected.items() if key != 'pinChallenge'}
+            cases = dict(row, id=f'mistake-{event}-{game[:16]}-{row["ply"]}',
+                         sourceGroup=game, event=event, stratum=stratum, split=split,
+                         category='public-classical-broadcast')
+            rows.append(cases)
+            seen_boards.add(board_key(row['fen']))
+        seen_games.add(game)
+    return rows
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('output', type=Path)
-    parser.add_argument('--event', action='append', nargs=4, required=True,
-                        metavar=('EVENT', 'PGN', 'ORDINARY_LIMIT', 'PIN_LIMIT'))
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--event', action='append', nargs=4,
+                      metavar=('EVENT', 'PGN', 'ORDINARY_LIMIT', 'PIN_LIMIT'))
+    mode.add_argument('--mistake-event', action='append', nargs=4,
+                      metavar=('EVENT', 'PGN', 'SPLIT', 'GAME_LIMIT'))
     parser.add_argument('--exclude-sample', type=Path, action='append', default=[])
     args = parser.parse_args()
     if args.output.resolve().is_relative_to(Path(__file__).resolve().parents[2]):
@@ -103,24 +146,36 @@ def main():
     cases = []
     seen_games = set()
     events = {}
-    for event, pgn, ordinary, pin in args.event:
-        ordinary, pin = int(ordinary), int(pin)
-        if not re.fullmatch(r'[a-z0-9-]+', event) or event in events or ordinary < 1 or pin < 0:
-            raise ValueError('Use unique event IDs, a positive ordinary limit and nonnegative challenge limit')
+    for event, pgn, first, second in args.event or args.mistake_event:
+        if not re.fullmatch(r'[a-z0-9-]+', event) or event in events:
+            raise ValueError('Use unique event IDs')
         path = Path(pgn)
-        games = read_games(path, exclusions)
-        selected = select_event(event, games, ordinary, pin, seen_boards, seen_games)
+        games = read_games(path, exclusions, broadcast_loss=bool(args.mistake_event))
+        if args.mistake_event:
+            split, limit = first, int(second)
+            if split not in {'development', 'validation'} or limit < 1:
+                raise ValueError('Provide a valid split and positive game limit')
+            selected = select_mistakes(event, split, games, limit, seen_boards, seen_games)
+            counts = dict(split=split, games=len(selected) // 2, gameLimit=limit)
+        else:
+            ordinary, pin = int(first), int(second)
+            if ordinary < 1 or pin < 0:
+                raise ValueError('Provide a positive ordinary limit and nonnegative challenge limit')
+            selected = select_event(event, games, ordinary, pin, seen_boards, seen_games)
+            counts = dict(ordinaryLimit=ordinary, pinLimit=pin,
+                          ordinary=sum(row['stratum'] == 'ordinary' for row in selected),
+                          pinChallenge=sum(row['stratum'] == 'quiet-with-pin' for row in selected))
         if not selected:
             raise ValueError(f'No eligible games for {event}')
         events[event] = {
             'sha256': digest(path.read_bytes()), 'eligibleGames': len(games),
-            'ordinaryLimit': ordinary, 'pinLimit': pin,
-            'ordinary': sum(row['stratum'] == 'ordinary' for row in selected),
-            'pinChallenge': sum(row['stratum'] == 'quiet-with-pin' for row in selected),
+            **counts,
         }
         cases.extend(selected)
-    result = dict(protocol=1, events=events, exclusions=exclusion_hashes, cases=cases,
-                  scope='Classical broadcast games. One legal decision per game. Challenge rows are separate; no model or engine evaluations enter selection.')
+    scope = ('Classical broadcasts. Two decisions per game stratified only by existing broadcast scores. Whole events held out.'
+             if args.mistake_event else
+             'Classical broadcast games. One legal decision per game. Challenge rows are separate; no model or engine evaluations enter selection.')
+    result = dict(protocol=1, events=events, exclusions=exclusion_hashes, cases=cases, scope=scope)
     with args.output.open('x', encoding='utf-8') as stream:
         json.dump(result, stream, indent=2)
     print(json.dumps(dict(cases=len(cases), events=events)))
