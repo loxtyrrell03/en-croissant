@@ -41,6 +41,6 @@ export default {
   ],
   test: {
     environment: "node",
-    include: [resolve(directory, "replay.test.ts").replaceAll("\\", "/")],
+    include: [resolve(directory, "replay.bench.ts").replaceAll("\\", "/")],
   },
 };
