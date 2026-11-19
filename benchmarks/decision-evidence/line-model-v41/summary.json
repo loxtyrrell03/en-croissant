@@ -1,0 +1,419 @@
+{
+  "scope": "Previously reviewed classical position character, per-tournament development exclusion, no new engine searches",
+  "incumbentCommit": "c6e3564ceee1e336c90ebd4e2b6d744b8b5631db",
+  "sourceReceipt": "../ordinary-precision-v40/prior-sources.json",
+  "freshV40SourceNowInDevelopment": "../ordinary-precision-v40/tournament-sample.json",
+  "optimizerConvergenceWarnings": {
+    "600": 59,
+    "3000": 0
+  },
+  "primary": {
+    "workerReplaySha256": "5b20631712b499a070d7a8edb21143f4c3812ed905170d132df66c725dfdedf4",
+    "manifestSha256": "1abd642dc112fdbffe27f2e7e8318191baf102f748ac0c791969325641377734",
+    "scriptSha256": "7353e47d7631c7c98df55092162abf71a38e07bc1a15d7d7347f8d93deeb3338",
+    "scikitLearn": "1.9.1",
+    "pythonChess": "1.11.2",
+    "networkMaxIterations": 600,
+    "games": 259,
+    "groups": [
+      "amateur-u1700-2026",
+      "aq-prime-2026",
+      "arequipa-2026",
+      "aruba-open-2026",
+      "bavarian-open-2026",
+      "box-hill-2026",
+      "brazilian-women-2026",
+      "cappelle-open",
+      "dutch-open-2026",
+      "english-open-2026",
+      "european-women-2026",
+      "lugano-standard-2026",
+      "misamis-2026",
+      "mona-karff-2026",
+      "montenegro-cup-2026",
+      "naestved-2026",
+      "naycc-2026",
+      "ny-girls-2026",
+      "trois-vallees-2026",
+      "tyreso-2026",
+      "world-seniors-65-2026"
+    ],
+    "featureCounts": {
+      "scores": 9,
+      "continuation": 293
+    },
+    "metrics": {
+      "tactical": {
+        "incumbent": {
+          "tp": 53,
+          "fp": 1
+        },
+        "models": {
+          "prior": {
+            "positives": 135,
+            "negatives": 54,
+            "uncertain": 70,
+            "averagePrecision": 0.5998343916452491,
+            "brier": 0.20660229969558513,
+            "reviewSlots": 31,
+            "reviewedPositives": 8,
+            "reviewedNegatives": 10,
+            "uncertainReferences": 13
+          },
+          "score-logistic": {
+            "positives": 135,
+            "negatives": 54,
+            "uncertain": 70,
+            "averagePrecision": 0.9369112021024908,
+            "brier": 0.15205948790290105,
+            "reviewSlots": 31,
+            "reviewedPositives": 24,
+            "reviewedNegatives": 1,
+            "uncertainReferences": 6
+          },
+          "line-logistic": {
+            "positives": 135,
+            "negatives": 54,
+            "uncertain": 70,
+            "averagePrecision": 0.9681191612617199,
+            "brier": 0.08904648916166355,
+            "reviewSlots": 31,
+            "reviewedPositives": 26,
+            "reviewedNegatives": 1,
+            "uncertainReferences": 4
+          },
+          "line-tree": {
+            "positives": 135,
+            "negatives": 54,
+            "uncertain": 70,
+            "averagePrecision": 0.9783342289421083,
+            "brier": 0.08012403231564294,
+            "reviewSlots": 31,
+            "reviewedPositives": 28,
+            "reviewedNegatives": 0,
+            "uncertainReferences": 3
+          },
+          "score-network": {
+            "positives": 135,
+            "negatives": 54,
+            "uncertain": 70,
+            "averagePrecision": 0.9558119488307836,
+            "brier": 0.1191993298646657,
+            "reviewSlots": 31,
+            "reviewedPositives": 24,
+            "reviewedNegatives": 0,
+            "uncertainReferences": 7
+          },
+          "line-network": {
+            "positives": 135,
+            "negatives": 54,
+            "uncertain": 70,
+            "averagePrecision": 0.9637718933144777,
+            "brier": 0.08727441635258323,
+            "reviewSlots": 31,
+            "reviewedPositives": 27,
+            "reviewedNegatives": 1,
+            "uncertainReferences": 3
+          }
+        }
+      },
+      "positional": {
+        "incumbent": {
+          "tp": 54,
+          "fp": 1
+        },
+        "models": {
+          "prior": {
+            "positives": 212,
+            "negatives": 27,
+            "uncertain": 20,
+            "averagePrecision": 0.8013006076986536,
+            "brier": 0.10140597096552192,
+            "reviewSlots": 33,
+            "reviewedPositives": 29,
+            "reviewedNegatives": 2,
+            "uncertainReferences": 2
+          },
+          "score-logistic": {
+            "positives": 212,
+            "negatives": 27,
+            "uncertain": 20,
+            "averagePrecision": 0.9256262642147238,
+            "brier": 0.07124461299979391,
+            "reviewSlots": 33,
+            "reviewedPositives": 27,
+            "reviewedNegatives": 3,
+            "uncertainReferences": 3
+          },
+          "line-logistic": {
+            "positives": 212,
+            "negatives": 27,
+            "uncertain": 20,
+            "averagePrecision": 0.9814780740729507,
+            "brier": 0.06895180170150766,
+            "reviewSlots": 33,
+            "reviewedPositives": 32,
+            "reviewedNegatives": 1,
+            "uncertainReferences": 0
+          },
+          "line-tree": {
+            "positives": 212,
+            "negatives": 27,
+            "uncertain": 20,
+            "averagePrecision": 0.9734327211636448,
+            "brier": 0.07818034743028018,
+            "reviewSlots": 33,
+            "reviewedPositives": 32,
+            "reviewedNegatives": 1,
+            "uncertainReferences": 0
+          },
+          "score-network": {
+            "positives": 212,
+            "negatives": 27,
+            "uncertain": 20,
+            "averagePrecision": 0.9521589235491401,
+            "brier": 0.06612759500206618,
+            "reviewSlots": 33,
+            "reviewedPositives": 31,
+            "reviewedNegatives": 2,
+            "uncertainReferences": 0
+          },
+          "line-network": {
+            "positives": 212,
+            "negatives": 27,
+            "uncertain": 20,
+            "averagePrecision": 0.9788934252875049,
+            "brier": 0.07929696094206216,
+            "reviewSlots": 33,
+            "reviewedPositives": 32,
+            "reviewedNegatives": 1,
+            "uncertainReferences": 0
+          }
+        }
+      },
+      "mixed": {
+        "incumbent": {
+          "tp": 3,
+          "fp": 1
+        },
+        "models": {
+          "prior": {
+            "positives": 88,
+            "negatives": 81,
+            "uncertain": 90,
+            "averagePrecision": 0.4462113319368957,
+            "brier": null,
+            "reviewSlots": 41,
+            "reviewedPositives": 10,
+            "reviewedNegatives": 15,
+            "uncertainReferences": 16
+          },
+          "score-logistic": {
+            "positives": 88,
+            "negatives": 81,
+            "uncertain": 90,
+            "averagePrecision": 0.7657928898727068,
+            "brier": null,
+            "reviewSlots": 41,
+            "reviewedPositives": 25,
+            "reviewedNegatives": 3,
+            "uncertainReferences": 13
+          },
+          "line-logistic": {
+            "positives": 88,
+            "negatives": 81,
+            "uncertain": 90,
+            "averagePrecision": 0.8542595788884486,
+            "brier": null,
+            "reviewSlots": 41,
+            "reviewedPositives": 25,
+            "reviewedNegatives": 2,
+            "uncertainReferences": 14
+          },
+          "line-tree": {
+            "positives": 88,
+            "negatives": 81,
+            "uncertain": 90,
+            "averagePrecision": 0.845647185871435,
+            "brier": null,
+            "reviewSlots": 41,
+            "reviewedPositives": 24,
+            "reviewedNegatives": 4,
+            "uncertainReferences": 13
+          },
+          "score-network": {
+            "positives": 88,
+            "negatives": 81,
+            "uncertain": 90,
+            "averagePrecision": 0.7797351473498676,
+            "brier": null,
+            "reviewSlots": 41,
+            "reviewedPositives": 22,
+            "reviewedNegatives": 5,
+            "uncertainReferences": 14
+          },
+          "line-network": {
+            "positives": 88,
+            "negatives": 81,
+            "uncertain": 90,
+            "averagePrecision": 0.8345268498850774,
+            "brier": null,
+            "reviewSlots": 41,
+            "reviewedPositives": 24,
+            "reviewedNegatives": 2,
+            "uncertainReferences": 15
+          }
+        }
+      }
+    },
+    "positionalInReviewedTacticalPositions": {
+      "prior": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.6396937125476692,
+        "brier": 0.19660203732666026
+      },
+      "score-logistic": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.8354907556333033,
+        "brier": 0.1417490371293702
+      },
+      "line-logistic": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.9420787576415315,
+        "brier": 0.13531226721304143
+      },
+      "line-tree": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.8976650876083482,
+        "brier": 0.1581399610509405
+      },
+      "score-network": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.8835591655191528,
+        "brier": 0.13077010152623764
+      },
+      "line-network": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.9343659927691089,
+        "brier": 0.15201677596245622
+      }
+    },
+    "passesDevelopmentScreen": {
+      "positional:score-network": false,
+      "positional:line-network": false,
+      "mixed:score-network": false,
+      "mixed:line-network": false
+    }
+  },
+  "sensitivity": {
+    "networkMaxIterations": 3000,
+    "metrics": {
+      "tactical": {
+        "score-network": {
+          "positives": 135,
+          "negatives": 54,
+          "uncertain": 70,
+          "averagePrecision": 0.9558119488307836,
+          "brier": 0.11920089090990393,
+          "reviewSlots": 31,
+          "reviewedPositives": 24,
+          "reviewedNegatives": 0,
+          "uncertainReferences": 7
+        },
+        "line-network": {
+          "positives": 135,
+          "negatives": 54,
+          "uncertain": 70,
+          "averagePrecision": 0.9649436292610581,
+          "brier": 0.0881715226594712,
+          "reviewSlots": 31,
+          "reviewedPositives": 27,
+          "reviewedNegatives": 1,
+          "uncertainReferences": 3
+        }
+      },
+      "positional": {
+        "score-network": {
+          "positives": 212,
+          "negatives": 27,
+          "uncertain": 20,
+          "averagePrecision": 0.9520668085675208,
+          "brier": 0.06613742161327925,
+          "reviewSlots": 33,
+          "reviewedPositives": 31,
+          "reviewedNegatives": 2,
+          "uncertainReferences": 0
+        },
+        "line-network": {
+          "positives": 212,
+          "negatives": 27,
+          "uncertain": 20,
+          "averagePrecision": 0.9788658605034563,
+          "brier": 0.0793511479158024,
+          "reviewSlots": 33,
+          "reviewedPositives": 32,
+          "reviewedNegatives": 1,
+          "uncertainReferences": 0
+        }
+      },
+      "mixed": {
+        "score-network": {
+          "positives": 88,
+          "negatives": 81,
+          "uncertain": 90,
+          "averagePrecision": 0.7793992763243415,
+          "brier": null,
+          "reviewSlots": 41,
+          "reviewedPositives": 22,
+          "reviewedNegatives": 5,
+          "uncertainReferences": 14
+        },
+        "line-network": {
+          "positives": 88,
+          "negatives": 81,
+          "uncertain": 90,
+          "averagePrecision": 0.8343833447129564,
+          "brier": null,
+          "reviewSlots": 41,
+          "reviewedPositives": 24,
+          "reviewedNegatives": 2,
+          "uncertainReferences": 15
+        }
+      }
+    },
+    "positionalInReviewedTacticalPositions": {
+      "score-network": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.8834216057105404,
+        "brier": 0.1307886060312878
+      },
+      "line-network": {
+        "positives": 88,
+        "negatives": 27,
+        "uncertain": 20,
+        "averagePrecision": 0.9345645189110313,
+        "brier": 0.15199115487705095
+      }
+    },
+    "passesDevelopmentScreen": {
+      "positional:score-network": false,
+      "positional:line-network": false,
+      "mixed:score-network": false,
+      "mixed:line-network": false
+    }
+  }
+}

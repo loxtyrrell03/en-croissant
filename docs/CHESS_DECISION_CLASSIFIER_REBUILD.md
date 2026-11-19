@@ -2467,3 +2467,87 @@ the source of the candidate before any fresh predictions were read.
 Use the same replay harness when testing the baseline modules.
 The worker audit above used the prior committed tactical module
 because the working tree already contained an unrelated local edit.
+
+## Iteration 41 — can a network find the mixed decisions the worker misses?
+
+Train separate tactical and positional heads directly on reviewed
+position character. The previous neural experiment learned which extra
+move an engine could refute. This one learns from the resulting chess
+position and its first three Stockfish choices. The aim is to prioritize
+positions for further analysis. A chosen position still needs legal
+evidence for both dimensions before it can receive a mixed diagnosis.
+
+The experiment uses 259 ordinary classical positions from the v33–v40
+worker replay, one position per game. The 24 broadcast sections form 21
+tournament groups, with all four North American Youth Championship
+sections in one group. Each fit excludes a whole tournament group.
+Repeated games, board identities or events across the fit and its
+evaluation are rejected. The features exclude player and event
+information, the played move, and the reference and worker diagnoses.
+The frozen worker result defines which decisions remain unresolved.
+
+The score inputs use the leading evaluations and their differences,
+material and the number of legal moves. The line inputs add actual
+checks, captures, promotions and material changes over 12 plies, and
+early or persistent changes in pawn structure, rook-file use, piece
+activity and king cover. The linear, tree and two-layer neural models
+share these inputs. Each neural result averages three seeded fits. The
+two heads rank mixed decisions by the lower score. That score gives an
+ordering and carries no probability interpretation.
+
+| Ranking method | Tactical AP | Positional AP | Mixed AP | Mixed review picks (positive / negative / uncertain) |
+| --- | ---: | ---: | ---: | ---: |
+| Training prevalence | .600 | .801 | .446 | 10 / 15 / 16 |
+| Scores, logistic | .937 | .926 | .766 | 25 / 3 / 13 |
+| Lines, logistic | .968 | .981 | .854 | 25 / 2 / 14 |
+| Lines, shallow boosted tree | .978 | .973 | .846 | 24 / 4 / 13 |
+| Scores, neural | .956 | .952 | .780 | 22 / 5 / 14 |
+| Lines, neural | .964 | .979 | .835 | 24 / 2 / 15 |
+
+Average precision (AP) excludes uncertain references. The review budget
+is one fifth of each event's unresolved boards, rounded down. Uncertain
+boards can consume slots. The original worker finds 53/135 tactical,
+54/212 positional and 3/88 mixed positives, with one reviewed false
+positive on each. At 41 mixed review slots, the best model ranks 25
+previously missed reviewed positives and two reviewed negatives in the
+shortlist. These counts measure prioritization of reviewed positions.
+Actual recovery requires a separate verifier replay.
+
+The preset neural screen required at least .03 additional AP, two more
+reviewed positives at the same budget, and no more reviewed negatives
+than the simpler controls. Both neural variants fall short. With the
+line network, the tactical queue finds 27 positives with one reviewed
+negative, and the tree finds 28 with zero, at 31 slots. In the positional
+queue, both the line network and the best controls reach 32 positives
+and one negative from 33 slots. This leaves too little headroom for the
+positional screen to pass on this cohort. The mixed screen has room to
+detect an improvement. At 600 iterations 59 of 252 neural fits
+reached the optimizer limit. At 3,000 iterations all fits converged.
+Mixed AP moved from .835 to .834 for the line network and its review
+counts stayed the same.
+
+All 27 reviewed positional negatives occur in positions also reviewed
+as tactical. The reference set therefore overrepresents tactical
+negative controls for the positional question. Also, its existing
+reviews used Stockfish lines, and the models learn from related lines.
+Among the 135 reviewed tactical positions, the secondary positional
+ranking has AP .942 for the line logistic model and .935 for the
+converged line network. There are 88 positional positives, 27
+negatives and 20 uncertain references in that slice.
+Tournament exclusion reduces opening and event leakage. Shared review
+practice can still make these results optimistic. This was a development
+screen with no fresh holdout. Improving the references and testing a
+shortlist through the legal verifier would establish whether the extra
+review opportunities yield useful explanations. The runtime remains
+at v40.
+
+**Reproduction.** Reproduce the 227-board pooled and 32-board fresh
+worker outputs described in v40, combined with the eight ordinary
+cohorts in the replay manifest. Run
+`decision-evidence-line-model.py WORKER_REPLAY MANIFEST OUTPUT`.
+Use scikit-learn 1.9.1 and python-chess 1.999. Rerun with
+`--network-max-iterations 3000` for the optimizer check. The compact
+result receipt is in `benchmarks/decision-evidence/line-model-v41`.
+The pilot reuses Stockfish caches and requests no additional engine
+searches. The model weights and case-level research output stay out
+of the repository.
