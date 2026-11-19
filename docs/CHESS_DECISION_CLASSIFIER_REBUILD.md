@@ -1907,3 +1907,27 @@ audit with extra choice disabled. Development and holdout proofs replay
 byte-for-byte after formatting the audit source. Exact file hashes use the
 original line endings. Run the Python benchmark with python-chess 1.999
 and scikit-learn 1.9.1. Engine caches and trained models stay outside Git.
+
+### Positional comparison on the same frozen games
+
+A separate candidate compared strategic plans across legal continuations
+that settled their exchanges at different plies. It followed the same
+passed pawn and supporting or blockading rook, and required agreement
+on material changes in the nearby files. On 160 earlier development
+positions, the candidate added three reviewed positional positives
+without a new reviewed false positive. One already had tactical
+evidence and became mixed. In that World Amateur game, `a7` and `Kh1`
+both met `...Ra8` against the same passed pawn, while unrelated exchanges
+on the other wing had previously defeated the comparison.
+
+The candidate produced identical assessments to the committed
+strategic comparison on all 30 general and 12 challenge boards.
+The benchmark uses the ordinary Stockfish frames for both versions.
+The challenge selected six games with an advanced passed pawn that
+remained for six plies and six with an early capture or promotion.
+The selector in `decision-evidence-passer-sample.py` uses the recorded
+game only to choose a sample. The recorded pawn trajectory supplies
+neither the tactical nor positional reference. This positional change
+remains experimental because the frozen evaluation established no
+gain. The shortlist findings point to the limited set of explanations
+that search can verify given its current branches and checks.
