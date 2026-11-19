@@ -1,0 +1,18 @@
+{
+  "1OxfT": {
+    "deflection": true,
+    "rationale": "Rxg2 moves the f2 rook off the f-file. Rxf1+ is blocked on the original board and legal if that rook moves. After Rxf1+ Qxf1 Rxf1+ Kxf1 the exchange has recovered the bishop offer and leaves 170 material centipawns above the starting balance."
+  },
+  "0RYob": {
+    "deflection": true,
+    "rationale": "After Qxe1+ Nxe1 Rxe1#, returning the accepted f3 knight to f3 on the payoff board permits Nxe1. This is both clearance and a mating deflection."
+  },
+  "033eV": {
+    "deflection": true,
+    "rationale": "After Rxh6+ Bxh6, restoring the bishop to g7 on the payoff board stops Qf7 from giving check. The actual line forces Bg7 Rh1#. Clearance and displacement both contribute."
+  },
+  "0yKNX": {
+    "deflection": null,
+    "rationale": "The existing classifier gives a branch after ...fxe3. The selected Stockfish line uses ...Qxe3. The old label does not enter the exact-line score on this case."
+  }
+}

@@ -33,6 +33,14 @@ export function TacticalScanResult({
 }) {
   const sideLabel = scan.side === "white" ? "White" : "Black";
   const laterTheme = (scan.motifs[0]?.ply ?? 1) > 1;
+  const scopedTheme = scan.motifs[0]?.lineThroughPly !== undefined;
+  const idea = laterTheme
+    ? "In the displayed continuation"
+    : scan.motifs[0]?.id === "attractionIdea"
+      ? `${sideLabel}'s conditional exchange idea`
+      : scan.preferredMultipv
+        ? `${sideLabel}'s immediate tactical option`
+        : `${sideLabel}'s main tactical idea`;
   const tacticalVariations = scan.variations
     .filter((variation) => variation.motifs.length > 0 || variation.timeline.length > 0)
     .sort(
@@ -70,23 +78,25 @@ export function TacticalScanResult({
             color="orange"
             icon={<IconBolt size="1rem" />}
             title={
-              laterTheme
-                ? `${scan.motifs[0].label} in the continuation`
-                : scan.motifs[0].id === "attractionIdea"
-                  ? "Attraction idea in the displayed line"
-                : scan.motifs[0].id === "matingThreat"
-                  ? `${sideLabel} threatens mate`
-                : `${scan.motifs.map((motif) => motif.label).join(" · ")} found`
+              scopedTheme
+                ? scan.motifs[0].label
+                : laterTheme
+                  ? `${scan.motifs[0].label} in the continuation`
+                  : scan.motifs[0].id === "attractionIdea"
+                    ? "Attraction idea in the displayed line"
+                    : scan.motifs[0].id === "matingThreat"
+                      ? `${sideLabel} threatens mate`
+                      : `${scan.motifs.map((motif) => motif.label).join(" · ")} found`
             }
           >
-            {laterTheme
-              ? "In the displayed continuation"
-              : scan.motifs[0].id === "attractionIdea"
-                ? `${sideLabel}'s conditional exchange idea`
-              : scan.preferredMultipv
-                ? `${sideLabel}'s immediate tactical option`
-                : `${sideLabel}'s main tactical idea`}
-            {lastMoveSan ? ` after ${lastMoveSan}` : ""}: {scan.motifs[0]?.evidence}
+            {scopedTheme ? (
+              scan.motifs[0]?.evidence
+            ) : (
+              <>
+                {idea}
+                {lastMoveSan ? ` after ${lastMoveSan}` : ""}: {scan.motifs[0]?.evidence}
+              </>
+            )}
             {laterTheme && (
               <Text size="sm" mt="xs">
                 This theme occurs after the replies shown. The scan has not verified it as the
@@ -190,11 +200,17 @@ export function TacticalScanResult({
                 {variation.motifs.slice(0, 1).map((motif) => (
                   <Stack key={motif.id} gap={2}>
                     <Text size="sm">{tacticalMotifDescription(motif)}</Text>
-                    {motif.moveUci && (
+                    {motif.lineThroughPly !== undefined ? (
                       <Text size="xs" c="dimmed">
-                        {(motif.ply ?? 1) > 1 ? "Continuation move" : "Triggering move"}:{" "}
-                        <Code>{motif.moveUci}</Code> · {motif.confidence} confidence
+                        Checked through {line[motif.lineThroughPly - 1]}.
                       </Text>
+                    ) : (
+                      motif.moveUci && (
+                        <Text size="xs" c="dimmed">
+                          {(motif.ply ?? 1) > 1 ? "Continuation move" : "Triggering move"}:{" "}
+                          <Code>{motif.moveUci}</Code> · {motif.confidence} confidence
+                        </Text>
+                      )
                     )}
                     {(motif.ply ?? 1) > 1 && (
                       <Text size="xs" c="dimmed">

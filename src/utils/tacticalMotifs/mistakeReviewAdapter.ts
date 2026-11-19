@@ -52,6 +52,7 @@ import { appendTacticalHistory, type TacticalGameHistory } from "./gameHistory";
 import { tacticalRepetitionBoundary } from "./repetitionHistory";
 import { qualifyHistoryAwareMatingMotifs, retainsHistoryAwareMate } from "./historyAwareMate";
 import { filterContinuationHistory, survivesOptionalDraw } from "./continuationHistory";
+import { findLineRouteEvidence } from "./lineRouteEvidence";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -103,6 +104,8 @@ export type PositionTacticalMotifInput = {
     tacticalHistory?: TacticalGameHistory | null;
     /** Engine evaluation from this position's side to move. */
     rootCp?: number | null;
+    rootMate?: number | null;
+    rootDepth?: number;
 };
 
 type SiteThemeStep = {
@@ -146,7 +149,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 176;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 177;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1037,6 +1040,9 @@ export function classifyPositionTacticalMotifs(
         input.tacticalHistory,
     );
     const motifs = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, auditedMotifs);
+    const observed = findLineRouteEvidence(
+        fen, bestLine, input.rootCp, input.rootMate, input.rootDepth, input.tacticalHistory,
+    ).filter(({ id }) => !motifs.some((motif) => motif.id === id && motif.ply === 1));
     // A missing root certificate must not erase independently checked later
     // events. The timeline retains its quiet/terminal relevance boundaries;
     // none of its rows are promoted into a root lesson here.
@@ -1053,8 +1059,12 @@ export function classifyPositionTacticalMotifs(
     );
     const timeline = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, continuation);
     return {
-        motifs: selectRootConnectedLessons(fen, bestLine, motifs, timeline),
-        ...(motifs.length || timeline.length ? { timeline } : {}),
+        motifs: [
+            ...selectRootConnectedLessons(fen, bestLine, motifs, timeline)
+                .filter((motif) => !observed.some(({ id }) => id === motif.id)),
+            ...observed,
+        ],
+        ...(motifs.length || timeline.length || observed.length ? { timeline: [...observed, ...timeline] } : {}),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     };
 }

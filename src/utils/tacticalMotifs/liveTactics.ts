@@ -162,7 +162,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 183;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 184;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 export const LIVE_TACTICAL_EXTRA_CANDIDATES = 2;
 
@@ -351,6 +351,8 @@ function buildLiveTacticalVariation(
         previousMoveUci: input.previousMoveUci,
         tacticalHistory: input.tacticalHistory,
         rootCp: variation.cp,
+        rootMate: variation.mate,
+        rootDepth: variation.depth ?? input.depth,
         tablebaseEvidence: input.tablebaseEvidence,
     });
     const motifs = selectLiveTacticalMotifs(classification.motifs);
@@ -565,7 +567,8 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
     // existing main-search alternatives and the broad winning-outcome admission
     // when the principal line has no immediate high-confidence explanation.
     const principalIsImmediate = enginePrimary.motifs.some(m =>
-        m.confidence === "high" && m.ply === 1 && m.moveUci === enginePrimary.lineUci[0]);
+        m.lineThroughPly === undefined && m.confidence === "high" &&
+        m.ply === 1 && m.moveUci === enginePrimary.lineUci[0]);
     const variations = classifiedVariations.filter(variation => {
         if (!principalIsImmediate || variation.origin !== "targeted") return true;
         const candidate = viableInputs.find(v => v.multipv === variation.multipv);
@@ -579,7 +582,7 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
     );
     const materialAlternative = strongerAlternativeToPawnCapture(enginePrimary, variations, viableInputs);
     const tacticalAlternative = immediateAlternativeToEmptyLine(enginePrimary, variations, viableInputs);
-    const additional = enginePrimary.motifs.length === 0 ? variations.find(v =>
+    const additional = !enginePrimary.motifs.some(m => m.lineThroughPly === undefined) ? variations.find(v =>
         v.origin === "targeted" && hasImmediateTacticalOpportunity(v)) : undefined;
     const primary = immediate ?? materialAlternative ?? tacticalAlternative ?? additional ?? enginePrimary;
     const motifs = primary.motifs.slice(0, 1);
@@ -617,7 +620,8 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
 
 function hasImmediateTacticalOpportunity(variation: LiveTacticalVariation) {
     const theme = variation.motifs[0];
-    return theme?.confidence === "high" && theme.ply === 1 && theme.moveUci === variation.lineUci[0] &&
+    return theme?.lineThroughPly === undefined && theme?.confidence === "high" &&
+        theme.ply === 1 && theme.moveUci === variation.lineUci[0] &&
         // Compensation-only countercaptures explain a response to an existing
         // tactic; they are not a new material opportunity in either lane.
         (theme.id !== "hangingPiece" || (theme.value ?? 0) > 0);
@@ -632,7 +636,7 @@ function immediateAlternativeToEmptyLine(
     variations: ClassifiedLiveTacticalVariation[],
     inputs: LiveTacticalVariationInput[],
 ) {
-    if (principal.motifs.length) return null;
+    if (principal.motifs.some(motif => motif.lineThroughPly === undefined)) return null;
     const score = (line: ClassifiedLiveTacticalVariation) => inputs.find((v, i) => (v.multipv ?? i + 1) === line.multipv);
     const first = score(principal);
     if (first?.mate != null || !Number.isFinite(first?.cp) || !Number.isInteger(first?.depth) || first!.depth! < 14) return null;
@@ -712,6 +716,7 @@ function immediateAlternativeAfterCycle(
                 Number.isFinite(score?.cp) &&
                 score!.cp! >= 100 &&
                 score!.cp! >= firstInput.cp! - 80 &&
+                immediate?.lineThroughPly === undefined &&
                 immediate?.ply === 1 &&
                 immediate.moveUci === motif.moveUci &&
                 immediate.id === motif.id

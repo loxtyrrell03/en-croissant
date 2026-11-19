@@ -3767,3 +3767,21 @@ position and adds nine tactical diagnoses on the separate 25-game
 World Senior reserve. Ten controls and all played-move diagnoses
 match. It adds zero engine searches.
 [Quiet-threat experiment](../benchmarks/decision-evidence/quiet-mate-threats/README.md)
+
+## Line-specific deflection and clearance
+
+Live tactical adapter 177 validates the route in an existing scored
+Stockfish line. It checks whether a displaced defender could have
+blocked the entry or recaptured, or whether restoring a friendly
+piece makes the second piece's entry illegal. The continuation must
+also show an actual mate or a local material payoff. The panel states
+which line supports the annotation and how far it was checked.
+
+The frozen 56-puzzle sample improves clearance recall from 0/10 to
+9/10 with zero false positives across 33 reference negatives. Blind
+deflection counts are unchanged. A separate post-output legal
+adjudication raises deflection recall from 6/8 to 7/8. All 1,050 valid
+archived game reports match. The live scans add 20 line motifs with
+zero additional engine searches. The rule abstains when the route
+only yields a payoff beyond its checked horizon.
+[Benchmark, adjudications and replay](../benchmarks/decision-evidence/line-route-motifs/README.md)

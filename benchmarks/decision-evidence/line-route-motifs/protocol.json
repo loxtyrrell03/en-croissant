@@ -1,0 +1,50 @@
+{
+  "baseline": "a3cc7e27",
+  "source": "https://database.lichess.org/#puzzles",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "settings": {
+    "threads": 1,
+    "hashMiB": 64,
+    "firstRootBudget": 600000,
+    "fixedPairBudget": 1200000,
+    "independentReplyBudget": 1000000
+  },
+  "selection": {
+    "source": {
+      "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT",
+      "ETag": "\"6ae6f0f4-12766d85\"",
+      "Content-Length": "309751173"
+    },
+    "scanLimit": 150000,
+    "seed": "root-route-motifs-a3cc7e27-v1",
+    "population": {
+      "tagged-deflection": 650,
+      "unlabelled-offer": 12445,
+      "tagged-clearance": 218,
+      "unlabelled-vacancy": 5524
+    },
+    "counts": {
+      "tagged-deflection": 14,
+      "tagged-clearance": 14,
+      "unlabelled-offer": 14,
+      "unlabelled-vacancy": 14
+    }
+  },
+  "corpusExclusionSha256": "9f3d2bdf595a3eac9f1d4f049f3937c03248bfa5595e3c4709f6b6ee30f1fee0",
+  "ruleFrozenSha256": {
+    "lineRouteEvidence.ts": "6b8058aca0604e750f9ed09021f0ffefc26d2b14adefebdb3fe2e52ea6e3aa37",
+    "mistakeReviewAdapter.ts": "4c61be7ef5a71be6ee95354d6599e898caa94f7f1129d00d80a1206d56637f53",
+    "liveTactics.ts": "e47fcabc9c6fc8b710252f2440960e08d71c70ff2d08e682e1112877fac6edca",
+    "types.ts": "3738aa322d5236b8b820868c23b12c84bf1a40c2c71bb04c7c173c1c1f40e419",
+    "fresh-reserve-v2.json": "82a0deb97a2d6bb8c120c404799bda56e8dd7e8d68508e7cf92872bbd65c3c5b"
+  },
+  "blindReferenceSha256": "1c5bfe9ae631af6627d5508c597e5e3b4d5973eec7bd34457003a436b3d08d30",
+  "publicInputsSha256": {
+    "reserve.json": "c0839ac992e8e6120cdeb00ae9cb5c4d91118fecdfd7c33b91b676c8be01a655",
+    "development-public.json": "fb9d750365ea530ed83491ad44b9cc6f520b02393c638f1bb4a79d428fbb1a12",
+    "examples.json": "ebce4dbd940389bfbb2d7ff6c382a95ae7fd23880fc93e5f6543348fa12cf771",
+    "reference.json": "b9584eaa11a4a214dee0f24a233ab762f08b49c89867be2a42f3e77b61f47c06",
+    "adjudications.json": "15e457df1f4d8b5bcbf2f2c3f3d72b77d25d463b82bd13ac3aad15d765b7b09d"
+  }
+}

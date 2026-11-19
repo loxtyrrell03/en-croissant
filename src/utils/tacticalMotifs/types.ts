@@ -2,8 +2,12 @@ export type TacticalMotifConfidence = "high" | "medium" | "low";
 export type TacticalMotifSource = "allowed" | "missed" | "available";
 
 /** Useful geometry/threat context, not a forced outcome or mistake cause. */
-export function isTacticalObservation(motif: { id: string } | undefined) {
-    return motif?.id === "matingThreat" || motif?.id === "attractionIdea";
+export function isTacticalObservation(motif: { id: string; lineThroughPly?: number } | undefined) {
+    return (
+        motif?.id === "matingThreat" ||
+        motif?.id === "attractionIdea" ||
+        motif?.lineThroughPly !== undefined
+    );
 }
 
 /** Same-search alternatives, scored for the side to move on this exact board.
@@ -35,6 +39,8 @@ export type TacticalMotifEvidence = {
      * a PV tag or score. A material residual may be smaller than a pawn. */
     verifiedCombination?: true;
     actor?: "white" | "black";
+    /** This exact engine line supplies causal evidence through this ply. */
+    lineThroughPly?: number;
     comparison?: "prevented" | "persists" | "reduced";
     comparisonEvidence?: string;
     /** A root missed hanging-piece capture has a comparable positive local

@@ -1,0 +1,123 @@
+{
+  "longDeflection": {
+    "id": "lichess-001h8",
+    "frame": {
+      "cp": 587,
+      "mate": null,
+      "depth": 18,
+      "fen": "2r3k1/2r4p/4p1p1/1p1q1pP1/p2P1P1Q/P6R/4bB2/2R3K1 w - - 6 35",
+      "pvUci": [
+        "h4h7",
+        "c7h7",
+        "c1c8",
+        "g8g7",
+        "c8c7",
+        "g7g8",
+        "h3h7",
+        "e2f1",
+        "g1f1",
+        "d5b3",
+        "f1g2",
+        "b3d5",
+        "g2g1",
+        "d5b3",
+        "h7h4",
+        "b3d1"
+      ]
+    }
+  },
+  "acceptedDeflection": {
+    "id": "0DqSO",
+    "frame": {
+      "fen": "4r1k1/p4pp1/7p/2P5/8/P1Q4P/3q1PP1/2R3K1 b - - 1 32",
+      "depth": 18,
+      "cp": 761,
+      "mate": null,
+      "pvUci": [
+        "e8e1",
+        "c1e1",
+        "d2c3",
+        "e1e8",
+        "g8h7",
+        "e8e3",
+        "c3c5",
+        "g1h2",
+        "c5c2",
+        "e3f3",
+        "c2a2",
+        "h2g1",
+        "f7f6"
+      ]
+    },
+    "otherRoot": "g8h8"
+  },
+  "clearanceMate": {
+    "id": "18txR",
+    "frame": {
+      "fen": "4rkr1/pQ2R3/2p5/3qN3/5p2/2P3Pp/PP3P1P/6K1 w - - 0 29",
+      "depth": 27,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "e7f7",
+        "d5f7",
+        "b7f7"
+      ]
+    }
+  },
+  "materialClearance": {
+    "id": "0Vz77",
+    "frame": {
+      "fen": "r2qr1k1/pb1n1pbp/1pp2np1/3Pp3/5P2/1PN3P1/PB2N1BP/1R1Q1RK1 w - - 0 16",
+      "depth": 17,
+      "cp": 521,
+      "mate": null,
+      "pvUci": [
+        "d5c6",
+        "b7c6",
+        "g2c6",
+        "a8c8",
+        "c6d7",
+        "f6d7",
+        "c3e4",
+        "b6b5",
+        "f1f2",
+        "c8b8",
+        "g1f1",
+        "d8b6",
+        "d1d7",
+        "b8d8",
+        "d7h3",
+        "e5f4",
+        "b2g7",
+        "e8e4",
+        "g7a1"
+      ]
+    }
+  },
+  "quietControl": {
+    "id": "0gfVQ",
+    "frame": {
+      "fen": "8/1p1k1p2/2p5/2PR4/5P2/5KP1/8/8 b - - 0 41",
+      "depth": 15,
+      "cp": 371,
+      "mate": null,
+      "pvUci": [
+        "c6d5",
+        "g3g4",
+        "d7c6",
+        "f4f5",
+        "c6c5",
+        "g4g5",
+        "c5d6",
+        "g5g6",
+        "f7g6",
+        "f5g6",
+        "d6e7",
+        "f3f4",
+        "b7b5",
+        "f4e5"
+      ]
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "blindReference": {
+    "before": {
+      "deflection": {
+        "tp": 4,
+        "fp": 3,
+        "fn": 1,
+        "tn": 38,
+        "unknown": 10
+      },
+      "clearance": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "tn": 33,
+        "unknown": 13
+      }
+    },
+    "after": {
+      "deflection": {
+        "tp": 4,
+        "fp": 3,
+        "fn": 1,
+        "tn": 38,
+        "unknown": 10
+      },
+      "clearance": {
+        "tp": 9,
+        "fp": 0,
+        "fn": 1,
+        "tn": 33,
+        "unknown": 13
+      }
+    }
+  },
+  "afterSeparateAdjudication": {
+    "before": {
+      "deflection": {
+        "tp": 6,
+        "fp": 0,
+        "fn": 2,
+        "tn": 38,
+        "unknown": 10
+      },
+      "clearance": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "tn": 33,
+        "unknown": 13
+      }
+    },
+    "after": {
+      "deflection": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 1,
+        "tn": 38,
+        "unknown": 10
+      },
+      "clearance": {
+        "tp": 9,
+        "fp": 0,
+        "fn": 1,
+        "tn": 33,
+        "unknown": 13
+      }
+    }
+  },
+  "reserveMedianScanMs": {
+    "before": 76.82,
+    "after": 76.64
+  },
+  "historicalReviewed": {
+    "independentDeflectionRecovered": 3,
+    "independentDeflectionTotal": 3,
+    "woodpeckerDeflectionRecovered": 1,
+    "woodpeckerDeflectionTotal": 1,
+    "woodpeckerClearanceRecovered": 1,
+    "woodpeckerClearanceTotal": 2
+  },
+  "addedEngineSearches": 0,
+  "archivedGameReplay": {
+    "requests": 1051,
+    "validReports": 1050,
+    "changedReports": 0,
+    "changedLiveScans": 20,
+    "addedClearances": 14,
+    "addedDeflections": 6,
+    "medianMs": {
+      "before": 63.61,
+      "after": 61.18
+    },
+    "p95Ms": {
+      "before": 382.12,
+      "after": 372.04
+    }
+  }
+}
