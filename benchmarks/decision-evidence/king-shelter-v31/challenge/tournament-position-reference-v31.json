@@ -1,0 +1,118 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "shelter-club-cup-2025-100758a039e9e584-83",
+      "scope": "position-character",
+      "moveUci": "f6g5",
+      "gameMoveUci": "f6g5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "In the rook ending both kings deliberately leave their starting files. The choice affects pawn exchanges, king activity, and rook checks without an established opening of the king's shelter."
+    },
+    {
+      "id": "shelter-club-cup-2025-e6b0a966745b56ba-41",
+      "scope": "position-character",
+      "moveUci": "d8d5",
+      "gameMoveUci": "c6d5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Taking the queen is the immediate calculation. After ...cxd5 the king can leave the file and White's rooks must reorganize. The independent value of the open c-file is unclear from these lines."
+    },
+    {
+      "id": "shelter-club-cup-2025-f87de0a30d8bd1d9-95",
+      "scope": "position-character",
+      "moveUci": "f6e5",
+      "gameMoveUci": "f6e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...fxe5 and ...Qxe5 lead to distinct concrete queen lines. The resulting connected passed-pawn possibilities affect the ending independently of the first exchange."
+    },
+    {
+      "id": "shelter-club-cup-2025-a2102ec20bbd7d9c-39",
+      "scope": "position-character",
+      "moveUci": "e6d5",
+      "gameMoveUci": "e6d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White's exposed queen and both sides' advanced pawns need concrete calculation. ...exd5 opens the e-file around the black king, while the queenside pawn bind persists in both principal comparisons."
+    },
+    {
+      "id": "shelter-british-championship-2025-b9fba71cbe3607f1-58",
+      "scope": "position-character",
+      "moveUci": "h5g6",
+      "gameMoveUci": "h5g6",
+      "tactical": true,
+      "positional": false,
+      "rationale": "hxg6 immediately pursues gxh7+ and an attack with the rook and bishops. White's king is already on a bare h-file and the h-pawn is five ranks away, outside its original shelter."
+    },
+    {
+      "id": "shelter-club-cup-2025-dda86715290e8ea8-70",
+      "scope": "position-character",
+      "moveUci": "c3a5",
+      "gameMoveUci": "e5f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Ba5 and exf6 create different rook infiltration routes. The king is central, and the e-pawn is an advanced strategic asset rather than a shelter pawn."
+    },
+    {
+      "id": "shelter-club-cup-2025-ebdc153e622eb983-58",
+      "scope": "position-character",
+      "moveUci": "g2f4",
+      "gameMoveUci": "g2f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Both moves take the queen, but the following central knight exchanges depend on which piece recaptures. gxf4 also changes White's remaining pawn structure around the king."
+    },
+    {
+      "id": "shelter-club-cup-2025-fa783bcd616d7385-35",
+      "scope": "position-character",
+      "moveUci": "g7f5",
+      "gameMoveUci": "g7f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Nxf5 preserves king cover and allows the knight to retreat. ...gxf5 permits Bh6 and pressure on g7. The opened pawn cover is a lasting difference."
+    },
+    {
+      "id": "shelter-club-cup-2025-bb03d06170339c0a-34",
+      "scope": "position-character",
+      "moveUci": "f1d3",
+      "gameMoveUci": "f1d3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The three non-pawn captures are viable. The c-file pawn stays put in all of them, while ...d5 changes the centre and minor-piece placement."
+    },
+    {
+      "id": "shelter-club-cup-2025-8ebbbdc084307281-25",
+      "scope": "position-character",
+      "moveUci": "d7f6",
+      "gameMoveUci": "d7f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "...gxf6 changes the pawn shield and leaves doubled f-pawns. White takes the centre with e4. The non-pawn captures keep the g-pawn and different piece activity. No direct use of the g-file is established in the shown window."
+    },
+    {
+      "id": "shelter-british-championship-2025-f9f9fac2e44d6afc-54",
+      "scope": "position-character",
+      "moveUci": "c2b3",
+      "gameMoveUci": "c2b3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White must take the exposed knight. The rook and queen activity changes between the two captures, and axb3 removes the original a-file shelter, even though the continuation applies pressure elsewhere."
+    },
+    {
+      "id": "shelter-club-cup-2025-6004d47461e5ae04-36",
+      "scope": "position-character",
+      "moveUci": "e2f3",
+      "gameMoveUci": "e2f3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "gxf3 concedes White's front g-file pawn, and the bishop's role and white pawn chain differ across the next pawn breaks. The main lines provide unclear evidence of a concrete tactic."
+    }
+  ],
+  "limitations": [
+    "One engine-assisted reviewer used legal leading continuations and ordinary reply probes without classifier output or optional position replies.",
+    "This challenge retrieves legal captures by a king-file pawn and other pieces. Opening of king shelter and relative value were reviewed independently.",
+    "Uncertain axes are null. The legacy proxy uses its motif on the first engine choice and has no independent positional axis."
+  ]
+}

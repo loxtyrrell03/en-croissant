@@ -1458,3 +1458,80 @@ v29 cache procedure with profile `v30`. The file challenge sampler
 is `scripts/benchmarks/decision-evidence-file-sample.py`. The v29
 comparator uses the assessment and position-plan modules at
 `5c0208b7`. Keep the challenge separate when reporting results.
+
+## Iteration 31 — pawn shelter in a tactical decision
+
+Two captures of the same piece can require different kinds of reasoning.
+After `Nxf3` and `gxf3` in the development position, White takes the same
+bishop. The tactical report explains the exchanges around c1. The new
+positional comparison also shows that `gxf3` opens the g-file in front of
+the king. Black obtains `...Qg5+` down that file. In the `Nxf3` line the
+pawn remains on g2, between g5 and the king, through the corresponding ply.
+
+The position report compares legal same-depth candidates. Two captures
+of the same target qualify for comparison even when their scores differ
+substantially. For a pawn-shelter diagnosis the original pawn must be
+present in the control line at every compared ply. In the exposed line
+the file must remain clear of defending pawns and the opposing queen
+or rook must actually use that file to check the king. The mistake
+report also requires the effect in a separate reply search on both moves.
+The pawn cover and legal check are board facts. The interpretation that
+they constitute a positional consideration is labelled heuristic.
+
+On the reviewed 28-board v30 development replay, position recall rose
+from 2/18 to 3/18 positional and 0/11 to 1/11 mixed, with one positional
+false positive in both versions and no mixed false positives. The same
+board gained an explanation in the mistake report. That board informed
+the implementation and provides regression evidence.
+
+**Held-out evaluation.** The 28-board general sample pairs losses and
+controls across 14 games from the
+[2025 British Championship, round 6](https://lichess.org/broadcast/2025-british-chess-championships-championship/round-6/93ur7ddm)
+and [2025 European Club Cup, round 4](https://lichess.org/broadcast/european-chess-club-cup-2025--open-matches-1-16/round-4/IBcpk6tK).
+The separate 12-board challenge takes six games in which a king-file
+pawn captured and six in which a piece captured, with both capture
+types legally available on each board. No challenge game appears in
+the general sample. A single engine-assisted reviewer assigned both
+axes using the leading legal variations and ordinary reply probes
+before seeing the classifier output. Uncertain axes are excluded.
+
+| Held-out question | Reviewed positives / negatives | Legacy TP / FP | v30 TP / FP | v31 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| General tactical | 22 / 0 | 2 / 0 | 4 / 0 | 4 / 0 |
+| General positional | 22 / 4 | 0 / 0 | 7 / 0 | 7 / 0 |
+| General mixed | 16 / 4 | 0 / 0 | 1 / 0 | 1 / 0 |
+| Shelter challenge tactical | 7 / 1 | 4 / 0 | 4 / 0 | 4 / 0 |
+| Shelter challenge positional | 10 / 1 | 0 / 0 | 1 / 0 | 1 / 0 |
+| Shelter challenge mixed | 5 / 2 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+The v30 and v31 position, move and mistake reports matched on all 40
+boards apart from the version field. The general cohort has no reviewed
+tactical negatives, so it cannot estimate the tactical false-positive
+rate. The challenge exposes two limitations. A shelter-pawn capture
+can change the structure even when the opponent attacks on another
+file, and some meaningful alternatives sit outside the three engine
+candidates. For example, after `...gxf6` in challenge board 10 the g-file
+opens and the f-pawns double, but the opposing response takes central
+space with `e4`. The new explanation abstains in that case. This
+iteration provides one reproduced development improvement and no
+held-out accuracy gain over v30. Mixed recall remains low.
+
+The change uses the existing engine search budget. On the exact
+committed tactical core, median classifier time for v30 and v31 was
+about 27 and 25 ms on general and 20 and 22 ms on challenge,
+excluding engine search and legacy extraction. The focused suite
+passed 127 tests with one existing skip. Source type and lint checks
+passed. The production worker and panel displayed the position and
+mistake explanations at 320, 390 and 900 pixels in an isolated browser
+with replayed Stockfish evidence.
+
+**Reproduction.** The review and sample manifests are under
+`benchmarks/decision-evidence/king-shelter-v31`. Use the v29 root and
+probe cache procedure with profile `v31` and candidate
+`v31-king-shelter`. Retrieve the challenge with
+`scripts/benchmarks/decision-evidence-shelter-sample.py` and exclude the
+general sample and prior games. The v30 comparator uses the assessment
+module at `5d7a2de6`; both comparisons use that revision's tactical
+core. The earlier course-trained model and reply-selection experiments
+still provide the evidence for leaving neural inference out of the
+interactive classifier.

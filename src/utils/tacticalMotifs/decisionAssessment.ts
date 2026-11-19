@@ -38,6 +38,7 @@ import {
     type DecisionSharedReplyProbe,
 } from "./decisionSharedReply";
 import { comparePawnEpisodes } from "./decisionPawnEpisode";
+import { compareLostKingShelter, findKingShelterTradeoff } from "./decisionKingShelter";
 import { confirmPositionRefutation, nominatePositionRefutation } from "./decisionPositionContrast";
 import {
     findPositionStrategicPlan,
@@ -45,7 +46,7 @@ import {
     type PositionStrategicPlan,
 } from "./decisionPositionPlans";
 
-export const DECISION_ASSESSMENT_VERSION = 12;
+export const DECISION_ASSESSMENT_VERSION = 13;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -479,7 +480,9 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         break;
     }
     if (position.positional.support === "unestablished" && !rejectedChoices) {
-        const plan = findPositionStrategicPlan(input.fen, input.candidates);
+        const plan =
+            findPositionStrategicPlan(input.fen, input.candidates) ??
+            findKingShelterTradeoff(input.fen, input.candidates);
         if (plan) {
             position.strategicPlan = plan;
             position.positional = {
@@ -785,7 +788,18 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                               ),
                       )
                     : [];
-            if (factors.length || pawnEpisodes.length) {
+            const shelter =
+                corroboratingReply(input.fen, comparedBest, betterProbe) &&
+                corroboratingReply(input.fen, playedLine, playedProbe)
+                    ? compareLostKingShelter(
+                          input.fen,
+                          comparedBest,
+                          playedLine,
+                          betterProbe!.lines[0],
+                          playedProbe!.lines[0],
+                      )
+                    : null;
+            if (factors.length || pawnEpisodes.length || shelter) {
                 assessment.positional = {
                     support: "supported",
                     basis: "heuristic",
@@ -795,9 +809,14 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                                 `${item.description} The feature is absent from the played line in the compared window.`,
                         ),
                         ...pawnEpisodes.map((item) => item.description),
+                        ...(shelter ? [shelter.description] : []),
                     ],
                 };
-                assessment.positionalFactors = [...factors, ...pawnEpisodes];
+                assessment.positionalFactors = [
+                    ...factors,
+                    ...pawnEpisodes,
+                    ...(shelter ? [shelter] : []),
+                ];
             }
             assessment.category = category(assessment.tactical, assessment.positional);
             assessment.limitations = [

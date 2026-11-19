@@ -187,7 +187,7 @@ function DecisionReport({
             : []),
           ...(plan
             ? plan.linesUci.map((moves) => ({
-                label: `Plan after ${lineSan(report.fen, moves.slice(0, 1))}`,
+                label: `After ${lineSan(report.fen, moves.slice(0, 1))}`,
                 san: lineSan(report.fen, moves),
               }))
             : []),

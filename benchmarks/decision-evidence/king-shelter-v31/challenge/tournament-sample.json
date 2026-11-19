@@ -1,0 +1,160 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "shelter-club-cup-2025-100758a039e9e584-83",
+      "event": "club-cup-2025",
+      "stratum": "pawn-chooses-capture",
+      "fen": "8/8/5p2/5kPp/1R6/6PP/3r4/6K1 b - - 0 42",
+      "ply": 83,
+      "playedMoveUci": "f6g5",
+      "sourceGroup": "100758a039e9e584ef71266f7b81b4242c20bf646b2351feb9330e3552ad8282",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-e6b0a966745b56ba-41",
+      "event": "club-cup-2025",
+      "stratum": "pawn-chooses-capture",
+      "fen": "2kr3r/p1b1n3/1pp2p2/3Q1ppp/2RP3P/1N2P1P1/PP2NP2/1K5R b - - 0 21",
+      "ply": 41,
+      "playedMoveUci": "c6d5",
+      "sourceGroup": "e6b0a966745b56ba294f6df96fb932c828bd8b78ee39631ff119d54106878079",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-f87de0a30d8bd1d9-95",
+      "event": "club-cup-2025",
+      "stratum": "pawn-chooses-capture",
+      "fen": "3r1k2/5bpp/1p1P1p2/1q2P3/p1p2pBP/P1Q3P1/1P1R2K1/8 b - - 1 48",
+      "ply": 95,
+      "playedMoveUci": "f6e5",
+      "sourceGroup": "f87de0a30d8bd1d9ab246f65ceab0610b5c67b5a272834d3fc15b1043600b10e",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-a2102ec20bbd7d9c-39",
+      "event": "club-cup-2025",
+      "stratum": "pawn-chooses-capture",
+      "fen": "1r1qkr2/1P2bpQp/4p3/pP1P1b2/8/8/P3BPPP/R2R2K1 b - - 0 20",
+      "ply": 39,
+      "playedMoveUci": "e6d5",
+      "sourceGroup": "a2102ec20bbd7d9c4903ca68ceedb18ff0a456667a060b9870c573a16914458d",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-british-championship-2025-b9fba71cbe3607f1-58",
+      "event": "british-championship-2025",
+      "stratum": "pawn-chooses-capture",
+      "fen": "2r3k1/p5bp/1pn1p1p1/2q3BP/2P2P2/1P6/P5Q1/1B1R3K w - - 1 30",
+      "ply": 58,
+      "playedMoveUci": "h5g6",
+      "sourceGroup": "b9fba71cbe3607f1e44c9ca1611e093ed8d5631c408a4260c85309559eacd858",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-dda86715290e8ea8-70",
+      "event": "club-cup-2025",
+      "stratum": "pawn-chooses-capture",
+      "fen": "6k1/3nr1b1/p1rNpp1p/2P1P1pP/3P2P1/P1B2R2/4K3/1R6 w - - 0 36",
+      "ply": 70,
+      "playedMoveUci": "e5f6",
+      "sourceGroup": "dda86715290e8ea8a7ca9a308c8ee07b14c9147d4f3d91cc7e3d6a995e26c988",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-ebdc153e622eb983-58",
+      "event": "club-cup-2025",
+      "stratum": "piece-chooses-capture",
+      "fen": "7k/pp4p1/2n4p/3p1n2/3P1q2/5NP1/PP3PN1/6K1 w - - 0 30",
+      "ply": 58,
+      "playedMoveUci": "g2f4",
+      "sourceGroup": "ebdc153e622eb9837054be695faa05e2cf5368ce385915073a654b6f21158fe7",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-fa783bcd616d7385-35",
+      "event": "club-cup-2025",
+      "stratum": "piece-chooses-capture",
+      "fen": "r2q2k1/pp3pnp/2p2bp1/3p1B2/3P1B2/2P5/PP1NQPPP/4R1K1 b - - 0 18",
+      "ply": 35,
+      "playedMoveUci": "g7f5",
+      "sourceGroup": "fa783bcd616d7385947036ea3f1358e7d399afa2af79d6d7dc5f748824f8ea0a",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-bb03d06170339c0a-34",
+      "event": "club-cup-2025",
+      "stratum": "piece-chooses-capture",
+      "fen": "1k1r3r/1b2qp1p/p2ppnp1/8/Pp2P2P/3nQP2/1PP3P1/1NKR1B1R w - - 0 18",
+      "ply": 34,
+      "playedMoveUci": "f1d3",
+      "sourceGroup": "bb03d06170339c0ab0bc3a0a90fd1251614826b7f8d55f964974e3024f9633ea",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-8ebbbdc084307281-25",
+      "event": "club-cup-2025",
+      "stratum": "piece-chooses-capture",
+      "fen": "r2q1rk1/1ppn1pp1/p1bbpB1p/8/P1QP4/5NP1/1P1NPPBP/R4RK1 b - - 0 13",
+      "ply": 25,
+      "playedMoveUci": "d7f6",
+      "sourceGroup": "8ebbbdc08430728193bea41688744cb8425483b914793a4f8d8a10ff8d261417",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-british-championship-2025-f9f9fac2e44d6afc-54",
+      "event": "british-championship-2025",
+      "stratum": "piece-chooses-capture",
+      "fen": "r3r3/pp1b3k/2pP1nq1/5p2/2P1p3/1nN3Pp/PPQ1B2P/K2RR3 w - - 0 28",
+      "ply": 54,
+      "playedMoveUci": "c2b3",
+      "sourceGroup": "f9f9fac2e44d6afcd6730fd46dc2afd04a330967393c703453fd1b77d7c0a578",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "shelter-club-cup-2025-6004d47461e5ae04-36",
+      "event": "club-cup-2025",
+      "stratum": "piece-chooses-capture",
+      "fen": "r1b1k2r/pp2nppp/2p1p3/2P5/2PP3B/4Pp2/2R1B1PP/5RK1 w kq - 0 19",
+      "ply": 36,
+      "playedMoveUci": "e2f3",
+      "sourceGroup": "6004d47461e5ae046753b63a8bedde911f5382f607a7d869f2f9b70921552b02",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "events": {
+    "british-championship-2025": "944ddee3f96212d7a65532b23754d5ec0e5e95283692b6803203e62a148d6e85",
+    "club-cup-2025": "7b3486990249029a0cc0a30d9bc6765de8d9516ddb943ef7b9e2f5dbf009c095"
+  },
+  "exclusions": [
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "6a5ebc28997d5668b0f13c8c28fdcaab4e34a052889d680b1799712400f9ab73",
+    "7e495b652759e5f74b4b9a912c1daf2048cfdb4f154748275c1f74f96e011183",
+    "a75c08a3ea2b7e185d69dc0651422cae9597e06736194348cffd8ef68f7300fb",
+    "75616e3f5a43ec8bfa39a4235ce8515d005c1f0a185a69ceb353cd4cc67b0deb",
+    "44c4e4e424cf1bc0a0cc62751ab631064252576b4c2e94285fee285655a7e6b7",
+    "d9ce8d6b574b0ee6f8f8e3bfaf7abe1822a32f36f5bf8cafff4d77bdf212acfb",
+    "f27f65d0172ab375e9494feac432a68a2c17d4279665690604163794c3589512",
+    "95130b3d85718c70ef90cb3bae3bffd658a6801a9be720d3be345a53f848d5de",
+    "8fe1fee913009c0217355e302b8540d9967827452752ba14317383655b788549",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341"
+  ],
+  "scope": "Both a king-file pawn and a different piece can capture the same target. Recorded pawn or piece captures are retrieval strata, not reference labels."
+}

@@ -1,0 +1,262 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "mistake-british-championship-2025-df517322dc6d2d85-48",
+      "scope": "position-character",
+      "moveUci": "h6f8",
+      "gameMoveUci": "h6f4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bf8+ makes the bishop trade on b4 available. Be3 and Kb1 preserve different bishop activity and plans against the connected queenside pawns."
+    },
+    {
+      "id": "mistake-british-championship-2025-df517322dc6d2d85-31",
+      "scope": "position-character",
+      "moveUci": "a5b6",
+      "gameMoveUci": "h8f8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Both sides contest the f-file and can exchange on f3. Be3 and Bf2 alter which side maintains pressure."
+    },
+    {
+      "id": "mistake-british-championship-2025-6d6c089f07c663c2-52",
+      "scope": "position-character",
+      "moveUci": "a1c1",
+      "gameMoveUci": "g5f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rc1 and Rae1 change the possible rook and queen captures. After Bxf6 gxf6 the g-file and doubled f-pawns change king safety."
+    },
+    {
+      "id": "mistake-british-championship-2025-6d6c089f07c663c2-76",
+      "scope": "position-character",
+      "moveUci": "e1e2",
+      "gameMoveUci": "e1e2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The second-rank rook can be traded or contained by the king. The g-pawn exchanges change the initiative on the g-file."
+    },
+    {
+      "id": "mistake-british-championship-2025-62b64b2dadd40df0-65",
+      "scope": "position-character",
+      "moveUci": "f7f6",
+      "gameMoveUci": "e6f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...exf5 allows Nxf5+ and Nxh6. ...f6, ...Nbc6 and ...b6 also change the central pawn tension and blockade."
+    },
+    {
+      "id": "mistake-british-championship-2025-62b64b2dadd40df0-42",
+      "scope": "position-character",
+      "moveUci": "f1b5",
+      "gameMoveUci": "f1b5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "White has to answer the second-rank rook. The central pawn chain and the d6 knight persist after the possible rook exchanges."
+    },
+    {
+      "id": "mistake-british-championship-2025-aac87693becd2eea-65",
+      "scope": "position-character",
+      "moveUci": "e8d6",
+      "gameMoveUci": "e6d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "After ...exd5, Rf2 threatens Rfxb2. ...Nd6 keeps coordination behind the b2 passer, which governs the placements."
+    },
+    {
+      "id": "mistake-british-championship-2025-aac87693becd2eea-46",
+      "scope": "position-character",
+      "moveUci": "f2d4",
+      "gameMoveUci": "f2d4",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Three ways to take on d4 or d5 lead to distinct sequences involving e4, d3 or the e-file. The independent value of the resulting pawn structure is unclear."
+    },
+    {
+      "id": "mistake-british-championship-2025-6a9e190735aa0c1c-58",
+      "scope": "position-character",
+      "moveUci": "c2b3",
+      "gameMoveUci": "d1e2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qxb3 Nc5+ and Rd2 lead to the forcing queen-for-rook sequence. Ke2 lets the knights attack b2 and the queen check on d3."
+    },
+    {
+      "id": "mistake-british-championship-2025-6a9e190735aa0c1c-65",
+      "scope": "position-character",
+      "moveUci": "b7b5",
+      "gameMoveUci": "b7b5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "...b5, ...f6 and ...g6 expand in different ways from the e4 pawn and the knight on d3. Queenside pressure remains when trades are delayed."
+    },
+    {
+      "id": "mistake-british-championship-2025-425e4d252be7c272-38",
+      "scope": "position-character",
+      "moveUci": "f5e5",
+      "gameMoveUci": "d3c5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nc5 allows ...axb4 and ...Nxd4. In the sounder queen lines, the long-term c4 outpost and queenside pawn breaks govern the continuation."
+    },
+    {
+      "id": "mistake-british-championship-2025-425e4d252be7c272-51",
+      "scope": "position-character",
+      "moveUci": "a8a2",
+      "gameMoveUci": "d8c8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Trading on a2, centralizing through d6 or keeping the rooks active are viable. The a-file and the c5 knight govern the play."
+    },
+    {
+      "id": "mistake-british-championship-2025-38716e70c7822057-60",
+      "scope": "position-character",
+      "moveUci": "b2b3",
+      "gameMoveUci": "b2e2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The stronger moves preserve checking resources. Qe2 allows a queen exchange into a pawn-down ending without these checks."
+    },
+    {
+      "id": "mistake-british-championship-2025-38716e70c7822057-51",
+      "scope": "position-character",
+      "moveUci": "e4f3",
+      "gameMoveUci": "e4f3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...exf3 starts a concrete sequence on f3 including two rook exchanges and ...Rxc4. The alternatives let the knight escape."
+    },
+    {
+      "id": "mistake-club-cup-2025-c749a515e5fea560-37",
+      "scope": "position-character",
+      "moveUci": "d7b5",
+      "gameMoveUci": "f8c8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Rfc8 permits Rxc8+ and Bxa6. The bishop routes avoid that sequence and the f- and b-pawn levers stay important."
+    },
+    {
+      "id": "mistake-club-cup-2025-c749a515e5fea560-28",
+      "scope": "position-character",
+      "moveUci": "d3e5",
+      "gameMoveUci": "d3e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The knight captures on e5 allow different exchanges including ...Nxd4. The pawn capture changes the centre and leaves rooks competing for the c-file."
+    },
+    {
+      "id": "mistake-club-cup-2025-cac893dd50c6ed0a-51",
+      "scope": "position-character",
+      "moveUci": "e4f6",
+      "gameMoveUci": "f7f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...f6 changes the defence of e4 and permits a queen-and-rook sequence. ...Nf6 preserves different central coordination after the queens come off."
+    },
+    {
+      "id": "mistake-club-cup-2025-cac893dd50c6ed0a-50",
+      "scope": "position-character",
+      "moveUci": "d3e3",
+      "gameMoveUci": "d3e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re3 and Ba3 transpose into an exchange and defence of e4. White's g-pawn advance and central squares still govern piece coordination."
+    },
+    {
+      "id": "mistake-club-cup-2025-9d8e42c1db7b3159-55",
+      "scope": "position-character",
+      "moveUci": "h5h4",
+      "gameMoveUci": "e8e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...h4 prevents h4+ and changes the king's escape. The bishop also reorganizes the pieces around d5 and e5 in the viable lines."
+    },
+    {
+      "id": "mistake-club-cup-2025-9d8e42c1db7b3159-85",
+      "scope": "position-character",
+      "moveUci": "f6e8",
+      "gameMoveUci": "f6e8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "...Nxe8 takes the exposed rook. ...Rxh4+ is answered by a king move and Nxg4+. The exchanges and checks govern the decision."
+    },
+    {
+      "id": "mistake-club-cup-2025-2fdb7ef9dd9800c6-57",
+      "scope": "position-character",
+      "moveUci": "d7e7",
+      "gameMoveUci": "c1b1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Rb1 allows Qb5+ and the f-pawn captures. The better moves keep both rooks active against the advancing b-pawn."
+    },
+    {
+      "id": "mistake-club-cup-2025-2fdb7ef9dd9800c6-27",
+      "scope": "position-character",
+      "moveUci": "a8a7",
+      "gameMoveUci": "c8b7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "...f5 and the knight route to d5 after ...Ra7 are long-term choices. ...Qb7 and ...Rc8 can trade queens while retaining c-file play."
+    },
+    {
+      "id": "mistake-club-cup-2025-6360ec27f83465cf-63",
+      "scope": "position-character",
+      "moveUci": "e7f8",
+      "gameMoveUci": "f7f5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "...f5 allows exf5 and ...Bxd5, before Ng5 threatens near the king. After the queen trade the lasting contribution is uncertain."
+    },
+    {
+      "id": "mistake-club-cup-2025-6360ec27f83465cf-59",
+      "scope": "position-character",
+      "moveUci": "c5a4",
+      "gameMoveUci": "c5a4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "...Nxa4 can initiate the c-file liquidation. The alternatives also change which side can contest the seventh rank afterward."
+    },
+    {
+      "id": "mistake-club-cup-2025-4dbcc8566e5c8395-43",
+      "scope": "position-character",
+      "moveUci": "d7f8",
+      "gameMoveUci": "g7g5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The defence must account for g5 and Qh5 around the king. ...Nf8 and the g-pawn advance also change control over f4 and h4 long term."
+    },
+    {
+      "id": "mistake-club-cup-2025-4dbcc8566e5c8395-56",
+      "scope": "position-character",
+      "moveUci": "e2g4",
+      "gameMoveUci": "e2g4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The queen moves change whether h5 is lost via a queen exchange. The h4 knight and f-pawn break stay important afterward."
+    },
+    {
+      "id": "mistake-club-cup-2025-1caff260c13eff07-36",
+      "scope": "position-character",
+      "moveUci": "g4e6",
+      "gameMoveUci": "a3d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bd6 allows ...Rxd6 and liquidation. The f- and e-pawn captures, or h6, change king cover and White's advanced pawn structure."
+    },
+    {
+      "id": "mistake-club-cup-2025-1caff260c13eff07-50",
+      "scope": "position-character",
+      "moveUci": "c1f4",
+      "gameMoveUci": "c1f4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qf4 permits a queen exchange and rook activity. The quiet alternatives attack the same central structure with queen and rook maneuvering."
+    }
+  ],
+  "limitations": [
+    "One engine-assisted reviewer used legal leading continuations and ordinary reply probes without classifier output or optional position replies.",
+    "Cases are paired broadcast losses and controls from 14 games across two tournaments and do not estimate prevalence.",
+    "Uncertain axes are null. The legacy proxy uses its motif on the first engine choice and has no independent positional axis."
+  ]
+}
