@@ -1,0 +1,321 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "shelter-benasque-2026-1fd30cee61842936-46",
+      "sourceGroup": "1fd30cee6184293628023b42518fa37c7b3cb7682294a999fa0a4b70b63c1759",
+      "event": "benasque-2026",
+      "fen": "5rk1/R1pb1p2/3p1qp1/4p1p1/2B1Pn2/2PPNQ1P/1r3PP1/R5K1 w - - 3 24",
+      "ply": 46,
+      "playedMoveUci": "e3g4",
+      "category": "public-classical-broadcast",
+      "stratum": "second-shield-pawn",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 166
+    },
+    {
+      "id": "shelter-barbera-2026-197f83fc34a86d71-64",
+      "sourceGroup": "197f83fc34a86d7174e52051ed219428d4a1b70ed96ae55085f36cfe2031fd0f",
+      "event": "barbera-2026",
+      "fen": "r6k/5pb1/4n1p1/1N1N2qp/1P2p3/2P2PP1/5QP1/4R1K1 w - - 0 33",
+      "ply": 64,
+      "playedMoveUci": "f3e4",
+      "category": "public-classical-broadcast",
+      "stratum": "second-shield-pawn",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 126
+    },
+    {
+      "id": "shelter-barbera-2026-97ad5c4c29e0e981-53",
+      "sourceGroup": "97ad5c4c29e0e9811935a05a79d845e6ba326b6780f068a1b385c954dba9958e",
+      "event": "barbera-2026",
+      "fen": "5rk1/pq1bppnp/3p2p1/5P1P/4P1P1/3PB3/P5B1/3Q1R1K b - - 0 27",
+      "ply": 53,
+      "playedMoveUci": "f7f6",
+      "category": "public-classical-broadcast",
+      "stratum": "second-shield-pawn",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 84
+    },
+    {
+      "id": "shelter-benasque-2026-ba5df1690361ce1e-85",
+      "sourceGroup": "ba5df1690361ce1e67fa4905b67a5b71372bc77fdccb42aebf1be3315e416dfa",
+      "event": "benasque-2026",
+      "fen": "2r3k1/1q1r1p2/p5p1/P1np3p/3Q4/2P2N1P/1P2RPP1/5BK1 b - - 0 43",
+      "ply": 85,
+      "playedMoveUci": "b7c7",
+      "category": "public-classical-broadcast",
+      "stratum": "second-shield-pawn",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 103
+    },
+    {
+      "id": "shelter-benasque-2026-4dfa1d0079d97e26-52",
+      "sourceGroup": "4dfa1d0079d97e26c2fdeb38261ad6d9c69d04f45813e21da3aa423653b0f111",
+      "event": "benasque-2026",
+      "fen": "2q3k1/1p3rp1/pBr1b3/P3p1p1/3p1n2/4NP2/1PPQ2PP/2R1R1K1 w - - 0 27",
+      "ply": 52,
+      "playedMoveUci": "e3f1",
+      "category": "public-classical-broadcast",
+      "stratum": "second-shield-pawn",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 102
+    },
+    {
+      "id": "shelter-benasque-2026-8244eeec6555134f-43",
+      "sourceGroup": "8244eeec6555134f64a07941aa21ef2d9d6c6386bcfa7718e76df323791ee32f",
+      "event": "benasque-2026",
+      "fen": "3r1rk1/1b3p1p/p1n3p1/2npPpNQ/8/2NB4/1PP3PP/R3R2K b - - 0 22",
+      "ply": 43,
+      "playedMoveUci": "g6h5",
+      "category": "public-classical-broadcast",
+      "stratum": "second-shield-pawn",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 12
+    },
+    {
+      "id": "shelter-benasque-2026-3fff9019a17d9b85-39",
+      "sourceGroup": "3fff9019a17d9b85a80077f6450feea3e3c31e3166dddabae2f0f5338a772feb",
+      "event": "benasque-2026",
+      "fen": "2r1r1k1/1p3pbp/3p1np1/2qPpQP1/p1P5/P1N4P/1P1NBP2/1K1R2R1 b - - 0 20",
+      "ply": 39,
+      "playedMoveUci": "g6f5",
+      "category": "public-classical-broadcast",
+      "stratum": "heavy-piece-check",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 73
+    },
+    {
+      "id": "shelter-sitges-2026-f38e7beaba7847c5-52",
+      "sourceGroup": "f38e7beaba7847c5bca10f1ead2a73c356e31004067dd88f5661a879b2435a8d",
+      "event": "sitges-2026",
+      "fen": "r2r4/1bq2kpp/4pb2/7P/p3PP2/1p1p4/PPPR2B1/1KB1Q2R w - - 0 27",
+      "ply": 52,
+      "playedMoveUci": "c2d3",
+      "category": "public-classical-broadcast",
+      "stratum": "heavy-piece-check",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 85
+    },
+    {
+      "id": "shelter-benasque-2026-c6887dfbc08b9fed-66",
+      "sourceGroup": "c6887dfbc08b9fed72dc2b343f73af556bb65fd7d6c69f1945970328dfb52aca",
+      "event": "benasque-2026",
+      "fen": "r2r4/7k/pp1p1npb/2pPp2p/4P3/1PP1BP2/P3NKP1/2R4R w - - 5 34",
+      "ply": 66,
+      "playedMoveUci": "c1g1",
+      "category": "public-classical-broadcast",
+      "stratum": "heavy-piece-check",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 298
+    },
+    {
+      "id": "shelter-sants-a-2026-b5942cb2d162009f-31",
+      "sourceGroup": "b5942cb2d162009fdb4352c9b3475bb952ce9d7d5d3ccfd3f0a94320abfcaf4d",
+      "event": "sants-a-2026",
+      "fen": "r1b2rk1/pp2qppp/3bpn2/8/2N5/1P1BP3/PB3PPP/2RQ1RK1 b - - 4 16",
+      "ply": 31,
+      "playedMoveUci": "f8d8",
+      "category": "public-classical-broadcast",
+      "stratum": "heavy-piece-check",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 87
+    },
+    {
+      "id": "shelter-benasque-2026-f508f3eee6890ad5-41",
+      "sourceGroup": "f508f3eee6890ad5a3516fa9a324c3c99ffe4d2a419fda103bef11608968ed7d",
+      "event": "benasque-2026",
+      "fen": "r7/1pp3pk/2nppr1p/p3p3/P3P2q/2NPP1R1/1PP3Q1/2KR2N1 b - - 3 21",
+      "ply": 41,
+      "playedMoveUci": "f6f7",
+      "category": "public-classical-broadcast",
+      "stratum": "heavy-piece-check",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 104
+    },
+    {
+      "id": "shelter-benasque-2026-7049a863d7b5011d-36",
+      "sourceGroup": "7049a863d7b5011d4059fbdb5beeea5040f7c5b1911b0268cdbcae533f3af614",
+      "event": "benasque-2026",
+      "fen": "2r1k3/pp1bbp2/5p1p/3p2r1/3QPp2/2BB4/qPP3PP/2K2RR1 w - - 0 19",
+      "ply": 36,
+      "playedMoveUci": "e4d5",
+      "category": "public-classical-broadcast",
+      "stratum": "heavy-piece-check",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 340
+    },
+    {
+      "id": "shelter-barbera-2026-b3df8b9df0bf4e79-49",
+      "sourceGroup": "b3df8b9df0bf4e79067af1e193ebaf49b0b0d00c9c374543ae311e4f583e330c",
+      "event": "barbera-2026",
+      "fen": "r5k1/pp5p/2p1N1p1/3n4/5PP1/3R4/PP5P/6K1 b - - 1 25",
+      "ply": 49,
+      "playedMoveUci": "a8e8",
+      "category": "public-classical-broadcast",
+      "stratum": "cover-capture-control",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 0
+    },
+    {
+      "id": "shelter-sants-b-2026-c58f2efc9764ada8-81",
+      "sourceGroup": "c58f2efc9764ada8591d5e3cf8094206b3b03880238c33028c0ead7434a82ab7",
+      "event": "sants-b-2026",
+      "fen": "r5rk/4q2n/1ppp1Ppp/4pP2/PPP1P2P/7R/3Q2R1/3B2K1 b - - 0 41",
+      "ply": 81,
+      "playedMoveUci": "e7f6",
+      "category": "public-classical-broadcast",
+      "stratum": "cover-capture-control",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": -1
+    },
+    {
+      "id": "shelter-sants-a-2026-0361c27f6722bfec-52",
+      "sourceGroup": "0361c27f6722bfec6379ca7535b959a62c0082cb2d69516656ad0a0df29090a8",
+      "event": "sants-a-2026",
+      "fen": "r5kr/1b1q1p2/4pQpp/2P1P3/p3B1P1/4BP2/PP5P/R3b1K1 w - - 4 27",
+      "ply": 52,
+      "playedMoveUci": "a1e1",
+      "category": "public-classical-broadcast",
+      "stratum": "cover-capture-control",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": -12
+    },
+    {
+      "id": "shelter-benasque-2026-7ae18189453a0f0b-28",
+      "sourceGroup": "7ae18189453a0f0b64d158ac759d55cd57ad608df19bb2ea7964fb1f6753643f",
+      "event": "benasque-2026",
+      "fen": "r2q1rk1/2p2p2/p1np1n1p/2b1p1p1/PpN1P1b1/1BPP1NB1/1P3PPP/R2Q1RK1 w - - 1 15",
+      "ply": 28,
+      "playedMoveUci": "c4e3",
+      "category": "public-classical-broadcast",
+      "stratum": "cover-capture-control",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": 17
+    },
+    {
+      "id": "shelter-benasque-2026-7b95bb103aba1f14-64",
+      "sourceGroup": "7b95bb103aba1f141a9837f8cd808c80d8b7214d14efb361edeeca2c43ad57d2",
+      "event": "benasque-2026",
+      "fen": "4rrk1/7p/1p3qpb/p1pPp3/2P1Pp2/1PP3P1/4QB1P/1R2R1K1 w - - 6 33",
+      "ply": 64,
+      "playedMoveUci": "b3b4",
+      "category": "public-classical-broadcast",
+      "stratum": "cover-capture-control",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": -12
+    },
+    {
+      "id": "shelter-sitges-2026-421a6ad83e570958-85",
+      "sourceGroup": "421a6ad83e570958e6c79db84a7dae195ad073059335903813d2868d586d0214",
+      "event": "sitges-2026",
+      "fen": "6k1/3n1pp1/7p/2q1pPP1/p2pP3/1b1P1NP1/1P1Q2K1/1B6 b - - 0 43",
+      "ply": 85,
+      "playedMoveUci": "h6g5",
+      "category": "public-classical-broadcast",
+      "stratum": "cover-capture-control",
+      "split": "validation",
+      "phase": "middlegame",
+      "broadcastLossCp": -9
+    }
+  ],
+  "events": {
+    "benasque-2026": {
+      "pgnSha256": "2eb82ed355a551bc5f56e6a4ae7cdd707c95bf7217d7d1a38d1c278b0f3734ef",
+      "nominations": {
+        "heavy-piece-check": 37,
+        "cover-capture-control": 358,
+        "second-shield-pawn": 19
+      }
+    },
+    "sants-a-2026": {
+      "pgnSha256": "079282c8284e3439fdfc01ed8edab95ed9df38d8db1d3fd481c7ad36599f3b23",
+      "nominations": {
+        "cover-capture-control": 248,
+        "heavy-piece-check": 14,
+        "second-shield-pawn": 7
+      }
+    },
+    "sants-b-2026": {
+      "pgnSha256": "6015d3892665072c978b8f8bf932632dc2f49627856710f747c9f3163648dbb5",
+      "nominations": {
+        "cover-capture-control": 30,
+        "heavy-piece-check": 4
+      }
+    },
+    "sitges-2026": {
+      "pgnSha256": "2111c1db4badf17bceacb55d199e5cbc8a1cfa7ebb8ab07623f55de5f9d7740b",
+      "nominations": {
+        "cover-capture-control": 76,
+        "heavy-piece-check": 8,
+        "second-shield-pawn": 2
+      }
+    },
+    "barbera-2026": {
+      "pgnSha256": "3871edb7430fc3c84817de20f67aa94f55fb1fbec9fdcb0580e7761f1fd1aebc",
+      "nominations": {
+        "cover-capture-control": 84,
+        "heavy-piece-check": 6,
+        "second-shield-pawn": 5
+      }
+    }
+  },
+  "exclusions": [
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "12e4df7126c3e7d6019e910ca8576313555e6239c187edd283370e1543eaebe8",
+    "134c6da545057c8742c78cd9b2a6eec720cb6bc9561f823b369ec03ebaa32ed7",
+    "158323fcc542223b2543c28ecdbd1efd32f0a7c9e9986d06020d4e6a4227035c",
+    "173b21eb3aaa73873993ab205bf2a3ffbf24b3093595ed05dfcd01e9044d45c9",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341",
+    "213ad8832d2c3144869fc5c489bcc635cb3a90b26bd953f805d8612219810bdb",
+    "251200a1e666130b12d1a22b3b0a7dd3327d7206733bc501b46663603c00dd37",
+    "25630bb832a1e413702275bd91e95e153c361212cb02c1bcf17e521b50f0db8d",
+    "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+    "48df231e103c0762290c892b985cb0ac2d432e27d190701af43885d9afcc6898",
+    "4c50efb41ca7cccc10d27f3732c1ec2aef2d3ac5f7a4721eb530d4371b46347b",
+    "512a52822a7fe276bbd26f53eeb990dac7d6435fc4a232fe99497988eca583b8",
+    "576b7c36c809e86ede526fff49ed3148dce5e4426066f3b20cc10ee4a005b269",
+    "6469b24fde897597dc44f73a5b2071d601887663858d4746305d5c7eef4cfdf8",
+    "6ae11eac0d5ed2d40b9a90364ae7af4b729810cae0a3ba996b796653615a594d",
+    "708dc00c4cee37d1e5ee19c6c1515d44b0f9f1bc5e01a1ce19d5fd29542a8ce1",
+    "77c668aee84132a11e0865cd42d32f3bad90e3b64a7ce5fff92d6e347e557217",
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "7e842ee8ded085cfe11bff5ae38431c1dcd06cfbce11f55ccf070b14ed2fe674",
+    "8b9c6ede8c7c417ceb6b3e017d05ffb331e0f2610ec6db96ebbc6259c355f4f6",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53",
+    "8fb4ed12bb5d6b07f7981eb70750e094797c33fe68463e50fc37ab20a6696c3a",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "993a92c04b9bddfde7989272143a0fb480b443594569ce939932e814b006ab44",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "a8f44219d0967f40677101d585d669655f691e6e059eb89255e50c31914e228f",
+    "aa2dd1f97e2c0a6c44b083e6595c3914f3c3401d323779fc9a7822052744e9b4",
+    "b38b996a209c519e53a2dd763d4cc80fedef5f5d6f130df1f7a2ef8320eebacb",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "c5f925e0469de209b806092dfcfd51a0fc60bc561cfe43ab86e929af16afef43",
+    "cd533a42e79412271c9905319e1c3b159b75a17d6c061a2aafda7fc6bc5b800a",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "d3cfb52561420c828ff4c8d91f51dc30df11a5f774ed8e3d5da55eef9f9ab571",
+    "dba9828177981f71b3bb99b9c7adaea942b24c33d64f605a90a9fbd993c32c8a",
+    "e1c833a9e94fb0eda99ada11de78743bd6edf066e14c06a769e565101a8e040b",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d"
+  ],
+  "scope": "Recorded OTB shelter transitions nominate one actual played choice per game. Annotated losses and controls get priority. Classifier outputs are blind."
+}

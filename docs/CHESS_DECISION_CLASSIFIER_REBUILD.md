@@ -2999,3 +2999,84 @@ use `decision-evidence-ordinary-replay-score.py --mistakes`. The
 `costly-pawn-recovery.patch` applies against v45 using
 `git apply --unidiff-zero`. Keep the committed tactical core fixed
 for all arms.
+
+
+## Iteration 47 — compare consequences of opening the king's pawn cover
+
+Four candidates replayed the two weaker and two stronger Stockfish lines.
+The first requires a rook or queen check down the file opened by an original
+pawn. The second also accepts capture of a second original shield pawn.
+The third tests for a tactical diagnosis when a legal exchange forces that
+pawn departure and leaves a verified material cost. The fourth compares the
+part of the shield involved in the attack and allows the better move to take
+the king away from the attacked file. All four reuse the existing searches.
+
+| Evaluation sample | Positional TP / reviewed positives, v46 → strongest candidate | Mixed TP / reviewed positives, v46 → strongest candidate |
+| --- | ---: | ---: |
+| 226 historical decisions | 10 / 58 → 11 / 58 | 2 / 9 → 2 / 9 |
+| Initial 18-game sample, later used for fourth candidate development | 0 / 5 → 1 / 5 | 0 / 1 → 1 / 1 |
+| Untouched 18-game reserve | 0 / 8 → 0 / 8 | 0 / 4 → 0 / 4 |
+
+There were zero additional reviewed false positives. No candidate changed
+tactical scores, position-character reports, candidate-move reports or
+evaluation losses across the 262 decisions. The reserve has six reviewed
+negatives for each scope measured here. It is a targeted, small study
+labelled by one engine-assisted reviewer. None of the variants transferred
+to the reserve, so they remain experiments.
+
+The development gain after `29.Rb1 Bxf4 30.gxf4 Bxh3` concerns White's
+own pawns on g3 and h3. Separately targeted searches after the exchange
+show `31.Bxh3 Rxf3`, with Stockfish scoring the forced bishop recapture
+worse than its unrestricted alternative. That offline search documents
+the reply. The candidate still lacked a verified tactical diagnosis in the
+worker replay. In the initial sample, `34.Rcg1 Nxe4+ 35.fxe4 Rf8+`
+opens the f-file while the better `34.Ng3` lines move the king away
+by the matched attack ply. The fourth candidate added positional
+support to the existing tactical assessment when the matched
+shared reply was included.
+
+Two older mixed-reference explanations failed legal-board review.
+The d5 pawn in the World Amateur case is blocked by a black pawn on
+d6, so the passed-pawn rationale fails. In the Asian Disabilities Women's
+case, Black played `...Qc2` and the subsequent pawn movement damaged
+White's shelter. It cannot establish a positional concession by Black.
+The frozen reference metrics are preserved. Treating the two disputed
+positional axes as uncertain changes the sensitivity denominator from
+nine reviewed mixed positives to seven, with two true positives either way.
+
+The reserve also exposed a limitation of comparing pawn counts alone.
+After `21.Qe2 Bxh3 22.gxh3 Qg5+`, Black sustains the checks. The stronger
+`21.Qf3 Qxf3 22.gxf3` also vacates the g-file but exchanges queens first.
+In a separate reserve game after `25...a5 26.e6 fxe6 27.Bxg7`, the early
+damage is real, yet Stockfish's separately searched `25...Ne8` branch
+also loses the original g7 pawn two plies later. A reliable test must
+compare access for the attacking pieces and explain why the different
+timing matters. Both positions are now development examples.
+
+The earlier neural ranking experiment measured position character,
+a separate question from these mistake diagnoses. On the grouped
+259-game replay, the continuation network achieved mixed average
+precision of 0.835 and nominated 24 reviewed positives at the fixed
+review budget. Logistic ranking on the same continuation inputs
+achieved 0.854 and nominated 25. Improving the labels and testing
+whether a ranker allocates the same engine budget more effectively
+remain measurable next experiments.
+
+**Reproduction.** Use the frozen strata, board positions, labels,
+and the four-arm patch under
+`benchmarks/decision-evidence/shelter-consequences-v47`.
+`decision-evidence-shelter-consequence-sample.py` selects one played
+move per game from public classical PGNs. Both candidate decisions
+and engine searches are outside its sampling inputs. Generate the
+Stockfish 19 root cache with depth 18 and a maximum of 9.6 million
+root nodes. Generate reply frames with `--capture-resources
+--position-choices`, then generate `tournament-shared-v47` with
+`decision-evidence-shared-reply.py`. Use the existing
+`decisionMistakeBreadthReplay.test.ts` and
+`decision-evidence-ordinary-replay-score.py --mistakes`.
+Apply the patch to v46 with `git apply --unidiff-zero` in an
+isolated checkout. Set the final argument of
+`compareShelterConsequence` to `"file-check"`, `"cover-capture"`,
+`"exchange-cost"` or `"distinct-cover"` before each replay.
+The two small case-level evidence receipts preserve the disputed
+boards and the additional Brazilian counterfactual search.

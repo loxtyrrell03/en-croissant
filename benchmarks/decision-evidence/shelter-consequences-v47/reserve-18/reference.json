@@ -1,0 +1,150 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "shelter-biel-mto-2026-c3fc6cbe779a5eca-33",
+      "scope": "mistake-mechanism",
+      "moveUci": "f8e8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After Re8, White's f6 push draws Black's g-pawn off the g-file. Both stronger Qd8 branches meet f6 with Bf8 and keep the kingside cover. The later White capture differs across the weaker branches."
+    },
+    {
+      "id": "shelter-biel-mto-2026-bf3e8172f32cd29b-60",
+      "scope": "mistake-mechanism",
+      "moveUci": "h3g4",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Nf6+ changes the order of the exchanges. The hxg4 branches disagree about whether White should immediately recapture on g4 or switch back to the knight check."
+    },
+    {
+      "id": "shelter-dubai-open-2025-172ffaafbdac5cb1-58",
+      "scope": "mistake-mechanism",
+      "moveUci": "a1e1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The bishop sacrifice Bxg3 opens a sequence of rook checks after Re1. Bxg3 also works against Qh1, with a different continuation, and both moves lose decisively."
+    },
+    {
+      "id": "shelter-biel-ato-2026-27b51b533f56e6ed-49",
+      "scope": "mistake-mechanism",
+      "moveUci": "a7a5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "After a5, e6 draws the f-pawn off its file, Bxg7 takes a second pawn from the king's cover, and Qxh5 takes the rook. Both stronger Ne8 lines keep more cover at that stage."
+    },
+    {
+      "id": "shelter-dubai-open-2025-7531cf7d8ccdb7a9-27",
+      "scope": "mistake-mechanism",
+      "moveUci": "d8e7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qe7 allows hxg6 and prompts fxg6 in both weaker lines, depleting the central king's pawn cover. After gxh5, Black keeps the f-pawn on its file in both searches over the corresponding exchanges."
+    },
+    {
+      "id": "shelter-biel-ato-2026-d9e35261e1e43fae-32",
+      "scope": "mistake-mechanism",
+      "moveUci": "e1d1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Nxg3 draws the f-pawn away and allows Rxe3. This sequence also appears after hxg5 but White inserts Rh1 and keeps an attack. Independent long-term concession is uncertain."
+    },
+    {
+      "id": "shelter-biel-mto-2026-5c0dd0027a4c4a7e-40",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1e2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxh3 gxh3 clears the g-file for Qg5+ and a series of checks. Qf3 also permits a g-pawn recapture, but it first trades queens and avoids the exposed king with queens on."
+    },
+    {
+      "id": "shelter-biel-ato-2026-511c00d924b51935-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6f5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "gxf5 opens the g-file toward Black's king. White forces Kh8 and doubles rooks against it in both searches, with the move order varying. Nd5 keeps that file closed in the early reply."
+    },
+    {
+      "id": "shelter-biel-ato-2026-4f03c8f31afd3315-55",
+      "scope": "mistake-mechanism",
+      "moveUci": "c7e7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re7 allows fxg6 and Nxh5+ before White advances the g-pawn with check. exf5 eliminates the f5-pawn first and leaves Black's g6/h5 shelter standing at that stage."
+    },
+    {
+      "id": "shelter-biel-mto-2026-a386e29a519bd8cb-79",
+      "scope": "mistake-mechanism",
+      "moveUci": "b7g7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rg7 misses the available Qxb1, which wins a rook even after White's checks. Black remains won either way and a distinct positional concession is uncertain."
+    },
+    {
+      "id": "shelter-biel-ato-2026-df476d133a5cf320-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "gxf6 opens the g-file in front of Black's king and leaves weak f-pawns. Qxf6 keeps the g-pawn and retains kingside cover in both better lines."
+    },
+    {
+      "id": "shelter-biel-ato-2026-abf0556e435bc158-48",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1c2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qc2 lets Black attack the kingside with h5. Both weaker lines show pressure or capture against White's kingside pawns. Nc5 keeps play away from the king during that window; the exact tactical sequence differs."
+    },
+    {
+      "id": "shelter-biel-mto-2026-a6f7666c3a52932b-48",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3f4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The push e6 and played gxf4 both keep a winning score. A pawn-cover change does not establish a consequential error here."
+    },
+    {
+      "id": "shelter-dubai-open-2025-490c602222cc9580-29",
+      "scope": "mistake-mechanism",
+      "moveUci": "f6g5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "fxg5 is the engine's preferred move and exchanges the bishop for the knight without a consequential played-move loss."
+    },
+    {
+      "id": "shelter-biel-ato-2026-407601c6b4fbdef9-41",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6g5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "hxg5 is the engine's preferred move and leaves a balanced game. The opened file is insufficient evidence of a mistake."
+    },
+    {
+      "id": "shelter-biel-mto-2026-7db231af127d3d1b-38",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2f3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "gxf3 is the engine's chosen defense. Bxd5 and Nxf3+ exploit the position already on the board."
+    },
+    {
+      "id": "shelter-biel-mto-2026-8b3c054ccd9bce26-27",
+      "scope": "mistake-mechanism",
+      "moveUci": "b4c6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nc6 is the engine's chosen move. Re1+ in the variation is not evidence of a played-move loss."
+    },
+    {
+      "id": "shelter-dubai-open-2025-e74059380c91a58e-67",
+      "scope": "mistake-mechanism",
+      "moveUci": "d8c7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "g5 and the actual Bc7 both leave a balanced rook-versus-bishop ending. The pawn geometry does not establish a meaningful error."
+    }
+  ]
+}

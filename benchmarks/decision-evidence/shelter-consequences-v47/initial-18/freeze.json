@@ -1,0 +1,17 @@
+{
+  "comparator": "0e6b617ee26ceed757e6505a6d49e5292b549d3b",
+  "sample": "e85ac60fa581836f1a27ab248e75c6adabdbc7dedc7d5c739ecac4da7414abe6",
+  "reference": "35a336d9ac54ad27cdd03a276b56c10b78da38ce72e627a5bfb8fea413240c7b",
+  "variants": [
+    "file-check",
+    "cover-capture",
+    "exchange-cost"
+  ],
+  "implementation": "b53041e949e7e649c9fc67d7ba2e9e12bb421da6776933bd37f9c918ba908dbf",
+  "criterion": "Add at least one reviewed positional or mixed true positive while preserving all reviewed true positives and adding no reviewed false positives. No added engine searches. Preserve position and move scope.",
+  "frozenFileLineEndings": "CRLF",
+  "repositoryLfSha256": {
+    "sample": "830339b869883e7a65856498413b22ce10e16818fbaba3720ab2a290bc8475b1",
+    "reference": "311051b63f8352d15f58436bbac62316c9743817bb708a19c16d00d3df61acd6"
+  }
+}

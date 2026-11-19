@@ -1,0 +1,150 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "shelter-benasque-2026-1fd30cee61842936-46",
+      "scope": "mistake-mechanism",
+      "moveUci": "e3g4",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Ng4 permits Bxg4, then the two played searches choose hxg4 and Qxg4 respectively. The better Rxc7 lines enter a forcing exchange rather than the same attack, so neither additional mechanism is isolated across the played searches."
+    },
+    {
+      "id": "shelter-barbera-2026-197f83fc34a86d71-64",
+      "scope": "mistake-mechanism",
+      "moveUci": "f3e4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "fxe4 moves the f-pawn out of cover, and both played lines then show Bxg3 taking a second pawn near the king. c4 permits exf3 but retains the g-pawn through the early comparison. The played countercapture on f7 obscures a distinct material loss."
+    },
+    {
+      "id": "shelter-barbera-2026-97ad5c4c29e0e981-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7f6",
+      "tactical": false,
+      "positional": null,
+      "rationale": "Both choices allow h6 and Ne8. Qb2 gives Black earlier queen activity, while f6 leaves a different defence, but the continuation does not isolate the queen activity or own king shelter as a cause of the loss."
+    },
+    {
+      "id": "shelter-benasque-2026-ba5df1690361ce1e-85",
+      "scope": "mistake-mechanism",
+      "moveUci": "b7c7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After Qc7 both played searches start b4 and a more active queenside for White. Ne4 retains a central knight and the better lines follow a different plan. The later material and king-cover consequences differ between the played searches."
+    },
+    {
+      "id": "shelter-benasque-2026-4dfa1d0079d97e26-52",
+      "scope": "mistake-mechanism",
+      "moveUci": "e3f1",
+      "tactical": null,
+      "positional": null,
+      "rationale": "The two choices already lose heavily and both allow g4 and gxf3. The played lines differ later, and the independent deterioration is small. A choice-specific tactical or positional mechanism remains uncertain."
+    },
+    {
+      "id": "shelter-benasque-2026-8244eeec6555134f-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6h5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "gxh5 is the leading supplied choice and the independent reply follows the same defence. No mistake verified."
+    },
+    {
+      "id": "shelter-benasque-2026-3fff9019a17d9b85-39",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6f5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nxd5 and gxf5 have almost identical paired evaluations in a previously losing position. The independent replies vary, so the measured played comparison establishes no mistake."
+    },
+    {
+      "id": "shelter-sitges-2026-f38e7beaba7847c5-52",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2d3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "cxd3 allows the same Rxd3 rook entry and moves White's c-pawn to d3. After c3 it remains on the c-file and both branches defend on the queenside differently. Later direct losses differ between the played lines."
+    },
+    {
+      "id": "shelter-benasque-2026-c6887dfbc08b9fed-66",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1g1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rcg1 allows Nxe4+ fxe4 Rf8+ Nf4 exf4 in both searches. The opening of the f-file in front of White's king has a separate structural consequence from the pawn and recapture sequence. The Ng3 lines move the king away from the f-file during the comparison."
+    },
+    {
+      "id": "shelter-sants-a-2026-b5942cb2d162009f-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "f8d8",
+      "tactical": null,
+      "positional": null,
+      "rationale": "The better Bc5 line also allows Bxf6 gxf6 Qg4+. The played lines rearrange the exchanges around d6 and permit similar g-file exposure. The shared check and pawn recapture cannot alone account for the choice-specific difference."
+    },
+    {
+      "id": "shelter-benasque-2026-f508f3eee6890ad5-41",
+      "scope": "mistake-mechanism",
+      "moveUci": "f6f7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rg8 and Rf7 tie within five centipawns in the paired search. The existing king pressure survives both. No additional mistake mechanism established."
+    },
+    {
+      "id": "shelter-benasque-2026-7049a863d7b5011d-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Both exd5 lines permit Rxd5 and later Rxc3 and bxc3, displacing the b-pawn from the king's cover. Re1 keeps that cover in the early lines. The later material and checking effects differ between the played searches."
+    },
+    {
+      "id": "shelter-barbera-2026-b3df8b9df0bf4e79-49",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8e8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Re8 is the leading supplied choice. The later f-pawn and rook activity occurs in the corroborating search."
+    },
+    {
+      "id": "shelter-sants-b-2026-c58f2efc9764ada8-81",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7f6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qxf6 is the leading supplied choice and both searches corroborate the same queen exchange."
+    },
+    {
+      "id": "shelter-sants-a-2026-0361c27f6722bfec-52",
+      "scope": "mistake-mechanism",
+      "moveUci": "a1e1",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxe1 is the leading supplied choice. The f-pawn recapture occurs in both measured continuations."
+    },
+    {
+      "id": "shelter-benasque-2026-7ae18189453a0f0b-28",
+      "scope": "mistake-mechanism",
+      "moveUci": "c4e3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Ne3 is close to a5 in both searches. Both choices retain a viable defence despite different pawn recaptures."
+    },
+    {
+      "id": "shelter-benasque-2026-7b95bb103aba1f14-64",
+      "scope": "mistake-mechanism",
+      "moveUci": "b3b4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "b4 is the leading supplied choice. Both searches retain queenside counterplay."
+    },
+    {
+      "id": "shelter-sitges-2026-421a6ad83e570958-85",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6g5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "hxg5 is the leading supplied choice and both searches show the same knight recapture."
+    }
+  ]
+}

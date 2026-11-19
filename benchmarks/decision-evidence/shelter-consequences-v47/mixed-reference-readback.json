@@ -1,0 +1,100 @@
+{
+  "protocol": 1,
+  "scope": "Readback of two reviewed mixed examples. The archived labels remain the scoring references.",
+  "cases": [
+    {
+      "id": "mistake-world-amateur-c56d044e7e57e80e-75",
+      "archivedReference": {
+        "id": "mistake-world-amateur-c56d044e7e57e80e-75",
+        "scope": "mistake-mechanism",
+        "moveUci": "h4h3",
+        "tactical": true,
+        "positional": true,
+        "rationale": "h3 permits Qc7 and a forcing queen exchange in which White recaptures on d5, creating a second dangerous passed pawn alongside b7. Bxd5 first removes the knight and reaches a different defensive setup."
+      },
+      "observed": [
+        {
+          "ply": 6,
+          "move": "exd5",
+          "blockers": [
+            "d6"
+          ],
+          "fen": "3r4/1P3ppk/3p4/3Pp3/8/6Pp/5P1P/1R4K1 b - - 0 41",
+          "prefixUci": [
+            "h4h3",
+            "c6c7",
+            "e6d5",
+            "c7d8",
+            "b8d8",
+            "e4d5"
+          ]
+        },
+        {
+          "ply": 6,
+          "move": "exd5",
+          "blockers": [
+            "d6"
+          ],
+          "fen": "3r4/1P3ppk/3p4/3Pp3/8/6Pp/5P1P/1R4K1 b - - 0 41",
+          "prefixUci": [
+            "h4h3",
+            "c6c7",
+            "e6d5",
+            "c7d8",
+            "b8d8",
+            "e4d5"
+          ]
+        }
+      ],
+      "review": "The pawn on d5 is blocked by the enemy pawn on d6 immediately after exd5 in both played branches. A different positional effect needs evidence.",
+      "adjudicatedPositional": null
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+      "archivedReference": {
+        "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+        "scope": "mistake-mechanism",
+        "moveUci": "c5c2",
+        "tactical": true,
+        "positional": true,
+        "rationale": "Qc2 allows Rc1 and Nd4, followed by Nxf3+ after the queen is taken. gxf3 weakens the king's pawn cover in both worse continuations; that structural result remains after the main exchange."
+      },
+      "observed": [
+        {
+          "ply": 6,
+          "move": "gxf3",
+          "coverOwner": "white",
+          "playedSide": "black",
+          "king": "g1",
+          "fen": "r2r2k1/1p4p1/p3Pp1p/8/6N1/P4P2/1PR2P1P/4R1K1 b - - 0 26",
+          "prefixUci": [
+            "c5c2",
+            "d1c1",
+            "f5d4",
+            "c1c2",
+            "d4f3",
+            "g2f3"
+          ]
+        },
+        {
+          "ply": 6,
+          "move": "gxf3",
+          "coverOwner": "white",
+          "playedSide": "black",
+          "king": "g1",
+          "fen": "r2r2k1/1p4p1/p3Pp1p/8/6N1/P4P2/1PR2P1P/4R1K1 b - - 0 26",
+          "prefixUci": [
+            "c5c2",
+            "d1c1",
+            "f5d4",
+            "c1c2",
+            "d4f3",
+            "g2f3"
+          ]
+        }
+      ],
+      "review": "The played choice Qc2 is Black. The pawn that leaves the king cover is White. This observation cannot establish a positional concession by Black.",
+      "adjudicatedPositional": null
+    }
+  ]
+}

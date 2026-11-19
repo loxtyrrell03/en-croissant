@@ -1,0 +1,349 @@
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -62,0 +63 @@
++import { compareShelterConsequence, type ShelterConsequence } from "./decisionShelterConsequence";
+@@ -142,0 +144 @@
++              shelterConsequence?: ShelterConsequence;
+@@ -930,0 +933,18 @@
++            const shelterConsequence =
++                corroboratedChoices && !shelter
++                    ? compareShelterConsequence(
++                          input.fen,
++                          comparedBest,
++                          playedLine,
++                          betterProbe!.lines[0],
++                          playedProbe!.lines[0],
++                      )
++                    : null;
++            if (shelterConsequence?.tactic && assessment.tactical.support !== "supported") {
++                tacticalEpisode = shelterConsequence.tactic;
++                assessment.tactical = {
++                    support: "supported",
++                    basis: "engine-supported",
++                    reasons: [tacticalEpisode.explanation],
++                };
++            }
+@@ -936 +956,2 @@
+-                rookPressure
++                rookPressure ||
++                shelterConsequence
+@@ -949,0 +971 @@
++                        ...(shelterConsequence ? [shelterConsequence.factor.description] : []),
+@@ -956,0 +979 @@
++                    ...(shelterConsequence ? [shelterConsequence.factor] : []),
+@@ -977,0 +1001 @@
++                ...(shelterConsequence ? { shelterConsequence } : {}),
+diff --git a/src/utils/tacticalMotifs/decisionShelterConsequence.ts b/src/utils/tacticalMotifs/decisionShelterConsequence.ts
+new file mode 100644
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionShelterConsequence.ts
+@@ -0,0 +1,309 @@
++import { attacks } from "chessops/attacks";
++import type { Chess } from "chessops/chess";
++import { makeFen } from "chessops/fen";
++import type { Color, Square } from "chessops/types";
++import { makeSquare } from "chessops/util";
++import {
++    MIN_TACTICAL_CAPTURE_GAIN,
++    replayTacticalLine,
++    tacticalCaptureGain,
++    type TacticalReplayStep,
++} from "./causalTactics";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import type { ComparativePositionalEvidence } from "./positionalTransitions";
++import type { TacticalMistakeEpisode } from "./tacticalMistakeEpisode";
++
++const WINDOW = 12;
++const file = (square: Square) => square % 8;
++const rank = (square: Square, side: Color) =>
++    side === "white" ? Math.floor(square / 8) : 7 - Math.floor(square / 8);
++const isPawn = (board: Chess, square: Square, side: Color) => {
++    const piece = board.board.get(square);
++    return piece?.role === "pawn" && piece.color === side;
++};
++const fileCovered = (board: Chess, column: number, side: Color) =>
++    [...board.board.pawn.intersect(board.board[side])].some((square) => file(square) === column);
++
++type Exposure = {
++    departure: TacticalReplayStep;
++    attack: TacticalReplayStep;
++    coverCapture?: Square;
++    first: number;
++    payoff: number;
++    through: number;
++};
++export type ShelterConsequence = {
++    factor: ComparativePositionalEvidence;
++    playedLineUci: string[];
++    betterLineUci: string[];
++    tactic?: TacticalMistakeEpisode;
++};
++
++function coveringPawns(board: Chess, side: Color, king: Square) {
++    return [...board.board.pawn.intersect(board.board[side])].filter(
++        (square) =>
++            Math.abs(file(square) - file(king)) <= 1 &&
++            rank(square, side) >= 1 &&
++            rank(square, side) <= 2,
++    );
++}
++
++function sameOriginalPawn(steps: TacticalReplayStep[], square: Square, side: Color, end: number) {
++    return steps
++        .slice(0, end)
++        .every(
++            ({ after, move }) =>
++                move.from !== square && move.to !== square && isPawn(after, square, side),
++        );
++}
++
++/** An empty file is a board fact. Require a check using the vacancy or
++ * a second original covering pawn being taken before attributing harm. */
++function exposedCover(
++    steps: TacticalReplayStep[],
++    side: Color,
++    king: Square,
++    shield: Square[],
++    coverCapture: boolean,
++) {
++    const found: Exposure[] = [];
++    for (const [index, departure] of steps.slice(0, 5).entries()) {
++        const from = departure.move.from;
++        const column = file(from);
++        if (
++            departure.before.turn !== side ||
++            departure.before.board.kingOf(side) !== king ||
++            !departure.capture ||
++            departure.move.promotion ||
++            !shield.includes(from) ||
++            file(departure.move.to) === column ||
++            !sameOriginalPawn(steps, from, side, index)
++        )
++            continue;
++        for (let entry = index + 1; entry < Math.min(9, steps.length); entry++) {
++            const attack = steps[entry];
++            if (
++                attack.before.board.kingOf(side) !== king ||
++                fileCovered(attack.before, column, side)
++            )
++                break;
++            if (attack.before.turn === side) continue;
++            const to = attack.move.to;
++            const piece = attack.after.board.get(to);
++            if (!piece) continue;
++            const usesFile =
++                column === file(king) &&
++                file(to) === column &&
++                (piece.role === "rook" || piece.role === "queen") &&
++                attacks(piece, to, attack.after.board.occupied).has(king) &&
++                (to - from) * (from - king) >= 0 &&
++                to !== king;
++            const takesNext =
++                coverCapture &&
++                Boolean(attack.capture) &&
++                shield.includes(to) &&
++                Math.abs(file(to) - column) === 1 &&
++                sameOriginalPawn(steps, to, side, entry);
++            if (!usesFile && !takesNext) continue;
++            const through = entry + (takesNext ? 3 : 1);
++            if (
++                steps.length < through ||
++                steps.slice(index, through).some(({ after }) => fileCovered(after, column, side)) ||
++                (takesNext &&
++                    steps
++                        .slice(entry, through)
++                        .some(({ after }) => fileCovered(after, file(to), side)))
++            )
++                continue;
++            found.push({
++                departure,
++                attack,
++                coverCapture: takesNext ? to : undefined,
++                first: index + 1,
++                payoff: entry + 1,
++                through,
++            });
++        }
++    }
++    return found;
++}
++
++function replayChoice(fen: string, line: DecisionEngineLine, reply?: DecisionEngineLine) {
++    let expanded = line;
++    if (reply) {
++        const root = replayTacticalLine(fen, line.pvUci.slice(0, 1))[0];
++        if (!root || !measureDecisionLine(makeFen(root.after.toSetup()), reply)) return [];
++        expanded = { ...line, pvUci: [line.pvUci[0], ...reply.pvUci] };
++    }
++    return measureDecisionLine(fen, expanded)
++        ? replayTacticalLine(fen, expanded.pvUci.slice(0, WINDOW))
++        : [];
++}
++
++function preservesCover(
++    steps: TacticalReplayStep[],
++    exposure: Exposure,
++    through: number,
++    king: Square,
++    side: Color,
++    distinctCover: boolean,
++) {
++    if (steps.length < through) return false;
++    if (distinctCover) {
++        // A better move can lose a different cover pawn in the same exchange.
++        // Test the original pawn that was lost only in the played branches.
++        if (exposure.coverCapture !== undefined)
++            return sameOriginalPawn(steps, exposure.coverCapture, side, through);
++        const afterCheck = steps[exposure.payoff - 1].after;
++        const alternativeKing = afterCheck.board.kingOf(side);
++        const departure = exposure.departure.move.from;
++        return (
++            (alternativeKing !== undefined && file(alternativeKing) !== file(departure)) ||
++            sameOriginalPawn(steps, departure, side, through)
++        );
++    }
++    const cover = [exposure.departure.move.from, exposure.coverCapture];
++    return (
++        cover.every(
++            (square) => square === undefined || sameOriginalPawn(steps, square, side, through),
++        ) && steps.slice(0, through).every(({ after }) => after.board.kingOf(side) === king)
++    );
++}
++
++/** A wider experimental arm adds tactical support only for a common short
++ * exchange with a legal capture proof and a corroborated material cost. */
++function exchangeCost(
++    poorer: TacticalReplayStep[][],
++    stronger: TacticalReplayStep[][],
++    exposure: Exposure,
++    repeat: Exposure,
++) {
++    if (
++        exposure.coverCapture === undefined ||
++        exposure.payoff !== repeat.payoff ||
++        exposure.first < 3 ||
++        exposure.payoff - exposure.first !== 1
++    )
++        return null;
++    const [actual, independent] = poorer;
++    if (actual.slice(0, exposure.payoff).some(({ uci }, index) => independent[index].uci !== uci))
++        return null;
++    const beforeDeparture = actual[exposure.first - 2];
++    const departure = exposure.departure;
++    if (beforeDeparture.move.to !== departure.move.to || !beforeDeparture.capture) return null;
++    const recaptures = [...departure.before.allDests()].filter(([, destinations]) =>
++        destinations.has(departure.move.to),
++    );
++    if (recaptures.length !== 1 || recaptures[0][0] !== departure.move.from) return null;
++    const through = exposure.through;
++    if (
++        [...poorer, ...stronger].some(
++            (line) =>
++                line.length < through ||
++                line[through - 2].balance !== line[through - 1].balance ||
++                line[through - 1].after.isCheck(),
++        )
++    )
++        return null;
++    const difference =
++        Math.min(...stronger.map((line) => line[through - 1].balance)) -
++        Math.max(...poorer.map((line) => line[through - 1].balance));
++    if (
++        difference < MIN_TACTICAL_CAPTURE_GAIN ||
++        (tacticalCaptureGain(exposure.attack) ?? 0) < MIN_TACTICAL_CAPTURE_GAIN
++    )
++        return null;
++    return {
++        kind: "forcing-attack",
++        throughPly: through,
++        betterLineUci: stronger[0].slice(0, through).map(({ uci }) => uci),
++        playedLineUci: actual.slice(0, through).map(({ uci }) => uci),
++        mechanisms: [],
++        explanation: `${beforeDeparture.san} leaves ${departure.san} as the only immediate recapture on ${makeSquare(departure.move.to)}. Both played continuations then show ${exposure.attack.san} taking the cover pawn. At the comparison point the played lines retain at least ${(difference / 100).toFixed(1)} fewer material points.`,
++    } satisfies TacticalMistakeEpisode;
++}
++
++export function compareShelterConsequence(
++    fen: string,
++    better: DecisionEngineLine,
++    played: DecisionEngineLine,
++    betterReply: DecisionEngineLine,
++    playedReply: DecisionEngineLine,
++    mode: "file-check" | "cover-capture" | "exchange-cost" | "distinct-cover" = "file-check",
++): ShelterConsequence | null {
++    if (
++        better.cp === null ||
++        played.cp === null ||
++        better.cp - played.cp < 60 ||
++        betterReply.cp === null ||
++        playedReply.cp === null ||
++        playedReply.cp - betterReply.cp < 40 ||
++        better.depth !== played.depth ||
++        better.depth < 16 ||
++        [better, played, betterReply, playedReply].some((line) => line.mate != null)
++    )
++        return null;
++    const root = replayTacticalLine(fen, played.pvUci.slice(0, 1))[0];
++    if (!root) return null;
++    const side = root.before.turn;
++    const king = root.before.board.kingOf(side);
++    if (king === undefined || rank(king, side) > 1) return null;
++    const shield = coveringPawns(root.before, side, king);
++    if (shield.length < 2) return null;
++    const poorer = [replayChoice(fen, played), replayChoice(fen, played, playedReply)];
++    const stronger = [replayChoice(fen, better), replayChoice(fen, better, betterReply)];
++    const options = poorer.map((line) =>
++        exposedCover(line, side, king, shield, mode !== "file-check"),
++    );
++    for (const effect of options[0]) {
++        const repeat = options[1].find(
++            (other) =>
++                effect.departure.uci === other.departure.uci &&
++                effect.attack.uci === other.attack.uci &&
++                effect.first === other.first &&
++                effect.payoff === other.payoff &&
++                effect.coverCapture === other.coverCapture,
++        );
++        if (!repeat) continue;
++        const through = Math.max(effect.through, repeat.through);
++        const distinct = mode === "distinct-cover";
++        if (stronger.some((line) => !preservesCover(line, effect, through, king, side, distinct)))
++            continue;
++        const square = makeSquare(effect.departure.move.from);
++        const betterCheck = distinct
++            ? "The better lines keep the blocking pawn or move the king away from that file."
++            : `Both better lines retain the pawn on ${square}.`;
++        const betterCover =
++            effect.coverCapture === undefined
++                ? ""
++                : distinct
++                  ? `Both better lines retain the pawn on ${makeSquare(effect.coverCapture)} through the comparison.`
++                  : "Both better lines keep both cover pawns through the comparison.";
++        const description =
++            effect.coverCapture === undefined
++                ? `${effect.departure.san} opens the ${square[0]}-file in front of the king. Both played lines show ${effect.attack.san} checking down that file. ${betterCheck}`
++                : `${effect.departure.san} moves the pawn from ${square} out of the king's cover. Both played lines then show ${effect.attack.san} taking the original pawn on ${makeSquare(effect.coverCapture)}. ${betterCover}`;
++        const tactic =
++            mode === "exchange-cost" ? exchangeCost(poorer, stronger, effect, repeat) : null;
++        return {
++            playedLineUci: poorer[0].slice(0, through).map(({ uci }) => uci),
++            betterLineUci: stronger[0].slice(0, through).map(({ uci }) => uci),
++            ...(tactic ? { tactic } : {}),
++            factor: {
++                feature: "king-file-shelter",
++                side,
++                squareOrFile: square[0],
++                description,
++                firstPly: effect.first,
++                lastConsecutivePly: through,
++                support: "board-fact",
++                comparisonMoveUci: better.pvUci[0],
++                comparisonGapCp: better.cp - played.cp,
++                supportInComparison: false,
++                comparison: "separate-reply-search",
++                interpretation: "heuristic",
++            },
++        };
++    }
++    return null;
++}
