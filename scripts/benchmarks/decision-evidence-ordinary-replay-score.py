@@ -133,16 +133,18 @@ def evaluate_mistakes(before, after):
     if before.keys() != after.keys():
         raise ValueError('The report pairs must cover the same decisions')
     pairs = [(old, after[case]) for case, old in before.items()]
+    promotion_count = sum('promotion' in old['label'] for old, _ in pairs)
+    if promotion_count not in (0, len(pairs)):
+        raise ValueError('Promotion references must cover the entire sample or be omitted')
     for old, new in pairs:
         label = old['label']
         if (
             old['row'] != new['row'] or label != new['label']
             or label['scope'] != 'mistake-mechanism'
             or label.get('moveUci') != old['row']['playedMoveUci']
-            or 'promotion' not in label
         ):
             raise ValueError('A mistake reference must identify the actual move in both reports')
-    axes = (*DIMENSIONS, 'promotion')
+    axes = (*DIMENSIONS, 'promotion') if promotion_count else DIMENSIONS
 
     def detect_mistake(case, axis):
         mistake = case['report']['mistake']

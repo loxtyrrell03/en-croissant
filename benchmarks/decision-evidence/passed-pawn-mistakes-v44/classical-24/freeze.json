@@ -1,0 +1,11 @@
+{
+  "comparator": "d55143516157e04bbb36d9d79eb97b2f0a89fae1",
+  "sample": "dba9828177981f71b3bb99b9c7adaea942b24c33d64f605a90a9fbd993c32c8a",
+  "reference": "e6bafe8132f10955b960e6d10909392490b8bd8af909ae4deabeaecf73928433",
+  "criterion": "At least one new positional true positive with no new reviewed false positives or losses to either evidence dimension",
+  "snapshots": {
+    "src/utils/tacticalMotifs/decisionExistingPasser.ts": "23be9839a01f2bfc69ef7982e030b5ac7be3fa78b038f446b379378e80188940",
+    "src/utils/tacticalMotifs/decisionAssessment.ts": "f1050256c771f0f9296b0f6ad3ecd61b517115fc2720835435ad0a3059a686c5",
+    "src/utils/tacticalMotifs/decisionEvidence.ts": "9f8f08efd965e1a169a76e0e639d57135c73ae7fd341f59c54ce57b9c344175c"
+  }
+}

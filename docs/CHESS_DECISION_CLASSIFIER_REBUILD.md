@@ -2738,3 +2738,94 @@ promotion evidence separately from the tactical dimension. Use
 `git apply --unidiff-zero` for either archived variant. The study
 used the committed tactical core because the shared checkout
 contains a separate tactical edit.
+
+## Iteration 44 — retain a legal engine line that ends in a draw
+
+The paired comparison for `51...Kb8` in the 2025 Grand Swiss was
+discarded in full because the line after `51...Kc7` contained a king
+move after both sides had run out of mating material. The same search
+evaluated the better continuation at −0.27 and the played choice at
+−4.04 from Black's point of view. Losing the whole pair hid a measured
+3.77-pawn evaluation drop. The app now retries an otherwise invalid
+paired comparison by truncating a near-equal exact-score continuation
+at the first position with insufficient material. The full legal prefix
+and the exact starting board must still validate. Ordinary position
+and move assessments keep their existing validation, and the recovery
+uses the existing engine result. [FIDE Grand Swiss 2025 Open](https://lichess.org/api/broadcast/vSyxclHS.pgn)
+
+Four experimental mistake classifiers compared the same advanced enemy
+passed pawn in two paired lines and in separate reply searches.
+
+| Experimental candidate | New positional diagnoses among five earlier reviewed misses | New positional diagnoses in the 24-game sample |
+| --- | ---: | ---: |
+| A. Better choice removes the pawn and the played line leaves it passed | 1 | 0 |
+| B. Also compare the material cost of stopping the same pawn | 2 | 0 |
+| C. Also retain the legal drawing prefix in the paired comparison | 3 | 0 |
+| D. Also verify that the better move can intercept a guarded advance | 3 | 0 |
+
+In development, the first comparison recovered `Rc5` versus
+`Rxe3`, when taking on e3 removes the advanced passer. Comparing
+settled material after the pawn advances recovered `g3` versus
+`Qf1`, where `d2 Rxd2 Bxd2 Qxd2` costs an additional 1.7
+material points. Retaining the draw line recovered the `Kb8` versus
+`Kc7` pawn comparison for the experiment. These results describe
+earlier reviewed cases used to develop the rules.
+
+One engine-assisted reviewer froze labels for 24 previously unused
+games from four classical events before replays A through C. A later
+inspection of that set exposed `...Kd7` versus `...Rf7`. The
+short demonstration for D could verify `...Rxd7` against the pawn
+advance and a rook-for-pawn cost in the played lines. In the complete
+app replay, the two replies after `...Rf7` start with `Re5` and
+`Re8`. The paired and separate searches do not meet the existing
+reply agreement gate, so D still abstains. The first sample was
+therefore development for D. [Limerick Congress](https://lichess.org/api/broadcast/fYHaW9yz.pgn)
+[Rio Absolute](https://lichess.org/api/broadcast/0cfOqgVY.pgn)
+[Asian Disabilities Open](https://lichess.org/api/broadcast/JwDV9Ju4.pgn)
+[Asian Disabilities Women](https://lichess.org/api/broadcast/rUYNHzDG.pgn)
+
+The independent check for D used a shallow Stockfish preview to select
+three games with a different observed pawn outcome and three with the
+same outcome. The original seven-per-group quota was reduced after 174
+previews yielded three differences. The six-game references were
+frozen before replay using the full engine searches. This targeted
+sample measures transfer on these cases and is too small for a precise
+population estimate. [Samarkand Olympiad Open](https://lichess.org/api/broadcast/n1pPI5Q0.pgn)
+[European Club Cup Women](https://lichess.org/api/broadcast/seXJoc2H.pgn)
+
+| Cohort | Question | Positive / negative / uncertain references | v43 TP / FP | Experimental TP / FP |
+| --- | --- | ---: | ---: | ---: |
+| 24-game classical pawn sample | Tactical mistake | 4 / 16 / 4 | 0 / 0 | 0 / 0 |
+| | Positional mistake | 8 / 14 / 2 | 0 / 0 | 0 / 0 |
+| | Mixed mistake | 3 / 16 / 5 | 0 / 0 | 0 / 0 |
+| Six-game pawn contrast | Tactical mistake | 1 / 4 / 1 | 1 / 0 | 1 / 0 |
+| | Positional mistake | 1 / 3 / 2 | 0 / 0 | 0 / 0 |
+| | Mixed mistake | 0 / 4 / 2 | 0 / 0 | 0 / 0 |
+
+The frozen promotion criterion for the experimental classifier required
+at least one fresh positional true positive with zero new reviewed
+false positives or lost tactical or positional diagnoses. The pawn
+classifiers remain reproducible experiments. The source change is the
+separate legal-prefix repair, which restores the evaluation comparison
+and reports the mechanism as unclear. Its report differs from v43 on
+one of 418 worker replays, the `Kb8` development case. The worker
+requested the same optional searches on all 418. Median cached worker
+time for the 24-game sample was 100.88 ms before and 89.49 ms after.
+These are separate replay timings, with engine search excluded. The
+existing panel displays the restored evaluation loss at 320, 390 and
+900 pixels in an isolated browser run. The installed app is unverified.
+The v41 legal-line neural ranker remains behind the logistic baseline
+on its reported mixed-position experiment.
+
+**Reproduction.** Use the tournament sample, reference and freeze
+files in `benchmarks/decision-evidence/passed-pawn-mistakes-v44`.
+The first set comes from `decision-evidence-passer-sample.py
+--annotated-promotion-decision --per-stratum 12`. The second uses
+`decision-evidence-pawn-contrast-sample.py --per-stratum 3`. The
+published manifests are the fixed positions for reproduction. Generate
+ordinary Stockfish 19 root, reply, shared-reply and six-choice caches
+with the v43 search settings. Run `decisionOrdinaryReplay.test.ts`
+with the manifest scope set to `mistake-mechanism`, then use
+`decision-evidence-ordinary-replay-score.py --mistakes`. Each research
+patch applies against v43 with `git apply --unidiff-zero`. The
+comparison uses the v43 committed tactical core for both arms.

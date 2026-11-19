@@ -216,6 +216,41 @@ test("an invalid later continuation cannot erase or replace valid principal evid
     expect(report.mistakeStatus).toBe("comparison-unavailable");
 });
 
+test("a paired draw with an engine continuation past bare kings still compares the played move", () => {
+    const root = "5n2/1k4p1/2P3p1/8/R2N3r/2K5/8/8 b - - 0 51";
+    const drawing = {
+        fen: root,
+        depth: 20,
+        cp: -27,
+        pvUci: "b7c7 d4b5 c7c6 b5a7 c6b7 a4h4 b7a7 h4f4 f8e6 f4e4 e6c7 c3c4 a7b6 e4g4 b6c6 g4g6 c6d7 c4d4 c7e6 d4e5 e6c7 g6g7 d7c6 g7c7 c6c7 e5e6".split(
+            " ",
+        ),
+    };
+    const played = {
+        fen: root,
+        depth: 20,
+        cp: -404,
+        pvUci: "b7b8 a4b4 b8c8 b4b7 h4h1 b7e7 f8h7 d4b5".split(" "),
+    };
+    const input = {
+        fen: root,
+        candidates: [{ ...drawing, pvUci: drawing.pvUci.slice(0, 14) }, played],
+        playedMoveUci: "b7b8",
+    };
+    const comparison = { ...input, comparisonCandidates: [drawing, played] };
+    const report = assessChessDecision(comparison);
+    expect(report?.mistakeStatus).toBe("assessed");
+    expect(report?.mistake?.evaluationLossCp).toBe(377);
+    expect(report?.position).toEqual(assessChessDecision(input)?.position);
+    expect(report?.moves).toEqual(assessChessDecision(input)?.moves);
+    const illegal = { ...drawing, pvUci: [...drawing.pvUci] };
+    illegal.pvUci[2] = "c7c5";
+    expect(
+        assessChessDecision({ ...comparison, comparisonCandidates: [illegal, played] })
+            ?.mistakeStatus,
+    ).toBe("comparison-unavailable");
+});
+
 test("an allowed fork is diagnosed independently of the quiet better move", () => {
     const root = "7k/p7/8/8/6n1/7K/P7/3Q4 w - - 0 1";
     const better = {

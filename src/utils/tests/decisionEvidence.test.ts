@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import {
+    endPairedLineAtDeadDraw,
     measureDecisionLine,
     measurePositionDecision,
     compareDecisionConsequences,
@@ -125,6 +126,23 @@ test("a later pawn reset cannot hide an earlier available fifty-move draw", () =
     const evidence = { fen, cp: 400, depth: 18, pvUci: ["a1a2"] };
     expect(measureDecisionLine(fen, evidence)?.drawnEnding).toBe(true);
     expect(measureDecisionLine(fen, { ...evidence, pvUci: ["a1a2", "h7h6"] })).toBeNull();
+});
+
+test("the paired frame can retain a legal draw while excluding an engine's bare-king tail", () => {
+    const fen = "8/8/8/8/8/4k3/4p3/4K3 w - - 0 1";
+    const scored = {
+        fen: "8/8/8/8/8/8/4p1k1/4K3 w - - 0 1",
+        cp: 0,
+        depth: 20,
+        pvUci: ["e1e2", "g2g3"],
+    };
+    expect(measureDecisionLine(scored.fen, scored)).toBeNull();
+    const bounded = endPairedLineAtDeadDraw(scored.fen, scored);
+    expect(bounded.pvUci).toEqual(["e1e2"]);
+    expect(measureDecisionLine(scored.fen, bounded)?.drawnEnding).toBe(true);
+    expect(endPairedLineAtDeadDraw(fen, scored)).toBe(scored);
+    const decisive = { ...scored, cp: 350 };
+    expect(endPairedLineAtDeadDraw(scored.fen, decisive)).toBe(decisive);
 });
 
 test("candidate comparison cannot promote a later line after rejecting rank one", () => {

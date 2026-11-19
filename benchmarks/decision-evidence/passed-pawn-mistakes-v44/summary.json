@@ -1,0 +1,1495 @@
+{
+  "comparator": "d55143516157e04bbb36d9d79eb97b2f0a89fae1",
+  "rubric": "Single engine-assisted review by actual played move, before compared inference. Unknown references excluded from TP/FP/FN/TN.",
+  "transferGate": "At least one new reviewed positional positive with no new reviewed false positives or lost positives.",
+  "development": {
+    "a": {
+      "replays": 388,
+      "changedReports": [
+        {
+          "id": "annotated-pawn-grand-swiss-women-2025-8dfb7a489fd733b2-104",
+          "fields": [
+            "mistake"
+          ],
+          "baselineStatus": "assessed",
+          "candidateStatus": "assessed",
+          "baselineCategory": "tactical",
+          "candidateCategory": "mixed",
+          "evaluationLossCp": 184,
+          "explanation": "After Rc5, the pawn remains a passer through ply 6 in both lines. Rxe3 removes the same pawn from e3 in the better line."
+        }
+      ],
+      "optionalSearchCount": 141,
+      "baselineMedianWorkerMs": 74.36,
+      "candidateMedianWorkerMs": 73.31,
+      "annotatedMistakeMetrics": {
+        "tactical": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 3,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4,
+            "numerator": 2,
+            "denominator": 5,
+            "interval95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8125,
+            "numerator": 13,
+            "denominator": 16,
+            "interval95": [
+              0.5699111903802586,
+              0.9340840092857187
+            ]
+          }
+        },
+        "positional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 4,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.2,
+            "numerator": 1,
+            "denominator": 5,
+            "interval95": [
+              0.03622410863243014,
+              0.6244653702374747
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.75,
+            "numerator": 12,
+            "denominator": 16,
+            "interval95": [
+              0.5050168346449122,
+              0.8981793250878696
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 2,
+          "tn": 11,
+          "unknownReference": 7,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 2,
+            "interval95": [
+              0.0,
+              0.6576197724933469
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8461538461538461,
+            "numerator": 11,
+            "denominator": 13,
+            "interval95": [
+              0.5776536898051745,
+              0.9567418216419186
+            ]
+          }
+        },
+        "promotion": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1,
+          "tn": 18,
+          "unknownReference": 0,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "interval95": [
+              0.09453120573423074,
+              0.9054687942657693
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 18,
+            "denominator": 18,
+            "interval95": [
+              0.8241207763533425,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.95,
+            "numerator": 19,
+            "denominator": 20,
+            "interval95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          }
+        }
+      }
+    },
+    "b": {
+      "replays": 388,
+      "changedReports": [
+        {
+          "id": "annotated-pawn-grand-swiss-women-2025-8dfb7a489fd733b2-104",
+          "fields": [
+            "mistake"
+          ],
+          "baselineStatus": "assessed",
+          "candidateStatus": "assessed",
+          "baselineCategory": "tactical",
+          "candidateCategory": "mixed",
+          "evaluationLossCp": 184,
+          "explanation": "After Rc5, the pawn remains a passer through ply 6 in both lines. Rxe3 removes the same pawn from e3 in the better line."
+        },
+        {
+          "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84",
+          "fields": [
+            "mistake"
+          ],
+          "baselineStatus": "assessed",
+          "candidateStatus": "assessed",
+          "baselineCategory": "unclear",
+          "candidateCategory": "positional",
+          "evaluationLossCp": 437,
+          "explanation": "After g3, dealing with the passer on d2 costs at least 1.7 more material points in both lines. The played line has Rxd2 Bxd2 Qxd2. After Qf1, Qxd3 Qxd3 Rxd3 removes the same pawn from d3 in the better line."
+        }
+      ],
+      "optionalSearchCount": 141,
+      "baselineMedianWorkerMs": 74.36,
+      "candidateMedianWorkerMs": 74.79,
+      "annotatedMistakeMetrics": {
+        "tactical": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 3,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4,
+            "numerator": 2,
+            "denominator": 5,
+            "interval95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8125,
+            "numerator": 13,
+            "denominator": 16,
+            "interval95": [
+              0.5699111903802586,
+              0.9340840092857187
+            ]
+          }
+        },
+        "positional": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 3,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4,
+            "numerator": 2,
+            "denominator": 5,
+            "interval95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8125,
+            "numerator": 13,
+            "denominator": 16,
+            "interval95": [
+              0.5699111903802586,
+              0.9340840092857187
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 2,
+          "tn": 11,
+          "unknownReference": 7,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 2,
+            "interval95": [
+              0.0,
+              0.6576197724933469
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8461538461538461,
+            "numerator": 11,
+            "denominator": 13,
+            "interval95": [
+              0.5776536898051745,
+              0.9567418216419186
+            ]
+          }
+        },
+        "promotion": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1,
+          "tn": 18,
+          "unknownReference": 0,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "interval95": [
+              0.09453120573423074,
+              0.9054687942657693
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 18,
+            "denominator": 18,
+            "interval95": [
+              0.8241207763533425,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.95,
+            "numerator": 19,
+            "denominator": 20,
+            "interval95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          }
+        }
+      }
+    },
+    "c": {
+      "replays": 388,
+      "changedReports": [
+        {
+          "id": "annotated-pawn-grand-swiss-women-2025-8dfb7a489fd733b2-104",
+          "fields": [
+            "mistake"
+          ],
+          "baselineStatus": "assessed",
+          "candidateStatus": "assessed",
+          "baselineCategory": "tactical",
+          "candidateCategory": "mixed",
+          "evaluationLossCp": 184,
+          "explanation": "After Rc5, the pawn remains a passer through ply 6 in both lines. Rxe3 removes the same pawn from e3 in the better line."
+        },
+        {
+          "id": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101",
+          "fields": [
+            "mistake",
+            "mistakeStatus"
+          ],
+          "baselineStatus": "comparison-unavailable",
+          "candidateStatus": "assessed",
+          "baselineCategory": null,
+          "candidateCategory": "positional",
+          "evaluationLossCp": 377,
+          "explanation": "After Kb8, the pawn remains a passer through ply 6 in both lines. After Kc7, Kxc6 removes the same pawn from c6 in the better line."
+        },
+        {
+          "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84",
+          "fields": [
+            "mistake"
+          ],
+          "baselineStatus": "assessed",
+          "candidateStatus": "assessed",
+          "baselineCategory": "unclear",
+          "candidateCategory": "positional",
+          "evaluationLossCp": 437,
+          "explanation": "After g3, dealing with the passer on d2 costs at least 1.7 more material points in both lines. The played line has Rxd2 Bxd2 Qxd2. After Qf1, Qxd3 Qxd3 Rxd3 removes the same pawn from d3 in the better line."
+        }
+      ],
+      "optionalSearchCount": 141,
+      "baselineMedianWorkerMs": 74.36,
+      "candidateMedianWorkerMs": 75.2,
+      "annotatedMistakeMetrics": {
+        "tactical": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 3,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4,
+            "numerator": 2,
+            "denominator": 5,
+            "interval95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8125,
+            "numerator": 13,
+            "denominator": 16,
+            "interval95": [
+              0.5699111903802586,
+              0.9340840092857187
+            ]
+          }
+        },
+        "positional": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 2,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 3,
+            "denominator": 3,
+            "interval95": [
+              0.4385029682449546,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.6,
+            "numerator": 3,
+            "denominator": 5,
+            "interval95": [
+              0.2307242812760128,
+              0.882379225767352
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.875,
+            "numerator": 14,
+            "denominator": 16,
+            "interval95": [
+              0.639771727342413,
+              0.9650225122567595
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 2,
+          "tn": 11,
+          "unknownReference": 7,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 2,
+            "interval95": [
+              0.0,
+              0.6576197724933469
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8461538461538461,
+            "numerator": 11,
+            "denominator": 13,
+            "interval95": [
+              0.5776536898051745,
+              0.9567418216419186
+            ]
+          }
+        },
+        "promotion": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1,
+          "tn": 18,
+          "unknownReference": 0,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "interval95": [
+              0.09453120573423074,
+              0.9054687942657693
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 18,
+            "denominator": 18,
+            "interval95": [
+              0.8241207763533425,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.95,
+            "numerator": 19,
+            "denominator": 20,
+            "interval95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          }
+        }
+      }
+    },
+    "d": {
+      "replays": 388,
+      "changedReports": [
+        {
+          "id": "annotated-pawn-grand-swiss-women-2025-8dfb7a489fd733b2-104",
+          "fields": [
+            "mistake"
+          ],
+          "baselineStatus": "assessed",
+          "candidateStatus": "assessed",
+          "baselineCategory": "tactical",
+          "candidateCategory": "mixed",
+          "evaluationLossCp": 184,
+          "explanation": "After Rc5, the pawn remains a passer through Bg7+ in the displayed line and through the same point in the separate search. Rxe3 removes the same pawn from e3 in the better line."
+        },
+        {
+          "id": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101",
+          "fields": [
+            "mistake",
+            "mistakeStatus"
+          ],
+          "baselineStatus": "comparison-unavailable",
+          "candidateStatus": "assessed",
+          "baselineCategory": null,
+          "candidateCategory": "positional",
+          "evaluationLossCp": 377,
+          "explanation": "After Kb8, the pawn remains a passer through Re7 in the displayed line and through the same point in the separate search. After Kc7, Kxc6 removes the same pawn from c6 in the better line."
+        },
+        {
+          "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84",
+          "fields": [
+            "mistake"
+          ],
+          "baselineStatus": "assessed",
+          "candidateStatus": "assessed",
+          "baselineCategory": "unclear",
+          "candidateCategory": "positional",
+          "evaluationLossCp": 437,
+          "explanation": "After g3, dealing with the passer on d2 costs at least 1.7 more material points in each search. The played line has Rxd2 Bxd2 Qxd2. After Qf1, Qxd3 Qxd3 Rxd3 removes the same pawn from d3 in the better line."
+        }
+      ],
+      "optionalSearchCount": 141,
+      "baselineMedianWorkerMs": 74.36,
+      "candidateMedianWorkerMs": 73.6,
+      "annotatedMistakeMetrics": {
+        "tactical": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 3,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4,
+            "numerator": 2,
+            "denominator": 5,
+            "interval95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8125,
+            "numerator": 13,
+            "denominator": 16,
+            "interval95": [
+              0.5699111903802586,
+              0.9340840092857187
+            ]
+          }
+        },
+        "positional": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 2,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 3,
+            "denominator": 3,
+            "interval95": [
+              0.4385029682449546,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.6,
+            "numerator": 3,
+            "denominator": 5,
+            "interval95": [
+              0.2307242812760128,
+              0.882379225767352
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.875,
+            "numerator": 14,
+            "denominator": 16,
+            "interval95": [
+              0.639771727342413,
+              0.9650225122567595
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 2,
+          "tn": 11,
+          "unknownReference": 7,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 2,
+            "interval95": [
+              0.0,
+              0.6576197724933469
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8461538461538461,
+            "numerator": 11,
+            "denominator": 13,
+            "interval95": [
+              0.5776536898051745,
+              0.9567418216419186
+            ]
+          }
+        },
+        "promotion": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1,
+          "tn": 18,
+          "unknownReference": 0,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "interval95": [
+              0.09453120573423074,
+              0.9054687942657693
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 18,
+            "denominator": 18,
+            "interval95": [
+              0.8241207763533425,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.95,
+            "numerator": 19,
+            "denominator": 20,
+            "interval95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          }
+        }
+      }
+    },
+    "release-fix": {
+      "replays": 388,
+      "changedReports": [
+        {
+          "id": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101",
+          "fields": [
+            "mistake",
+            "mistakeStatus"
+          ],
+          "baselineStatus": "comparison-unavailable",
+          "candidateStatus": "assessed",
+          "baselineCategory": null,
+          "candidateCategory": "unclear",
+          "evaluationLossCp": 377,
+          "explanation": null
+        }
+      ],
+      "optionalSearchCount": 141,
+      "baselineMedianWorkerMs": 74.36,
+      "candidateMedianWorkerMs": 77.59,
+      "annotatedMistakeMetrics": {
+        "tactical": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 3,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": 1.0,
+            "numerator": 2,
+            "denominator": 2,
+            "interval95": [
+              0.34238022750665303,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.4,
+            "numerator": 2,
+            "denominator": 5,
+            "interval95": [
+              0.11762077423264783,
+              0.769275718723987
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8125,
+            "numerator": 13,
+            "denominator": 16,
+            "interval95": [
+              0.5699111903802586,
+              0.9340840092857187
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 5,
+          "tn": 11,
+          "unknownReference": 4,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 5,
+            "interval95": [
+              0.0,
+              0.43448246478317476
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.6875,
+            "numerator": 11,
+            "denominator": 16,
+            "interval95": [
+              0.44404355834740666,
+              0.8583535614521796
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 2,
+          "tn": 11,
+          "unknownReference": 7,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 2,
+            "interval95": [
+              0.0,
+              0.6576197724933469
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 11,
+            "denominator": 11,
+            "interval95": [
+              0.7411670330319684,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.8461538461538461,
+            "numerator": 11,
+            "denominator": 13,
+            "interval95": [
+              0.5776536898051745,
+              0.9567418216419186
+            ]
+          }
+        },
+        "promotion": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1,
+          "tn": 18,
+          "unknownReference": 0,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "interval95": [
+              0.09453120573423074,
+              0.9054687942657693
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 18,
+            "denominator": 18,
+            "interval95": [
+              0.8241207763533425,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.95,
+            "numerator": 19,
+            "denominator": 20,
+            "interval95": [
+              0.763868806553258,
+              0.9911185511992047
+            ]
+          }
+        }
+      }
+    }
+  },
+  "fresh": {
+    "classical-24": {
+      "baselineMistakeMetrics": {
+        "tactical": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "tn": 16,
+          "unknownReference": 4,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 4,
+            "interval95": [
+              0.0,
+              0.4898908364545973
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 16,
+            "denominator": 16,
+            "interval95": [
+              0.8063923194655637,
+              1.0000000000000002
+            ]
+          },
+          "agreement": {
+            "value": 0.8,
+            "numerator": 16,
+            "denominator": 20,
+            "interval95": [
+              0.5839825677481064,
+              0.919342337420202
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 8,
+          "tn": 14,
+          "unknownReference": 2,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 8,
+            "interval95": [
+              0.0,
+              0.32440756488388023
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 14,
+            "denominator": 14,
+            "interval95": [
+              0.7846891972623643,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.6363636363636364,
+            "numerator": 14,
+            "denominator": 22,
+            "interval95": [
+              0.42951708090131013,
+              0.8026679532963387
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 3,
+          "tn": 16,
+          "unknownReference": 5,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 3,
+            "interval95": [
+              5.551115123125783e-17,
+              0.5614970317550454
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 16,
+            "denominator": 16,
+            "interval95": [
+              0.8063923194655637,
+              1.0000000000000002
+            ]
+          },
+          "agreement": {
+            "value": 0.8421052631578947,
+            "numerator": 16,
+            "denominator": 19,
+            "interval95": [
+              0.6243452472967093,
+              0.9447952836146585
+            ]
+          }
+        }
+      },
+      "candidateReplays": {
+        "a": {
+          "replays": 24,
+          "changedReports": [],
+          "optionalSearchCount": 15,
+          "baselineMedianWorkerMs": 100.88,
+          "candidateMedianWorkerMs": 97.97
+        },
+        "b": {
+          "replays": 24,
+          "changedReports": [],
+          "optionalSearchCount": 15,
+          "baselineMedianWorkerMs": 100.88,
+          "candidateMedianWorkerMs": 100.16
+        },
+        "c": {
+          "replays": 24,
+          "changedReports": [],
+          "optionalSearchCount": 15,
+          "baselineMedianWorkerMs": 100.88,
+          "candidateMedianWorkerMs": 98.99
+        },
+        "d": {
+          "replays": 24,
+          "changedReports": [],
+          "optionalSearchCount": 15,
+          "baselineMedianWorkerMs": 100.88,
+          "candidateMedianWorkerMs": 98.46
+        },
+        "release-fix": {
+          "replays": 24,
+          "changedReports": [],
+          "optionalSearchCount": 15,
+          "baselineMedianWorkerMs": 100.88,
+          "candidateMedianWorkerMs": 89.49
+        }
+      }
+    },
+    "pawn-contrast-6": {
+      "baselineMistakeMetrics": {
+        "tactical": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 4,
+          "unknownReference": 1,
+          "precision": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "recall": {
+            "value": 1.0,
+            "numerator": 1,
+            "denominator": 1,
+            "interval95": [
+              0.20654931437723745,
+              1.0
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 4,
+            "denominator": 4,
+            "interval95": [
+              0.5101091635454027,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 5,
+            "denominator": 5,
+            "interval95": [
+              0.5655175352168251,
+              1.0
+            ]
+          }
+        },
+        "positional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3,
+          "unknownReference": 2,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": 0.0,
+            "numerator": 0,
+            "denominator": 1,
+            "interval95": [
+              0.0,
+              0.7934506856227626
+            ]
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 3,
+            "denominator": 3,
+            "interval95": [
+              0.4385029682449546,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 0.75,
+            "numerator": 3,
+            "denominator": 4,
+            "interval95": [
+              0.30064184258240184,
+              0.9544127391902995
+            ]
+          }
+        },
+        "mixed": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 4,
+          "unknownReference": 2,
+          "precision": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "recall": {
+            "value": null,
+            "numerator": 0,
+            "denominator": 0,
+            "interval95": null
+          },
+          "specificity": {
+            "value": 1.0,
+            "numerator": 4,
+            "denominator": 4,
+            "interval95": [
+              0.5101091635454027,
+              1.0
+            ]
+          },
+          "agreement": {
+            "value": 1.0,
+            "numerator": 4,
+            "denominator": 4,
+            "interval95": [
+              0.5101091635454027,
+              1.0
+            ]
+          }
+        }
+      },
+      "candidateReplays": {
+        "d": {
+          "replays": 6,
+          "changedReports": [],
+          "optionalSearchCount": 3,
+          "baselineMedianWorkerMs": 118.71,
+          "candidateMedianWorkerMs": 111.99
+        },
+        "release-fix": {
+          "replays": 6,
+          "changedReports": [],
+          "optionalSearchCount": 3,
+          "baselineMedianWorkerMs": 118.71,
+          "candidateMedianWorkerMs": 117.67
+        }
+      }
+    }
+  },
+  "note": "Paired comparison repair is integrated. A\u2013D are experimental. Classical 24 was exposed when D was developed.",
+  "engineCost": "Reuse of identical recorded analysis inputs and nomination decisions. Worker times exclude engine search.",
+  "developmentMistakeBaseline": {
+    "tactical": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 3,
+      "tn": 11,
+      "unknownReference": 4,
+      "precision": {
+        "value": 1.0,
+        "numerator": 2,
+        "denominator": 2,
+        "interval95": [
+          0.34238022750665303,
+          1.0
+        ]
+      },
+      "recall": {
+        "value": 0.4,
+        "numerator": 2,
+        "denominator": 5,
+        "interval95": [
+          0.11762077423264783,
+          0.769275718723987
+        ]
+      },
+      "specificity": {
+        "value": 1.0,
+        "numerator": 11,
+        "denominator": 11,
+        "interval95": [
+          0.7411670330319684,
+          1.0
+        ]
+      },
+      "agreement": {
+        "value": 0.8125,
+        "numerator": 13,
+        "denominator": 16,
+        "interval95": [
+          0.5699111903802586,
+          0.9340840092857187
+        ]
+      }
+    },
+    "positional": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 5,
+      "tn": 11,
+      "unknownReference": 4,
+      "precision": {
+        "value": null,
+        "numerator": 0,
+        "denominator": 0,
+        "interval95": null
+      },
+      "recall": {
+        "value": 0.0,
+        "numerator": 0,
+        "denominator": 5,
+        "interval95": [
+          0.0,
+          0.43448246478317476
+        ]
+      },
+      "specificity": {
+        "value": 1.0,
+        "numerator": 11,
+        "denominator": 11,
+        "interval95": [
+          0.7411670330319684,
+          1.0
+        ]
+      },
+      "agreement": {
+        "value": 0.6875,
+        "numerator": 11,
+        "denominator": 16,
+        "interval95": [
+          0.44404355834740666,
+          0.8583535614521796
+        ]
+      }
+    },
+    "mixed": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 2,
+      "tn": 11,
+      "unknownReference": 7,
+      "precision": {
+        "value": null,
+        "numerator": 0,
+        "denominator": 0,
+        "interval95": null
+      },
+      "recall": {
+        "value": 0.0,
+        "numerator": 0,
+        "denominator": 2,
+        "interval95": [
+          0.0,
+          0.6576197724933469
+        ]
+      },
+      "specificity": {
+        "value": 1.0,
+        "numerator": 11,
+        "denominator": 11,
+        "interval95": [
+          0.7411670330319684,
+          1.0
+        ]
+      },
+      "agreement": {
+        "value": 0.8461538461538461,
+        "numerator": 11,
+        "denominator": 13,
+        "interval95": [
+          0.5776536898051745,
+          0.9567418216419186
+        ]
+      }
+    },
+    "promotion": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 18,
+      "unknownReference": 0,
+      "precision": {
+        "value": 1.0,
+        "numerator": 1,
+        "denominator": 1,
+        "interval95": [
+          0.20654931437723745,
+          1.0
+        ]
+      },
+      "recall": {
+        "value": 0.5,
+        "numerator": 1,
+        "denominator": 2,
+        "interval95": [
+          0.09453120573423074,
+          0.9054687942657693
+        ]
+      },
+      "specificity": {
+        "value": 1.0,
+        "numerator": 18,
+        "denominator": 18,
+        "interval95": [
+          0.8241207763533425,
+          1.0
+        ]
+      },
+      "agreement": {
+        "value": 0.95,
+        "numerator": 19,
+        "denominator": 20,
+        "interval95": [
+          0.763868806553258,
+          0.9911185511992047
+        ]
+      }
+    }
+  }
+}

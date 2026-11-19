@@ -1,0 +1,14 @@
+{
+  "sampleDesign": "Three games from each stratum after the initial seven-per-stratum plan returned only three shallow pawn contrasts. Sample size fixed before full review and replay.",
+  "comparator": "d55143516157e04bbb36d9d79eb97b2f0a89fae1",
+  "reviewed": {
+    "reference.json": "90ad432ce81b1422d42e259081acd28fe88d4577c5304d56b751bbed3b7761e7",
+    "tournament-sample.json": "c5f925e0469de209b806092dfcfd51a0fc60bc561cfe43ab86e929af16afef43"
+  },
+  "snapshots": {
+    "src/utils/tacticalMotifs/decisionEvidence.ts": "9f8f08efd965e1a169a76e0e639d57135c73ae7fd341f59c54ce57b9c344175c",
+    "src/utils/tacticalMotifs/decisionAssessment.ts": "f1142b117d7d7e53c9605447b4f2fbfc9eebec011da5bd800b1f403501315d56",
+    "src/utils/tacticalMotifs/decisionExistingPasser.ts": "c7af7406793a061897638351186ecf2474ccf804eb4c0f232e8b9847a23c5d50"
+  },
+  "criterion": "At least one new positional true positive with no new reviewed false positives or losses to either evidence dimension"
+}

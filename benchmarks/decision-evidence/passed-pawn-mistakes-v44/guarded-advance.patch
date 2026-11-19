@@ -1,0 +1,601 @@
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -3,0 +4 @@
++    endPairedLineAtDeadDraw,
+@@ -60,0 +62 @@
++import { compareExistingPasser, type ExistingPasserEvidence } from "./decisionExistingPasser";
+@@ -62 +64 @@
+-export const DECISION_ASSESSMENT_VERSION = 20;
++export const DECISION_ASSESSMENT_VERSION = 21;
+@@ -139,0 +142 @@
++              passer?: ExistingPasserEvidence;
+@@ -631,2 +634,9 @@
+-    const comparison = input.comparisonCandidates ?? originalCandidates;
+-    const comparisonMeasured = measurePositionDecision(input.fen, comparison);
++    let comparison = input.comparisonCandidates ?? originalCandidates;
++    let comparisonMeasured = measurePositionDecision(input.fen, comparison);
++    if (input.comparisonCandidates && comparisonMeasured?.lines.length !== comparison.length) {
++        const bounded = comparison.map((line) => endPairedLineAtDeadDraw(input.fen, line));
++        if (bounded.some((line, index) => line !== comparison[index])) {
++            comparison = bounded;
++            comparisonMeasured = measurePositionDecision(input.fen, comparison);
++        }
++    }
+@@ -900 +910 @@
+-            const shelter =
++            const matchedReplies =
+@@ -902,10 +912,32 @@
+-                corroboratingReply(input.fen, playedLine, playedProbe)
+-                    ? compareLostKingShelter(
+-                          input.fen,
+-                          comparedBest,
+-                          playedLine,
+-                          betterProbe!.lines[0],
+-                          playedProbe!.lines[0],
+-                      )
+-                    : null;
+-            if (factors.length || pawnEpisodes.length || shelter || promotion?.positional) {
++                corroboratingReply(input.fen, playedLine, playedProbe);
++            const shelter = matchedReplies
++                ? compareLostKingShelter(
++                      input.fen,
++                      comparedBest,
++                      playedLine,
++                      betterProbe!.lines[0],
++                      playedProbe!.lines[0],
++                  )
++                : null;
++            const passer = matchedReplies
++                ? compareExistingPasser(
++                      input.fen,
++                      comparedBest,
++                      playedLine,
++                      betterProbe!.lines[0],
++                      playedProbe!.lines[0],
++                  )
++                : null;
++            if (passer?.tactical && assessment.tactical.support === "unestablished")
++                assessment.tactical = {
++                    support: "supported",
++                    basis: "engine-supported",
++                    reasons: [passer.tactical],
++                };
++            if (
++                factors.length ||
++                pawnEpisodes.length ||
++                shelter ||
++                promotion?.positional ||
++                passer
++            ) {
+@@ -916,0 +949 @@
++                        ...(passer ? [passer.factor.description] : []),
+@@ -928,0 +962 @@
++                    ...(passer ? [passer.factor] : []),
+@@ -948,0 +983 @@
++                ...(passer ? { passer } : {}),
+diff --git a/src/utils/tacticalMotifs/decisionExistingPasser.ts b/src/utils/tacticalMotifs/decisionExistingPasser.ts
+new file mode 100644
+--- /dev/null
++++ b/src/utils/tacticalMotifs/decisionExistingPasser.ts
+@@ -0,0 +1,289 @@
++import { makeFen, parseFen } from "chessops/fen";
++import { makeSan } from "chessops/san";
++import type { Color, NormalMove, Square } from "chessops/types";
++import { makeSquare, makeUci, opposite, parseSquare } from "chessops/util";
++import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
++import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
++import { traceAdvancedPawn } from "./decisionPromotionPressure";
++import { extractPositionalBoardFacts } from "./positionalEvidence";
++import type { ComparativePositionalEvidence } from "./positionalTransitions";
++
++const WINDOW = 12;
++const ADVANCE_WINDOW = 16;
++const rank = (square: Square, side: Color) =>
++    side === "white" ? 1 + (square >> 3) : 8 - (square >> 3);
++
++export type ExistingPasserEvidence = {
++    factor: ComparativePositionalEvidence;
++    betterLineUci: string[];
++    playedLineUci: string[];
++    responseTest?: string[];
++    tactical?: string;
++};
++
++function checkedPaths(fen: string, root: DecisionEngineLine, reply: DecisionEngineLine) {
++    const prefix = replayTacticalLine(fen, root.pvUci.slice(0, 1))[0];
++    if (
++        !prefix ||
++        !measureDecisionLine(fen, root) ||
++        !measureDecisionLine(makeFen(prefix.after.toSetup()), reply)
++    )
++        return [];
++    return [root.pvUci, [prefix.uci, ...reply.pvUci]].map((moves) =>
++        replayTacticalLine(fen, moves.slice(0, ADVANCE_WINDOW)),
++    );
++}
++
++function guardedAdvance(steps: TacticalReplayStep[], advance: NormalMove, opponent: Color) {
++    const guard = steps[0].move.to;
++    const defender = steps[0].before.turn;
++    const capture = { from: guard, to: advance.to };
++    const occupying = steps[0].after.board.get(guard);
++    if (!occupying || occupying.role === "pawn" || occupying.color !== defender) return;
++    let firstSan: string | undefined;
++    for (const [i, step] of steps.entries()) {
++        const board = step.after;
++        if (i && step.before.turn === defender && step.move.from === guard) return;
++        if (step.before.turn === opponent && step.move.from === advance.from) return;
++        if (!board.board[defender].has(guard) || board.board.get(guard)?.role !== occupying.role)
++            return;
++        if (!board.board.pawn.has(advance.from) || !board.board[opponent].has(advance.from)) return;
++        if (board.turn !== opponent) continue;
++        if (!board.isLegal(advance)) {
++            if (!i || !board.isCheck()) return;
++            continue;
++        }
++        const pushed = board.clone();
++        pushed.play(advance);
++        if (!pushed.isLegal(capture) || tacticalExchangeGain(pushed, capture) < 90) return;
++        if (firstSan)
++            return {
++                through: i + 1,
++                san: firstSan,
++                role: occupying.role,
++                square: guard,
++                testLine: [steps[0].uci, makeUci(advance), makeUci(capture)],
++            };
++        firstSan = makeSan(pushed, capture);
++    }
++}
++
++function costlyAdvance(paths: TacticalReplayStep[][], pawn: Square, side: Color) {
++    if (rank(pawn, side) !== 6) return;
++    const observations = paths.map((steps) => {
++        const index = steps.findIndex(
++            (step, i) =>
++                i < 10 &&
++                step.before.turn === side &&
++                step.move.from === pawn &&
++                step.before.board.pawn.has(pawn) &&
++                rank(step.move.to, side) === 7,
++        );
++        if (index < 1 || steps.slice(0, index).some((step) => step.balance <= -90)) return;
++        const approach = traceAdvancedPawn(steps.slice(0, index), pawn, side);
++        if (approach.removes || approach.promotion || approach.lastSquare !== pawn) return;
++        const continued = traceAdvancedPawn(steps, pawn, side);
++        if (!continued.removes || continued.lastSquare !== steps[index].move.to) return;
++        const exchange = removalExchange(steps, continued.removes.through);
++        if (!exchange || exchange.relativeMaterialCp >= -90) return;
++        return { step: steps[index], exchange };
++    });
++    const [first, second] = observations;
++    if (!first || !second || first.step.uci !== second.step.uci) return;
++    return {
++        ...first,
++        lowerCost: Math.min(
++            -first.exchange.relativeMaterialCp,
++            -second.exchange.relativeMaterialCp,
++        ),
++    };
++}
++
++function removedByRootPiece(steps: TacticalReplayStep[], index: number) {
++    const mover = steps[0].before.turn;
++    const piece = steps[0].before.board.get(steps[0].move.from)!;
++    let square = steps[0].move.from;
++    for (const step of steps.slice(0, index)) {
++        if (step.before.turn === mover && step.move.from === square) square = step.move.to;
++        const occupant = step.after.board.get(square);
++        if (occupant?.role !== piece.role || occupant.color !== mover) return false;
++    }
++    return steps[index].before.turn === mover && steps[index].move.from === square;
++}
++
++function removalExchange(steps: TacticalReplayStep[], capturePly: number) {
++    const first = steps[capturePly - 1];
++    const target = first.move.to;
++    let end = capturePly;
++    while (steps[end]?.capture && steps[end].move.to === target && !steps[end].move.promotion)
++        end++;
++    const settled = steps[end - 1];
++    const after = steps.slice(end, end + 2);
++    if (
++        !settled.after.isEnd() &&
++        (after.length !== 2 || after.some((step) => step.balance !== settled.balance))
++    )
++        return;
++    return {
++        end,
++        relativeMaterialCp: settled.balance - (steps[capturePly - 2]?.balance ?? 0),
++        san: steps
++            .slice(capturePly - 1, end)
++            .map((step) => step.san)
++            .join(" "),
++    };
++}
++
++function comparePawn(
++    reactions: TacticalReplayStep[][],
++    paths: TacticalReplayStep[][],
++    origin: Square,
++    side: Color,
++) {
++    const better = reactions.map((steps) => traceAdvancedPawn(steps, origin, side));
++    const taken = better.map((trace) => trace.removes?.through ?? 0);
++    if (
++        taken.some(
++            (ply, index) => ply < 1 || ply > 5 || !removedByRootPiece(reactions[index], ply - 1),
++        )
++    )
++        return;
++    const cleaner = reactions.map((steps, index) => removalExchange(steps, taken[index]));
++    if (cleaner.some((item) => !item || item.relativeMaterialCp < 0)) return;
++    const settled = cleaner[0]!;
++    const horizon = Math.max(6, ...taken.map((ply) => ply + 3));
++    if (paths.some((steps) => steps.length < horizon)) return;
++    const active = paths.map((steps) => traceAdvancedPawn(steps.slice(0, horizon), origin, side));
++    if (
++        active.every((trace, index) => {
++            if (trace.removes || trace.promotion) return false;
++            const end = paths[index][horizon - 1].after;
++            const fact = extractPositionalBoardFacts(makeFen(end.toSetup()));
++            return fact?.[side].passedPawns.includes(makeSquare(trace.lastSquare));
++        })
++    ) {
++        return {
++            betterEnd: settled.end,
++            playedEnd: horizon,
++            consequence: `the pawn remains a passer through ${paths[0][horizon - 1].san} in the displayed line and through the same point in the separate search`,
++            removal: settled.san,
++        };
++    }
++    // A pawn can be gone in both continuations and still constrain the
++    // defence. Compare the exchange used to take it in each branch.
++    const captured = active[0].removes;
++    const square = active[0].lastSquare;
++    if (
++        !captured ||
++        rank(square, side) !== 7 ||
++        active.some((trace) => !trace.removes || trace.lastSquare !== square)
++    )
++        return;
++    const exchanges = paths.map((steps, index) =>
++        removalExchange(steps, active[index].removes!.through),
++    );
++    if (exchanges.some((exchange) => !exchange || exchange.relativeMaterialCp > -50)) return;
++    const differences = cleaner.map(
++        (exchange, index) => exchange!.relativeMaterialCp - exchanges[index]!.relativeMaterialCp,
++    );
++    const difference = Math.min(...differences);
++    if (difference < 90) return;
++    return {
++        betterEnd: settled.end,
++        playedEnd: exchanges[0]!.end,
++        consequence: `dealing with the passer on ${makeSquare(square)} costs at least ${(difference / 100).toFixed(1)} more material points in each search. The played line has ${exchanges[0]!.san}`,
++        removal: settled.san,
++    };
++}
++
++/** Direct removal of the same advanced passer, confirmed in both searches.
++ * It must be the piece repositioned by the better move that takes the pawn.
++ * Merely surviving a capture elsewhere is insufficient evidence. */
++export function compareExistingPasser(
++    fen: string,
++    better: DecisionEngineLine,
++    played: DecisionEngineLine,
++    betterReply: DecisionEngineLine,
++    playedReply: DecisionEngineLine,
++): ExistingPasserEvidence | null {
++    if (
++        better.cp === null ||
++        played.cp === null ||
++        better.mate != null ||
++        played.mate != null ||
++        betterReply.cp === null ||
++        playedReply.cp === null ||
++        betterReply.mate != null ||
++        playedReply.mate != null ||
++        better.depth !== played.depth ||
++        better.pvUci[0] === played.pvUci[0] ||
++        better.cp - played.cp < 100 ||
++        playedReply.cp - betterReply.cp < 70 ||
++        Math.abs(better.cp + betterReply.cp) > 90 ||
++        Math.abs(played.cp + playedReply.cp) > 90
++    )
++        return null;
++    const facts = extractPositionalBoardFacts(fen);
++    const setup = parseFen(fen);
++    if (!facts || setup.isErr) return null;
++    const side = opposite(setup.value.turn);
++    const pawns = facts[side].passedPawns
++        .map((square) => parseSquare(square)!)
++        .filter((square) => rank(square, side) >= 5);
++    if (!pawns.length) return null;
++    const preferred = checkedPaths(fen, better, betterReply);
++    const actual = checkedPaths(fen, played, playedReply);
++    if (preferred.length !== 2 || actual.length !== 2) return null;
++    for (const pawn of pawns) {
++        const effect = comparePawn(
++            preferred.map((steps) => steps.slice(0, WINDOW)),
++            actual.map((steps) => steps.slice(0, WINDOW)),
++            pawn,
++            side,
++        );
++        const advance = effect ? undefined : costlyAdvance(actual, pawn, side);
++        const guard = advance && guardedAdvance(preferred[0], advance.step.move, side);
++        const corroborated =
++            guard && advance && guardedAdvance(preferred[1], advance.step.move, side);
++        if (!effect && (!advance || !guard || !corroborated)) continue;
++        const origin = makeSquare(pawn);
++        const rootSan = preferred[0][0].san;
++        const playedSan = actual[0][0].san;
++        const betterEnd = effect?.betterEnd ?? guard!.through;
++        const playedEnd = effect?.playedEnd ?? advance!.exchange.end;
++        let description: string;
++        if (effect) {
++            const removal = effect.removal.startsWith(rootSan)
++                ? effect.removal
++                : `After ${rootSan}, ${effect.removal}`;
++            description = `After ${playedSan}, ${effect.consequence}. ${removal} removes the same pawn from ${origin} in the better line.`;
++        } else {
++            description = `After ${rootSan}, the ${guard!.role} on ${makeSquare(guard!.square)} can answer the pawn advance from ${origin} with ${guard!.san} at two points in each better line. After ${playedSan}, ${advance!.step.san} leads to a more costly exchange in both searches.`;
++        }
++        return {
++            factor: {
++                feature: "passed-pawn",
++                side,
++                squareOrFile: origin[0],
++                description,
++                firstPly: 1,
++                lastConsecutivePly: playedEnd,
++                support: "board-fact",
++                comparisonMoveUci: better.pvUci[0],
++                comparisonGapCp: better.cp - played.cp,
++                supportInComparison: false,
++                comparison: "alternative-choice",
++                interpretation: "heuristic",
++            },
++            betterLineUci: preferred[0].slice(0, betterEnd).map((step) => step.uci),
++            playedLineUci: actual[0].slice(0, playedEnd).map((step) => step.uci),
++            ...(advance && guard
++                ? {
++                      responseTest: guard.testLine,
++                      tactical: `After ${playedSan}, ${advance.step.san} leads to ${advance.exchange.san}. The exchange on that square costs at least ${(advance.lowerCost / 100).toFixed(1)} material points in both searches.`,
++                  }
++                : {}),
++        };
++    }
++    return null;
++}
+--- a/src/utils/tacticalMotifs/decisionPromotionPressure.ts
++++ b/src/utils/tacticalMotifs/decisionPromotionPressure.ts
+@@ -16,0 +17 @@
++    lastSquare: Square;
+@@ -60 +61 @@
+-    const result: Trajectory = {};
++    const result: Trajectory = { lastSquare: start };
+@@ -67,0 +69 @@
++            result.lastSquare = square;
+--- a/src/components/panels/tactics/DecisionEvidencePanel.tsx
++++ b/src/components/panels/tactics/DecisionEvidencePanel.tsx
+@@ -189 +189,2 @@
+-  const mistakeComparison = report.mistake?.promotion ?? episode;
++  const passer = report.mistake?.passer;
++  const mistakeComparison = report.mistake?.promotion ?? episode ?? passer;
+@@ -250,2 +251,2 @@
+-          comparedLines={
+-            mistakeComparison
++          comparedLines={[
++            ...(mistakeComparison
+@@ -264,2 +265,22 @@
+-                : undefined
+-          }
++                : []),
++            ...(passer && passer !== mistakeComparison
++              ? [
++                  {
++                    label: "Played line with the passer",
++                    san: lineSan(report.fen, passer.playedLineUci),
++                  },
++                  {
++                    label: "Better line against the passer",
++                    san: lineSan(report.fen, passer.betterLineUci),
++                  },
++                ]
++              : []),
++            ...(passer?.responseTest
++              ? [
++                  {
++                    label: "If the pawn advances after the better move",
++                    san: lineSan(report.fen, passer.responseTest),
++                  },
++                ]
++              : []),
++          ]}
+--- a/src/utils/tacticalMotifs/decisionEvidence.ts
++++ b/src/utils/tacticalMotifs/decisionEvidence.ts
+@@ -63,0 +64,8 @@
++): DecisionLineEvidence | null {
++    return replayDecisionEvidence(fen, line, false);
++}
++
++function replayDecisionEvidence(
++    fen: string,
++    line: DecisionEngineLine,
++    stopAtInsufficientMaterial: boolean,
+@@ -88,0 +97,2 @@
++        if (stopAtInsufficientMaterial && balance.length && position.isInsufficientMaterial())
++            break;
+@@ -119 +129 @@
+-        moves: [...line.pvUci],
++        moves: line.pvUci.slice(0, balance.length),
+@@ -134,0 +145,11 @@
++}
++
++/** Some engines append extra moves from a position with insufficient material.
++ * Recover the legal prefix of a finite, near-equal paired comparison. This
++ * bypasses neither illegality before the draw nor other terminal checks. */
++export function endPairedLineAtDeadDraw(fen: string, line: DecisionEngineLine): DecisionEngineLine {
++    if (line.cp === null || Math.abs(line.cp) > 50 || line.mate != null) return line;
++    const evidence = replayDecisionEvidence(fen, line, true);
++    return evidence && evidence.moves.length < line.pvUci.length
++        ? { ...line, pvUci: evidence.moves }
++        : line;
+--- a/src/utils/tests/decisionEvidence.test.ts
++++ b/src/utils/tests/decisionEvidence.test.ts
+@@ -2,0 +3 @@
++    endPairedLineAtDeadDraw,
+@@ -129,0 +131,17 @@
++test("the paired frame can retain a legal draw while excluding an engine's bare-king tail", () => {
++    const fen = "8/8/8/8/8/4k3/4p3/4K3 w - - 0 1";
++    const scored = {
++        fen: "8/8/8/8/8/8/4p1k1/4K3 w - - 0 1",
++        cp: 0,
++        depth: 20,
++        pvUci: ["e1e2", "g2g3"],
++    };
++    expect(measureDecisionLine(scored.fen, scored)).toBeNull();
++    const bounded = endPairedLineAtDeadDraw(scored.fen, scored);
++    expect(bounded.pvUci).toEqual(["e1e2"]);
++    expect(measureDecisionLine(scored.fen, bounded)?.drawnEnding).toBe(true);
++    expect(endPairedLineAtDeadDraw(fen, scored)).toBe(scored);
++    const decisive = { ...scored, cp: 350 };
++    expect(endPairedLineAtDeadDraw(scored.fen, decisive)).toBe(decisive);
++});
++
+diff --git a/src/utils/tests/decisionExistingPasser.test.ts b/src/utils/tests/decisionExistingPasser.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/utils/tests/decisionExistingPasser.test.ts
+@@ -0,0 +1,131 @@
++import { describe, expect, it } from "vitest";
++import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
++import type { DecisionEngineLine } from "../tacticalMotifs/decisionEvidence";
++import { compareExistingPasser } from "../tacticalMotifs/decisionExistingPasser";
++
++const line = (fen: string, cp: number, moves: string): DecisionEngineLine => ({
++    fen,
++    cp,
++    depth: 20,
++    pvUci: moves.split(" "),
++});
++const board = "8/5rb1/P1N1r1k1/8/6p1/1P1Kp1P1/8/2R1R3 w - - 1 53";
++const best = line(board, 553, "e1e3 e6d6 d3e2 f7f8 e3e4 g7h6 c1c2 g6f5");
++const played = line(board, 369, "c1c5 g7f8 c5c4 f7d7 d3c3 f8g7 c3b4 g7f8");
++const bestReply = line(
++    "8/5rb1/P1N1r1k1/8/6p1/1P1KR1P1/8/2R5 b - - 0 53",
++    -541,
++    "e6d6 d3e2 f7f8 e3e4 g7h6 c1c2 g6f5",
++);
++const playedReply = line(
++    "8/5rb1/P1N1r1k1/2R5/6p1/1P1Kp1P1/8/4R3 b - - 2 53",
++    -396,
++    "g7f8 c5c4 f7d7 d3c3 d7d2 e1e3 e6e3 c3d2",
++);
++
++describe("existing passed pawns in an assessed mistake", () => {
++    it("confirms that the actual choice leaves the same advanced passer in both searches", () => {
++        const evidence = compareExistingPasser(board, best, played, bestReply, playedReply);
++        expect(evidence?.factor.description).toContain("Rxe3 removes the same pawn from e3");
++        expect(evidence?.factor.description).toContain("the pawn remains a passer");
++        expect(evidence?.playedLineUci).toHaveLength(6);
++        expect(evidence?.betterLineUci).toEqual(["e1e3"]);
++    });
++
++    it("requires an independently measured deterioration and both exact child frames", () => {
++        expect(compareExistingPasser(board, best, played, bestReply, bestReply)).toBeNull();
++        expect(
++            compareExistingPasser(board, best, played, bestReply, { ...playedReply, cp: -515 }),
++        ).toBeNull();
++    });
++
++    it("recognises the cost of taking the same pawn after it advances to the seventh rank", () => {
++        const fen = "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p3P/1P3QP1/3RR2K w - - 2 43";
++        const neutralizes = line(fen, 532, "f2f1 e5e7 f1d3 c4d3 d1d3 f7f6 b2b3 a4b3");
++        const allows = line(fen, 95, "g2g3 d3d2 d1d2 f4d2 f2d2 g7f8 d2e3 f7f6");
++        const neutralizesReply = line(
++            "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p3P/1P4P1/3RRQ1K b - - 3 43",
++            -570,
++            "e5e7 f1d3 c4d3 d1d3 f7f6 b2b3 a4b3",
++        );
++        const allowsReply = line(
++            "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p2PP/1P3Q2/3RR2K b - - 0 43",
++            -87,
++            "d3d2 d1d2 f4d2 f2d2 g7f8 d2e3 f7f6",
++        );
++        const evidence = compareExistingPasser(
++            fen,
++            neutralizes,
++            allows,
++            neutralizesReply,
++            allowsReply,
++        );
++        expect(evidence?.factor.description).toContain("Rxd2 Bxd2 Qxd2");
++        expect(evidence?.factor.description).toContain("1.7 more material points");
++    });
++
++    it("can assess an exact better choice whose scored line reaches bare kings", () => {
++        const fen = "5n2/1k4p1/2P3p1/8/R2N3r/2K5/8/8 b - - 0 51";
++        const drawing = line(
++            fen,
++            -27,
++            "b7c7 d4b5 c7c6 b5a7 c6b7 a4h4 b7a7 h4f4 f8e6 f4e4 e6c7 c3c4 a7b6 e4g4 b6c6 g4g6 c6d7 c4d4 c7e6 d4e5 e6c7 g6g7 d7c6 g7c7 c6c7 e5e6",
++        );
++        const worse = line(fen, -404, "b7b8 a4b4 b8c8 b4b7 h4h1 b7e7 f8h7 d4b5");
++        const drawingReply = line(
++            "5n2/2k3p1/2P3p1/8/R2N3r/2K5/8/8 w - - 1 52",
++            19,
++            "d4b5 c7c6 b5a7 c6b7 a4h4 b7a7 h4b4 g6g5",
++        );
++        const worseReply = line(
++            "1k3n2/6p1/2P3p1/8/R2N3r/2K5/8/8 w - - 1 52",
++            358,
++            "a4b4 b8c8 b4b7 h4h1 b7e7 f8h7 d4b5",
++        );
++        const report = assessChessDecision({
++            fen,
++            candidates: [{ ...drawing, pvUci: drawing.pvUci.slice(0, 14) }, worse],
++            comparisonCandidates: [drawing, worse],
++            playedMoveUci: "b7b8",
++            replyProbes: [
++                { moveUci: "b7c7", lines: [drawingReply] },
++                { moveUci: "b7b8", lines: [worseReply] },
++            ],
++        });
++        expect(report?.mistakeStatus).toBe("assessed");
++        expect(report?.mistake?.passer?.factor.description).toContain("Kxc6 removes the same pawn");
++    });
++
++    it("checks a stable interception and the separate material cost of releasing the passer", () => {
++        const fen = "5r2/8/2kPR3/1p6/pBp5/P1PbK3/1P6/8 b - - 25 67";
++        const holds = line(fen, -15, "f8f7 e6e5 d3c2 e5g5 c2f5 e3d4 f5d7 d4e4");
++        const releases = line(
++            fen,
++            -739,
++            "c6d7 e6e7 d7c6 e7c7 c6d5 d6d7 f8d8 b4e7 d8d7 c7d7 d5e6 d7c7 d3c2",
++        );
++        const holdReply = line(
++            "8/5r2/2kPR3/1p6/pBp5/P1PbK3/1P6/8 w - - 26 68",
++            4,
++            "e6e8 d3f5 e8e5 f5b1 e5g5 b1f5 e3d4 f5e6",
++        );
++        const releaseReply = line(
++            "5r2/3k4/3PR3/1p6/pBp5/P1PbK3/1P6/8 w - - 26 68",
++            753,
++            "e6e7 d7c6 e7c7 c6d5 d6d7 f8d8 b4e7 d8d7 c7d7 d5e6 d7c7 e6f7",
++        );
++        const evidence = compareExistingPasser(fen, holds, releases, holdReply, releaseReply);
++        expect(evidence?.factor.description).toContain("the rook on f7");
++        expect(evidence?.responseTest).toEqual(["f8f7", "d6d7", "f7d7"]);
++        expect(evidence?.tactical).toContain("Rxd7 Rxd7+");
++        expect(
++            compareExistingPasser(
++                fen,
++                holds,
++                releases,
++                { ...holdReply, pvUci: ["e6e8", "f7h7", "e8e5"] },
++                releaseReply,
++            ),
++        ).toBeNull();
++    });
++});

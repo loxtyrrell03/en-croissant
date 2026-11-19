@@ -1,0 +1,198 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-eaf0d284db2ac44f-87",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1e1",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qe1+ is the paired leading choice. Its queen checks keep control while the d-pawn remains, so the played move is not an established error."
+    },
+    {
+      "id": "annotated-pawn-rio-absoluto-2026-7185167df6b25985-63",
+      "scope": "mistake-mechanism",
+      "moveUci": "a7f7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rf7 and Qc7 eventually take f6 with different pieces. The rook goes on to f7 and g7 in the played line, whereas the queen can take the pawn while preserving Black's rook coordination in both stronger searches."
+    },
+    {
+      "id": "annotated-pawn-rio-absoluto-2026-54d64fd11b2d60de-110",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5b4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Rb6 attacks along the sixth rank and retains counterplay with a6 before taking b2. Rb4 allows Black to advance the kingside pawns with tempo. The lasting change is supported without a distinct tactical loss in this window."
+    },
+    {
+      "id": "annotated-pawn-limerick-congress-2026-56ef499738e85862-141",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4e2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qe2+ loses a tempo in the pawn race. After Kc1, White advances f6 and can keep a rook active while Black is occupied by the e-pawn. The different kingside pawn progress is clear and the tactical mechanism is less certain."
+    },
+    {
+      "id": "annotated-pawn-rio-absoluto-2026-c5f7535d08a6ad64-47",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7g6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Bxg6 permits Nxc3 and activity around the f6-pawn and Black king. The independent reply includes Bxf6 Rxf6. The lines establish concrete threats, while the separate persistent strategic loss is less certain."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-1eedc28b1c0e5159-35",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8c8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rfe8 and Rac8 are close in both searches. White keeps d6 and the option of c5, without a distinct played-move error established."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-2f1d3c397b0d2623-72",
+      "scope": "mistake-mechanism",
+      "moveUci": "f2d2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qd2 allows Ne4 while Black keeps c-file coordination and a dangerous d-pawn. The better rook exchanges remove that activity. The distinct forcing loss is unclear because one actual continuation plays d2 and the other plays Qb7."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-578542d97f31c502-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "c8b7",
+      "tactical": false,
+      "positional": null,
+      "rationale": "Both Nxb7 and Bxb7 remove the same pawn. The queen exchange in the played line changes the structure only modestly and the separate searches disagree on the size of the loss."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6d7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "After Kd7, Re7+ and Rc7+ displace the king in both searches, then d7 requires Black to give up a rook. Rf7 keeps a defensive rook available on the seventh rank and the d6-pawn restrained."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-17c2690bdf8b79f4-56",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Ra2 and Rad2 coordinate the rooks against the passed pawn. Rd2 allows Nc1 and Nb3, after which the d-pawn can support either a direct advance or an unfavourable exchange on d3."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5c2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qc2 allows Rc1 and Nd4, followed by Nxf3+ after the queen is taken. gxf3 weakens the king's pawn cover in both worse continuations; that structural result remains after the main exchange."
+    },
+    {
+      "id": "annotated-pawn-rio-absoluto-2026-ea337dec39581ad9-42",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qd2 allows Black to use the e-file around Re4 and maintain the advanced f-pawn, while Qd4 and e4 can challenge the centre. The continuation supports activity and structure more clearly than a separate short tactic."
+    },
+    {
+      "id": "annotated-pawn-rio-absoluto-2026-540a41af308ca160-39",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7d6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qxd6 is the leading choice and removes the advanced pawn. Subsequent bishop exchanges do not make this choice inferior."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-4aab4f07007807b4-39",
+      "scope": "mistake-mechanism",
+      "moveUci": "c7d6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qxd6 is the leading choice. The queen exchange and rook activity are part of a comparable defensive setup."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-9ea64bd8c455f972-77",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7g6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Bxg6 is the leading choice and the g-pawn disappears in both searched lines."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-c72a1317dc54c8ef-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "a1a2",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxa2 is the leading choice and removes the opponent's passed pawn before castling and rook activation."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-086be395f8b75e34-55",
+      "scope": "mistake-mechanism",
+      "moveUci": "c7d7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qxd7 is the leading choice and resolves the advanced pawn. Both continuations leave Black ahead."
+    },
+    {
+      "id": "annotated-pawn-limerick-congress-2026-cdd187402f05d0ae-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8g8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Castling is the leading choice. The a-pawn falls to Bxa6 in both analysed routes."
+    },
+    {
+      "id": "annotated-pawn-limerick-congress-2026-71128dc74a337b41-57",
+      "scope": "mistake-mechanism",
+      "moveUci": "a7b6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qxb6 is the leading choice and removes the white pawn. The bishop and rook regrouping afterwards is not a played-move error."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-531f6d527c36cc87-89",
+      "scope": "mistake-mechanism",
+      "moveUci": "d8e7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Ke7 is the leading choice in an already lost pawn ending. White's connected passers constrain both searched continuations."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-31209150d3f759a2-97",
+      "scope": "mistake-mechanism",
+      "moveUci": "b7b2",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rb2+ is the leading move and both analyses hold with repeated rook checks."
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-461442cd17513425-83",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6f6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Kxf6 is the leading choice and resolves White's f-pawn. Both later bishop manoeuvres leave a similar drawing prospect."
+    },
+    {
+      "id": "annotated-pawn-rio-absoluto-2026-a21a5071349b6bdb-78",
+      "scope": "mistake-mechanism",
+      "moveUci": "b4b3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rb3 is the leading choice; the opposed passers generate different underpromotions without a measured played-move error."
+    },
+    {
+      "id": "annotated-pawn-limerick-congress-2026-71248af37f8f5176-90",
+      "scope": "mistake-mechanism",
+      "moveUci": "f2f3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Kxf3 is the leading choice and removes the advanced pawn. Both searched continuations preserve the draw."
+    }
+  ]
+}

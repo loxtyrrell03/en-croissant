@@ -1,6 +1,7 @@
 import { makeFen } from "chessops/fen";
 import { replayTacticalLine } from "./causalTactics";
 import {
+    endPairedLineAtDeadDraw,
     measureDecisionLine,
     measurePositionDecision,
     type DecisionEngineLine,
@@ -59,7 +60,7 @@ import { findSharedStructuralPlan } from "./decisionSharedStructure";
 import { findPromotionPressure } from "./decisionPromotionPressure";
 import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisionPromotionMistake";
 
-export const DECISION_ASSESSMENT_VERSION = 20;
+export const DECISION_ASSESSMENT_VERSION = 21;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -628,8 +629,15 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     let mistakeStatus: ChessDecisionReport["mistakeStatus"] = input.playedMoveUci
         ? "comparison-unavailable"
         : "not-requested";
-    const comparison = input.comparisonCandidates ?? originalCandidates;
-    const comparisonMeasured = measurePositionDecision(input.fen, comparison);
+    let comparison = input.comparisonCandidates ?? originalCandidates;
+    let comparisonMeasured = measurePositionDecision(input.fen, comparison);
+    if (input.comparisonCandidates && comparisonMeasured?.lines.length !== comparison.length) {
+        const bounded = comparison.map((line) => endPairedLineAtDeadDraw(input.fen, line));
+        if (bounded.some((line, index) => line !== comparison[index])) {
+            comparison = bounded;
+            comparisonMeasured = measurePositionDecision(input.fen, comparison);
+        }
+    }
     const comparedBest = comparison[0];
     const afterChoice = (uci: string | undefined) => {
         const step = uci ? replayTacticalLine(input.fen, [uci])[0] : undefined;

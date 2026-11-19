@@ -62,6 +62,14 @@ export function measureDecisionLine(
     fen: string,
     line: DecisionEngineLine,
 ): DecisionLineEvidence | null {
+    return replayDecisionEvidence(fen, line, false);
+}
+
+function replayDecisionEvidence(
+    fen: string,
+    line: DecisionEngineLine,
+    stopAtInsufficientMaterial: boolean,
+): DecisionLineEvidence | null {
     const root = identity(fen);
     if (
         !root ||
@@ -86,6 +94,8 @@ export function measureDecisionLine(
         quietEndingPlies = 0;
     let repeated = false;
     for (const uci of line.pvUci) {
+        if (stopAtInsufficientMaterial && balance.length && position.isInsufficientMaterial())
+            break;
         const move = parseUci(uci);
         if (
             !move ||
@@ -116,7 +126,7 @@ export function measureDecisionLine(
     }
     const tail = balance.slice(-4);
     return {
-        moves: [...line.pvUci],
+        moves: line.pvUci.slice(0, balance.length),
         plies: balance.length,
         depth: line.depth,
         evaluationCp: line.cp,
@@ -132,6 +142,17 @@ export function measureDecisionLine(
             repeated ||
             (!position.isCheckmate() && (position.isEnd() || position.halfmoves >= 100)),
     };
+}
+
+/** Some engines append extra moves from a position with insufficient material.
+ * Recover the legal prefix of a finite, near-equal paired comparison. This
+ * bypasses neither illegality before the draw nor other terminal checks. */
+export function endPairedLineAtDeadDraw(fen: string, line: DecisionEngineLine): DecisionEngineLine {
+    if (line.cp === null || Math.abs(line.cp) > 50 || line.mate != null) return line;
+    const evidence = replayDecisionEvidence(fen, line, true);
+    return evidence && evidence.moves.length < line.pvUci.length
+        ? { ...line, pvUci: evidence.moves }
+        : line;
 }
 
 export type PositionDecisionEvidence = {

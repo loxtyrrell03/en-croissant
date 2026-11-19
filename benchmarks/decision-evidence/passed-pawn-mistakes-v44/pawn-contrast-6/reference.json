@@ -1,0 +1,54 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "pawn-contrast-samarkand-open-2026-859dfc4f0b162d80-95",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6c5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played bxc5 is the paired search's leading move, removes the c5 passer and is not an evaluated deterioration."
+    },
+    {
+      "id": "pawn-contrast-samarkand-open-2026-fb843e1c32865fcc-57",
+      "scope": "mistake-mechanism",
+      "moveUci": "d3b4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Both choices allow Rxd8+. Nc5 and Nb4 have almost the same evaluation in both search pairs, with no reviewed meaningful loss to diagnose."
+    },
+    {
+      "id": "pawn-contrast-samarkand-open-2026-c56bddb1cce7c9f4-99",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4h3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The played h3 is the paired search's leading move. The d7 threat exists in the starting position and does not establish a mistake by h3."
+    },
+    {
+      "id": "pawn-contrast-club-cup-women-2026-14921963cad5e446-95",
+      "scope": "mistake-mechanism",
+      "moveUci": "f8f4",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Both moves are already losing. The paired Rf4 line gives 49.Qc7; the independent search gives 49.Rxf4 Bxf4. The b6 pawn still threatens to advance in both choices. The evidence is insufficient to assign a mechanism to the extra loss."
+    },
+    {
+      "id": "pawn-contrast-club-cup-women-2026-902f567c93e7d75d-66",
+      "scope": "mistake-mechanism",
+      "moveUci": "f3e3",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Bxe6 Rxe6 Qe4 opens the repeated queen checks after d2 Rd1 Qc7. The same defence appears in both better searches, while the played Qe3 permits attacking rook activity and fails to achieve the checking sequence. The two Qe3 searches disagree on both the reply and the later fate of the d-pawn."
+    },
+    {
+      "id": "pawn-contrast-club-cup-women-2026-1569cd9f22423d82-101",
+      "scope": "mistake-mechanism",
+      "moveUci": "c7a8",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Kb7 keeps the knight mobile with Ne6 after Bd6 and lets the king take the a7 pawn. After Na8 the knight remains passive while the king heads away from a7 in both searches. There is no corroborated immediate winning tactic attributable to Na8; the difference is the ability to coordinate the defence of the same pawn."
+    }
+  ]
+}
