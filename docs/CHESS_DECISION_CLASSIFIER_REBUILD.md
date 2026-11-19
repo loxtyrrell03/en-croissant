@@ -3080,3 +3080,58 @@ isolated checkout. Set the final argument of
 `"exchange-cost"` or `"distinct-cover"` before each replay.
 The two small case-level evidence receipts preserve the disputed
 boards and the additional Brazilian counterfactual search.
+
+
+## Iteration 48 — rank unresolved played mistakes with learned models
+
+The previous neural benchmark ranked position character. This pilot ranks
+unresolved diagnoses of actual played moves. It uses the same regularized
+logistic regression, shallow boosted trees and three-seed neural ensemble
+from iteration 41. Its continuation features preserve the identities of
+the played and best moves and describe their first 12 legal plies. The
+models see Stockfish evaluations and features computed from the boards
+along the lines. The incumbent diagnosis only defines which cases are
+unresolved. Separate tactical and positional heads contribute to the
+mixed rank. The minimum of those scores is a rank and has no joint
+probability interpretation.
+
+Train on the 226 historical decisions and group all sections of a
+tournament in the same development fold. The two 18-game transfer
+samples come from different tournament families. They were already
+used in the king-cover experiment, so this is an exploratory transfer
+test. The learning settings were inherited from iteration 41. Scoring
+excludes uncertain labels from average precision. They still consume a
+review slot when nominated. The transfer comparison gives each model
+four review slots per dimension and per sample.
+
+| Reserve measure | Logistic on continuations | Neural on continuations | Boosted trees |
+| --- | ---: | ---: | ---: |
+| Tactical positives in four nominations | 4 | 4 | 3 |
+| Positional positives in four nominations | 3 | 3 | 3 |
+| Mixed positives in four nominations, original labels | 3 | 2 | 1 |
+| Mixed positives in four nominations, audited training labels | 3 | 3 | 1 |
+| Mixed average precision, audited training labels | 0.875 | 0.950 | 1.000 |
+
+The reserve contains seven reviewed tactical positives, eight positional
+positives and four mixed positives. The incumbent already found three of
+the tactical positives and neither of the other types. On the initial
+18-game sample, logistic and neural continuation rankings both nominated
+one mixed positive of four and two positional positives of four. The
+evaluation-only logistic baseline nominated three positional positives
+in its four slots there. The neural continuation model's better reserve
+mixed ranking did not yield more reviewed positives at the fixed budget.
+Removing the two disputed training labels improved its nomination count
+by one. Neither changing the network size nor calibrating on these two
+samples would resolve that uncertainty. A useful follow-up measure is
+added Stockfish-verified diagnoses at equal search cost on new,
+unexposed tournaments.
+
+**Reproduction.** Run `decision-evidence-mistake-model.py` against
+`decision-evidence-line-model.py` using the three v46 incumbent worker
+replays as training and the two v47 incumbent replays as transfer.
+Use the same group samples and engine settings from iterations 46 and
+47. Repeat with the two exact case IDs from the v47 reference audit
+passed to `--uncertain-positional`. The resulting models nominate
+possible diagnoses for follow-up. They do not add reports or run extra
+engine searches. The aggregate results and fit settings are in
+`benchmarks/decision-evidence/mistake-model-v48`.
