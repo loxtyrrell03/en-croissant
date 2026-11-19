@@ -1,0 +1,118 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "rook-pressure-lugano-standard-2026-ecf5f28c2d50db7a-28",
+      "scope": "mistake-mechanism",
+      "moveUci": "a2b3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "cxb3 keeps the a-pawn back and changes which queenside file is opened, then both better lines advance the h-pawn. Both axb3 lines let Black generate early a-file counterplay with a5 and a4. The central tactics vary in the better replies."
+    },
+    {
+      "id": "rook-pressure-lugano-standard-2026-71f023e53ebc0cbc-54",
+      "scope": "mistake-mechanism",
+      "moveUci": "f1b1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Ra5 allows Rc5 against d5 in both better lines after Rde8. Bc6 then supports d5. Rfb1 permits Qb6 and delays the same c-file pressure in the paired line, while the independent line uses different play. The early contrast is in rook activity."
+    },
+    {
+      "id": "rook-pressure-lugano-standard-2026-0eb3d093b5caaf07-64",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1c1",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Kc1 permits Qg5+ and the forced-looking queen exchange in both searches. The extra loss is modest in already lost positions. The continuation does not clearly isolate one cause for the extra loss."
+    },
+    {
+      "id": "rook-pressure-lugano-standard-2026-10aa5131bcf758ab-35",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6e5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Ne5 permits b3 Qc3 Nxe6 and Qf5 in both played searches, with the bishop lost. After Nxd4 the compared line is a different early exchange on d4 and c2. The separate lasting positional effect is unclear."
+    },
+    {
+      "id": "rook-pressure-lugano-standard-2026-08a351c2388eae3d-42",
+      "scope": "mistake-mechanism",
+      "moveUci": "g3f4",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Bf4 allows the same e5 opening of the centre and leaves the rooks exposed to knight activity. The reply order and material consequence differ, and no single choice-specific mechanism is clear."
+    },
+    {
+      "id": "rook-pressure-lugano-standard-2026-1455c68135342947-81",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6g5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Kg5 permits Rg1+ Kf5 Rxg8 in both searches, losing the rook. Re8 avoids that immediate tactic and initially sits in front of the passed pawn. Its later restraint of the pawn differs across the stronger branches."
+    },
+    {
+      "id": "rook-pressure-lugano-standard-2026-290813515660948f-34",
+      "scope": "mistake-mechanism",
+      "moveUci": "d3d5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "cxd5 opens the c-file and gives the rook Rc4 or Rc1. After Qxd5, both played lines put Black's rook on d8 and White retreats the queen. The precise consequences of that pressure are different in the two played branches."
+    },
+    {
+      "id": "rook-pressure-brazil-women-2026-3da0d8a0c165def9-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6a5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Na5 moves the knight away from c6 and both played continuations leave White with the f5 break and penetration after fxe6. The Be7 lines keep the knight central and retain a different plan with ...a5. Bxb6 is common to both choices and is not alone a refutation."
+    },
+    {
+      "id": "rook-pressure-brazil-women-2026-797179592cf988ee-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5f6",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Bxf6 trades the bishop for a knight and both lines leave the other black bishop active through c8 and d4. After Nc3, White retains both bishops and develops the rooks. The immediate exchange is materially level."
+    },
+    {
+      "id": "rook-pressure-brazil-women-2026-57cc81bc061d8626-56",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1b1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rb1 permits Bxf4 gxf4 Bxh3 in both searches. That sequence gains the pawn and separately removes the g-pawn from the king's cover. Neither Nd4 line suffers the same reorganisation of the king's pawns."
+    },
+    {
+      "id": "rook-pressure-brazil-women-2026-9c60481488a5ff42-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4e5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "e5 permits dxe5 in both played searches. Qxd6 instead takes the pawn, but the gap is relatively small and subsequent exchanges and rook play differ. An enduring mechanism is unclear."
+    },
+    {
+      "id": "rook-pressure-brazil-women-2026-4cd2045ef9a702a3-75",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7f6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Kf6 permits Re4, Rf5 and c4\u2013c6 in both played searches. Rxh4 activates the rook and gives Black different kingside counterplay while White's queenside pawn is less advanced over the same early window."
+    },
+    {
+      "id": "rook-pressure-brazil-women-2026-cf4452f300124d9b-46",
+      "scope": "mistake-mechanism",
+      "moveUci": "f2f4",
+      "tactical": false,
+      "positional": true,
+      "rationale": "h4 retains the central pawns and both better lines use Rc1. f4 exchanges that pawn and both played branches have to move the f-rook through f4 and f3 before it can contest the centre. No matching immediate tactical loss is established."
+    },
+    {
+      "id": "rook-pressure-brazil-women-2026-fa212b618791ac4c-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "f4g3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After h3 both searches use the central e4 break and Bxd5. Bg3 gives a different sequence of rook trades on the c-file or permits queenside expansion. The common central payoff after h3 supports a positional contrast."
+    }
+  ]
+}

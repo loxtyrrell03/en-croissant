@@ -1,0 +1,134 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "mistake-misamis-occidental-2026-2b851ad06e4fe543-32",
+      "scope": "mistake-mechanism",
+      "moveUci": "h3h4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bh6 retains an attack with Bf5 and confines the rook to e7 in both better lines. Qh4 permits Ne8 and the bishop exchange on d8. The later forcing possibilities differ across the two better replies."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-2b851ad06e4fe543-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8d6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The separate and paired comparisons show only a small difference, and both enable the bishop trade on b7. No reliable mistake mechanism is established."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-55e342aa733f1c3f-64",
+      "scope": "mistake-mechanism",
+      "moveUci": "c4f4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rxf4 permits Qxf4 and the repeated queen sequence from g4 to h5, followed by the same exchange. The early rook-for-bishop loss is concrete. No separate lasting strategic difference is established."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-55e342aa733f1c3f-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7f6",
+      "tactical": false,
+      "positional": false,
+      "rationale": "gxf6 is the leading supplied choice. Both searches use the same defensive sequence."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-e69baf1ec4dddb62-55",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7b4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Bxb4 permits Rdh4 followed by Rxg5+, Rh8+ and Rxb8 in both played branches. f6 first gives a different defence and removes that forcing route. The immediate tactical loss accounts for the observed change."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-e69baf1ec4dddb62-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6b3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qxb3 is the top supplied choice and both versions retain the same queen exchange and recapture."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-71cf5b6c5fadf443-86",
+      "scope": "mistake-mechanism",
+      "moveUci": "e1b1",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rf3+ and Rb1 have almost the same paired evaluation, and both lines leave Black with a substantial advantage. There is no measured mistake to diagnose."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-71cf5b6c5fadf443-58",
+      "scope": "mistake-mechanism",
+      "moveUci": "f4d2",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The paired and separate evaluations remain close. Bd2 and Qg4 use different ways to trade centrally, with no reliable additional loss."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-5ed7a8b998e4158b-58",
+      "scope": "mistake-mechanism",
+      "moveUci": "g1h2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Bc3 retains active bishop pressure with Ba5 in both better lines. Kh2 permits ...Nh5 and then different forms of rook and knight activity. The exact tactics diverge, so the recurring change is in piece activity."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-5ed7a8b998e4158b-55",
+      "scope": "mistake-mechanism",
+      "moveUci": "h5g3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nxg3 is the leading supplied choice. The separate reply differs later without reversing that comparison."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-01fd6082195b1cc9-45",
+      "scope": "mistake-mechanism",
+      "moveUci": "d8d7",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Rxd7 permits Be5 and Nd6 in both lines. The ensuing cxd6 creates an advanced passer. Nxd7 instead leaves a different minor-piece trade and White cannot create the same d-pawn in the compared window. No distinct forcing material loss is established."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-01fd6082195b1cc9-28",
+      "scope": "mistake-mechanism",
+      "moveUci": "c4c5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "c5 is the top supplied choice and both searches retain central space."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-ce0a5a5dc4ee15af-48",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6b5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Rdb1 doubles the rooks immediately and both better lines show the same b7 exchange. Rb5 allows ...b6 before the other rook can enter the file. The later checks and rook exchanges differ between the two stronger branches."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-ce0a5a5dc4ee15af-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5d4",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Both moves take the knight on d4. The paired and separate comparisons prefer Qxd4, but the queen and rook continuations differ markedly afterward. A choice-specific tactical or strategic cause is unclear."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-dbcc6277e175585e-68",
+      "scope": "mistake-mechanism",
+      "moveUci": "f2e2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "h3 gives White timely kingside cover and control of the h-pawn position as the king centralises. In both Ke2 lines Black gets ...g5 and forces a rook exchange after Bf3. No distinct forcing material loss is observed."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-dbcc6277e175585e-40",
+      "scope": "mistake-mechanism",
+      "moveUci": "b3d4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nd4 is the leading supplied choice and both frames retain a balanced liquidation."
+    }
+  ]
+}

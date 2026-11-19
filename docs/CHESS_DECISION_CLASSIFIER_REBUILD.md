@@ -2917,3 +2917,85 @@ omits optional position-only searches for all arms to compare the
 played-move evidence. Apply each experimental patch separately against
 v44 using `git apply --unidiff-zero`. Keep the committed tactical core
 fixed when comparing experiments.
+
+## Iteration 46 — compare sustained rook pressure after a played mistake
+
+Previous mistake comparisons mainly measured a new feature visible at the
+root or a select pawn episode. That left out cases where the useful rook
+setup arrives a move or two later. The new verifier compares the paired
+root search and the separately searched replies after both the played
+move and the stronger choice. It tracks the original rooks and opposing
+pawn across those branches.
+
+Both stronger lines must show the same rook placement or doubled rooks
+pressing the same pawn for at least four consecutive plies, starting by
+ply six. A rook must have a legal capture of that pawn somewhere inside
+the matched window. The better root must move one of the rooks or open
+the file with its pawn. The played lines must omit the same pressure and
+must keep the original pawn on the board through the comparison. The
+material balances can differ by at most one material point at the
+comparison ply. These are observed conditions for a positional
+interpretation. The app displays the two legal lines under Show
+evidence. The calculation uses its existing searches.
+
+In the Lugano case, both searches after `28.Ra5 Rde8 29.Rc5 Bc6`
+show the rook on c5 attacking d5. After `28.Rfb1 Qb6`, White spends
+the same early moves on the b- and e-files. The paired `Rfb1` line
+reaches c5 later. The independent line goes elsewhere. The report
+shows the 2.37-pawn evaluation loss and explains the earlier rook
+activity within the matched window. [Lugano classical games](https://lichess.org/api/broadcast/uEsZ9lgJ.pgn)
+
+The broader candidate also accepts a played branch that takes the
+pawn at a clearly worse cost after recaptures settle. That recovers
+an extra development example after `29.Rd2`. In both better lines,
+`29.Ra2 Nc1 30.Rad2` doubles the rooks against d3. One `Rd2`
+branch disposes of the same pawn with an extra 2.2-point material loss.
+The two rules tie in both fresh samples. The narrower rule enters the
+app. The broader comparison remains a reproducible experiment.
+[Asian Disabilities Open](https://lichess.org/api/broadcast/JwDV9Ju4.pgn)
+
+| Sample | Positional positives / negatives / uncertain | v45 TP / FP | Sustained pressure TP / FP | With costlier capture TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| 196 development decisions | 44 / 119 / 33 | 5 / 0 | 7 / 0 | 8 / 0 |
+| Lugano and Brazilian Women's Championship, 14 games | 9 / 0 / 5 | 2 / 0 | 3 / 0 | 3 / 0 |
+| Misamis Occidental, 16 decisions from 8 games | 5 / 10 / 1 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+The first fresh sample uses a 60,000-node Stockfish preview and one
+decision per game. A stricter three-position preview recovered only
+one pressure nomination across 421 previews. The two-position preview
+nominated four pressure cases and ten controls across 424 previews.
+These strata describe the preview. The full searches supplied the
+references through one engine-assisted reviewer, who froze each set
+before opening classifier outputs. The second fresh sample selects one
+annotated loss and one annotated control per game. These independent
+controls provide reviewed positional negatives, which the first fresh
+sample lacks. [Brazilian Women's Championship games](https://lichess.org/api/broadcast/tGKQocRe.pgn)
+[Misamis Occidental tournament record](https://s3.chess-results.com/tnr1514595.aspx?SNode=S0&flag=30&lan=1&turdet=YES)
+
+Across 226 replays the tactical and mixed scores, position character,
+candidate move reports and evaluation losses are unchanged. The
+Misamis sample has one existing tactical disagreement involving the
+tempo `...Rxd7 Be5`. The benchmark reference treats the resulting
+passed pawn as positional evidence. The worker also sees the changed
+ability to capture the bishop that attacks the queen. The gain from
+the rook verifier is specific to positional mistake coverage. The
+cached worker timings and complete per-dimension counts are in the
+receipt. The panel displayed the Lugano case and both lines at
+320, 390 and 900 pixels. The installed desktop app is unverified.
+
+**Reproduction.** Use the frozen manifests, references and scores in
+`benchmarks/decision-evidence/rook-pressure-mistakes-v46`.
+`decision-evidence-rook-sample.py` regenerates the first sample given
+the two public PGNs and the earlier exclusion manifests. For the
+archived sample compare exclusion digests as a set. The reproduced
+ordered case list and search metadata match.
+For the
+second, use `decision-evidence-tournament.py --mistake-event` with
+Misamis Occidental, the validation split and an eight-game limit,
+excluding the first sample and earlier positions. Generate the v46
+root, reply and shared-reply frames with the existing Stockfish 19
+settings. Replay through `decisionMistakeBreadthReplay.test.ts` and
+use `decision-evidence-ordinary-replay-score.py --mistakes`. The
+`costly-pawn-recovery.patch` applies against v45 using
+`git apply --unidiff-zero`. Keep the committed tactical core fixed
+for all arms.

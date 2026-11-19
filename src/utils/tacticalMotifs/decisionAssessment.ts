@@ -59,8 +59,9 @@ import {
 import { findSharedStructuralPlan } from "./decisionSharedStructure";
 import { findPromotionPressure } from "./decisionPromotionPressure";
 import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisionPromotionMistake";
+import { compareRookPressure, type RookPressureEvidence } from "./decisionRookPressure";
 
-export const DECISION_ASSESSMENT_VERSION = 22;
+export const DECISION_ASSESSMENT_VERSION = 23;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -138,6 +139,7 @@ export type ChessDecisionReport = {
               tacticalEpisode?: TacticalMistakeEpisode;
               mateConsequence?: DecisionMateConsequence;
               promotion?: PromotionMistakeEvidence;
+              rookPressure?: RookPressureEvidence;
           })
         | null;
 };
@@ -905,18 +907,34 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                               ),
                       )
                     : [];
-            const shelter =
+            const corroboratedChoices =
                 corroboratingReply(input.fen, comparedBest, betterProbe) &&
-                corroboratingReply(input.fen, playedLine, playedProbe)
-                    ? compareLostKingShelter(
-                          input.fen,
-                          comparedBest,
-                          playedLine,
-                          betterProbe!.lines[0],
-                          playedProbe!.lines[0],
-                      )
-                    : null;
-            if (factors.length || pawnEpisodes.length || shelter || promotion?.positional) {
+                corroboratingReply(input.fen, playedLine, playedProbe);
+            const shelter = corroboratedChoices
+                ? compareLostKingShelter(
+                      input.fen,
+                      comparedBest,
+                      playedLine,
+                      betterProbe!.lines[0],
+                      playedProbe!.lines[0],
+                  )
+                : null;
+            const rookPressure = corroboratedChoices
+                ? compareRookPressure(
+                      input.fen,
+                      comparedBest,
+                      playedLine,
+                      betterProbe!.lines[0],
+                      playedProbe!.lines[0],
+                  )
+                : null;
+            if (
+                factors.length ||
+                pawnEpisodes.length ||
+                shelter ||
+                promotion?.positional ||
+                rookPressure
+            ) {
                 assessment.positional = {
                     support: "supported",
                     basis: "heuristic",
@@ -928,12 +946,14 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                         ),
                         ...pawnEpisodes.map((item) => item.description),
                         ...(shelter ? [shelter.description] : []),
+                        ...(rookPressure ? [rookPressure.factor.description] : []),
                     ],
                 };
                 assessment.positionalFactors = [
                     ...factors,
                     ...pawnEpisodes,
                     ...(shelter ? [shelter] : []),
+                    ...(rookPressure ? [rookPressure.factor] : []),
                 ];
             }
             assessment.category = category(assessment.tactical, assessment.positional);
@@ -954,6 +974,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 allowed,
                 ...(tacticalEpisode ? { tacticalEpisode } : {}),
                 ...(promotion ? { promotion } : {}),
+                ...(rookPressure ? { rookPressure } : {}),
             };
         }
     }

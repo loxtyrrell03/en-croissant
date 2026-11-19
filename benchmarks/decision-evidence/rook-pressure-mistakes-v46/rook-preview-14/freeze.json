@@ -1,0 +1,10 @@
+{
+  "reference": "4be6ecab9a553b20861bdc47ac0688e6a816fe542862be2364b9f187ad948fa8",
+  "comparator": "8ab00a02c8347d1d9e26e2e1c0381cc94843b04c",
+  "criterion": "At least one new reviewed positional positive with zero lost reviewed true positives or added reviewed false positives. Preserve the tactical dimension and scope.",
+  "snapshots": {
+    "b": "9adb737d00f9c53c96a99487142e31d1bec32cbb430fa4a99614d37ee216c655",
+    "a": "199fef15a358bbd4d84eeb28819903cd94d064a02af423046d27c242350138d9"
+  },
+  "sample": "134c6da545057c8742c78cd9b2a6eec720cb6bc9561f823b369ec03ebaa32ed7"
+}

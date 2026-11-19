@@ -11,6 +11,7 @@ export type PositionalTransition = {
         | "pawn-stable-minor"
         | "open-rook-file"
         | "semi-open-rook-file"
+        | "rook-pawn-pressure"
         | "passed-pawn"
         | "king-file-shelter"
         | "bishop-pair"

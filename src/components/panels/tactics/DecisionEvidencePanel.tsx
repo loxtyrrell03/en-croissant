@@ -187,6 +187,30 @@ function DecisionReport({
   const episode = report.mistake?.tacticalEpisode;
   const mate = report.mistake?.mateConsequence;
   const mistakeComparison = report.mistake?.promotion ?? episode;
+  const rookPressure = report.mistake?.rookPressure;
+  const mistakeLines = mistakeComparison
+    ? [
+        { label: "Played line", san: lineSan(report.fen, mistakeComparison.playedLineUci) },
+        { label: "Better line", san: lineSan(report.fen, mistakeComparison.betterLineUci) },
+      ]
+    : mate
+      ? [{ label: "Mating line", san: lineSan(report.fen, mate.lineUci) }]
+      : [];
+  if (rookPressure) {
+    const played = lineSan(report.fen, rookPressure.playedLineUci);
+    const better = lineSan(report.fen, rookPressure.betterLineUci);
+    const hasOtherComparison = mistakeLines.length > 0;
+    if (!mistakeLines.some((line) => line.san === played))
+      mistakeLines.push({
+        label: hasOtherComparison ? "Played line for rook comparison" : "Played line",
+        san: played,
+      });
+    if (!mistakeLines.some((line) => line.san === better))
+      mistakeLines.push({
+        label: hasOtherComparison ? "Better line for rook comparison" : "Better line",
+        san: better,
+      });
+  }
   const contrast = report.position.tacticalContrast;
   const plan = report.position.strategicPlan;
   const promotion = report.position.promotionTactic;
@@ -247,22 +271,7 @@ function DecisionReport({
         <EvidenceSummary
           title={playedSan ? `What ${playedSan} missed or allowed` : "Mistake mechanism"}
           assessment={report.mistake}
-          comparedLines={
-            mistakeComparison
-              ? [
-                  {
-                    label: "Played line",
-                    san: lineSan(report.fen, mistakeComparison.playedLineUci),
-                  },
-                  {
-                    label: "Better line",
-                    san: lineSan(report.fen, mistakeComparison.betterLineUci),
-                  },
-                ]
-              : mate
-                ? [{ label: "Mating line", san: lineSan(report.fen, mate.lineUci) }]
-                : undefined
-          }
+          comparedLines={mistakeLines}
         >
           {report.mistake.evaluationLossCp !== null && (
             <Text size="xs" c="dimmed">

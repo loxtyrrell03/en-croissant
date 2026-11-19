@@ -1,0 +1,11 @@
+{
+  "snapshots": {
+    "release": "8a84ddfaed1b09dea3a0931e24001aa42daa3ee1b9d4300166edb6f8e368d8dc",
+    "b": "9adb737d00f9c53c96a99487142e31d1bec32cbb430fa4a99614d37ee216c655",
+    "a": "199fef15a358bbd4d84eeb28819903cd94d064a02af423046d27c242350138d9"
+  },
+  "comparator": "8ab00a02c8347d1d9e26e2e1c0381cc94843b04c",
+  "reference": "5cc74c234d4e81c8ad33550d7c88eff6cd51aa486bfdb7a1d8b25847e7c03d65",
+  "sample": "7e842ee8ded085cfe11bff5ae38431c1dcd06cfbce11f55ccf070b14ed2fe674",
+  "criterion": "Confirm no additional reviewed positional false positives in the standard mistake/control sample. Compare the same frozen rules."
+}
