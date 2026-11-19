@@ -1,0 +1,390 @@
+{
+  "protocol": 1,
+  "notes": "Single engine-assisted review of paired and separate Stockfish frames. References were saved before candidate output was read.",
+  "cases": [
+    {
+      "id": "mistake-cascade-open-2026-eb15fe34368d4ada-47",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8d7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "After Kd7, Bb5+ sends the king back in both responses. The Ke7 branches keep the king near d6 and connect the rooks earlier. A material tactical payoff is unclear."
+    },
+    {
+      "id": "mistake-cascade-open-2026-eb15fe34368d4ada-38",
+      "scope": "mistake-mechanism",
+      "moveUci": "b7b5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rb5 is the engine's preferred decision. The position remains close to level."
+    },
+    {
+      "id": "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4e8",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Re8+ allows Rxe8 and an immediate simplifying exchange. Bxc7 takes a pawn with an attack on the d8 rook and keeps the advantage through the engine replies. A distinct lasting weakness is unclear."
+    },
+    {
+      "id": "mistake-cascade-open-2026-2f3a3121a88340f5-36",
+      "scope": "mistake-mechanism",
+      "moveUci": "e1e3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Re3 is the engine's preferred move. The later exchanges do not establish a mistake."
+    },
+    {
+      "id": "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+      "scope": "mistake-mechanism",
+      "moveUci": "h8c8",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rhc8 leads to the quiet Bf4 and a concrete attack on h6 and g7 in both lines. Nd5 instead allows checks Black can meet with pawn cover and queen defence. Independent lasting damage is unclear."
+    },
+    {
+      "id": "mistake-cascade-open-2026-7ce1bcb13badb2d1-27",
+      "scope": "mistake-mechanism",
+      "moveUci": "e8f7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Kf7 is the engine's preferred choice in a position where Black is already worse."
+    },
+    {
+      "id": "mistake-cascade-open-2026-3ae3faf1daf98303-34",
+      "scope": "mistake-mechanism",
+      "moveUci": "e2b5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qb5 induces the queen exchange and gives Black kingside castling plus the e4-pawn counterplay. Both g4 lines keep queens on and induce queenside castling. No distinct forcing payoff is established."
+    },
+    {
+      "id": "mistake-cascade-open-2026-3ae3faf1daf98303-66",
+      "scope": "mistake-mechanism",
+      "moveUci": "d4d5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxd5 maintains balance and is the engine's preferred move."
+    },
+    {
+      "id": "mistake-cascade-open-2026-467333df5397dfb4-63",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8f8",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Raf8 yields the g-file exchange and White can reorganise around the remaining rook. Rgc8 keeps the surviving rook on the c-file and gives active counterplay against White in both lines. The later tactics differ."
+    },
+    {
+      "id": "mistake-cascade-open-2026-467333df5397dfb4-83",
+      "scope": "mistake-mechanism",
+      "moveUci": "f4f3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "f3 is the equalising engine choice. Taking the bishop leads to continuing rook checks."
+    },
+    {
+      "id": "mistake-cascade-open-2026-470bb298511c2797-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2d3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The omitted f5 begins a forcing fxe6 and exf7+ sequence in both stronger lines, despite different first replies. It also breaks the centre before Black can stabilise. Bd3 trades the attacking bishop and allows a defended blockade with Nc5."
+    },
+    {
+      "id": "mistake-cascade-open-2026-470bb298511c2797-78",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4h7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rg1 and Qh7 both draw despite different tactical sequences."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6e6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qe6 allows the rook sacrifice Rf6 and the intermediate Qd3+, after which White retakes on f6 with exposed king checks or wins the queen. Kg8 avoids that sequence. The position was already exposed."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-59",
+      "scope": "mistake-mechanism",
+      "moveUci": "g8h7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Kh7 is the preferred defence. The later h-pawn pressure is already available."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-53a8c33c0a6d8716-48",
+      "scope": "mistake-mechanism",
+      "moveUci": "e2d4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Nd4 permits Nxd4 and exd4, leaving White an isolated d-pawn and allowing Black's bishops active squares. After a3, White instead exchanges the e6 knight and targets Black's queenside pawns."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-53a8c33c0a6d8716-64",
+      "scope": "mistake-mechanism",
+      "moveUci": "d2b3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nb3 is the engine's preferred defence and no distinct played-move error is shown."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1d1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Both branches must deal with the b2 passer. Re1 allows a Bd4 interposition and a concrete promotion/queen-capture sequence retaining White's survival chances. Rd1 lets Black build around the protected passer while keeping queens and the bishop pair."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-42ce9223d0035fef-27",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5d7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Both moves keep approximately the same evaluation and transpose to similar structures."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7e6",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qe6 misses Bxf2+ and the forcing tempo sequence into active rook play. White instead gets Qb4 and Be3. Sustained structure changes do not clearly separate the options."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "b4c3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Bc3 is the preferred near-equal response. The later checks are common resources."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-1ab8a1ddcc38bfef-87",
+      "scope": "mistake-mechanism",
+      "moveUci": "b6d7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Nd7 forgoes pushing the outside h-pawn. With h5 and h4 the pawn repeatedly ties White's rook and knight down, while after Nd7 White's rook invades before the pawn can advance."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-1ab8a1ddcc38bfef-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "d3e3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxe3 is the preferred move and the later central break does not show an independent error."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "b8b2",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Qb2 allows Nb5 and forces the rook to b6 while White activates the e-file. f4 keeps the queen at home and sets up h5 and Bg4 pressure in both searches."
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-059f0532430c54c6-32",
+      "scope": "mistake-mechanism",
+      "moveUci": "a3c4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nc4 is the preferred choice, and the position keeps an approximately level evaluation."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-99088356949d75c9-56",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1f1",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Rdf1 permits Ne4 and a tactical sequence that trades White's bishop and brings the black queen in with check. Qf4 leaves a rook entry but White can exchange it without the same follow-up."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-99088356949d75c9-78",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8f8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qxf8 reaches the engine's draw by recurring queen checks. It is the preferred move."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5b4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Immediate promotion on e1 forces the two rook exchanges in both stronger lines. After b4 the passed pawn remains blocked on e2 while White's rook gets into d6 and h6, winning pawns. The analysis does not establish uniqueness of the knight promotion."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-745143260fcd356d-72",
+      "scope": "mistake-mechanism",
+      "moveUci": "e3g4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nxg4 is an approximately equal preferred decision. The later capture order changes between engine continuations."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-d30cc78bb69dd275-65",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6h5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Rf8 keeps the rook active on the f-file and h5 allows g5 and Rf6, but the paired and separate searches disagree on the size of the loss. Black is badly worse either way."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-d30cc78bb69dd275-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d3",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qc2 and Qd3 both retain much of White's advantage. The minor evaluation difference has no verified played-move mechanism here."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+      "scope": "mistake-mechanism",
+      "moveUci": "c7d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kd6 allows g4 and the same sequence through Ne4+ and Nxg5 in both replies. The a5 lines create queenside counterplay before White can dismantle Black's kingside pawns."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-31acf8742a982f4a-83",
+      "scope": "mistake-mechanism",
+      "moveUci": "c8d7",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Bd7 is the preferred continuation. Both lines retain Black's active rook and passed f-pawn counterplay."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-90473c2e593e4dff-47",
+      "scope": "mistake-mechanism",
+      "moveUci": "d7c5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Nc5 lets White take the c4 pawn, leaving an advanced pawn and restricting Black's queenside pressure. Exchanging on d3 first opens Black's lines through c8 and trades the potential c-pawn off. Later tactical replies disagree."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-90473c2e593e4dff-28",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4h5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "The two decisions keep a small comparable advantage over differing responses. No meaningful loss is established."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-da7a9b59ba8ec820-67",
+      "scope": "mistake-mechanism",
+      "moveUci": "h6h5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Playing h5 first allows White to gain queenside space with a4 and a5 while keeping f4 as support. Qg4 enables g5 to make White commit that pawn before the queenside advance."
+    },
+    {
+      "id": "mistake-tournament-of-peace-2026-da7a9b59ba8ec820-69",
+      "scope": "mistake-mechanism",
+      "moveUci": "h3h1",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Qh1+ and Qg4 both retain comparable drawing chances. The queen check changes the route, not the observed outcome."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "f3d2",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Nd2 gives Black Qh4 in both searches, with a queen entry on f2 either directly or through Rxf2 and Bg3. Ne5 gives White effective defensive play, although the two better continuations differ."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-27",
+      "scope": "mistake-mechanism",
+      "moveUci": "f7f5",
+      "tactical": null,
+      "positional": null,
+      "rationale": "The paired search sees only a modest difference between f5 and Qa5+, while the independent f5 search returns a stronger short reply. The lines do not establish a stable scope for this control."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-5404948be32efaa6-78",
+      "scope": "mistake-mechanism",
+      "moveUci": "h1h2",
+      "tactical": false,
+      "positional": true,
+      "rationale": "After Kh2, both lines let Black fix the kingside with h5 and h4 before improving the king and rook. Immediate a4 allows g3 while Black's pawn is still on h5 and keeps a queenside point of play. No distinct forcing error is visible."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-5404948be32efaa6-68",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d8",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Rxd8 is the preferred route to the queen exchange. Any persistent disadvantage already exists."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-c4da58bf896b1ed3-46",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1h5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Qh5 allows Be3 and a forcing trade that dissolves White's attack. Qd2 and Qg5 preserve the threat long enough to force Rxh6 in both good lines, yielding material compensation."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-c4da58bf896b1ed3-37",
+      "scope": "mistake-mechanism",
+      "moveUci": "e4f2",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Nf2+ is the preferred continuation and trades the rook for the knight. No separate played-move error is established."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-7db86faaa6a46f32-29",
+      "scope": "mistake-mechanism",
+      "moveUci": "g8h6",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Nh6 allows Bxh6 and gxh6, damaging Black's own pawn cover in both searches. Nd5 avoids that concession and supports central and queenside activity."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-7db86faaa6a46f32-57",
+      "scope": "mistake-mechanism",
+      "moveUci": "d6d5",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Kd5 is the preferred choice and consolidates the advantage around the c5 pawn."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-beeb5017e7210c7e-73",
+      "scope": "mistake-mechanism",
+      "moveUci": "d5c3",
+      "tactical": null,
+      "positional": null,
+      "rationale": "Nxc3 trades the knight while the stronger move keeps a blockade, but the position is already badly lost. The lines vary on whether the main concession is activity or king safety."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-beeb5017e7210c7e-69",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5b4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "Bb4 is the preferred choice. White's later pressure comes from the existing position."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-feee1561e82b9ece-53",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7d5",
+      "tactical": true,
+      "positional": null,
+      "rationale": "Taking with the wrong knight gives White forcing alternatives. After the common Ne3+ combination, the played line allows Ng6+ because the e7 knight has left. The separate reply instead opens with Ke1. A separate long-term concession is unclear."
+    },
+    {
+      "id": "mistake-benidorm-a-2026-feee1561e82b9ece-35",
+      "scope": "mistake-mechanism",
+      "moveUci": "f5f4",
+      "tactical": false,
+      "positional": false,
+      "rationale": "f4 and axb4 are both near balanced. Their different pawn exchanges do not establish a significant error in this case."
+    }
+  ]
+}

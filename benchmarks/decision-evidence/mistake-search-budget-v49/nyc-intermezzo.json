@@ -1,0 +1,702 @@
+{
+  "v46-replay.json": {
+    "position": "4r3/4r1bk/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 b - - 3 39",
+    "frame": {
+      "best": {
+        "fen": "4r3/4r1bk/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 b - - 3 39",
+        "cp": -34,
+        "mate": null,
+        "depth": 20,
+        "nodes": 2204079,
+        "pvUci": [
+          "h7g8",
+          "f1d1",
+          "a5a4",
+          "d1d5",
+          "b6b5",
+          "e2d3",
+          "b5c4",
+          "d3c4",
+          "c6e6",
+          "c4d3",
+          "c5c4",
+          "d3f3",
+          "g5g4",
+          "f3e4",
+          "g4g3",
+          "d5a5",
+          "e7f7",
+          "f5f7",
+          "e6f7",
+          "e4f3",
+          "f7d7",
+          "f3g3",
+          "d7d1",
+          "g1h2",
+          "d1h5",
+          "g3h3",
+          "h5g6",
+          "a5a4",
+          "g6c2",
+          "a4c4"
+        ],
+        "wdl": [
+          1,
+          966,
+          33
+        ],
+        "searchMs": 2154.699599952437
+      },
+      "played": {
+        "fen": "4r3/4r1bk/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 b - - 3 39",
+        "cp": -490,
+        "mate": null,
+        "depth": 20,
+        "nodes": 2204079,
+        "pvUci": [
+          "c6e6",
+          "f5f6",
+          "g7f6",
+          "e2d3",
+          "h7h8",
+          "f1f6",
+          "e7g7",
+          "f6e6",
+          "e8e6",
+          "d3d8",
+          "g7g8",
+          "d8d7",
+          "g8e8",
+          "d7f7",
+          "e8e7",
+          "f7f8",
+          "h8h7",
+          "g2g3",
+          "e6d6"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 2154.699599952437
+      },
+      "bestReply": [
+        {
+          "fen": "4r1k1/4r1b1/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 16,
+          "cp": 23,
+          "mate": null,
+          "pvUci": [
+            "f1d1",
+            "a5a4",
+            "d1d5",
+            "b6b5",
+            "e2d3",
+            "b5c4",
+            "d3c4",
+            "c6e6",
+            "c4d3",
+            "c5c4",
+            "d3e4",
+            "e6c6",
+            "e4d4",
+            "c6c8",
+            "d4f2",
+            "c8b7",
+            "d5a5",
+            "b7e4",
+            "a5a4",
+            "g7e5",
+            "c3e5",
+            "e7e5",
+            "f5e5",
+            "e8e5"
+          ]
+        },
+        {
+          "fen": "4r1k1/4r1b1/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 16,
+          "cp": 7,
+          "mate": null,
+          "pvUci": [
+            "c3b2",
+            "a5a4",
+            "b2a1",
+            "a4a3",
+            "e2d3",
+            "e7d7",
+            "d3a3",
+            "d7d2",
+            "a3g3",
+            "c6e4",
+            "f5f2",
+            "g7e5",
+            "a1e5",
+            "d2f2",
+            "g3f2",
+            "e4e5"
+          ]
+        },
+        {
+          "fen": "4r1k1/4r1b1/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 16,
+          "cp": 4,
+          "mate": null,
+          "pvUci": [
+            "c3a1",
+            "a5a4",
+            "f1d1",
+            "a4a3",
+            "d1d5",
+            "b6b5",
+            "e2d3",
+            "b5c4",
+            "d3c4",
+            "c6e6",
+            "c4e4",
+            "a3a2",
+            "f5f3",
+            "e7a7"
+          ]
+        }
+      ],
+      "playedReply": [
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 17,
+          "cp": 484,
+          "mate": null,
+          "pvUci": [
+            "f5f6",
+            "g7f6",
+            "e2d3",
+            "h7g8",
+            "f1f6",
+            "e6d7",
+            "f6d6",
+            "d7c8",
+            "d6g6",
+            "g8f8",
+            "g6h6",
+            "e7d7",
+            "d3g6"
+          ]
+        },
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 17,
+          "cp": 73,
+          "mate": null,
+          "pvUci": [
+            "f1f3",
+            "h7g8",
+            "e2e4",
+            "a5a4",
+            "c3a1",
+            "e6d7",
+            "f3d3",
+            "d7b7",
+            "d3d5",
+            "b6b5",
+            "f5f1",
+            "b5c4",
+            "e4c4"
+          ]
+        },
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 17,
+          "cp": 72,
+          "mate": null,
+          "pvUci": [
+            "e2e4",
+            "h7g8",
+            "f1f3",
+            "a5a4",
+            "c3a1",
+            "e6d7",
+            "f3d3",
+            "d7e6",
+            "g2g4",
+            "e7d7",
+            "d3d7",
+            "e6d7",
+            "e4d5",
+            "d7e6",
+            "g1f2",
+            "a4a3",
+            "f2e3",
+            "a3a2",
+            "e3d2",
+            "g8h8",
+            "d5e6",
+            "e8e6"
+          ]
+        }
+      ],
+      "sharedReply": null
+    },
+    "diagnosis": {
+      "category": "unclear",
+      "tactical": {
+        "support": "unestablished",
+        "basis": "insufficient",
+        "reasons": [
+          "No relevant tactical mechanism has been established."
+        ]
+      },
+      "positional": {
+        "support": "unestablished",
+        "basis": "insufficient",
+        "reasons": [
+          "No relevant positional difference has been established."
+        ]
+      },
+      "mechanisms": [],
+      "verifiedMotifs": [],
+      "localProofs": [],
+      "episodeOutcomes": [],
+      "conditionalResources": [],
+      "positionalFactors": [],
+      "limitations": [
+        "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
+        "The compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved."
+      ],
+      "evaluationLossCp": 456,
+      "missed": [],
+      "allowed": []
+    }
+  },
+  "enhanced-replay.json": {
+    "position": "4r3/4r1bk/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 b - - 3 39",
+    "frame": {
+      "best": {
+        "fen": "4r3/4r1bk/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 b - - 3 39",
+        "cp": -34,
+        "mate": null,
+        "depth": 20,
+        "nodes": 2204079,
+        "pvUci": [
+          "h7g8",
+          "f1d1",
+          "a5a4",
+          "d1d5",
+          "b6b5",
+          "e2d3",
+          "b5c4",
+          "d3c4",
+          "c6e6",
+          "c4d3",
+          "c5c4",
+          "d3f3",
+          "g5g4",
+          "f3e4",
+          "g4g3",
+          "d5a5",
+          "e7f7",
+          "f5f7",
+          "e6f7",
+          "e4f3",
+          "f7d7",
+          "f3g3",
+          "d7d1",
+          "g1h2",
+          "d1h5",
+          "g3h3",
+          "h5g6",
+          "a5a4",
+          "g6c2",
+          "a4c4"
+        ],
+        "wdl": [
+          1,
+          966,
+          33
+        ],
+        "searchMs": 2154.699599952437
+      },
+      "played": {
+        "fen": "4r3/4r1bk/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 b - - 3 39",
+        "cp": -490,
+        "mate": null,
+        "depth": 20,
+        "nodes": 2204079,
+        "pvUci": [
+          "c6e6",
+          "f5f6",
+          "g7f6",
+          "e2d3",
+          "h7h8",
+          "f1f6",
+          "e7g7",
+          "f6e6",
+          "e8e6",
+          "d3d8",
+          "g7g8",
+          "d8d7",
+          "g8e8",
+          "d7f7",
+          "e8e7",
+          "f7f8",
+          "h8h7",
+          "g2g3",
+          "e6d6"
+        ],
+        "wdl": [
+          0,
+          0,
+          1000
+        ],
+        "searchMs": 2154.699599952437
+      },
+      "bestReply": [
+        {
+          "fen": "4r1k1/4r1b1/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 24,
+          "cp": 9,
+          "mate": null,
+          "pvUci": [
+            "f1d1",
+            "a5a4",
+            "d1d5",
+            "b6b5",
+            "e2d3",
+            "b5c4",
+            "d3c4",
+            "c6e6",
+            "c4d3",
+            "c5c4",
+            "d3f3",
+            "g5g4",
+            "f3e4",
+            "g4g3",
+            "d5a5",
+            "e7f7",
+            "f5f7",
+            "e6f7",
+            "e4f3",
+            "f7d7",
+            "f3g3",
+            "d7d1",
+            "g1h2",
+            "d1h5",
+            "g3h3",
+            "h5g5",
+            "a5a4",
+            "g7e5",
+            "c3e5",
+            "g5e5",
+            "h3g3",
+            "g8h8"
+          ]
+        },
+        {
+          "fen": "4r1k1/4r1b1/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 24,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "c3a1",
+            "a5a4",
+            "g1h2",
+            "e8d8",
+            "f5f3",
+            "d8e8",
+            "f3e3",
+            "c6e6",
+            "a1b2",
+            "e6d7",
+            "e3d3",
+            "d7e6",
+            "d3e3"
+          ]
+        },
+        {
+          "fen": "4r1k1/4r1b1/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 24,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "e2d3",
+            "e7d7",
+            "d3e2",
+            "a5a4",
+            "f1a1",
+            "e8e6",
+            "a1a3",
+            "d7e7",
+            "c3a1",
+            "c6e8",
+            "a3e3",
+            "a4a3",
+            "e2f3",
+            "g7e5",
+            "f5e5",
+            "e6e5",
+            "f3f6",
+            "e5e3",
+            "f6h8",
+            "g8f7",
+            "h8f6"
+          ]
+        }
+      ],
+      "playedReply": [
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 24,
+          "cp": 552,
+          "mate": null,
+          "pvUci": [
+            "f5f6",
+            "g7f6",
+            "e2d3",
+            "h7h8",
+            "f1f6",
+            "e7g7",
+            "f6e6",
+            "e8e6",
+            "d3d8",
+            "h8h7",
+            "c3d2",
+            "g7a7",
+            "d8f8",
+            "a7e7",
+            "g1h2",
+            "e7e8",
+            "f8f7",
+            "h7h8",
+            "d2c3",
+            "e8e7",
+            "f7f8",
+            "h8h7"
+          ]
+        },
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 24,
+          "cp": 37,
+          "mate": null,
+          "pvUci": [
+            "e2d3",
+            "e7d7",
+            "d3e4",
+            "h7g8",
+            "g2g4",
+            "d7e7",
+            "g1g2",
+            "a5a4",
+            "f1a1",
+            "e6d7",
+            "e4d5",
+            "d7d5",
+            "c4d5",
+            "g7e5",
+            "c3e5",
+            "e7e5",
+            "a1a4",
+            "e5e2",
+            "g2g3",
+            "e2c2",
+            "a4a3",
+            "c5c4"
+          ]
+        },
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "depth": 24,
+          "cp": 29,
+          "mate": null,
+          "pvUci": [
+            "e2e4",
+            "h7g8",
+            "f1d1",
+            "a5a4",
+            "d1d5",
+            "a4a3",
+            "e4d3",
+            "e7f7",
+            "g2g4",
+            "f7e7",
+            "d5d6",
+            "e6c8",
+            "g1h2",
+            "a3a2",
+            "c3a1",
+            "e7e6",
+            "d6d7",
+            "e6e7",
+            "e5e6",
+            "g7a1",
+            "f5f7",
+            "a1g7",
+            "f7e7",
+            "e8e7"
+          ]
+        }
+      ],
+      "sharedReply": null
+    },
+    "diagnosis": {
+      "category": "tactical",
+      "tactical": {
+        "support": "supported",
+        "basis": "engine-supported",
+        "reasons": [
+          "Qd3+ inserts a check before Rxf6 recaptures on f6. The played line retains 2.3 fewer material points after 12 plies of both compared lines."
+        ]
+      },
+      "positional": {
+        "support": "unestablished",
+        "basis": "insufficient",
+        "reasons": [
+          "No relevant positional difference has been established."
+        ]
+      },
+      "mechanisms": [
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "mechanism": "intermezzo",
+          "actor": "white",
+          "mechanismPly": 3,
+          "payoffPly": 5,
+          "squares": [
+            "d3",
+            "f6"
+          ],
+          "description": "Qd3+ inserts a check before Rxf6 recaptures on f6.",
+          "support": "legal-continuation",
+          "rootMoveInvolved": false,
+          "lineUci": [
+            "f5f6",
+            "g7f6",
+            "e2d3",
+            "h7h8",
+            "f1f6"
+          ]
+        }
+      ],
+      "verifiedMotifs": [],
+      "localProofs": [],
+      "episodeOutcomes": [],
+      "conditionalResources": [],
+      "positionalFactors": [],
+      "limitations": [
+        "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
+        "The compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved."
+      ],
+      "evaluationLossCp": 456,
+      "missed": [],
+      "allowed": [
+        {
+          "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+          "mechanism": "intermezzo",
+          "actor": "white",
+          "mechanismPly": 3,
+          "payoffPly": 5,
+          "squares": [
+            "d3",
+            "f6"
+          ],
+          "description": "Qd3+ inserts a check before Rxf6 recaptures on f6.",
+          "support": "legal-continuation",
+          "rootMoveInvolved": false,
+          "lineUci": [
+            "f5f6",
+            "g7f6",
+            "e2d3",
+            "h7h8",
+            "f1f6"
+          ]
+        }
+      ],
+      "tacticalEpisode": {
+        "kind": "comparative",
+        "throughPly": 12,
+        "materialDifferencePoints": 2.3,
+        "betterLineUci": [
+          "h7g8",
+          "f1d1",
+          "a5a4",
+          "d1d5",
+          "b6b5",
+          "e2d3",
+          "b5c4",
+          "d3c4",
+          "c6e6",
+          "c4d3",
+          "c5c4",
+          "d3f3"
+        ],
+        "playedLineUci": [
+          "c6e6",
+          "f5f6",
+          "g7f6",
+          "e2d3",
+          "h7h8",
+          "f1f6",
+          "e7g7",
+          "f6e6",
+          "e8e6",
+          "d3d8",
+          "h8h7",
+          "c3d2"
+        ],
+        "mechanisms": [
+          {
+            "fen": "4r3/4r1bk/1p2q2p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+            "mechanism": "intermezzo",
+            "actor": "white",
+            "mechanismPly": 3,
+            "payoffPly": 5,
+            "squares": [
+              "d3",
+              "f6"
+            ],
+            "description": "Qd3+ inserts a check before Rxf6 recaptures on f6.",
+            "support": "legal-continuation",
+            "rootMoveInvolved": false,
+            "lineUci": [
+              "f5f6",
+              "g7f6",
+              "e2d3",
+              "h7h8",
+              "f1f6"
+            ]
+          }
+        ],
+        "explanation": "Qd3+ inserts a check before Rxf6 recaptures on f6."
+      }
+    }
+  },
+  "separatelyPrecomputedSharedReply": {
+    "betterMoveUci": "h7g8",
+    "playedMoveUci": "c6e6",
+    "line": {
+      "fen": "4r1k1/4r1b1/1pq4p/p1p1PRpP/2P5/2B5/2P1Q1P1/5RK1 w - - 4 40",
+      "depth": 22,
+      "cp": -774,
+      "mate": null,
+      "pvUci": [
+        "f5f6",
+        "g7f6",
+        "f1f5",
+        "a5a4",
+        "g2g3",
+        "f6g7",
+        "f5f1",
+        "e8d8",
+        "f1d1",
+        "c6e8",
+        "d1d8",
+        "e8d8",
+        "e2f3",
+        "g7e5",
+        "c3e5",
+        "e7e5",
+        "f3d3"
+      ]
+    }
+  }
+}

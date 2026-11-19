@@ -1,0 +1,12 @@
+{
+  "baseline": "2cc7d97fd1548f062c12645001d8993f50a9600a",
+  "protocolSha256": "6f2bf3ab0a551316fe61b6b9ac93843e73226119da82ea088e22a590da2c95f5",
+  "sampleSha256": "cadd8c3b7922606a04f554017a5781551a000cb97f9129ea05bf0978a11ceeb0",
+  "referenceSha256": "f937458dd95636d3525f5dae86226f06001278743ea707314b3cf975d2f6280e",
+  "labels": "One reviewer used paired legal Stockfish variations before opening any worker outcomes or rankings.",
+  "repositoryLfDigests": {
+    "sampleSha256": "f4297b9119b9a8721b0fdeeccbcf4e73ea5b7d4d48af7a251665952a26003d02",
+    "referenceSha256": "254f0cdc24f3455b7a19d8cc3f6ce98e370bd61e1a9e2ff85398c530b5ad7d1b",
+    "protocolSha256": "6f2bf3ab0a551316fe61b6b9ac93843e73226119da82ea088e22a590da2c95f5"
+  }
+}

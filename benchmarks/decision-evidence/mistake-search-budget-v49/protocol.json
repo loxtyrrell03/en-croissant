@@ -1,0 +1,21 @@
+{
+  "protocol": 1,
+  "baseline": "2cc7d97fd1548f062c12645001d8993f50a9600a",
+  "sampling": "Six games per family, each with one annotated loss and one annotated control. Require public PGN confirms classical. Board and game groups disjoint from prior cohorts.",
+  "policies": [
+    "continuation-logistic",
+    "continuation-network",
+    "score-logistic",
+    "evaluation-loss",
+    "seeded-control"
+  ],
+  "eligibility": "Distinct legal paired best and played roots, both have separately searched replies, same global best, 75 centipawn or greater paired loss (mate conversion clipped same as v48), and incumbent mixed is unresolved.",
+  "slots": 6,
+  "nodesPerReply": 6000000,
+  "threads": 1,
+  "hashMiB": 64,
+  "maxReplyMultiPv": 3,
+  "scoring": "Net change in known mixed true positives at identical requested engine budget, along with tactical and positional true positives, reviewed false positives and abstentions. Label positions before opening classifier outputs or ranker predictions. Existing evidence verdicts are replayed without adapting their criteria to this sample.",
+  "deploymentGate": "Any explicit neural benefit must improve verified newly mixed output over all prespecified deterministic baselines without adding reviewed false positives or wiping out reviewed true positives. Small or tied changes remain research.",
+  "rank": "Use iteration 48 model definitions with the audited training labels. Use one decision per game per policy and the same deterministic tie order."
+}

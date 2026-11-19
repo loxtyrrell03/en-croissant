@@ -1,0 +1,2020 @@
+{
+  "eligible": 22,
+  "unionSearched": 12,
+  "transferCases": 48,
+  "policyMetrics": {
+    "continuation-logistic": {
+      "requestedNodes": 72000000,
+      "observedNodes": 72003451,
+      "acceptedReplies": 12,
+      "pairs": [
+        "mistake-benidorm-a-2026-7db86faaa6a46f32-29",
+        "mistake-benidorm-a-2026-c4da58bf896b1ed3-46",
+        "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+        "mistake-tournament-of-peace-2026-745143260fcd356d-89"
+      ],
+      "metrics": {
+        "cases": 48,
+        "events": 4,
+        "before": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "after": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "changedPositionReports": 0,
+        "changedMoveReports": 0,
+        "extraSearchDecisions": {
+          "before": 0,
+          "after": 6
+        },
+        "workerMedianMs": {
+          "before": 85.52324999999928,
+          "after": 85.52324999999928
+        },
+        "changes": [
+          {
+            "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          }
+        ]
+      }
+    },
+    "continuation-network": {
+      "requestedNodes": 72000000,
+      "observedNodes": 72003853,
+      "acceptedReplies": 12,
+      "pairs": [
+        "mistake-benidorm-a-2026-7db86faaa6a46f32-29",
+        "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+        "mistake-tournament-of-peace-2026-745143260fcd356d-89"
+      ],
+      "metrics": {
+        "cases": 48,
+        "events": 4,
+        "before": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "after": {
+          "tactical": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 9,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 3,
+              "denominator": 12,
+              "interval95": [
+                0.08894166839405471,
+                0.5323053349335657
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.75,
+              "numerator": 27,
+              "denominator": 36,
+              "interval95": [
+                0.5892954623327166,
+                0.8624952233700517
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "changedPositionReports": 0,
+        "changedMoveReports": 0,
+        "extraSearchDecisions": {
+          "before": 0,
+          "after": 6
+        },
+        "workerMedianMs": {
+          "before": 85.52324999999928,
+          "after": 85.52324999999928
+        },
+        "changes": [
+          {
+            "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          },
+          {
+            "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          }
+        ]
+      }
+    },
+    "score-logistic": {
+      "requestedNodes": 72000000,
+      "observedNodes": 72003746,
+      "acceptedReplies": 12,
+      "pairs": [
+        "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+        "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+        "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "mistake-tournament-of-peace-2026-745143260fcd356d-89"
+      ],
+      "metrics": {
+        "cases": 48,
+        "events": 4,
+        "before": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "after": {
+          "tactical": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 9,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 3,
+              "denominator": 12,
+              "interval95": [
+                0.08894166839405471,
+                0.5323053349335657
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.75,
+              "numerator": 27,
+              "denominator": 36,
+              "interval95": [
+                0.5892954623327166,
+                0.8624952233700517
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "changedPositionReports": 0,
+        "changedMoveReports": 0,
+        "extraSearchDecisions": {
+          "before": 0,
+          "after": 6
+        },
+        "workerMedianMs": {
+          "before": 85.52324999999928,
+          "after": 85.52324999999928
+        },
+        "changes": [
+          {
+            "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          },
+          {
+            "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          }
+        ]
+      }
+    },
+    "evaluation-loss": {
+      "requestedNodes": 72000000,
+      "observedNodes": 72003623,
+      "acceptedReplies": 12,
+      "pairs": [
+        "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "mistake-benidorm-a-2026-feee1561e82b9ece-53",
+        "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+        "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+        "mistake-fall-nyc-norms-2026-d617317c7afc176f-77"
+      ],
+      "metrics": {
+        "cases": 48,
+        "events": 4,
+        "before": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "after": {
+          "tactical": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 9,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 3,
+              "denominator": 12,
+              "interval95": [
+                0.08894166839405471,
+                0.5323053349335657
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.75,
+              "numerator": 27,
+              "denominator": 36,
+              "interval95": [
+                0.5892954623327166,
+                0.8624952233700517
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "changedPositionReports": 0,
+        "changedMoveReports": 0,
+        "extraSearchDecisions": {
+          "before": 0,
+          "after": 6
+        },
+        "workerMedianMs": {
+          "before": 85.52324999999928,
+          "after": 85.52324999999928
+        },
+        "changes": [
+          {
+            "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          },
+          {
+            "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          }
+        ]
+      }
+    },
+    "seeded-control": {
+      "requestedNodes": 72000000,
+      "observedNodes": 72003308,
+      "acceptedReplies": 12,
+      "pairs": [
+        "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+        "mistake-cascade-open-2026-eb15fe34368d4ada-47",
+        "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+        "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "mistake-tournament-of-peace-2026-31acf8742a982f4a-75"
+      ],
+      "metrics": {
+        "cases": 48,
+        "events": 4,
+        "before": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "after": {
+          "tactical": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 9,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.25,
+              "numerator": 3,
+              "denominator": 12,
+              "interval95": [
+                0.08894166839405471,
+                0.5323053349335657
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.75,
+              "numerator": 27,
+              "denominator": 36,
+              "interval95": [
+                0.5892954623327166,
+                0.8624952233700517
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "changedPositionReports": 0,
+        "changedMoveReports": 0,
+        "extraSearchDecisions": {
+          "before": 0,
+          "after": 6
+        },
+        "workerMedianMs": {
+          "before": 85.52324999999928,
+          "after": 85.52324999999928
+        },
+        "changes": [
+          {
+            "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          },
+          {
+            "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+            "reference": {
+              "tactical": true,
+              "positional": null,
+              "mixed": null
+            },
+            "before": [
+              "tactical"
+            ],
+            "after": [
+              "tactical"
+            ],
+            "promotion": null
+          }
+        ]
+      }
+    }
+  },
+  "protocol": {
+    "protocol": 1,
+    "baseline": "2cc7d97fd1548f062c12645001d8993f50a9600a",
+    "sampling": "Six games per family, each with one annotated loss and one annotated control. Require public PGN confirms classical. Board and game groups disjoint from prior cohorts.",
+    "policies": [
+      "continuation-logistic",
+      "continuation-network",
+      "score-logistic",
+      "evaluation-loss",
+      "seeded-control"
+    ],
+    "eligibility": "Distinct legal paired best and played roots, both have separately searched replies, same global best, 75 centipawn or greater paired loss (mate conversion clipped same as v48), and incumbent mixed is unresolved.",
+    "slots": 6,
+    "nodesPerReply": 6000000,
+    "threads": 1,
+    "hashMiB": 64,
+    "maxReplyMultiPv": 3,
+    "scoring": "Net change in known mixed true positives at identical requested engine budget, along with tactical and positional true positives, reviewed false positives and abstentions. Label positions before opening classifier outputs or ranker predictions. Existing evidence verdicts are replayed without adapting their criteria to this sample.",
+    "deploymentGate": "Any explicit neural benefit must improve verified newly mixed output over all prespecified deterministic baselines without adding reviewed false positives or wiping out reviewed true positives. Small or tied changes remain research.",
+    "rank": "Use iteration 48 model definitions with the audited training labels. Use one decision per game per policy and the same deterministic tie order."
+  },
+  "nominations": {
+    "continuation-logistic": [
+      {
+        "id": "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+        "rank": 0.8274358919211817
+      },
+      {
+        "id": "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "rank": 0.7846981370267562
+      },
+      {
+        "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "rank": 0.7266437512252661
+      },
+      {
+        "id": "mistake-benidorm-a-2026-7db86faaa6a46f32-29",
+        "rank": 0.6304785332106586
+      },
+      {
+        "id": "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+        "rank": 0.36610906581164077
+      },
+      {
+        "id": "mistake-benidorm-a-2026-c4da58bf896b1ed3-46",
+        "rank": 0.3313041537197187
+      }
+    ],
+    "continuation-network": [
+      {
+        "id": "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+        "rank": 0.9369717799127887
+      },
+      {
+        "id": "mistake-benidorm-a-2026-7db86faaa6a46f32-29",
+        "rank": 0.8681619392894872
+      },
+      {
+        "id": "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "rank": 0.8449570284873623
+      },
+      {
+        "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "rank": 0.8443002203610019
+      },
+      {
+        "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "rank": 0.22147296632577995
+      },
+      {
+        "id": "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+        "rank": 0.08881060441132323
+      }
+    ],
+    "score-logistic": [
+      {
+        "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "rank": 0.6297236101184057
+      },
+      {
+        "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "rank": 0.5625571204574403
+      },
+      {
+        "id": "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+        "rank": 0.5330379530193184
+      },
+      {
+        "id": "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+        "rank": 0.5131917762183422
+      },
+      {
+        "id": "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+        "rank": 0.509344620932485
+      },
+      {
+        "id": "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "rank": 0.417287547805948
+      }
+    ],
+    "evaluation-loss": [
+      {
+        "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "rank": 6.510000000000001
+      },
+      {
+        "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "rank": 4.5600000000000005
+      },
+      {
+        "id": "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+        "rank": 3.18
+      },
+      {
+        "id": "mistake-fall-nyc-norms-2026-059f0532430c54c6-53",
+        "rank": 2.79
+      },
+      {
+        "id": "mistake-cascade-open-2026-7ce1bcb13badb2d1-31",
+        "rank": 2.74
+      },
+      {
+        "id": "mistake-benidorm-a-2026-feee1561e82b9ece-53",
+        "rank": 2.48
+      }
+    ],
+    "seeded-control": [
+      {
+        "id": "mistake-fall-nyc-norms-2026-07cb38c4214c0e47-57",
+        "rank": 0.0
+      },
+      {
+        "id": "mistake-cascade-open-2026-2f3a3121a88340f5-48",
+        "rank": 0.0
+      },
+      {
+        "id": "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+        "rank": 0.0
+      },
+      {
+        "id": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "rank": 0.0
+      },
+      {
+        "id": "mistake-benidorm-a-2026-dbaf7b5539dbbb1c-30",
+        "rank": 0.0
+      },
+      {
+        "id": "mistake-cascade-open-2026-eb15fe34368d4ada-47",
+        "rank": 0.0
+      }
+    ]
+  },
+  "trainingCases": 226,
+  "trainingReportSha256": [
+    "eb3ea9297da94aae3b2bfdccccf9d46ad305ddb0ea26560249c3c9ad5d556472",
+    "ef4ef452d940cca4ecab82280899333ccde1626dc08914c59d745217355fd51b",
+    "9eda23bb6f82e9db57a1cb6f0d7a544caf0445105e2ebfc68ebd4a93728b6fa2"
+  ],
+  "notes": "Five prespecified policies on 48 decisions from events absent from model training. Secondary exhaustive search followed the primary analysis.",
+  "sharedSearch": "Reuse a saved control only when the enhanced played line has the same leading opponent reply. The worker still checks its own nomination.",
+  "extraSearch": {
+    "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+    "medianSummedBranchMs": 9798.252300039167,
+    "exhaustiveCases": 22,
+    "requestedExhaustiveNodes": 264000000,
+    "exhaustiveAdditionalAcceptedAxes": [
+      {
+        "case": "mistake-fall-nyc-norms-2026-d617317c7afc176f-77",
+        "axis": "tactical"
+      }
+    ],
+    "extraComplementMetrics": {
+      "requestedNodes": 120000000,
+      "observedNodes": 120007013,
+      "acceptedReplies": 20,
+      "pairs": [
+        "mistake-benidorm-a-2026-5404948be32efaa6-78",
+        "mistake-cascade-open-2026-3ae3faf1daf98303-34",
+        "mistake-cascade-open-2026-467333df5397dfb4-63",
+        "mistake-cascade-open-2026-470bb298511c2797-30",
+        "mistake-fall-nyc-norms-2026-1ab8a1ddcc38bfef-87",
+        "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60",
+        "mistake-fall-nyc-norms-2026-53a8c33c0a6d8716-48",
+        "mistake-tournament-of-peace-2026-90473c2e593e4dff-47",
+        "mistake-tournament-of-peace-2026-99088356949d75c9-56",
+        "mistake-tournament-of-peace-2026-da7a9b59ba8ec820-67"
+      ],
+      "metrics": {
+        "cases": 48,
+        "events": 4,
+        "before": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "after": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 10,
+            "tn": 24,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.16666666666666666,
+              "numerator": 2,
+              "denominator": 12,
+              "interval95": [
+                0.04696514218385378,
+                0.4480308622529734
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.7222222222222222,
+              "numerator": 26,
+              "denominator": 36,
+              "interval95": [
+                0.5600751000260289,
+                0.841516620598654
+              ]
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 13,
+            "tn": 23,
+            "unknownReference": 11,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.07142857142857142,
+              "numerator": 1,
+              "denominator": 14,
+              "interval95": [
+                0.012722215247890939,
+                0.31468704424151117
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 23,
+              "denominator": 23,
+              "interval95": [
+                0.8568833815495731,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6486486486486487,
+              "numerator": 24,
+              "denominator": 37,
+              "interval95": [
+                0.4875902312255084,
+                0.7817439286607287
+              ]
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "tn": 24,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 4,
+              "interval95": [
+                0.0,
+                0.4898908364545973
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 24,
+              "denominator": 24,
+              "interval95": [
+                0.8620237953250198,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8571428571428571,
+              "numerator": 24,
+              "denominator": 28,
+              "interval95": [
+                0.685101978364747,
+                0.9430099468025059
+              ]
+            }
+          }
+        },
+        "changedPositionReports": 0,
+        "changedMoveReports": 0,
+        "extraSearchDecisions": {
+          "before": 0,
+          "after": 10
+        },
+        "workerMedianMs": {
+          "before": 85.52324999999928,
+          "after": 87.17754999999943
+        },
+        "changes": []
+      }
+    }
+  }
+}

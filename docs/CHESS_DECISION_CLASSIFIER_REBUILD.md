@@ -3135,3 +3135,67 @@ passed to `--uncertain-positional`. The resulting models nominate
 possible diagnoses for follow-up. They do not add reports or run extra
 engine searches. The aggregate results and fit settings are in
 `benchmarks/decision-evidence/mistake-model-v48`.
+
+
+## Iteration 49 — measure verified diagnoses at equal Stockfish cost
+
+The experiment froze 48 decisions from 24 games across Cascade Open,
+Fall NYC Chess Norms, Tournament of Peace and Benidorm Group A. Each game
+contributes one annotated loss and one annotated control. Each of the
+four tournament sources is independent of the v48 model training data.
+The public PGNs give classical controls. One reviewer read paired and
+separately searched legal lines before opening app reports or model
+nominations. Ambiguous axes remain uncertain.
+
+Twenty-two decisions met the search eligibility conditions. Each of five
+policies nominated six games for an extra six million nodes after the
+played move and six million nodes after the best move. Both use the same
+Stockfish 19 build with one thread, a 64 MiB hash and up to three replies.
+Original paired root evaluations were held fixed. The same app worker
+reassessed the mistake using the deeper replies. Twelve distinct
+decisions covered all five nominations. Each policy cost 72 million
+requested nodes.
+
+| Policy | Added tactical positives | Added positional positives | Added mixed positives | Added reviewed false positives |
+| --- | ---: | ---: | ---: | ---: |
+| Continuation logistic | 0 | 0 | 0 | 0 |
+| Continuation network | 1 | 0 | 0 | 0 |
+| Evaluation-only logistic | 1 | 0 | 0 | 0 |
+| Largest Stockfish loss | 1 | 0 | 0 | 0 |
+| Seeded control | 1 | 0 | 0 | 0 |
+
+The original worker found 2 of 12 reviewed tactical positives, 1 of 14
+positional positives and 0 of 4 mixed positives. The four successful
+policies all found the same new case. In Fall NYC Chess Norms,
+`39...Qe6 40.Rf6 Bxf6 41.Qd3+` inserts a queen check before
+`42.Rxf6`. Both original searches show the check, and the longer
+separate search gives a comparable 12-ply material consequence.
+The exact lines and the engine score, depth and node counts are saved
+in the case receipt. The original recorded loss is 4.56 pawns.
+
+An exploratory exhaustive run searched the ten eligible choices that
+none of the five policies nominated. Across all 22 and 264 million
+requested nodes, the worker still added just one tactical diagnosis.
+The two deeper branches took a median of about 9.8 combined seconds
+on this machine during the concurrent experiments. The immediate
+opportunity is evidence extraction from the existing legal lines,
+rather than spending that budget across all unclear decisions.
+
+The Benidorm counterfactual records a separate remaining mechanism.
+After the same legal sequence following either knight capture on d5,
+White's `Ng6+` is met by `Nxg6` only when Black's original e7 knight
+stays on e7. The forced replies and both legal boards are in the
+receipt. The app still needs to establish when that kind of alternative
+changes a tactic's outcome across the searched choices.
+
+**Reproduction.** Use the sample, reference, protocol and source list in
+`benchmarks/decision-evidence/mistake-search-budget-v49`. Generate
+root and reply frames using the v47 parameters and `v49` cache suffix.
+Replay the full sample with `decisionMistakeBreadthReplay.test.ts`.
+Run `decision-evidence-mistake-search-budget.py nominate` with the same
+three historical worker reports and disputed training IDs as v48.
+Its `search` command outputs an extra-reply manifest for the app worker.
+Replay that manifest, then use the `score` command to assemble the
+five equal-budget outcomes. Keep the committed tactical core fixed
+through the replays. The exhaustive complement is a separate diagnostic
+based on the eligible games outside the nomination union.
