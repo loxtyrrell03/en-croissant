@@ -1,0 +1,152 @@
+diff --git a/src/components/panels/tactics/DecisionEvidencePanel.tsx b/src/components/panels/tactics/DecisionEvidencePanel.tsx
+index fda6db9b..c1b4b094 100644
+--- a/src/components/panels/tactics/DecisionEvidencePanel.tsx
++++ b/src/components/panels/tactics/DecisionEvidencePanel.tsx
+@@ -199,8 +199,10 @@ function DecisionReport({
+               ]
+             : []),
+           ...(plan
+-            ? plan.linesUci.map((moves) => ({
+-                label: `After ${lineSan(report.fen, moves.slice(0, 1))}`,
++            ? plan.linesUci.map((moves, index) => ({
++                label: plan.linesUci[0][0] === plan.linesUci[1][0]
++                  ? (index === 0 ? "Main line" : "Separate engine line")
++                  : `After ${lineSan(report.fen, moves.slice(0, 1))}`,
+                 san: lineSan(report.fen, moves),
+               }))
+             : []),
+diff --git a/src/utils/tacticalMotifs/decisionAssessment.ts b/src/utils/tacticalMotifs/decisionAssessment.ts
+index 5ddef981..ce5f2512 100644
+--- a/src/utils/tacticalMotifs/decisionAssessment.ts
++++ b/src/utils/tacticalMotifs/decisionAssessment.ts
+@@ -52,12 +52,13 @@ import {
+ } from "./decisionPositionContrast";
+ import {
+     findPositionStrategicPlan,
++    findRookRecapturePlan,
+     qualifyPositionFactors,
+     type PositionStrategicPlan,
+ } from "./decisionPositionPlans";
+ import { findSharedStructuralPlan } from "./decisionSharedStructure";
+ 
+-export const DECISION_ASSESSMENT_VERSION = 16;
++export const DECISION_ASSESSMENT_VERSION = 17;
+ export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
+ export type DecisionDimension = {
+     support: "unestablished" | "suggestive" | "supported";
+@@ -518,10 +519,19 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
+         break;
+     }
+     if (position.positional.support === "unestablished" && !rejectedChoices) {
+-        const plan =
++        let plan =
+             findPositionStrategicPlan(input.fen, input.candidates) ??
+             findKingShelterTradeoff(input.fen, input.candidates) ??
+             findSharedStructuralPlan(input.fen, input.candidates);
++        if (!plan) {
++            for (const move of viable) {
++                const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;
++                const reply = input.replyProbes?.find((item) => item.moveUci === move.moveUci);
++                if (!corroboratingReply(input.fen, line, reply)) continue;
++                plan = findRookRecapturePlan(input.fen, line, reply!.lines[0]);
++                if (plan) break;
++            }
++        }
+         if (plan) {
+             position.strategicPlan = plan;
+             position.positional = {
+diff --git a/src/utils/tacticalMotifs/decisionPositionPlans.ts b/src/utils/tacticalMotifs/decisionPositionPlans.ts
+index 90c19538..51a8e94e 100644
+--- a/src/utils/tacticalMotifs/decisionPositionPlans.ts
++++ b/src/utils/tacticalMotifs/decisionPositionPlans.ts
+@@ -1,7 +1,8 @@
+ import { attacks, pawnAttacks } from "chessops/attacks";
+-import type { Chess } from "chessops/chess";
++import { castlingSide, type Chess } from "chessops/chess";
++import { makeFen } from "chessops/fen";
+ import type { Color, Square } from "chessops/types";
+-import { makeSquare, opposite, parseSquare } from "chessops/util";
++import { makeSquare, opposite, parseSquare, rookCastlesTo } from "chessops/util";
+ import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
+ import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
+ import type { ComparativePositionalEvidence } from "./positionalTransitions";
+@@ -51,6 +52,79 @@ export type PositionStrategicPlan = {
+     description: string;
+ };
+ 
++/** Show how a newly deployed rook gains a lasting post through an equal
++ * minor-piece exchange. The other search must retain the same rook and file. */
++export function findRookRecapturePlan(
++    fen: string,
++    main: DecisionEngineLine,
++    confirmedReply: DecisionEngineLine,
++): PositionStrategicPlan | null {
++    const steps = replayTacticalLine(fen, main.pvUci.slice(0, WINDOW));
++    const [root] = steps;
++    if (!root || root.capture || root.before.isCheck() || root.after.isCheck()) return null;
++    const side = root.before.turn;
++    const castle = castlingSide(root.before, root.move);
++    if (!castle && root.before.board.get(root.move.from)?.role !== "rook") return null;
++    const entry = castle ? rookCastlesTo(side, castle) : root.move.to;
++    const column = file(entry);
++    const keepsFile = (board: Chess, square: Square) =>
++        file(square) === column && openForRook(board, square, side);
++    if (
++        !keepsFile(root.after, entry) ||
++        [...root.before.board.rook.intersect(root.before.board[side])].some(
++            (rook) => file(rook) === column,
++        )
++    )
++        return null;
++
++    const isMinor = (value: number) => value === 320 || value === 330;
++    let square = entry;
++    for (let i = 1; i <= Math.min(6, steps.length - 4); i++) {
++        const step = steps[i];
++        if (!keepsFile(step.before, square)) return null;
++        if (step.before.turn !== side && step.capture && step.move.to === square) return null;
++        if (step.before.turn !== side || step.move.from !== square) continue;
++        square = step.move.to;
++        if (!keepsFile(step.after, square)) return null;
++        if (!step.capture) continue;
++        const previous = steps[i - 1];
++        if (
++            rank(square, side) < 5 ||
++            step.after.isCheck() ||
++            !isMinor(previous.capture) ||
++            !isMinor(step.capture) ||
++            previous.move.to !== square ||
++            Math.abs(step.balance - (steps[i - 2]?.balance ?? 0)) > 50
++        )
++            return null;
++        const through = i + 4;
++        const settle = steps.slice(i + 1, through);
++        if (
++            settle.some(
++                (later) =>
++                    !keepsFile(later.after, square) ||
++                    later.after.board.get(square)?.role !== "rook" ||
++                    later.after.board.get(square)?.color !== side ||
++                    Math.abs(later.balance - step.balance) > 50,
++            )
++        )
++            return null;
++        const otherUci = [root.uci, ...confirmedReply.pvUci].slice(0, through);
++        const corroboration = measureDecisionLine(
++            makeFen(root.after.toSetup()),
++            confirmedReply,
++        );
++        if (otherUci.length < through || !corroboration || corroboration.drawnEnding) return null;
++        const other = replayTacticalLine(fen, otherUci);
++        if (maintain(other, 0, entry, keepsFile) < through) return null;
++        return {
++            linesUci: [main.pvUci.slice(0, through), otherUci],
++            description: `${root.san} places a rook on ${makeSquare(entry)}. The exchange ${previous.san} ${step.san} brings that rook to ${makeSquare(square)}, where it stays through ${settle[2].san}. The separate reply search also keeps the rook on the ${makeSquare(entry)[0]}-file.`,
++        };
++    }
++    return null;
++}
++
+ function describePlan(rootSan: string, action: PlanAction) {
+     return action.description.startsWith(`${rootSan} `)
+         ? action.description

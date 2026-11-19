@@ -1,0 +1,503 @@
+{
+  "protocol": 1,
+  "limitations": [
+    "One engine-assisted reviewer used the original Stockfish candidate and played-move comparison lines. Labels were frozen before the candidate or any comparison output was inspected. Uncertain judgments are explicit."
+  ],
+  "cases": [
+    {
+      "id": "coordination-marshall-premier-2026-3f6e1c29cfe686c5-39",
+      "scope": "position-character",
+      "moveUci": "h3g3",
+      "gameMoveUci": "g7d4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qg3+ and Bd4+ gain tempi against the exposed king. Qxd4 inverts the checking order and gives up the queen, while Ng3 lets the king out."
+    },
+    {
+      "id": "coordination-asian-nations-men-2026-5432f45bd3eed53d-80",
+      "scope": "position-character",
+      "moveUci": "h1h8",
+      "gameMoveUci": "h1h8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rh8+ forces king movement before the knight gives check and both rooks are exchanged on d8. A slower rook move misses that concrete liquidation."
+    },
+    {
+      "id": "coordination-arequipa-2026-1355da1385b0e5ed-104",
+      "scope": "position-character",
+      "moveUci": "h6f7",
+      "gameMoveUci": "h6f7",
+      "tactical": true,
+      "positional": null,
+      "rationale": "The Nf7+ and Nd6+ checks can repeat to hold the ending. Ng8 lets Black give checks and take h5. The precise contribution of the fixed pawns as a strategic feature is unclear."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-83073140d49b33b9-91",
+      "scope": "position-character",
+      "moveUci": "e5g5",
+      "gameMoveUci": "e5g5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rg5+ starts a forcing rook attack with Rf3+ and Rf2+. The quieter b6 and Re3 lines instead contain the d-pawn and reposition the rooks."
+    },
+    {
+      "id": "coordination-czech-extraliga-2026-1f8a60f9343c6130-51",
+      "scope": "position-character",
+      "moveUci": "e7d7",
+      "gameMoveUci": "c8c5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black can use the open d-file or double on the c-file. White's rook activity and the c-pawn are common concerns in the near-equal lines."
+    },
+    {
+      "id": "coordination-asian-nations-men-2026-aed71515f9a42b31-58",
+      "scope": "position-character",
+      "moveUci": "e1f1",
+      "gameMoveUci": "e1f1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The choice between doubling on the f-file, contesting the c-file and playing h4 changes which files each side can use. The small score differences reflect similar positions."
+    },
+    {
+      "id": "coordination-asian-nations-men-2026-7ff620520dcf45f9-50",
+      "scope": "position-character",
+      "moveUci": "c1f1",
+      "gameMoveUci": "c1f1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rf1 sets up Rf4 and a central d-pawn advance while dxe4 and Qf2 allow distinct queen exchanges or captures with check. Control of the f- and e-files persists."
+    },
+    {
+      "id": "coordination-kallpa-2026-78cb932a11da751a-62",
+      "scope": "position-character",
+      "moveUci": "f1f3",
+      "gameMoveUci": "f1d1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The rook can swing to f3 or contest the d-file. The alternatives allow different exchanges on e3 and d4, including a concrete path for the d-pawn."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-2cf430083f7abc4b-40",
+      "scope": "position-character",
+      "moveUci": "e1e5",
+      "gameMoveUci": "e1e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re5 brings a rook into play before Bxf5 and the captures on e6. The bishop retreat or check changes which pawns can advance and whether the rook can use that file."
+    },
+    {
+      "id": "coordination-kallpa-2026-f596f9c27521368f-31",
+      "scope": "position-character",
+      "moveUci": "c8e8",
+      "gameMoveUci": "c8e8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re8 holds the defence before the bishop takes c5. Rd8 or Rc6 permits Bb7 and Bxa8 during the rook recapture, with a distinct cost to Black's rook coordination."
+    },
+    {
+      "id": "coordination-asian-nations-men-2026-4976981f9bc5ecd2-37",
+      "scope": "position-character",
+      "moveUci": "e5e8",
+      "gameMoveUci": "e5e8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Re8 supports Rxe4 after the knight trade. The alternate rook squares give White a different response and change Black's use of the e-file and counterplay around the king."
+    },
+    {
+      "id": "coordination-kallpa-2026-7e340cd48aee57f4-48",
+      "scope": "position-character",
+      "moveUci": "c1b1",
+      "gameMoveUci": "c1b1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rb1 gains a queen tempo and realigns both rooks. After Be7 Black can trade on c5 and d8, changing the pressure from the queenside pawns."
+    },
+    {
+      "id": "coordination-arequipa-2026-a7f719e3c0d8c870-58",
+      "scope": "position-character",
+      "moveUci": "g2f1",
+      "gameMoveUci": "a1b1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White can choose a bishop exchange or place the rook on b1. The critical play involves the a-pawn and the rook's access to the c-file. Several short exchanges lack a common forcing payoff."
+    },
+    {
+      "id": "coordination-marshall-premier-2026-3055f1ce008fb5fa-48",
+      "scope": "position-character",
+      "moveUci": "h1d1",
+      "gameMoveUci": "h1e1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Both players choose between placing a rook on the d-file and keeping pawn moves available. Black's bishop and queenside pawn decisions vary across near-equal lines."
+    },
+    {
+      "id": "coordination-ny-girls-2026-c67ae9b5b2716bb6-41",
+      "scope": "position-character",
+      "moveUci": "a4b3",
+      "gameMoveUci": "d8d3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qb3 changes the queen trade and enables Bxb2 after the rooks take d1. The rook alternative uses d3 to support advancing queenside pawns instead."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-c4fc82e07e6aeb82-51",
+      "scope": "position-character",
+      "moveUci": "h8e8",
+      "gameMoveUci": "h8e8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rhe8 and Nd5 change the entry Qxc4+ and whether there is a knight capture on c3. Control of the e-file and White's e-pawn remain central."
+    },
+    {
+      "id": "coordination-ny-girls-2026-61a472783f31ae25-54",
+      "scope": "position-character",
+      "moveUci": "e5g6",
+      "gameMoveUci": "h7h6",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Ng6+ deflects the f-pawn before Qh8+ and Rh7+. The other rook routes change the forcing king attack rather than achieving the same result."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-af3dce83abe0905f-33",
+      "scope": "position-character",
+      "moveUci": "b4a2",
+      "gameMoveUci": "b4a2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Nxa2+ gains a tempo and changes the sequence in which White can take c4. The alternative king and knight placements leave Black short of counterplay against the c-pawn and bishops."
+    },
+    {
+      "id": "coordination-asian-nations-men-2026-d3aa08e2a4c26a43-88",
+      "scope": "position-character",
+      "moveUci": "g4e4",
+      "gameMoveUci": "g4e4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The rook can capture the e-pawn with check or take it after moving the bishop. The king and rook routes determine how to blockade Black's a-pawn."
+    },
+    {
+      "id": "coordination-kallpa-2026-f01a1c971d98c8d6-65",
+      "scope": "position-character",
+      "moveUci": "b8c7",
+      "gameMoveUci": "b8b1",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black tries to coordinate the queen and king while reorganizing the kingside pawns. The played check changes White's king square without resolving the strategic disadvantage."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-1b95633e52b6b752-81",
+      "scope": "position-character",
+      "moveUci": "g5h6",
+      "gameMoveUci": "g5e3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Pushing g3 changes the queen's checking entry and promotion threat. Qh6 retains both f- and g-pawns while the other queen check allows a different queen trade."
+    },
+    {
+      "id": "coordination-ny-girls-2026-da187f3a24cf7493-65",
+      "scope": "position-character",
+      "moveUci": "e8e1",
+      "gameMoveUci": "e8e1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The alternatives can trade rooks before or after queen repositioning. The resulting queen activity and choice of pawn targets persist without a demonstrated narrow tactical requirement."
+    },
+    {
+      "id": "coordination-asian-nations-men-2026-bdff81ed28ee82ef-48",
+      "scope": "position-character",
+      "moveUci": "c2c3",
+      "gameMoveUci": "h5g5",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The choice between resolving cxd4 and checking changes how White can use the f-file. The leading positions differ mainly in the central pawn structure and rook activity."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-923cd09b7752754c-47",
+      "scope": "position-character",
+      "moveUci": "b6e3",
+      "gameMoveUci": "b6e3",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Qe3+ is the route to perpetual check. The rook and king alternatives let White use a concerted attack and materially different captures."
+    },
+    {
+      "id": "coordination-czech-extraliga-2026-854a949181d0bb65-79",
+      "scope": "position-character",
+      "moveUci": "e3e1",
+      "gameMoveUci": "e3g3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The checks and lateral rook moves influence which rook reaches the seventh. The candidates leave different exchanges and give different routes to the passed pawns."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-7cf140ff90d2aa86-114",
+      "scope": "position-character",
+      "moveUci": "d1g4",
+      "gameMoveUci": "d1f3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The king and bishop choices address different knight routes. The core question concerns containing the a- and h-pawns with a bishop against the knight."
+    },
+    {
+      "id": "coordination-copa-revolucion-2026-fd308a95c0b1a421-54",
+      "scope": "position-character",
+      "moveUci": "d3d8",
+      "gameMoveUci": "d3d8",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Rd8+ forces a perpetual via Qxd8+ and Qc7+. The quieter alternatives need a separate concrete route against Black's threats."
+    },
+    {
+      "id": "coordination-ny-girls-2026-3a9c7399b3c8e38e-88",
+      "scope": "position-character",
+      "moveUci": "b7g7",
+      "gameMoveUci": "h5f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rg7+ gives White time to take g6 and e6 while the knight checks and captures. The quieter method of repeating with Nf6+ leaves the central pawns where they are."
+    },
+    {
+      "id": "tournament-ny-girls-2026-190118301d5c8e16-39",
+      "scope": "position-character",
+      "moveUci": "c7c5",
+      "gameMoveUci": "c4b3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "c5 and c6 allow the same dxc6 reply through different capture rules, while cxb3 allows a forcing rook exchange on a7. The resulting central and queenside files govern plans."
+    },
+    {
+      "id": "tournament-ny-girls-2026-1c8400b6979f06c1-46",
+      "scope": "position-character",
+      "moveUci": "e3f3",
+      "gameMoveUci": "e3d3",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The queen trade, rook manoeuvres and e-pawn restriction define the choices. The observed tactical exchanges leave the same broad material disadvantage."
+    },
+    {
+      "id": "tournament-ny-girls-2026-667ef4f93e3c3dc3-117",
+      "scope": "position-character",
+      "moveUci": "g6f6",
+      "gameMoveUci": "g6f5",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black uses the active king and queenside majority in several move orders. The conversion concerns pawn breaks and opposition."
+    },
+    {
+      "id": "tournament-ny-girls-2026-3445b335ac34d173-57",
+      "scope": "position-character",
+      "moveUci": "g8d8",
+      "gameMoveUci": "e6e5",
+      "tactical": true,
+      "positional": false,
+      "rationale": "The rook from g8 must give check so that the a-rook remains to limit the checked king. The alternatives give White a decisive queen check and counterattack."
+    },
+    {
+      "id": "tournament-ny-girls-2026-93567b2abe178aa0-47",
+      "scope": "position-character",
+      "moveUci": "c5d4",
+      "gameMoveUci": "c5d4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "cxd4 removes the knight without giving up Black's rook for it. a6 allows Nf5+ and a forcing exchange. The c- and d-files organise the counterplay."
+    },
+    {
+      "id": "tournament-ny-girls-2026-6c910b60c5cf8876-73",
+      "scope": "position-character",
+      "moveUci": "h5f6",
+      "gameMoveUci": "g7g6",
+      "tactical": true,
+      "positional": false,
+      "rationale": "White's rooks can force exchanges on e8 or mate after g6. Black's available knight moves alter the forcing continuation."
+    },
+    {
+      "id": "tournament-ny-girls-2026-081464ae41f280fd-46",
+      "scope": "position-character",
+      "moveUci": "h4h5",
+      "gameMoveUci": "h4h5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "h5 keeps the kingside pressure and permits the Rxe5 sequence before Qxf2+. The bishop alternatives give Black different e- and d-pawn moves."
+    },
+    {
+      "id": "tournament-ny-girls-2026-200614ac89c81068-39",
+      "scope": "position-character",
+      "moveUci": "g6f8",
+      "gameMoveUci": "g6h4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Ngf8 and axb4 can occur in either order and change who recaptures on c5. Nh4 makes the kingside exchanges concrete and gives up queenside control."
+    },
+    {
+      "id": "tournament-ny-girls-2026-72edf410929198e7-61",
+      "scope": "position-character",
+      "moveUci": "b6d4",
+      "gameMoveUci": "b6d4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The queen maneuvers against the bishop and moves the king before the f-pawn lever. The choice of queen square changes the long-term role of the central pawn."
+    },
+    {
+      "id": "tournament-ny-girls-2026-cbf62a6a22138766-52",
+      "scope": "position-character",
+      "moveUci": "f4g5",
+      "gameMoveUci": "f4g5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bxg5 changes the kingside pawn structure. The other choices allow the rook exchange on e3 or Bxf4, while Black's advancing c-pawn continues to shape the position."
+    },
+    {
+      "id": "tournament-tyreso-2026-319aab7497b8c8e1-92",
+      "scope": "position-character",
+      "moveUci": "e5e6",
+      "gameMoveUci": "e5e6",
+      "tactical": false,
+      "positional": true,
+      "rationale": "The bishop and king support different penetration routes before the h-pawn is taken. The root moves all convert the same endgame advantage."
+    },
+    {
+      "id": "tournament-tyreso-2026-f78de1432c71b8a5-54",
+      "scope": "position-character",
+      "moveUci": "g3f4",
+      "gameMoveUci": "g3f4",
+      "tactical": true,
+      "positional": false,
+      "rationale": "gxf4 permits the knight fork after Kxf7, taking the rook on a8. Nxf4+ and Kg1 change the concrete exchange sequence."
+    },
+    {
+      "id": "tournament-tyreso-2026-c98700ba5b7c8607-83",
+      "scope": "position-character",
+      "moveUci": "e4a4",
+      "gameMoveUci": "e4a4",
+      "tactical": null,
+      "positional": true,
+      "rationale": "Each rook move retains king and pawn coordination, and keeps the option of advancing e4. White's exchange sacrifice in one line does not establish a required tactic at the root."
+    },
+    {
+      "id": "tournament-tyreso-2026-ec078cfbaa479b76-43",
+      "scope": "position-character",
+      "moveUci": "h3g3",
+      "gameMoveUci": "h3g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qg3+ is followed by Bxf2 and a queen entry, while the captures on f5 resolve the central attacker differently. The e-pawn and king shelter remain strategic concerns."
+    },
+    {
+      "id": "tournament-tyreso-2026-e13585b6c05b4649-48",
+      "scope": "position-character",
+      "moveUci": "g1g5",
+      "gameMoveUci": "e3g5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxg5 exchanges rooks before Bxg5. The alternative bishop captures preserve more pieces and change king and knight placement around the d-pawn."
+    },
+    {
+      "id": "tournament-tyreso-2026-606c893e5308d82a-49",
+      "scope": "position-character",
+      "moveUci": "g3e2",
+      "gameMoveUci": "g3e2",
+      "tactical": true,
+      "positional": false,
+      "rationale": "Nxe2+ gains the required tempo before Rxe4. Nxf1 and the first rook capture change the recapture sequence decisively."
+    },
+    {
+      "id": "tournament-tyreso-2026-c7ba0afc149d094c-41",
+      "scope": "position-character",
+      "moveUci": "c8c4",
+      "gameMoveUci": "c8c4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rxc4 removes the bishop without surrendering the same f-file activity. bxc4 opens a different file and lets the knight attack the king."
+    },
+    {
+      "id": "tournament-tyreso-2026-894335f18e16b030-30",
+      "scope": "position-character",
+      "moveUci": "e1f2",
+      "gameMoveUci": "h2h4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kf2 changes the checks aimed at White's king, while a3 allows Bxc3+ and the later queen trade. The h-pawn and e-file route change across the alternatives."
+    },
+    {
+      "id": "tournament-arequipa-2026-164a6b3eae9121f9-34",
+      "scope": "position-character",
+      "moveUci": "d3b1",
+      "gameMoveUci": "d3b1",
+      "tactical": null,
+      "positional": true,
+      "rationale": "White's bishop retreats and flank pawn break all react to c4 and b5. The isolated tactic at the end of one branch does not establish the reason for the original choice."
+    },
+    {
+      "id": "tournament-arequipa-2026-a4a9909582a781d3-56",
+      "scope": "position-character",
+      "moveUci": "d5e5",
+      "gameMoveUci": "d5e5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qe5 controls the timing of Qxc7 and the rook exchange. Qd6 gives a different liquidation and lets the rook capture on the second rank."
+    },
+    {
+      "id": "tournament-arequipa-2026-0a791fa6cae5ddd2-55",
+      "scope": "position-character",
+      "moveUci": "g3g4",
+      "gameMoveUci": "g3g2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rg4+ gives a concrete route for the rook on d8 to check the exposed king. Rg2 and Rg6 give White more freedom to move rooks and support the passed e-pawn."
+    },
+    {
+      "id": "tournament-arequipa-2026-104155fcd15ad068-52",
+      "scope": "position-character",
+      "moveUci": "h2g3",
+      "gameMoveUci": "h2g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "hxg3 removes the advanced threat before the queen enters. Knight moves permit gxh2+ and a materially different exchange, while the kingside files and cover persist."
+    },
+    {
+      "id": "tournament-arequipa-2026-dc08bab8b8a0a67e-30",
+      "scope": "position-character",
+      "moveUci": "c4d5",
+      "gameMoveUci": "c4d5",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Different captures on d5 change the forcing e4 and Nb5 sequences. The underlying c-, d- and f-pawn structure affects the chosen rook and knight plans."
+    },
+    {
+      "id": "tournament-arequipa-2026-1c6f8dc1cf35ccd3-67",
+      "scope": "position-character",
+      "moveUci": "a3c3",
+      "gameMoveUci": "a3c3",
+      "tactical": false,
+      "positional": true,
+      "rationale": "Black can place the rook on c3 or d3 before pressuring the bishop and queenside pawn. The h-pawn choice keeps a distinct structure with close evaluations."
+    },
+    {
+      "id": "tournament-arequipa-2026-5607ca206ed89fd2-99",
+      "scope": "position-character",
+      "moveUci": "f4g5",
+      "gameMoveUci": "c7a7",
+      "tactical": null,
+      "positional": true,
+      "rationale": "The bishop and rook manoeuvres choose how to meet the d-pawn break and White's h-file access. The variations do not settle on a specific tactical requirement at the root."
+    },
+    {
+      "id": "tournament-arequipa-2026-e620b9261a7ae406-35",
+      "scope": "position-character",
+      "moveUci": "d6h2",
+      "gameMoveUci": "c7b8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bh2+ can force a repetition, while Be5 and Kh8 use the knight entry on d3. White's queenside pawn majority changes what the rook trades achieve."
+    },
+    {
+      "id": "tournament-arequipa-2026-27c830845f1aa34e-45",
+      "scope": "position-character",
+      "moveUci": "f5g4",
+      "gameMoveUci": "f5g4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The timing of fxg4 or Kh8 changes the captures and rook entry against the king. The locked queenside pawns and opening g-file explain why the attack stays on one wing."
+    }
+  ]
+}

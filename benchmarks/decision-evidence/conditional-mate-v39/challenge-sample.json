@@ -1,0 +1,374 @@
+{
+  "protocol": 1,
+  "events": {
+    "bauru-2026": {
+      "sha256": "d5064c22b9337079c2379debb31f9b96c2ccca633d1654f7c6fb9532ab2a2d50"
+    },
+    "tyreso-2026": {
+      "sha256": "6b976e3ec06a84f2e548e9f66e0e01ee1ba59cb731393c4242d37d0c0d597912"
+    },
+    "peace-2026": {
+      "sha256": "dbfc5d9770ccc119125fad14c5855510d75419363ace881780ceca32bd5689de"
+    },
+    "marshall-premier-2026": {
+      "sha256": "f2b4933db90a224997f18aacded255556004f04bdf6e7aa5bc3b826005e7b473"
+    },
+    "kallpa-2026": {
+      "sha256": "aa403d73b80211cb569b233075490fdaba27453aeeef23a5972b6b6362ae4943"
+    },
+    "czech-extraliga-2026": {
+      "sha256": "909413f5a46d5604717bf47a7ab3f643c05bddb9bce03f098285a02f2bd1c6fc"
+    },
+    "asian-nations-men-2026": {
+      "sha256": "880fb4d2db907add3ba7a6d3ac0ea78165a9473f91f16d08effa34a631b0d10a"
+    },
+    "copa-revolucion-2026": {
+      "sha256": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7"
+    },
+    "arequipa-2026": {
+      "sha256": "d0c395351d743bb5e8ca15003c8d90ed3a1965758d769e6bcd1a719348068af0"
+    },
+    "ny-girls-2026": {
+      "sha256": "cdc49ebd994f9da954842fa583f9b72c7844757ce1d928786f4bd597e62b5bcf"
+    }
+  },
+  "exclusions": [
+    "e1c833a9e94fb0eda99ada11de78743bd6edf066e14c06a769e565101a8e040b",
+    "aa2dd1f97e2c0a6c44b083e6595c3914f3c3401d323779fc9a7822052744e9b4",
+    "0a9cb5f3d3aa30d0576312c74207d58145101794b4a95734be3c461420599b9b",
+    "b38b996a209c519e53a2dd763d4cc80fedef5f5d6f130df1f7a2ef8320eebacb",
+    "a36ef16a982c2e374baef7bccd7debb5daa52c933fdcdfb6e74aef801506aa36",
+    "1b5bf8d396811310585554163aba928044bddacaa06d43caf4aca2efbce1f341",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53",
+    "6469b24fde897597dc44f73a5b2071d601887663858d4746305d5c7eef4cfdf8",
+    "7b4b225264184a8c63cd153fc2754e010ca87c20786fcc3796a39304915f1ea2",
+    "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+    "708dc00c4cee37d1e5ee19c6c1515d44b0f9f1bc5e01a1ce19d5fd29542a8ce1",
+    "95cd5740c91fb34cac2471d694e2f33377dc95cc00db76b8e4494072905a4d66",
+    "576b7c36c809e86ede526fff49ed3148dce5e4426066f3b20cc10ee4a005b269",
+    "512a52822a7fe276bbd26f53eeb990dac7d6435fc4a232fe99497988eca583b8",
+    "48df231e103c0762290c892b985cb0ac2d432e27d190701af43885d9afcc6898",
+    "25630bb832a1e413702275bd91e95e153c361212cb02c1bcf17e521b50f0db8d",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "213ad8832d2c3144869fc5c489bcc635cb3a90b26bd953f805d8612219810bdb",
+    "6ae11eac0d5ed2d40b9a90364ae7af4b729810cae0a3ba996b796653615a594d",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed"
+  ],
+  "cases": [
+    {
+      "fen": "rn3rk1/p5bp/1p1p2p1/1PpP3n/2N1P3/5P1q/1P2B3/R1BQ1RK1 b - - 3 20",
+      "ply": 39,
+      "playedMoveUci": "g7d4",
+      "id": "coordination-marshall-premier-2026-3f6e1c29cfe686c5-39",
+      "sourceGroup": "3f6e1c29cfe686c57d727813269c115640f4139904aeec1c76e95fdd42b0fdb7",
+      "event": "marshall-premier-2026",
+      "split": "validation",
+      "stratum": "mate-after-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "1r1r1k2/8/5p2/5K2/3NPn2/P1Pn4/8/6RR w - - 6 41",
+      "ply": 80,
+      "playedMoveUci": "h1h8",
+      "id": "coordination-asian-nations-men-2026-5432f45bd3eed53d-80",
+      "sourceGroup": "5432f45bd3eed53d4b9caa62d8f97fba75cbc72a903cb38e6f09405c8baefce3",
+      "event": "asian-nations-men-2026",
+      "split": "validation",
+      "stratum": "mate-after-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/8/2R4N/4p1kP/1r3p2/6p1/6K1/8 w - - 2 53",
+      "ply": 104,
+      "playedMoveUci": "h6f7",
+      "id": "coordination-arequipa-2026-1355da1385b0e5ed-104",
+      "sourceGroup": "1355da1385b0e5ed1a3aa05ea1017dcc61621fbab96f7fe8c1785e851b77c2d2",
+      "event": "arequipa-2026",
+      "split": "validation",
+      "stratum": "mate-after-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/1p4p1/5r1k/1R1Pr3/8/1B4K1/8/8 b - - 10 46",
+      "ply": 91,
+      "playedMoveUci": "e5g5",
+      "id": "coordination-copa-revolucion-2026-83073140d49b33b9-91",
+      "sourceGroup": "83073140d49b33b9c7f6121345e82b079295cd16541e9645ababb7e32d8e52c3",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "mate-after-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2r2k2/1p2rppp/p3b3/8/2P5/P3RP2/1R2B1PP/4K3 b - - 13 26",
+      "ply": 51,
+      "playedMoveUci": "c8c5",
+      "id": "coordination-czech-extraliga-2026-1f8a60f9343c6130-51",
+      "sourceGroup": "1f8a60f9343c6130a8aed59c1eb30c8643a03ded8925a01b42552029f631e0b1",
+      "event": "czech-extraliga-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "4rr2/2pb1pk1/1p3p2/p2Pq2p/4PR2/P5P1/3Q2BP/4R2K w - - 0 30",
+      "ply": 58,
+      "playedMoveUci": "e1f1",
+      "id": "coordination-asian-nations-men-2026-aed71515f9a42b31-58",
+      "sourceGroup": "aed71515f9a42b3102e9bcb6f9d929d57b9a2d9158d7f07a29c45809d4b2a7c2",
+      "event": "asian-nations-men-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2b1r2k/4qppp/8/8/4p2N/2PPP1Q1/2P3PP/2R3K1 w - - 0 26",
+      "ply": 50,
+      "playedMoveUci": "c1f1",
+      "id": "coordination-asian-nations-men-2026-7ff620520dcf45f9-50",
+      "sourceGroup": "7ff620520dcf45f9ec753affc84cf3786442408ff3ce0aa3263c750b8a5edff0",
+      "event": "asian-nations-men-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "6k1/2n5/r2p1qNp/p1p3pP/2P2p2/1P2r3/P1Q1P1B1/5RK1 w - - 0 32",
+      "ply": 62,
+      "playedMoveUci": "f1d1",
+      "id": "coordination-kallpa-2026-78cb932a11da751a-62",
+      "sourceGroup": "78cb932a11da751a7f70e1cae9feaf0304152d27b019c5c619bc43b16aafeb62",
+      "event": "kallpa-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r1b1k2r/p7/1p2n2p/2pq1pp1/3P4/Q2B2B1/P4PPP/1R2R1K1 w kq - 0 21",
+      "ply": 40,
+      "playedMoveUci": "e1e5",
+      "id": "coordination-copa-revolucion-2026-2cf430083f7abc4b-40",
+      "sourceGroup": "2cf430083f7abc4b0aceb4b2b34823a8e32ebd50dbf505c217200ea775395247",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r1r3k1/p4ppp/B2B1n2/2pp4/6b1/2P5/P1P2PPP/R4RK1 b - - 3 16",
+      "ply": 31,
+      "playedMoveUci": "c8e8",
+      "id": "coordination-kallpa-2026-f596f9c27521368f-31",
+      "sourceGroup": "f596f9c27521368fb1592b61ae2dc178dd300a2e069ad8cf65cab1311cf4df40",
+      "event": "kallpa-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "5b2/pp3kpr/2p4p/3pr3/4nPPq/2N5/PPP1N3/R1KQ2R1 b - - 2 19",
+      "ply": 37,
+      "playedMoveUci": "e5e8",
+      "id": "coordination-asian-nations-men-2026-4976981f9bc5ecd2-37",
+      "sourceGroup": "4976981f9bc5ecd22c79256e8feffb836693636d424cd1dccf89c75908abd60f",
+      "event": "asian-nations-men-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2rr2k1/3n1pp1/1ppBbn1p/2P5/1q1pP3/3B1N1P/2Q2PP1/2R1R1K1 w - - 0 25",
+      "ply": 48,
+      "playedMoveUci": "c1b1",
+      "id": "coordination-kallpa-2026-7e340cd48aee57f4-48",
+      "sourceGroup": "7e340cd48aee57f4af89528a74f06cb45a3db2daf4cb4a6425ae4d7319597f68",
+      "event": "kallpa-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r6k/1p1b3p/1p6/3N4/P1n5/4P3/6BP/R5K1 w - - 1 30",
+      "ply": 58,
+      "playedMoveUci": "a1b1",
+      "id": "coordination-arequipa-2026-a7f719e3c0d8c870-58",
+      "sourceGroup": "a7f719e3c0d8c870e9381c5f7441f0926e2d56a6070ffd4e6414796c3a857d6f",
+      "event": "arequipa-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/p2r1p1k/1pb2bp1/7p/8/3B1P2/PPP2BPP/1K5R w - - 2 25",
+      "ply": 48,
+      "playedMoveUci": "h1e1",
+      "id": "coordination-marshall-premier-2026-3055f1ce008fb5fa-48",
+      "sourceGroup": "3055f1ce008fb5faa8f5d4cf3f21e3dc5347316da43cceb36aeb779e621f75f7",
+      "event": "marshall-premier-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "3r2k1/pp3pbp/6p1/8/q1p1P3/P3BP2/1P2Q1PP/1R4K1 b - - 1 21",
+      "ply": 41,
+      "playedMoveUci": "d8d3",
+      "id": "coordination-ny-girls-2026-c67ae9b5b2716bb6-41",
+      "sourceGroup": "c67ae9b5b2716bb65f8b80717c4b2ad37b52bae5480c5d4593eec665493e76c7",
+      "event": "ny-girls-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2kr3r/p6p/1p2qnp1/4Pp2/2pP4/2N4P/PP2Q1P1/2K2R1R b - - 2 26",
+      "ply": 51,
+      "playedMoveUci": "h8e8",
+      "id": "coordination-copa-revolucion-2026-c4fc82e07e6aeb82-51",
+      "sourceGroup": "c4fc82e07e6aeb8207140ea8025f9e663cc446debbb2b7234eba098db3b3b094",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "rook-recapture",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "r4k2/pp2qp1Q/1n1r1b2/2p1N1p1/3P4/P4R2/1P3PP1/1K5R w - - 4 28",
+      "ply": 54,
+      "playedMoveUci": "h7h6",
+      "id": "coordination-ny-girls-2026-61a472783f31ae25-54",
+      "sourceGroup": "61a472783f31ae258efd1279b680dfbe1d29df260e8d97f883c4cc3e386e7967",
+      "event": "ny-girls-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2k2b1r/1p3ppp/1B2p3/8/1np1P3/6P1/PP3P1P/2K2B1R b - - 3 17",
+      "ply": 33,
+      "playedMoveUci": "b4a2",
+      "id": "coordination-copa-revolucion-2026-af3dce83abe0905f-33",
+      "sourceGroup": "af3dce83abe0905f9c0ddfabe01ac0ec9749e268d773f64364a8c1046468df69",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/2p5/1p1b1B2/p7/k3p1R1/4P3/4KP1r/8 w - - 0 45",
+      "ply": 88,
+      "playedMoveUci": "g4e4",
+      "id": "coordination-asian-nations-men-2026-d3aa08e2a4c26a43-88",
+      "sourceGroup": "d3aa08e2a4c26a432f10f98185f5f1355685955e2639d09b2523367b6ea0a888",
+      "event": "asian-nations-men-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "1q4k1/p4p1p/6p1/3Q4/8/4PBP1/5P1P/6K1 b - - 1 33",
+      "ply": 65,
+      "playedMoveUci": "b8b1",
+      "id": "coordination-kallpa-2026-f01a1c971d98c8d6-65",
+      "sourceGroup": "f01a1c971d98c8d664b23ebaebe503581be9c946f1c03b29a251df21b1f0336d",
+      "event": "kallpa-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "6k1/6r1/4p3/pQ1pPpq1/3P2p1/2P5/PP6/5RK1 b - - 0 41",
+      "ply": 81,
+      "playedMoveUci": "g5e3",
+      "id": "coordination-copa-revolucion-2026-1b95633e52b6b752-81",
+      "sourceGroup": "1b95633e52b6b752c2869921a6fb46648b67946a6b213538f4037ce4da8b35cf",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "4r1k1/2p2p1p/3p2p1/7q/8/2P4P/1P1Q1PP1/4R1K1 b - - 0 33",
+      "ply": 65,
+      "playedMoveUci": "e8e1",
+      "id": "coordination-ny-girls-2026-da187f3a24cf7493-65",
+      "sourceGroup": "da187f3a24cf749343b881da82bb8e834991e20314d1039e50c0b77eaecd322a",
+      "event": "ny-girls-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2r5/2qnkp2/r3p3/ppppP2Q/3P4/P2R4/1PP2PPP/4R1K1 w - - 3 25",
+      "ply": 48,
+      "playedMoveUci": "h5g5",
+      "id": "coordination-asian-nations-men-2026-bdff81ed28ee82ef-48",
+      "sourceGroup": "bdff81ed28ee82ef38c52eb79283bd6fdc3e3bc601b3d5149b20050b5fd15d97",
+      "event": "asian-nations-men-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "3rk2r/1p3pQp/pq2p3/4PP2/4B3/2P2N1P/2P5/2K4R b k - 2 24",
+      "ply": 47,
+      "playedMoveUci": "b6e3",
+      "id": "coordination-copa-revolucion-2026-923cd09b7752754c-47",
+      "sourceGroup": "923cd09b7752754c6da8e8c25e09701db9d7fabc6c4c5ec1f3dc6b6d006ce4f0",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "2R2b2/5kp1/pBN2p2/P6P/8/3br2P/8/6K1 b - - 3 40",
+      "ply": 79,
+      "playedMoveUci": "e3g3",
+      "id": "coordination-czech-extraliga-2026-854a949181d0bb65-79",
+      "sourceGroup": "854a949181d0bb6508855bc560833c496d68c5926a1abd8283a300099e75a9d7",
+      "event": "czech-extraliga-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "8/8/7p/p2k1n1P/P7/3K4/8/3B4 w - - 3 58",
+      "ply": 114,
+      "playedMoveUci": "d1f3",
+      "id": "coordination-copa-revolucion-2026-7cf140ff90d2aa86-114",
+      "sourceGroup": "7cf140ff90d2aa8618a2cade55015e0d2636b6e22d19a8c64def3171cc101ba4",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "k6r/p1Q1p2p/qp3pp1/1Nb1p3/4P3/3R4/1PP3PP/5K2 w - - 4 28",
+      "ply": 54,
+      "playedMoveUci": "d3d8",
+      "id": "coordination-copa-revolucion-2026-fd308a95c0b1a421-54",
+      "sourceGroup": "fd308a95c0b1a421dfcc8d43a09eb050d8ecee640b3b2040f5e97e14d9cf8595",
+      "event": "copa-revolucion-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "fen": "6k1/1R6/4p1pp/3pP2N/3n1PP1/r7/5K1P/8 w - - 0 45",
+      "ply": 88,
+      "playedMoveUci": "h5f6",
+      "id": "coordination-ny-girls-2026-3a9c7399b3c8e38e-88",
+      "sourceGroup": "3a9c7399b3c8e38efc3302f4f5db94ab2ffb0e3cf40f447879d13a311e4e169e",
+      "event": "ny-girls-2026",
+      "split": "validation",
+      "stratum": "stable-evasion",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "strata": {
+    "mate-after-evasion": 4,
+    "rook-recapture": 12,
+    "stable-evasion": 12
+  }
+}

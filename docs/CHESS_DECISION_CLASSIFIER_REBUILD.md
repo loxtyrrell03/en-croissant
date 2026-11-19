@@ -2294,3 +2294,83 @@ a confirmed capture threat or mate. Score the three axes with the
 ordinary reference evaluator. The committed runner reproduced all
 35 evaluated records, including the 24 probed boards and both verified
 proofs, apart from timings.
+
+## Iteration 39 — deeper mate after a different check evasion
+
+Stockfish sometimes returned a complete mating line for a worse check
+evasion in an ordinary reply search. The decision classifier only
+used this evidence for mate in one or two. The new branch evaluates
+the supplied legal mate in three to five with the local mate prover.
+The proof covers all legal defences, allows a nominated quiet attacking
+move, and abstains at the fixed 8,192-node proof cap. The best defence
+must still have a finite evaluation. The explanation names the
+specific evasion that concedes mate and the move Stockfish prefers.
+A line where the defender could have taken the attacking queen is
+a regression control, even though that line reaches legal checkmate.
+
+In development, the candidate rediscovered a known conditional mate
+in four after Qd5+ Kf8. The tactical reference was uncertain. The
+same cache supplied Kh8 as the stronger defence, so a follow-up
+Stockfish query was unnecessary. The quiet one-move threat comparison
+yielded zero new verified cases across 293 reviewed development
+positions. The two strategic alternatives also had limited coverage.
+A rook recapture candidate recovered the known d6 example. A quiet
+minor-piece exchange whose pawn recapture leaves a lasting isolated
+pawn recovered one example, and a bishop-pair exchange recovered
+one more. Tests of different early routes using the existing
+strategic actions added zero. The rook candidate changed none of
+the 55 fresh reports and stays experimental.
+
+| Held-out cohort | Positions | Tactical recall before | Tactical recall after | New reviewed tactical FP |
+| --- | ---: | ---: | ---: | ---: |
+| Ordinary games | 27 | 5 / 19 | 5 / 19 | 0 |
+| Recorded rook recaptures | 12 | 1 / 8 | 1 / 8 | 0 |
+| Broadcast annotations suggesting mate after a check evasion | 4 | 0 / 4 | 2 / 4 | 0 |
+| Stable check-evasion controls | 12 | 3 / 6 | 3 / 6 | 0 |
+| Combined | 55 | 9 / 37 | 11 / 37 | 0 |
+
+There were eight reviewed tactical negatives and ten uncertain
+tactical references. Legacy first-choice motif labels found 4 of
+37 tactical positives with zero reviewed false positives, using
+the same root analysis as a coarse position proxy. Positional
+recall was 11 of 45 and mixed recall was 3 of 27 with zero
+reviewed false positives for both v37 and v39. One engine-assisted
+reviewer saved the references before viewing either candidate.
+Recorded rook moves or broadcast scores only selected strata.
+The four mating cases measure a focused challenge with limited
+precision. The ordinary sample showed no gain.
+
+In the Asian Nations Cup, after 41.Rh8+, the branch 41...Kf7
+allows mate in five starting 42.Rh7+. The preferred evasion was
+41...Ke7. In the Copa Revolución game, 46...Rg5+ 47.Kh4
+allows mate in four starting with the quiet 47...Rf1. Stockfish
+prefers 47.Kh3. The proof covers the White replies to Rf1 before
+committing to the mating line. The candidate still missed that
+position's strategic component, which concerned control of the
+d-pawn and rook placement in other lines.
+[Asian Nations Cup](https://lichess.org/api/broadcast/E2Ux0N0V.pgn)
+[Copa Revolución](https://lichess.org/api/broadcast/4jZflFpE.pgn)
+
+The change adds no Stockfish requests. The replay avoided optional
+extra-choice probes totalling 3.58M requested nodes because existing
+reply frames supplied the two proofs. Three move reports changed
+and the mistake reports were identical. The 55 stripped-down reports
+matched the earlier two-feature candidate exactly. The 157 focused
+tests passed with two existing skips. The evidence panel and actual
+classifier worker showed both held-out lines with keyboard expansion
+in an isolated Chrome fixture at 320, 390 and 900 pixels. Installed
+desktop verification remains open.
+
+**Reproduction.** The dataset, references, policy freezes,
+unpromoted rook patch and compact results are under `benchmarks/decision-evidence/conditional-mate-v39`.
+The challenge selector is `decision-evidence-rook-and-evasions.py`,
+and the ordinary cohort uses `decision-evidence-tournament.py`.
+Use the committed combined manifest for the exact case claims.
+No game appears in two separate strata. Run the standard engine,
+reply, shared-reply and six-choice collectors at profile `v39`.
+The control is `e6dcd837`. The first freeze included the rook
+patch and the deeper mate code. The release freeze followed
+removal of the rook candidate. Compare both variants with the
+same ordinary cache and score with the saved references. A
+replay against the committed earlier tactical module reproduced
+all 55 release assessments.

@@ -76,3 +76,35 @@ test("a mixed-depth or incomplete mating line supplies no proof", () => {
         expect(result.position.conditionalMate).toBeUndefined();
     }
 });
+
+test("proves a deeper mate in a cached evasion without claiming the principal move forces mate", () => {
+    const fen = "2q3k1/1p1b2bp/p2Q2p1/8/3N4/2B3P1/PP3P1P/6K1 w - - 2 30";
+    const best = line(fen, 244, "d6d5 g8h8 d5d6 h8g8 f2f3 a6a5 a2a3 a5a4");
+    const next = after(fen, "d6d5");
+    const holds = line(next, -217, "g8h8 d5d6 b7b5 a2a3 c8e8");
+    const allowsMate = line(next, null, "g8f8 c3b4 c8c5 b4c5 f8e8 d5g8 g7f8 g8f8", -4);
+    const assess = (alternative: DecisionEngineLine) =>
+        assessChessDecision({
+            fen,
+            candidates: [best],
+            replyProbes: [{ moveUci: "d6d5", lines: [holds, alternative] }],
+        });
+    const result = assess(allowsMate);
+    expect(result?.position.tactical.basis).toBe("bounded-proof");
+    expect(result?.position.conditionalMate?.explanation).toContain(
+        "Kf8 allows mate in 4 starting with Bb4+. Stockfish prefers Kh8",
+    );
+    expect(result?.moves[0].evaluationCp).toBe(244);
+    expect(result?.mistake).toBeNull();
+    expect(assess({ ...allowsMate, mate: -5 })?.position.conditionalMate).toBeUndefined();
+
+    // This replay ends in legal mate, but after Be6 Qxe6+ Black can capture
+    // the queen instead of moving the king.
+    const cooperative = line(
+        next,
+        null,
+        "d7e6 d5e6 g8f8 e6c8 f8e7 c3b4 e7f7 c8e6",
+        -4,
+    );
+    expect(assess(cooperative)?.position.conditionalMate).toBeUndefined();
+});

@@ -1,6 +1,7 @@
 import { makeFen } from "chessops/fen";
 import { makeSquare } from "chessops/util";
 import {
+    proveCheckingMate,
     proveMateWithinThree,
     proveShortCheckingMate,
     replayTacticalLine,
@@ -91,8 +92,8 @@ export type DecisionConditionalMate = {
 };
 
 /** An independently searched defensive reply allows mate. The engine may
- * avoid it in the main line. Verify the short mating move against all legal
- * evasions before drawing a conclusion about the displayed branch. */
+ * avoid it in the main line. Verify the continuation against all legal
+ * defences before drawing a conclusion about the displayed branch. */
 export function findConditionalMate(
     fen: string,
     root: DecisionEngineLine,
@@ -106,7 +107,7 @@ export function findConditionalMate(
     const [safer] = replayTacticalLine(best.fen, best.pvUci.slice(0, 1));
     for (const reply of replies.slice(1)) {
         const distance = -(reply.mate ?? 0);
-        if (reply.depth !== best.depth || (distance !== 1 && distance !== 2)) continue;
+        if (reply.depth !== best.depth || distance < 1 || distance > 5) continue;
         const measured = measureDecisionLine(best.fen, reply);
         if (!measured?.checkmate || measured.drawnEnding || measured.plies !== 2 * distance)
             continue;
@@ -119,6 +120,9 @@ export function findConditionalMate(
                 : proveMateWithinThree(mating)?.branches.every((branch) => !branch.replies);
             if (!proven) continue;
         }
+        // Long lines must stand up to a bounded proof. An exhausted budget
+        // leaves the conditional mate unestablished.
+        if (distance >= 3 && !proveCheckingMate(mating, 8_192)) continue;
         return {
             fen,
             lineUci: [move.uci, ...reply.pvUci],
