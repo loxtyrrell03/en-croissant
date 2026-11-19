@@ -537,6 +537,46 @@ The real development worker endpoint and the worker dependency recovery
 tests pass. The focused frontend suite passes 120 checks with one opt-in
 audit skipped, alongside 15 Python checks, full TypeScript and scoped lint.
 
+The frozen v17 reserve consists of 32 positions from 16 classical games
+disjoint from both v13 partitions. Single-reviewer labels were saved before
+classification. Tactical mistake recall was 2/6, up from 1/6, with zero false
+positives on 16 reviewed negatives. Positional recall was 1/8, up from 0/8,
+with zero false positives on 15 reviewed negatives. No mixed mistake was
+adjudicated positive, so mixed recall is unavailable. Tactical labels
+remained uncertain on ten examples and positional labels on nine. Two
+tactical predictions fell on uncertain labels and do not establish
+precision. The new tactical detection identifies an allowed knight fork
+that wins material. The new positional case identifies the difference
+between retaining a central pawn advance and allowing the centre to open.
+The baseline classifier median was 132 ms and the additional decision
+assessment median was 38 ms, excluding the engine.
+
+The full desktop frontend build succeeded and contains the separate decision
+worker. The build is a local artifact and has not been installed or published.
+
+## Mate and retained outpost evidence
+
+The next candidate diagnoses a change from a finite evaluation to a verified
+short mate, or a missed short mate replaced by a finite evaluation. A legal
+mate in one is directly checkable. Other claims require agreement with the
+separate reply search, exact board identity, matching mate distance, and a
+legal continuation ending with the correct side checkmated. The report shows
+the mating line with its move count instead of a pawn-loss value. Two
+constructed back-rank cases exercised the real Stockfish search and
+classification path, including Black allowing mate and White missing mate.
+These are behavioural regressions with known mechanisms.
+
+The actual-move comparison also considers a pawn-supported advanced minor
+that the stronger line keeps and the played move abandons. Both lines are
+checked at the same early horizon with comparable material. If the outpost
+is reoccupied within the window, the alleged loss is withheld. This is a
+strategic interpretation of measured board changes. On a development replay
+of the 32 classical reserve positions, the feature recovered one additional
+positional decision. Tactical recall remained 2/6 and positional recall
+rose to 2/8 with no detections on the 15 reviewed positional negatives.
+The original v17 held-out result above stays frozen. The replay cannot be
+used as a new independent estimate.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and

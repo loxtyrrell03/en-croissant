@@ -6,6 +6,7 @@ import {
     type DecisionEngineLine,
 } from "./decisionEvidence";
 import {
+    compareLostOutpost,
     comparePositionalTransitions,
     corroboratePositionalEffects,
     type ComparativePositionalEvidence,
@@ -28,8 +29,9 @@ import {
     compareTacticalMistakeEpisode,
     type TacticalMistakeEpisode,
 } from "./tacticalMistakeEpisode";
+import { compareMateConsequence, type DecisionMateConsequence } from "./decisionMateConsequence";
 
-export const DECISION_ASSESSMENT_VERSION = 2;
+export const DECISION_ASSESSMENT_VERSION = 3;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -93,11 +95,12 @@ export type ChessDecisionReport = {
         | "assessed";
     mistake:
         | (DecisionAssessment & {
-              evaluationLossCp: number;
+              evaluationLossCp: number | null;
               mechanisms: TacticalSequenceWitness[];
               missed: TacticalSequenceWitness[];
               allowed: TacticalSequenceWitness[];
               tacticalEpisode?: TacticalMistakeEpisode;
+              mateConsequence?: DecisionMateConsequence;
           })
         | null;
 };
@@ -433,6 +436,42 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         mistakeStatus = "best-supplied-choice";
     if (
         playedIndex > 0 &&
+        comparisonMeasured?.lines.length === comparison.length &&
+        comparedBest.pvUci[0] === first.pvUci[0]
+    ) {
+        const played = comparison[playedIndex];
+        const replyFor = (choice: DecisionEngineLine) =>
+            input.replyProbes?.find((probe) => probe.moveUci === choice.pvUci[0])?.lines[0];
+        const mateConsequence = compareMateConsequence(
+            input.fen,
+            comparedBest,
+            played,
+            replyFor(comparedBest),
+            replyFor(played),
+        );
+        if (mateConsequence) {
+            mistakeStatus = "assessed";
+            mistake = {
+                ...emptyAssessment(),
+                category: "tactical",
+                tactical: {
+                    support: "supported",
+                    basis:
+                        mateConsequence.kind === "missed" && mateConsequence.mateIn === 1
+                            ? "bounded-proof"
+                            : "engine-supported",
+                    reasons: [mateConsequence.explanation],
+                },
+                evaluationLossCp: null,
+                missed: [],
+                allowed: [],
+                mateConsequence,
+                limitations: ["This is a measured mating consequence in the supplied search."],
+            };
+        }
+    }
+    if (
+        playedIndex > 0 &&
         comparisonMeasured?.bestSecondGapCp !== null &&
         comparisonMeasured &&
         comparedBest?.cp !== null &&
@@ -573,13 +612,23 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             }
             // Compare this particular played choice, not a different alternative.
             const factors = comparePositionalTransitions(input.fen, comparedBest, [playedLine]);
+            const lostOutpost = compareLostOutpost(input.fen, comparedBest, playedLine);
+            if (
+                lostOutpost &&
+                !factors.some(
+                    (item) =>
+                        item.feature === lostOutpost.feature &&
+                        item.squareOrFile === lostOutpost.squareOrFile,
+                )
+            )
+                factors.push(lostOutpost);
             if (factors.length) {
                 assessment.positional = {
                     support: "supported",
                     basis: "heuristic",
                     reasons: factors.map(
                         (item) =>
-                            `${item.description} The played continuation does not establish this feature in the compared window.`,
+                            `${item.description} The feature is absent from the played line in the compared window.`,
                     ),
                 };
                 assessment.positionalFactors = factors;

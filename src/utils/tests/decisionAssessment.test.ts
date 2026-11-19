@@ -4,7 +4,10 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
 import { extractPositionalTransitions } from "../tacticalMotifs/positionalTransitions";
 import { corroboratePositionalEffects } from "../tacticalMotifs/positionalTransitions";
-import { comparePositionalTransitions } from "../tacticalMotifs/positionalTransitions";
+import {
+    compareLostOutpost,
+    comparePositionalTransitions,
+} from "../tacticalMotifs/positionalTransitions";
 
 const fen = "3r4/4k2p/8/8/1N6/8/7P/6K1 w - - 0 1";
 // Synthetic score payloads exercise the evidence contract. They are not an
@@ -26,6 +29,30 @@ const probe = {
     moveUci: best.pvUci[0],
     lines: [{ fen: after, depth: 18, cp: -200, pvUci: best.pvUci.slice(1) }],
 };
+
+test("a played move can give up an established outpost without creating a new feature", () => {
+    const position = "2r3k1/p5pp/4N3/5P2/8/8/P5PP/3R2K1 w - - 0 1";
+    const keep = { fen: position, cp: 80, depth: 18, pvUci: ["a2a3", "h7h6", "g1f2", "g8h7"] };
+    const leave = { fen: position, cp: 0, depth: 18, pvUci: ["e6f4", "h7h6", "g1f2", "g8h7"] };
+    expect(compareLostOutpost(position, keep, leave)).toMatchObject({
+        feature: "pawn-stable-minor",
+        squareOrFile: "e6",
+        materialWindowPlies: 4,
+        interpretation: "heuristic",
+    });
+    const report = assessChessDecision({
+        fen: position,
+        candidates: [keep, leave],
+        playedMoveUci: "e6f4",
+    });
+    expect(report?.mistake?.positional.support).toBe("supported");
+    expect(
+        compareLostOutpost(position, keep, {
+            ...leave,
+            pvUci: ["e6f4", "h7h6", "f4e6", "g8h7"],
+        }),
+    ).toBeNull();
+});
 
 test("strategic comparisons use equivalent early windows before unrelated late captures", () => {
     const position = "1rbq2k1/5ppp/p7/8/8/8/PP3PPP/R1BQ2K1 w - - 0 1";

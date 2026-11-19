@@ -170,6 +170,7 @@ function DecisionReport({
   const [move, setMove] = useState(report.moves[0]?.moveUci);
   const selected = report.moves.find((item) => item.moveUci === move);
   const episode = report.mistake?.tacticalEpisode;
+  const mate = report.mistake?.mateConsequence;
   return (
     <Stack gap="xs">
       <EvidenceSummary title="Position character" assessment={report.position}>
@@ -208,12 +209,16 @@ function DecisionReport({
                   { label: "Played line", san: lineSan(report.fen, episode.playedLineUci) },
                   { label: "Better line", san: lineSan(report.fen, episode.betterLineUci) },
                 ]
-              : undefined
+              : mate
+                ? [{ label: "Mating line", san: lineSan(report.fen, mate.lineUci) }]
+                : undefined
           }
         >
-          <Text size="xs" c="dimmed">
-            Engine evaluation loss {(report.mistake.evaluationLossCp / 100).toFixed(2)} pawns
-          </Text>
+          {report.mistake.evaluationLossCp !== null && (
+            <Text size="xs" c="dimmed">
+              Engine evaluation loss {(report.mistake.evaluationLossCp / 100).toFixed(2)} pawns
+            </Text>
+          )}
         </EvidenceSummary>
       ) : report.mistakeStatus !== "not-requested" && report.mistakeStatus !== "assessed" ? (
         <Text size="xs" c="dimmed">

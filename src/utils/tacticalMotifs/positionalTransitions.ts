@@ -1,5 +1,6 @@
 import { makeFen } from "chessops/fen";
 import type { Color } from "chessops/types";
+import { makeSquare } from "chessops/util";
 import { replayTacticalLine } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import { extractPositionalBoardFacts, type SidePositionalFacts } from "./positionalEvidence";
@@ -126,6 +127,88 @@ export type ComparativePositionalEvidence = (PositionalTransition | StrategicRoo
     materialWindowPlies?: number;
     interpretation: "heuristic";
 };
+
+/** A mistake can surrender an established advantage without the better move
+ * having to create a new feature. Compare the starting outpost and the same
+ * early window after both choices. Give no credit for a temporary exchange
+ * imbalance, an unsupported square, or an immediate return to the outpost. */
+export function compareLostOutpost(
+    fen: string,
+    better: DecisionEngineLine,
+    played: DecisionEngineLine,
+): ComparativePositionalEvidence | null {
+    if (
+        better.cp === null ||
+        played.cp === null ||
+        better.mate != null ||
+        played.mate != null ||
+        better.depth < 16 ||
+        better.depth !== played.depth ||
+        better.cp - played.cp < 60
+    )
+        return null;
+    const good = measureDecisionLine(fen, better);
+    const bad = measureDecisionLine(fen, played);
+    if (!good || !bad || good.drawnEnding || bad.drawnEnding) return null;
+    const horizon = 4;
+    const stronger = replayTacticalLine(fen, better.pvUci.slice(0, horizon));
+    const weaker = replayTacticalLine(fen, played.pvUci.slice(0, horizon));
+    if (stronger.length !== horizon || weaker.length !== horizon) return null;
+    const start = weaker[0];
+    const piece = start.before.board.get(start.move.from);
+    if (start.capture || !piece || !["knight", "bishop"].includes(piece.role)) return null;
+    const side = piece.color;
+    const square = makeSquare(start.move.from);
+    const hasOutpost = (position: typeof start.before) =>
+        extractPositionalBoardFacts(makeFen(position.toSetup()))?.[
+            side
+        ].minorSquaresWithoutPawnChallengers.includes(square);
+    const ownRank = side === "white" ? Number(square[1]) : 9 - Number(square[1]);
+    if (
+        ownRank < 5 ||
+        !hasOutpost(start.before) ||
+        !stronger.every(({ after }) => hasOutpost(after)) ||
+        weaker.some(({ after }) => hasOutpost(after))
+    )
+        return null;
+    // The stronger line cannot swap the original piece and take credit for
+    // another piece occupying the same square later in the window.
+    if (stronger.some(({ move }) => move.from === start.move.from || move.to === start.move.from))
+        return null;
+    const goodWindow = measureDecisionLine(fen, {
+        ...better,
+        pvUci: better.pvUci.slice(0, horizon),
+    });
+    const badWindow = measureDecisionLine(fen, {
+        ...played,
+        pvUci: played.pvUci.slice(0, horizon),
+    });
+    const commonMaterialWindow =
+        goodWindow &&
+        badWindow &&
+        Math.abs(goodWindow.materialChangeCp - badWindow.materialChangeCp) <= 50 &&
+        [stronger, weaker].every((steps) =>
+            steps.every(
+                (step) => step.capture < 320 && !step.move.promotion && !step.after.isCheck(),
+            ),
+        );
+    if (!commonMaterialWindow) return null;
+    return {
+        feature: "pawn-stable-minor",
+        side,
+        squareOrFile: square,
+        description: `${start.san} moves the pawn-supported ${piece.role} away from ${square}. The stronger line keeps that piece on a square the opponent cannot challenge with a pawn.`,
+        firstPly: 1,
+        lastConsecutivePly: horizon,
+        support: "board-fact",
+        comparisonMoveUci: played.pvUci[0],
+        comparisonGapCp: better.cp - played.cp,
+        supportInComparison: false,
+        comparison: "alternative-choice",
+        materialWindowPlies: horizon,
+        interpretation: "heuristic",
+    };
+}
 
 function rootFeatures(
     fen: string,
