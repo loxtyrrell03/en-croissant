@@ -18,6 +18,9 @@ engine_spec.loader.exec_module(engine_frames)
 probe_spec = importlib.util.spec_from_file_location('capture_probes', path.with_name('decision-evidence-probes.py'))
 probes = importlib.util.module_from_spec(probe_spec)
 probe_spec.loader.exec_module(probes)
+evaluation_spec = importlib.util.spec_from_file_location('decision_evaluation', path.with_name('decision-evidence-evaluate.py'))
+evaluation = importlib.util.module_from_spec(evaluation_spec)
+evaluation_spec.loader.exec_module(evaluation)
 
 
 class SourceGameIdentity(unittest.TestCase):
@@ -69,6 +72,29 @@ class CaptureNominations(unittest.TestCase):
     def test_ordinary_expensive_capture_of_a_defended_piece_is_excluded(self):
         board = chess.Board('1q3rk1/2N2ppp/8/7Q/8/3B4/8/R5K1 w - - 0 1')
         self.assertEqual(probes.capture_nominations(board, 'a1a8'), [])
+
+
+class SeparateQuestionMetrics(unittest.TestCase):
+    def test_mixed_move_does_not_make_the_actual_mistake_mixed(self):
+        supported = {'support':'supported'}
+        report = {'results':[dict(id='case', baseline={'variations':[]}, baselineMistake={'nature':'tactical'},
+            assessment={'moves':[dict(moveUci='a2a4', tactical=supported, positional=supported,
+                mechanisms=[dict(mechanism='fork', rootMoveInvolved=True, mechanismPly=1)],
+                conditionalResources=[dict(refutationMechanisms=[dict(mechanism='pin')])])],
+                'mistake':{'tactical':supported, 'positional':{'support':'unestablished'}}})]}
+        reference = {'cases':[dict(id='case',scope='move-justification',moveUci='a2a4',tactical=True,positional=True,motifs={'fork':True,'pin':False,'overloading':None}),
+                              dict(id='case',scope='mistake-mechanism',tactical=True,positional=False)]}
+        scores = evaluation.evaluate(reference,report)['questions']
+        self.assertEqual(scores['move-justification']['candidate']['mixed']['tp'],1)
+        self.assertEqual(scores['mistake-mechanism']['candidate']['mixed']['tn'],1)
+        self.assertEqual(scores['move-justification']['candidate']['motifs']['pin']['tn'],1)
+        self.assertEqual(scores['move-justification']['candidate']['motifs']['overloading']['unknownReference'],1)
+
+    def test_bad_labels_and_missing_predictions_fail_instead_of_changing_denominators(self):
+        with self.assertRaises(ValueError):
+            evaluation.evaluate({'cases':[dict(id='missing',scope='move-justification',moveUci='a2a4',tactical=True,positional=None)]}, {'results':[]})
+        with self.assertRaises(ValueError):
+            evaluation.evaluate({'cases':[dict(id='case',scope='move-justification',moveUci='a2a4',tactical='likely',positional=None)]}, {'results':[{'id':'case'}]})
 
 
 class EngineFrames(unittest.TestCase):

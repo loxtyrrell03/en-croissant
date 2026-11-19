@@ -386,6 +386,37 @@ audit is skipped without a private dataset), full TypeScript and scoped lint
 pass, and 13 Python plus two source-group checks pass. Production integration,
 rendered workflow checks and deployment remain outstanding.
 
+## Frozen evaluation protocol
+
+`decision-evidence-freeze.mjs` saves exact classifier/dependency hashes, engine
+identity, the predetermined exclusions and all 124 held-out identities (52
+course, 48 independent and 24 classical). It also creates small filtered private
+samples for engine analysis. No source corpus is copied. The configured policy
+uses protocol 2, adaptive root depth 18 within 9.6 million nodes, separate reply
+searches and bounded capture counterfactuals. Missing convergence/depth still
+produces uncertainty rather than an invented classification.
+
+Held-out audits require `DECISION_AUDIT_SPLIT=validation`,
+`DECISION_FREEZE_PATH` and `DECISION_REFERENCE_PATH`. The saved reference must
+cover every held-out identity, including explicit uncertainty. The runner checks
+source hashes, original sample identity, exclusions, engine identity, root
+budget/depth policy and reply-to-root cache binding before classification. Its
+output records the freeze and reference hashes. Changing the model against
+these results consumes this set as development data; it cannot become another
+untouched result by renaming an output.
+
+`decision-evidence-evaluate.py` reports move justification, position character
+and mistake mechanism separately, plus explicitly reviewed motif positives and
+negatives. Unknown motif labels are excluded. A conditional reply's fork is not
+transferred into the original move's root-motif score. The old live root output
+has no equivalent independent positional/mixed position dimension; its use as
+a tactical position proxy is disclosed. Old mistake-nature output has no
+comparable named-motif inventory, so that comparison is unavailable. Saved
+reference bytes must match those recorded before held-out classification.
+These safeguards pass two new freeze checks and 15 total Python checks, full
+TypeScript and scoped lint. They do not themselves supply reference accuracy,
+expert review or held-out results.
+
 ## Remaining acceptance work
 
 Expand and adjudicate the reference data across all requested decision types and

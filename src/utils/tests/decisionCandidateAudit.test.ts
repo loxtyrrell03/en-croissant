@@ -25,12 +25,47 @@ test.skipIf(!directory)(
         if (!/^[a-z0-9-]+$/.test(profile)) throw new Error("Invalid engine profile");
         const probeProfile = process.env.DECISION_PROBE_PROFILE ?? profile;
         if (!/^[a-z0-9-]+$/.test(probeProfile)) throw new Error("Invalid probe profile");
-        const sample = JSON.parse(readFileSync(join(directory!, `${cohort}-sample.json`), "utf8"));
+        const sampleBytes = readFileSync(join(directory!, `${cohort}-sample.json`));
+        const sample = JSON.parse(sampleBytes.toString("utf8"));
+        const split = process.env.DECISION_AUDIT_SPLIT ?? "development";
+        if (!["development", "validation"].includes(split)) throw new Error("Invalid split");
+        let frozen: {
+            engineSha256: string;
+            search: { minimumDepth: number; maximumRootNodes: number };
+        } | null = null;
+        let freezeSha256: string | null = null;
+        let referenceSha256: string | null = null;
+        let rows = sample.cases.filter((r: { split: string }) => r.split === split);
+        if (split === "validation") {
+            const { assertFrozenFiles, selectFrozenValidation, sha256 } =
+                await import("../../../scripts/benchmarks/decision-evidence-freeze.mjs");
+            const freezePath = process.env.DECISION_FREEZE_PATH;
+            const referencePath = process.env.DECISION_REFERENCE_PATH;
+            if (!freezePath || !referencePath)
+                throw new Error(
+                    "Held-out evaluation requires a frozen candidate and a saved reference before classification",
+                );
+            const freezeBytes = readFileSync(freezePath);
+            frozen = JSON.parse(freezeBytes.toString("utf8"));
+            assertFrozenFiles(process.cwd(), frozen);
+            rows = selectFrozenValidation(sampleBytes, cohort, frozen);
+            const referenceBytes = readFileSync(referencePath);
+            const reviewed = new Set(
+                JSON.parse(referenceBytes.toString("utf8")).cases.map(
+                    (row: { id: string }) => row.id,
+                ),
+            );
+            if (rows.some((row: { id: string }) => !reviewed.has(row.id)))
+                throw new Error(
+                    "Every held-out case needs a reference entry, including explicit uncertainty",
+                );
+            freezeSha256 = sha256(freezeBytes);
+            referenceSha256 = sha256(referenceBytes);
+        }
         const name = process.env.DECISION_AUDIT_NAME ?? "decision-candidate-v3";
         if (!/^[a-z0-9-]+$/.test(name)) throw new Error("Invalid audit name");
         const output = privateReportPath(join(directory!, `${name}.json`));
         expect(existsSync(output)).toBe(false);
-        const rows = sample.cases.filter((r: { split: string }) => r.split === "development");
         const results = rows.map((row: { id: string; fen: string; category: string }) => {
             const engine = JSON.parse(
                 readFileSync(
@@ -60,6 +95,28 @@ test.skipIf(!directory)(
                     "utf8",
                 ),
             );
+            if (
+                frozen &&
+                (engine.identity.protocol !== 2 ||
+                    engine.identity.engine_sha256 !== frozen.engineSha256 ||
+                    engine.identity.minimum_depth !== frozen.search.minimumDepth ||
+                    engine.identity.maximum_root_nodes !== frozen.search.maximumRootNodes ||
+                    probes.identity.engine_sha256 !== frozen.engineSha256 ||
+                    probes.identity.capture_resource_limit !== 3 ||
+                    probes.identity.root_sha256 !==
+                        createHash("sha256")
+                            .update(
+                                readFileSync(
+                                    join(
+                                        directory!,
+                                        `${cohort}-engine-${profile}`,
+                                        `${row.id}.json`,
+                                    ),
+                                ),
+                            )
+                            .digest("hex"))
+            )
+                throw new Error("Held-out search evidence does not match the frozen policy");
             const started = performance.now();
             const baseline = buildLiveTacticalScan({
                 fen: row.fen,
@@ -154,7 +211,13 @@ test.skipIf(!directory)(
             output,
             JSON.stringify(
                 {
-                    scope: "Development candidate, not held-out accuracy",
+                    scope:
+                        split === "validation"
+                            ? "Frozen held-out candidate; accuracy requires reviewed reference scoring"
+                            : "Development candidate, not held-out accuracy",
+                    split,
+                    freezeSha256,
+                    referenceSha256,
                     engineProtocol: protocol,
                     engineProfile: profile,
                     probeProfile,
