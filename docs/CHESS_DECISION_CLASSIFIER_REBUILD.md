@@ -1369,3 +1369,92 @@ procedure with the `v29` cache profile for all caches and with
 `--position-choices` for the reply generation. The predecessor
 assessment is at `1c660d43`. Use new game groups for any held-out
 claims from work informed by the failure cases above.
+
+## Iteration 30 — follow-through on a file or square
+
+The previous rank gate lost some sound positional explanations.
+`...Rfc8` prepares `...Rxc1+ Nxc1` while the rook waits on its own
+back rank. The position report now follows the original rook from
+the appearance of the file feature. It accepts a later same-file
+rook exchange when both rooks are captured and material returns
+to its pre-exchange balance. Either side can initiate the exchange.
+The file itself must persist in the separate reply search before
+the exchange is counted as position evidence. The report names the
+actual two moves.
+
+The pawn-space check now asks what the advance accomplished. The
+pawn can advance again, sustain control after displacing a piece,
+support a piece which actually uses a new square, or cover a square
+an opposing minor piece uses in the matched alternative. For
+example, `...g5` covers f4, while after `...gxf5` the other line
+uses `Nf4`. Checking outposts need a settled material window. A
+push to the seventh rank with an immediate promotion threat needs
+additional evidence before it supports a separate positional label.
+
+Two development cohorts exposed the trade-offs. The first version
+of the broader rook trace reintroduced a positional false call on
+a defensive rook exchange. The independent-file requirement removed
+it. The first pawn-space qualification also lost two reviewed
+space advantages. Adding actual displacement and opposing square
+use restored them.
+
+| Development position cohort | Positional positives / negatives | v29 TP / FP | v30 TP / FP |
+| --- | ---: | ---: | ---: |
+| London and 4NCL, 36 boards | 22 / 9 | 7 / 0 | 7 / 0 |
+| European and British, 32 boards | 18 / 9 | 7 / 3 | 8 / 0 |
+
+The second replay also removed its one false mixed call, retaining
+one correct mixed call out of eight. One correctly labelled older
+mixed position lost its positional evidence. Its old explanation
+relied on a checking outpost, while the reviewed strategic value
+came from the doubled rooks and pawn structure. That distinction
+is still a coverage gap.
+
+**Held-out evaluation.** The general sample contained 28 positions
+from 14 games across the [2025 FIDE Grand Swiss Open round
+5](https://lichess.org/broadcast/fide-grand-swiss-2025-open/round-5/ADzdjVmn)
+and [2026 British Major Open round
+6](https://lichess.org/broadcast/2026-british-chess-championships-major-open/round-6/vCGDNHBe).
+A separate challenge sample used 12 other games from those rounds.
+It retrieved six quiet entries from the first four ranks with a
+later equal exchange and six similar entries without a qualifying
+exchange or advance.
+The retrieval strata came from the actual game, while the reviewer
+labelled the position from the legal engine lines and ordinary
+probes. References were recorded before candidate or optional
+position-reply output was examined.
+
+| Held-out question | Reviewed positives / negatives | Legacy TP / FP | Same-board v29 TP / FP | v30 TP / FP |
+| --- | ---: | ---: | ---: | ---: |
+| General tactical | 21 / 3 | 3 / 0 | 6 / 0 | 6 / 0 |
+| General positional | 18 / 5 | 0 / 0 | 2 / 1 | 2 / 1 |
+| General mixed | 11 / 8 | 0 / 0 | 0 / 0 | 0 / 0 |
+| File challenge positional | 10 / 1 | 0 / 0 | 3 / 0 | 3 / 0 |
+
+Only two of six recorded rook entries in the exchange stratum were
+the engine's first choice. Even when they were, the engine principal
+variation could select a different follow-up. The focused sample
+still supplies hard cases, but it demonstrates limited transfer
+for the new trace. The two fresh comparisons provide no aggregate
+accuracy gain over v29. They also show that broader positional and
+mixed recall remain low.
+
+The file and pawn checks use existing engine lines. The general
+audit took about 42 ms median for the candidate logic, excluding
+engine work and legacy extraction. The predecessor replays used
+the same inputs and matched the move and mistake reports. Source
+regressions cover each side initiating a rook exchange, an unrelated
+replacement rook, pawn restriction visible in an alternative, and
+passive file occupation. There were 124 focused tests passed and
+one existing skip. TypeScript and scoped lint passed. The committed
+tactical core reproduced every position report for both cohorts.
+The rook-exchange explanation was rendered
+with the production panel and worker at 320, 390 and 900 px using
+recorded Stockfish input.
+
+**Reproduction.** The general and challenge manifests are under
+`benchmarks/decision-evidence/file-use-v30`. For each cohort use the
+v29 cache procedure with profile `v30`. The file challenge sampler
+is `scripts/benchmarks/decision-evidence-file-sample.py`. The v29
+comparator uses the assessment and position-plan modules at
+`5c0208b7`. Keep the challenge separate when reporting results.

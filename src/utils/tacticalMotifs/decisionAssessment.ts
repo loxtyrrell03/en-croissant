@@ -45,7 +45,7 @@ import {
     type PositionStrategicPlan,
 } from "./decisionPositionPlans";
 
-export const DECISION_ASSESSMENT_VERSION = 11;
+export const DECISION_ASSESSMENT_VERSION = 12;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -457,15 +457,25 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.conditionalResources = tactical?.conditionalResources ?? [];
     for (const move of viable) {
         const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;
-        const factors = qualifyPositionFactors(input.fen, line, move.positionalFactors);
-        if (!factors.length) continue;
+        const qualified = qualifyPositionFactors(
+            input.fen,
+            line,
+            move.positionalFactors,
+            input.candidates,
+        );
+        if (!qualified.length) continue;
         position.positional = {
             ...move.positional,
-            reasons: move.positional.reasons.filter((_, index) =>
-                factors.includes(move.positionalFactors[index]),
+            reasons: qualified.map(({ factor, continuationEvidence }) =>
+                [
+                    move.positional.reasons[move.positionalFactors.indexOf(factor)],
+                    continuationEvidence,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
             ),
         };
-        position.positionalFactors = factors;
+        position.positionalFactors = qualified.map(({ factor }) => factor);
         break;
     }
     if (position.positional.support === "unestablished" && !rejectedChoices) {

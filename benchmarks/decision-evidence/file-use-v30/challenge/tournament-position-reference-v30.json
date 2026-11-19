@@ -1,0 +1,142 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "file-grand-swiss-open-e3d60ef872e71f85-52",
+      "scope": "position-character",
+      "moveUci": "a1c1",
+      "gameMoveUci": "a1b1",
+      "tactical": null,
+      "positional": true,
+      "rookFile": "b",
+      "rookFileRole": true,
+      "rationale": "On b1, the rook can exchange on b4 or double behind a rook lift to b3. Rac1 and Rfc1 offer separate c-file pressure, and the d5/c6 pawn structure persists."
+    },
+    {
+      "id": "file-british-major-open-2026-285769e5cf7655ed-44",
+      "scope": "position-character",
+      "moveUci": "b3c3",
+      "gameMoveUci": "f1d1",
+      "tactical": null,
+      "positional": true,
+      "rookFile": "d",
+      "rookFileRole": true,
+      "rationale": "A rook on d1 can meet the opposing rook and exchange, or leave Black\u2019s rook on d3 with activity. The engine alternatives differ in queen exchanges, pawn targets and who reaches the d-file."
+    },
+    {
+      "id": "file-british-major-open-2026-04530b92ced2740b-53",
+      "scope": "position-character",
+      "moveUci": "a8b8",
+      "gameMoveUci": "a8h8",
+      "tactical": false,
+      "positional": true,
+      "rookFile": "h",
+      "rookFileRole": null,
+      "rationale": "The main alternatives focus on ...a5, ...b5 and a rook on b8 behind the pawn break. The recorded ...Rh8 has an h-file exchange resource, but its separate contribution under strongest play is uncertain."
+    },
+    {
+      "id": "file-british-major-open-2026-d9e9755dc15bdf04-40",
+      "scope": "position-character",
+      "moveUci": "a1e1",
+      "gameMoveUci": "a1e1",
+      "tactical": true,
+      "positional": true,
+      "rookFile": "e",
+      "rookFileRole": true,
+      "rationale": "Rae1 increases e-file pressure and supports c3 and Nc4. The related Rf2 and Rad1 lines also place a rook on e1. Direct knight exchanges and Rxf1+ still require calculation."
+    },
+    {
+      "id": "file-grand-swiss-open-75391eda3bc1eda3-36",
+      "scope": "position-character",
+      "moveUci": "f1b1",
+      "gameMoveUci": "f1b1",
+      "tactical": null,
+      "positional": true,
+      "rookFile": "b",
+      "rookFileRole": true,
+      "rationale": "Rfb1 gives an active choice on the b-file. Rab8 can contest it and the rook can later go to b4. Rfc1 retains pressure on the c-file and produces a different rook placement."
+    },
+    {
+      "id": "file-british-major-open-2026-41deae33658054f2-51",
+      "scope": "position-character",
+      "moveUci": "h4h3",
+      "gameMoveUci": "h7g7",
+      "tactical": true,
+      "positional": null,
+      "rookFile": "g",
+      "rookFileRole": null,
+      "rationale": "...Rhg7 and ...h3 lead to a long trade sequence on g3 while White tries to control the h-file. Whether that file move has a durable purpose apart from protecting the attack is uncertain."
+    },
+    {
+      "id": "file-british-major-open-2026-ecffeee55f5ee13f-74",
+      "scope": "position-character",
+      "moveUci": "g2f3",
+      "gameMoveUci": "g3b3",
+      "tactical": false,
+      "positional": true,
+      "rookFile": "b",
+      "rookFileRole": false,
+      "rationale": "Kf3 or Kf1 improves the king\u2019s route against Black\u2019s connected queenside play. The isolated Rb3 move delays that and the rook has no lasting b-file role in the credible line."
+    },
+    {
+      "id": "file-british-major-open-2026-1f0cfa7cc0374ae2-39",
+      "scope": "position-character",
+      "moveUci": "c8b8",
+      "gameMoveUci": "f8e8",
+      "tactical": null,
+      "positional": true,
+      "rookFile": "e",
+      "rookFileRole": false,
+      "rationale": "Black has to address the opposing rook on a7 and White\u2019s queenside pawn play. ...Re8 alone supplies no sustained e-file objective in its compared continuation."
+    },
+    {
+      "id": "file-british-major-open-2026-08926a33ab24e7af-65",
+      "scope": "position-character",
+      "moveUci": "g8e8",
+      "gameMoveUci": "g8e8",
+      "tactical": null,
+      "positional": true,
+      "rookFile": "e",
+      "rookFileRole": true,
+      "rationale": "...Rge8 and ...Rf8 followed by ...Rfe8 reinforce the e4 rook. The e3 pawn remains a pressure point after queen exchanges and across the different rook orders."
+    },
+    {
+      "id": "file-british-major-open-2026-1d47140372e37646-24",
+      "scope": "position-character",
+      "moveUci": "d4e2",
+      "gameMoveUci": "f1d1",
+      "tactical": null,
+      "positional": true,
+      "rookFile": "d",
+      "rookFileRole": true,
+      "rationale": "White\u2019s centre supports manoeuvres on both the d-file and c-file. On d1, the rook contests Black\u2019s d6 pawn and the entry persists in the alternate searches without an immediate exchange."
+    },
+    {
+      "id": "file-british-major-open-2026-37d6324e171a4669-60",
+      "scope": "position-character",
+      "moveUci": "e1h1",
+      "gameMoveUci": "e1h1",
+      "tactical": true,
+      "positional": false,
+      "rookFile": "h",
+      "rookFileRole": false,
+      "rationale": "Rh1 is the only leading move that keeps the forcing king-side resources. The advanced e7 pawn and the sequence Rxe7 Bxg6 shape this immediate calculation. The new h-file location is tactical here."
+    },
+    {
+      "id": "file-grand-swiss-open-1ce0695ff8484c08-27",
+      "scope": "position-character",
+      "moveUci": "f8e8",
+      "gameMoveUci": "f8e8",
+      "tactical": true,
+      "positional": true,
+      "rookFile": "e",
+      "rookFileRole": true,
+      "rationale": "...Rfe8 and ...Rae8 both reinforce pressure on e5. The resulting Bxe5 sequence and Nf6+ require calculation, while the e-file and the control of the central pawn remain relevant afterward."
+    }
+  ],
+  "limitations": [
+    "One engine-assisted reviewer assessed the legal continuations and ordinary reply probes before viewing classifier or optional position-reply outputs.",
+    "The six exchange and six without-use cases are retrieval strata, not truth labels. The actual game and leading engine choices can differ.",
+    "An optional rookFileRole label indicates a reviewed strategic role of the recorded rook destination file. The main review scores tactical and positional position character."
+  ]
+}

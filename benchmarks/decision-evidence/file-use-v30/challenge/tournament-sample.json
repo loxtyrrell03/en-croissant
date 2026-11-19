@@ -1,0 +1,158 @@
+{
+  "protocol": 1,
+  "cases": [
+    {
+      "id": "file-grand-swiss-open-e3d60ef872e71f85-52",
+      "event": "grand-swiss-open",
+      "stratum": "later-equal-exchange",
+      "fen": "r5k1/4np1p/2pq2p1/p2p4/1r1P4/Q3P3/P1B2PPP/R4RK1 w - - 0 27",
+      "ply": 52,
+      "playedMoveUci": "a1b1",
+      "sourceGroup": "e3d60ef872e71f85971fcb044f9e564d3184e89e7f1a60692c790c6b7b55b3a5",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-285769e5cf7655ed-44",
+      "event": "british-major-open-2026",
+      "stratum": "later-equal-exchange",
+      "fen": "6k1/5ppp/pp1rp1b1/2q5/2P2P2/PQ3B2/1P4PP/5R1K w - - 0 23",
+      "ply": 44,
+      "playedMoveUci": "f1d1",
+      "sourceGroup": "285769e5cf7655eda8e852b85ac64edd3e6dc2640007323153c3c1b7bc983f2b",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-04530b92ced2740b-53",
+      "event": "british-major-open-2026",
+      "stratum": "later-equal-exchange",
+      "fen": "r7/pp1rnkp1/2p1pp2/8/2PP1PP1/1P2KN2/P2R4/2R5 b - - 0 27",
+      "ply": 53,
+      "playedMoveUci": "a8h8",
+      "sourceGroup": "04530b92ced2740ba706c588d24f3b0fe10b00ef10d9bbaaef8c6047da1e4323",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-d9e9755dc15bdf04-40",
+      "event": "british-major-open-2026",
+      "stratum": "later-equal-exchange",
+      "fen": "r4rk1/6qp/1pp3p1/p1p2b2/P2n1N2/3PN2P/1PPQ2P1/R4RK1 w - - 0 21",
+      "ply": 40,
+      "playedMoveUci": "a1e1",
+      "sourceGroup": "d9e9755dc15bdf0423e66cc58eb4c15f07dbb8ae97e8e7862091ef8c76a8dfe5",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-grand-swiss-open-75391eda3bc1eda3-36",
+      "event": "grand-swiss-open",
+      "stratum": "later-equal-exchange",
+      "fen": "r4rk1/2q1bppp/b1p1p3/p1PpP3/P1nPn3/2B2NP1/2Q1NPBP/R4RK1 w - - 3 19",
+      "ply": 36,
+      "playedMoveUci": "f1b1",
+      "sourceGroup": "75391eda3bc1eda3b3562bcfe746b46b5f59ab760a3477e2e935a9e88bad358c",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-41deae33658054f2-51",
+      "event": "british-major-open-2026",
+      "stratum": "later-equal-exchange",
+      "fen": "2n3r1/1p1k1p1r/2p1p3/1p1pP1Bq/3P1QRp/2P5/PP3P1P/R6K b - - 8 26",
+      "ply": 51,
+      "playedMoveUci": "h7g7",
+      "sourceGroup": "41deae33658054f2c4a3b635b07ecb680b5d27b5816d2e7946c1fd1823dcffa9",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-ecffeee55f5ee13f-74",
+      "event": "british-major-open-2026",
+      "stratum": "file-entry-without-use",
+      "fen": "8/1r5p/1p2k3/5p2/5P2/6RP/5PK1/8 w - - 3 38",
+      "ply": 74,
+      "playedMoveUci": "g3b3",
+      "sourceGroup": "ecffeee55f5ee13f2bc1b4002f34ed0d0d77872e2b53769bafba1e0242acebb6",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-1f0cfa7cc0374ae2-39",
+      "event": "british-major-open-2026",
+      "stratum": "file-entry-without-use",
+      "fen": "2rq1rk1/R2n1ppp/1pb2b2/2pp4/3P4/1PB2NPB/1Q2PP1P/2R3K1 b - - 5 20",
+      "ply": 39,
+      "playedMoveUci": "f8e8",
+      "sourceGroup": "1f0cfa7cc0374ae21487c2debaa47be1fdb5ba96ca78958dbaee5f0bf010301f",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-08926a33ab24e7af-65",
+      "event": "british-major-open-2026",
+      "stratum": "file-entry-without-use",
+      "fen": "6rk/1pp3p1/p2p1p1p/3n4/PP1Pr1PP/3qP3/4R2N/2R1Q1K1 b - - 4 33",
+      "ply": 65,
+      "playedMoveUci": "g8e8",
+      "sourceGroup": "08926a33ab24e7af9a8f23b84aaaa87faef488d968fdb2e87dde9e39d6758968",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-1d47140372e37646-24",
+      "event": "british-major-open-2026",
+      "stratum": "file-entry-without-use",
+      "fen": "r4r2/pp1qppbk/2np1npp/8/2PNP3/2N1BP2/PP1Q2PP/R4RK1 w - - 2 13",
+      "ply": 24,
+      "playedMoveUci": "f1d1",
+      "sourceGroup": "1d47140372e37646e9c2a15d955f2eaa314d5c2c8004b0eb97e3dc441ec748df",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-british-major-open-2026-37d6324e171a4669-60",
+      "event": "british-major-open-2026",
+      "stratum": "file-entry-without-use",
+      "fen": "r3r2k/pp2PBpp/1bp2pn1/3p4/3P2q1/2N2N2/PPQ3P1/1K2R3 w - - 5 31",
+      "ply": 60,
+      "playedMoveUci": "e1h1",
+      "sourceGroup": "37d6324e171a4669774167ce9dcb0a574566f27ba7b4994fd4073934e4b7f051",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    },
+    {
+      "id": "file-grand-swiss-open-1ce0695ff8484c08-27",
+      "event": "grand-swiss-open",
+      "stratum": "file-entry-without-use",
+      "fen": "r4rk1/p1ppqpbp/b1p3p1/3nP3/2P5/PP6/1B1NQPPP/2KR1B1R b - - 4 14",
+      "ply": 27,
+      "playedMoveUci": "f8e8",
+      "sourceGroup": "1ce0695ff8484c08b700dc7eebe5b50de3a94c51dc2305c280bee6dd690699df",
+      "split": "validation",
+      "category": "public-classical-broadcast"
+    }
+  ],
+  "events": {
+    "grand-swiss-open": "1c0cedc9b8c63305b62181f052d63d649c04ed3695c80249a932419c8b20721f",
+    "british-major-open-2026": "0b47b20f265f4ce4ca14e4a390f30f1adf54d06c5a144ab223836c5b15467006"
+  },
+  "exclusions": [
+    "7e495b652759e5f74b4b9a912c1daf2048cfdb4f154748275c1f74f96e011183",
+    "6a5ebc28997d5668b0f13c8c28fdcaab4e34a052889d680b1799712400f9ab73",
+    "a75c08a3ea2b7e185d69dc0651422cae9597e06736194348cffd8ef68f7300fb",
+    "75616e3f5a43ec8bfa39a4235ce8515d005c1f0a185a69ceb353cd4cc67b0deb",
+    "44c4e4e424cf1bc0a0cc62751ab631064252576b4c2e94285fee285655a7e6b7",
+    "d9ce8d6b574b0ee6f8f8e3bfaf7abe1822a32f36f5bf8cafff4d77bdf212acfb",
+    "f27f65d0172ab375e9494feac432a68a2c17d4279665690604163794c3589512",
+    "95130b3d85718c70ef90cb3bae3bffd658a6801a9be720d3be345a53f848d5de",
+    "8fe1fee913009c0217355e302b8540d9967827452752ba14317383655b788549",
+    "eab50232d1bb89cb748a0413979d87bec3042f07de5a5cd712c0ab57db2b536d",
+    "d2a6892ab1915d5ea50167bea598f704765817134095b6c3f48ce42c86f979a6",
+    "962b454495f3791af895bfa34c5b499be9501933e456aeadafeb94ad2ba4d256",
+    "b3d33ad98a68a8d1cd37819fbcbf8af211ef74475e80129c9915f4ee893d2eed",
+    "8c5f356b4fde5e98c4e07648e4bc9f2c3a40c3d6f2300c61dc05b0ba18405a53"
+  ],
+  "scope": "Recorded quiet rook entry below the fifth rank, six balanced-exchange retrievals and six controls. Strata are not reference labels."
+}

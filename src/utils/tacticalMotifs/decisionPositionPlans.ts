@@ -1,7 +1,7 @@
 import { attacks, pawnAttacks } from "chessops/attacks";
 import type { Chess } from "chessops/chess";
 import type { Color, Square } from "chessops/types";
-import { makeSquare, opposite } from "chessops/util";
+import { makeSquare, opposite, parseSquare } from "chessops/util";
 import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import type { ComparativePositionalEvidence } from "./positionalTransitions";
@@ -80,24 +80,19 @@ function maintain(
     return steps.length;
 }
 
-function completedRookExchange(
-    steps: TacticalReplayStep[],
-    takenAt: number,
-    side: Color,
-    column: number,
-) {
-    const take = steps[takenAt - 1];
-    const retake = steps[takenAt];
+function completedRookExchange(steps: TacticalReplayStep[], captureIndex: number, column: number) {
+    const take = steps[captureIndex];
+    const retake = steps[captureIndex + 1];
     if (
         !take ||
         !retake ||
-        take.before.turn !== side ||
         take.before.board.get(take.move.from)?.role !== "rook" ||
         take.before.board.get(take.move.to)?.role !== "rook" ||
         file(take.move.from) !== column ||
         file(take.move.to) !== column ||
         retake.move.to !== take.move.to ||
-        retake.capture !== 500
+        retake.capture !== 500 ||
+        retake.balance !== (steps[captureIndex - 1]?.balance ?? 0)
     )
         return null;
     return `${take.san} ${retake.san} exchanges rooks on the file`;
@@ -123,7 +118,10 @@ function findPlanActions(steps: TacticalReplayStep[]) {
                     rank(square, side) >= 5 &&
                     openForRook(board, square, side),
             );
-            const exchange = completedRookExchange(steps, use, side, file(move.to));
+            const exchange =
+                steps[use - 1]?.before.turn === side
+                    ? completedRookExchange(steps, use - 1, file(move.to))
+                    : null;
             if (use >= index + 3)
                 actions.push({
                     key: `rook:${side}:${file(move.to)}`,
@@ -213,6 +211,12 @@ function quietMaterialWindow(steps: TacticalReplayStep[], ply: number, tolerance
     );
 }
 
+function quietSettlement(steps: TacticalReplayStep[], earliest: number, tolerance: number) {
+    for (let ply = earliest; ply <= steps.length; ply++)
+        if (quietMaterialWindow(steps, ply, tolerance)) return true;
+    return false;
+}
+
 /** A position can revolve around the same plan even though several moves
  * are equally strong. Require actual use of the same asset in different
  * legal root choices during a matched, settled early window. */
@@ -261,6 +265,125 @@ export function findPositionStrategicPlan(fen: string, candidates: DecisionEngin
     return null;
 }
 
+/** A rook on its own back rank can still contest the file. Track it from
+ * the first observation, including an exchange initiated by either side. */
+function rookUsesFile(
+    steps: TacticalReplayStep[],
+    index: number,
+    side: Color,
+    initial: Square,
+): { description?: string; exchange?: true } | null {
+    const start = steps[index];
+    const column = file(initial);
+    let square = initial;
+    if (
+        start.before.turn === side &&
+        start.move.to === square &&
+        start.before.board.get(start.move.from)?.role === "rook" &&
+        !start.capture &&
+        !start.after.isCheck() &&
+        rank(square, side) >= 5
+    )
+        return {};
+    for (let i = index + 1; i < steps.length; i++) {
+        const step = steps[i];
+        if (!openForRook(step.before, square, side)) return null;
+        const byRook = step.before.turn === side && step.move.from === square;
+        const takesRook = step.before.turn !== side && step.move.to === square;
+        if (!byRook && !takesRook) continue;
+        if (file(step.move.from) !== column || file(step.move.to) !== column) return null;
+        if (step.capture) {
+            if (i < index + 2 || !openForRook(step.after, step.move.to, side)) return null;
+            const exchange = completedRookExchange(steps, i, column);
+            return exchange ? { description: `${exchange}.`, exchange: true } : null;
+        }
+        square = step.move.to;
+        if (!step.after.isCheck() && rank(square, side) >= 5)
+            return { description: `${step.san} takes the same rook to ${makeSquare(square)}.` };
+    }
+    return null;
+}
+
+function usesPawnSpace(
+    steps: TacticalReplayStep[],
+    comparison: TacticalReplayStep[],
+    side: Color,
+    squareText: string,
+) {
+    const start = steps[0];
+    const square = parseSquare(squareText);
+    if (
+        square === undefined ||
+        start.move.to !== square ||
+        start.before.turn !== side ||
+        start.after.board.get(square)?.role !== "pawn" ||
+        rank(square, side) >= 7
+    )
+        return null;
+    const supported = pawnAttacks(side, square);
+    const reply = steps[1];
+    if (
+        reply &&
+        !reply.capture &&
+        supported.has(reply.move.from) &&
+        !["pawn", "king"].includes(reply.before.board.get(reply.move.from)!.role) &&
+        steps.slice(1, 4).length === 3 &&
+        steps
+            .slice(1, 4)
+            .every(
+                (step) =>
+                    step.after.board.get(square)?.role === "pawn" &&
+                    step.after.board.get(square)?.color === side &&
+                    step.after.board.get(reply.move.from)?.color !== opposite(side),
+            )
+    )
+        return `${reply.san} moves the attacked piece away, and the pawn keeps control of ${makeSquare(reply.move.from)}.`;
+    for (let i = 1; i < steps.length; i++) {
+        const step = steps[i];
+        const { from, to } = step.move;
+        if (step.before.turn === side && from === square)
+            return !step.capture && !step.after.isCheck() && rank(to, side) <= 6
+                ? `${step.san} advances the same pawn again.`
+                : null;
+        if (
+            step.after.board.get(square)?.color !== side ||
+            step.after.board.get(square)?.role !== "pawn"
+        )
+            return null;
+        const piece = step.before.board.get(from);
+        if (
+            step.before.turn === side &&
+            !step.capture &&
+            !step.after.isCheck() &&
+            piece &&
+            !["pawn", "king"].includes(piece.role) &&
+            supported.has(to) &&
+            steps[i + 1]?.after.board.get(to)?.color === side
+        )
+            return `${step.san} uses the square newly covered by the pawn.`;
+        const alternative = comparison[i];
+        if (
+            alternative &&
+            alternative.before.turn !== side &&
+            !alternative.capture &&
+            !alternative.after.isCheck() &&
+            supported.has(alternative.move.to) &&
+            ["knight", "bishop"].includes(
+                alternative.before.board.get(alternative.move.from)!.role,
+            ) &&
+            comparison[i + 1]?.after.board.get(alternative.move.to)?.color === opposite(side) &&
+            !step.after.board.get(alternative.move.to)
+        )
+            return `${alternative.san} uses ${makeSquare(alternative.move.to)} in the other line. The advanced pawn controls that square here.`;
+    }
+    return null;
+}
+
+type QualifiedFactor = {
+    factor: ComparativePositionalEvidence;
+    continuationEvidence?: string;
+};
+
 /** A new square may simply be where a piece escaped an attack. For the
  * position-level diagnosis require evidence that the file or pawn is used.
  * Removing a free piece alone is not a positional exchange. */
@@ -268,46 +391,66 @@ export function qualifyPositionFactors(
     fen: string,
     line: DecisionEngineLine,
     factors: ComparativePositionalEvidence[],
+    candidates: DecisionEngineLine[] = [],
 ) {
     if (!factors.length) return [];
     const steps = replayTacticalLine(fen, line.pvUci.slice(0, WINDOW));
     if (!steps.length) return [];
-    return factors.filter((factor) => {
+    return factors.flatMap((factor): QualifiedFactor[] => {
+        const accepted = [{ factor }];
+        const index = factor.firstPly - 1;
+        const reached = steps[index]?.after;
+        if (!reached) return [];
         switch (factor.feature) {
             case "open-rook-file":
             case "semi-open-rook-file":
-                return steps.some(
-                    (step, index) =>
-                        index >= factor.firstPly - 1 &&
-                        index < factor.lastConsecutivePly &&
-                        step.before.turn === factor.side &&
-                        step.before.board.get(step.move.from)?.role === "rook" &&
-                        !step.capture &&
-                        !step.after.isCheck() &&
-                        makeSquare(step.move.to)[0] === factor.squareOrFile &&
-                        rank(step.move.to, factor.side) >= 5 &&
-                        openForRook(step.after, step.move.to, factor.side),
-                );
+                for (const square of reached.board.rook.intersect(reached.board[factor.side])) {
+                    if (makeSquare(square)[0] !== factor.squareOrFile) continue;
+                    const fileUse = rookUsesFile(steps, index, factor.side, square);
+                    if (
+                        fileUse &&
+                        (!fileUse.exchange || factor.comparison === "separate-reply-search")
+                    )
+                        return [{ factor, continuationEvidence: fileUse.description }];
+                }
+                return [];
             case "bishop-pair-removal":
-                for (let ply = Math.max(6, factor.firstPly + 3); ply <= steps.length; ply++)
-                    if (quietMaterialWindow(steps, ply, 50)) return true;
-                return false;
+                return quietSettlement(steps, Math.max(6, factor.firstPly + 3), 50) ? accepted : [];
             case "piece-reach":
             case "piece-restriction":
-                return !steps[0].capture && !steps[0].after.isCheck();
-            case "passed-pawn":
-                const board = steps[factor.firstPly - 1]?.after;
-                return (
-                    board !== undefined &&
-                    [...board.board.pawn.intersect(board.board[factor.side])].some(
-                        (square) =>
-                            makeSquare(square)[0] === factor.squareOrFile &&
-                            rank(square, factor.side) >= 5 &&
-                            passed(board, square, factor.side),
-                    )
+                return !steps[0].capture && !steps[0].after.isCheck() ? accepted : [];
+            case "pawn-space": {
+                const comparison = candidates.find(
+                    (candidate) => candidate.pvUci[0] === factor.comparisonMoveUci,
                 );
+                const support = usesPawnSpace(
+                    steps,
+                    comparison ? replayTacticalLine(fen, comparison.pvUci.slice(0, WINDOW)) : [],
+                    factor.side,
+                    factor.squareOrFile,
+                );
+                return support ? [{ factor, continuationEvidence: support }] : [];
+            }
+            case "pawn-stable-minor":
+                // Check can be the whole reason for landing there. Retaining
+                // the outpost only during a decisive material win is weak evidence.
+                return !reached.isCheck() ||
+                    quietSettlement(steps, Math.max(6, factor.firstPly + 3), 100)
+                    ? accepted
+                    : [];
+            case "passed-pawn-progress":
+                return factor.after < 7 ? accepted : [];
+            case "passed-pawn":
+                return [...reached.board.pawn.intersect(reached.board[factor.side])].some(
+                    (square) =>
+                        makeSquare(square)[0] === factor.squareOrFile &&
+                        rank(square, factor.side) >= 5 &&
+                        passed(reached, square, factor.side),
+                )
+                    ? accepted
+                    : [];
             default:
-                return true;
+                return accepted;
         }
     });
 }
