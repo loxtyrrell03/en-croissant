@@ -190,14 +190,15 @@ def feature_rows(encoder, reports):
     return output, elapsed
 
 
-def probe(training, testing, feature_map, model, score_control='evaluation-loss'):
+def probe(training, testing, feature_map, model, score_control='evaluation-loss', extra_arms=None):
     validate_split(training, testing)
+    extra_arms = (*NEURAL, 'line-random-branches') if extra_arms is None else extra_arms
     existing = model.model_specs(max_iterations=3000)
     specs = {name: existing[name] for name in ARMS if name in existing}
     predictions = model.fit(training, testing, specs)
     predictions[score_control] = {axis: np.array([row.scores[-1] for row in testing])
                                   for axis in model.AXES}
-    for arm in (*NEURAL, 'line-random-branches'):
+    for arm in extra_arms:
         by_axis = {}
         for axis in model.AXES[:2]:
             known = [row for row in training if row.label[axis] is not None]
@@ -271,12 +272,13 @@ def score(rows, predictions, axes):
     return cells
 
 
-def passes_gate(axis):
+def passes_gate(axis, candidates=None):
+    candidates = NEURAL if candidates is None else candidates
     rankings = axis['rankings']
-    controls = [value for name, value in rankings.items() if name not in NEURAL]
+    controls = [value for name, value in rankings.items() if name not in candidates]
     strongest = max(controls, key=lambda value: (value['positives'], -value['negatives']))
     return [
-        arm for arm in NEURAL
+        arm for arm in candidates
         if rankings[arm]['positives'] >= strongest['positives'] + 2
         and rankings[arm]['negatives'] <= strongest['negatives']
         and sum(value > strongest['positivesByEvent'][event] for event, value in

@@ -1,0 +1,2045 @@
+{
+  "protocolSha256": "ba9647cf228bd0d775156b2546415331f4c31dcf070ab90c452380c2f8f00dcd",
+  "runnerSha256": "cc6c467c029f6732e4c3072245d63f213730014da9b7f93096c58b9001f9cae8",
+  "mistakeInputCounts": [
+    226,
+    48
+  ],
+  "positionInputCounts": [
+    259,
+    33,
+    36,
+    35
+  ],
+  "cost": {
+    "additionalStockfishNodes": 0,
+    "networkBoardsPerDecision": 5,
+    "cpuThreads": 4,
+    "medianNetworkMs": 21.089399990160018,
+    "medianFeatureMs": 23.573299986310303
+  },
+  "mistakes": {
+    "training": 225,
+    "test": 48,
+    "results": {
+      "tactical": {
+        "reference": {
+          "uncertain": 12,
+          "negative": 24,
+          "positive": 12
+        },
+        "incumbent": {
+          "truePositives": 2,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.9809090909090908,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.8166522366522366,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-tree": {
+            "unresolvedAP": 0.9999999999999999,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-network": {
+            "unresolvedAP": 0.8258080808080808,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 0.980909090909091,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-leela-root": {
+            "unresolvedAP": 0.7668989898517805,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-leela-branches": {
+            "unresolvedAP": 0.8683006535947713,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-leela-wdl": {
+            "unresolvedAP": 0.8187280040221216,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-random-board-branches": {
+            "unresolvedAP": 0.8028273518596099,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          }
+        }
+      },
+      "positional": {
+        "reference": {
+          "positive": 14,
+          "negative": 23,
+          "uncertain": 11
+        },
+        "incumbent": {
+          "truePositives": 1,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.8488864579362314,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.6366878491878494,
+            "slots": 4,
+            "positives": 3,
+            "negatives": 1,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 0,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-tree": {
+            "unresolvedAP": 0.9999999999999998,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "line-network": {
+            "unresolvedAP": 0.7763582571274878,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-leela-root": {
+            "unresolvedAP": 0.6547244422244423,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 0,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-leela-branches": {
+            "unresolvedAP": 0.7637737397641411,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-leela-wdl": {
+            "unresolvedAP": 0.7767831210334799,
+            "slots": 4,
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-random-board-branches": {
+            "unresolvedAP": 0.7146838541575382,
+            "slots": 4,
+            "positives": 4,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "cascade-open-2026": 1,
+              "fall-nyc-norms-2026": 1,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 1
+            }
+          }
+        }
+      },
+      "mixed": {
+        "reference": {
+          "uncertain": 20,
+          "negative": 24,
+          "positive": 4
+        },
+        "incumbent": {
+          "truePositives": 0,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.95,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.5102380952380952,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-tree": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-network": {
+            "unresolvedAP": 0.5218855218855218,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "evaluation-loss": {
+            "unresolvedAP": 1.0,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-leela-root": {
+            "unresolvedAP": 0.39545454545454545,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-leela-branches": {
+            "unresolvedAP": 0.7857142857142857,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-leela-wdl": {
+            "unresolvedAP": 0.5773809523809523,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          },
+          "line-random-board-branches": {
+            "unresolvedAP": 0.48921911421911424,
+            "slots": 4,
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "cascade-open-2026": 0,
+              "fall-nyc-norms-2026": 0,
+              "tournament-of-peace-2026": 1,
+              "benidorm-a-2026": 0
+            }
+          }
+        }
+      }
+    },
+    "promisingArms": {
+      "tactical": [],
+      "positional": [],
+      "mixed": []
+    }
+  },
+  "positions": {
+    "maia-33": {
+      "training": 259,
+      "test": 33,
+      "results": {
+        "tactical": {
+          "reference": {
+            "positive": 18,
+            "negative": 10,
+            "uncertain": 5
+          },
+          "incumbent": {
+            "truePositives": 1,
+            "falsePositives": 0
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.9466637181188265,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.9130333238464726,
+              "slots": 7,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 2
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.9300557496423459,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 1,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.9223024860568114,
+              "slots": 7,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 2
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.9409441593265124,
+              "slots": 7,
+              "positives": 5,
+              "negatives": 1,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.9464890837728208,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 1,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.939852583018673,
+              "slots": 7,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 2
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.9289727439035398,
+              "slots": 7,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 2
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.9098353453543765,
+              "slots": 7,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 3,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 2
+              }
+            }
+          }
+        },
+        "positional": {
+          "reference": {
+            "uncertain": 4,
+            "negative": 3,
+            "positive": 26
+          },
+          "incumbent": {
+            "truePositives": 5,
+            "falsePositives": 0
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.869889751118959,
+              "slots": 5,
+              "positives": 3,
+              "negatives": 1,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "reykjavik-2026": 1,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.9955679241393527,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.9955679241393527,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.9931869717584003,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.8076594179977639,
+              "slots": 5,
+              "positives": 2,
+              "negatives": 1,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "reykjavik-2026": 0,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 1.0,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 1.0,
+              "slots": 5,
+              "positives": 4,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "reykjavik-2026": 1,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.9955679241393527,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.9955679241393527,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            }
+          }
+        },
+        "mixed": {
+          "reference": {
+            "uncertain": 9,
+            "negative": 13,
+            "positive": 11
+          },
+          "incumbent": {
+            "truePositives": 0,
+            "falsePositives": 0
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.8633984998958262,
+              "slots": 7,
+              "positives": 3,
+              "negatives": 0,
+              "uncertain": 4,
+              "positivesByEvent": {
+                "reykjavik-2026": 1,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.7501160675073719,
+              "slots": 7,
+              "positives": 3,
+              "negatives": 2,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "reykjavik-2026": 1,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.7475055173584585,
+              "slots": 7,
+              "positives": 5,
+              "negatives": 1,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.7260113843117796,
+              "slots": 7,
+              "positives": 3,
+              "negatives": 2,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "reykjavik-2026": 0,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.6808851435645693,
+              "slots": 7,
+              "positives": 3,
+              "negatives": 2,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "reykjavik-2026": 1,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.789062704971796,
+              "slots": 7,
+              "positives": 5,
+              "negatives": 1,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.8330165004078047,
+              "slots": 7,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "reykjavik-2026": 1,
+                "prague-open-2026": 2,
+                "world-amateur-w2000-2026": 2
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.7630853994490358,
+              "slots": 7,
+              "positives": 2,
+              "negatives": 2,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "reykjavik-2026": 0,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.7194346057982421,
+              "slots": 7,
+              "positives": 4,
+              "negatives": 1,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "reykjavik-2026": 2,
+                "prague-open-2026": 1,
+                "world-amateur-w2000-2026": 1
+              }
+            }
+          }
+        }
+      },
+      "promisingArms": {
+        "tactical": [],
+        "positional": [],
+        "mixed": []
+      }
+    },
+    "kovin-puerto-rico-36": {
+      "training": 259,
+      "test": 36,
+      "results": {
+        "tactical": {
+          "reference": {
+            "uncertain": 11,
+            "negative": 4,
+            "positive": 21
+          },
+          "incumbent": {
+            "truePositives": 4,
+            "falsePositives": 0
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.9306099250918045,
+              "slots": 8,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 3
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.976947211765551,
+              "slots": 8,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 3
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.9932718185313342,
+              "slots": 8,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "kovin": 4,
+                "team-open": 3
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.976947211765551,
+              "slots": 8,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 3
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.9683159161100339,
+              "slots": 8,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.9856737793156479,
+              "slots": 8,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.9856737793156479,
+              "slots": 8,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.981472098643379,
+              "slots": 8,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 3
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.9895953479430989,
+              "slots": 8,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 3
+              }
+            }
+          }
+        },
+        "positional": {
+          "reference": {
+            "positive": 31,
+            "negative": 4,
+            "uncertain": 1
+          },
+          "incumbent": {
+            "truePositives": 6,
+            "falsePositives": 1
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.9205064515628254,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.9939601139601142,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.9934557413600892,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.9890209835253314,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.7787394753240358,
+              "slots": 6,
+              "positives": 3,
+              "negatives": 3,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 1,
+                "team-open": 2
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.9970370370370372,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.9926373626373628,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.9984615384615386,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.9905543168586648,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            }
+          }
+        },
+        "mixed": {
+          "reference": {
+            "uncertain": 12,
+            "negative": 8,
+            "positive": 16
+          },
+          "incumbent": {
+            "truePositives": 1,
+            "falsePositives": 1
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.6627077895731147,
+              "slots": 8,
+              "positives": 3,
+              "negatives": 2,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 0,
+                "team-open": 3
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.8410674785597386,
+              "slots": 8,
+              "positives": 4,
+              "negatives": 0,
+              "uncertain": 4,
+              "positivesByEvent": {
+                "kovin": 1,
+                "team-open": 3
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.8512741400899295,
+              "slots": 8,
+              "positives": 6,
+              "negatives": 1,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "kovin": 3,
+                "team-open": 3
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.8319310594233195,
+              "slots": 8,
+              "positives": 4,
+              "negatives": 1,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 1,
+                "team-open": 3
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.6902547143259217,
+              "slots": 8,
+              "positives": 4,
+              "negatives": 3,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "kovin": 1,
+                "team-open": 3
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.8623230748153349,
+              "slots": 8,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 4
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.8070561195483795,
+              "slots": 8,
+              "positives": 5,
+              "negatives": 1,
+              "uncertain": 2,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 3
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.8393047967970568,
+              "slots": 8,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 3,
+              "positivesByEvent": {
+                "kovin": 2,
+                "team-open": 3
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.8701496926419527,
+              "slots": 8,
+              "positives": 4,
+              "negatives": 0,
+              "uncertain": 4,
+              "positivesByEvent": {
+                "kovin": 1,
+                "team-open": 3
+              }
+            }
+          }
+        }
+      },
+      "promisingArms": {
+        "tactical": [],
+        "positional": [],
+        "mixed": []
+      }
+    },
+    "spice-turkiye-bangladesh-35": {
+      "training": 259,
+      "test": 35,
+      "results": {
+        "tactical": {
+          "reference": {
+            "negative": 5,
+            "positive": 25,
+            "uncertain": 5
+          },
+          "incumbent": {
+            "truePositives": 8,
+            "falsePositives": 0
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.9800950683303624,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.9835956312349501,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.9840397923875434,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.980351686598272,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.9234328915989816,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.9895953479430989,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.9835956312349501,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.9872721018231854,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.9601430768385786,
+              "slots": 5,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            }
+          }
+        },
+        "positional": {
+          "reference": {
+            "positive": 30,
+            "uncertain": 2,
+            "negative": 3
+          },
+          "incumbent": {
+            "truePositives": 7,
+            "falsePositives": 0
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.9705615298043913,
+              "slots": 6,
+              "positives": 5,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.9767491001796045,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.9965217391304348,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.9747822264736004,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.8910271956277768,
+              "slots": 6,
+              "positives": 4,
+              "negatives": 1,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 2,
+                "bangladesh": 0
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.9949832775919732,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.9751381888432928,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.9911166338387509,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.9821685389638827,
+              "slots": 6,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 2,
+                "bangladesh": 1
+              }
+            }
+          }
+        },
+        "mixed": {
+          "reference": {
+            "negative": 8,
+            "positive": 20,
+            "uncertain": 7
+          },
+          "incumbent": {
+            "truePositives": 0,
+            "falsePositives": 0
+          },
+          "rankings": {
+            "score-logistic": {
+              "unresolvedAP": 0.9540007662485286,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "line-logistic": {
+              "unresolvedAP": 0.966494484486812,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "line-tree": {
+              "unresolvedAP": 0.9591011583445794,
+              "slots": 7,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "line-network": {
+              "unresolvedAP": 0.9613947252848856,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "stockfish-gap": {
+              "unresolvedAP": 0.8578575182986949,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-root": {
+              "unresolvedAP": 0.9597484527407802,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-branches": {
+              "unresolvedAP": 0.9340302403546112,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "line-leela-wdl": {
+              "unresolvedAP": 0.9570457393483711,
+              "slots": 7,
+              "positives": 7,
+              "negatives": 0,
+              "uncertain": 0,
+              "positivesByEvent": {
+                "spice": 3,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            },
+            "line-random-board-branches": {
+              "unresolvedAP": 0.9417775815802132,
+              "slots": 7,
+              "positives": 6,
+              "negatives": 0,
+              "uncertain": 1,
+              "positivesByEvent": {
+                "spice": 2,
+                "turkiye": 3,
+                "bangladesh": 1
+              }
+            }
+          }
+        }
+      },
+      "promisingArms": {
+        "tactical": [],
+        "positional": [],
+        "mixed": []
+      }
+    }
+  },
+  "positionsPooled": {
+    "training": 259,
+    "test": 104,
+    "results": {
+      "tactical": {
+        "reference": {
+          "positive": 64,
+          "negative": 19,
+          "uncertain": 21
+        },
+        "incumbent": {
+          "truePositives": 13,
+          "falsePositives": 0
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.955688872711941,
+            "slots": 20,
+            "positives": 16,
+            "negatives": 0,
+            "uncertain": 4,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 2,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.9445838979399945,
+            "slots": 20,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 2,
+              "kovin": 2,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-tree": {
+            "unresolvedAP": 0.9586579437412459,
+            "slots": 20,
+            "positives": 18,
+            "negatives": 1,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 4,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-network": {
+            "unresolvedAP": 0.9451167224445268,
+            "slots": 20,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 2,
+              "kovin": 2,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "stockfish-gap": {
+            "unresolvedAP": 0.9349709996537943,
+            "slots": 20,
+            "positives": 16,
+            "negatives": 1,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-root": {
+            "unresolvedAP": 0.9658825222230938,
+            "slots": 20,
+            "positives": 17,
+            "negatives": 1,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-branches": {
+            "unresolvedAP": 0.9616549208047315,
+            "slots": 20,
+            "positives": 18,
+            "negatives": 0,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 2,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-wdl": {
+            "unresolvedAP": 0.9543032223121855,
+            "slots": 20,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 2,
+              "kovin": 2,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-random-board-branches": {
+            "unresolvedAP": 0.9407581107103972,
+            "slots": 20,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "reykjavik-2026": 3,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 2,
+              "kovin": 2,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          }
+        }
+      },
+      "positional": {
+        "reference": {
+          "uncertain": 7,
+          "negative": 10,
+          "positive": 87
+        },
+        "incumbent": {
+          "truePositives": 18,
+          "falsePositives": 1
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.9111215530793629,
+            "slots": 17,
+            "positives": 14,
+            "negatives": 1,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "reykjavik-2026": 1,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.9885961807802982,
+            "slots": 17,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-tree": {
+            "unresolvedAP": 0.9930789270432564,
+            "slots": 17,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-network": {
+            "unresolvedAP": 0.9862903722863328,
+            "slots": 17,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "stockfish-gap": {
+            "unresolvedAP": 0.8195129231984685,
+            "slots": 17,
+            "positives": 9,
+            "negatives": 5,
+            "uncertain": 3,
+            "positivesByEvent": {
+              "reykjavik-2026": 0,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 1,
+              "team-open": 2,
+              "spice": 2,
+              "turkiye": 2,
+              "bangladesh": 0
+            }
+          },
+          "line-leela-root": {
+            "unresolvedAP": 0.9959603680421062,
+            "slots": 17,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-branches": {
+            "unresolvedAP": 0.987490101806352,
+            "slots": 17,
+            "positives": 16,
+            "negatives": 0,
+            "uncertain": 1,
+            "positivesByEvent": {
+              "reykjavik-2026": 1,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-wdl": {
+            "unresolvedAP": 0.9943293319739076,
+            "slots": 17,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          },
+          "line-random-board-branches": {
+            "unresolvedAP": 0.9888742303696181,
+            "slots": 17,
+            "positives": 17,
+            "negatives": 0,
+            "uncertain": 0,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 2,
+              "bangladesh": 1
+            }
+          }
+        }
+      },
+      "mixed": {
+        "reference": {
+          "uncertain": 28,
+          "negative": 29,
+          "positive": 47
+        },
+        "incumbent": {
+          "truePositives": 1,
+          "falsePositives": 1
+        },
+        "rankings": {
+          "score-logistic": {
+            "unresolvedAP": 0.8537810559548111,
+            "slots": 22,
+            "positives": 12,
+            "negatives": 2,
+            "uncertain": 8,
+            "positivesByEvent": {
+              "reykjavik-2026": 1,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 0,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "line-logistic": {
+            "unresolvedAP": 0.8680583729174647,
+            "slots": 22,
+            "positives": 13,
+            "negatives": 2,
+            "uncertain": 7,
+            "positivesByEvent": {
+              "reykjavik-2026": 1,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 1,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "line-tree": {
+            "unresolvedAP": 0.8665716122717728,
+            "slots": 22,
+            "positives": 18,
+            "negatives": 2,
+            "uncertain": 2,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 3,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "line-network": {
+            "unresolvedAP": 0.8566847718521433,
+            "slots": 22,
+            "positives": 13,
+            "negatives": 3,
+            "uncertain": 6,
+            "positivesByEvent": {
+              "reykjavik-2026": 0,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 1,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "stockfish-gap": {
+            "unresolvedAP": 0.7434635836568898,
+            "slots": 22,
+            "positives": 13,
+            "negatives": 5,
+            "uncertain": 4,
+            "positivesByEvent": {
+              "reykjavik-2026": 1,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 1,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-root": {
+            "unresolvedAP": 0.8823822602981283,
+            "slots": 22,
+            "positives": 17,
+            "negatives": 1,
+            "uncertain": 4,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 2,
+              "team-open": 4,
+              "spice": 2,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-branches": {
+            "unresolvedAP": 0.851493180256379,
+            "slots": 22,
+            "positives": 16,
+            "negatives": 1,
+            "uncertain": 5,
+            "positivesByEvent": {
+              "reykjavik-2026": 1,
+              "prague-open-2026": 2,
+              "world-amateur-w2000-2026": 2,
+              "kovin": 2,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "line-leela-wdl": {
+            "unresolvedAP": 0.8730617078367684,
+            "slots": 22,
+            "positives": 14,
+            "negatives": 2,
+            "uncertain": 6,
+            "positivesByEvent": {
+              "reykjavik-2026": 0,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 2,
+              "team-open": 3,
+              "spice": 3,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          },
+          "line-random-board-branches": {
+            "unresolvedAP": 0.8474433457227682,
+            "slots": 22,
+            "positives": 14,
+            "negatives": 1,
+            "uncertain": 7,
+            "positivesByEvent": {
+              "reykjavik-2026": 2,
+              "prague-open-2026": 1,
+              "world-amateur-w2000-2026": 1,
+              "kovin": 1,
+              "team-open": 3,
+              "spice": 2,
+              "turkiye": 3,
+              "bangladesh": 1
+            }
+          }
+        }
+      }
+    },
+    "promisingArms": {
+      "tactical": [],
+      "positional": [],
+      "mixed": []
+    }
+  },
+  "verification": {
+    "replaysCompared": 3,
+    "exactMatch": [
+      "reference counts",
+      "incumbent counts",
+      "nominations",
+      "ranking metrics",
+      "promotion gates"
+    ],
+    "nativeWdlMaxAbsoluteErrorPermille": [
+      0.421,
+      0.412,
+      0.058
+    ],
+    "newRegressionTestsPassed": 5,
+    "existingMotifSequenceTestsPassed": 4
+  }
+}

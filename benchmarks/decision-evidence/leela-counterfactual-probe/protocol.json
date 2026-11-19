@@ -1,0 +1,53 @@
+{
+  "scope": "Offline diagnostic triage for position character and the mechanism of the played mistake.",
+  "networkSource": "https://huggingface.co/LeelaChessZero/T1-10Lx256D",
+  "networkFile": "t1-256x10-distilled-swa-2432500.pb.gz",
+  "networkSha256": "bc27a6cae8ad36f2b9a80a6ad9dabb0d6fda25b1e7f481a79bc359e14f563406",
+  "onnxSha256": "0e2699c19b617781d4fbe3d00286756b125836a30c0658afc620e197bec35d04",
+  "converter": "Lc0 v0.32.1 leela2onnx, default flags apart from input and output",
+  "replays": {
+    "mistakes": [
+      "eb3ea9297da94aae3b2bfdccccf9d46ad305ddb0ea26560249c3c9ad5d556472",
+      "ef4ef452d940cca4ecab82280899333ccde1626dc08914c59d745217355fd51b",
+      "9eda23bb6f82e9db57a1cb6f0d7a544caf0445105e2ebfc68ebd4a93728b6fa2",
+      "1e37d1e418df3487bbe4161378de3f32e7f316f529f5f7cff17353a4878864ab"
+    ],
+    "positions": [
+      "5b20631712b499a070d7a8edb21143f4c3812ed905170d132df66c725dfdedf4",
+      "1abd642dc112fdbffe27f2e7e8318191baf102f748ac0c791969325641377734",
+      "3a22b34a55d1210f8765845b2e692c09e153521673d551fc5c2392b2a7edea0f",
+      "1ed1ba74fd7bcc4539c69360283ab29b64832d8420d9a5d8ead2a5ce9bfd3ca6",
+      "9a0d5f781023185d469d48b4533f72e093f2d0890789cdc538d93c3da00a3e54",
+      "b4fe25c54786b0237a51c26db8b0080c9e2fd938029aeff29d668d73a906b72f"
+    ],
+    "positionReplays": [
+      [
+        "8e47d507f2e6478aa1634ea763be3b1f61dc4fdaf8828392a04d743788d52e3f",
+        "915558cac605f728c0920c6e97471ee3f99219895af8a735e21ca56e70d4f45c"
+      ],
+      [
+        "9c428fedeee053520aa630376049b4a2cbb4fd0a55037e3b59af66abbd209276",
+        "e85f7145fd523ddb2bc57cc108c4408ebc964158aa55f8e69809ac7b2433b85b"
+      ]
+    ]
+  },
+  "eventFamilies": {
+    "asian-disabilities-men-2026": "asian-disabilities-2026",
+    "asian-disabilities-women-2026": "asian-disabilities-2026",
+    "european-youth-g18-2026": "european-youth-2026",
+    "european-youth-u16-2026": "european-youth-2026",
+    "grand-swiss-open-2025": "grand-swiss-2025",
+    "grand-swiss-women-2025": "grand-swiss-2025",
+    "guernsey-challengers-2026": "guernsey-2026",
+    "guernsey-open-2026": "guernsey-2026",
+    "biel-mto-2026": "biel-2026",
+    "biel-ato-2026": "biel-2026"
+  },
+  "disputedTrainingLabels": [
+    "mistake-world-amateur-c56d044e7e57e80e-75",
+    "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45"
+  ],
+  "split": "Reuse frozen training and transfer sets from the Maia probe and two separate later public classical position replays. Transfer references were reviewed before this model existed. No game, tournament family or color-normalized root crosses training and evaluation. Prior development used these reviews for other families of models.",
+  "features": "Use the final T1 attention layer averaged over squares. Compare its root embedding with root plus differences at plies 2 and 4. Also compare only Leela WDL and random projections of the same position planes. All augment the same existing legal Stockfish line features and share the same regularized logistic heads and train-only standardization. Mixed queue uses the lower of the two independently learned scores.",
+  "gate": "Apply the previous equal per-event review budget and promotion gate. A candidate needs at least two additional reviewed positives over the strongest control, at least two improved events and no increase in reviewed negatives. All verified diagnoses require their own separate follow-up. Inspect cohort results alongside pooled scores."
+}

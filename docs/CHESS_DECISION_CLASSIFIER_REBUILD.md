@@ -3670,3 +3670,17 @@ frame. Otherwise keep its matched best/played pair. The checked
 patch applies to `8d367519` and extends
 `decisionExactForkAudit.test.ts`. The combined Benasque receipt
 contains the app-budget frames and the two exact capture searches.
+
+## Frozen Leela representations
+
+The neural follow-up compares Leela's pretrained root and legal-branch
+representations with Stockfish loss, legal-line models, Leela evaluation
+and a random projection of the same board inputs. In 104 classical
+positions the strongest Leela variant matches the line tree's 18/20
+tactical review positives and avoids one reviewed negative. Its mixed
+queue yields 17/22 positives against the tree's 18/22. In 48 played
+decisions the best Leela variants yield 3/4 tactical and 2/4 positional
+positives against 4/4 for both tree queues. These are nominations.
+No arm clears the same-budget promotion screen. The comparison adds
+zero Stockfish nodes and introduces no diagnostic verdicts.
+[Experiment, results and reproduction](../benchmarks/decision-evidence/leela-counterfactual-probe/README.md)
