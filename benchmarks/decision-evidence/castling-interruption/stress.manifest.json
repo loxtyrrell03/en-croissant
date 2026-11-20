@@ -1,0 +1,367 @@
+{
+  "priorSha256": "4dae19431f8bc192510532d4ed974124628c40a8d1d67ac9fc13bb806be900aa",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "selectionSha256": "fca812b6df6d3c53b15bdb4f5b023b80647e6fe17d3c1cc66be51e62c3fd29f9",
+  "previewNodes": [
+    90000,
+    120000
+  ],
+  "scanned": {
+    "development": 127,
+    "reserve": 349
+  },
+  "qualified": {
+    "development": 6,
+    "reserve": 7
+  },
+  "sources": {
+    "development": {
+      "2025-canadian-closed-championnat-ferme-du-canada-closed-FEdZG0OL.pgn": {
+        "sha256": "af3b004b09605ac19dc66e1c9a048c83fc10e0026f66785256374b24f3361c7f",
+        "nominations": 31
+      },
+      "2025-o2c-doeberl-cup-stSVniC9.pgn": {
+        "sha256": "4c9349ef767b5387040ed4869e09ae0aba3cae4cbad18949ed6a5584fcb7bf7a",
+        "nominations": 0
+      },
+      "2025-sydney-international-open-championships-VqTd7T2w.pgn": {
+        "sha256": "676346fa012b6ffcd25d616778aca5b9b02b1ace508c23a8f07503f973ba6842",
+        "nominations": 98
+      },
+      "22nd-bangkok-chess-club-open-2025-r0eh3s3n.pgn": {
+        "sha256": "90eae4d9584475986e58d6426feab590cf5943c18af3e900f5dfe73c75d48805",
+        "nominations": 0
+      },
+      "3rd-maharashtra-international-grandmaster-2025-AVDgzx7C.pgn": {
+        "sha256": "758b8a94075820ae5c2d13ccc20feca574c2d73ba76e9215a30ecc9fa3654625",
+        "nominations": 0
+      },
+      "4ncl-easter-congress-2025-open-w8OAoJwV.pgn": {
+        "sha256": "bbd754fe983e6d36ff9680b26728963e0438f41831d8fa326be69f05e367cec1",
+        "nominations": 116
+      },
+      "51-open-chess-la-roda-rEgA7bhz.pgn": {
+        "sha256": "9e103ac686b2cafe97c0f1a217fe7a978fdbf02097ad95895b95b20eae6784df",
+        "nominations": 153
+      },
+      "54-abierto-internacional-ciudad-de-mar-del-plata-UmEX7nBu.pgn": {
+        "sha256": "fb603c458b23151c04fc3c30d8f5a8bae27970bc93a02e4e4566b55db5c689d2",
+        "nominations": 69
+      },
+      "67th-southend-easter-chess-festival-2025-gm-round-robin-kbIUsnqS.pgn": {
+        "sha256": "0b4b6603a9503354eef16dab66c2150077a258d2c69874ad618dfb95fcffe910",
+        "nominations": 28
+      },
+      "african-superzonal-chess-championship-2025-open-PK4BiMlQ.pgn": {
+        "sha256": "0aafd5741709ccb5ac0f7b9fcc6ca7e99a03d8f3a5f9516fd33cdd812008fcc8",
+        "nominations": 47
+      },
+      "asian-zone-33-chess-championship-2025-open-wfaM8dO7.pgn": {
+        "sha256": "66ed196cc03404c9119a2253444adee6b4d5efb87c6d43522df719e7d355ff27",
+        "nominations": 13
+      },
+      "campeonato-absoluto-de-euskadi-2025-0bp11T0v.pgn": {
+        "sha256": "4af747b82fa93f1b38f5886cff8617f1c7a366d497c9cb97a1ac94c527998a96",
+        "nominations": 59
+      },
+      "finnish-championship-2025-open-i6RjRMpi.pgn": {
+        "sha256": "eab07c479a0c48521288a6352455a363a0f13609ef2ab53b19bff4ef35101a6c",
+        "nominations": 47
+      },
+      "guildford-fide-congress-open-2025-guRPunjq.pgn": {
+        "sha256": "b2c9bd7e89db327562c1259343d8da42e3f4d972e687eef706ad1a59a6b599b8",
+        "nominations": 47
+      },
+      "lxx-campeonato-abierto-mexicano-queretaro-2025-internacional-i96kIc2a.pgn": {
+        "sha256": "eaf7d56c99d13510e1c4648d22370ebfe239248b871ff6d34a6a4596ce65cab4",
+        "nominations": 222
+      },
+      "menorca-open-2025-open-nsgnf6rc.pgn": {
+        "sha256": "f369f1796396ac7f53c29f89dbc573bc66c76520e693a50cb9c8ab0cfbfead07",
+        "nominations": 246
+      },
+      "rokh-chess-festival-2025-olr16IuC.pgn": {
+        "sha256": "334283040b3de1deceb12ce3787e1122c041702b6256342db40aafe335959784",
+        "nominations": 32
+      },
+      "sardinia-world-chess-festival-2025-open-a-gDfAUwcT.pgn": {
+        "sha256": "cdd64d29990b4d1dc90aefca82b4e312198fee48f8309b8c3e8755dfda4a27ba",
+        "nominations": 277
+      },
+      "the-dublin-easter-im-norm-2025-sdc3jPDu.pgn": {
+        "sha256": "b529257049830bc9fb7309793ae9b8262981e63641611b959cc2d7173d2e2f7f",
+        "nominations": 51
+      },
+      "xvii-memorial-pedro-lezcano-montalvo-2025-s6v7rV0e.pgn": {
+        "sha256": "8d02583bcfe78c3ad39c232e7437c3136f4f4c218fe21968d982cc7acf00e925",
+        "nominations": 457
+      }
+    },
+    "reserve": {
+      "0OdFy3Rz.pgn": {
+        "sha256": "444a977918e3f6a8427f01c40e5758effd6d3072646a9cb45b130a3a571f0d79",
+        "nominations": 51
+      },
+      "138e7EwA.pgn": {
+        "sha256": "c86f9576b40d33c79929af9a67d45f9e9aa069d40bdc150e99b61c64431691fa",
+        "nominations": 409
+      },
+      "1RRMJxjI.pgn": {
+        "sha256": "b2e3b24502c808e8c2259c96bc0c77d8cee4ba1e7d36406f858b560ad6cb5391",
+        "nominations": 68
+      },
+      "3ixby523.pgn": {
+        "sha256": "246fe63b0f9fea493c839f4f99cd6325add8817d890187c37bf39741eaa2bf57",
+        "nominations": 0
+      },
+      "8dbzURAs.pgn": {
+        "sha256": "14cff237b333be61e4a8e61a710aeeb0ecf8043c5994df9971c311879adc4535",
+        "nominations": 177
+      },
+      "9NKgIMSS.pgn": {
+        "sha256": "f420cc6a88544ea002bdee5aba952cfa7d4bf422249fbc81e02c0a8abc289082",
+        "nominations": 83
+      },
+      "A5WKEZ6B.pgn": {
+        "sha256": "1114c8a92c91ffa327015d6a18ac13efc38571349947efee92513c3b5f3b12c2",
+        "nominations": 0
+      },
+      "BqObbeIS.pgn": {
+        "sha256": "047324f8102d315172d625356e2de99e52119d49f4ed2467696867126543c2d0",
+        "nominations": 83
+      },
+      "CmLEvxLA.pgn": {
+        "sha256": "fe6d4169e2523cc1557a7ce26829e82f79111ccc8623d543139bd313679eb2d3",
+        "nominations": 133
+      },
+      "hmoaUnak.pgn": {
+        "sha256": "e11d26775b66ba048d1c56db3011115900e49ccdfb21933f3da967a3bad97eb6",
+        "nominations": 81
+      },
+      "HyGJMos9.pgn": {
+        "sha256": "509201b8901be34c18fe98c239758c5e9fb3f8df0f8936e1a86853b4d3ac20c0",
+        "nominations": 0
+      },
+      "IcQ0IuPZ.pgn": {
+        "sha256": "45e9831aed78cb11513b63e052e37d37532dd882db3f9c1fe4f832403f78ccd6",
+        "nominations": 77
+      },
+      "jEWsp682.pgn": {
+        "sha256": "8e0fc844e4fa27f50cb2a08b1995301dee73ac0ad4007b269d3af5aa4ff76e1a",
+        "nominations": 272
+      },
+      "lLoSkBb9.pgn": {
+        "sha256": "53a1652ffb15b8b80dcf28c62a527f8ac2084449294716e2e26c346b7d1b7beb",
+        "nominations": 0
+      },
+      "mu6Kv85k.pgn": {
+        "sha256": "d2b951b2048d75cab70b5433c063d4641b91a416c64c456bc7ac42d9dbf80ca7",
+        "nominations": 75
+      },
+      "n4gzJ5OE.pgn": {
+        "sha256": "0caca7ad79363f88c6c2fc2f3c75aaa320862e4ddd87ed1c05fe723f6715d2df",
+        "nominations": 395
+      },
+      "n5vOYpBi.pgn": {
+        "sha256": "e4a695cebbd987da9a18048f9b4691a29852dac1896a61ff47149de89ba6588d",
+        "nominations": 0
+      },
+      "Nwv14V65.pgn": {
+        "sha256": "556eb28c427e91f7f7170a7d7c1a037ae848888bf2c6ad224cc198569f49a3c9",
+        "nominations": 120
+      },
+      "OHA3daQb.pgn": {
+        "sha256": "8c20aae8325c8504373f7729be29b33d7242647104d1f794a50ae3888e0ffdef",
+        "nominations": 0
+      },
+      "p3ctK4xS.pgn": {
+        "sha256": "d67cd6d92d8c466f9da1937b395e4ea754354bcbbb7b34f2fc100e4125faaf4f",
+        "nominations": 0
+      },
+      "qbcbnp1U.pgn": {
+        "sha256": "1342eddf548156a46ef5b6db164587401de3ff926a4001d9287c46828fe71f6f",
+        "nominations": 30
+      },
+      "R1ZiYVGV.pgn": {
+        "sha256": "755347c0f5dd1fbd870557a76e9f3c2cd63cc0f3044b399f13e3d41f13d1a0ce",
+        "nominations": 0
+      },
+      "S64nwIUm.pgn": {
+        "sha256": "667269a10a0ec8bb8540ab31ed02bc046fa658ceec4bbfa7ec93f674fc39bd23",
+        "nominations": 46
+      },
+      "TD0GJMS3.pgn": {
+        "sha256": "ca669684c37eb04f06d57cfa23285e6d3ca216448d987f1c91b1df7d9dd1bd2a",
+        "nominations": 68
+      },
+      "v4Vq95WI.pgn": {
+        "sha256": "676756cbce44aa9b7f105ddc961826aa889a540dc3fbe4f4157a1181cabd0605",
+        "nominations": 110
+      },
+      "WGBOR3uP.pgn": {
+        "sha256": "acc3f50a613b823c80a4077dd1f267a35007b473bb8c345a82a737e9e978705e",
+        "nominations": 183
+      },
+      "x4kuY3rE.pgn": {
+        "sha256": "2d52f37d96cb674f53387ce740416ae7bcb89e5c166ef96fc0dbfeddd770214a",
+        "nominations": 118
+      },
+      "ZvtLBvk8.pgn": {
+        "sha256": "3a37e290edf8a9646efa94113b7724c3a606d3ed873557193e7ac12d89cb4219",
+        "nominations": 0
+      },
+      "arad-6SJEilNL.pgn": {
+        "sha256": "62a0905dd58cd5f08e03e8f3dea6bbc0cb922bb7f9d632ebccea23afa0acc59e",
+        "nominations": 29
+      },
+      "arad-AmuVNKCj.pgn": {
+        "sha256": "462dfd1273d238de38384239737a8e862410488316daeac950fbba80ca714c5c",
+        "nominations": 11
+      },
+      "arad-dFgK7wL9.pgn": {
+        "sha256": "44b59190c33b39c39a995073d570baab8622f51b32726dea4a0f09077c343559",
+        "nominations": 17
+      },
+      "arad-KuVy4Gsx.pgn": {
+        "sha256": "5bf1134db69e007d61c1bf0a9ad403b34a14aeed0493b3dfeba82c02033a1b5d",
+        "nominations": 18
+      },
+      "czech-54vvY1tE.pgn": {
+        "sha256": "27909ff5747bde36e42765722e5350fff87c55309b0734a32e08019a8df7ff19",
+        "nominations": 0
+      },
+      "czech-7SQh1n2M.pgn": {
+        "sha256": "c6acd1a6492f22af5cea9853ef65d52440348fcd4dbc4ce0aec0e4e37eddcbc8",
+        "nominations": 0
+      },
+      "czech-hQhZs0v1.pgn": {
+        "sha256": "84824095aa505b28d9a5d9cadcaf1769b28203036b440496ea5659e4f4d62710",
+        "nominations": 0
+      },
+      "czech-rIbHX8Zn.pgn": {
+        "sha256": "ff46206ffab9e2fb200a275f5e4c58bc72ebf9f1ad583896fb26ec479256abe7",
+        "nominations": 0
+      },
+      "olympiad-oQds2Dcv.pgn": {
+        "sha256": "31a48996f8fbedc7a85e9e4a47960b3a9d2f32b6b10ab11a725a7a7d1e122eae",
+        "nominations": 0
+      },
+      "olympiad-QJSVWmNu.pgn": {
+        "sha256": "69e9d5380c8f5da1f40b688a7f5fe0260ac2849e17499d21229b74258862237a",
+        "nominations": 0
+      },
+      "olympiad-WCYaLfnP.pgn": {
+        "sha256": "c4dc2b9b54a50aff114d8cc89683bfa74d12db077b34deb3715b145f735fabee",
+        "nominations": 0
+      },
+      "poland-0F78yJIi.pgn": {
+        "sha256": "f5c34a157d7a5d2c6c42a6b580524e2bf8c1c72824e4801c95fac3e19f1873c7",
+        "nominations": 65
+      },
+      "poland-9eyzPy9m.pgn": {
+        "sha256": "0701bffc29d0c43f61c53beb6f44f02046d28626741418747e41c28557f258ea",
+        "nominations": 54
+      },
+      "poland-bLaUj5vJ.pgn": {
+        "sha256": "acf4acfed455894871aad12536f0eb87afaa3e8d1cac8d793ea58c3ff155993b",
+        "nominations": 77
+      },
+      "poland-vcIdhifR.pgn": {
+        "sha256": "75ab74109fb15f71fc5522482e3f531e99ab4b4921424c7a441f208db371eb26",
+        "nominations": 59
+      },
+      "poland-wwrkku5B.pgn": {
+        "sha256": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+        "nominations": 58
+      },
+      "turkey-A84qp8J6.pgn": {
+        "sha256": "6450af0b66200e43cbe416f22211d40ccb9fa4fd58e70f6616ff6fafd7721a57",
+        "nominations": 43
+      },
+      "turkey-loIX5V6A.pgn": {
+        "sha256": "6e151fb70b4fd577220fd7ca7bc3a045bb10e726306f93add7895039cf63027e",
+        "nominations": 46
+      },
+      "turkey-ndTfO720.pgn": {
+        "sha256": "3bd584eb60fc06381f5b5e83caebcfe242054d4d8a29dfbe1814a10b0e4fbd7f",
+        "nominations": 49
+      },
+      "turkey-uxB0wfNi.pgn": {
+        "sha256": "743dd62998c2a9e1b731c0704d8858f32fe9613972e77f9b6728457310d6db5d",
+        "nominations": 43
+      },
+      "turkey-zbeM6PPX.pgn": {
+        "sha256": "82ebd4d5a45570a474382a2c4373b99f2bea8f4358c62e3ea47d770dbb59d995",
+        "nominations": 54
+      },
+      "1st-berjaya-global-chess-open-OFkP5zwn.pgn": {
+        "sha256": "a6778cfea89596cbe9ebf2a45c594c352a2e279f3cd9c1fc04ead9dc20625ba9",
+        "nominations": 101
+      },
+      "50-obert-internacional-descacs-ciutat-OtIG9BBF.pgn": {
+        "sha256": "7062df1fe104f2dcdf8e4939163a1ff894f2796903751bbbf7d0bcf60f045d3e",
+        "nominations": 81
+      },
+      "bulgarian-team-chess-championship-standard-eZpXTPAU.pgn": {
+        "sha256": "5c923537a7e2fac1096ceac7bd0142fc792e76057678d60e38d86aa04279c2ab",
+        "nominations": 0
+      },
+      "sparkassen-chess-trophy-2026-open-jfEpUuzg.pgn": {
+        "sha256": "8f23ad71ce3a7ae2e08fb46439e695a48acd5fb0abb1d4a988e8e38e5e704037",
+        "nominations": 125
+      },
+      "zagreb-open-2026-viii-krunoslav-4gRk9Iku.pgn": {
+        "sha256": "c44d78643a5f940d623860c2f8ab4b6ed0ffcc83663a70ff32f2d0fe84477364",
+        "nominations": 0
+      },
+      "5nCsaooa.pgn": {
+        "sha256": "1ec128767b3d97d49b6b1d85b7bab8cafdf04ed0d68de47e0886b8f36d7ab8df",
+        "nominations": 13
+      },
+      "6xgSAggt.pgn": {
+        "sha256": "2b70a824fed05581d9c669770622be399dd90417bddb39d2463dd82c40592d6f",
+        "nominations": 33
+      },
+      "cR0xn6Sw.pgn": {
+        "sha256": "3b4d18ad38b4f867b22457ac4d9afc54760bfeaff3e1eb65950766c5d84f090b",
+        "nominations": 620
+      },
+      "DFndnVVA.pgn": {
+        "sha256": "ce1e17845dadd7ddf1a22b26b0a5a77faaa12d59a6e6dd960a7bfd494d980a67",
+        "nominations": 48
+      },
+      "ECAetKut.pgn": {
+        "sha256": "5d8b5f37fe0a27c9bb24361a272eda78df0e8f7287421d74622b0df761a7e8b4",
+        "nominations": 200
+      },
+      "ekUuUtmi.pgn": {
+        "sha256": "d406c18ba391e1fa98df76e0b762e8114971828bc44b4d1f6240d02021c6f45f",
+        "nominations": 0
+      },
+      "MIdYkUE2.pgn": {
+        "sha256": "694adc64935d639fd03eb8e1fe1430022b5548fca60984cf501e767ea056712b",
+        "nominations": 43
+      },
+      "nkznxZUM.pgn": {
+        "sha256": "8293f20f5c280ccd2bd8d58a487d78ec2e838b7538796e3f68a732685dfb0ad5",
+        "nominations": 0
+      },
+      "q5PFG4WC.pgn": {
+        "sha256": "5e86ce1e7a55930835e1c730d9e60a71cecaaff2435da749ab226b76271ee78e",
+        "nominations": 45
+      },
+      "Tgj5txdT.pgn": {
+        "sha256": "e4936b501f02643e9ef80437d423b2f4d442dd7dd23ff922f58361f3bbbcd087",
+        "nominations": 248
+      },
+      "yKXS0vjE.pgn": {
+        "sha256": "2d85ceaedef76e0c926035518ce476930886222b8ab9f97e2c07eca13a56272d",
+        "nominations": 40
+      },
+      "z00SjNY3.pgn": {
+        "sha256": "aefdb9bccf9aa79387dc764cec2a4b3a476904e0798fae0d57dd805c32f3db91",
+        "nominations": 0
+      }
+    }
+  }
+}

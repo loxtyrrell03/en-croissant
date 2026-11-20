@@ -6271,6 +6271,8 @@ Isolated Windows build 9812c1bf verifies the Chilean Bf2 as mixed with independe
 
 Decision Evidence v62 adds the matched reply after the independent mistake proofs so an engine-supported ray cannot suppress tactical recovery, checked defence or positional pawn evidence. The release comparator asserts that only the intended tactical reason and its evidence change.
 
+The castling-interruption base cohorts each have 54 negatives and six unresolved cases with no verified positive. The enriched sample is separately frozen from a shallow fixed-budget screen of 476 unused game decisions. The exact Candidates timing probe shows Bh3 is playable only when g4 precedes Qa4. Delayed g4 permits Qxa2 and Qxc4+ in the separate reply search. The ordinary castling variable does not isolate that tactical resource yet.
+
 The castling-interruption benchmark freezes 60 development and 60 reserve classical games with an available castle and a recorded delay. Checked king moves, quiet king moves and games that castle later are separate sampling strata. The opened Candidates example Bd2 Qe8 shows that late castling remains legal but allows Qa4, and needs an exact comparison. See the benchmark for matched search requirements and disjoint source events.
 
 The isolated Windows build 7a11ac6a verified both v64 mixed scenarios with live Stockfish 19 and replayed the h4 played-choice regression. The matched Candidates readback finds one of seven mixed position positives after the new treatment, previously zero. The recovered board was used in development. The separate 47-game transfer has one independently positive checking capture. See the Windows and replay receipts in capture-route-structure.

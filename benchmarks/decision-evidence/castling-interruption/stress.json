@@ -1,0 +1,787 @@
+{
+  "development": [
+    {
+      "id": "a9a219153f780ab3513e",
+      "game": "VdgP1YG0",
+      "event": "xvii-memorial-pedro-lezcano-montalvo-2025",
+      "site": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-2/EFm4KTuk/VdgP1YG0",
+      "fen": "q3k2r/1pn2ppp/2b1p3/8/p2P1P2/R2BP3/4Q1PP/5RK1 b k - 0 23",
+      "playedMoveUci": "b7b5",
+      "castles": [
+        "e8g8"
+      ],
+      "observed": [
+        "b7b5",
+        "f1b1",
+        "e8e7",
+        "e2c2",
+        "e7d7"
+      ],
+      "shape": "quiet-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "d2d4",
+          "g8f6",
+          "e2e3",
+          "e7e6",
+          "g1f3",
+          "d7d5",
+          "f1d3",
+          "b8c6",
+          "b2b3",
+          "f8d6",
+          "c1b2",
+          "d8e7",
+          "f3e5",
+          "c8d7",
+          "b1d2",
+          "c6b4",
+          "d3e2",
+          "a7a5",
+          "a2a3",
+          "b4a6",
+          "c2c4",
+          "c7c5",
+          "e2d3",
+          "a6c7",
+          "d1e2",
+          "d7c6",
+          "f2f4",
+          "f6d7",
+          "e1g1",
+          "a5a4",
+          "b3b4",
+          "c5b4",
+          "e5d7",
+          "b4a3",
+          "b2c1",
+          "d5c4",
+          "d2c4",
+          "e7d7",
+          "c4b6",
+          "d7d8",
+          "b6a8",
+          "d8a8",
+          "c1a3",
+          "d6a3",
+          "a1a3"
+        ]
+      },
+      "preview": {
+        "castle": "e8g8",
+        "gapCp": 355
+      }
+    },
+    {
+      "id": "f883488e28beeef785d6",
+      "game": "Lp7sZef0",
+      "event": "4ncl-easter-congress-2025",
+      "site": "https://lichess.org/broadcast/4ncl-easter-congress-2025-open/round-2/olo2KTEY/Lp7sZef0",
+      "fen": "rnb1kb1r/pp1q1p2/4p1p1/2ppP3/3P2P1/2PB1Q1N/P1PB3P/R3K2R w KQkq - 2 14",
+      "playedMoveUci": "h3f4",
+      "castles": [
+        "e1g1",
+        "e1c1"
+      ],
+      "observed": [
+        "h3f4",
+        "f8h6",
+        "f4g6",
+        "h6d2",
+        "e1d2"
+      ],
+      "shape": "checked-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "d7d6",
+          "d2d4",
+          "g8f6",
+          "b1c3",
+          "c7c6",
+          "f2f4",
+          "d8a5",
+          "e4e5",
+          "f6e4",
+          "d1f3",
+          "d6d5",
+          "f1d3",
+          "e4c3",
+          "c1d2",
+          "e7e6",
+          "b2c3",
+          "g7g6",
+          "g2g4",
+          "a5a4",
+          "f4f5",
+          "c6c5",
+          "f5g6",
+          "h7g6",
+          "g1h3",
+          "a4d7"
+        ]
+      },
+      "preview": {
+        "castle": "e1g1",
+        "gapCp": 219
+      }
+    },
+    {
+      "id": "c8daf120a4e6c9b8fe2c",
+      "game": "34I0YpWG",
+      "event": "xvii-memorial-pedro-lezcano-montalvo-2025",
+      "site": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-4/QZnHIyuS/34I0YpWG",
+      "fen": "r3k1nr/bbpp3p/1pn2PPq/p2N4/P3B3/1N4P1/1PP1Q2P/R1B1K2R b KQkq - 0 17",
+      "playedMoveUci": "h6f8",
+      "castles": [
+        "e8c8"
+      ],
+      "observed": [
+        "h6f8",
+        "g6g7",
+        "f8d6",
+        "e4g6",
+        "e8d8"
+      ],
+      "shape": "checked-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "e7e5",
+          "g1f3",
+          "b8c6",
+          "d2d4",
+          "e5d4",
+          "f3d4",
+          "f8c5",
+          "d4b3",
+          "c5b6",
+          "d1e2",
+          "d8e7",
+          "b1c3",
+          "a7a5",
+          "c3d5",
+          "e7e5",
+          "f2f4",
+          "e5d6",
+          "a2a4",
+          "b6a7",
+          "g2g3",
+          "b7b6",
+          "f1g2",
+          "c8b7",
+          "e4e5",
+          "d6g6",
+          "g2e4",
+          "f7f5",
+          "e5f6",
+          "g6h6",
+          "f4f5",
+          "g7g5",
+          "f5g6"
+        ]
+      },
+      "preview": {
+        "castle": "e8c8",
+        "gapCp": 184
+      }
+    },
+    {
+      "id": "7caa86de0de51b95cc9a",
+      "game": "n8XCGp0u",
+      "event": "xvii-memorial-pedro-lezcano-montalvo-2025",
+      "site": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-9/BXmrHeJO/n8XCGp0u",
+      "fen": "r3k2r/p1n1qpbp/1pp1b3/5p2/2PP2p1/PN2B3/1PQ1BPPP/R3K2R w KQkq - 2 15",
+      "playedMoveUci": "e2d3",
+      "castles": [
+        "e1g1",
+        "e1c1"
+      ],
+      "observed": [
+        "e2d3",
+        "f5f4",
+        "e3f4",
+        "e6c4",
+        "e1d2"
+      ],
+      "shape": "checked-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "c7c6",
+          "d2d4",
+          "d7d5",
+          "b1c3",
+          "d5e4",
+          "c3e4",
+          "g8f6",
+          "e4f6",
+          "e7f6",
+          "c1f4",
+          "c8e6",
+          "g1f3",
+          "b8a6",
+          "a2a3",
+          "g7g5",
+          "f4e3",
+          "a6c7",
+          "c2c4",
+          "f8g7",
+          "f1e2",
+          "g5g4",
+          "f3d2",
+          "f6f5",
+          "d2b3",
+          "b7b6",
+          "d1c2",
+          "d8e7"
+        ]
+      },
+      "preview": {
+        "castle": "e1c1",
+        "gapCp": 78
+      }
+    },
+    {
+      "id": "a55197fad18538f1deaa",
+      "game": "YYZ9hA6F",
+      "event": "51-open-chess-la-roda",
+      "site": "https://lichess.org/broadcast/51-open-chess-la-roda/round-9/KRYMEim6/YYZ9hA6F",
+      "fen": "1r2k2r/p4ppp/1q2p3/2npP3/1p1N1P2/3P4/PP1Q2PP/R4R1K b k - 0 17",
+      "playedMoveUci": "c5a4",
+      "castles": [
+        "e8g8"
+      ],
+      "observed": [
+        "c5a4",
+        "d2c2",
+        "b6d4",
+        "c2c6",
+        "e8d8"
+      ],
+      "shape": "checked-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "e7e6",
+          "d2d4",
+          "d7d5",
+          "b1c3",
+          "g8f6",
+          "e4e5",
+          "f6d7",
+          "f2f4",
+          "c7c5",
+          "g1f3",
+          "b8c6",
+          "c1e3",
+          "d8a5",
+          "d1d2",
+          "a8b8",
+          "d4c5",
+          "f8c5",
+          "e3c5",
+          "d7c5",
+          "f1d3",
+          "b7b5",
+          "e1g1",
+          "b5b4",
+          "c3e2",
+          "c8a6",
+          "f3d4",
+          "a6d3",
+          "c2d3",
+          "a5b6",
+          "g1h1",
+          "c6d4",
+          "e2d4"
+        ]
+      },
+      "preview": {
+        "castle": "e8g8",
+        "gapCp": 78
+      }
+    },
+    {
+      "id": "75e0c52b51c2a4d4a601",
+      "game": "oAjvPC7I",
+      "event": "guildford-fide-congress-open-2025",
+      "site": "https://lichess.org/broadcast/guildford-fide-congress-open-2025/round-5/CMZThooJ/oAjvPC7I",
+      "fen": "rq2k2r/pp1n1pp1/2pb1n1p/8/4P3/1PN2QPP/PB3PB1/2R2RK1 b kq - 0 15",
+      "playedMoveUci": "h6h5",
+      "castles": [
+        "e8g8"
+      ],
+      "observed": [
+        "h6h5",
+        "f3e2",
+        "e8f8",
+        "f2f4",
+        "h5h4"
+      ],
+      "shape": "quiet-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "g1f3",
+          "g8f6",
+          "g2g3",
+          "d7d5",
+          "f1g2",
+          "c8f5",
+          "e1g1",
+          "h7h6",
+          "c2c4",
+          "c7c6",
+          "b2b3",
+          "b8d7",
+          "c1b2",
+          "e7e6",
+          "d2d3",
+          "d8c7",
+          "b1c3",
+          "f8d6",
+          "c4d5",
+          "e6d5",
+          "e2e4",
+          "d5e4",
+          "d3e4",
+          "f5g4",
+          "a1c1",
+          "c7b8",
+          "h2h3",
+          "g4f3",
+          "d1f3"
+        ]
+      },
+      "preview": {
+        "castle": "e8g8",
+        "gapCp": 77
+      }
+    }
+  ],
+  "reserve": [
+    {
+      "id": "32deaa13fa8fdc0757bf",
+      "game": "ZMqNNG8m",
+      "event": "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga",
+      "site": "https://lichess.org/broadcast/polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga/round-8/bLaUj5vJ/ZMqNNG8m",
+      "fen": "2r1kb1r/1p1b1p1p/pq2pp2/8/2pP1P2/P1N1PN2/1P2Q1PP/2R1K2R w Kk - 0 15",
+      "playedMoveUci": "f3d2",
+      "castles": [
+        "e1g1"
+      ],
+      "observed": [
+        "f3d2",
+        "f8e7",
+        "c1c2",
+        "b6c7",
+        "e1f2"
+      ],
+      "shape": "quiet-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "d2d4",
+          "d7d5",
+          "c2c4",
+          "c7c6",
+          "c4d5",
+          "c6d5",
+          "c1g5",
+          "b8c6",
+          "b1c3",
+          "g8f6",
+          "g5f6",
+          "g7f6",
+          "e2e3",
+          "e7e6",
+          "f1d3",
+          "a7a6",
+          "a2a3",
+          "c8d7",
+          "f2f4",
+          "c6a5",
+          "g1f3",
+          "d8b6",
+          "d1e2",
+          "a8c8",
+          "a1c1",
+          "a5c4",
+          "d3c4",
+          "d5c4"
+        ]
+      },
+      "preview": {
+        "castle": "e1g1",
+        "gapCp": 250
+      }
+    },
+    {
+      "id": "a2e03d04e87fea66bb9c",
+      "game": "8409Q5OB",
+      "event": "4th-hdca-all-india-open-fide-rated-classical-chess-tournament-2026",
+      "site": "https://lichess.org/broadcast/4th-hdca-all-india-open-fide-rated-classical-chess-tournament-2026/round-9/68VHUfSL/8409Q5OB",
+      "fen": "r1b2rk1/5pp1/2p2n1p/Bp4q1/4P3/1P5P/1P2QPP1/R2NK2R w KQ - 1 19",
+      "playedMoveUci": "f2f4",
+      "castles": [
+        "e1g1"
+      ],
+      "observed": [
+        "f2f4",
+        "g5g3",
+        "d1f2",
+        "g3g2",
+        "e1d2"
+      ],
+      "shape": "quiet-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "e7e5",
+          "g1f3",
+          "b8c6",
+          "f1c4",
+          "g8f6",
+          "d2d3",
+          "h7h6",
+          "h2h3",
+          "d7d6",
+          "b1c3",
+          "c6a5",
+          "c4b3",
+          "a5b3",
+          "a2b3",
+          "c7c6",
+          "d1e2",
+          "f8e7",
+          "c1d2",
+          "b7b5",
+          "c3d1",
+          "a7a5",
+          "c2c4",
+          "d8b6",
+          "c4c5",
+          "b6c7",
+          "c5d6",
+          "e7d6",
+          "d3d4",
+          "e8g8",
+          "d4e5",
+          "d6e5",
+          "f3e5",
+          "c7e5",
+          "d2a5",
+          "e5g5"
+        ]
+      },
+      "preview": {
+        "castle": "e1g1",
+        "gapCp": 200
+      }
+    },
+    {
+      "id": "859fdb83b72cfdd5543c",
+      "game": "M8yRLQU1",
+      "event": "south-wales-international-2026",
+      "site": "https://lichess.org/broadcast/south-wales-international-2026/round-3/AvsFowvJ/M8yRLQU1",
+      "fen": "r3k2r/ppp2p1p/n3bn2/1N6/2p1P3/5P2/PP1N2PP/R3KB1R b KQkq - 0 12",
+      "playedMoveUci": "c7c6",
+      "castles": [
+        "e8g8",
+        "e8c8"
+      ],
+      "observed": [
+        "c7c6",
+        "b5d6",
+        "e8d7",
+        "d6c4",
+        "a6b4"
+      ],
+      "shape": "checked-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "d2d4",
+          "d7d5",
+          "c2c4",
+          "d5c4",
+          "e2e4",
+          "e7e5",
+          "g1f3",
+          "e5d4",
+          "d1d4",
+          "f8d6",
+          "d4g7",
+          "d6b4",
+          "b1c3",
+          "d8f6",
+          "g7f6",
+          "g8f6",
+          "c1d2",
+          "c8e6",
+          "c3b5",
+          "b4d2",
+          "f3d2",
+          "b8a6",
+          "f2f3"
+        ]
+      },
+      "preview": {
+        "castle": "e8c8",
+        "gapCp": 178
+      }
+    },
+    {
+      "id": "450dff2d382765b98e88",
+      "game": "z3eLLF4j",
+      "event": "10th-eastern-asia-youth-chess-championships-2026-classical-g12",
+      "site": "https://lichess.org/broadcast/10th-eastern-asia-youth-chess-championships-2026-classical-g12/round-5/OS2fLwgG/z3eLLF4j",
+      "fen": "2rqk2r/pp2npp1/n3p3/2PpP2p/1P1N3P/P2Q4/3N1PP1/R3K2R b KQk - 0 15",
+      "playedMoveUci": "d8d7",
+      "castles": [
+        "e8g8"
+      ],
+      "observed": [
+        "d8d7",
+        "d4b5",
+        "e8f8",
+        "b5d6",
+        "c8c7"
+      ],
+      "shape": "quiet-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "c7c6",
+          "d2d4",
+          "d7d5",
+          "e4e5",
+          "c8f5",
+          "h2h4",
+          "h7h5",
+          "f1d3",
+          "f5d3",
+          "d1d3",
+          "e7e6",
+          "c1g5",
+          "f8e7",
+          "g1f3",
+          "d8b6",
+          "b1d2",
+          "c6c5",
+          "c2c4",
+          "b8a6",
+          "a2a3",
+          "c5d4",
+          "b2b4",
+          "b6d8",
+          "c4c5",
+          "a8c8",
+          "g5e7",
+          "g8e7",
+          "f3d4"
+        ]
+      },
+      "preview": {
+        "castle": "e8g8",
+        "gapCp": 112
+      }
+    },
+    {
+      "id": "2e7c77f92b7dfdd364c1",
+      "game": "e8ThWEAY",
+      "event": "2026-carolinas-classic",
+      "site": "https://lichess.org/broadcast/2026-carolinas-classic/round-3/ViyKcGyC/e8ThWEAY",
+      "fen": "r2qk2r/p3npp1/1bp1p2p/3pP3/8/2PQB3/PP1N1PPP/R4RK1 b kq - 5 13",
+      "playedMoveUci": "c6c5",
+      "castles": [
+        "e8g8"
+      ],
+      "observed": [
+        "c6c5",
+        "d3b5",
+        "d8d7",
+        "b5d7",
+        "e8d7"
+      ],
+      "shape": "checked-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "e7e6",
+          "d2d4",
+          "c7c5",
+          "g1f3",
+          "c5d4",
+          "f3d4",
+          "d7d5",
+          "e4e5",
+          "f8c5",
+          "c2c3",
+          "b8c6",
+          "f1b5",
+          "c8d7",
+          "d4c6",
+          "d7c6",
+          "b5c6",
+          "b7c6",
+          "e1g1",
+          "h7h6",
+          "d1d3",
+          "g8e7",
+          "c1e3",
+          "c5b6",
+          "b1d2"
+        ]
+      },
+      "preview": {
+        "castle": "e8g8",
+        "gapCp": 82
+      }
+    },
+    {
+      "id": "a302e608af8aa3f9b752",
+      "game": "0DAsNsnP",
+      "event": "22nd-chefchaouen-international-chess-festival-2026-standard",
+      "site": "https://lichess.org/broadcast/22nd-chefchaouen-international-chess-festival-2026-standard/round-9/W7xyVEzR/0DAsNsnP",
+      "fen": "2k1r3/2q5/p1b1n3/1p1p1pb1/3B2p1/P1P3P1/1P2BP1P/R2QK2R w KQ - 3 25",
+      "playedMoveUci": "h2h4",
+      "castles": [
+        "e1g1"
+      ],
+      "observed": [
+        "h2h4",
+        "g4h3",
+        "e1f1",
+        "f5f4",
+        "e2g4"
+      ],
+      "shape": "quiet-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "d2d4",
+          "d7d5",
+          "b1c3",
+          "g8f6",
+          "c1f4",
+          "c7c5",
+          "e2e3",
+          "c5d4",
+          "e3d4",
+          "a7a6",
+          "g1f3",
+          "b8c6",
+          "f3e5",
+          "e7e6",
+          "c3e2",
+          "f8e7",
+          "c2c3",
+          "c8d7",
+          "e2g3",
+          "b7b5",
+          "a2a3",
+          "c6e5",
+          "d4e5",
+          "f6e4",
+          "d1g4",
+          "g7g5",
+          "f4e3",
+          "d8c7",
+          "e3d4",
+          "h7h5",
+          "g3h5",
+          "f7f5",
+          "g4d1",
+          "g5g4",
+          "h5g3",
+          "e4c5",
+          "g3f5",
+          "e6f5",
+          "e5e6",
+          "c5e6",
+          "d4h8",
+          "e8c8",
+          "h8d4",
+          "e7g5",
+          "g2g3",
+          "d8e8",
+          "f1e2",
+          "d7c6"
+        ]
+      },
+      "preview": {
+        "castle": "e1g1",
+        "gapCp": 82
+      }
+    },
+    {
+      "id": "a55ffeb55dadbb7d550a",
+      "game": "fFaBs6Ib",
+      "event": "2026-carolinas-classic",
+      "site": "https://lichess.org/broadcast/2026-carolinas-classic/round-4/nBMahb0Q/fFaBs6Ib",
+      "fen": "r6r/p3qpk1/2Qbpn1p/3pNbp1/3P1P2/2P3P1/PP1NB2P/R3K2R w KQ - 1 16",
+      "playedMoveUci": "c6a6",
+      "castles": [
+        "e1g1",
+        "e1c1"
+      ],
+      "observed": [
+        "c6a6",
+        "f6e4",
+        "h1g1",
+        "e4d2",
+        "e1d2"
+      ],
+      "shape": "quiet-king-move",
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "d2d4",
+          "g8f6",
+          "c1g5",
+          "d7d5",
+          "e2e3",
+          "c7c5",
+          "b1d2",
+          "b8c6",
+          "g1f3",
+          "c5d4",
+          "e3d4",
+          "h7h6",
+          "g5f4",
+          "c8f5",
+          "c2c3",
+          "e7e6",
+          "d1b3",
+          "f8d6",
+          "b3b7",
+          "d6f4",
+          "b7c6",
+          "e8f8",
+          "f1e2",
+          "g7g5",
+          "g2g3",
+          "f4d6",
+          "f3e5",
+          "f8g7",
+          "f2f4",
+          "d8e7"
+        ]
+      },
+      "preview": {
+        "castle": "e1g1",
+        "gapCp": 80
+      }
+    }
+  ]
+}

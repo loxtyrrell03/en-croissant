@@ -1,0 +1,51 @@
+{
+  "calibration": [
+    {
+      "id": "1c048483ab7d924db0dd",
+      "game": "jRlb31dr",
+      "site": "https://lichess.org/study/Y1yXP80U/jRlb31dr",
+      "group": "open",
+      "split": "development",
+      "phase": "middlegame",
+      "stratum": "mistakeSignal",
+      "fen": "r1bq1rk1/ppp3pp/3b1p2/3p1n2/3P1B2/2P2P2/PP2NQPP/R3KB1R w KQ - 1 14",
+      "playedMoveUci": "f4d2",
+      "ply": 27,
+      "history": {
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "moves": [
+          "e2e4",
+          "e7e5",
+          "g1f3",
+          "g8f6",
+          "d2d4",
+          "f6e4",
+          "d1e2",
+          "d7d5",
+          "f3e5",
+          "f8e7",
+          "f2f3",
+          "e4d6",
+          "b1c3",
+          "d6f5",
+          "e2f2",
+          "e8g8",
+          "c1f4",
+          "f7f6",
+          "e5d3",
+          "b8c6",
+          "c3e2",
+          "c6b4",
+          "d3b4",
+          "e7b4",
+          "c2c3",
+          "b4d6"
+        ]
+      },
+      "castles": [
+        "e1c1"
+      ],
+      "shape": "calibration"
+    }
+  ]
+}

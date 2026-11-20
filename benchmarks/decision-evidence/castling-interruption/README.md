@@ -12,7 +12,7 @@ in the main line does not establish that it was forced.
 
 The sampler freezes two sets of 60 standard classical games from
 retained public tournament broadcasts. Each set contains 20
-instances of a checked king move, 20 unforced king moves, and
+instances of a checked king move, 20 king moves from outside check, and
 20 games where the player castles later. The labels describe
 the recorded shape and have no role in the engine verdict.
 The starting castle was legal and the actual choice was a
@@ -45,3 +45,43 @@ concerns what happens to the original castling option. The
 position, immediate castle and played mistake remain separate.
 No explanation is inferred merely from a king move or evaluation
 drop.
+
+## Enriched challenge
+
+The first development and reserve replays each have 54 negatives,
+six unresolved and no verified positives under this protocol.
+That sample can expose obvious overcalls but cannot measure recall.
+For a separate challenge, select previously unused games from the
+same disjoint event groups. The recorded decision must still lead to
+a king move of either kind. Cap the deterministic game sample at
+380 cases per shape and group, then preview global and exact root
+choices at 90k and 120k nodes. Run the full protocol on the
+strongest scores that clear the preview criteria. The maximum is
+24 decisions per group and four per tournament. The preview is for
+sampling. Scores and verification use the higher-budget independent
+queries in both groups.
+
+## What the calibration establishes
+
+At 4.8M and 8M nodes, `Bh3` is the best of the exact early
+responses after `O-O-O Qe8 g4 Qa4`. Moving the g-pawn earlier
+makes that bishop move legal. After `Bd2 Qe8 O-O-O Qa4`,
+the g2 pawn still blocks it. Trying `g4` then allows
+`...Qxa2` and a repeated queen attack on c4 and d4.
+The late-castling penalty is real. The leading defensive
+continuations after the late castle can avoid the same short
+material loss, so the castling-only rule abstains. This
+comparison uses one already reviewed position.
+[Exact alternative replies](resource-timing.json)
+
+## Reproduce
+
+Use the cached public PGNs matching the selection manifest.
+`freeze.py` regenerates the first sample. `stress.py` takes the
+first selection, Stockfish executable and a new output path.
+Both accept `--development` and `--reserve` PGN lists.
+`capture.py {app,reference} SELECTION STOCKFISH OUT --split SPLIT`
+evaluates the frozen decisions, then
+`assess.py APP_FRAMES REFERENCE_FRAMES RESULTS` scores them.
+The two calibration probes use the same Stockfish 19 binary
+recorded in [the stress manifest](stress.manifest.json).
