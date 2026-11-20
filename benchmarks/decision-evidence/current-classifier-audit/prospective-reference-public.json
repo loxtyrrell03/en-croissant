@@ -1,0 +1,443 @@
+{
+  "protocol": 1,
+  "reviewer": "one engine-assisted reviewer",
+  "frozenInputSha256": "5f74cf2ee81f71e7cca96b2fe82ecf9c0feab5be2a430c9c0292028be6879cc8",
+  "scoredInputSha256": "6bb0e9af250ff0487b03c5f120fc878f0fb5bfd04ed32ab67206dac784c3c6c3",
+  "deeperInputSha256": "0ff265c7c0364675f90b2cdc4eee39c5401de90f92b70afa5756ec243ff38353",
+  "cases": [
+    {
+      "id": "public-006d9384a8884907",
+      "source": "freiburg",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "White's c6 passer is blockaded by the black king. The strongest rook manoeuvres retain activity against the blockade."
+    },
+    {
+      "id": "public-006d9384a8884907",
+      "source": "freiburg",
+      "scope": "mistake-mechanism",
+      "moveUci": "e3a3",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-011b109414d675b9",
+      "source": "freiburg",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": null,
+      "note": "The preference for Qf4 over Qh6 is clear. The lines diverge before a stable causal explanation."
+    },
+    {
+      "id": "public-011b109414d675b9",
+      "source": "freiburg",
+      "scope": "mistake-mechanism",
+      "moveUci": "d2f4",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-01a5b3e1f8ec3628",
+      "source": "freiburg",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "h3 and Nb3 improve the minor-piece and rook placement. Nd4 centralises the knight and leads to doubled rooks on the d-file."
+    },
+    {
+      "id": "public-01a5b3e1f8ec3628",
+      "source": "freiburg",
+      "scope": "mistake-mechanism",
+      "moveUci": "f3d4",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-03380424e7e93d59",
+      "source": "witney",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Nd3 and the c-file entry give activity against the b-pawn while f4 changes the kingside pawn exchanges."
+    },
+    {
+      "id": "public-03380424e7e93d59",
+      "source": "witney",
+      "scope": "mistake-mechanism",
+      "moveUci": "f3f4",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-039421b6ea14d409",
+      "source": "witney",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Ra3 allows a rook transfer while Be3 offers a bishop exchange and can strengthen the centre with the f-pawn. The short tactical continuation varies."
+    },
+    {
+      "id": "public-039421b6ea14d409",
+      "source": "witney",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1e3",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-06108743fd9949a8",
+      "source": "witney",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": true,
+      "positional": true,
+      "note": "Qh8+ and Qf6 force queen interaction and create an advanced f6 passer after the exchange. The close Rbc1 line instead uses the c-file and challenges the b6 pawn."
+    },
+    {
+      "id": "public-06108743fd9949a8",
+      "source": "witney",
+      "scope": "mistake-mechanism",
+      "moveUci": "b1b3",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-00fc34a2c55cf095",
+      "source": "almaty-masters",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": true,
+      "positional": null,
+      "note": "Rb2 attacks the f2 rook and neutralises Black's immediate e2 advance. The a5 alternative gives e2 Bxe2 Rxe2."
+    },
+    {
+      "id": "public-00fc34a2c55cf095",
+      "source": "almaty-masters",
+      "scope": "mistake-mechanism",
+      "moveUci": "b1b2",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-01514bc6fafb1389",
+      "source": "almaty-masters",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": true,
+      "positional": null,
+      "note": "cxb3 takes the rook. The quiet Kg1 alternative allows Rxb2 followed by further pawn captures."
+    },
+    {
+      "id": "public-01514bc6fafb1389",
+      "source": "almaty-masters",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2b3",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-01b0a7d32beced8a",
+      "source": "almaty-masters",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": true,
+      "positional": null,
+      "note": "Qc4 and Qd3+ supply recurring checks against the black king. The h6 continuation drops the checks."
+    },
+    {
+      "id": "public-01b0a7d32beced8a",
+      "source": "almaty-masters",
+      "scope": "mistake-mechanism",
+      "moveUci": "h5h6",
+      "tactical": true,
+      "positional": null,
+      "note": "Qc4 reaches the recurring check setup. h6 allows ...g5 and the separate reply search retains a large advantage. A distinct lasting pawn consequence is uncertain."
+    },
+    {
+      "id": "public-014475c8916a9500",
+      "source": "serbia-women",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Nb3 and Re2 can be played in either order, combining queen harassment and access for the rook. The alternative Red1 branches diverge."
+    },
+    {
+      "id": "public-014475c8916a9500",
+      "source": "serbia-women",
+      "scope": "mistake-mechanism",
+      "moveUci": "e1d1",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-1093d1c37f2d42ea",
+      "source": "serbia-women",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Rb1 contests the b-file and pressures the b6 pawn after a queen exchange. The h4 line seeks space while delaying the same file control."
+    },
+    {
+      "id": "public-1093d1c37f2d42ea",
+      "source": "serbia-women",
+      "scope": "mistake-mechanism",
+      "moveUci": "a1b1",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-29020f02233fdc42",
+      "source": "serbia-women",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": true,
+      "positional": null,
+      "note": "Nxa7 takes the loose rook and preserves balance. Rc1 gives Black time to save it and retain the material lead."
+    },
+    {
+      "id": "public-29020f02233fdc42",
+      "source": "serbia-women",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5a7",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-013bf405ca37794e",
+      "source": "hvar",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": null,
+      "note": "The root and reply alternatives disagree on the least bad defence by similar scores."
+    },
+    {
+      "id": "public-013bf405ca37794e",
+      "source": "hvar",
+      "scope": "mistake-mechanism",
+      "moveUci": "e5c3",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-028a90e73b860409",
+      "source": "hvar",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": null,
+      "note": "Qb5+ costs evaluation, but the strongest replies and follow-up tactics differ enough to leave the mechanism uncertain."
+    },
+    {
+      "id": "public-028a90e73b860409",
+      "source": "hvar",
+      "scope": "mistake-mechanism",
+      "moveUci": "e2b5",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-0322eb271560f2cc",
+      "source": "hvar",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": true,
+      "positional": null,
+      "note": "The actual queen placement admits a concrete exchange sequence and in-between bishop capture. Other continuations vary."
+    },
+    {
+      "id": "public-0322eb271560f2cc",
+      "source": "hvar",
+      "scope": "mistake-mechanism",
+      "moveUci": "e7f7",
+      "tactical": true,
+      "positional": null,
+      "note": "Qf7 allows Rxf6 Bf4 Rxf7 Bxd2 Rxf8+. Both searches retain the same exchange sequence. A separate strategic concession is uncertain."
+    },
+    {
+      "id": "public-0002119b22d96883",
+      "source": "hvar",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Nf6 and Rae8 preserve pressure on the king and f3 pawn while bringing another piece into play. The tactics differ between continuations."
+    },
+    {
+      "id": "public-0002119b22d96883",
+      "source": "hvar",
+      "scope": "mistake-mechanism",
+      "moveUci": "g4e5",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-00098a1a4830fb1c",
+      "source": "hvar",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": null,
+      "note": "Several black rook choices are strongly losing, with different trade and activity sequences. The reference is inconclusive."
+    },
+    {
+      "id": "public-00098a1a4830fb1c",
+      "source": "hvar",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8f8",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-001025a47f138631",
+      "source": "hvar",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Kd6 activates the king against e5 and keeps the rook active. Rd1+ can transpose to king activation after Kh2."
+    },
+    {
+      "id": "public-001025a47f138631",
+      "source": "hvar",
+      "scope": "mistake-mechanism",
+      "moveUci": "d4d1",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-02c6c261f0f0f080",
+      "source": "club-cup",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": null,
+      "note": "The weaker Nh4+ loses the knight in the paired line and the first reply search, but the deeper independent search switches to b5. The exact concession is uncertain."
+    },
+    {
+      "id": "public-02c6c261f0f0f080",
+      "source": "club-cup",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6h4",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-034b9987821190b3",
+      "source": "club-cup",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "The queen-exchange route reaches a different knight ending with Black's queenside majority. Ng3 retains the queen and seeks counterplay."
+    },
+    {
+      "id": "public-034b9987821190b3",
+      "source": "club-cup",
+      "scope": "mistake-mechanism",
+      "moveUci": "b2d4",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-0a3e5b236535825c",
+      "source": "club-cup",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Retreating the knight keeps the f-pawn and prepares Ne4. Ne5 changes the pawn structure after Bxe5 fxe5."
+    },
+    {
+      "id": "public-0a3e5b236535825c",
+      "source": "club-cup",
+      "scope": "mistake-mechanism",
+      "moveUci": "f3e5",
+      "tactical": false,
+      "positional": true,
+      "note": "The played exchange moves the f-pawn to e5 while the better line retains the supporting pawn and later posts the knight on e4. Exchanges in the compared window are materially balanced."
+    },
+    {
+      "id": "public-000b89196c1eb16e",
+      "source": "club-cup",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": true,
+      "note": "Rb1 contests the b-file and the analysis later exchanges the opposing rooks there. The direct Ba4 changes the order of the minor-piece and rook exchanges."
+    },
+    {
+      "id": "public-000b89196c1eb16e",
+      "source": "club-cup",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2a4",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-00649a670342a15b",
+      "source": "club-cup",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": null,
+      "positional": null,
+      "note": "The best continuations differ in rook and bishop manoeuvres. The point of Bh3 stays uncertain within the compared window."
+    },
+    {
+      "id": "public-00649a670342a15b",
+      "source": "club-cup",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2h3",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    },
+    {
+      "id": "public-008ce6cdd7bc7c90",
+      "source": "club-cup",
+      "scope": "position-character",
+      "moveUci": null,
+      "tactical": true,
+      "positional": null,
+      "note": "g5 leads to a bishop sacrifice, queen checks on g5 and h5 and the recurring Kh7 and Kg7 replies."
+    },
+    {
+      "id": "public-008ce6cdd7bc7c90",
+      "source": "club-cup",
+      "scope": "mistake-mechanism",
+      "moveUci": "g6g5",
+      "tactical": null,
+      "positional": null,
+      "note": "No distinct mistake mechanism established over the paired and independent replies."
+    }
+  ],
+  "publicPositions": 24,
+  "omittedOwnerPositions": 2
+}

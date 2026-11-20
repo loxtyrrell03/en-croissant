@@ -4230,3 +4230,19 @@ repeat at the higher engine budget. All retained draw boundaries were
 checked with a separate legal replay. The worker uses the existing
 engine budget.
 [Results and exact continuations](../benchmarks/decision-evidence/draw-aware-search/README.md)
+
+## Current accuracy across the three questions
+
+The current matched audit compares the original, v33 and v47 on earlier
+reviewed inputs. The classifier detects 22 of 68 reviewed tactical
+mistakes versus 10 originally and 19 in v33. It detects 1 of 17 reviewed
+mixed mistakes and 8 of 88 ordinary mixed positions. It misses both
+dimensions in ten of the former and 57 of the latter.
+
+A separate 26-game classical sample includes two private owner games.
+The latest build detects the same two of seven tactical positions as
+the original proxy and two of 14 reviewed positional positions. The
+lone reviewed mixed position is unclear. A materially even knight
+exchange reveals a tactical certificate that still overstates the
+capture result. The old and current build make this false call in the
+frozen evaluation. [Cross-scope results and exact gaps](../benchmarks/decision-evidence/current-classifier-audit/README.md)
