@@ -1,0 +1,2987 @@
+{
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "baselineRevision": "2bc055dd",
+  "referenceMedianRootDepth": 21.5,
+  "referenceRootNodes": 273826723,
+  "settings": {
+    "app": {
+      "cases": 58,
+      "counts": {
+        "shape": 21,
+        "shapeCorroborated": 4,
+        "fixed": 5,
+        "fixedCorroborated": 1,
+        "settled": 5,
+        "settledCorroborated": 1,
+        "independentlyObserved": 5
+      },
+      "witnesses": [
+        {
+          "id": "008f3cd098c5b0d0",
+          "source": "https://lichess.org/broadcast/35th-drogheda-chess-congress-thomson-masters/round-2/ayoyRrtv/QDxHnVDk",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "a6b7",
+                "c6c5"
+              ],
+              "selected": [
+                "Bb7",
+                "c5"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "c5 b5 Bb7 Qe3"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "r1q2rk1/p1nn1pb1/bpp1p1p1/4P2p/1PP5/Q4NP1/PB1N1PBP/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a3e3"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6b7",
+                "c7e8"
+              ],
+              "selected": [
+                "Bb7",
+                "Ne8"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "Ne8 Qd3 c5 b5 Bb7 a4"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "r1q1nrk1/p2n1pb1/bpp1p1p1/4P2p/1PP5/3Q1NP1/PB1N1PBP/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "c7e8",
+                  "a3d3",
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a2a4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6b7",
+                "a8b8"
+              ],
+              "selected": [
+                "Bb7",
+                "Rb8"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "Rb8 Rad1 c5 b5 Bb7 Qe3"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "1rq2rk1/p1nn1pb1/bpp1p1p1/4P2p/1PP5/Q4NP1/PB1N1PBP/3RR1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "a8b8",
+                  "a1d1",
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a3e3"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "072e0f91d2e6cf3b",
+          "source": "https://lichess.org/broadcast/12th-cesme-international-open-chess-tournament/round-6/DhWApaGr/D0gaX05O",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "a6a5",
+                "d3e2"
+              ],
+              "selected": [
+                "a5",
+                "Qe2"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "Qe2 Qc4+ Qxc4 Rxc4 a5 b5 Nd4 Rc7"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1PR1P2P/PN4B1/3N1PP1/6K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "d3e2",
+                  "c2c4",
+                  "e2c4",
+                  "c1c4",
+                  "a6a5",
+                  "b4b5",
+                  "c6d4",
+                  "c4c7"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6a5",
+                "h7h5"
+              ],
+              "selected": [
+                "a5",
+                "h5"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "bxa5 bxa5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "h5 f3 a5 bxa5 bxa5 a4 Bb4"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r2k1/1b2b1p1/ppn2p2/4p2p/1P2P2P/PN1q1PB1/2QN2P1/2R3K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "h7h5",
+                  "f2f3",
+                  "a6a5",
+                  "b4a5",
+                  "b6a5",
+                  "a3a4",
+                  "e7b4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6a5",
+                "e7f8"
+              ],
+              "selected": [
+                "a5",
+                "Bf8"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "bxa5 bxa5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "Bf8 f3 a5 bxa5 bxa5 a4 Qxc2 Rxc2"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r1bk1/1b4pp/ppn2p2/4p3/1P2P2P/PN1q1PB1/2QN2P1/2R3K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "e7f8",
+                  "f2f3",
+                  "a6a5",
+                  "b4a5",
+                  "b6a5",
+                  "a3a4",
+                  "d3c2",
+                  "c1c2"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0c9db788e694a860",
+          "source": "https://lichess.org/broadcast/aktobe-open-2026-vladimir-dvorkovich-memorial-masters/round-2/M3agTFYf/CJfE6IGT",
+          "incumbent": "positional",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "c2c4",
+                "a2a3"
+              ],
+              "selected": [
+                "c4",
+                "a3"
+              ],
+              "pawn": "c2",
+              "lever": "c2c4",
+              "contact": "c4",
+              "target": "d5",
+              "theirSquare": "d5",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "d4",
+                "d4"
+              ],
+              "witness": [
+                "c4 d4 Ng4 a5",
+                "a3 h5 c4 d4 Nd1 Be7"
+              ],
+              "requiredControl": [
+                "r3rbk1/1bqn1p1p/p3p1p1/2ppP3/5P2/1P1BN3/P1PBQ1PP/4RR1K w - -",
+                "r3rbk1/1bqn1p2/p3p1p1/2ppP2p/5P2/PP1BN3/2PBQ1PP/4RR1K w - -"
+              ],
+              "linesUci": [
+                [
+                  "c2c4",
+                  "d5d4",
+                  "e3g4",
+                  "a6a5"
+                ],
+                [
+                  "a2a3",
+                  "h7h5",
+                  "c2c4",
+                  "d5d4",
+                  "e3d1",
+                  "f8e7"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "0f1a682d78e304d1",
+          "source": "https://lichess.org/broadcast/2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b/round-9/33T9A6tw/JipMpye0",
+          "incumbent": "positional",
+          "matched": [
+            [
+              "c5",
+              "c5c4",
+              "d3",
+              "d3"
+            ]
+          ],
+          "proposed": [
+            {
+              "roots": [
+                "a8c8",
+                "c5c4"
+              ],
+              "selected": [
+                "Rac8",
+                "c4"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "d4",
+                "cxd3 cxd3"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 Rd1",
+                "c4 Bc5 Bc6 f3 Rxe1+ Rxe1 cxd3 cxd3 Kh7 Re7"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r3r1k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "e1d1"
+                ],
+                [
+                  "c5c4",
+                  "b6c5",
+                  "d7c6",
+                  "f2f3",
+                  "e8e1",
+                  "a1e1",
+                  "c4d3",
+                  "c2d3",
+                  "g8h7",
+                  "e1e7"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a8c8",
+                "e8e1"
+              ],
+              "selected": [
+                "Rac8",
+                "Rxe1+"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "d4",
+                "d4"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 Rd1",
+                "Rxe1+ Rxe1 c4 d4 Re8 Rxe8+ Bxe8"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r5k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "e1d1"
+                ],
+                [
+                  "e8e1",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "a8e8",
+                  "e1e8",
+                  "d7e8"
+                ]
+              ]
+            }
+          ],
+          "independent": [
+            {
+              "roots": [
+                "a8c8",
+                "e8e1"
+              ],
+              "selected": [
+                "Rac8",
+                "Rxe1+"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "d4",
+                "dxc4 bxc4"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 f3",
+                "Rxe1+ Rxe1 c4 dxc4 bxc4 Rd1 Ba4"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r5k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "f2f3"
+                ],
+                [
+                  "e8e1",
+                  "a1e1",
+                  "c5c4",
+                  "d3c4",
+                  "b5c4",
+                  "e1d1",
+                  "d7a4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a8c8",
+                "c5c4"
+              ],
+              "selected": [
+                "Rac8",
+                "c4"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "d4",
+                "dxc4 bxc4"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 f3",
+                "c4 Rxe8+ Rxe8 Rd1 Bc6 dxc4 bxc4 Rd8 Rxd8 Bxd8"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r3r1k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "f2f3"
+                ],
+                [
+                  "c5c4",
+                  "e1e8",
+                  "a8e8",
+                  "a1d1",
+                  "d7c6",
+                  "d3c4",
+                  "b5c4",
+                  "d1d8",
+                  "e8d8",
+                  "b6d8"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1c569eecb972a382",
+          "source": "https://lichess.org/broadcast/1er-open-international-de-lecci/round-5/q6DYrXUr/a4FI6Gu7",
+          "incumbent": "positional",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "b7b5",
+                "e8f8"
+              ],
+              "selected": [
+                "b5",
+                "Rf8"
+              ],
+              "pawn": "b7",
+              "lever": "b7b5",
+              "contact": "b5",
+              "target": "c4",
+              "theirSquare": "c4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "c5",
+                "c5"
+              ],
+              "witness": [
+                "b5 c5 Bc7 Ne5",
+                "Rf8 e3 b5 c5 Bc7 a4"
+              ],
+              "requiredControl": [
+                "r1bqr1k1/1p1n2pp/2pbp3/p2p1p2/1PPPn3/P1B2NP1/2QNPPBP/R2R2K1 b - -",
+                "r1bq1rk1/1p1n2pp/2pbp3/p2p1p2/1PPPn3/P1B1PNP1/2QN1PBP/R2R2K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "b7b5",
+                  "c4c5",
+                  "d6c7",
+                  "f3e5"
+                ],
+                [
+                  "e8f8",
+                  "e2e3",
+                  "b7b5",
+                  "c4c5",
+                  "d6c7",
+                  "a3a4"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "1ddd3b65e7214133",
+          "source": "https://lichess.org/broadcast/35th-drogheda-chess-congress-thomson-masters/round-3/TFiF3Xc5/xLJpnlLx",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "d3d4",
+                "d1b3"
+              ],
+              "selected": [
+                "d4",
+                "Qb3"
+              ],
+              "pawn": "d3",
+              "lever": "d3d4",
+              "contact": "d4",
+              "target": "c5",
+              "theirSquare": "c5",
+              "outcomes": [
+                "exchange",
+                "advance"
+              ],
+              "actions": [
+                "cxd4 cxd4",
+                "c4"
+              ],
+              "witness": [
+                "d4 O-O Kh1 cxd4 cxd4 Nb6 Nc3",
+                "Qb3 Qb6 d4 c4 Qxb6 Nxb6"
+              ],
+              "requiredControl": [
+                "r1b1k2r/ppqnp1bp/2n2pp1/2ppP3/5P2/2PPBN1P/PP2B1P1/RN1Q1RK1 w kq -",
+                "r1b1k2r/pp1np1bp/1qn2pp1/2ppP3/5P2/1QPPBN1P/PP2B1P1/RN3RK1 w kq -"
+              ],
+              "linesUci": [
+                [
+                  "d3d4",
+                  "e8g8",
+                  "g1h1",
+                  "c5d4",
+                  "c3d4",
+                  "d7b6",
+                  "b1c3"
+                ],
+                [
+                  "d1b3",
+                  "c7b6",
+                  "d3d4",
+                  "c5c4",
+                  "b3b6",
+                  "d7b6"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2061f2ca9dbad7aa",
+          "source": "https://lichess.org/broadcast/2nd-rungta-cement-international-open-fide-rating-chess-tournament-2026/round-5/56OMKcZo/MMXFepIb",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "h7h5",
+                "c6a6"
+              ],
+              "selected": [
+                "h5",
+                "Qa6"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "Qa6 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/pp3ppp/q3p1b1/2P1P3/6P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "c6a6",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "h7h5",
+                "c6a4"
+              ],
+              "selected": [
+                "h5",
+                "Qa4"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "Qa4 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/pp3ppp/4p1b1/2P1P3/q5P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "c6a4",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "h7h5",
+                "a7a6"
+              ],
+              "selected": [
+                "h5",
+                "a6"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "a6 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/1p3ppp/p1q1p1b1/2P1P3/6P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "a7a6",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2b1e1652cab13dd3",
+          "source": "https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-13/zbeM6PPX/yLUyfHNe",
+          "incumbent": "positional",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "e5e6",
+                "f3g3"
+              ],
+              "selected": [
+                "e6",
+                "Rg3"
+              ],
+              "pawn": "e5",
+              "lever": "e5e6",
+              "contact": "e6",
+              "target": "f7",
+              "theirSquare": "f7",
+              "outcomes": [
+                "exchange",
+                "advance"
+              ],
+              "actions": [
+                "exf7+ Bxf7",
+                "f6"
+              ],
+              "witness": [
+                "e6 c5 Rg3 Rac8 Qf2 Rd3 Be3 Rf8 exf7+ Bxf7 Qf4 Be8",
+                "Rg3 Rd3 Be3 Qb5 Re1 Rad8 e6 f6 e5 Re8"
+              ],
+              "requiredControl": [
+                "r2r2k1/p3pp1p/q1p3p1/4PP2/2b1P3/5R1P/P1Q3PK/R1B5 w - -",
+                "3r2k1/p3pp1p/2p3p1/1q2PP2/2b1P3/3rB1RP/P1Q3PK/4R3 w - -"
+              ],
+              "linesUci": [
+                [
+                  "e5e6",
+                  "c6c5",
+                  "f3g3",
+                  "a8c8",
+                  "c2f2",
+                  "d8d3",
+                  "c1e3",
+                  "c8f8",
+                  "e6f7",
+                  "c4f7",
+                  "f2f4",
+                  "f7e8"
+                ],
+                [
+                  "f3g3",
+                  "d8d3",
+                  "c1e3",
+                  "a6b5",
+                  "a1e1",
+                  "a8d8",
+                  "e5e6",
+                  "f7f6",
+                  "e4e5",
+                  "d8e8"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "e5e6",
+                "c2f2"
+              ],
+              "selected": [
+                "e6",
+                "Qf2"
+              ],
+              "pawn": "e5",
+              "lever": "e5e6",
+              "contact": "e6",
+              "target": "f7",
+              "theirSquare": "f7",
+              "outcomes": [
+                "exchange",
+                "advance"
+              ],
+              "actions": [
+                "exf7+ Bxf7",
+                "f6"
+              ],
+              "witness": [
+                "e6 c5 Rg3 Rac8 Qf2 Rd3 Be3 Rf8 exf7+ Bxf7 Qf4 Be8",
+                "Qf2 Rd3 e6 f6 fxg6 hxg6"
+              ],
+              "requiredControl": [
+                "r2r2k1/p3pp1p/q1p3p1/4PP2/2b1P3/5R1P/P1Q3PK/R1B5 w - -",
+                "r5k1/p3pp1p/q1p3p1/4PP2/2b1P3/3r1R1P/P4QPK/R1B5 w - -"
+              ],
+              "linesUci": [
+                [
+                  "e5e6",
+                  "c6c5",
+                  "f3g3",
+                  "a8c8",
+                  "c2f2",
+                  "d8d3",
+                  "c1e3",
+                  "c8f8",
+                  "e6f7",
+                  "c4f7",
+                  "f2f4",
+                  "f7e8"
+                ],
+                [
+                  "c2f2",
+                  "d8d3",
+                  "e5e6",
+                  "f7f6",
+                  "f5g6",
+                  "h7g6"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "00bfc7da75573273",
+          "source": "https://lichess.org/broadcast/2nd-rungta-cement-international-open-fide-rating-chess-tournament-2026/round-8/6Iihup51/3tNydxLJ",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "e6e5",
+                "e7d7"
+              ],
+              "selected": [
+                "e5",
+                "Kd7"
+              ],
+              "pawn": "e6",
+              "lever": "e6e5",
+              "contact": "e5",
+              "target": "d4",
+              "theirSquare": "d4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "d5",
+                "d5"
+              ],
+              "witness": [
+                "e5 Ke3 Kd7 d5 R6c7 Kd3",
+                "Kd7 a4 e5 d5 R6c7 Ke3"
+              ],
+              "requiredControl": [
+                "2r5/p3kp1p/1prpp1p1/8/1PPP4/5P2/P1R2KPP/2R5 b - -",
+                "2r5/p2k1p1p/1prpp1p1/8/PPPP4/5P2/2R2KPP/2R5 b - -"
+              ],
+              "linesUci": [
+                [
+                  "e6e5",
+                  "f2e3",
+                  "e7d7",
+                  "d4d5",
+                  "c6c7",
+                  "e3d3"
+                ],
+                [
+                  "e7d7",
+                  "a2a4",
+                  "e6e5",
+                  "d4d5",
+                  "c6c7",
+                  "f2e3"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        }
+      ],
+      "frameHashes": {
+        "app": "b960051a60d506e4b252fad00c2e489af9b882265763c9220f060569bc4f956e",
+        "reference": "3ed2bc21aca4283474e8aaec039346564fa5c50255512eba0a2f697b861f85d5"
+      },
+      "sameLeadingMove": 48,
+      "medianRootDepth": 20.0,
+      "rootNodes": 119600062
+    },
+    "same-nodes-four": {
+      "cases": 58,
+      "counts": {
+        "shape": 24,
+        "shapeCorroborated": 4,
+        "fixed": 4,
+        "fixedCorroborated": 1,
+        "settled": 6,
+        "settledCorroborated": 2,
+        "independentlyObserved": 5
+      },
+      "witnesses": [
+        {
+          "id": "008f3cd098c5b0d0",
+          "source": "https://lichess.org/broadcast/35th-drogheda-chess-congress-thomson-masters/round-2/ayoyRrtv/QDxHnVDk",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "a6b7",
+                "c6c5"
+              ],
+              "selected": [
+                "Bb7",
+                "c5"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "c5 b5 Bb7 Qe3"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "r1q2rk1/p1nn1pb1/bpp1p1p1/4P2p/1PP5/Q4NP1/PB1N1PBP/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a3e3"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6b7",
+                "c7e8"
+              ],
+              "selected": [
+                "Bb7",
+                "Ne8"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "Ne8 Qd3 c5 b5 Bb7 a4"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "r1q1nrk1/p2n1pb1/bpp1p1p1/4P2p/1PP5/3Q1NP1/PB1N1PBP/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "c7e8",
+                  "a3d3",
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a2a4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6b7",
+                "a8b8"
+              ],
+              "selected": [
+                "Bb7",
+                "Rb8"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "Rb8 Rad1 c5 b5 Bb7 Qe3"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "1rq2rk1/p1nn1pb1/bpp1p1p1/4P2p/1PP5/Q4NP1/PB1N1PBP/3RR1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "a8b8",
+                  "a1d1",
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a3e3"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "072e0f91d2e6cf3b",
+          "source": "https://lichess.org/broadcast/12th-cesme-international-open-chess-tournament/round-6/DhWApaGr/D0gaX05O",
+          "incumbent": "unclear",
+          "matched": [
+            [
+              "a6",
+              "a6a5",
+              "b4",
+              "b4"
+            ]
+          ],
+          "proposed": [
+            {
+              "roots": [
+                "h7h5",
+                "d3e2"
+              ],
+              "selected": [
+                "h5",
+                "Qe2"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "exchange",
+                "advance"
+              ],
+              "actions": [
+                "bxa5 bxa5",
+                "b5"
+              ],
+              "witness": [
+                "h5 f3 a5 bxa5 bxa5 a4 Qxc2 Rxc2",
+                "Qe2 Qc4+ Qxc4 Rxc4 a5 b5 Nd4 Rc7"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1p1/ppn2p2/4p2p/1P2P2P/PN1q1PB1/2QN2P1/2R3K1 b - -",
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1PR1P2P/PN4B1/3N1PP1/6K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "f2f3",
+                  "a6a5",
+                  "b4a5",
+                  "b6a5",
+                  "a3a4",
+                  "d3c2",
+                  "c1c2"
+                ],
+                [
+                  "d3e2",
+                  "c2c4",
+                  "e2c4",
+                  "c1c4",
+                  "a6a5",
+                  "b4b5",
+                  "c6d4",
+                  "c4c7"
+                ]
+              ]
+            }
+          ],
+          "independent": [
+            {
+              "roots": [
+                "a6a5",
+                "d3e2"
+              ],
+              "selected": [
+                "a5",
+                "Qe2"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "Qe2 Qc4+ Qxc4 Rxc4 a5 b5 Nd4 Rc7"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1PR1P2P/PN4B1/3N1PP1/6K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "d3e2",
+                  "c2c4",
+                  "e2c4",
+                  "c1c4",
+                  "a6a5",
+                  "b4b5",
+                  "c6d4",
+                  "c4c7"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6a5",
+                "h7h5"
+              ],
+              "selected": [
+                "a5",
+                "h5"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "bxa5 bxa5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "h5 f3 a5 bxa5 bxa5 a4 Bb4"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r2k1/1b2b1p1/ppn2p2/4p2p/1P2P2P/PN1q1PB1/2QN2P1/2R3K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "h7h5",
+                  "f2f3",
+                  "a6a5",
+                  "b4a5",
+                  "b6a5",
+                  "a3a4",
+                  "e7b4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6a5",
+                "e7f8"
+              ],
+              "selected": [
+                "a5",
+                "Bf8"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "bxa5 bxa5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "Bf8 f3 a5 bxa5 bxa5 a4 Qxc2 Rxc2"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r1bk1/1b4pp/ppn2p2/4p3/1P2P2P/PN1q1PB1/2QN2P1/2R3K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "e7f8",
+                  "f2f3",
+                  "a6a5",
+                  "b4a5",
+                  "b6a5",
+                  "a3a4",
+                  "d3c2",
+                  "c1c2"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0980d907bf1acd7a",
+          "source": "https://lichess.org/broadcast/12th-cesme-international-open-chess-tournament/round-9/A8sisy1y/rVYQdqCn",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "c6e6",
+                "c6f6"
+              ],
+              "selected": [
+                "Re6",
+                "Rf6"
+              ],
+              "pawn": "h4",
+              "lever": "h4h3",
+              "contact": "h3",
+              "target": "g2",
+              "theirSquare": "g2",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g3",
+                "g3"
+              ],
+              "witness": [
+                "Re6 Re2 Rxe2 Kxe2 Bd6 Kd3 h3 g3 Ke6 Re1+",
+                "Rf6 Re2 h3 g3 Bd6 Rf1"
+              ],
+              "requiredControl": [
+                "2r5/3k1pp1/1p1b4/3p4/3P3p/P1BK4/1P3PPP/7R b - -",
+                "2r5/3k1pp1/1p3r2/3p4/3P1b1p/P1BK4/1P2RPPP/7R b - -"
+              ],
+              "linesUci": [
+                [
+                  "c6e6",
+                  "c2e2",
+                  "e6e2",
+                  "d3e2",
+                  "f4d6",
+                  "e2d3",
+                  "h4h3",
+                  "g2g3",
+                  "d7e6",
+                  "h1e1"
+                ],
+                [
+                  "c6f6",
+                  "c2e2",
+                  "h4h3",
+                  "g2g3",
+                  "f4d6",
+                  "h1f1"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "0f1a682d78e304d1",
+          "source": "https://lichess.org/broadcast/2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b/round-9/33T9A6tw/JipMpye0",
+          "incumbent": "positional",
+          "matched": [
+            [
+              "c5",
+              "c5c4",
+              "d3",
+              "d3"
+            ]
+          ],
+          "proposed": [
+            {
+              "roots": [
+                "e8e1",
+                "c5c4"
+              ],
+              "selected": [
+                "Rxe1+",
+                "c4"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "d4",
+                "d4"
+              ],
+              "witness": [
+                "Rxe1+ Rxe1 c4 d4 Ra6 Bc5",
+                "c4 d4 Bc6 f3"
+              ],
+              "requiredControl": [
+                "r5k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r3r1k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "e8e1",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "a8a6",
+                  "b6c5"
+                ],
+                [
+                  "c5c4",
+                  "d3d4",
+                  "d7c6",
+                  "f2f3"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "e8e1",
+                "a8c8"
+              ],
+              "selected": [
+                "Rxe1+",
+                "Rac8"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "d4",
+                "d4"
+              ],
+              "witness": [
+                "Rxe1+ Rxe1 c4 d4 Ra6 Bc5",
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 Re5"
+              ],
+              "requiredControl": [
+                "r5k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "e8e1",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "a8a6",
+                  "b6c5"
+                ],
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "e1e5"
+                ]
+              ]
+            }
+          ],
+          "independent": [
+            {
+              "roots": [
+                "a8c8",
+                "e8e1"
+              ],
+              "selected": [
+                "Rac8",
+                "Rxe1+"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "d4",
+                "dxc4 bxc4"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 f3",
+                "Rxe1+ Rxe1 c4 dxc4 bxc4 Rd1 Ba4"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r5k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "f2f3"
+                ],
+                [
+                  "e8e1",
+                  "a1e1",
+                  "c5c4",
+                  "d3c4",
+                  "b5c4",
+                  "e1d1",
+                  "d7a4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a8c8",
+                "c5c4"
+              ],
+              "selected": [
+                "Rac8",
+                "c4"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "d4",
+                "dxc4 bxc4"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 f3",
+                "c4 Rxe8+ Rxe8 Rd1 Bc6 dxc4 bxc4 Rd8 Rxd8 Bxd8"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r3r1k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "f2f3"
+                ],
+                [
+                  "c5c4",
+                  "e1e8",
+                  "a8e8",
+                  "a1d1",
+                  "d7c6",
+                  "d3c4",
+                  "b5c4",
+                  "d1d8",
+                  "e8d8",
+                  "b6d8"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "15db024321ed4817",
+          "source": "https://lichess.org/broadcast/17th-kiit-international-chess-festival-2026-cat-a/round-5/pZJqJSfw/wS999sIr",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "f5f4",
+                "d7e6"
+              ],
+              "selected": [
+                "f4",
+                "Qe6"
+              ],
+              "pawn": "f5",
+              "lever": "f5f4",
+              "contact": "f4",
+              "target": "g3",
+              "theirSquare": "g3",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g4",
+                "g4"
+              ],
+              "witness": [
+                "f4 g4 Rg5 Be2",
+                "Qe6 Kg2 f4 g4 Rg5 Rfe1"
+              ],
+              "requiredControl": [
+                "5r2/pp1q2k1/3b2p1/3prp2/8/2PB1QP1/PP3P2/R4RK1 b - -",
+                "5r2/pp4k1/3bq1p1/3prp2/8/2PB1QP1/PP3PK1/R4R2 b - -"
+              ],
+              "linesUci": [
+                [
+                  "f5f4",
+                  "g3g4",
+                  "e5g5",
+                  "d3e2"
+                ],
+                [
+                  "d7e6",
+                  "g1g2",
+                  "f5f4",
+                  "g3g4",
+                  "e5g5",
+                  "f1e1"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "17e22a5deb7d1cb2",
+          "source": "https://lichess.org/broadcast/2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b/round-1/a8iXjhcz/aiubbv3N",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "a5a4",
+                "b7b6"
+              ],
+              "selected": [
+                "a4",
+                "Rb6"
+              ],
+              "pawn": "a5",
+              "lever": "a5a4",
+              "contact": "a4",
+              "target": "b3",
+              "theirSquare": "b3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b4",
+                "axb3 axb3"
+              ],
+              "witness": [
+                "a4 b4 Rb5 Re8+",
+                "Rb6 Rxc7 a4 g3 axb3 axb3 Ra6 Ne7+"
+              ],
+              "requiredControl": [
+                "6k1/1rp1Rpp1/2N4p/p7/3P4/1P6/P4PPP/6K1 b - -",
+                "6k1/2R2pp1/1rN4p/p7/3P4/1P6/P4PPP/6K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a5a4",
+                  "b3b4",
+                  "b7b5",
+                  "e7e8"
+                ],
+                [
+                  "b7b6",
+                  "e7c7",
+                  "a5a4",
+                  "g2g3",
+                  "a4b3",
+                  "a2b3",
+                  "b6a6",
+                  "c6e7"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "1ddd3b65e7214133",
+          "source": "https://lichess.org/broadcast/35th-drogheda-chess-congress-thomson-masters/round-3/TFiF3Xc5/xLJpnlLx",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "d3d4",
+                "d1b3"
+              ],
+              "selected": [
+                "d4",
+                "Qb3"
+              ],
+              "pawn": "d3",
+              "lever": "d3d4",
+              "contact": "d4",
+              "target": "c5",
+              "theirSquare": "c5",
+              "outcomes": [
+                "exchange",
+                "advance"
+              ],
+              "actions": [
+                "cxd4 cxd4",
+                "c4"
+              ],
+              "witness": [
+                "d4 O-O Kh1 cxd4 cxd4 Nb6 Nc3",
+                "Qb3 Qb6 d4 c4 Qxb6 Nxb6"
+              ],
+              "requiredControl": [
+                "r1b1k2r/ppqnp1bp/2n2pp1/2ppP3/5P2/2PPBN1P/PP2B1P1/RN1Q1RK1 w kq -",
+                "r1b1k2r/pp1np1bp/1qn2pp1/2ppP3/5P2/1QPPBN1P/PP2B1P1/RN3RK1 w kq -"
+              ],
+              "linesUci": [
+                [
+                  "d3d4",
+                  "e8g8",
+                  "g1h1",
+                  "c5d4",
+                  "c3d4",
+                  "d7b6",
+                  "b1c3"
+                ],
+                [
+                  "d1b3",
+                  "c7b6",
+                  "d3d4",
+                  "c5c4",
+                  "b3b6",
+                  "d7b6"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2061f2ca9dbad7aa",
+          "source": "https://lichess.org/broadcast/2nd-rungta-cement-international-open-fide-rating-chess-tournament-2026/round-5/56OMKcZo/MMXFepIb",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "h7h5",
+                "c6a6"
+              ],
+              "selected": [
+                "h5",
+                "Qa6"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "Qa6 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/pp3ppp/q3p1b1/2P1P3/6P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "c6a6",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "h7h5",
+                "c6a4"
+              ],
+              "selected": [
+                "h5",
+                "Qa4"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "Qa4 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/pp3ppp/4p1b1/2P1P3/q5P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "c6a4",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "h7h5",
+                "a7a6"
+              ],
+              "selected": [
+                "h5",
+                "a6"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "a6 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/1p3ppp/p1q1p1b1/2P1P3/6P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "a7a6",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "00bfc7da75573273",
+          "source": "https://lichess.org/broadcast/2nd-rungta-cement-international-open-fide-rating-chess-tournament-2026/round-8/6Iihup51/3tNydxLJ",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "e7d7",
+                "e6e5"
+              ],
+              "selected": [
+                "Kd7",
+                "e5"
+              ],
+              "pawn": "a7",
+              "lever": "a7a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "axb4 axb4"
+              ],
+              "witness": [
+                "Kd7 a4 a5 b5 R6c7 f4",
+                "e5 Ke3 a5 a3 axb4 axb4 Ra8 dxe5 dxe5"
+              ],
+              "requiredControl": [
+                "2r5/p2k1p1p/1prpp1p1/8/PPPP4/5P2/2R2KPP/2R5 b - -",
+                "2r5/p3kp1p/1prp2p1/4p3/1PPP4/4KP2/P1R3PP/2R5 b - -"
+              ],
+              "linesUci": [
+                [
+                  "e7d7",
+                  "a2a4",
+                  "a7a5",
+                  "b4b5",
+                  "c6c7",
+                  "f3f4"
+                ],
+                [
+                  "e6e5",
+                  "f2e3",
+                  "a7a5",
+                  "a2a3",
+                  "a5b4",
+                  "a3b4",
+                  "c8a8",
+                  "d4e5",
+                  "d6e5"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        }
+      ],
+      "frameHashes": {
+        "app": "2b5a2811e1cb2655762c5d7c1d17640cc6f6866f845915be187a38d95abb061e",
+        "reference": "3ed2bc21aca4283474e8aaec039346564fa5c50255512eba0a2f697b861f85d5"
+      },
+      "sameLeadingMove": 47,
+      "medianRootDepth": 19.0,
+      "rootNodes": 118972157
+    },
+    "deeper-three": {
+      "cases": 58,
+      "counts": {
+        "shape": 21,
+        "shapeCorroborated": 3,
+        "fixed": 2,
+        "fixedCorroborated": 0,
+        "settled": 3,
+        "settledCorroborated": 0,
+        "independentlyObserved": 5
+      },
+      "witnesses": [
+        {
+          "id": "008f3cd098c5b0d0",
+          "source": "https://lichess.org/broadcast/35th-drogheda-chess-congress-thomson-masters/round-2/ayoyRrtv/QDxHnVDk",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "a6b7",
+                "c6c5"
+              ],
+              "selected": [
+                "Bb7",
+                "c5"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "c5 b5 Bb7 Qe3"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "r1q2rk1/p1nn1pb1/bpp1p1p1/4P2p/1PP5/Q4NP1/PB1N1PBP/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a3e3"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6b7",
+                "c7e8"
+              ],
+              "selected": [
+                "Bb7",
+                "Ne8"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "Ne8 Qd3 c5 b5 Bb7 a4"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "r1q1nrk1/p2n1pb1/bpp1p1p1/4P2p/1PP5/3Q1NP1/PB1N1PBP/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "c7e8",
+                  "a3d3",
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a2a4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6b7",
+                "a8b8"
+              ],
+              "selected": [
+                "Bb7",
+                "Rb8"
+              ],
+              "pawn": "c6",
+              "lever": "c6c5",
+              "contact": "c5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "Bb7 Qe3 c5 b5 a6 a4",
+                "Rb8 Rad1 c5 b5 Bb7 Qe3"
+              ],
+              "requiredControl": [
+                "r1q2rk1/pbnn1pb1/1pp1p1p1/4P2p/1PP5/4QNP1/PB1N1PBP/R3R1K1 b - -",
+                "1rq2rk1/p1nn1pb1/bpp1p1p1/4P2p/1PP5/Q4NP1/PB1N1PBP/3RR1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6b7",
+                  "a3e3",
+                  "c6c5",
+                  "b4b5",
+                  "a7a6",
+                  "a2a4"
+                ],
+                [
+                  "a8b8",
+                  "a1d1",
+                  "c6c5",
+                  "b4b5",
+                  "a6b7",
+                  "a3e3"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "072e0f91d2e6cf3b",
+          "source": "https://lichess.org/broadcast/12th-cesme-international-open-chess-tournament/round-6/DhWApaGr/D0gaX05O",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "a6a5",
+                "d3e2"
+              ],
+              "selected": [
+                "a5",
+                "Qe2"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "b5",
+                "b5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "Qe2 Qc4+ Qxc4 Rxc4 a5 b5 Nd4 Rc7"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1PR1P2P/PN4B1/3N1PP1/6K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "d3e2",
+                  "c2c4",
+                  "e2c4",
+                  "c1c4",
+                  "a6a5",
+                  "b4b5",
+                  "c6d4",
+                  "c4c7"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6a5",
+                "h7h5"
+              ],
+              "selected": [
+                "a5",
+                "h5"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "bxa5 bxa5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "h5 f3 a5 bxa5 bxa5 a4 Bb4"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r2k1/1b2b1p1/ppn2p2/4p2p/1P2P2P/PN1q1PB1/2QN2P1/2R3K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "h7h5",
+                  "f2f3",
+                  "a6a5",
+                  "b4a5",
+                  "b6a5",
+                  "a3a4",
+                  "e7b4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a6a5",
+                "e7f8"
+              ],
+              "selected": [
+                "a5",
+                "Bf8"
+              ],
+              "pawn": "a6",
+              "lever": "a6a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "bxa5 bxa5"
+              ],
+              "witness": [
+                "a5 Qxd3 Rxd3 b5 Nd8 a4",
+                "Bf8 f3 a5 bxa5 bxa5 a4 Qxc2 Rxc2"
+              ],
+              "requiredControl": [
+                "3r2k1/1b2b1pp/ppn2p2/4p3/1P2P2P/PN1q2B1/2QN1PP1/2R3K1 b - -",
+                "3r1bk1/1b4pp/ppn2p2/4p3/1P2P2P/PN1q1PB1/2QN2P1/2R3K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a6a5",
+                  "c2d3",
+                  "d8d3",
+                  "b4b5",
+                  "c6d8",
+                  "a3a4"
+                ],
+                [
+                  "e7f8",
+                  "f2f3",
+                  "a6a5",
+                  "b4a5",
+                  "b6a5",
+                  "a3a4",
+                  "d3c2",
+                  "c1c2"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0f1a682d78e304d1",
+          "source": "https://lichess.org/broadcast/2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b/round-9/33T9A6tw/JipMpye0",
+          "incumbent": "positional",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "a8c8",
+                "e8e1"
+              ],
+              "selected": [
+                "Rac8",
+                "Rxe1+"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "d4",
+                "dxc4 bxc4"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 f3",
+                "Rxe1+ Rxe1 c4 dxc4 bxc4 Rd1 Ba4"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r5k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "f2f3"
+                ],
+                [
+                  "e8e1",
+                  "a1e1",
+                  "c5c4",
+                  "d3c4",
+                  "b5c4",
+                  "e1d1",
+                  "d7a4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "a8c8",
+                "c5c4"
+              ],
+              "selected": [
+                "Rac8",
+                "c4"
+              ],
+              "pawn": "c5",
+              "lever": "c5c4",
+              "contact": "c4",
+              "target": "d3",
+              "theirSquare": "d3",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "d4",
+                "dxc4 bxc4"
+              ],
+              "witness": [
+                "Rac8 Rxe8+ Bxe8 Re1 c4 d4 Bc6 f3",
+                "c4 Rxe8+ Rxe8 Rd1 Bc6 dxc4 bxc4 Rd8 Rxd8 Bxd8"
+              ],
+              "requiredControl": [
+                "2r1b1k1/1p3pp1/1B5p/1pp5/8/P2P4/1PP2PP1/4R1K1 b - -",
+                "r3r1k1/1p1b1pp1/1B5p/1pp5/8/P2P4/1PP2PP1/R3R1K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a8c8",
+                  "e1e8",
+                  "d7e8",
+                  "a1e1",
+                  "c5c4",
+                  "d3d4",
+                  "e8c6",
+                  "f2f3"
+                ],
+                [
+                  "c5c4",
+                  "e1e8",
+                  "a8e8",
+                  "a1d1",
+                  "d7c6",
+                  "d3c4",
+                  "b5c4",
+                  "d1d8",
+                  "e8d8",
+                  "b6d8"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "17e22a5deb7d1cb2",
+          "source": "https://lichess.org/broadcast/2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b/round-1/a8iXjhcz/aiubbv3N",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "a5a4",
+                "g8h7"
+              ],
+              "selected": [
+                "a4",
+                "Kh7"
+              ],
+              "pawn": "a5",
+              "lever": "a5a4",
+              "contact": "a4",
+              "target": "b3",
+              "theirSquare": "b3",
+              "outcomes": [
+                "exchange",
+                "advance"
+              ],
+              "actions": [
+                "axb3 axb3",
+                "b4"
+              ],
+              "witness": [
+                "a4 g3 g5 Kg2 axb3 axb3 Kg7 b4",
+                "Kh7 Rxf7 a4 b4 Kg6 Re7"
+              ],
+              "requiredControl": [
+                "6k1/1rp1Rpp1/2N4p/p7/3P4/1P6/P4PPP/6K1 b - -",
+                "8/1rp2Rpk/2N4p/p7/3P4/1P6/P4PPP/6K1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "a5a4",
+                  "g2g3",
+                  "g7g5",
+                  "g1g2",
+                  "a4b3",
+                  "a2b3",
+                  "g8g7",
+                  "b3b4"
+                ],
+                [
+                  "g8h7",
+                  "e7f7",
+                  "a5a4",
+                  "b3b4",
+                  "h7g6",
+                  "f7e7"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "1ddd3b65e7214133",
+          "source": "https://lichess.org/broadcast/35th-drogheda-chess-congress-thomson-masters/round-3/TFiF3Xc5/xLJpnlLx",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "d3d4",
+                "d1b3"
+              ],
+              "selected": [
+                "d4",
+                "Qb3"
+              ],
+              "pawn": "d3",
+              "lever": "d3d4",
+              "contact": "d4",
+              "target": "c5",
+              "theirSquare": "c5",
+              "outcomes": [
+                "exchange",
+                "advance"
+              ],
+              "actions": [
+                "cxd4 cxd4",
+                "c4"
+              ],
+              "witness": [
+                "d4 O-O Kh1 cxd4 cxd4 Nb6 Nc3",
+                "Qb3 Qb6 d4 c4 Qxb6 Nxb6"
+              ],
+              "requiredControl": [
+                "r1b1k2r/ppqnp1bp/2n2pp1/2ppP3/5P2/2PPBN1P/PP2B1P1/RN1Q1RK1 w kq -",
+                "r1b1k2r/pp1np1bp/1qn2pp1/2ppP3/5P2/1QPPBN1P/PP2B1P1/RN3RK1 w kq -"
+              ],
+              "linesUci": [
+                [
+                  "d3d4",
+                  "e8g8",
+                  "g1h1",
+                  "c5d4",
+                  "c3d4",
+                  "d7b6",
+                  "b1c3"
+                ],
+                [
+                  "d1b3",
+                  "c7b6",
+                  "d3d4",
+                  "c5c4",
+                  "b3b6",
+                  "d7b6"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2061f2ca9dbad7aa",
+          "source": "https://lichess.org/broadcast/2nd-rungta-cement-international-open-fide-rating-chess-tournament-2026/round-5/56OMKcZo/MMXFepIb",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [],
+          "independent": [
+            {
+              "roots": [
+                "h7h5",
+                "c6a6"
+              ],
+              "selected": [
+                "h5",
+                "Qa6"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "Qa6 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/pp3ppp/q3p1b1/2P1P3/6P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "c6a6",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "h7h5",
+                "c6a4"
+              ],
+              "selected": [
+                "h5",
+                "Qa4"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "Qa4 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/pp3ppp/4p1b1/2P1P3/q5P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "c6a4",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            },
+            {
+              "roots": [
+                "h7h5",
+                "a7a6"
+              ],
+              "selected": [
+                "h5",
+                "a6"
+              ],
+              "pawn": "h7",
+              "lever": "h7h5",
+              "contact": "h5",
+              "target": "g4",
+              "theirSquare": "g4",
+              "outcomes": [
+                "advance",
+                "advance"
+              ],
+              "actions": [
+                "g5",
+                "g5"
+              ],
+              "witness": [
+                "h5 g5 Bf5 Kh2",
+                "a6 bxc5 h5 g5 Ne7 Nd4"
+              ],
+              "requiredControl": [
+                "2kr1bnr/pp3ppp/2q1p1b1/2p1P3/1P4P1/B1PpQN1P/P2P1P2/RN3RK1 b - -",
+                "2kr1bnr/1p3ppp/p1q1p1b1/2P1P3/6P1/B1PpQN1P/P2P1P2/RN3RK1 b - -"
+              ],
+              "linesUci": [
+                [
+                  "h7h5",
+                  "g4g5",
+                  "g6f5",
+                  "g1h2"
+                ],
+                [
+                  "a7a6",
+                  "b4c5",
+                  "h7h5",
+                  "g4g5",
+                  "g8e7",
+                  "f3d4"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "252f300a73067374",
+          "source": "https://lichess.org/broadcast/19th-kalamaria-international-2026-group-a/round-2/tzYuRBSG/Awr8iLfE",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "f4f5",
+                "g1f2"
+              ],
+              "selected": [
+                "f5",
+                "Kf2"
+              ],
+              "pawn": "f4",
+              "lever": "f4f5",
+              "contact": "f5",
+              "target": "g6",
+              "theirSquare": "g6",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "g5",
+                "gxf5 Bxf5"
+              ],
+              "witness": [
+                "f5 g5 Re6 Nd5",
+                "Kf2 Red8 Rbc1 Rb8 f5 gxf5 Bxf5 a5 Re7"
+              ],
+              "requiredControl": [
+                "2r1r1k1/6bp/p4np1/1p6/3P1P2/1P1B2PP/1B6/1R2R1K1 w - -",
+                "1r1r2k1/6bp/p4np1/1p6/3P1P2/1P1B2PP/1B3K2/2R1R3 w - -"
+              ],
+              "linesUci": [
+                [
+                  "f4f5",
+                  "g6g5",
+                  "e1e6",
+                  "f6d5"
+                ],
+                [
+                  "g1f2",
+                  "e8d8",
+                  "b1c1",
+                  "c8b8",
+                  "f4f5",
+                  "g6f5",
+                  "d3f5",
+                  "a6a5",
+                  "e1e7"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        },
+        {
+          "id": "00bfc7da75573273",
+          "source": "https://lichess.org/broadcast/2nd-rungta-cement-international-open-fide-rating-chess-tournament-2026/round-8/6Iihup51/3tNydxLJ",
+          "incumbent": "unclear",
+          "matched": [],
+          "proposed": [
+            {
+              "roots": [
+                "e7d7",
+                "e6e5"
+              ],
+              "selected": [
+                "Kd7",
+                "e5"
+              ],
+              "pawn": "a7",
+              "lever": "a7a5",
+              "contact": "a5",
+              "target": "b4",
+              "theirSquare": "b4",
+              "outcomes": [
+                "advance",
+                "exchange"
+              ],
+              "actions": [
+                "b5",
+                "axb4 axb4"
+              ],
+              "witness": [
+                "Kd7 a4 g5 Ke2 a5 b5 R6c7 g3",
+                "e5 Ke3 a5 a3 f5 Kd3 axb4 axb4 Ra8 dxe5 dxe5"
+              ],
+              "requiredControl": [
+                "2r5/p2k1p1p/1prpp3/6p1/PPPP4/5P2/2R1K1PP/2R5 b - -",
+                "2r5/p3kp1p/1prp2p1/4p3/1PPP4/4KP2/P1R3PP/2R5 b - -"
+              ],
+              "linesUci": [
+                [
+                  "e7d7",
+                  "a2a4",
+                  "g6g5",
+                  "f2e2",
+                  "a7a5",
+                  "b4b5",
+                  "c6c7",
+                  "g2g3"
+                ],
+                [
+                  "e6e5",
+                  "f2e3",
+                  "a7a5",
+                  "a2a3",
+                  "f7f5",
+                  "e3d3",
+                  "a5b4",
+                  "a3b4",
+                  "c8a8",
+                  "d4e5",
+                  "d6e5"
+                ]
+              ]
+            }
+          ],
+          "independent": []
+        }
+      ],
+      "frameHashes": {
+        "app": "5fde0081c8a28a3cc46b05213d3bbbd7df681300ccfaaef46c659ab60cdc1a77",
+        "reference": "3ed2bc21aca4283474e8aaec039346564fa5c50255512eba0a2f697b861f85d5"
+      },
+      "sameLeadingMove": 48,
+      "medianRootDepth": 23.0,
+      "rootNodes": 278378675
+    }
+  }
+}

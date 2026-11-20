@@ -27,10 +27,13 @@ It does not give the whole plan to one exact root move.
    `fxe3` restores the previous material balance.
 
 Cached analysis of 1,051 older requests gives 64 repeated shapes and
-seven resolved plans. Five of those seven were previously unclear and
-all seven already have positive positional reference labels. These
-are retrospective axis counts. The reference notes are checked for
-agreement with the specific proposed plan during readback.
+seven resolved plans. Five previously unclear position reports could
+gain an observation. Four have positive position references, and the
+Polish example was reviewed as a mistake. The archived notes describe
+the same pawn idea in several cases. The Baden note specifically
+identifies the g4–h4 contact. In the Puerto Rico team event, the note
+also identifies separate tactics near the king. The positional plan
+alone does not resolve that tactical question.
 
 ## Frozen transfer protocol
 
@@ -52,3 +55,34 @@ its own explanation. A shallow shape with a stable deeper pivot
 but no structural outcome is checked separately. A changed root
 or lost continuation can leave the case unresolved. Count position
 verdicts and agreement on the exact plan separately.
+
+## Transfer result
+
+All 58 games produced complete frames. The independent deeper search
+observed five of the scoped plans. The table counts proposed plans by
+board. Corroboration means the same lever and original pawns in the
+deeper lines. A change of plan at depth leaves the shallow observation
+unconfirmed. It does not make the move sequence illegal.
+
+| Root search | Median depth | Repeated shape, found / corroborated | Resolved, found / corroborated | With completed recaptures, found / corroborated |
+| --- | ---: | ---: | ---: | ---: |
+| Three choices, 2.4M nodes | 20 | 21 / 4 | 5 / 1 | 5 / 1 |
+| Four choices, 2.4M nodes | 19 | 24 / 4 | 4 / 1 | 6 / 2 |
+| Three choices, 5.4M nodes | 23 | 21 / 3 | 2 / 0 | 3 / 0 |
+
+At the app budget, the only matched plan was already classified as
+positional. Black's c4 challenges d3, which advances or is exchanged.
+At the same node budget, the four-choice search also finds a5
+challenging the original b4 pawn in Çeşme. The deeper lines independently
+show both b5 and bxa5. That position had been unclear. The four-choice
+arm also proposes four other unconfirmed explanations, and the
+three-choice deeper arm recovers none. The trial stays offline.
+[Belt and Road game](https://lichess.org/broadcast/2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b/round-9/33T9A6tw/JipMpye0) ·
+[Çeşme game](https://lichess.org/broadcast/12th-cesme-international-open-chess-tournament/round-6/DhWApaGr/D0gaX05O)
+
+To reproduce, run `gather_plans.py engine` from the neighbouring
+competing-pawn-plans benchmark with `reserve.json` at the listed settings.
+Use 1.4M reply nodes at 2.4M root nodes and 3.2M reply nodes at 5.4M root
+nodes. Run `readback.py APP_FRAMES REFERENCE_FRAMES OUTPUT` against the
+5.4M-node four-choice reference. The [readback receipt](results.json)
+records hashes, costs, the v65 baseline and exact continuations.
