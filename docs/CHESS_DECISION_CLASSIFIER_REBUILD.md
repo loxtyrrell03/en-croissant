@@ -4133,3 +4133,21 @@ nominations. The stronger capture comparison also rejects one archive
 proposal. This trial remains offline. The added searches have not been validated within the normal
 analysis budget, and the fresh coverage remains uncertain.
 [Benchmark, exact variations and reproduction](../benchmarks/decision-evidence/passer-restraint/README.md)
+
+## Quiet preparation for a conditional mate in two
+
+Decision Evidence now catches a quiet move that sets up an exact
+mate in two when a legal reply allows it. Each legal defence to the
+named first check is tested. The engine's leading lines must show
+defences that stop the short attack. The expanded report distinguishes
+a separately verified example from a reply Stockfish searched.
+
+The exact-move proof finds 24 of 26 scoped positives and zero of 52
+scoped negatives across two independent challenge sets. The full
+worker gains five tactical position diagnoses in each and gives 14
+new move explanations. It changes one position to mixed, retaining the
+existing strategic rationale. An archive replay adds three move
+explanations with the same position categories and mistake reports.
+No extra Stockfish calls are needed. The source-built evidence panel
+and all independent mating replays passed.
+[Results, examples and reproduction](../benchmarks/decision-evidence/quiet-mate-in-two/README.md)

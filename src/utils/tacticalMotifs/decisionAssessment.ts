@@ -40,6 +40,7 @@ import type { TacticalGameHistory } from "./gameHistory";
 import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
 import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
 import { findQuietMateThreat, type QuietMateThreat } from "./decisionQuietMateThreat";
+import { findQuietMateInTwoThreat } from "./decisionQuietMateInTwo";
 import { explainFleetingCapture } from "./decisionCaptureOpportunity";
 import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
 import {
@@ -99,7 +100,7 @@ import {
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 43;
+export const DECISION_ASSESSMENT_VERSION = 44;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -641,7 +642,9 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 (item) => item.moveUci === line.pvUci[0],
             );
             if (probe && validReplyFrame(input.fen, line, probe)) {
-                const threat = findQuietMateThreat(input.fen, line, probe.lines);
+                const threat =
+                    findQuietMateThreat(input.fen, line, probe.lines) ??
+                    findQuietMateInTwoThreat(input.fen, line, probe.lines, input.history);
                 if (threat) {
                     assessment.quietMateThreat = threat;
                     assessment.tactical = {

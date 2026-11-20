@@ -1,0 +1,833 @@
+{
+  "development": {
+    "frozenSha256": "92530557420eb7825a58e3971fcefde60adf03a997d7991e2b8eb0e8d208972b",
+    "engineInputSha256": "5379c1006d03fe184ad306431657f171e8eaf62b3b4e4890515e5964b04517c8",
+    "sampling": {
+      "sources": {
+        "unified-audit/grand-swiss-2025.pgn": {
+          "sha256": "3f1c04b3e8347f94c1cd665d561abce85b1dcf9a0cd426f8519e36848abc5f62",
+          "population": {
+            "new-mate-two": 3
+          }
+        },
+        "unified-audit/british-2025.pgn": {
+          "sha256": "d376eb246c885719553eaab5b3a38b72b4f0c4118c7c639c69848ecfc08c9d13",
+          "population": {
+            "new-mate-two": 6
+          }
+        },
+        "unified-audit/senior-2025-open65.pgn": {
+          "sha256": "10a64723a2defae058a33a9a3e293fcc59d22196005dfce0afea3788a916c8a4",
+          "population": {
+            "new-mate-two": 7
+          }
+        },
+        "structural-tradeoffs/hvar.pgn": {
+          "sha256": "8bbea58a784f9117ffa141d8402bb4c0e6e7187d50ac00d4081f2010495967aa",
+          "population": {
+            "new-mate-two": 3
+          }
+        },
+        "rook-file-consequence/world-junior.pgn": {
+          "sha256": "248ced5e2f7389fa6a4e73a3fb46f8f62bc1d68d5004a2ef91df763ebc00b19e",
+          "population": {
+            "new-mate-two": 3
+          }
+        },
+        "promotion-mistake-transfer/challengers.pgn": {
+          "sha256": "89aa94c72a2f352938aaf9387fe2783c332efa2086a23389ca01b8b341c8ecb3",
+          "population": {
+            "new-mate-two": 1
+          }
+        },
+        "aligned-strategic-plans/cappelle-open.pgn": {
+          "sha256": "cc42b65217f9ded90288256ae6d39010ce3392256987d121e2750d6c15fa6b56",
+          "population": {
+            "new-mate-two": 1
+          }
+        },
+        "coordination-and-cached-defences/fresh/czech.pgn": {
+          "sha256": "909413f5a46d5604717bf47a7ab3f643c05bddb9bce03f098285a02f2bd1c6fc",
+          "population": {
+            "new-mate-two": 3
+          }
+        }
+      },
+      "cases": {
+        "new-mate-two": 14
+      }
+    },
+    "focused": {
+      "new-mate-two": {
+        "requests": 14,
+        "searched": 1,
+        "legal": 14
+      }
+    },
+    "medianMsBothProofMethods": 4.23,
+    "worker": {
+      "groups": {
+        "new-mate-two": {
+          "valid": 14,
+          "positionTacticalBefore": 3,
+          "positionTacticalAfter": 10,
+          "addedPositionTactical": 7,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 7,
+          "positionEvidenceChanges": 8,
+          "newMoveProofs": 9,
+          "newProofsAtRecordedMove": 9
+        }
+      },
+      "witnesses": [
+        {
+          "case": "quiet-two-0d14f4a58070f5dd-65",
+          "group": "new-mate-two",
+          "event": "senior-2025-open65",
+          "moveUci": "c2e3",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "mixed",
+          "moves": {
+            "ignored": "33...Ne3 34. b3 Nf1+ 35. Kf4 Be3#",
+            "defences": [
+              "33...Ne3 34. Bxf6"
+            ]
+          },
+          "explanation": "Ne3 sets up a mate-in-two threat. For example, b3 allows Nf1+, which forces mate on the next move. Bxf6 stops that attack."
+        },
+        {
+          "case": "quiet-two-d03d48ad7ff834a9-58",
+          "group": "new-mate-two",
+          "event": "british-2025",
+          "moveUci": "c1c8",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "30. Rc8 Qd2 31. Qe8+ Rxe8 32. Rxe8#",
+            "defences": [
+              "30. Rc8 Rf8"
+            ]
+          },
+          "explanation": "Rc8 sets up a mate-in-two threat. For example, Qd2 allows Qe8+, which forces mate on the next move. Rf8 stops that attack."
+        },
+        {
+          "case": "quiet-two-5fe5be00f95e5dd5-49",
+          "group": "new-mate-two",
+          "event": "world-junior",
+          "moveUci": "g6f5",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "25...Qf5 26. Ra1 Qxh3+ 27. Kg1 Qh1#",
+            "defences": [
+              "25...Qf5 26. Rxf2"
+            ]
+          },
+          "explanation": "Qf5 sets up a mate-in-two threat. For example, Ra1 allows Qxh3+, which forces mate on the next move. Rxf2 stops that attack."
+        },
+        {
+          "case": "quiet-two-a1e867aaed3956f2-73",
+          "group": "new-mate-two",
+          "event": "grand-swiss-2025",
+          "moveUci": "g5c1",
+          "beforePosition": "unclear",
+          "afterPosition": "unclear",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "37...Bc1 38. Ka1 Qa3+ 39. Kb1 Qb2#",
+            "defences": [
+              "37...Bc1 38. Qxb4",
+              "37...Bc1 38. Kb1"
+            ]
+          },
+          "explanation": "Bc1 sets up a mate-in-two threat. For example, Ka1 allows Qa3+, which forces mate on the next move. Qxb4 and Kb1 stop that attack."
+        },
+        {
+          "case": "quiet-two-0ce1421c0c430392-57",
+          "group": "new-mate-two",
+          "event": "hvar",
+          "moveUci": "e8e2",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "29...Re2 30. Kh1 Rb1+ 31. Rd1 Rxd1#",
+            "defences": [
+              "29...Re2 30. Rf3"
+            ]
+          },
+          "explanation": "Re2 sets up a mate-in-two threat. For example, Kh1 allows Rb1+, which forces mate on the next move. Rf3 stops that attack."
+        },
+        {
+          "case": "quiet-two-4af9e1ac5b96fed0-87",
+          "group": "new-mate-two",
+          "event": "senior-2025-open65",
+          "moveUci": "a2a1",
+          "beforePosition": "tactical",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "44...Ra1 45. Nf3 Rh1+ 46. Nh2 Rxh2#",
+            "defences": [
+              "44...Ra1 45. Ne6+"
+            ]
+          },
+          "explanation": "Ra1 sets up a mate-in-two threat. For example, Nf3 allows Rh1+, which forces mate on the next move. Ne6+ stops that attack."
+        },
+        {
+          "case": "quiet-two-dd3bcb2a8e3414e1-68",
+          "group": "new-mate-two",
+          "event": "british-2025",
+          "moveUci": "f4g4",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "35. Rg4 a4 36. Bxg7+ Rxg7 37. Qxg7#",
+            "defences": [
+              "35. Rg4 Ne8"
+            ]
+          },
+          "explanation": "Rg4 sets up a mate-in-two threat. For example, a4 allows Bxg7+, which forces mate on the next move. Ne8 stops that attack."
+        },
+        {
+          "case": "quiet-two-d36158e4aaf00e19-56",
+          "group": "new-mate-two",
+          "event": "british-2025",
+          "moveUci": "d1c1",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "mixed",
+          "moves": {
+            "ignored": "29. Rc1 Qh4 30. Rxc8+ Qd8 31. Rxd8#",
+            "defences": [
+              "29. Rc1 Qd5+"
+            ]
+          },
+          "explanation": "Rc1 sets up a mate-in-two threat. For example, Qh4 allows Rxc8+, which forces mate on the next move. Qd5+ stops that attack."
+        },
+        {
+          "case": "quiet-two-986f2458e2575a0f-82",
+          "group": "new-mate-two",
+          "event": "british-2025",
+          "moveUci": "e2b2",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "42. Reb2 Ne3 43. Rb8+ Rxb8 44. Rxb8#",
+            "defences": [
+              "42. Reb2 Rhh8"
+            ]
+          },
+          "explanation": "Reb2 sets up a mate-in-two threat. For example, Ne3 allows Rb8+, which forces mate on the next move. Rhh8 stops that attack."
+        }
+      ],
+      "medianWorkerMs": {
+        "baseline": 50.7,
+        "candidate": 49.25
+      }
+    }
+  },
+  "holdout": {
+    "frozenSha256": "666d099adccd05e3285965181c09f785ff2ea450c987e3647e0ee7a91a458162",
+    "engineInputSha256": "84f262032e66f3c7028eb6b42e3601134d811bb3df5d2b921230c552f0db18b4",
+    "sampling": {
+      "sources": {
+        "forcing-transfer/olympiad-open-i-r4.pgn": {
+          "sha256": "293c44a277bae5ea17b89f99043d8566ce9893359dc05f3f71dcac81af2175b6",
+          "population": {
+            "cooperative": 117,
+            "new-mate-two": 7,
+            "immediate": 20
+          }
+        },
+        "forcing-transfer/pan-amateur-r4.pgn": {
+          "sha256": "efa92c05b0d245914ef48922be9471004a81129414b4e4c2bea0be78959adcb5",
+          "population": {}
+        },
+        "forcing-transfer/asian-amateur-r4.pgn": {
+          "sha256": "3e9b58e9f18de4466b363b31acc6db70df686e1fc4be2144c96303e7c1cc1218",
+          "population": {}
+        },
+        "aligned-strategic-plans/english-open.pgn": {
+          "sha256": "947e527c5b24b4cc9852c582487a79c44f358ebea843bbf8dbe78f4cd2a06811",
+          "population": {
+            "cooperative": 40,
+            "immediate": 9,
+            "new-mate-two": 4
+          }
+        },
+        "promotion-mistake-transfer/castel.pgn": {
+          "sha256": "d83050474521f2e85ec9af8491f704c7020b8faadd2a95fcbb41a7b4b0816bd9",
+          "population": {}
+        },
+        "coordination-and-cached-defences/fresh/tyreso.pgn": {
+          "sha256": "6b976e3ec06a84f2e548e9f66e0e01ee1ba59cb731393c4242d37d0c0d597912",
+          "population": {
+            "new-mate-two": 4,
+            "cooperative": 16
+          }
+        },
+        "coordination-and-cached-defences/fresh/bauru.pgn": {
+          "sha256": "d5064c22b9337079c2379debb31f9b96c2ccca633d1654f7c6fb9532ab2a2d50",
+          "population": {}
+        },
+        "structural-tradeoffs/arco.pgn": {
+          "sha256": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18",
+          "population": {
+            "cooperative": 300,
+            "new-mate-two": 23,
+            "immediate": 54
+          }
+        },
+        "structural-tradeoffs/stockholm.pgn": {
+          "sha256": "73db2ecd3b605f9b8dd2274616ac0f8c5f18bdc292ad4ca80bcf51596c89cd7c",
+          "population": {}
+        },
+        "rook-file-consequence/marshall-premier.pgn": {
+          "sha256": "f2b4933db90a224997f18aacded255556004f04bdf6e7aa5bc3b826005e7b473",
+          "population": {}
+        },
+        "rook-file-consequence/serbia-women.pgn": {
+          "sha256": "d60972f69f9e543d00ec35bd33bba1c2efee8a3592c42b3b5f531b4d40eba4b3",
+          "population": {
+            "cooperative": 17,
+            "immediate": 2,
+            "new-mate-two": 1
+          }
+        },
+        "verified-defensive-mate/bremer-r1.pgn": {
+          "sha256": "884bf5415baf7bd76ac834487fbf7433fe8a585f4f63d6810e22323306fed02f",
+          "population": {}
+        }
+      },
+      "cases": {
+        "cooperative": 16,
+        "immediate": 16,
+        "new-mate-two": 16
+      }
+    },
+    "focused": {
+      "cooperative": {
+        "requests": 16,
+        "searched": 0,
+        "legal": 0
+      },
+      "immediate": {
+        "requests": 16,
+        "searched": 0,
+        "legal": 0
+      },
+      "new-mate-two": {
+        "requests": 16,
+        "searched": 0,
+        "legal": 15,
+        "declinedBelowMinusOnePawn": 1
+      }
+    },
+    "medianMsBothProofMethods": 2.64,
+    "worker": {
+      "groups": {
+        "cooperative": {
+          "valid": 16,
+          "positionTacticalBefore": 1,
+          "positionTacticalAfter": 1,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 0
+        },
+        "immediate": {
+          "valid": 16,
+          "positionTacticalBefore": 8,
+          "positionTacticalAfter": 8,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 0
+        },
+        "new-mate-two": {
+          "valid": 16,
+          "positionTacticalBefore": 3,
+          "positionTacticalAfter": 8,
+          "addedPositionTactical": 5,
+          "addedPositionMixed": 1,
+          "positionCategoryChanges": 5,
+          "positionEvidenceChanges": 6,
+          "newMoveProofs": 8,
+          "newProofsAtRecordedMove": 6
+        }
+      },
+      "witnesses": [
+        {
+          "case": "quiet-two-7a84b82a81c29e4a-58",
+          "group": "new-mate-two",
+          "event": "olympiad-open-i-r4",
+          "moveUci": "g4h4",
+          "beforePosition": "positional",
+          "afterPosition": "mixed",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "30. Qh4 a5 31. Qxh6+ Nh7 32. Qg7#",
+            "defences": [
+              "30. Qh4 Qd2"
+            ]
+          },
+          "explanation": "Qh4 sets up a mate-in-two threat. For example, a5 allows Qxh6+, which forces mate on the next move. Qd2 stops that attack."
+        },
+        {
+          "case": "quiet-two-4894adeb0803e3eb-45",
+          "group": "new-mate-two",
+          "event": "arco",
+          "moveUci": "f4g4",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "23...Rg4 24. Rab1 Qxg3+ 25. Kf1 Bd3#",
+            "defences": [
+              "23...Rg4 24. Qxg4"
+            ]
+          },
+          "explanation": "Rg4 sets up a mate-in-two threat. For example, Rab1 allows Qxg3+, which forces mate on the next move. Qxg4 stops that attack."
+        },
+        {
+          "case": "quiet-two-a3d908a0330b8909-59",
+          "group": "new-mate-two",
+          "event": "arco",
+          "moveUci": "d8h8",
+          "beforePosition": "unclear",
+          "afterPosition": "unclear",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "30...Rdh8 31. Ra1 Rh1+ 32. Kf2 R8h2#",
+            "defences": [
+              "30...Rdh8 31. Nf1",
+              "30...Rdh8 31. Rf1"
+            ]
+          },
+          "explanation": "Rdh8 sets up a mate-in-two threat. For example, Ra1 allows Rh1+, which forces mate on the next move. Nf1 and Rf1 stop that attack."
+        },
+        {
+          "case": "quiet-two-cfcf3a5c08995cb1-74",
+          "group": "new-mate-two",
+          "event": "olympiad-open-i-r4",
+          "moveUci": "b7e7",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "38. Qe7 Qa1 39. Qf6+ Kh7 40. Qxf7#",
+            "defences": [
+              "38. Qe7 Rd2+"
+            ]
+          },
+          "explanation": "Qe7 sets up a mate-in-two threat. For example, Qa1 allows Qf6+, which forces mate on the next move. Rd2+ stops that attack."
+        },
+        {
+          "case": "quiet-two-ae2e3201e0761b43-62",
+          "group": "new-mate-two",
+          "event": "arco",
+          "moveUci": "e4b7",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "32. Qb7 Qa1 33. Qxf7+ Kh8 34. Qxg7#",
+            "defences": [
+              "32. Qb7 Na2+"
+            ]
+          },
+          "explanation": "Qb7 sets up a mate-in-two threat. For example, Qa1 allows Qxf7+, which forces mate on the next move. Na2+ stops that attack."
+        },
+        {
+          "case": "quiet-two-95906e250346f98b-63",
+          "group": "new-mate-two",
+          "event": "tyreso",
+          "moveUci": "d3e1",
+          "beforePosition": "tactical",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "32...Ne1 33. Ra1 Ng3+ 34. Kg1 Rg2#",
+            "defences": [
+              "32...Ne1 33. f4"
+            ]
+          },
+          "explanation": "Ne1 sets up a mate-in-two threat. For example, Ra1 allows Ng3+, which forces mate on the next move. f4 stops that attack."
+        },
+        {
+          "case": "quiet-two-9adde3636e4b6956-40",
+          "group": "new-mate-two",
+          "event": "arco",
+          "moveUci": "d2d3",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "21. Qd3 Nc3 22. Qh7+ Kf8 23. Qh8#",
+            "defences": [
+              "21. Qd3 Nf6"
+            ]
+          },
+          "explanation": "Qd3 sets up a mate-in-two threat. For example, Nc3 allows Qh7+, which forces mate on the next move. Nf6 stops that attack."
+        },
+        {
+          "case": "quiet-two-cf670a39765d8030-95",
+          "group": "new-mate-two",
+          "event": "olympiad-open-i-r4",
+          "moveUci": "e6f5",
+          "beforePosition": "tactical",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "48...Qf5 49. Nh2 Qf2+ 50. Kh1 Ng3#",
+            "defences": [
+              "48...Qf5 49. Qa2"
+            ]
+          },
+          "explanation": "Qf5 sets up a mate-in-two threat. For example, Nh2 allows Qf2+, which forces mate on the next move. Qa2 stops that attack."
+        }
+      ],
+      "medianWorkerMs": {
+        "baseline": 48.61,
+        "candidate": 47.82
+      }
+    }
+  },
+  "replication": {
+    "frozenSha256": "4e316db57c8e8466c0aa9b89f704435b89a2747b11f435bff7a00a38e15bf76c",
+    "engineInputSha256": "daae440b87be2461d0b5b4daef3e31c998859a43038390e799f3e9692b87b32b",
+    "sampling": {
+      "sources": {
+        "passed-pawn-choices/world-seniors-65-2026.pgn": {
+          "sha256": "57ad6743504ed363bf55fcb750eb3f0f7d84df6d6eedc811a548b1936c5193bf",
+          "population": {
+            "cooperative": 10,
+            "new-mate-two": 1
+          }
+        },
+        "rook-file-consequence/buongoma.pgn": {
+          "sha256": "7c38efe6490a20f003a3efe8d2220eb139a9761221b811f79bf3b4bce79c3ec1",
+          "population": {
+            "cooperative": 33,
+            "immediate": 7,
+            "new-mate-two": 1
+          }
+        },
+        "rook-file-consequence/korea.pgn": {
+          "sha256": "05244bcdd6654631050b703eb221f6683d67de73a82c5b081be608773c9ff544",
+          "population": {}
+        },
+        "candidate-breadth/prospective-2026/reykjavik.pgn": {
+          "sha256": "acb4fa9de710591b43d0dc2d4b9b5715c4a533e132f84ebddafb0ad73a6d0120",
+          "population": {}
+        },
+        "candidate-breadth/prospective-2026/prague.pgn": {
+          "sha256": "7094c10a27f1599070f2621a3268af2d3ad6271dd836e633772378aa82b1f186",
+          "population": {
+            "cooperative": 10
+          }
+        },
+        "candidate-breadth/prospective/scottish.pgn": {
+          "sha256": "e070136877b1e31dc41ec520e0d2ddf235c6be32d0e189da1a11fcb39760f0e9",
+          "population": {}
+        },
+        "aligned-strategic-plans/challenge/hastings-masters.pgn": {
+          "sha256": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4",
+          "population": {
+            "cooperative": 57,
+            "immediate": 7,
+            "new-mate-two": 5
+          }
+        },
+        "rook-file-consequence/team-open.pgn": {
+          "sha256": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+          "population": {
+            "cooperative": 35,
+            "immediate": 5,
+            "new-mate-two": 5
+          }
+        },
+        "verified-defensive-mate/hongkong-r1.pgn": {
+          "sha256": "86e4b8415033696e671612e1f90bc8f4b3a0b41b89e9b8be0c4bbf7a9541e5fe",
+          "population": {}
+        },
+        "conditional-recovery/irish-championship.pgn": {
+          "sha256": "c6206cecc5be314d1582cc9a58b77fee8b26b745d5a07e900016e5de54b58239",
+          "population": {
+            "cooperative": 251,
+            "immediate": 51,
+            "new-mate-two": 13
+          }
+        },
+        "promotion-mistake-transfer/lebanon.pgn": {
+          "sha256": "065a47c9706cb3ee47291d0deda0fb44443e6b67dd31bc28ee972a2d8656f9cb",
+          "population": {}
+        }
+      },
+      "cases": {
+        "immediate": 10,
+        "cooperative": 10,
+        "new-mate-two": 10
+      }
+    },
+    "focused": {
+      "immediate": {
+        "requests": 10,
+        "searched": 0,
+        "legal": 0
+      },
+      "cooperative": {
+        "requests": 10,
+        "searched": 0,
+        "legal": 0
+      },
+      "new-mate-two": {
+        "requests": 10,
+        "searched": 0,
+        "legal": 9,
+        "declinedBelowMinusOnePawn": 1
+      }
+    },
+    "medianMsBothProofMethods": 3.11,
+    "worker": {
+      "groups": {
+        "immediate": {
+          "valid": 10,
+          "positionTacticalBefore": 7,
+          "positionTacticalAfter": 7,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 0
+        },
+        "cooperative": {
+          "valid": 10,
+          "positionTacticalBefore": 2,
+          "positionTacticalAfter": 2,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 0
+        },
+        "new-mate-two": {
+          "valid": 10,
+          "positionTacticalBefore": 1,
+          "positionTacticalAfter": 6,
+          "addedPositionTactical": 5,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 5,
+          "positionEvidenceChanges": 5,
+          "newMoveProofs": 6,
+          "newProofsAtRecordedMove": 6
+        }
+      },
+      "witnesses": [
+        {
+          "case": "quiet-two-0d8bdbfb922c00ed-64",
+          "group": "new-mate-two",
+          "event": "irish-championship",
+          "moveUci": "f6h8",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "33. Qh8 Rb1 34. Qa8+ Kb6 35. b8=Q#",
+            "defences": [
+              "33. Qh8 Rxb7"
+            ]
+          },
+          "explanation": "Qh8 sets up a mate-in-two threat. For example, Rb1 allows Qa8+, which forces mate on the next move. Rxb7 stops that attack."
+        },
+        {
+          "case": "quiet-two-e41de85f9b7286ce-76",
+          "group": "new-mate-two",
+          "event": "irish-championship",
+          "moveUci": "a2a8",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "39. Ra8 Qa1 40. Rxc8+ Kd7 41. Qd8#",
+            "defences": [
+              "39. Ra8 Qd8"
+            ]
+          },
+          "explanation": "Ra8 sets up a mate-in-two threat. For example, Qa1 allows Rxc8+, which forces mate on the next move. Qd8 stops that attack."
+        },
+        {
+          "case": "quiet-two-1f4f2a8da38bece9-62",
+          "group": "new-mate-two",
+          "event": "irish-championship",
+          "moveUci": "d1d6",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "32. R1d6 Qa1 33. Rxg6+ Kh7 34. Qxh5#",
+            "defences": [
+              "32. R1d6 Qe5+"
+            ]
+          },
+          "explanation": "R1d6 sets up a mate-in-two threat. For example, Qa1 allows Rxg6+, which forces mate on the next move. Qe5+ stops that attack."
+        },
+        {
+          "case": "quiet-two-806f844989dd2461-42",
+          "group": "new-mate-two",
+          "event": "team-open",
+          "moveUci": "d1d4",
+          "beforePosition": "positional",
+          "afterPosition": "positional",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "22. Rd4 a5 23. Rxc4+ Nc5 24. Rxc5#",
+            "defences": [
+              "22. Rd4 b5"
+            ]
+          },
+          "explanation": "Rd4 sets up a mate-in-two threat. For example, a5 allows Rxc4+, which forces mate on the next move. b5 stops that attack."
+        },
+        {
+          "case": "quiet-two-6a89c32a4dc84e81-93",
+          "group": "new-mate-two",
+          "event": "hastings-masters",
+          "moveUci": "c3e4",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "47...Ne4 48. b4 Nxd2+ 49. Kg1 Re1#",
+            "defences": [
+              "47...Ne4 48. Be1"
+            ]
+          },
+          "explanation": "Ne4 sets up a mate-in-two threat. For example, b4 allows Nxd2+, which forces mate on the next move. Be1 stops that attack."
+        },
+        {
+          "case": "quiet-two-79d58cf518e5e4fa-67",
+          "group": "new-mate-two",
+          "event": "hastings-masters",
+          "moveUci": "d7h3",
+          "beforePosition": "unclear",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "34...Bh3 35. b3 Rxg2+ 36. Kf1 Rg3#",
+            "defences": [
+              "34...Bh3 35. g3"
+            ]
+          },
+          "explanation": "Bh3 sets up a mate-in-two threat. For example, b3 allows Rxg2+, which forces mate on the next move. g3 stops that attack."
+        }
+      ],
+      "medianWorkerMs": {
+        "baseline": 51.96,
+        "candidate": 50.73
+      }
+    }
+  },
+  "archive": {
+    "engineInputSha256": "8b1a441dc4666f722bca3e415f0827085f8e40cbd7f19ccf4d6d9d8990b8015f",
+    "worker": {
+      "groups": {
+        "archive": {
+          "valid": 1050,
+          "positionTacticalBefore": 173,
+          "positionTacticalAfter": 173,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 0
+        },
+        "deep": {
+          "valid": 66,
+          "positionTacticalBefore": 2,
+          "positionTacticalAfter": 2,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 0
+        },
+        "classical": {
+          "valid": 697,
+          "positionTacticalBefore": 61,
+          "positionTacticalAfter": 61,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 1,
+          "newMoveProofs": 3,
+          "newProofsAtRecordedMove": 0
+        },
+        "puzzle": {
+          "valid": 56,
+          "positionTacticalBefore": 2,
+          "positionTacticalAfter": 2,
+          "addedPositionTactical": 0,
+          "addedPositionMixed": 0,
+          "positionCategoryChanges": 0,
+          "positionEvidenceChanges": 0
+        }
+      },
+      "witnesses": [
+        {
+          "case": "classical-transfer-a2f1a38c64afeedf",
+          "group": "classical",
+          "event": "cork-congress-2026-masters-1825",
+          "moveUci": "b3f3",
+          "beforePosition": "tactical",
+          "afterPosition": "tactical",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "44. Qf3 Qc1 45. Qf5+ g6 46. Qxg6#",
+            "defences": [
+              "44. Qf3 Qe6"
+            ]
+          },
+          "explanation": "Qf3 sets up a mate-in-two threat. For example, Qc1 allows Qf5+, which forces mate on the next move. Qe6 stops that attack."
+        },
+        {
+          "case": "deeper-loss-1086dc0d223bc8ad",
+          "group": "classical",
+          "event": "buongoma-open-chess-championship-grand-prix-circuit-open",
+          "moveUci": "g5e4",
+          "beforePosition": "unclear",
+          "afterPosition": "unclear",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "57. Ne4 Ba2 58. Qxf6+ Kh7 59. Ng5#",
+            "defences": [
+              "57. Ne4 Qxe6"
+            ]
+          },
+          "explanation": "Ne4 sets up a mate-in-two threat. For example, Ba2 allows Qxf6+, which forces mate on the next move. Qxe6 stops that attack."
+        },
+        {
+          "case": "deeper-loss-1087db5069a38df4",
+          "group": "classical",
+          "event": "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026-abierta",
+          "moveUci": "e5d7",
+          "beforePosition": "unclear",
+          "afterPosition": "unclear",
+          "afterMove": "tactical",
+          "moves": {
+            "ignored": "28. Nd7 Ba2 29. Nxf6+ Kf8 30. Qxg7#",
+            "defences": [
+              "28. Nd7 Bxd4"
+            ]
+          },
+          "explanation": "Nd7 sets up a mate-in-two threat. For example, Ba2 allows Nxf6+, which forces mate on the next move. Bxd4 stops that attack."
+        }
+      ],
+      "medianWorkerMs": {
+        "baseline": 75.52,
+        "candidate": 72.22
+      }
+    }
+  }
+}

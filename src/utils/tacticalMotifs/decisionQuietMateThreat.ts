@@ -11,7 +11,8 @@ import type { DecisionEngineLine } from "./decisionEvidence";
 export type QuietMateThreat = {
     fen: string;
     defenceLinesUci: Array<[string, string]>;
-    ignoredLineUci: [string, string, string];
+    ignoredLineUci: [string, string, string, ...string[]];
+    mateIn?: 2;
     exampleWasSearched: boolean;
     explanation: string;
 };
