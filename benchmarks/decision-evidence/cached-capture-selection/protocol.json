@@ -1,0 +1,15 @@
+{
+  "development": "The previous 144 public standard-game questions and shared reply frames.",
+  "test": "Other public standard games sampled before engine analysis. Exclude previous tournament families, game prefixes and color-normalized positions using the shared freeze procedure.",
+  "reference": "Use the defender-capture-order reference at 5.4M and 8M nodes. Keep the same 50-centipawn root and removal tolerance and 100-centipawn reply tolerance. Review every different proposed capture pair that passes the cheap comparison on its own terms.",
+  "sharedInput": "One 2.4M-node MultiPV 3 root plus the ordinary root and played-move reply probes. The principal selector uses only the root frame. Alternatives have the same cached replies available with a 90-centipawn root/reply drift and 100-centipawn reply gap.",
+  "selectors": {
+    "principal": "First move order proposed by a competitive principal variation.",
+    "cached": "Keep the first principal nomination when available, then try the first cached reply nomination.",
+    "agreement": "Prefer agreement between the root and cached reply searches among the same nominations.",
+    "generated": "Use the cached ranking when available. Otherwise use the first four moves of an existing search to consider retaking the exact target with an already legal capture. Rank by the piece put at risk, the original defender and the target value."
+  },
+  "verification": "At most one matched 1.4M-node search per board per selector. The recorded continuation never directs a nomination. Black and white perspectives are taken from the side to move.",
+  "metrics": "Exact recorded-order recall and false calls, adjudication of other accepted proposals, candidate pool sizes, engine nodes and ordinary-control search count.",
+  "neuralGate": "Treat these as baselines. Training requires enough boards with multiple potentially useful alternatives and independently labeled competing branches. Keep the test questions out of training."
+}
