@@ -1,0 +1,28 @@
+{
+  "trainFramesSha256": "65f9035a53941e2233e00e42d56eb65267570b64c95ae1a258a76a98e51a773b",
+  "testFramesSha256": "4f31b36b7c843f2eac85f12bc8c808d845cb0d0c057c496b14bdd9fcab6bdb02",
+  "primary": "Yield of previously unseen material or mate witnesses at a 25% per-family shortlist budget, rounded up.",
+  "promotionScreen": "At least two additional witnesses against the best simpler equal-budget control, at least two held-out event families improved and no more narrow negatives. Independently check any added witness before an app experiment. More data and an independent live-classifier replay are required for deployment.",
+  "policy": "An uncertain score consumes a slot and is excluded from average precision. The reference is a bounded engine teacher, not a comprehensive tactical or positional diagnosis.",
+  "baseline": "e412e3bed444e9dc6300e00a2ef9dcd42592c92b",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "shortReplyNodesEach": 52000,
+  "primaryReferenceReplyNodesEach": 1200000,
+  "referenceRootNodesEach": 600000,
+  "adjudicationNodesPerSearch": 3600000,
+  "seeds": [
+    31,
+    73,
+    109
+  ],
+  "preTransferRankerSha256": "cc54b8b7faabcdcda32848aa194ec4d09cf166adb266c267d1097486c78d685c",
+  "inputSha256": {
+    "train-input.json": "f4b6507064df096ec0109efa2635a129a6d4d0ca82ec176f5abff678237363df",
+    "test-input.json": "fc0f8be7a24add1bc42f198b3791633f65e86b5b0525575c157638d70386b4e8",
+    "reserve-input.json": "24bd39617df39aba520cdbf5000f355b3efdd87ec917d7ffc4954a871993c0f7"
+  },
+  "reserveFramesSha256": "27a92581680452e7fb05212f620a22192e815304ae95ddf4f8eb7b2fd25415cf",
+  "ordinaryGames": 128,
+  "enrichedGames": 120,
+  "enrichedDesign": "Preserve the model and test budget. Sample fresh events and prioritize pre-existing centipawn losses of at least 140 without using the target Stockfish frames."
+}

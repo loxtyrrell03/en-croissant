@@ -1,0 +1,1905 @@
+{
+  "ordinary": {
+    "training": {
+      "unsettled-material": 199,
+      "no-bounded-material-contrast": 60,
+      "score-disagreement": 23,
+      "stable-material": 43,
+      "score-margin": 46,
+      "short-reference-line": 14,
+      "already-visible-shallow": 2,
+      "shallow-reference": 7
+    },
+    "test": {
+      "played-leads-reference-root": 33,
+      "score-margin": 26,
+      "reference-ranking-disagrees": 7,
+      "unsettled-material": 37,
+      "short-reference-line": 3,
+      "no-bounded-material-contrast": 9,
+      "no-repeatable-loss": 7,
+      "short-two-replies-unavailable": 1,
+      "stable-material": 1,
+      "score-disagreement": 3,
+      "root-insufficient": 1
+    },
+    "parameters": 5873,
+    "oneNetworkBatchMs": 1.1415000190027058,
+    "eligible": {
+      "slots": 86,
+      "witness": 1,
+      "negative": 16,
+      "uncertain": 69
+    },
+    "results": {
+      "shallow-loss": {
+        "slots": 25,
+        "witness": 0,
+        "negative": 5,
+        "uncertain": 20,
+        "averagePrecision": 0.25,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 3
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 3
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-5e66d6265ca3770e",
+          "reply-budget-8e5f026cb5fe1903",
+          "reply-budget-6f9d224b96a38233",
+          "reply-budget-29e9774734b11d39",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-00ba44014cf8eaf9",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-2c31973a34fa2f5a",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-01ab3e36016268ff",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-07b9a0881bc9fafa",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-100f3ebcc1af4921",
+          "reply-budget-994ebf6ce219b88c",
+          "reply-budget-0e38cd5c8c06f2e8",
+          "reply-budget-60e45a764cfa7984",
+          "reply-budget-0f895c0d050b192b",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-2f9b1dc4feb72858",
+          "reply-budget-9d0c61625326574c",
+          "reply-budget-62b4078fc04a0d1b",
+          "reply-budget-3fd55a56fcb4f84c",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-248fadde363a172c"
+        ]
+      },
+      "shallow-material": {
+        "slots": 25,
+        "witness": 0,
+        "negative": 6,
+        "uncertain": 19,
+        "averagePrecision": 0.058823529411764705,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 3
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-04faddc35aa62894",
+          "reply-budget-062e73e37b23f1c7",
+          "reply-budget-285843b249cd2353",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-03e4110e68a124d4",
+          "reply-budget-3468fd8b65f430c4",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-0020eb6547c6aea0",
+          "reply-budget-15631f8fbf8745db",
+          "reply-budget-01f6150ec53dc270",
+          "reply-budget-1afbfab06e1dc67f",
+          "reply-budget-05b768df6c4f1ce6",
+          "reply-budget-30619fd703680515",
+          "reply-budget-9cbd34c28e0d96d6",
+          "reply-budget-0265453ca4983f37",
+          "reply-budget-03b33b4f4a3c53a0",
+          "reply-budget-072a9a2c5e9de0df",
+          "reply-budget-0e38cd5c8c06f2e8",
+          "reply-budget-19834f38b9b764b9",
+          "reply-budget-403696a144546967",
+          "reply-budget-1f51fc7ecf3deef8",
+          "reply-budget-62b4078fc04a0d1b",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-08904808089b17b0",
+          "reply-budget-0ce16f45d1dba131"
+        ]
+      },
+      "score-logistic": {
+        "slots": 25,
+        "witness": 0,
+        "negative": 4,
+        "uncertain": 21,
+        "averagePrecision": 0.2,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 2
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-5e66d6265ca3770e",
+          "reply-budget-8e5f026cb5fe1903",
+          "reply-budget-456552785963bd7f",
+          "reply-budget-2a3dcd5e8c3ca978",
+          "reply-budget-00ba44014cf8eaf9",
+          "reply-budget-29e9774734b11d39",
+          "reply-budget-2c31973a34fa2f5a",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-01ab3e36016268ff",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-9cbd34c28e0d96d6",
+          "reply-budget-07b9a0881bc9fafa",
+          "reply-budget-48a09dc86aece661",
+          "reply-budget-994ebf6ce219b88c",
+          "reply-budget-1a9f40b0b568f8a0",
+          "reply-budget-93becfa2df2364a9",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-0ea713c0b2862c49",
+          "reply-budget-1e3788231c4e4800",
+          "reply-budget-9d0c61625326574c",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-248fadde363a172c",
+          "reply-budget-3fd55a56fcb4f84c"
+        ]
+      },
+      "line-logistic": {
+        "slots": 25,
+        "witness": 0,
+        "negative": 6,
+        "uncertain": 19,
+        "averagePrecision": 0.07142857142857142,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 2
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-6f9d224b96a38233",
+          "reply-budget-8e5f026cb5fe1903",
+          "reply-budget-04faddc35aa62894",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-2a3dcd5e8c3ca978",
+          "reply-budget-00ba44014cf8eaf9",
+          "reply-budget-2c31973a34fa2f5a",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-00667a3ee44358a3",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-9cbd34c28e0d96d6",
+          "reply-budget-9c9d6d70627bca76",
+          "reply-budget-1a9f40b0b568f8a0",
+          "reply-budget-48a09dc86aece661",
+          "reply-budget-03b33b4f4a3c53a0",
+          "reply-budget-3946c7ea105dd736",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-1e3788231c4e4800",
+          "reply-budget-0ea713c0b2862c49",
+          "reply-budget-19834f38b9b764b9",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-0dca2d033463904b",
+          "reply-budget-211456716204ed57"
+        ]
+      },
+      "line-tree": {
+        "slots": 25,
+        "witness": 0,
+        "negative": 4,
+        "uncertain": 21,
+        "averagePrecision": 0.3333333333333333,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 2
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-5e66d6265ca3770e",
+          "reply-budget-062e73e37b23f1c7",
+          "reply-budget-8e5f026cb5fe1903",
+          "reply-budget-00ba44014cf8eaf9",
+          "reply-budget-2a3dcd5e8c3ca978",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-2c31973a34fa2f5a",
+          "reply-budget-0020eb6547c6aea0",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-01ab3e36016268ff",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-100f3ebcc1af4921",
+          "reply-budget-07b9a0881bc9fafa",
+          "reply-budget-3946c7ea105dd736",
+          "reply-budget-48a09dc86aece661",
+          "reply-budget-1a9f40b0b568f8a0",
+          "reply-budget-03b33b4f4a3c53a0",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-1e3788231c4e4800",
+          "reply-budget-1f51fc7ecf3deef8",
+          "reply-budget-9d0c61625326574c",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-3fd55a56fcb4f84c",
+          "reply-budget-08904808089b17b0"
+        ]
+      },
+      "branch-neural": {
+        "slots": 25,
+        "witness": 0,
+        "negative": 5,
+        "uncertain": 20,
+        "averagePrecision": 0.06666666666666667,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 3
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-5e66d6265ca3770e",
+          "reply-budget-8e5f026cb5fe1903",
+          "reply-budget-285843b249cd2353",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-29e9774734b11d39",
+          "reply-budget-2a3dcd5e8c3ca978",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-0020eb6547c6aea0",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-1afbfab06e1dc67f",
+          "reply-budget-53df55697a204732",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-07b9a0881bc9fafa",
+          "reply-budget-48a09dc86aece661",
+          "reply-budget-03b33b4f4a3c53a0",
+          "reply-budget-1a9f40b0b568f8a0",
+          "reply-budget-0265453ca4983f37",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-1e3788231c4e4800",
+          "reply-budget-0ea713c0b2862c49",
+          "reply-budget-19834f38b9b764b9",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-08904808089b17b0",
+          "reply-budget-248fadde363a172c"
+        ]
+      }
+    },
+    "seedResults": [
+      {
+        "slots": 25,
+        "witness": 0,
+        "negative": 5,
+        "uncertain": 20,
+        "averagePrecision": 0.07692307692307693,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 3
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-5e66d6265ca3770e",
+          "reply-budget-04faddc35aa62894",
+          "reply-budget-285843b249cd2353",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-29e9774734b11d39",
+          "reply-budget-03e4110e68a124d4",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-2c31973a34fa2f5a",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-1afbfab06e1dc67f",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-53df55697a204732",
+          "reply-budget-07b9a0881bc9fafa",
+          "reply-budget-48a09dc86aece661",
+          "reply-budget-0265453ca4983f37",
+          "reply-budget-03b33b4f4a3c53a0",
+          "reply-budget-3946c7ea105dd736",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-1e3788231c4e4800",
+          "reply-budget-0ea713c0b2862c49",
+          "reply-budget-9d0c61625326574c",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-08904808089b17b0",
+          "reply-budget-248fadde363a172c"
+        ]
+      },
+      {
+        "slots": 25,
+        "witness": 0,
+        "negative": 6,
+        "uncertain": 19,
+        "averagePrecision": 0.07692307692307693,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 3
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-5e66d6265ca3770e",
+          "reply-budget-8e5f026cb5fe1903",
+          "reply-budget-285843b249cd2353",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-29e9774734b11d39",
+          "reply-budget-2a3dcd5e8c3ca978",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-0020eb6547c6aea0",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-c06dc0020b705987",
+          "reply-budget-53df55697a204732",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-07b9a0881bc9fafa",
+          "reply-budget-48a09dc86aece661",
+          "reply-budget-03b33b4f4a3c53a0",
+          "reply-budget-1a9f40b0b568f8a0",
+          "reply-budget-60e45a764cfa7984",
+          "reply-budget-1e3788231c4e4800",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-19834f38b9b764b9",
+          "reply-budget-0ea713c0b2862c49",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-08904808089b17b0",
+          "reply-budget-248fadde363a172c"
+        ]
+      },
+      {
+        "slots": 25,
+        "witness": 0,
+        "negative": 6,
+        "uncertain": 19,
+        "averagePrecision": 0.058823529411764705,
+        "events": {
+          "amsterdam-chess-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "aq-prime-international-open-chess-championship": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "czech-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "dutch-meesterklasse-2026": {
+            "slots": 2,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "fide-world-junior-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 3
+          },
+          "hoogeveen-open-2026": {
+            "slots": 4,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 4
+          },
+          "mongolian-national-chess-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          }
+        },
+        "selected": [
+          "reply-budget-5e66d6265ca3770e",
+          "reply-budget-8e5f026cb5fe1903",
+          "reply-budget-285843b249cd2353",
+          "reply-budget-0e8b224468db86bf",
+          "reply-budget-29e9774734b11d39",
+          "reply-budget-02bbed51a60f2d06",
+          "reply-budget-08aa0df6ab5a9255",
+          "reply-budget-0020eb6547c6aea0",
+          "reply-budget-e983734b9a0427fa",
+          "reply-budget-18f45ed8f10edde6",
+          "reply-budget-c06dc0020b705987",
+          "reply-budget-53df55697a204732",
+          "reply-budget-0165c132c718c1c0",
+          "reply-budget-07b9a0881bc9fafa",
+          "reply-budget-48a09dc86aece661",
+          "reply-budget-03b33b4f4a3c53a0",
+          "reply-budget-072a9a2c5e9de0df",
+          "reply-budget-1a9f40b0b568f8a0",
+          "reply-budget-1e3788231c4e4800",
+          "reply-budget-0ed5c56be19181c4",
+          "reply-budget-0ea713c0b2862c49",
+          "reply-budget-19834f38b9b764b9",
+          "reply-budget-08904808089b17b0",
+          "reply-budget-07b1cbc7a9badbf1",
+          "reply-budget-248fadde363a172c"
+        ]
+      }
+    ],
+    "hashes": {
+      "train": "65f9035a53941e2233e00e42d56eb65267570b64c95ae1a258a76a98e51a773b",
+      "test": "4f31b36b7c843f2eac85f12bc8c808d845cb0d0c057c496b14bdd9fcab6bdb02"
+    },
+    "deterministicRefit": true,
+    "incumbentReplay": {
+      "overall": {
+        "unresolved": 84,
+        "added": 2
+      },
+      "byShortlist": {
+        "shallow-loss": {
+          "unresolved": 25
+        },
+        "shallow-material": {
+          "unresolved": 24,
+          "added": 1
+        },
+        "score-logistic": {
+          "unresolved": 24,
+          "added": 1
+        },
+        "line-logistic": {
+          "unresolved": 23,
+          "added": 2
+        },
+        "line-tree": {
+          "unresolved": 24,
+          "added": 1
+        },
+        "branch-neural": {
+          "unresolved": 23,
+          "added": 2
+        }
+      }
+    },
+    "independentReview": {
+      "initialWitnesses": [
+        {
+          "id": "reply-budget-4d1dd69d5d0cb2ce",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/amsterdam-chess-open-2026-group-a/round/1ujjsnvk"
+        }
+      ],
+      "additionalAppWitnesses": [
+        {
+          "id": "reply-budget-19834f38b9b764b9",
+          "result": 1,
+          "mechanism": "stable-material",
+          "site": "https://lichess.org/broadcast/hoogeveen-open-2026/round-7/o4Nw35Ls/sD6OSDTk"
+        },
+        {
+          "id": "reply-budget-1e3788231c4e4800",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/hoogeveen-open-2026/round-7/o4Nw35Ls/g32sx0cB"
+        }
+      ]
+    }
+  },
+  "enriched": {
+    "training": {
+      "unsettled-material": 199,
+      "no-bounded-material-contrast": 60,
+      "score-disagreement": 23,
+      "stable-material": 43,
+      "score-margin": 46,
+      "short-reference-line": 14,
+      "already-visible-shallow": 2,
+      "shallow-reference": 7
+    },
+    "test": {
+      "no-bounded-material-contrast": 30,
+      "unsettled-material": 57,
+      "score-margin": 11,
+      "score-disagreement": 2,
+      "short-reference-line": 4,
+      "stable-material": 6,
+      "played-leads-reference-root": 3,
+      "no-repeatable-loss": 2,
+      "shallow-reference": 1,
+      "short-two-replies-unavailable": 1,
+      "reference-ranking-disagrees": 2,
+      "already-visible-shallow": 1
+    },
+    "parameters": 5873,
+    "oneNetworkBatchMs": 1.0801000171341002,
+    "eligible": {
+      "slots": 113,
+      "witness": 6,
+      "negative": 32,
+      "uncertain": 75
+    },
+    "results": {
+      "shallow-loss": {
+        "slots": 30,
+        "witness": 6,
+        "negative": 8,
+        "uncertain": 16,
+        "averagePrecision": 0.6887917637917638,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 2,
+            "negative": 0,
+            "uncertain": 1
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          }
+        },
+        "selected": [
+          "deeper-loss-25c5000eb163abc0",
+          "deeper-loss-2223fb749adc5934",
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-34a403fbac15cb26",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-012c9112d261f2b3",
+          "deeper-loss-20a781500d684768",
+          "deeper-loss-06bb5140f814e893",
+          "deeper-loss-4be8ed7c98516a41",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-02f70fa4c3f8582b",
+          "deeper-loss-042bc61d076b1bae",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-21dbc1dc4c1e8df1",
+          "deeper-loss-36d14fd9cb5d9827",
+          "deeper-loss-0bc1e79ec4893977",
+          "deeper-loss-234b9760f06f6712",
+          "deeper-loss-31bf3eb700aafa6b",
+          "deeper-loss-0349b1bc934f40fd",
+          "deeper-loss-0d9c124b6d1c72ea",
+          "deeper-loss-00b6a8e264e59392",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-6c6507255ee7feba",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-06f228efc6d8058b",
+          "deeper-loss-362171042a2b9808",
+          "deeper-loss-1087db5069a38df4",
+          "deeper-loss-103a55d20d0e51a4",
+          "deeper-loss-0f17702f41ef244a"
+        ]
+      },
+      "shallow-material": {
+        "slots": 30,
+        "witness": 1,
+        "negative": 7,
+        "uncertain": 22,
+        "averagePrecision": 0.1535776861727264,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          }
+        },
+        "selected": [
+          "deeper-loss-077c28cfa5529227",
+          "deeper-loss-0f08586ecd624384",
+          "deeper-loss-17a89274607d660d",
+          "deeper-loss-009978f29ae1fddb",
+          "deeper-loss-012c9112d261f2b3",
+          "deeper-loss-353a0dd835dc7696",
+          "deeper-loss-223169c9734f5906",
+          "deeper-loss-2e9e8c3dd8cff3c5",
+          "deeper-loss-024e3fdfc127ba79",
+          "deeper-loss-04979d10849b2511",
+          "deeper-loss-0004d0351c60b5df",
+          "deeper-loss-0432015f12d4573d",
+          "deeper-loss-0f260a2b1a57fbbb",
+          "deeper-loss-1953bd3ca5e19ab6",
+          "deeper-loss-051947941e7981d1",
+          "deeper-loss-2c953a17283213dc",
+          "deeper-loss-0bc1e79ec4893977",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-09c7d4511961a282",
+          "deeper-loss-0d9c124b6d1c72ea",
+          "deeper-loss-03c05bccf3c80b63",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-05005bde92dda02f",
+          "deeper-loss-0700b7d910e3bae0",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-16cd85a846c4d061",
+          "deeper-loss-20c64ec808af4b60",
+          "deeper-loss-040380506a523ead",
+          "deeper-loss-01da3c577aaca039",
+          "deeper-loss-02770ef4834bb336"
+        ]
+      },
+      "score-logistic": {
+        "slots": 30,
+        "witness": 6,
+        "negative": 7,
+        "uncertain": 17,
+        "averagePrecision": 0.8306878306878307,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 2,
+            "negative": 0,
+            "uncertain": 1
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          }
+        },
+        "selected": [
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-25c5000eb163abc0",
+          "deeper-loss-077c28cfa5529227",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-353a0dd835dc7696",
+          "deeper-loss-34a403fbac15cb26",
+          "deeper-loss-06bb5140f814e893",
+          "deeper-loss-4be8ed7c98516a41",
+          "deeper-loss-20a781500d684768",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-04cdebdacda09754",
+          "deeper-loss-02f70fa4c3f8582b",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-1300b19daf7faec7",
+          "deeper-loss-4bdfd92b9f986c25",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-178919a59eff2e7f",
+          "deeper-loss-04c601d524366c47",
+          "deeper-loss-05d2b6ca8f2d6605",
+          "deeper-loss-0349b1bc934f40fd",
+          "deeper-loss-0d9c124b6d1c72ea",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-6c6507255ee7feba",
+          "deeper-loss-06f228efc6d8058b",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-362171042a2b9808",
+          "deeper-loss-1087db5069a38df4",
+          "deeper-loss-0f17702f41ef244a",
+          "deeper-loss-088755343a2a1202"
+        ]
+      },
+      "line-logistic": {
+        "slots": 30,
+        "witness": 2,
+        "negative": 4,
+        "uncertain": 24,
+        "averagePrecision": 0.578042328042328,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          }
+        },
+        "selected": [
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-09afa4a000c05536",
+          "deeper-loss-0c74aafc7667fabc",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-012c9112d261f2b3",
+          "deeper-loss-0c3bd6266e610f54",
+          "deeper-loss-4be8ed7c98516a41",
+          "deeper-loss-53465394cc4f3eda",
+          "deeper-loss-46af19258f5b8ba5",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-04cdebdacda09754",
+          "deeper-loss-0432015f12d4573d",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-4bdfd92b9f986c25",
+          "deeper-loss-36d14fd9cb5d9827",
+          "deeper-loss-178919a59eff2e7f",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-2eb46d75d3ed1272",
+          "deeper-loss-05d2b6ca8f2d6605",
+          "deeper-loss-0d9c124b6d1c72ea",
+          "deeper-loss-03c05bccf3c80b63",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-0700b7d910e3bae0",
+          "deeper-loss-2b7fe092d9b577c0",
+          "deeper-loss-0f29f3e44c0d0ce1",
+          "deeper-loss-362171042a2b9808",
+          "deeper-loss-0f17702f41ef244a",
+          "deeper-loss-198e6f03b993fc72",
+          "deeper-loss-040380506a523ead"
+        ]
+      },
+      "line-tree": {
+        "slots": 30,
+        "witness": 4,
+        "negative": 6,
+        "uncertain": 20,
+        "averagePrecision": 0.6287878787878788,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          }
+        },
+        "selected": [
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-25c5000eb163abc0",
+          "deeper-loss-09afa4a000c05536",
+          "deeper-loss-012c9112d261f2b3",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-34a403fbac15cb26",
+          "deeper-loss-4be8ed7c98516a41",
+          "deeper-loss-06bb5140f814e893",
+          "deeper-loss-53465394cc4f3eda",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-042f028afccbd268",
+          "deeper-loss-0004d0351c60b5df",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-1086dc0d223bc8ad",
+          "deeper-loss-36d14fd9cb5d9827",
+          "deeper-loss-0bc1e79ec4893977",
+          "deeper-loss-178919a59eff2e7f",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-05d2b6ca8f2d6605",
+          "deeper-loss-09c7d4511961a282",
+          "deeper-loss-00b6a8e264e59392",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-2105d46909b9b2d7",
+          "deeper-loss-06f228efc6d8058b",
+          "deeper-loss-2b7fe092d9b577c0",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-1087db5069a38df4",
+          "deeper-loss-0f17702f41ef244a",
+          "deeper-loss-088755343a2a1202"
+        ]
+      },
+      "branch-neural": {
+        "slots": 30,
+        "witness": 5,
+        "negative": 6,
+        "uncertain": 19,
+        "averagePrecision": 0.5586551792434146,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 2,
+            "negative": 0,
+            "uncertain": 1
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          }
+        },
+        "selected": [
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-09afa4a000c05536",
+          "deeper-loss-25c5000eb163abc0",
+          "deeper-loss-009978f29ae1fddb",
+          "deeper-loss-012c9112d261f2b3",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-06bb5140f814e893",
+          "deeper-loss-53465394cc4f3eda",
+          "deeper-loss-20a781500d684768",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-0432015f12d4573d",
+          "deeper-loss-0004d0351c60b5df",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-4bdfd92b9f986c25",
+          "deeper-loss-1086dc0d223bc8ad",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-0bc1e79ec4893977",
+          "deeper-loss-2eb46d75d3ed1272",
+          "deeper-loss-05d2b6ca8f2d6605",
+          "deeper-loss-09c7d4511961a282",
+          "deeper-loss-0349b1bc934f40fd",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-05005bde92dda02f",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-2b7fe092d9b577c0",
+          "deeper-loss-0f29f3e44c0d0ce1",
+          "deeper-loss-0f17702f41ef244a",
+          "deeper-loss-02770ef4834bb336",
+          "deeper-loss-198e6f03b993fc72"
+        ]
+      }
+    },
+    "seedResults": [
+      {
+        "slots": 30,
+        "witness": 5,
+        "negative": 7,
+        "uncertain": 18,
+        "averagePrecision": 0.6572751322751322,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 2,
+            "negative": 0,
+            "uncertain": 1
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          }
+        },
+        "selected": [
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-09afa4a000c05536",
+          "deeper-loss-25c5000eb163abc0",
+          "deeper-loss-009978f29ae1fddb",
+          "deeper-loss-353a0dd835dc7696",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-06bb5140f814e893",
+          "deeper-loss-53465394cc4f3eda",
+          "deeper-loss-20a781500d684768",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-0432015f12d4573d",
+          "deeper-loss-04cdebdacda09754",
+          "deeper-loss-4bdfd92b9f986c25",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-21dbc1dc4c1e8df1",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-0bc1e79ec4893977",
+          "deeper-loss-178919a59eff2e7f",
+          "deeper-loss-05d2b6ca8f2d6605",
+          "deeper-loss-0349b1bc934f40fd",
+          "deeper-loss-09c7d4511961a282",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-05005bde92dda02f",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-0f29f3e44c0d0ce1",
+          "deeper-loss-2b7fe092d9b577c0",
+          "deeper-loss-0f17702f41ef244a",
+          "deeper-loss-02770ef4834bb336",
+          "deeper-loss-198e6f03b993fc72"
+        ]
+      },
+      {
+        "slots": 30,
+        "witness": 5,
+        "negative": 6,
+        "uncertain": 19,
+        "averagePrecision": 0.5340909090909091,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 2,
+            "negative": 0,
+            "uncertain": 1
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          }
+        },
+        "selected": [
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-25c5000eb163abc0",
+          "deeper-loss-09afa4a000c05536",
+          "deeper-loss-009978f29ae1fddb",
+          "deeper-loss-012c9112d261f2b3",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-06bb5140f814e893",
+          "deeper-loss-53465394cc4f3eda",
+          "deeper-loss-20a781500d684768",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-0432015f12d4573d",
+          "deeper-loss-0004d0351c60b5df",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-1086dc0d223bc8ad",
+          "deeper-loss-4bdfd92b9f986c25",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-0bc1e79ec4893977",
+          "deeper-loss-2c953a17283213dc",
+          "deeper-loss-09c7d4511961a282",
+          "deeper-loss-05d2b6ca8f2d6605",
+          "deeper-loss-0349b1bc934f40fd",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-3ab5b98c69bc702c",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-2b7fe092d9b577c0",
+          "deeper-loss-0f29f3e44c0d0ce1",
+          "deeper-loss-0f17702f41ef244a",
+          "deeper-loss-198e6f03b993fc72",
+          "deeper-loss-02770ef4834bb336"
+        ]
+      },
+      {
+        "slots": 30,
+        "witness": 5,
+        "negative": 7,
+        "uncertain": 18,
+        "averagePrecision": 0.47799422799422797,
+        "events": {
+          "10th-annual-new-york-state-girls-championship-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 1,
+            "uncertain": 1
+          },
+          "3rd-annual-thanksgiving-open": {
+            "slots": 3,
+            "witness": 2,
+            "negative": 0,
+            "uncertain": 1
+          },
+          "asian-nations-chess-cup-2026": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "buongoma-open-chess-championship-grand-prix-circuit-open": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 0,
+            "uncertain": 3
+          },
+          "fide-world-senior-chess-championships-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "irt-clasico-por-equipos-aniversario-17-kallpa": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "national-championship-aruba-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 1,
+            "uncertain": 2
+          },
+          "stjernens-hstturnering": {
+            "slots": 3,
+            "witness": 1,
+            "negative": 0,
+            "uncertain": 2
+          },
+          "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+            "slots": 3,
+            "witness": 0,
+            "negative": 2,
+            "uncertain": 1
+          }
+        },
+        "selected": [
+          "deeper-loss-19820941f1610a83",
+          "deeper-loss-09afa4a000c05536",
+          "deeper-loss-25c5000eb163abc0",
+          "deeper-loss-009978f29ae1fddb",
+          "deeper-loss-012c9112d261f2b3",
+          "deeper-loss-1164593e86799ca9",
+          "deeper-loss-06bb5140f814e893",
+          "deeper-loss-20a781500d684768",
+          "deeper-loss-1fe3d68c480fb55a",
+          "deeper-loss-05c4cf1f5aa3661b",
+          "deeper-loss-0432015f12d4573d",
+          "deeper-loss-0004d0351c60b5df",
+          "deeper-loss-4bdfd92b9f986c25",
+          "deeper-loss-4144a10fd872c361",
+          "deeper-loss-21dbc1dc4c1e8df1",
+          "deeper-loss-0bc1e79ec4893977",
+          "deeper-loss-2c953a17283213dc",
+          "deeper-loss-047af8d63db70417",
+          "deeper-loss-0349b1bc934f40fd",
+          "deeper-loss-09c7d4511961a282",
+          "deeper-loss-05d2b6ca8f2d6605",
+          "deeper-loss-2d978f2234ff2986",
+          "deeper-loss-05005bde92dda02f",
+          "deeper-loss-02e26cd94f65d1b8",
+          "deeper-loss-055578239590d709",
+          "deeper-loss-2b7fe092d9b577c0",
+          "deeper-loss-0f29f3e44c0d0ce1",
+          "deeper-loss-0f17702f41ef244a",
+          "deeper-loss-02770ef4834bb336",
+          "deeper-loss-198e6f03b993fc72"
+        ]
+      }
+    ],
+    "hashes": {
+      "train": "65f9035a53941e2233e00e42d56eb65267570b64c95ae1a258a76a98e51a773b",
+      "test": "27a92581680452e7fb05212f620a22192e815304ae95ddf4f8eb7b2fd25415cf"
+    },
+    "deterministicRefit": true,
+    "incumbentReplay": {
+      "overall": {
+        "unresolved": 109,
+        "added": 4
+      },
+      "byShortlist": {
+        "shallow-loss": {
+          "unresolved": 29,
+          "added": 1
+        },
+        "shallow-material": {
+          "unresolved": 28,
+          "added": 2
+        },
+        "score-logistic": {
+          "added": 1,
+          "unresolved": 29
+        },
+        "line-logistic": {
+          "added": 2,
+          "unresolved": 28
+        },
+        "line-tree": {
+          "added": 2,
+          "unresolved": 28
+        },
+        "branch-neural": {
+          "added": 2,
+          "unresolved": 28
+        }
+      }
+    },
+    "independentReview": {
+      "initialWitnesses": [
+        {
+          "id": "deeper-loss-1164593e86799ca9",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/2-meunarodni-sahovski-turnir-busovaca-open-2026/round-3/C3ZrVfIR"
+        },
+        {
+          "id": "deeper-loss-06bb5140f814e893",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/3rd-annual-thanksgiving-open/round-1/pOPtLz54"
+        },
+        {
+          "id": "deeper-loss-20a781500d684768",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/3rd-annual-thanksgiving-open/round-3/w1G8BPAG"
+        },
+        {
+          "id": "deeper-loss-05c4cf1f5aa3661b",
+          "result": 1,
+          "mechanism": "stable-material",
+          "site": "https://lichess.org/broadcast/asian-nations-chess-cup-2026-men/round-8/JEkJZZxe"
+        },
+        {
+          "id": "deeper-loss-6c6507255ee7feba",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/national-championship-aruba-2026-open/round-3/VWpczvM4"
+        },
+        {
+          "id": "deeper-loss-055578239590d709",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/stjernens-hstturnering/runde-6/P51rdZye"
+        }
+      ],
+      "additionalAppWitnesses": [
+        {
+          "id": "deeper-loss-19820941f1610a83",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/10th-annual-new-york-state-girls-championship-2026/round-6/IJN2nA6R"
+        },
+        {
+          "id": "deeper-loss-0004d0351c60b5df",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/asian-nations-chess-cup-2026-men/round-7/uYFD0PMV"
+        },
+        {
+          "id": "deeper-loss-03c05bccf3c80b63",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/irt-clasico-por-equipos-aniversario-17-kallpa/round-4/wLYXKOOE"
+        },
+        {
+          "id": "deeper-loss-12f73eff190499a0",
+          "result": null,
+          "mechanism": "unsettled-material",
+          "site": "https://lichess.org/broadcast/xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026-abierta/round-8/IejEcbDn"
+        }
+      ]
+    }
+  }
+}

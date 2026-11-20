@@ -3933,3 +3933,22 @@ produce zero supported cases. An exploratory comparison following the
 played continuation also produces zero in the reserve. Keep the
 prototype and its exact replay in the benchmark.
 [Checkpoints and reproduction](../benchmarks/decision-evidence/blocked-defensive-resource/README.md)
+
+## Learning where a deeper search will pay off
+
+A small recurrent network ranks unresolved played moves from four
+short legal Stockfish lines. It learns from an independent engine
+comparison of the stronger and played choices. The comparison looks
+for a short forced mate or a lasting material difference. The network
+tied the best score model on grouped development. It found five of six
+provisional witnesses in the enriched 120-game transfer compared with
+six for score regression. A separate deeper search confirmed one
+witness, ranking in both shortlists. The 128-game ordinary transfer
+supplied no confirmed witness under this narrow reference. In the
+matched comparison using the committed assessor's explanations
+the network and the simple line regression each selected four
+newly explained cases at the same budget. The learned ranker remains
+offline. Shared material outcomes across bounded continuations are
+useful training observations, with limited coverage of real tactical
+and mixed decisions.
+[Reproduction, comparison and exact continuations](../benchmarks/decision-evidence/neural-deep-witness/README.md)
