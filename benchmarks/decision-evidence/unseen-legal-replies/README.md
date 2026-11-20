@@ -54,6 +54,61 @@ groups, and mirrored boards are excluded against the older data
 as specified in the [manifest](holdout.manifest.json). The
 [protocol](protocol.json) fixes the shared inputs, validation,
 node budget and the minimum improvement to justify app integration.
+[Lichess Broadcast API](https://lichess-org.github.io/api/#tag/Broadcasts)
+
+## Held-out results
+
+The generator found 3,018 legal questions across 95 of 144 games.
+Twenty of the eligible games were ordinary controls. Each method
+used at most one verification slot per game. Deeper searches
+adjudicated 27 distinct selected or recorded questions.
+
+| Selector | Deeper-verified | Confirmed false | Indeterminate |
+| --- | ---: | ---: | ---: |
+| Piece values | 1 | 0 | 2 |
+| Logistic regression | 4 | 0 | 1 |
+| Neural ensemble | 2 | 0 | 1 |
+| Shallow Stockfish preview | 2 | 0 | 3 |
+
+The linear selector found four positive questions across four
+events. The neural model tied the shallow preview and trailed the
+linear selector. Set aside the neural fit and this expansion for app
+use. Only one of the 17 exact recorded questions generated outside
+the cached lines verified at the deep budget. Logistic regression
+selected it. The normal-budget proof had the right legal sequence.
+Its score differed by 158 centipawns from the original root estimate,
+above the verifier's 90-centipawn limit. Other proposals can be distinct from the
+recorded question. [Positions, nominations and exact lines](results.json)
+
+## Matched-reply verification
+
+The score-drift case calls for comparing the exact opponent reply
+with the best known reply on the same board. An exploratory replay
+kept the logistic nominations fixed, used 220k nodes to compare the
+two replies, and reserved the rest of the 1.4M-node cap for the
+capture comparison. The score of the accepted capture must then
+agree with the evaluation after the exact reply.
+
+This version discarded 83 of 95 replies as uncompetitive, lacked a
+complete reply frame on one, and ran only 11 full comparisons. It
+retained four independently confirmed explanations, one of them
+new to this version, and used 33.88M reserved nodes versus 133M for
+verifying the full pair on every eligible board. It still screened
+20 ordinary games and sent two to full verification. The
+exploratory replay used the same games as the main experiment after
+reviewing them. It needs separate transfer evidence before being
+used in En Croissant. [Matched-reply evidence](paired-results.json)
+
+In Bangkok, the White bishop moves to f3. After `…Re8`, White must
+play `Bxe4` before taking on b7 with `Rxb7`. Playing `Rxb7` first
+allows `Bxb7`. The matched reply search sees `…Re8` within 91
+centipawns of the best cached defence. The exact capture order is
+587 centipawns better at the deeper budget.
+[Game broadcast](https://lichess.org/broadcast/2nd-bangkok-summer-international-chess-open-standard-open/round-2/Q12ksfJo/xfRY5V4A)
+
+The [mixed-decision readback](mixed-readback.md) records a different
+outstanding gap. The same board can have a correct tactical
+explanation and a separate strategic purpose.
 
 ## Reproduce
 
@@ -80,6 +135,8 @@ python "$bench/evaluate.py" frames.json model.joblib $stockfish attempts.json
 python "$bench/review.py" questions frames.json attempts.json questions.json
 python "$base/trials.py" ref questions.json $stockfish reference.json
 python "$bench/review.py" report attempts.json reference.json results.json
+python "$bench/paired_context.py" frames.json attempts.json $stockfish context.json
+python "$bench/paired_report.py" context.json reference.json paired-results.json
 ```
 
 The test measures one exact tactical mechanism across legal replies.
