@@ -3836,3 +3836,25 @@ The looser version adds two with one false call. Neither meets the
 promotion standard. Both stay offline. The comparison
 uses existing engine frames.
 [Review and reproduction](../benchmarks/decision-evidence/strategic-asset-contrast/README.md)
+
+## What it costs to stop a passer
+
+A played king move can let a passed pawn cost a rook even if the pawn
+never promotes in Stockfish's preferred line. The trial follows the
+same pawn and the intercepting piece, then searches the alternatives
+that leave the pawn on the board. The first two-arm comparison still
+made false calls when the stronger move could concede the same trade.
+Checking that both stronger lines can remove the pawn economically
+eliminated those reviewed false calls. On 85 untouched puzzles it
+matched seven of 22 scoped positives with zero false positives among
+46 reviewed negatives and used no extra Stockfish searches. Adding
+two restricted searches reduced that to six positives. The 135-game
+classical sample produced no newly supported diagnoses, so the trial
+remains offline. [Benchmark and replay](../benchmarks/decision-evidence/passed-pawn-interception/README.md)
+
+The matched v34 archive still finds one of 17 reviewed mixed mistakes.
+Its retrospective tactical mistake score remains 19 of 68 versus 10
+for the original, with zero false tactical calls across 165 reviewed
+negatives. The current positional mistake score remains 20 of 89.
+These totals carry forward the earlier archive, with its known limits.
+[Broader comparison](../benchmarks/decision-evidence/cross-scope-audit/README.md)

@@ -1,0 +1,662 @@
+{
+  "primary": {
+    "classical": {
+      "repeated": {
+        "excluded": 71,
+        "no": 7,
+        "uncertain": 3,
+        "yes": 1,
+        "yesDetected": 1
+      },
+      "restricted": {
+        "excluded": 71,
+        "no": 7,
+        "uncertain": 3,
+        "yes": 1,
+        "extraSearches": 2,
+        "extraNodes": 2400945,
+        "medianExtraTimeMs": 1557.6
+      },
+      "cheapDefence": {
+        "excluded": 71,
+        "no": 7,
+        "uncertain": 3,
+        "yes": 1
+      },
+      "bothChoices": {
+        "excluded": 71,
+        "no": 7,
+        "uncertain": 3,
+        "yes": 1
+      },
+      "incumbent": {
+        "yesTactical": 1,
+        "noTactical": 1
+      }
+    },
+    "puzzles": {
+      "repeated": {
+        "no": 69,
+        "yes": 25,
+        "yesDetected": 16,
+        "yesNewTactical": 14,
+        "uncertain": 14,
+        "uncertainDetected": 9,
+        "uncertainNewTactical": 7,
+        "noDetected": 2,
+        "noNewTactical": 2,
+        "excluded": 5,
+        "newTactical": [
+          [
+            "O04YF",
+            "yes",
+            "unclear"
+          ],
+          [
+            "MH2A7",
+            "yes",
+            "unclear"
+          ],
+          [
+            "LPWaC",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "LNC1C",
+            "no",
+            "unclear"
+          ],
+          [
+            "NpQQf",
+            "yes",
+            "unclear"
+          ],
+          [
+            "NCuKJ",
+            "yes",
+            "unclear"
+          ],
+          [
+            "N1kxA",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "NF6E6",
+            "yes",
+            "unclear"
+          ],
+          [
+            "MKkO3",
+            "yes",
+            "unclear"
+          ],
+          [
+            "M27ho",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "O5DxG",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "IT54z",
+            "yes",
+            "unclear"
+          ],
+          [
+            "NzufN",
+            "yes",
+            "unclear"
+          ],
+          [
+            "MidXe",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Lucf9",
+            "yes",
+            "unclear"
+          ],
+          [
+            "N9qL1",
+            "yes",
+            "unclear"
+          ],
+          [
+            "ItOMF",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "J2fPB",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Igsvm",
+            "yes",
+            "unclear"
+          ],
+          [
+            "NkZZT",
+            "yes",
+            "unclear"
+          ],
+          [
+            "JVWeJ",
+            "no",
+            "unclear"
+          ],
+          [
+            "Ld5Le",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "KpM8v",
+            "uncertain",
+            "unclear"
+          ]
+        ]
+      },
+      "restricted": {
+        "no": 69,
+        "yes": 25,
+        "uncertain": 14,
+        "yesDetected": 11,
+        "yesNewTactical": 9,
+        "extraSearches": 45,
+        "extraNodes": 54014566,
+        "uncertainDetected": 5,
+        "uncertainNewTactical": 3,
+        "noDetected": 2,
+        "noNewTactical": 2,
+        "excluded": 5,
+        "medianExtraTimeMs": 1179.29,
+        "newTactical": [
+          [
+            "MH2A7",
+            "yes",
+            "unclear"
+          ],
+          [
+            "LPWaC",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "LNC1C",
+            "no",
+            "unclear"
+          ],
+          [
+            "NCuKJ",
+            "yes",
+            "unclear"
+          ],
+          [
+            "MKkO3",
+            "yes",
+            "unclear"
+          ],
+          [
+            "M27ho",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "O5DxG",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "IT54z",
+            "yes",
+            "unclear"
+          ],
+          [
+            "MidXe",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Lucf9",
+            "yes",
+            "unclear"
+          ],
+          [
+            "N9qL1",
+            "yes",
+            "unclear"
+          ],
+          [
+            "J2fPB",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Igsvm",
+            "yes",
+            "unclear"
+          ],
+          [
+            "JVWeJ",
+            "no",
+            "unclear"
+          ]
+        ]
+      },
+      "cheapDefence": {
+        "no": 69,
+        "yes": 25,
+        "uncertain": 14,
+        "yesDetected": 5,
+        "yesNewTactical": 4,
+        "excluded": 5,
+        "uncertainDetected": 2,
+        "uncertainNewTactical": 1,
+        "newTactical": [
+          [
+            "NpQQf",
+            "yes",
+            "unclear"
+          ],
+          [
+            "IT54z",
+            "yes",
+            "unclear"
+          ],
+          [
+            "NzufN",
+            "yes",
+            "unclear"
+          ],
+          [
+            "J2fPB",
+            "yes",
+            "unclear"
+          ],
+          [
+            "KpM8v",
+            "uncertain",
+            "unclear"
+          ]
+        ]
+      },
+      "bothChoices": {
+        "no": 69,
+        "yes": 25,
+        "uncertain": 14,
+        "yesDetected": 3,
+        "extraSearches": 10,
+        "extraNodes": 12003080,
+        "excluded": 5,
+        "yesNewTactical": 2,
+        "uncertainDetected": 1,
+        "medianExtraTimeMs": 1404.076,
+        "newTactical": [
+          [
+            "IT54z",
+            "yes",
+            "unclear"
+          ],
+          [
+            "J2fPB",
+            "yes",
+            "unclear"
+          ]
+        ]
+      },
+      "incumbent": {
+        "uncertainTactical": 3,
+        "noTactical": 12,
+        "yesTactical": 4
+      }
+    }
+  },
+  "classical-reserve": {
+    "classical": {
+      "repeated": {
+        "no": 6,
+        "excluded": 46,
+        "uncertain": 1
+      },
+      "restricted": {
+        "no": 6,
+        "excluded": 46,
+        "uncertain": 1
+      },
+      "cheapDefence": {
+        "no": 6,
+        "excluded": 46,
+        "uncertain": 1
+      },
+      "bothChoices": {
+        "no": 6,
+        "excluded": 46,
+        "uncertain": 1
+      },
+      "incumbent": {
+        "noTactical": 1
+      }
+    }
+  },
+  "puzzle-reserve": {
+    "puzzles": {
+      "repeated": {
+        "uncertain": 11,
+        "no": 46,
+        "noDetected": 3,
+        "noNewTactical": 3,
+        "yes": 22,
+        "yesDetected": 17,
+        "yesNewTactical": 14,
+        "uncertainDetected": 6,
+        "uncertainNewTactical": 6,
+        "excluded": 6,
+        "yesWithoutMistakeReport": 1,
+        "newTactical": [
+          [
+            "OeKVl",
+            "no",
+            "unclear"
+          ],
+          [
+            "PFJ3f",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PzmOS",
+            "yes",
+            "positional"
+          ],
+          [
+            "PDtNn",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PT9mF",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "PU52K",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PTBn0",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "OnKyz",
+            "yes",
+            "unclear"
+          ],
+          [
+            "OJXma",
+            "no",
+            "unclear"
+          ],
+          [
+            "PS9jy",
+            "yes",
+            "unclear"
+          ],
+          [
+            "OjyPr",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "OCp8b",
+            "yes",
+            "unclear"
+          ],
+          [
+            "P9sbs",
+            "yes",
+            "unclear"
+          ],
+          [
+            "O9mXP",
+            "no",
+            "unclear"
+          ],
+          [
+            "PHbjy",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "PXUHv",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Oy5C5",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "OP8Uc",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Qb1rE",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PUPvs",
+            "yes",
+            "unclear"
+          ],
+          [
+            "P6yWX",
+            "yes",
+            "unclear"
+          ],
+          [
+            "OYFQA",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "PFYbG",
+            "yes",
+            "unclear"
+          ]
+        ]
+      },
+      "restricted": {
+        "uncertain": 11,
+        "no": 46,
+        "noDetected": 2,
+        "noNewTactical": 2,
+        "extraSearches": 42,
+        "extraNodes": 50413245,
+        "yes": 22,
+        "yesDetected": 13,
+        "yesNewTactical": 10,
+        "uncertainDetected": 2,
+        "uncertainNewTactical": 2,
+        "excluded": 6,
+        "yesWithoutMistakeReport": 1,
+        "medianExtraTimeMs": 1082.171,
+        "newTactical": [
+          [
+            "OeKVl",
+            "no",
+            "unclear"
+          ],
+          [
+            "PFJ3f",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PDtNn",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PU52K",
+            "yes",
+            "unclear"
+          ],
+          [
+            "OnKyz",
+            "yes",
+            "unclear"
+          ],
+          [
+            "OJXma",
+            "no",
+            "unclear"
+          ],
+          [
+            "OjyPr",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "P9sbs",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PXUHv",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Oy5C5",
+            "uncertain",
+            "unclear"
+          ],
+          [
+            "OP8Uc",
+            "yes",
+            "unclear"
+          ],
+          [
+            "Qb1rE",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PUPvs",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PFYbG",
+            "yes",
+            "unclear"
+          ]
+        ]
+      },
+      "cheapDefence": {
+        "uncertain": 11,
+        "no": 46,
+        "yes": 22,
+        "yesDetected": 7,
+        "yesNewTactical": 4,
+        "excluded": 6,
+        "yesWithoutMistakeReport": 1,
+        "newTactical": [
+          [
+            "PS9jy",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PXUHv",
+            "yes",
+            "unclear"
+          ],
+          [
+            "OP8Uc",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PFYbG",
+            "yes",
+            "unclear"
+          ]
+        ]
+      },
+      "bothChoices": {
+        "uncertain": 11,
+        "no": 46,
+        "yes": 22,
+        "yesDetected": 6,
+        "extraSearches": 12,
+        "extraNodes": 14403873,
+        "excluded": 6,
+        "yesNewTactical": 3,
+        "yesWithoutMistakeReport": 1,
+        "medianExtraTimeMs": 1099.119,
+        "newTactical": [
+          [
+            "PXUHv",
+            "yes",
+            "unclear"
+          ],
+          [
+            "OP8Uc",
+            "yes",
+            "unclear"
+          ],
+          [
+            "PFYbG",
+            "yes",
+            "unclear"
+          ]
+        ]
+      },
+      "incumbent": {
+        "yesTactical": 2,
+        "noTactical": 6
+      }
+    }
+  },
+  "validation": {
+    "checkedDecisions": 333,
+    "restrictedNominationsReproduced": 54,
+    "productionLoaded": "v34 compiled worker used on matching frames",
+    "newTacticalDefinition": "A reviewed positive with a current mistake report whose tactical support is unestablished. Missing reports counted separately. These are experimental candidates.",
+    "archiveTacticalMistake": {
+      "originalTrue": 10,
+      "currentTrue": 19,
+      "positives": 68,
+      "currentFalse": 0,
+      "negatives": 165
+    },
+    "archivePositionalMistake": {
+      "originalTrue": 2,
+      "currentTrue": 20,
+      "positives": 89,
+      "currentFalse": 0,
+      "negatives": 164
+    },
+    "archiveMixedMistake": {
+      "currentTrue": 1,
+      "positives": 17,
+      "currentFalse": 0,
+      "negatives": 185
+    },
+    "archiveInputScope": "Retrospective, same matches as the wider cross-scope audit, not an untouched final set."
+  }
+}
