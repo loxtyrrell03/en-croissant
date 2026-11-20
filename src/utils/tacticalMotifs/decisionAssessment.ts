@@ -130,11 +130,12 @@ import {
 } from "./quietReplyEvidence";
 
 import { availableCaptureOrders, confirmCaptureOrder, type CaptureOrderEvidence, type CaptureOrderProbe } from "./captureOrderEvidence";
+import { findPassedPawnRoles } from "./decisionPassedPawnRole";
 
 const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
 const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
 
-export const DECISION_ASSESSMENT_VERSION = 59;
+export const DECISION_ASSESSMENT_VERSION = 60;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -152,6 +153,7 @@ export type DecisionAssessment = {
     conditionalResources: ConditionalTacticalResource[];
     quietReply?: QuietReplyEvidence;
     captureOrder?: CaptureOrderEvidence;
+    sharedPassedPawn?: PositionStrategicPlan;
     conditionalFork?: ConditionalForkEvidence;
     conditionalMate?: DecisionConditionalMate;
     matingLines?: ConfirmedMatingLines;
@@ -1634,6 +1636,24 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         }
         leader.category = category(leader.tactical, leader.positional);
         leader.limitations.push("These lines compare the same pawn push. Other replies may require a different defence.");
+    }
+    // The pawn's strategic role can be shared by several plausible moves.
+    // Add it only after the played mistake has been assessed on its own evidence.
+    if (!rejectedChoices && (position.positional.support !== "supported" ||
+        moves.some(move => move.positional.support !== "supported"))) {
+        const plans = findPassedPawnRoles(input);
+        const support = (assessment: DecisionAssessment, plan: PositionStrategicPlan | undefined) => {
+            if (!plan || assessment.positional.support === "supported") return;
+            assessment.sharedPassedPawn = plan;
+            assessment.positional = {
+                support: "supported",
+                basis: "heuristic",
+                reasons: [plan.description],
+            };
+            assessment.category = category(assessment.tactical, assessment.positional);
+        };
+        support(position, plans.position);
+        for (const move of moves) support(move, plans.moves.get(move.moveUci));
     }
     return {
         version: DECISION_ASSESSMENT_VERSION,

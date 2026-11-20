@@ -17,11 +17,11 @@ def describe(board, frame, prefix=()):
     return f'{frame["cp"] if frame["mate"] is None else "mate " + str(frame["mate"])} {notation}'
 
 
-def packet(current, deeper, destination):
+def packet(current, deeper, destination, counts):
     exact = {row["id"]: row for row in current}
     groups = ("advanced", "ordinary")
     chosen = []
-    for category, size in zip(groups, (24, 12)):
+    for category, size in zip(groups, counts):
         group = [row for row in deeper if row["category"] == category]
         group.sort(key=lambda row: sha256(("blind-pawn-role|" + row["id"]).encode()).hexdigest())
         chosen += group[:size]
@@ -47,5 +47,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("normal", "deep", "destination"):
         parser.add_argument(name, type=Path)
+    parser.add_argument("--advanced", type=int, default=24)
+    parser.add_argument("--ordinary", type=int, default=12)
     args = parser.parse_args()
-    packet(read(args.normal), read(args.deep), args.destination)
+    packet(read(args.normal), read(args.deep), args.destination, (args.advanced, args.ordinary))

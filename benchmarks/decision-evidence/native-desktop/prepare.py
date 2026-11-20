@@ -58,6 +58,15 @@ def fixture(label, fen, line):
         board.push(move)
     (paths["document-dir"] / (label + ".pgn")).write_text(str(game) + "\n", encoding="utf-8")
 
+def history_fixture(label, history, follow=()):
+    board = chess.Board(history["fen"])
+    legal = []
+    for uci in [*history["moves"], *follow]:
+        move = board.parse_uci(uci)
+        legal.append(board.san(move))
+        board.push(move)
+    fixture(label, history["fen"], legal)
+
 fixture("Bavarian Refutation", load("sibling-refutation", "fixture.json")["bavaria"]["input"]["fen"], ["Qc8", "Nxb5"])
 fixture("Exact Rook Ending", load("exact-endgame-decisions", "witness.json")["fen"], ["Kf1", "e2+"])
 amsterdam = load("settled-exchange-plans", "fixture.json")["amsterdam"]
@@ -89,13 +98,12 @@ for folder, scenarios in (
         if scope not in order:
             continue
         target = order[scope]["input"]
-        history = target["history"]
-        moves = history["moves"] + ([target["playedMoveUci"]] if "playedMoveUci" in target else [])
-        board = chess.Board(history["fen"])
-        legal = []
-        for uci in moves:
-            move = board.parse_uci(uci)
-            legal.append(board.san(move))
-            board.push(move)
-        fixture(label, history["fen"], legal)
+        follow = [target["playedMoveUci"]] if "playedMoveUci" in target else []
+        history_fixture(label, target["history"], follow)
+passer_roles = fixtures / "passer-role-contrasts" / "runtime-fixture.json"
+if passer_roles.is_file():
+    plans = load("passer-role-contrasts", "runtime-fixture.json")
+    for key, label in (("chile", "Chile Passed Pawn"), ("handoff", "Passed Pawn Handoff"), ("direct", "Direct Pawn Blockade")):
+        target = plans[key]
+        history_fixture(label, target["history"], target["candidates"][0]["pvUci"][:1])
 print("Isolated app settings and legal PGN fixtures prepared.")

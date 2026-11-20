@@ -437,7 +437,10 @@ function DecisionReport({
   const checkpoint = report.position.preparedCheckpoint;
   const plan = report.position.strategicPlan;
   const promotion = report.position.promotionTactic;
-  const positionLines = [...(plan?.linesUci ?? []), ...(promotion?.linesUci ?? [])];
+  const pawnRole = report.position.sharedPassedPawn;
+  const positionLines = [
+    ...(plan?.linesUci ?? []), ...(promotion?.linesUci ?? []), ...(pawnRole?.linesUci ?? []),
+  ];
   const distinctPositionLines = positionLines.filter(
     (line, index) =>
       !positionLines.some(
@@ -474,7 +477,8 @@ function DecisionReport({
               ]
             : []),
           ...distinctPositionLines.map((moves) => ({
-            label: `After ${lineSan(report.fen, moves.slice(0, promotion?.linesUci.includes(moves) ? 2 : 1))}`,
+            label: `After ${lineSan(report.fen, moves.slice(0,
+              promotion?.linesUci.includes(moves) || pawnRole?.linesUci.includes(moves) ? 2 : 1))}`,
             san: lineSan(report.fen, moves),
           })),
         ]}
@@ -500,6 +504,7 @@ function DecisionReport({
             ...(selected.promotionTactic?.linesUci ?? []),
             ...(selected.passerFlight?.linesUci ?? []),
             ...(selected.settledExchangePlan?.linesUci ?? []),
+            ...(selected.sharedPassedPawn?.linesUci ?? []),
           ]
             .filter(
               (moves, index, lines) =>

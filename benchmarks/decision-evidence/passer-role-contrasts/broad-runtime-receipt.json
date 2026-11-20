@@ -1,0 +1,58 @@
+{
+  "count": 72,
+  "changes": [
+    {
+      "id": "00aa62121c2fecb25a1d",
+      "before": "tactical",
+      "after": "mixed",
+      "position": {
+        "description": "Both lines remove the opposing passed pawn on b6 through different exchanges.",
+        "linesUci": [
+          [
+            "g3f2",
+            "h6h5",
+            "f2e3",
+            "d3e3",
+            "b2b6",
+            "h5h4",
+            "g7f7"
+          ],
+          [
+            "g3f2",
+            "e3g5",
+            "b2b6",
+            "h6b6",
+            "f2b6"
+          ]
+        ]
+      },
+      "moves": [
+        {
+          "moveUci": "g3f2",
+          "category": "mixed",
+          "sharedPassedPawn": {
+            "description": "Both lines remove the opposing passed pawn on b6 through different exchanges.",
+            "linesUci": [
+              [
+                "g3f2",
+                "h6h5",
+                "f2e3",
+                "d3e3",
+                "b2b6",
+                "h5h4",
+                "g7f7"
+              ],
+              [
+                "g3f2",
+                "e3g5",
+                "b2b6",
+                "h6b6",
+                "f2b6"
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "reviewer": "single engine-assisted blind reviewer",
+  "predictionsVisible": false,
+  "scope": "Original advanced passer. Empty lists are scoped negatives, nulls indeterminate. The exact candidate is judged before the current classifier runs.",
+  "cases": [
+    {
+      "id": "01b654f318c829221346",
+      "position": [
+        "f6",
+        "g6"
+      ],
+      "move": [],
+      "note": "The original f6 and g6 pawns both run to promotion under different checks. d4 gives Black delaying counterplay without containing either pawn."
+    },
+    {
+      "id": "002ca6d6852d39102b16",
+      "position": [
+        "d5"
+      ],
+      "move": [],
+      "note": "Different Black king routes reach d7 or d6 to confront the passer and one continuation takes it. The exact a4 move primarily advances Black's other pawn."
+    },
+    {
+      "id": "00aa4aa17b78f6a4945f",
+      "position": null,
+      "move": [],
+      "note": "The b5 pawn can run to b6 in one defence and is then captured. Other viable lines center on the g-pawn race, so a recurring role for b5 is uncertain."
+    },
+    {
+      "id": "0068e8f20d0c2070cf41",
+      "position": [],
+      "move": [],
+      "note": "Black's defensive choices resolve the e-file and pressure around the king. The original d4 pawn advances only late in a secondary branch."
+    },
+    {
+      "id": "02aaa4f4c6ffefa1be37",
+      "position": [
+        "a4"
+      ],
+      "move": null,
+      "note": "The original a4 passed pawn advances to a2 under independent viable replies and rook placements. The exact Rbc8 explanation is unclear because the main reply exchanges rooks and leaves the pawn waiting."
+    },
+    {
+      "id": "0076257f430a0dbf1102",
+      "position": [
+        "d5"
+      ],
+      "move": [],
+      "note": "The d-pawn reaches d6 with checks and king displacement under different Black defences. The exact b5 move is about relieving the pressure on the queen and does not directly solve the passer."
+    },
+    {
+      "id": "00dd2b2326faf57a2a63",
+      "position": [
+        "g6",
+        "h7",
+        "a4"
+      ],
+      "move": null,
+      "note": "Both White passers shape the promotion race, and a4 can start Black's counterrace. The deeper search rates the exact a3 move well below its leader, leaving its evaluation-relative strategic role open."
+    },
+    {
+      "id": "003b86e010460312b330",
+      "position": [],
+      "move": [],
+      "note": "Exchanges on e5 and activity on the kingside do most of the work. d4 is incidental in the searched continuations."
+    },
+    {
+      "id": "004c3a225497816c2a09",
+      "position": null,
+      "move": [],
+      "note": "The a-pawn can advance in a later continuation. Rfd1 is immediately about surviving checks, and two distinct pawn plans are missing."
+    },
+    {
+      "id": "00a7d150362abc32ef76",
+      "position": [
+        "f4"
+      ],
+      "move": null,
+      "note": "White can take the same f-pawn after f3 or capture it on f4 via another defence. The exact Ne4 move has other defensive purposes and the contribution to both routes is uncertain."
+    },
+    {
+      "id": "00d40ec4eb173202ebd1",
+      "position": null,
+      "move": [],
+      "note": "The f-pawn is either captured or retained under queen and rook activity. The original gxh6 addresses the h6 pawn. A recurring independent strategic role for f4 is unclear."
+    },
+    {
+      "id": "141d7d11b35764deb2b0",
+      "position": null,
+      "move": [],
+      "note": "The e-pawn is captured under several different setups, with one weaker defence allowing e6. The exact Qxb6 root is about material or rook activity and does not deliberately further the pawn."
+    },
+    {
+      "id": "00373410ae3cac2e6973",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "001688cad7987c4ab707",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "000a95b126febd10d284",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "0030191f6b0814c87698",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "001d3b83fd131cb4401f",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "0031d334f673024c7d40",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    }
+  ]
+}

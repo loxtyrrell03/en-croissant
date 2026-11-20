@@ -89,7 +89,18 @@ def refines_guard(board, first, target):
         and first.move.from_square not in board.attackers(piece.color, target))
 
 
-def observations(board, path, pawn, pawn_side):
+def backs_replacement(step, original, square, side):
+    if original.move.from_square != square:
+        return False
+    return any(
+        chess.square_file(location) == chess.square_file(square)
+        and location in step.after.attackers(side, square)
+        and not step.after.is_pinned(side, location)
+        for location, origin in step.identities.items() if origin == original.origin
+    )
+
+
+def observations(board, path, pawn, pawn_side, extended=False):
     side = board.turn
     first = path[0]
     # Departure events have to leave the original pawn intact. Clearance and
@@ -123,7 +134,8 @@ def observations(board, path, pawn, pawn_side):
                     and all(follow.identities.get(square) == step.origin
                             and follow.identities.get(location) == pawn for follow in path[ply+1:ply+5])):
                 yield dict(role="blockade", ply=ply, actor=step.origin, effect=square,
-                           move=step.san, removed=(), rootAction=step.origin == first.origin)
+                           move=step.san, removed=(), rootAction=step.origin == first.origin
+                               or (extended and backs_replacement(step, first, square, side)))
 
 
 def routes(row):
@@ -149,12 +161,13 @@ def routes(row):
     return known
 
 
-def truly_distinct(first, second, path_a, path_b):
+def truly_distinct(first, second, path_a, path_b, extended=False):
     if path_a[:2] == path_b[:2]:
         return False
     # Convergence before the observed use does not supply two plans.
     if first["before"] == second["before"]:
-        return False
+        return (extended and first["ply"] == second["ply"] == 0 and path_a[0] == path_b[0]
+                and first["role"] in {"advance", "blockade"} and first["role"] == second["role"])
     if first["role"] != second["role"] or first["actor"] != second["actor"] or first["removed"] != second["removed"]:
         return True
     # At least one quieter continuation must reach a different pawn square
@@ -162,7 +175,7 @@ def truly_distinct(first, second, path_a, path_b):
     return first["effect"] != second["effect"] or first["role"] in {"advance", "blockade"}
 
 
-def compare(row):
+def compare(row, extended=False):
     board = initial(row)
     pawns = assets(board)
     discovered = {pawn: [] for pawn in pawns}
@@ -173,7 +186,7 @@ def compare(row):
         if not steps:
             continue
         for pawn, side in pawns.items():
-            for action in observations(board, steps, pawn, side):
+            for action in observations(board, steps, pawn, side, extended):
                 ply = action["ply"]
                 discovered[pawn].append(dict(action, path=path[:ply+3],
                     before=steps[ply-1].after.epd() if ply else board.epd()))
@@ -190,7 +203,7 @@ def compare(row):
                     repeated_position = proof
                 if first["path"][0] == second["path"][0]:
                     repeated_moves.setdefault(first["path"][0], proof)
-            if not truly_distinct(first, second, first["path"], second["path"]):
+            if not truly_distinct(first, second, first["path"], second["path"], extended):
                 continue
             if position is None:
                 position = proof

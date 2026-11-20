@@ -1,0 +1,263 @@
+{
+  "reviewer": "single engine-assisted blind reviewer",
+  "predictionsVisible": false,
+  "scope": "An original advanced passed pawn that affects the position or independently matters to the specifically examined move. Empty list is a scoped negative. Null is indeterminate. Positive arrays give reviewed target squares.",
+  "cases": [
+    {
+      "id": "00c99f665027e7800a2c",
+      "position": [
+        "g7"
+      ],
+      "move": null,
+      "note": "The g7 pawn reaches promotion in two forced queen-check continuations. Qd5+ also has a repetition after Bd6, so a separate exact move purpose is unresolved."
+    },
+    {
+      "id": "018aac183a211dad5d80",
+      "position": [],
+      "move": null,
+      "note": "The e5 pawn does not progress. The viable continuations manoeuvre behind the locked chain and exchange the g-pawn. The deeper frame does not search Kf2 separately."
+    },
+    {
+      "id": "0023a2fee8730d4286b6",
+      "position": [
+        "h5",
+        "d3",
+        "b6"
+      ],
+      "move": [
+        "h5"
+      ],
+      "note": "Kf6 and Kf7 gain access near h7 for the h-pawn. Nf4 permits h6 and Nf8 puts the knight on h7. Other continuations exchange b6 and d3 or race them."
+    },
+    {
+      "id": "0014eecd14d56ed0532d",
+      "position": [
+        "c3",
+        "c5"
+      ],
+      "move": null,
+      "note": "Rfd8 keeps the c3 pawn while taking c5 in another exchange. cxd2 exploits the c3 passer but the near-best replies do not independently establish its exact separate purpose."
+    },
+    {
+      "id": "00663218e023f8ea77e1",
+      "position": [
+        "f7"
+      ],
+      "move": null,
+      "note": "Bf8, Rf1 or Rxf7 all deal with the white passer. The b5 break provides counterplay and its exact role in restraining f7 is unresolved."
+    },
+    {
+      "id": "003af772b909ad413a76",
+      "position": [],
+      "move": [],
+      "note": "Bxe6 addresses White's queen and the forcing Ng6+ continuation. The e4 pawn remains incidental within both competitive branches, even with the late e3 follow-up in one."
+    },
+    {
+      "id": "003281b6552852ed7064",
+      "position": [
+        "a3"
+      ],
+      "move": null,
+      "note": "Bc5 permits White to remove the a3 pawn after Qb5. The other reply branch retains the pawn and guards its path with Qa2. The exact move's contribution across both replies is less certain."
+    },
+    {
+      "id": "00402b7505332028b9f1",
+      "position": null,
+      "move": null,
+      "note": "Kxe5 repeatedly takes the pawn, while White relies on side activity with Rf6 and captures elsewhere. Its role as a lure is plausible but unproved."
+    },
+    {
+      "id": "0023b794c02e2622c674",
+      "position": null,
+      "move": [],
+      "note": "Qc6 trades queens and launches Black's own a-pawn. White's e-pawn advances in some later branches, without proof that it drives the same choices."
+    },
+    {
+      "id": "00222d90db2d09491a51",
+      "position": null,
+      "move": null,
+      "note": "The d-pawn advances after a queen exchange in one branch. The competitive Re8 alternatives use other means of defence before that and do not settle its role."
+    },
+    {
+      "id": "001d6c27f3f88ee3f379",
+      "position": [
+        "f6"
+      ],
+      "move": [
+        "f6"
+      ],
+      "note": "Rf8 devotes the rook to the f-file behind the pawn's promotion squares. Nf7 physically blocks f6 in both competitive replies. Kf7 is another defence in close alternatives."
+    },
+    {
+      "id": "01082a023a56fcf06b58",
+      "position": null,
+      "move": [],
+      "note": "b3 creates queenside counterplay. The d5 and e6 pawns affect some rook choices late in the variation. There is no distinct support for containment as the purpose of b3."
+    },
+    {
+      "id": "003261cf8716a9571f18",
+      "position": [
+        "e6"
+      ],
+      "move": [],
+      "note": "The e6 pawn drives several materially different liquidation routes, particularly Bxe6 and Raxe6. Bh6's specific justification in the searched lines is the kingside attack, with e6 conceded."
+    },
+    {
+      "id": "00bca2e5a2d55465a611",
+      "position": [],
+      "move": [],
+      "note": "The better continuations contest the c- and b-files, while the e4 pawn is left holding its square. Rf7 does not put that passer to use in the compared lines."
+    },
+    {
+      "id": "00a77e86c1849d045852",
+      "position": [
+        "c3",
+        "f3"
+      ],
+      "move": [
+        "f3"
+      ],
+      "note": "Kf2 blocks and approaches f3, which Rxf3 or Kxf3 then collects. The c3 pawn separately races through c2 or c1 in other viable defences."
+    },
+    {
+      "id": "00aaa6e75f0fe88992df",
+      "position": [
+        "b5"
+      ],
+      "move": null,
+      "note": "Kh2, Kg1 and immediate b6 all permit repeated advances of the original b-pawn. Kh2 also answers queen checks and its independent contribution to the b-pawn is unresolved."
+    },
+    {
+      "id": "0019186d084ccb46c8b2",
+      "position": [
+        "b4"
+      ],
+      "move": [],
+      "note": "Several plausible orders pick up Black's b4 passer. The exact Nxg5+ wins the pawn on g5 and its relation to b4 is secondary, since Rxb4 remains viable immediately."
+    },
+    {
+      "id": "001c2a18d6ed08fc6472",
+      "position": [
+        "a6"
+      ],
+      "move": [],
+      "note": "The a-pawn shapes king routes both as a sacrifice with a7+ and as a survivor after other checks. The exact a7+ prompt is a concrete forcing king diversion with no verified additional independent purpose."
+    },
+    {
+      "id": "00fc69b5fcc0ebbe4866",
+      "position": [],
+      "move": [],
+      "note": "Ra7 and Rd7 contest rook activity, with checks and exchanges determining the support. The d4 pawn remains largely a fixed part of the position."
+    },
+    {
+      "id": "001aded0081b589c3a68",
+      "position": [
+        "b4"
+      ],
+      "move": [
+        "b4"
+      ],
+      "note": "Rb1 contests the b-pawn from behind. Both replies push it to b3 and White takes that pawn, with different tactical consequences. Other root choices still have to respond to b3."
+    },
+    {
+      "id": "009385726af69f4f89cf",
+      "position": [],
+      "move": [],
+      "note": "The continuations shift pieces around the g-file and kingside pressure. The e5 pawn does not determine the observed work of Rg5 or the nearby alternatives."
+    },
+    {
+      "id": "001cd439e458aaf18932",
+      "position": [
+        "e5"
+      ],
+      "move": [],
+      "note": "The same e-pawn captures to d6 and races to d7 in one line, or advances to e6 in another. The exact a5 move supplies different queenside counterplay."
+    },
+    {
+      "id": "002e6ba677c81a311ce2",
+      "position": [],
+      "move": [],
+      "note": "The observed alternatives focus on rook trades and the e-file. The original f5 pawn stays put, and neither Nd5 nor the other roots shows independent containment or use."
+    },
+    {
+      "id": "001b4d77a16c8b529caa",
+      "position": [
+        "a5"
+      ],
+      "move": null,
+      "note": "If Black lets it advance, White's a-pawn reaches the sixth or seventh with rook and bishop pressure. The exact contribution of the better f5 move to controlling it remains uncertain."
+    },
+    {
+      "id": "00416ef75750ff84cda5",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "000f6e56d89a25e59a9b",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "000143d131981f5a019a",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "001aaaea3bd53887461e",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "000933c1e4cbf20ad785",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "000d26a689d6333b9405",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "0049b216b01dad17a1c4",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "0007edec72b3f255b6f8",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "0022fcd02cbcf066d933",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "00046b31f2d98a156726",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "0040a3a12ee824e4131c",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    },
+    {
+      "id": "0003f5a3c6a6d614b589",
+      "position": [],
+      "move": [],
+      "note": "The original board contains no qualifying advanced passed pawn."
+    }
+  ]
+}

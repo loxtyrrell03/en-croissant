@@ -267,4 +267,26 @@ for (const [name, reply, capture, early, punishment] of [
   });
 }
 
+for (const [name, square, mechanism] of [
+  ["Chile Passed Pawn", "b6", /MIXED.*Bxf2/s],
+  ["Passed Pawn Handoff", "f6", /Rf8 leaves f7.*Nf7/s],
+  ["Direct Pawn Blockade", "f3", /Kf2.*stop its advance|stop its advance.*Kf2/s],
+]) {
+  if (!wanted.has(name)) continue;
+  await run(name, async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const position = await (await expandPosition(page)).innerText();
+    const move = page.getByText("What the move achieves", { exact: true }).locator("../..");
+    const toggle = move.getByRole("button", { name: "Show evidence", exact: true });
+    if (await toggle.count()) await toggle.click({ timeout: 6000 });
+    const evidence = await move.innerText();
+    assert(evidence.includes(`passed pawn on ${square}`), evidence);
+    assert.match(evidence, /Strategic interpretation/);
+    assert.match(evidence, mechanism);
+    return { position, move: evidence };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

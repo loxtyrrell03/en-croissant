@@ -14,7 +14,7 @@ from freeze import Games, board_key, family, hash_fields, read, write
 SEED = "original-passer-strategic-role-2026-11"
 
 
-def curate(sources, raw, prior, development):
+def curate(sources, raw, prior, development, limits):
     families = {family(row.get("event", "") or row.get("group", "")) for row in development}
     board_keys = {board_key(chess.Board(row["fen"])) for row in [*prior, *development]}
     prefixes = set()
@@ -57,14 +57,14 @@ def curate(sources, raw, prior, development):
                                 continue
                             site = game.headers.get("Site", "")
                             choices[cohort] = dict(id=ticket, game=identity, group=group, event=source["slug"],
-                                site=site if site.startswith("https://lichess.org/broadcast/") else source["url"],
+                                site=site if site.startswith("https://lichess.org/broadcast/") else (source.get("url") or source["broadcast"]),
                                 category=cohort, fen=board.fen(), history=dict(fen=start,moves=uci[:ply]),
                                 recorded=uci[ply:ply+8])
                     board.push(move)
                 for category, entry in choices.items():
                     pool[group, category].append(entry)
     picked, rows = set(), []
-    for cohort, limit in (("advanced", 72), ("ordinary", 48)):
+    for cohort, limit in limits.items():
         limit_by_source = Counter()
         ordered = [sorted(entries, key=lambda item: item["id"]) for (_, kind), entries in sorted(pool.items())
                    if kind == cohort]
@@ -91,10 +91,13 @@ if __name__ == "__main__":
         parser.add_argument(name, type=Path)
     parser.add_argument("--prior", type=Path, nargs="+", required=True)
     parser.add_argument("--development", type=Path, nargs="+", required=True)
+    parser.add_argument("--advanced", type=int, default=72)
+    parser.add_argument("--ordinary", type=int, default=48)
     args = parser.parse_args()
     prior = [row for p in args.prior for row in read(p)]
     development = [row for p in args.development for row in read(p)]
-    rows, sources, totals = curate(read(args.sources), args.raw, prior, development)
+    rows, sources, totals = curate(read(args.sources), args.raw, prior, development,
+        {"advanced": args.advanced, "ordinary": args.ordinary})
     write(args.output, rows)
     write(args.output.with_suffix(".manifest.json"), dict(seed=SEED, sources=sources, eligible=totals,
         sha256=sha256(args.output.read_bytes()).hexdigest(),
