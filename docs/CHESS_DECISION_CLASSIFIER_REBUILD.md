@@ -4212,3 +4212,21 @@ engine frames for a Serbian Championship game. The trial adds no mixed
 diagnosis. The current benchmark gives insufficient evidence for an app
 verdict change.
 [Exact games, comparisons and reproduction](../benchmarks/decision-evidence/competing-pawn-plans/README.md)
+
+## Drawing variations in complete searches
+
+The analysis now retains exact drawing prefixes instead of losing all
+alternatives when Stockfish continues past insufficient material or a
+verified repetition boundary. A winning side may decline an optional
+draw. A defender's claim still prevents the validator from treating
+that continuation as a win.
+
+In 104 independently selected classical boards, usable root frames
+increase from 68 to 88 and played comparisons from 31 to 38. The
+archived replay adds one reviewed tactical mistake after a drawn played
+line had suppressed a winning skewer comparison. Three held-out
+positions gain tactical diagnoses, and two of those explanations
+repeat at the higher engine budget. All retained draw boundaries were
+checked with a separate legal replay. The worker uses the existing
+engine budget.
+[Results and exact continuations](../benchmarks/decision-evidence/draw-aware-search/README.md)

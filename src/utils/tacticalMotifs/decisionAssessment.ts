@@ -101,7 +101,7 @@ import {
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 46;
+export const DECISION_ASSESSMENT_VERSION = 47;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -292,7 +292,9 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
     const measured = measureDecisionLine(input.fen, line);
     if (!measured || measured.drawnEnding) {
         result.limitations.push(
-            "The continuation is invalid or reaches an available draw; no later payoff is inferred.",
+            measured?.drawnEnding && line.claimHistory
+                ? "A draw by repetition can be claimed at the end of this line."
+                : "The continuation is invalid or reaches an available draw; no later payoff is inferred.",
         );
         return result;
     }

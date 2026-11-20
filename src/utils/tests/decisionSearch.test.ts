@@ -10,6 +10,7 @@ import type { BestMoves, EngineOptions } from "@/bindings";
 import type { LocalEngine } from "@/utils/engines";
 import cases from "../../../benchmarks/decision-evidence/defence-after-attack/fixtures.json";
 import mateTwo from "../../../benchmarks/decision-evidence/played-mate-in-two/fixtures.json";
+import drawFrames from "../../../benchmarks/decision-evidence/draw-aware-search/fixtures.json";
 
 const native = vi.hoisted(() => ({ listen: vi.fn(), getBestMoves: vi.fn(), kill: vi.fn() }));
 vi.mock("@/bindings", () => ({ events: { bestMovesPayload: { listen: native.listen } } }));
@@ -52,6 +53,38 @@ beforeEach(() => {
     native.kill.mockResolvedValue(undefined);
 });
 afterEach(() => vi.useRealTimers());
+
+test("a drawing alternative with an engine tail does not hide the defensive tactic", async () => {
+    const fixture = drawFrames.gatherDefensiveResource;
+    const input = (frames: typeof fixture.candidates | (typeof fixture.replyProbes)[0]["lines"], sign: number) =>
+        frames.map((frame, index): BestMoves => ({
+            ...lines([frame.pvUci], [0], frame.depth)[0],
+            multipv: index + 1,
+            score: {
+                value: frame.mate == null
+                    ? { type: "cp", value: sign * frame.cp! }
+                    : { type: "mate", value: sign * frame.mate },
+                wdl: null,
+            },
+        }));
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) =>
+        Promise.resolve([100, options.moves.length === fixture.history.moves.length
+            ? input(fixture.candidates, -1)
+            : input(fixture.replyProbes[0].lines, 1)]),
+    );
+    const saved = await gatherDecisionEvidence(
+        engine,
+        { fen: fixture.fen, playedMoveUci: fixture.playedMoveUci, history: fixture.history },
+        new AbortController().signal,
+        vi.fn(),
+    );
+    expect(saved.candidates.map((row) => row.pvUci[0])).toEqual(["g4g3", "e4e3", "f4f3"]);
+    expect(saved.candidates.slice(1).map((row) => row.pvUci.length)).toEqual([8, 10]);
+    expect(saved.replyProbes?.[0].lines[0].pvUci[0]).toBe("h2h3");
+    const report = assessChessDecision({ ...saved, history: fixture.history });
+    expect(report?.position.tactical.reasons.join(" ")).toMatch(/Kg1.*Re1.*Kh3/);
+    expect(native.getBestMoves).toHaveBeenCalledTimes(2);
+});
 
 test("a decision search keeps candidate, unrestricted reply and capture evidence separate", async () => {
     native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) => {

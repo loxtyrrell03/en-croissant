@@ -2,6 +2,8 @@ import { Chess } from "chessops/chess";
 import { makeFen, parseFen } from "chessops/fen";
 import type { Color, Role } from "chessops/types";
 import { parseUci } from "chessops/util";
+import type { TacticalGameHistory } from "./gameHistory";
+import { readTacticalRepetitionContext, tacticalRepetitionClaim } from "./repetitionHistory";
 
 const MATERIAL: Record<Role, number> = {
     pawn: 100,
@@ -21,7 +23,13 @@ export type DecisionEngineLine = {
     mate?: number | null;
     lowerbound?: boolean;
     upperbound?: boolean;
+    /** Present only when the line is bounded by a verified draw claim. */
+    claimHistory?: TacticalGameHistory;
 };
+
+export function isDecisionDrawScore(line: DecisionEngineLine) {
+    return line.cp !== null && Math.abs(line.cp) <= 10 && line.mate == null;
+}
 
 export type DecisionLineEvidence = {
     moves: string[];
@@ -124,6 +132,24 @@ function replayDecisionEvidence(
         const after = makeFen(position.toSetup()).split(" ").slice(0, 4).join(" ");
         repeated = (seen.get(after) ?? 0) >= 2;
     }
+    let claimAvailable = false;
+    if (line.claimHistory) {
+        if (!isDecisionDrawScore(line) || balance.length !== line.pvUci.length) return null;
+        const history = line.claimHistory;
+        if (!readTacticalRepetitionContext(fen, history)) return null;
+        const moves = [...history.moves, ...line.pvUci];
+        const reached = readTacticalRepetitionContext(makeFen(position.toSetup()), {
+            fen: history.fen,
+            moves,
+        });
+        if (
+            !reached ||
+            (reached.endedAtPly !== undefined && reached.endedAtPly !== moves.length) ||
+            !tacticalRepetitionClaim(reached)
+        )
+            return null;
+        claimAvailable = true;
+    }
     const tail = balance.slice(-4);
     return {
         moves: line.pvUci.slice(0, balance.length),
@@ -139,7 +165,7 @@ function replayDecisionEvidence(
         quietEndingPlies,
         checkmate: position.isCheckmate(),
         drawnEnding:
-            repeated ||
+            claimAvailable || repeated ||
             (!position.isCheckmate() && (position.isEnd() || position.halfmoves >= 100)),
     };
 }

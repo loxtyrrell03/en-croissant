@@ -6,10 +6,13 @@ import { events, type BestMoves, type BestMovesPayload } from "@/bindings";
 import { getBestMoves, killEngine, type LocalEngine } from "@/utils/engines";
 import { buildTacticalEngineOptions } from "@/utils/tacticalMotifs/liveTactics";
 import {
-    measureDecisionLine,
     measurePositionDecision,
     type DecisionEngineLine,
 } from "@/utils/tacticalMotifs/decisionEvidence";
+import {
+    canStartDecisionSearch,
+    validateDecisionSearchFrame,
+} from "@/utils/tacticalMotifs/decisionSearchFrame";
 import type {
     DecisionAssessmentInput,
     DecisionReplyProbe,
@@ -33,11 +36,6 @@ import {
     nominateSharedReply,
     type DecisionSharedReplyProbe,
 } from "@/utils/tacticalMotifs/decisionSharedReply";
-import {
-    advanceTacticalRepetitionContext,
-    readTacticalRepetitionContext,
-    tacticalRepetitionClaim,
-} from "@/utils/tacticalMotifs/repetitionHistory";
 
 export type DecisionSearchTarget = {
     fen: string;
@@ -160,18 +158,6 @@ function scoreForMover(fen: string, line: BestMoves): DecisionEngineLine {
     };
 }
 
-function crossesDrawClaim(fen: string, line: string[], history?: TacticalGameHistory) {
-    if (!history) return false;
-    let state = readTacticalRepetitionContext(fen, history);
-    if (!state) return true;
-    for (const uci of line) {
-        if (tacticalRepetitionClaim(state) || state.endedAtPly !== undefined) return true;
-        state = advanceTacticalRepetitionContext(state, uci);
-        if (!state) return true;
-    }
-    return !!tacticalRepetitionClaim(state);
-}
-
 async function searchPosition(
     engine: LocalEngine,
     fen: string,
@@ -183,11 +169,13 @@ async function searchPosition(
     width = 3,
 ): Promise<DecisionEngineLine[]> {
     signal.throwIfAborted();
-    const legal = [...board(fen).allDests().values()].reduce((total, set) => total + set.size(), 0);
-    if (legal === 0 || Date.now() >= stopAt || crossesDrawClaim(fen, [], history)) return [];
-    // A single promotion square represents four possible moves.
     const position = board(fen);
-    const additionalPromotions = [...position.allDests()].reduce(
+    if (position.isEnd() || Date.now() >= stopAt || !canStartDecisionSearch(fen, history))
+        return [];
+    const destinations = position.allDests();
+    const legal = [...destinations.values()].reduce((total, set) => total + set.size(), 0);
+    // A single promotion square represents four possible moves.
+    const additionalPromotions = [...destinations].reduce(
         (total, [from, dests]) =>
             total +
             (position.board.get(from)?.role === "pawn"
@@ -267,7 +255,12 @@ async function searchPosition(
                 )
             )
                 return;
-            const candidates = lines.map((line) => scoreForMover(fen, line));
+            const candidates = validateDecisionSearchFrame(
+                fen,
+                lines.map((line) => scoreForMover(fen, line)),
+                history,
+            );
+            if (!candidates) return;
             if (restricted) {
                 const expected = new Set(restricted.map((uci) => afterMove(fen, uci)));
                 if (
@@ -278,16 +271,7 @@ async function searchPosition(
                 )
                     return;
             }
-            if (
-                candidates.some(
-                    (line) =>
-                        !measureDecisionLine(fen, line) ||
-                        crossesDrawClaim(fen, line.pvUci, history),
-                )
-            )
-                return;
-            const measured = measurePositionDecision(fen, candidates);
-            if (measured?.lines.length === ranks) finish(candidates);
+            finish(candidates);
         };
         signal.addEventListener("abort", abort, { once: true });
         void events.bestMovesPayload
