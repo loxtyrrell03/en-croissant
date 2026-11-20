@@ -1,0 +1,68 @@
+{
+  "case": {
+    "id": "strategy-00dc61f42ff84ede",
+    "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+    "site": "https://lichess.org/broadcast/european-youth-chess-championship-2026-o18/round-6/B7IXGP6j/OrZik0ID",
+    "bestOutcome": 0,
+    "moves": {
+      "g4g6": 0,
+      "g4g7": 0,
+      "g4g8": 0,
+      "e2d1": -1,
+      "e2e1": -1,
+      "e2f1": -1,
+      "g4f4": -1,
+      "g4a4": -1,
+      "g4b4": -1,
+      "g4c4": -1,
+      "g4d4": -1,
+      "g4h4": -1,
+      "e2d3": -1,
+      "e2f3": -1,
+      "g4e4": -1,
+      "g4g5": -1,
+      "g4g1": -1,
+      "g4g3": -1,
+      "g4g2": -1
+    },
+    "played": "g4g8",
+    "playedOutcome": 0,
+    "engineChoices": [
+      "g4g7",
+      "g4g8",
+      "g4g6"
+    ]
+  },
+  "provenReplies": [
+    {
+      "played": "Rg5",
+      "reply": "Rxg5",
+      "fenAfterFirst": "8/8/8/4r1R1/8/4p2p/4K2k/8 b - - 1 62",
+      "winFor": "Black"
+    },
+    {
+      "played": "Rg3",
+      "reply": "Kxg3",
+      "fenAfterFirst": "8/8/8/4r3/8/4p1Rp/4K2k/8 b - - 1 62",
+      "winFor": "Black"
+    },
+    {
+      "played": "Rg2+",
+      "reply": "Kxg2",
+      "fenAfterFirst": "8/8/8/4r3/8/4p2p/4K1Rk/8 b - - 1 62",
+      "winFor": "Black"
+    },
+    {
+      "played": "Kf1",
+      "reply": "e2+",
+      "fenAfterFirst": "8/8/8/4r3/6R1/4p2p/7k/5K2 b - - 1 62",
+      "winFor": "Black"
+    },
+    {
+      "played": "Rd4",
+      "reply": "Kg3",
+      "fenAfterFirst": "8/8/8/4r3/3R4/4p2p/4K2k/8 b - - 1 62",
+      "winFor": "Black"
+    }
+  ]
+}

@@ -1,0 +1,493 @@
+{
+  "base-input.json": {
+    "sha256": "8651fedefdf3a57b99142e478e2c87643252160ae3e1feea1416a854b270a271",
+    "positions": [
+      {
+        "id": "fresh-king-00a3e9698fe0083d",
+        "fen": "2Qn4/8/3rk3/8/P7/8/3p4/3K4 b - - 2 56",
+        "site": "https://lichess.org/broadcast/fagernes-international-autumn-2026-gm/round/txyTaNWf",
+        "bestOutcome": 0,
+        "moves": {
+          "e6d5": 0,
+          "e6e5": 0,
+          "e6f6": 0,
+          "e6e7": 0,
+          "e6f7": 0,
+          "d6d7": 0
+        },
+        "played": "e6e7",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "d6d7",
+          "e6e7",
+          "e6d5"
+        ]
+      },
+      {
+        "id": "fresh-king-072100a79b90e107",
+        "fen": "R7/8/1k6/8/1p3P2/p2K4/8/1r6 b - - 5 56",
+        "site": "https://lichess.org/broadcast/mongolian-national-chess-championship-2026-open/round-7/vfxJWG67/a0eVnGPY",
+        "bestOutcome": 1,
+        "moves": {
+          "b1b2": 1,
+          "b6b7": 1,
+          "b1c1": 1,
+          "b6c6": 1,
+          "b6c7": 1,
+          "b1e1": 1,
+          "b1f1": 1,
+          "b1g1": 1,
+          "b1h1": 1,
+          "b1b3": 1,
+          "b6b5": 1,
+          "b6c5": 1,
+          "b1a1": 1,
+          "b1d1": 1,
+          "a3a2": 0,
+          "b4b3": 0
+        },
+        "played": "b6b5",
+        "playedOutcome": 1,
+        "engineChoices": [
+          "b6b5",
+          "b6c5",
+          "b1c1"
+        ]
+      },
+      {
+        "id": "fresh-king-00c036d6cc9ca7f0",
+        "fen": "8/1P1q4/8/1K6/8/2Q5/8/6k1 w - - 53 112",
+        "site": "https://lichess.org/broadcast/aq-prime-international-open-chess-championship/round/wVLqrDpX",
+        "bestOutcome": 0,
+        "moves": {
+          "b5b6": 0,
+          "c3c6": 0,
+          "b5a6": 0,
+          "b5b4": 0,
+          "b5c4": 0,
+          "b5a5": 0,
+          "b5c5": 0
+        },
+        "played": "b5a6",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "b5b6",
+          "c3c6",
+          "b5a6"
+        ]
+      },
+      {
+        "id": "fresh-king-0231c989a95ad88a",
+        "fen": "6R1/8/PP6/8/5k2/r2K1p2/8/8 w - - 21 129",
+        "site": "https://lichess.org/broadcast/1st-berjaya-global-chess-open-2026-masters/round-3/6MUa67ZD/5tMDl3Jt",
+        "bestOutcome": 0,
+        "moves": {
+          "d3c2": 0,
+          "d3d2": 0,
+          "d3c4": 0,
+          "d3d4": 0
+        },
+        "played": "d3d4",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "d3d4",
+          "d3d2",
+          "d3c2"
+        ]
+      },
+      {
+        "id": "fresh-king-018723921e229074",
+        "fen": "R7/8/Pk6/8/2P5/1K5r/8/8 w - - 9 70",
+        "site": "https://lichess.org/broadcast/fagernes-international-autumn-2026-gm/round/tWSzFmNu",
+        "bestOutcome": 0,
+        "moves": {
+          "b3a2": 0,
+          "b3b2": 0,
+          "b3c2": 0,
+          "b3a4": 0,
+          "b3b4": 0
+        },
+        "played": "b3a4",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "b3b4",
+          "b3a4",
+          "b3b2"
+        ]
+      },
+      {
+        "id": "fresh-king-039110f724fc5b18",
+        "fen": "8/8/1Q6/8/5Kp1/p5P1/8/1k6 b - - 4 58",
+        "site": "https://lichess.org/broadcast/36th-nato-chess-championship-2026/round-7/Cd33Pm6w/27AzgXjh",
+        "bestOutcome": -1,
+        "moves": {
+          "b1c2": -1,
+          "b1a1": -1,
+          "b1c1": -1,
+          "b1a2": -1
+        },
+        "played": "b1a1",
+        "playedOutcome": -1,
+        "engineChoices": [
+          "b1c2",
+          "b1a1",
+          "b1c1"
+        ]
+      },
+      {
+        "id": "fresh-king-01b2287035b73c5f",
+        "fen": "8/1R3P2/4p1K1/4k3/7P/8/8/6r1 w - - 5 59",
+        "site": "https://lichess.org/broadcast/benidorm-chess-open-2026-group-a/round/pANKkrTq",
+        "bestOutcome": 1,
+        "moves": {
+          "g6h6": 1,
+          "g6h7": 1,
+          "g6h5": 1
+        },
+        "played": "g6h7",
+        "playedOutcome": 1,
+        "engineChoices": [
+          "g6h6",
+          "g6h7",
+          "g6h5"
+        ]
+      },
+      {
+        "id": "fresh-king-028d23fa783fa42a",
+        "fen": "6k1/RK4P1/3P4/8/8/8/8/3r4 w - - 3 72",
+        "site": "https://lichess.org/broadcast/2026-serbian-second-league-group-voivodina/round-9/BbcwUbLm/3yiZxBwe",
+        "bestOutcome": 1,
+        "moves": {
+          "b7c6": 1,
+          "b7c7": 1,
+          "a7a8": 1,
+          "a7a6": 1,
+          "d6d7": 0,
+          "a7a1": 0,
+          "a7a2": 0,
+          "a7a3": 0,
+          "a7a4": 0,
+          "a7a5": 0,
+          "b7a6": 0,
+          "b7b6": 0,
+          "b7a8": 0,
+          "b7b8": 0,
+          "b7c8": 0
+        },
+        "played": "b7c7",
+        "playedOutcome": 1,
+        "engineChoices": [
+          "b7c6",
+          "b7c7",
+          "a7a8"
+        ]
+      },
+      {
+        "id": "fresh-king-06c455ce0ebffe7d",
+        "fen": "5k2/8/5K2/3p4/7R/4r3/7p/8 b - - 1 85",
+        "site": "https://lichess.org/broadcast/serbian-super-league-2026-open/round-8/Itn5GZof/qftQRvQh",
+        "bestOutcome": 1,
+        "moves": {
+          "f8e8": 1,
+          "h2h1q": 0,
+          "h2h1r": 0,
+          "e3f3": 0,
+          "e3g3": 0,
+          "f8g8": 0,
+          "e3h3": -1,
+          "e3e6": -1,
+          "e3e1": -1,
+          "e3e2": -1,
+          "e3a3": -1,
+          "e3b3": -1,
+          "e3c3": -1,
+          "e3d3": -1,
+          "e3e4": -1,
+          "e3e5": -1,
+          "e3e7": -1,
+          "e3e8": -1,
+          "d5d4": -1,
+          "h2h1b": -1,
+          "h2h1n": -1
+        },
+        "played": "f8e8",
+        "playedOutcome": 1,
+        "engineChoices": [
+          "f8e8",
+          "e3f3",
+          "h2h1r"
+        ]
+      },
+      {
+        "id": "fresh-king-04651f1556120e0f",
+        "fen": "6K1/3Q2P1/8/8/8/5q2/8/1k6 w - - 23 115",
+        "site": "https://lichess.org/broadcast/43-munsterland-open-34-challengers-2026-a-open/runde-7/VXq2ZO6H/2qPllNjt",
+        "bestOutcome": 0,
+        "moves": {
+          "d7d2": 0,
+          "d7a4": 0,
+          "d7d4": 0,
+          "d7b5": 0,
+          "d7d6": 0,
+          "d7e6": 0,
+          "d7a7": 0,
+          "d7c7": 0,
+          "d7e7": 0,
+          "d7f7": 0,
+          "d7c8": 0,
+          "d7d8": 0,
+          "d7e8": 0,
+          "g8h7": 0,
+          "g8h8": 0,
+          "d7d1": -1,
+          "d7c6": -1,
+          "d7b7": -1,
+          "d7d3": -1,
+          "d7h3": -1,
+          "d7g4": -1,
+          "d7d5": -1,
+          "d7f5": -1
+        },
+        "played": "g8h7",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "d7e6",
+          "d7d6",
+          "d7b5"
+        ]
+      },
+      {
+        "id": "fresh-king-072d1bd2388252b3",
+        "fen": "8/P6R/6p1/8/5k1P/8/r7/3K4 w - - 1 51",
+        "site": "https://lichess.org/broadcast/sparkassen-chess-trophy-2026-open-a/round-4/4DYwIer0/5bjZiwHp",
+        "bestOutcome": 0,
+        "moves": {
+          "a7a8q": 0,
+          "a7a8r": 0,
+          "a7a8b": 0,
+          "a7a8n": 0,
+          "h4h5": 0,
+          "h7h6": 0,
+          "h7b7": 0,
+          "h7c7": 0,
+          "h7d7": 0,
+          "h7e7": 0,
+          "h7f7": 0,
+          "h7g7": 0,
+          "h7h8": 0,
+          "d1c1": 0,
+          "d1e1": 0,
+          "h7h5": -1
+        },
+        "played": "d1c1",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "d1c1",
+          "h7g7",
+          "h7d7"
+        ]
+      },
+      {
+        "id": "exchange-0331edee9456a679",
+        "fen": "8/8/3r4/4k2p/7P/3R1K2/8/8 w - - 0 56",
+        "site": "https://lichess.org/broadcast/iv-open-internacional-de-ajedrez-cap-negret-50/round-6/vaVmzkCl/B6TESNLw",
+        "bestOutcome": 0,
+        "moves": {
+          "d3d6": 0,
+          "d3a3": 0,
+          "d3b3": 0,
+          "d3c3": 0,
+          "d3e3": 0,
+          "f3e2": 0,
+          "f3e3": 0,
+          "d3d1": -1,
+          "d3d2": -1,
+          "d3d4": -1,
+          "d3d5": -1,
+          "f3f2": -1,
+          "f3g2": -1,
+          "f3g3": -1
+        },
+        "played": "d3d6",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "d3d6",
+          "d3a3",
+          "d3e3"
+        ]
+      }
+    ]
+  },
+  "transfer-scored.json": {
+    "sha256": "25cc38e7dbbb92af7c81d2596f237d99464a9dd1ab477858bb90adf8277e0ece",
+    "positions": [
+      {
+        "id": "strategy-084ca3dc4b8ad8ed",
+        "fen": "8/8/8/2K4p/1P1N2bP/3k4/8/8 w - - 3 72",
+        "site": "https://lichess.org/broadcast/1-vechta-open-a-open/round-4/oNc4C8XB/K6V64b2G",
+        "bestOutcome": 1,
+        "moves": {
+          "b4b5": 1,
+          "d4c6": 1,
+          "c5d5": 1,
+          "d4b3": 1,
+          "d4b5": 1,
+          "d4c2": -1,
+          "d4e2": -1,
+          "d4f3": -1,
+          "d4f5": -1,
+          "d4e6": -1,
+          "c5b5": -1,
+          "c5b6": -1,
+          "c5c6": -1,
+          "c5d6": -1
+        },
+        "played": "b4b5",
+        "playedOutcome": 1,
+        "engineChoices": [
+          "c5d5",
+          "d4c6",
+          "b4b5"
+        ]
+      },
+      {
+        "id": "strategy-0106ad0933ebc068",
+        "fen": "1R6/6r1/1P1p4/5k2/8/4K3/8/8 w - - 2 58",
+        "site": "https://lichess.org/broadcast/benidorm-chess-open-2026-group-a/round/Zz3514fc",
+        "bestOutcome": 1,
+        "moves": {
+          "b6b7": 1,
+          "e3d4": 1,
+          "e3d3": 1,
+          "b8a8": 0,
+          "b8c8": 0,
+          "b8d8": 0,
+          "b8e8": 0,
+          "b8f8": 0,
+          "b8h8": 0,
+          "e3d2": 0,
+          "e3e2": 0,
+          "e3f2": 0,
+          "e3f3": 0,
+          "b8g8": -1,
+          "b8b7": -1
+        },
+        "played": "b6b7",
+        "playedOutcome": 1,
+        "engineChoices": [
+          "e3d4",
+          "b6b7",
+          "e3d3"
+        ]
+      },
+      {
+        "id": "strategy-0113bdc1643c78ed",
+        "fen": "8/8/6P1/7K/7P/4k3/8/5r2 w - - 0 69",
+        "site": "https://lichess.org/broadcast/hoogeveen-open-2026/round-9/1oWBFWRr/Dfc2lNPu",
+        "bestOutcome": 0,
+        "moves": {
+          "g6g7": 0,
+          "h5g5": 0,
+          "h5h6": 0,
+          "h5g4": -1
+        },
+        "played": "g6g7",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "h5g5",
+          "g6g7",
+          "h5h6"
+        ]
+      },
+      {
+        "id": "strategy-00ae1f4737901103",
+        "fen": "1k6/8/K3p3/1P3p2/8/4p3/8/4N3 w - - 1 66",
+        "site": "https://lichess.org/broadcast/khelo-chess-india-940-classical-fide-rating-2026/round-6/QS6035ZY/YceVSa1s",
+        "bestOutcome": 1,
+        "moves": {
+          "b5b6": 1,
+          "a6b6": 1,
+          "e1c2": 0,
+          "e1g2": 0,
+          "e1d3": 0,
+          "e1f3": 0,
+          "a6a5": 0
+        },
+        "played": "b5b6",
+        "playedOutcome": 1,
+        "engineChoices": [
+          "a6b6",
+          "b5b6",
+          "e1f3"
+        ]
+      },
+      {
+        "id": "strategy-0220df203f580468",
+        "fen": "8/6k1/R5p1/7p/7P/4r3/6K1/8 w - - 3 65",
+        "site": "https://lichess.org/broadcast/benidorm-chess-open-2026-group-a/round/Zz3514fc",
+        "bestOutcome": 0,
+        "moves": {
+          "a6a1": 0,
+          "a6a2": 0,
+          "a6a4": 0,
+          "a6a5": 0,
+          "a6b6": 0,
+          "a6c6": 0,
+          "a6d6": 0,
+          "a6a7": 0,
+          "a6a8": 0,
+          "g2f2": 0,
+          "g2h2": 0,
+          "g2f1": -1,
+          "g2g1": -1,
+          "g2h1": -1,
+          "a6a3": -1,
+          "a6e6": -1,
+          "a6f6": -1,
+          "a6g6": -1
+        },
+        "played": "a6b6",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "g2h2",
+          "g2f2",
+          "a6a7"
+        ]
+      },
+      {
+        "id": "strategy-00dc61f42ff84ede",
+        "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+        "site": "https://lichess.org/broadcast/european-youth-chess-championship-2026-o18/round-6/B7IXGP6j/OrZik0ID",
+        "bestOutcome": 0,
+        "moves": {
+          "g4g6": 0,
+          "g4g7": 0,
+          "g4g8": 0,
+          "e2d1": -1,
+          "e2e1": -1,
+          "e2f1": -1,
+          "g4f4": -1,
+          "g4a4": -1,
+          "g4b4": -1,
+          "g4c4": -1,
+          "g4d4": -1,
+          "g4h4": -1,
+          "e2d3": -1,
+          "e2f3": -1,
+          "g4e4": -1,
+          "g4g5": -1,
+          "g4g1": -1,
+          "g4g3": -1,
+          "g4g2": -1
+        },
+        "played": "g4g8",
+        "playedOutcome": 0,
+        "engineChoices": [
+          "g4g7",
+          "g4g8",
+          "g4g6"
+        ]
+      }
+    ]
+  }
+}

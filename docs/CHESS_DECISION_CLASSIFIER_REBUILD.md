@@ -4428,3 +4428,23 @@ three repeat. The Witney reference was also corrected after legal
 replay showed that its f6 pawn is blocked and a competitive king
 reply permits declining the queen trade.
 [Before and after, exact moves and regression checks](../benchmarks/decision-evidence/settled-exchange-plans/README.md)
+
+## Same-board comparisons for strategic timing
+
+A new offline benchmark isolates the timing of a quiet pawn advance,
+rook entry or knight outpost on one legal board. It searches the best
+option outside the specified action family and then compares the two
+exact moves at a common MultiPV depth. In the 66-game public sample
+after a source audit, two exact moves pass at both depths. Both
+positions already had positional explanations. The paired lines show
+that Kenya's passed pawn and NATO's active rook also appear after the
+weaker choices. In Amsterdam, the deeper comparison finds an equally
+scored way to defer the passed-pawn advance.
+
+An independent six-piece tablebase check highlights a defensive
+mechanism missed by the live position assessment. Three g-file rook
+moves draw, and dropping the rook to a direct capture or permitting
+a pawn advance loses. The temporary material stability in the engine
+variations could not isolate a positional mechanism. The experiment
+stays offline. It adds no runtime cost to Decision Evidence.
+[Reproducible comparisons and exact endgame results](../benchmarks/decision-evidence/strategic-choice-contrast/README.md)

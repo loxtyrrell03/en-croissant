@@ -1,0 +1,149 @@
+{
+  "inputHashes": {
+    "preview": "40eab4bd726c2ef9a52ec2315dcc7b1d7f764f75cd76b0534956e47a231cd12c",
+    "deeper": "cda5b2070502a70f3d5443bd73b24a1737632e1f4b6d08651e0a964a55cded23",
+    "product": "9d3ac9610d4d69bf69b5bba3188eeaaddd3c578d42e5a317902feaad4e8fa0cc",
+    "scope": "25cc38e7dbbb92af7c81d2596f237d99464a9dd1ab477858bb90adf8277e0ece"
+  },
+  "initialBoards": 96,
+  "nominatedCheckpoints": 27,
+  "observedPersistenceInOriginalPreview": 12,
+  "shallow": {
+    "close-alternative": 12,
+    "plan-does-not-lead": 6,
+    "nominated": 3,
+    "plan-does-not-persist": 4,
+    "different-material": 2
+  },
+  "deeper": {
+    "close-alternative": 12,
+    "plan-does-not-lead": 5,
+    "nominated": 3,
+    "plan-does-not-persist": 5,
+    "different-material": 2
+  },
+  "cost": {
+    "shallow": {
+      "queries": 69,
+      "medianMsIncludingEarlierSearches": 536.2,
+      "medianNodesIncludingEarlierSearches": 440878
+    },
+    "deeper": {
+      "queries": 71,
+      "medianMsIncludingEarlierSearches": 2077.1,
+      "medianNodesIncludingEarlierSearches": 2468922
+    }
+  },
+  "cases": [
+    {
+      "id": "strategy-16d2ca6ae469c552",
+      "kind": "passer",
+      "fen": "8/6k1/4b2p/4p3/P1pqP1pP/6P1/2Q1B1K1/8 b - - 2 43",
+      "event": "kenya-national-chess-league-2026",
+      "site": "https://lichess.org/broadcast/kenya-national-chess-league-2026-premier-league/round-2/WT4yuPmA/HCteHFd1",
+      "prefix": [],
+      "currentPositionCategory": "positional",
+      "positionReference": null,
+      "initialPersistence": true,
+      "before": {
+        "status": "nominated",
+        "option": "c4c3",
+        "alternate": "g7f6",
+        "gapCp": 119,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "c4c3",
+          "retained": true
+        },
+        "optionSan": "43...c3 44. a5 Bd7 45. Bd3 Ba4 46. Qe2 Kf8 47. h5 Ke7 48. a6",
+        "alternateSan": "43...Kf6 44. a5 c3 45. a6 Bc8 46. Bd3 Ke7 47. Kf1 Bd7 48. a7"
+      },
+      "after": {
+        "status": "nominated",
+        "option": "c4c3",
+        "alternate": "g7f6",
+        "gapCp": 170,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "c4c3",
+          "retained": true
+        },
+        "optionSan": "43...c3 44. a5 Bd7 45. Bd3 Ba4 46. Qe2 Kf6 47. a6 Ke7 48. h5",
+        "alternateSan": "43...Kf6 44. a5 c3 45. a6 Bc8 46. Kf1 Bd7 47. Bd3 Kg7 48. a7"
+      },
+      "repeat": true
+    },
+    {
+      "id": "strategy-0002242f417ccc6d",
+      "kind": "rook-file",
+      "fen": "2k5/qp1r1p2/2p1p1p1/p2r3p/P2PQP1P/1RP5/6P1/1R5K w - - 2 30",
+      "event": "36th-nato-chess-championship-2026",
+      "site": "https://lichess.org/broadcast/36th-nato-chess-championship-2026/round-5/Zipw7lXe/0YRAbS32",
+      "prefix": [],
+      "currentPositionCategory": "positional",
+      "positionReference": null,
+      "initialPersistence": true,
+      "before": {
+        "status": "nominated",
+        "option": "b3b6",
+        "alternate": "e4f3",
+        "gapCp": 93,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "b3b6",
+          "retained": true
+        },
+        "optionSan": "30. Rb6 Kd8 31. R1b3 Ke8 32. Qb1 Kf8 33. Qb2 Kg7 34. Kh2 Qa8",
+        "alternateSan": "30. Qf3 Kd8 31. Rb6 Ke7 32. Qe3 Ke8 33. Kh2 Kf8 34. Qe4 Qa8"
+      },
+      "after": {
+        "status": "nominated",
+        "option": "b3b6",
+        "alternate": "e4f3",
+        "gapCp": 116,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "b3b6",
+          "retained": true
+        },
+        "optionSan": "30. Rb6 Kd8 31. Kh2 Ke7 32. R1b2 Kf6 33. Qb1 Qb8 34. g3 c5",
+        "alternateSan": "30. Qf3 Kd8 31. Rb6 Ke8 32. Kh2 Kf8 33. Qe3 Kg8 34. R1b2 Qb8"
+      },
+      "repeat": true
+    },
+    {
+      "id": "strategy-00dc61f42ff84ede",
+      "kind": "rook-file",
+      "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+      "event": "european-youth-2026",
+      "site": "https://lichess.org/broadcast/european-youth-chess-championship-2026-o18/round-6/B7IXGP6j/OrZik0ID",
+      "prefix": [],
+      "currentPositionCategory": "positional",
+      "positionReference": null,
+      "initialPersistence": true,
+      "before": {
+        "status": "nominated",
+        "option": "g4g7",
+        "alternate": "e2f1",
+        "gapCp": 442,
+        "sameAssetDeferred": {
+          "ply": 5,
+          "move": "g4g7",
+          "retained": false
+        },
+        "optionSan": "62. Rg7 Kh1 63. Rg4 h2 64. Rg6 Re7 65. Rg8 Re6 66. Rg5 Rf6",
+        "alternateSan": "62. Kf1 e2+ 63. Ke1 Re3 64. Rg7 Rg3 65. Rf7 Kg1 66. Kxe2 h2"
+      },
+      "after": {
+        "status": "nominated",
+        "option": "g4g7",
+        "alternate": "g4d4",
+        "gapCp": 839,
+        "sameAssetDeferred": null,
+        "optionSan": "62. Rg7 Re6 63. Rg5 Re7 64. Rg4 Kh1 65. Rg6 h2 66. Rg8 Re6",
+        "alternateSan": "62. Rd4 Kg3 63. Rd8 h2 64. Rd1 Kg2 65. Rd7 Re4 66. Rg7+ Kh3"
+      },
+      "repeat": true
+    }
+  ]
+}

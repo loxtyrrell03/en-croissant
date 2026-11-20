@@ -1,0 +1,303 @@
+{
+  "inputHashes": {
+    "preview": "7661e578d5a07e1f34e96793c618eea08a702aa43cf6ea2478bd33c2df91ed71",
+    "deeper": "39614af10fa5512be3f0b9da8530d92737e42be8e51701354941a3ed3ce06c34",
+    "product": "bbad1f275e4c211db29c31ad11b6aeb65459be7ca70554414fd4c79dac6ac04c",
+    "scope": "8651fedefdf3a57b99142e478e2c87643252160ae3e1feea1416a854b270a271"
+  },
+  "initialBoards": 1785,
+  "nominatedCheckpoints": 78,
+  "observedPersistenceInOriginalPreview": 27,
+  "shallow": {
+    "close-alternative": 39,
+    "plan-does-not-persist": 10,
+    "plan-does-not-lead": 20,
+    "nominated": 5,
+    "incomplete-alternate": 1,
+    "different-material": 1,
+    "incomplete-matched": 2
+  },
+  "deeper": {
+    "close-alternative": 32,
+    "plan-does-not-lead": 23,
+    "plan-does-not-persist": 9,
+    "different-material": 3,
+    "nominated": 3,
+    "incomplete-matched": 6,
+    "incomplete-broad": 1,
+    "incomplete-alternate": 1
+  },
+  "cost": {
+    "shallow": {
+      "queries": 193,
+      "medianMsIncludingEarlierSearches": 530.2,
+      "medianNodesIncludingEarlierSearches": 591298
+    },
+    "deeper": {
+      "queries": 185,
+      "medianMsIncludingEarlierSearches": 1740.9,
+      "medianNodesIncludingEarlierSearches": 2236230
+    }
+  },
+  "cases": [
+    {
+      "id": "tournament-naycc-u18-2026-f25e180ca5174370-101",
+      "kind": "outpost",
+      "fen": "2r5/1p1k4/p1r1p1p1/P2p2p1/1P1P1pP1/1KPRnP1P/3R4/6N1 b - - 5 51",
+      "event": null,
+      "site": null,
+      "prefix": [],
+      "currentPositionCategory": "positional",
+      "positionReference": {
+        "id": "tournament-naycc-u18-2026-f25e180ca5174370-101",
+        "scope": "position-character",
+        "moveUci": "e3c4",
+        "gameMoveUci": "d7d6",
+        "tactical": false,
+        "positional": true,
+        "rationale": "Nc4 and the b6 break can occur in different orders. They produce the same queenside targets and rook entry, with no clear forced material sequence."
+      },
+      "initialPersistence": false,
+      "before": {
+        "status": "plan-does-not-lead"
+      },
+      "after": {
+        "status": "nominated",
+        "option": "e3c4",
+        "alternate": "c8h8",
+        "gapCp": 58,
+        "sameAssetDeferred": null,
+        "optionSan": "51...Nc4 52. Ra2 e5 53. Re2 Kd6 54. Rd1 exd4 55. Rxd4 b6 56. axb6",
+        "alternateSan": "51...Rh8 52. Ra2 Kd6 53. Rdd2 Rhc8 54. Ne2 R6c7 55. Rdb2 Nc4 56. Rb1"
+      },
+      "repeat": false
+    },
+    {
+      "id": "tournament-misamis-2026-d4a921d18adba727-58",
+      "kind": "rook-file",
+      "fen": "1r1r1k2/p2Bb1pp/1pR5/8/4NP2/4P3/PP5P/6K1 w - - 1 30",
+      "event": null,
+      "site": null,
+      "prefix": [],
+      "currentPositionCategory": "positional",
+      "positionReference": {
+        "id": "tournament-misamis-2026-d4a921d18adba727-58",
+        "scope": "position-character",
+        "moveUci": "c6c7",
+        "gameMoveUci": "c6c7",
+        "tactical": false,
+        "positional": true,
+        "rationale": "White can activate the rook or choose a bishop route while Black keeps the d-file and queenside majority. The ordinary checks serve different piece placements without a confirmed material requirement."
+      },
+      "initialPersistence": true,
+      "before": {
+        "status": "nominated",
+        "option": "c6c7",
+        "alternate": "d7g4",
+        "gapCp": 56,
+        "sameAssetDeferred": null,
+        "optionSan": "30. Rc7 b5 31. Kg2 a5 32. h4 b4 33. b3 Rb6 34. Bg4 Rg6",
+        "alternateSan": "30. Bg4 h5 31. Bf5 Rd1+ 32. Kg2 a5 33. b3 b5 34. Ra6 a4"
+      },
+      "after": {
+        "status": "close-alternative",
+        "option": "c6c7",
+        "alternate": "d7g4",
+        "gapCp": 45,
+        "sameAssetDeferred": {
+          "ply": 7,
+          "move": "c6c7",
+          "retained": false
+        },
+        "optionSan": "30. Rc7 b5 31. Kg2 a6 32. h4 Rb6 33. h5 Bd6 34. Nxd6 Rxd6",
+        "alternateSan": "30. Bg4 h5 31. Bf5 Rd1+ 32. Kg2 Rbd8 33. Rc7 Rb1 34. b3 Rb2+"
+      },
+      "repeat": false
+    },
+    {
+      "id": "mistake-fall-nyc-norms-2026-1ab8a1ddcc38bfef-87",
+      "kind": "passer",
+      "fen": "8/k6p/1n6/8/PR2KN2/1P6/r7/8 b - - 2 44",
+      "event": null,
+      "site": null,
+      "prefix": [
+        "h7h5",
+        "e4d3"
+      ],
+      "currentPositionCategory": "positional",
+      "positionReference": null,
+      "initialPersistence": true,
+      "before": {
+        "status": "nominated",
+        "option": "h5h4",
+        "alternate": "a7a6",
+        "gapCp": 58,
+        "sameAssetDeferred": null,
+        "optionSan": "45...h4 46. Re4 Rf2 47. Kd4 Rd2+ 48. Kc3 Rd7 49. Ng6 Nd5+ 50. Kb2",
+        "alternateSan": "45...Ka6 46. Ne6 Rg2 47. Rd4 Rg3+ 48. Kc2 Rg4 49. Nc5+ Ka7 50. Rd6"
+      },
+      "after": {
+        "status": "nominated",
+        "option": "h5h4",
+        "alternate": "a2a1",
+        "gapCp": 60,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "h5h4",
+          "retained": true
+        },
+        "optionSan": "45...h4 46. Re4 Rf2 47. Kd4 Rd2+ 48. Nd3 h3 49. Re7+ Ka8 50. Rh7",
+        "alternateSan": "45...Ra1 46. Re4 h4 47. Kc3 Rg1 48. Nd3 h3 49. Rh4 Rg3 50. Kd4"
+      },
+      "repeat": true
+    },
+    {
+      "id": "02af1f848e8ba230",
+      "kind": "passer",
+      "fen": "1r6/r6p/2Pk1p2/NP2p3/1RP2P2/5K2/7P/8 w - - 3 44",
+      "event": "munster-B8Gqv1Pd",
+      "site": "https://lichess.org/broadcast/43-munsterland-open-34-challengers-2026-a-open/runde-8/B8Gqv1Pd/RVCpx9DE",
+      "prefix": [
+        "a5b3",
+        "a7a2",
+        "c4c5",
+        "d6d5"
+      ],
+      "currentPositionCategory": "unclear",
+      "positionReference": null,
+      "initialPersistence": false,
+      "before": {
+        "status": "nominated",
+        "option": "c6c7",
+        "alternate": "f4e5",
+        "gapCp": 145,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "c6c7",
+          "retained": true
+        },
+        "optionSan": "46. c7 Rg8 47. fxe5 fxe5 48. b6 Rf8+ 49. Kg3 Kc6 50. h3 Kd7",
+        "alternateSan": "46. fxe5 fxe5 47. c7 Rf8+ 48. Kg3 Rb2 49. b6 e4 50. Kg4 Rg2+"
+      },
+      "after": {
+        "status": "plan-does-not-persist",
+        "option": "c6c7",
+        "alternate": "f4e5",
+        "gapCp": 130,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "c6c7",
+          "retained": true
+        },
+        "optionSan": "46. c7 Rg8 47. fxe5 fxe5 48. b6 Rxh2 49. Rg4 Rf8+ 50. Kg3 Rb2",
+        "alternateSan": "46. fxe5 fxe5 47. c7 Rf8+ 48. Kg3 Rb2 49. b6 e4 50. h3 Rg8+"
+      },
+      "repeat": false
+    },
+    {
+      "id": "fresh-king-0208e9c8fe18efe9",
+      "kind": "rook-file",
+      "fen": "1r4k1/5pp1/5b2/R1r4p/3p4/1P1R2PP/1P1B1P2/6K1 b - - 3 25",
+      "event": "misamis-occidental-philippines-international-chess-championship",
+      "site": "https://lichess.org/broadcast/misamis-occidental-philippines-international-chess-championship/round/eqbjJSLO",
+      "prefix": [],
+      "currentPositionCategory": "unclear",
+      "positionReference": null,
+      "initialPersistence": false,
+      "before": {
+        "status": "close-alternative",
+        "option": "c5c2",
+        "alternate": "c5a5",
+        "gapCp": 32,
+        "sameAssetDeferred": null,
+        "optionSan": "25...Rc2 26. Ra2 Re8 27. Kf1 Kh7 28. b4 g5 29. Ra6 Re6 30. Raa3",
+        "alternateSan": "25...Rxa5 26. Bxa5 Rb5 27. Bd2 Rc5 28. b4 Rc2 29. b3 Kf8 30. b5"
+      },
+      "after": {
+        "status": "nominated",
+        "option": "c5c2",
+        "alternate": "b8c8",
+        "gapCp": 57,
+        "sameAssetDeferred": null,
+        "optionSan": "25...Rc2 26. Ra2 Re8 27. Kf1 Kh7 28. b4 g5 29. Ra5 Kg6 30. b3",
+        "alternateSan": "25...Rbc8 26. Rxc5 Rxc5 27. Kg2 Rc2 28. Kf3 Rxb2 29. Ke4 Kf8 30. g4"
+      },
+      "repeat": false
+    },
+    {
+      "id": "exchange-01a95f9b21581cb2",
+      "kind": "rook-file",
+      "fen": "5B2/1k6/pb2r2p/3R2p1/P1P2pK1/8/6P1/8 b - - 7 47",
+      "event": "43-munsterland-open-34-challengers-2026",
+      "site": "https://lichess.org/broadcast/43-munsterland-open-34-challengers-2026-a-open/runde-6/Nb5HURJx/dml4k9Mg",
+      "prefix": [],
+      "currentPositionCategory": "unclear",
+      "positionReference": null,
+      "initialPersistence": true,
+      "before": {
+        "status": "nominated",
+        "option": "e6e2",
+        "alternate": "a6a5",
+        "gapCp": 100,
+        "sameAssetDeferred": null,
+        "optionSan": "47...Re2 48. Kf3 Re3+ 49. Kf2 Re6+ 50. Kf3 Kc6 51. a5 Bc7 52. Kg4",
+        "alternateSan": "47...a5 48. Rd2 Rf6 49. Bg7 Rc6 50. Rb2 Rxc4 51. Bxh6 Rxa4 52. Bxg5"
+      },
+      "after": {
+        "status": "different-material",
+        "option": "e6e2",
+        "alternate": "a6a5",
+        "gapCp": 128,
+        "sameAssetDeferred": {
+          "ply": 7,
+          "move": "e6e2",
+          "retained": false
+        },
+        "optionSan": "47...Re2 48. Kf3 Re3+ 49. Kf2 g4 50. Kf1 Rc3 51. Rd7+ Kc8 52. Rf7",
+        "alternateSan": "47...a5 48. Rd7+ Bc7 49. Rh7 Kc8 50. Bxh6 Re2 51. Kf3 Re3+ 52. Kf2"
+      },
+      "repeat": false
+    },
+    {
+      "id": "exchange-0a1b42a6180ad8eb",
+      "kind": "passer",
+      "fen": "8/8/4bb2/1pBpN3/p2Pk1p1/6P1/1P2KP2/8 b - - 15 50",
+      "event": "amsterdam-chess-open-2026",
+      "site": "https://lichess.org/broadcast/amsterdam-chess-open-2026-group-a/round/fXoFR8Bu",
+      "prefix": [
+        "f6e5",
+        "d4e5"
+      ],
+      "currentPositionCategory": "mixed",
+      "positionReference": null,
+      "initialPersistence": true,
+      "before": {
+        "status": "nominated",
+        "option": "d5d4",
+        "alternate": "e6f5",
+        "gapCp": 100,
+        "sameAssetDeferred": {
+          "ply": 3,
+          "move": "d5d4",
+          "retained": true
+        },
+        "optionSan": "51...d4 52. Bf8 d3+ 53. Kd2 Kd4 54. Be7 Kc4 55. Kc1 Kb3 56. Bg5",
+        "alternateSan": "51...Bf5 52. Kd2 d4 53. Bf8 Be6 54. Ba3 Bf7 55. Bf8 Bg8 56. Bd6"
+      },
+      "after": {
+        "status": "close-alternative",
+        "option": "d5d4",
+        "alternate": "e6f5",
+        "gapCp": 0,
+        "sameAssetDeferred": {
+          "ply": 5,
+          "move": "d5d4",
+          "retained": false
+        },
+        "optionSan": "51...d4 52. Ba3 Kd5 53. b3 axb3 54. Kd3 Bf5+ 55. Kd2 Kc4 56. Bb2",
+        "alternateSan": "51...Bf5 52. e6 Bxe6 53. Kd2 d4 54. Ba3 Kd5 55. b3 axb3 56. Bb2"
+      },
+      "repeat": false
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "sameGameAudit": {
+    "strategy-1092679629eaa266": [
+      "3r1r2/1pp3k1/p3b1pp/2PpPp2/3R4/1BP4P/1P3PP1/3R2K1 b - - 0 26"
+    ],
+    "strategy-26a3ef834fb4847b": [
+      "r1b3k1/pp1nq2p/2pb3r/8/2PPpPP1/P7/1P1BBPK1/2RQ1RN1 b - - 0 20"
+    ],
+    "strategy-362c63421fe37086": [
+      "r3k2r/1b1nbppp/pq1ppn2/6B1/3NPP2/p4B2/1PPQ1NPP/R4RK1 w kq - 0 15"
+    ],
+    "strategy-12bba51b64e11244": [
+      "8/4r2p/7R/1p3kp1/8/6K1/PP3P2/8 w - - 0 51"
+    ],
+    "strategy-4cf449c6e6361d4c": [
+      "8/2p2kp1/1p1p1q2/p2Pp2p/P1P1Rr2/1P2QPPP/5K2/8 b - - 0 50"
+    ],
+    "strategy-10896c1dd216bed6": [
+      "2k5/pp2p2Q/2p1P3/2P5/3P1K2/P2P4/R5q1/1N2r3 b - - 4 34"
+    ],
+    "strategy-405d5a88bf9357ad": [
+      "r1b2knr/ppqpp2p/2n2pp1/3N4/8/2B3P1/P2QBP1P/2R2RK1 b - - 2 20"
+    ],
+    "strategy-c0f238ff418811e3": [
+      "5rk1/4rnpp/1p3p1q/p1pP4/3nPN2/1P2R1PP/P4QB1/5RK1 w - - 1 36"
+    ],
+    "strategy-4ae666019fbd3754": [
+      "2rq4/p1r3pk/1p2bn1p/3nNp2/P1BPpP1Q/BP4R1/3P2PP/5RK1 b - - 3 31"
+    ],
+    "strategy-07bdce8953ef088b": [
+      "1r4k1/3b2pp/2p1p3/2PpR3/1P1q4/1Q6/5NPP/1R4K1 b - - 0 26"
+    ]
+  },
+  "sharedFamilyCases": {
+    "strategy-084ca3dc4b8ad8ed": "1-vechta-open-a-open",
+    "strategy-0014cdd8bcb4211b": "2026",
+    "strategy-04d126970795a2be": "campeonato-sudamericano-montevideo-2026",
+    "strategy-062482d33d4177eb": "european-youth-2026",
+    "strategy-362c63421fe37086": "fide-world-junior-chess-championship-2026",
+    "strategy-006f7fad193580c6": "1-vechta-open-a-open",
+    "strategy-00592e17c8b0103f": "2026",
+    "strategy-037dc83227f7da92": "allsvenskan-20262027",
+    "strategy-105400daa0f146cc": "campeonato-sudamericano-montevideo-2026",
+    "strategy-00dc61f42ff84ede": "european-youth-2026",
+    "strategy-4cf449c6e6361d4c": "fide-world-junior-chess-championship-2026",
+    "strategy-0254cc728e12c5c9": "1-vechta-open-a-open",
+    "strategy-005951658738d71f": "2026",
+    "strategy-044243d39013d093": "campeonato-sudamericano-montevideo-2026",
+    "strategy-0a8e881c72664ef3": "european-youth-2026",
+    "strategy-c0f238ff418811e3": "fide-world-junior-chess-championship-2026",
+    "strategy-00ff0e5053927609": "polish-team-championship-2026",
+    "strategy-032e6b5e650f1d01": "1-vechta-open-a-open",
+    "strategy-00105d46dfa8b586": "2026",
+    "strategy-076af226fd24870e": "allsvenskan-20262027",
+    "strategy-00eebba61a5e7f7c": "campeonato-sudamericano-montevideo-2026",
+    "strategy-073ca67783aed93c": "european-youth-2026",
+    "strategy-0a103c9e87b176da": "fide-world-junior-chess-championship-2026"
+  },
+  "developmentSourceMatches": {
+    "tournament-serbia-women-f20842967149f36f-61": [],
+    "tournament-world-junior-edd7fa353bbf8b4c-70": [
+      "fide-world-junior-chess-championship-2026"
+    ],
+    "tournament-world-junior-56f1aac1d60e0b92-52": [
+      "fide-world-junior-chess-championship-2026"
+    ],
+    "tournament-buongoma-c9f59c3a0b84136d-27": [],
+    "tournament-team-open-b6a2de4f17c65472-52": [],
+    "tournament-skakligaen-08641466b1a4e3b8-69": [],
+    "tournament-bundesliga-1ce264709011ec49-62": [],
+    "tournament-voivodina-4dfb6ac85feb461b-54": [
+      "2026"
+    ],
+    "tournament-reykjavik-2026-cab28fe56ccc5787-30": [],
+    "tournament-reykjavik-2026-6c99dfcb9d73d3ae-76": [],
+    "tournament-prague-open-2026-fd65976a9a61ec18-83": [],
+    "tournament-world-amateur-w2000-2026-4257bcc918d56426-70": [],
+    "recapture-halloween-5e8535f538b6a9ce-57": [],
+    "tournament-cappelle-open-73226dc723717fe8-108": [],
+    "tournament-cappelle-open-42948d5e2f81bd21-77": [],
+    "tournament-bavarian-open-2026-1b71c8ebd931f44a-62": [],
+    "tournament-trois-vallees-2026-b447cd104ce509a6-64": [],
+    "tournament-world-seniors-65-2026-e5b56899bd324755-86": [],
+    "tournament-brazilian-women-2026-4e3a2841ded31589-84": [],
+    "tournament-lugano-standard-2026-7cde10d7c4f4fc8c-103": [
+      "xix-international-chess-open-lugano-standard"
+    ],
+    "tournament-lugano-standard-2026-0a23fd75e02bf5b7-115": [
+      "xix-international-chess-open-lugano-standard"
+    ],
+    "tournament-naycc-u18-2026-f25e180ca5174370-101": [],
+    "tournament-naycc-u18-2026-7d49293494b3b3de-47": [],
+    "tournament-arequipa-2026-1c6f8dc1cf35ccd3-67": [
+      "itt-im-arequipa-leon-del-sur"
+    ],
+    "tournament-misamis-2026-d4a921d18adba727-58": [],
+    "tournament-misamis-2026-188044ef775c1501-67": [
+      "misamis-occidental-philippines-international-chess-championship"
+    ],
+    "tournament-misamis-2026-b21ee705538f9c0e-72": [
+      "misamis-occidental-philippines-international-chess-championship"
+    ],
+    "mistake-maia-u2000-d4bea40e3ed32b08-86": [],
+    "mistake-olympiad-open-i-6e0e60125294132c-60": [],
+    "mistake-world-amateur-c2e7d686e0f218d5-80": [],
+    "pawn-mistake-european-youth-u16-2026-087a139530105992-75": [],
+    "annotated-pawn-sudamericano-2026-e6f26d47dd989423-108": [
+      "campeonato-sudamericano-montevideo-2026"
+    ],
+    "annotated-pawn-grand-swiss-open-2025-c3f6afc569b4a565-77": [],
+    "annotated-pawn-rio-absoluto-2026-54d64fd11b2d60de-110": [],
+    "annotated-pawn-limerick-congress-2026-56ef499738e85862-141": [],
+    "pawn-contrast-samarkand-open-2026-c56bddb1cce7c9f4-99": [],
+    "rook-pressure-lugano-standard-2026-1455c68135342947-81": [
+      "xix-international-chess-open-lugano-standard"
+    ],
+    "mistake-cascade-open-2026-467333df5397dfb4-83": [],
+    "mistake-fall-nyc-norms-2026-d617317c7afc176f-77": [],
+    "mistake-fall-nyc-norms-2026-1ab8a1ddcc38bfef-87": [],
+    "mistake-tournament-of-peace-2026-da7a9b59ba8ec820-69": [],
+    "structure-hvar-open-2026-23a562ad4d837eaf-69": [],
+    "structure-polish-open-semifinal-2026-fad9b88020deb1a2-59": [],
+    "classical-0003-75": [],
+    "public-02c6c261f0f0f080": [],
+    "05fb837a53d9346c": [
+      "dutch-meesterklasse-2026"
+    ],
+    "07e13a596587c135": [],
+    "1dbca925a04ba366": [],
+    "067c41bb316f7fd6": [
+      "polish-team-championship-2026"
+    ],
+    "16a486e6d807f63b": [
+      "2026"
+    ],
+    "0226bbbd246985d8": [],
+    "079197ba7fe9060c": [
+      "2026"
+    ],
+    "0075d862fef17963": [],
+    "08704b1b43c732ce": [
+      "1-vechta-open-a-open"
+    ],
+    "02af1f848e8ba230": [
+      "43-munsterland-open-34-challengers-2026"
+    ],
+    "07330432c431624d": [
+      "2026"
+    ],
+    "fresh-king-419f2fa67816f94d": [
+      "magdeburg-open-2026"
+    ],
+    "fresh-king-018723921e229074": [
+      "fagernes-international-autumn-2026"
+    ],
+    "fresh-king-04815a6795740fd4": [
+      "allsvenskan-2627-swedish-team-championship"
+    ],
+    "fresh-king-0208e9c8fe18efe9": [
+      "misamis-occidental-philippines-international-chess-championship"
+    ],
+    "fresh-king-525739c5c69b740a": [
+      "1-aberto-do-brasil-de-xadrez-arcelormittal"
+    ],
+    "fresh-king-05fe04e3e517c90c": [
+      "atyrau-open-2026"
+    ],
+    "fresh-king-04587996760f114b": [
+      "46th-fide-chess-olympiad-samarkand-2026"
+    ],
+    "exchange-08d13654e9144e16": [
+      "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026"
+    ],
+    "exchange-296cc83d8135973c": [
+      "2nd-presidents-cup-of-the-republic-of-tajikistan-2026"
+    ],
+    "exchange-01a95f9b21581cb2": [
+      "43-munsterland-open-34-challengers-2026"
+    ],
+    "exchange-0a1b42a6180ad8eb": [
+      "amsterdam-chess-open-2026"
+    ],
+    "exchange-00c9760092662959": [
+      "aq-prime-international-open-chess-championship"
+    ],
+    "exchange-04a90d95778b4cc1": [
+      "czech-open-2026"
+    ],
+    "exchange-17fc233db9acc658": [
+      "romanian-team-chess-championships-2026"
+    ],
+    "exchange-0eeab7bcf1dfad66": [
+      "xix-international-chess-open-lugano-standard"
+    ],
+    "exchange-0a547f8c22d7fe43": [
+      "allsvenskan-2627-swedish-team-championship"
+    ],
+    "exchange-0eba6b4b8bc23087": [
+      "icelandic-team-chess-championships-202627-premier-league"
+    ],
+    "exchange-75cfcd13979506e5": [
+      "iv-open-internacional-de-ajedrez-cap-negret-50"
+    ],
+    "exchange-0770e49caf39c6b5": [
+      "itt-im-arequipa-leon-del-sur"
+    ],
+    "exchange-25f897ea1ea91075": [
+      "20-int-deizisauer-herbstopen-2026"
+    ],
+    "exchange-03737a4270dc14d7": [
+      "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026"
+    ],
+    "exchange-003e5c6d715ead1c": [
+      "german-bundesliga-202627-schachbundesliga"
+    ]
+  }
+}
