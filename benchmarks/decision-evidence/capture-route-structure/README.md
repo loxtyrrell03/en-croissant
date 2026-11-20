@@ -55,9 +55,22 @@ for those six plies in the check line and disappear in the pawn line.
 Different proven pawn alternatives may be counted separately in the
 audit, but each decision has one outcome in the summary.
 
-Check only cases and known material failures are controls. Incomplete
-or inconsistent searches remain unresolved. Reference labels
+Missing pawn links and clearly inferior checking routes provide
+negative controls. Confounding material swings and incomplete or
+inconsistent searches remain unresolved. Reference labels
 describe whether the exact evidence is present at the higher
 budget. They cannot determine how much of an evaluation difference
 comes from the pawn structure. The original classifier's position,
 move and mistake results stay separate.
+
+## Development revision
+
+The first material comparison stopped after six plies. In the
+Candidates calibration it stopped on `Nxc6` in the direct-capture
+line. The very next move, `...Rxc6`, completes the exchange. The
+revised comparison follows up to two recorded recaptures on the
+same landing square at the cutoff, stopping before unrelated moves.
+The original pawn link must last through any extension in its branch.
+Both fixed and settled candidates are scored on the same reference.
+The Candidates example becomes verifiable after settlement. The
+variant was fixed before looking at reserve outcomes.
