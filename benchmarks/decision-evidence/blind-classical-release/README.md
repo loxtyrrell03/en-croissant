@@ -81,6 +81,48 @@ The offline review completed about 481 million and disagreed with
 the common frame's first move in 11 of 36 games.
 [Search and baseline receipt](frame-receipt.json)
 
+## Live Windows transfer
+
+The exact same revision returned a Decision Evidence report on
+all 36 games through **Analyse last move**. Every sealed exact
+candidate remained available. The live engine nominated a different
+first move on two boards. The original classifier received the
+live app's engine lines for a matched comparison.
+
+| Reviewed question | Original on live frames | Rebuild on fixed frames | Rebuild in the live app |
+| --- | ---: | ---: | ---: |
+| Tactical position | 1/22 | 3/22 | 5/22 |
+| Tactical exact move | 0/16 | 0/16 | 1/16 |
+| Tactical actual mistake | 0/2 | 1/2 | 1/2 |
+| Positional position | — | 6/26 | 6/26 |
+| Positional exact move | — | 4/19 | 4/19 |
+| Positional actual mistake | 0/2 | 0/2 | 0/2 |
+| Mixed position | — | 0/12 | 0/12 |
+| Mixed exact move | — | 0/6 | 0/6 |
+
+Both versions make zero false calls on the 4 definite tactical
+position negatives, 9 exact-move negatives and 31 mistake negatives.
+The live app takes 9.11 seconds median and 18.08 seconds maximum
+from the analysis action to the visible report. The worker runs
+twice in 12 of the 36 games.
+
+The live `Qc1` report establishes access to g5 through a different
+line from the one the blind review used. It shows
+`Qc1 Qb4 Bxh5 gxh5 Qg5+ Kh8 Qxh5` and describes the fork as a
+resource in that line. The blind review follows `...Qc8` and uses
+the same g5 square to attack h5 and e7. Both support a tactical
+reason for the exact quiet move.
+[Australasian Masters game](https://lichess.org/broadcast/2025-australasian-masters/round-9/8QD7Hix8/I7jwarwi)
+
+The `Rb7` rook sacrifice followed by `Ne6+` appears only on the
+deeper reference frames among the fixed captures. Neither app
+workflow explains it. The bishop-removal defence
+`Rxf3+ Kxf3 Kb7 Rxb6+ Kxa7` is already present in the common
+frames, and both classifiers still omit it. More search can supply
+the first line. The second example needs better attribution of the
+existing evidence.
+[Live scores](windows-results.json) · [Run receipt](windows-receipt.json)
+
 ## Reproduce
 
 Run from the repository root with the project's dependencies and
@@ -110,3 +152,11 @@ $env:INTERFERENCE_OUTPUT = "$decisionReserve/current.json"
 node node_modules/vitest/vitest.mjs run --config "$audit/replay.config.mjs"
 python "$audit/classical_score.py" "$bench/app-frames.json" "$bench/reference.json" $decisionReserve --score "$decisionReserve/results.json" --worker v66 dde59f6f "$decisionReserve/current.json"
 ```
+
+For the live run, use revision `dde59f6f` and `selection.json`
+with the [Windows audit instructions](../native-desktop/README.md).
+Once the capture completes, prepare the original inputs with
+`native-desktop/classical-replay.py CAPTURE SELECTION REFERENCE INPUT`.
+Replay the original on that input with the same Vitest configuration.
+Run `classical-replay.py CAPTURE SELECTION REFERENCE OUTPUT --score
+ORIGINAL_REPLAY FIXED_REPLAY` to compare it with the saved fixed arm.

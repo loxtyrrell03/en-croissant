@@ -134,6 +134,15 @@ an improvement in tactical position and mistake coverage and
 continued difficulty explaining the strongest exact candidate.
 [New reserve, position notes and scorecard](../benchmarks/decision-evidence/blind-classical-release/README.md)
 
+The same 36 games completed in the normal Windows app. With
+adaptive search, the rebuild reached 5 of 22 tactical positions
+and 1 of 16 exact tactical moves, alongside 1 of 2 tactical actual
+mistakes. The original on the live frames reached 1 of 22, 0 of 16
+and 0 of 2. Positional and mixed scores stayed the same as the
+fixed-budget run. Median time to the visible report was 9.11
+seconds, with an 18.08-second maximum. An extra classification pass
+ran on 12 games. [Live transfer scores](../benchmarks/decision-evidence/blind-classical-release/windows-results.json)
+
 ## Verified scope and remaining issues
 
 The v65 follow-up explains an actual castling delay when a
@@ -165,6 +174,11 @@ tactical positives. The change adds no Stockfish queries.
   remain equal on the 72 captured inputs, with seven reports
   receiving revised text.
   [Latest Windows receipt](../benchmarks/decision-evidence/native-desktop/latest-windows.json)
+- On the exact release source, the decision, tactical, mistake
+  evidence, quiet tactics, checks, interference, capture order,
+  strategic root effects and sibling refutation suites passed
+  1,342 tests with 218 skipped. The standalone capture-order
+  replay used the 36 matched common frames.
 - The 47-game pawn-chain transfer had one verified
   positive and 34 negatives. The new rule diagnosed the positive
   with zero false calls on those negatives. The separately

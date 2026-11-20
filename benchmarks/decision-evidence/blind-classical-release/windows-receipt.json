@@ -1,0 +1,20 @@
+{
+  "revision": "dde59f6f21d84ff8ed0e81f34b438c6e9c358bc5",
+  "sampleSha256": "43cb405ed8eb0a1d44f8e8f79c335f5e24ba2dbcc7ce4471778eabd166fede0c",
+  "referenceSha256": "8e553dab2e3556c09adf6f168fac0a57acc2358621eff2f1818fcddba408624f",
+  "captureSha256": "3a602ad39dc36a5d459545a365e7ad288eabd6b5679e239a19d735bfe3d9a622",
+  "displayAction": "Analyse last move",
+  "cases": 36,
+  "passed": 36,
+  "workers": {
+    "2": 12,
+    "1": 24
+  },
+  "wallSeconds": {
+    "median": 9.11,
+    "maximum": 18.08
+  },
+  "sameExactLeadingMoveAsOfflineBudget": 34,
+  "baselineRequests": 108,
+  "baselineCleanDifferentRequests": 0
+}
