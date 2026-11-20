@@ -1,0 +1,27 @@
+{
+  "scope": "Whether a nominated reply provides a material or forcing explanation of the candidate's lower score",
+  "referenceBudget": "4M unrestricted nodes at the reply board, up to four exact variations; 4M separately for the nominated reply",
+  "notes": "One reviewer saw the root choices and deep replies only. These are mechanism-scope judgments and cannot serve as general tactical or positional labels.",
+  "labels": {
+    "reply-budget-00370e49ad828e5f": {
+      "status": "supported",
+      "rationale": "After 24.Rxf5 gxf5, 25.Nf6 Re7 keeps the extra exchange. 24.Bd3 Bxd3 25.Rxd3 Rxd7 26.Rexe3 instead trades two minor pieces and does not concede that extra exchange.",
+      "mechanism": "material-concession"
+    },
+    "reply-budget-002a9856dd9e644e": {
+      "status": "supported",
+      "rationale": "48...Ba4 takes the bishop off the diagonal protecting a2. 49.Rxa2 removes the advanced passer at once. 48...Bd5 protects a2 down the diagonal.",
+      "mechanism": "remove-protection"
+    },
+    "reply-budget-0035e686ae1df517": {
+      "status": "uncertain",
+      "rationale": "The wider search shows a checking route to capture h6, but the deeper restricted branch leaves the pawn alive over the compared segment. The stronger 103.Kf6 changes the checking geometry. The exact tactical mechanism still needs a paired check of the white defensive choices.",
+      "mechanism": null
+    },
+    "reply-budget-0306f693980f4cac": {
+      "status": "uncertain",
+      "rationale": "28.Bxa6 takes a loose pawn after 27...Qc6. The alternative also abandons the forcing king attack shown after 27...Qe3+. The pawn capture itself does not establish which part of the attack makes the root decision tactical.",
+      "mechanism": null
+    }
+  }
+}

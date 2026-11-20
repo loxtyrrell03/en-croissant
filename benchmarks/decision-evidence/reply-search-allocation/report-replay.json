@@ -1,0 +1,41 @@
+{
+  "archived": {
+    "requests": 1051,
+    "validReports": 1050,
+    "wordingChanged": 3,
+    "changesByField": {
+      "position.tacticalContrast.explanation": 3,
+      "mistake.tactical.reasons.2": 1,
+      "mistake.tacticalEpisode.explanation": 3,
+      "position.tactical.reasons.0": 2,
+      "mistake.tactical.reasons.0": 1,
+      "mistake.tactical.reasons.1": 1
+    },
+    "baselineSha256": "c3e3a3322db7a40677f285b238e6f35bafff52fcb38cb783412e0f9f37775156",
+    "candidateSha256": "18287cf7f015cf470c7fd030029d49f251507e6a37e2f09eb78fd0fc43082480"
+  },
+  "public": {
+    "requests": 11,
+    "validReports": 11,
+    "wordingChanged": 2,
+    "changesByField": {
+      "position.tactical.reasons.0": 2,
+      "position.tacticalContrast.explanation": 2
+    },
+    "baselineSha256": "40bc47ba2b9ca95cb0f15f5c10d71f30cd5b01a7bdfbae37cdb3c683ce221a58",
+    "candidateSha256": "394fd73fd4a292b4d03a2321dfb341a1e880f504cb66499fc98571085bbb5147"
+  },
+  "additionalEngineSearches": 0,
+  "browserViewportWidthsPx": [
+    320,
+    390,
+    900
+  ],
+  "testNames": [
+    "tacticalMistakeEpisode",
+    "decisionTacticalRecovery",
+    "decisionPreparedCheckpoint"
+  ],
+  "testsPassed": 22,
+  "appTypeCheck": true
+}

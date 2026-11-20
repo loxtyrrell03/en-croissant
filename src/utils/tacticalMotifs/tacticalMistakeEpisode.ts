@@ -1,5 +1,6 @@
 import { makeSquare, opposite, parseUci } from "chessops/util";
 import { makeFen } from "chessops/fen";
+import { makeSan } from "chessops/san";
 import type { NormalMove } from "chessops/types";
 import {
     MIN_TACTICAL_CAPTURE_GAIN,
@@ -31,6 +32,41 @@ function capturedSquare(step: TacticalReplayStep) {
     return before.epSquare === move.to && before.board.get(move.from)?.role === "pawn"
         ? move.to + (before.turn === "white" ? -8 : 8)
         : move.to;
+}
+
+function explainDirectCapture(
+    better: TacticalReplayStep,
+    reply: TacticalReplayStep,
+    counterfactualGain: number,
+    captureIsLegal: boolean,
+) {
+    const square = capturedSquare(reply);
+    const target = reply.before.board.get(square);
+    const capture = `${reply.san} takes the ${target?.role ?? "pawn"} on ${makeSquare(square)}${square !== reply.move.to ? " en passant" : ""}.`;
+    if (!captureIsLegal) return `${capture} That capture is unavailable after ${better.san}.`;
+
+    const [alternative] = replayTacticalLine(makeFen(better.after.toSetup()), [reply.uci]);
+    if (alternative) {
+        if (!alternative.capture)
+            return `${capture} After ${better.san}, the same move no longer takes a piece.`;
+
+        const { after, move } = alternative;
+        const expectedReturn = alternative.capture - counterfactualGain;
+        if (expectedReturn > 0) {
+            for (const [from, destinations] of after.allDests()) {
+                if (!destinations.has(move.to)) continue;
+                const promotion =
+                    after.board.get(from)?.role === "pawn" && (move.to < 8 || move.to >= 56)
+                        ? "queen"
+                        : undefined;
+                const recapture = { from, to: move.to, promotion } as const;
+                if (tacticalExchangeGain(after, recapture) === expectedReturn)
+                    return `${capture} After ${better.san}, ${alternative.san} can be answered by ${makeSan(after, recapture)}.`;
+            }
+        }
+    }
+
+    return `${capture} After ${better.san}, the same capture has a worse material outcome.`;
 }
 
 /** Trace the captured piece to its square after the alternative. Legal
@@ -123,18 +159,13 @@ export function compareTacticalMistakeEpisode(
     let victim: ReturnType<typeof savedVictim>;
     if (take && "from" in take && reply.capture > 0 && !take.promotion) {
         const alternative = betterSteps[0].after;
-        const reduced = alternative.isLegal(take) ? tacticalExchangeGain(alternative, take) : 0;
+        const legal = alternative.isLegal(take);
+        const reduced = legal ? tacticalExchangeGain(alternative, take) : 0;
         const gained = tacticalExchangeGain(reply.before, take);
-        const square = capturedSquare(reply);
-        const target = reply.before.board.get(square);
-        // The same move in the alternative must be an unavailable or
-        // unprofitable capture. An unrelated pawn won in both lines is not
-        // evidence that the played move caused the loss.
-        if (gained >= 90 && reduced >= 0 && gained - reduced >= 90) {
-            directCapture = `${reply.san} can take the ${target?.role ?? "pawn"} on ${makeSquare(square)}${square !== reply.move.to ? " en passant" : ""}. The same capture does not gain that material after ${betterSteps[0].san}.`;
-        } else if (gained >= 90 && alternative.isLegal(take) && reduced > -20000 && reduced < 0) {
-            directCapture = `${reply.san} wins an exchange on ${makeSquare(reply.move.to)} that is unfavourable after ${betterSteps[0].san}.`;
-        }
+        // The same capture must be unavailable or materially worse after the
+        // better choice. A pawn won in both lines is not evidence of the cause.
+        if (gained >= 90 && reduced > -20000 && gained - reduced >= 90)
+            directCapture = explainDirectCapture(betterSteps[0], reply, reduced, legal);
         if (gained >= MIN_TACTICAL_CAPTURE_GAIN && actual.pvUci[1] === reply.uci)
             victim = savedVictim(played, betterSteps[0], reply);
     }

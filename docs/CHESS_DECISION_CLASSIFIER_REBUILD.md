@@ -3892,3 +3892,17 @@ nominates a bishop that deeper Stockfish exchanges immediately.
 The sample supplies no confirmed fresh example of the narrow label.
 Keep the candidate and training-label experiment offline.
 [Exact frames, review and reproduction](../benchmarks/decision-evidence/outposts-after-exchanges/README.md)
+
+## Equal-budget reply allocation
+
+The one-reply search reached deeper than the ordinary three-reply
+search, with more tactical findings and fewer mixed findings in the
+archive. All alternatives tied or trailed the ordinary route on reviewed
+classical transfer. Four of 300 prospective positions were eligible.
+The review did reveal a misleading capture explanation. Decision
+reports now show the exact recapture when legal static exchange can
+verify it, including Bxa2 after the stronger Bd5 in the European
+Youth case. Across 1,050 archived reports and 11 public replays, the
+classifications, motifs and engine continuations agree. The search
+allocation remains experimental.
+[Benchmark and exact continuations](../benchmarks/decision-evidence/reply-search-allocation/README.md)

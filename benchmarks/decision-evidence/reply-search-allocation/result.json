@@ -1,0 +1,445 @@
+{
+  "archive": {
+    "eligiblePositions": 53,
+    "admissibleAlternatives": 62,
+    "arms": {
+      "ordinary": {
+        "supported": 28,
+        "additionalTactical": 15,
+        "additionalMixed": 5,
+        "requestedNodes": 53000000,
+        "medianDepth": 19,
+        "allRootChoicesOracle": 31
+      },
+      "single": {
+        "supported": 31,
+        "additionalTactical": 22,
+        "additionalMixed": 4,
+        "requestedNodes": 53000000,
+        "medianDepth": 22,
+        "allRootChoicesOracle": 33
+      },
+      "near": {
+        "supported": 32,
+        "additionalTactical": 19,
+        "additionalMixed": 6,
+        "requestedNodes": 53000000,
+        "medianDepth": 19,
+        "allRootChoicesOracle": 34
+      },
+      "focused": {
+        "supported": 34,
+        "additionalTactical": 24,
+        "additionalMixed": 3,
+        "requestedNodes": 53000000,
+        "medianDepth": 22,
+        "allRootChoicesOracle": 36
+      }
+    },
+    "searchReceiptSha256": "371ab1a2f6c7360d9fb103b757612e6efe41e56251ea77d3b0e8d35cf896f7a5"
+  },
+  "reserve": {
+    "eligiblePositions": 7,
+    "admissibleAlternatives": 8,
+    "arms": {
+      "ordinary": {
+        "supported": 2,
+        "additionalTactical": 1,
+        "additionalMixed": 0,
+        "requestedNodes": 7000000,
+        "medianDepth": 18,
+        "allRootChoicesOracle": 3
+      },
+      "single": {
+        "supported": 2,
+        "additionalTactical": 1,
+        "additionalMixed": 0,
+        "requestedNodes": 7000000,
+        "medianDepth": 22,
+        "allRootChoicesOracle": 3
+      },
+      "near": {
+        "supported": 2,
+        "additionalTactical": 1,
+        "additionalMixed": 0,
+        "requestedNodes": 7000000,
+        "medianDepth": 18,
+        "allRootChoicesOracle": 3
+      },
+      "focused": {
+        "supported": 2,
+        "additionalTactical": 1,
+        "additionalMixed": 0,
+        "requestedNodes": 7000000,
+        "medianDepth": 21,
+        "allRootChoicesOracle": 3
+      }
+    },
+    "searchReceiptSha256": "5f1d55922c16be6132689d731a3574c205c428c2055c7b3ce39823362022081e"
+  },
+  "prospective": {
+    "eligiblePositions": 4,
+    "admissibleAlternatives": 4,
+    "arms": {
+      "ordinary": {
+        "supported": 3,
+        "additionalTactical": 3,
+        "additionalMixed": 1,
+        "requestedNodes": 4000000,
+        "medianDepth": 18.0,
+        "allRootChoicesOracle": 3,
+        "reviewedSupported": 2,
+        "uncertainFound": 1
+      },
+      "single": {
+        "supported": 2,
+        "additionalTactical": 2,
+        "additionalMixed": 0,
+        "requestedNodes": 4000000,
+        "medianDepth": 22.0,
+        "allRootChoicesOracle": 2,
+        "reviewedSupported": 1,
+        "uncertainFound": 1
+      },
+      "near": {
+        "supported": 3,
+        "additionalTactical": 3,
+        "additionalMixed": 1,
+        "requestedNodes": 4000000,
+        "medianDepth": 18.0,
+        "allRootChoicesOracle": 3,
+        "reviewedSupported": 2,
+        "uncertainFound": 1
+      },
+      "focused": {
+        "supported": 3,
+        "additionalTactical": 3,
+        "additionalMixed": 1,
+        "requestedNodes": 4000000,
+        "medianDepth": 22.5,
+        "allRootChoicesOracle": 3,
+        "reviewedSupported": 2,
+        "uncertainFound": 1
+      }
+    },
+    "searchReceiptSha256": "3e2b274836b7620444eff28ca610b385b3316e01b3ff4dd748b6a39659a44c5a",
+    "details": {
+      "reply-budget-00370e49ad828e5f": {
+        "ordinary": {
+          "depth": 19,
+          "found": true,
+          "proof": {
+            "kind": "concession",
+            "throughPly": 5,
+            "materialConcededPoints": 1.7,
+            "betterLineUci": [
+              "e2d3",
+              "f5d3",
+              "d1d3",
+              "c7d7",
+              "e5e3"
+            ],
+            "playedLineUci": [
+              "e5f5",
+              "g6f5",
+              "d7f6",
+              "c7e7",
+              "f6d5"
+            ],
+            "mechanisms": [],
+            "explanation": "gxf5 takes the rook on f5. After Bd3, that piece is safe in the immediate exchange check."
+          }
+        },
+        "single": {
+          "depth": 19,
+          "found": true,
+          "proof": {
+            "kind": "concession",
+            "throughPly": 5,
+            "materialConcededPoints": 1.7,
+            "betterLineUci": [
+              "e2d3",
+              "f5d3",
+              "d1d3",
+              "c7d7",
+              "e5e3"
+            ],
+            "playedLineUci": [
+              "e5f5",
+              "g6f5",
+              "d7f6",
+              "c7e7",
+              "f6d5"
+            ],
+            "mechanisms": [],
+            "explanation": "gxf5 takes the rook on f5. After Bd3, that piece is safe in the immediate exchange check."
+          }
+        },
+        "focused": {
+          "depth": 19,
+          "found": true,
+          "proof": {
+            "kind": "concession",
+            "throughPly": 5,
+            "materialConcededPoints": 1.7,
+            "betterLineUci": [
+              "e2d3",
+              "f5d3",
+              "d1d3",
+              "c7d7",
+              "e5e3"
+            ],
+            "playedLineUci": [
+              "e5f5",
+              "g6f5",
+              "d7f6",
+              "c7e7",
+              "f6d5"
+            ],
+            "mechanisms": [],
+            "explanation": "gxf5 takes the rook on f5. After Bd3, that piece is safe in the immediate exchange check."
+          }
+        },
+        "near": {
+          "depth": 19,
+          "found": true,
+          "proof": {
+            "kind": "concession",
+            "throughPly": 5,
+            "materialConcededPoints": 1.7,
+            "betterLineUci": [
+              "e2d3",
+              "f5d3",
+              "d1d3",
+              "c7d7",
+              "e5e3"
+            ],
+            "playedLineUci": [
+              "e5f5",
+              "g6f5",
+              "d7f6",
+              "c7e7",
+              "f6d5"
+            ],
+            "mechanisms": [],
+            "explanation": "gxf5 takes the rook on f5. After Bd3, that piece is safe in the immediate exchange check."
+          }
+        }
+      },
+      "reply-budget-002a9856dd9e644e": {
+        "ordinary": {
+          "depth": 18,
+          "found": true,
+          "proof": {
+            "kind": "comparative",
+            "throughPly": 5,
+            "materialDifferencePoints": 1,
+            "betterLineUci": [
+              "b3d5",
+              "c3b2",
+              "a6a5",
+              "a1c1",
+              "g7g5"
+            ],
+            "playedLineUci": [
+              "b3a4",
+              "a1a2",
+              "a4b5",
+              "c3d4",
+              "f5g4"
+            ],
+            "mechanisms": [],
+            "explanation": "Rxa2 wins an exchange on a2 that is unfavourable after Bd5."
+          }
+        },
+        "single": {
+          "depth": 23,
+          "found": false,
+          "proof": null
+        },
+        "focused": {
+          "depth": 21,
+          "found": true,
+          "proof": {
+            "kind": "comparative",
+            "throughPly": 5,
+            "materialDifferencePoints": 1,
+            "betterLineUci": [
+              "b3d5",
+              "c3b2",
+              "a6a5",
+              "a1c1",
+              "g7g5"
+            ],
+            "playedLineUci": [
+              "b3a4",
+              "a1a2",
+              "a4b5",
+              "c3d4",
+              "f5g4"
+            ],
+            "mechanisms": [],
+            "explanation": "Rxa2 wins an exchange on a2 that is unfavourable after Bd5."
+          }
+        },
+        "near": {
+          "depth": 18,
+          "found": true,
+          "proof": {
+            "kind": "comparative",
+            "throughPly": 5,
+            "materialDifferencePoints": 1,
+            "betterLineUci": [
+              "b3d5",
+              "c3b2",
+              "a6a5",
+              "a1c1",
+              "g7g5"
+            ],
+            "playedLineUci": [
+              "b3a4",
+              "a1a2",
+              "a4b5",
+              "c3d4",
+              "f5g4"
+            ],
+            "mechanisms": [],
+            "explanation": "Rxa2 wins an exchange on a2 that is unfavourable after Bd5."
+          }
+        }
+      },
+      "reply-budget-0035e686ae1df517": {
+        "ordinary": {
+          "depth": 15,
+          "found": false,
+          "proof": null
+        },
+        "single": {
+          "depth": 21,
+          "found": false,
+          "proof": null
+        },
+        "focused": {
+          "depth": 24,
+          "found": false,
+          "proof": null
+        },
+        "near": {
+          "depth": 15,
+          "found": false,
+          "proof": null
+        }
+      },
+      "reply-budget-0306f693980f4cac": {
+        "ordinary": {
+          "depth": 18,
+          "found": true,
+          "proof": {
+            "kind": "comparative",
+            "throughPly": 6,
+            "materialDifferencePoints": 1,
+            "betterLineUci": [
+              "f3e3",
+              "d2c2",
+              "f8c8",
+              "d3c4",
+              "g8h7",
+              "f1d3"
+            ],
+            "playedLineUci": [
+              "f3c6",
+              "d3a6",
+              "g8h8",
+              "a6b5",
+              "c6d5",
+              "f1h1"
+            ],
+            "mechanisms": [],
+            "explanation": "Bxa6 can take the pawn on a6. The same capture does not gain that material after Qe3+."
+          }
+        },
+        "single": {
+          "depth": 28,
+          "found": true,
+          "proof": {
+            "kind": "comparative",
+            "throughPly": 6,
+            "materialDifferencePoints": 1,
+            "betterLineUci": [
+              "f3e3",
+              "d2c2",
+              "f8c8",
+              "d3c4",
+              "g8h7",
+              "f1d3"
+            ],
+            "playedLineUci": [
+              "f3c6",
+              "d3a6",
+              "g8h8",
+              "a6b5",
+              "c6d5",
+              "f1h1"
+            ],
+            "mechanisms": [],
+            "explanation": "Bxa6 can take the pawn on a6. The same capture does not gain that material after Qe3+."
+          }
+        },
+        "focused": {
+          "depth": 30,
+          "found": true,
+          "proof": {
+            "kind": "comparative",
+            "throughPly": 6,
+            "materialDifferencePoints": 1,
+            "betterLineUci": [
+              "f3e3",
+              "d2c2",
+              "f8c8",
+              "d3c4",
+              "g8h7",
+              "f1d3"
+            ],
+            "playedLineUci": [
+              "f3c6",
+              "d3a6",
+              "g8h8",
+              "a6b5",
+              "c6d5",
+              "f1h1"
+            ],
+            "mechanisms": [],
+            "explanation": "Bxa6 can take the pawn on a6. The same capture does not gain that material after Qe3+."
+          }
+        },
+        "near": {
+          "depth": 18,
+          "found": true,
+          "proof": {
+            "kind": "comparative",
+            "throughPly": 6,
+            "materialDifferencePoints": 1,
+            "betterLineUci": [
+              "f3e3",
+              "d2c2",
+              "f8c8",
+              "d3c4",
+              "g8h7",
+              "f1d3"
+            ],
+            "playedLineUci": [
+              "f3c6",
+              "d3a6",
+              "g8h8",
+              "a6b5",
+              "c6d5",
+              "f1h1"
+            ],
+            "mechanisms": [],
+            "explanation": "Bxa6 can take the pawn on a6. The same capture does not gain that material after Qe3+."
+          }
+        }
+      }
+    }
+  }
+}

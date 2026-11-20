@@ -1,0 +1,33 @@
+{
+  "frozenAppRevision": "e389632b8c7bdcb46d8957ac35b60b803038369d",
+  "sampling": {
+    "seed": "en-croissant-reply-budget-e389632b",
+    "positions": 300,
+    "events": 49,
+    "loggedClassicalRounds": 245,
+    "uniqueRootPosition": true,
+    "priorSelectionExclusion": "Earlier selected FENs (including color mirrors), linked broadcast games and encountered positions from ply 27"
+  },
+  "search": {
+    "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+    "rootBudgets": [
+      600000,
+      2400000,
+      9600000
+    ],
+    "rootStopDepth": 18,
+    "threadsPerEngine": 1,
+    "hashMiB": 64,
+    "armBudget": 1000000,
+    "oracleBudgetPerSearch": 4000000,
+    "nearBandCp": 35,
+    "referenceFileBeforeProspectivePredictionsSha256": "8f4c1e4b1bf8ac9a5aeae8b1dccada396e213e13ba8fc88f78d91b6d85aac9f0"
+  },
+  "hashes": {
+    "privateArchiveInput": "3f992ca5ac5fec78b7461e6c587f4e04a453e61f2d9fb5ca1c2abf75d6dc916d",
+    "publicReserveInput": "a9394a8cc3742bd181e2e19d58cdf0b5c031c50a38efdbe6771ca279bc316f4b",
+    "prospectiveRawSample": "03afaf385c629c1f4a5fc6c1f0e50f7830c0549ed48672c985862695bdf6282b",
+    "prospectiveRootFrames": "7c88f99d546c359e2c6dd0a518e7c4e24f494c1e355e1494c739adb77504cc79",
+    "prospectiveNominations": "a1c793ec73cd2df2b1ea844483b6d0539eaf4425182cca3006bdcb9d04f07d32"
+  }
+}

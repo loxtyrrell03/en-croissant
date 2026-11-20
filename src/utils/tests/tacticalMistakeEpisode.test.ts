@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { makeFen } from "chessops/fen";
+import youthCapture from "../../../benchmarks/decision-evidence/reply-search-allocation/european-youth.json";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
 import { compareTacticalMistakeEpisode } from "../tacticalMotifs/tacticalMistakeEpisode";
@@ -30,6 +31,7 @@ test("a stable early loss of a knight has a concrete counterfactual and matching
         betterLineUci: better.pvUci.slice(0, 5),
         mechanisms: [],
     });
+    expect(episode?.explanation).toContain("That capture is unavailable after Nb5");
     const report = assessChessDecision({
         fen,
         candidates: [better, actual],
@@ -207,4 +209,13 @@ test("a later settled recovery in either search disqualifies the earlier net los
             exchangeAfter(saveKnight),
         ),
     ).toBeNull();
+});
+
+test("names the legal recapture that saves an advanced pawn", () => {
+    const report = assessChessDecision(youthCapture);
+    expect(report?.position.category).toBe("mixed");
+    expect(report?.position.tacticalContrast).toMatchObject({
+        kind: "comparative",
+        explanation: "Rxa2 takes the pawn on a2. After Bd5, Rxa2 can be answered by Bxa2.",
+    });
 });
