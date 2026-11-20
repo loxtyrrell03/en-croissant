@@ -358,7 +358,10 @@ function DecisionReport({
 }) {
   const [move, setMove] = useState(report.moves[0]?.moveUci);
   const [endgame, setEndgame] = useState<DecisionEndgameAssessment | null>(null);
-  const selected = report.moves.find((item) => item.moveUci === move);
+  const listedMoves = report.playedMoveAssessment
+    ? [...report.moves, report.playedMoveAssessment]
+    : report.moves;
+  const selected = listedMoves.find((item) => item.moveUci === move);
   const selectedOutcome = endgame?.moveOutcomes.find(({ uci }) => uci === move)?.outcome;
   const exactDefence = endgame?.defensiveTactic;
   const played = endgame?.played;
@@ -523,9 +526,9 @@ function DecisionReport({
             onChange={(value) => {
               if (value) setMove(value);
             }}
-            data={report.moves.map((item, index) => ({
+            data={listedMoves.map((item, index) => ({
               value: item.moveUci,
-              label: `${lineSan(report.fen, [item.moveUci]) || item.moveUci}${index === 0 ? " · Engine’s first choice" : ""}`,
+              label: `${lineSan(report.fen, [item.moveUci]) || item.moveUci}${index === 0 ? " · Engine’s first choice" : item === report.playedMoveAssessment ? " · Played move" : ""}`,
             }))}
           />
           {selectedOutcome !== undefined && (

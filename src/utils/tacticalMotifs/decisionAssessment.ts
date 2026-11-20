@@ -136,7 +136,7 @@ import { findPassedPawnRoles } from "./decisionPassedPawnRole";
 const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
 const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
 
-export const DECISION_ASSESSMENT_VERSION = 62;
+export const DECISION_ASSESSMENT_VERSION = 63;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -203,6 +203,12 @@ export type DecisionAssessmentInput = {
      * Absence is unavailable data, never an assumed zero loss. */
     playedMoveUci?: string;
 };
+type DecisionMoveAssessment = DecisionAssessment & {
+    moveUci: string;
+    evaluationCp: number | null;
+    depth: number;
+};
+
 export type ChessDecisionReport = {
     version: number;
     fen: string;
@@ -218,9 +224,8 @@ export type ChessDecisionReport = {
         preparedCheckpoint?: { lineUci: string[]; alternativeUci: string[] };
         strategicPlan?: PositionStrategicPlan;
     };
-    moves: Array<
-        DecisionAssessment & { moveUci: string; evaluationCp: number | null; depth: number }
-    >;
+    moves: DecisionMoveAssessment[];
+    playedMoveAssessment?: DecisionMoveAssessment;
     mistakeStatus:
         | "not-requested"
         | "best-supplied-choice"
@@ -1042,6 +1047,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             : []),
     ];
 
+    let comparedPlayedAssessment: DecisionAssessment | undefined;
     let mistake: ChessDecisionReport["mistake"] = null;
     let mistakeStatus: ChessDecisionReport["mistakeStatus"] = input.playedMoveUci
         ? "comparison-unavailable"
@@ -1160,6 +1166,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             const comparisonInput = { ...input, candidates: comparison, quietReply: undefined };
             const bestAssessment = assessMove(comparisonInput, comparedBest);
             const playedAssessment = assessMove(comparisonInput, playedLine);
+            comparedPlayedAssessment = playedAssessment;
             const settled = (line: typeof bestMeasured) =>
                 !line.drawnEnding &&
                 line.quietEndingPlies >= 2 &&
@@ -1673,11 +1680,28 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         support(position, plans.position);
         for (const move of moves) support(move, plans.moves.get(move.moveUci));
     }
+    let playedMoveAssessment: DecisionMoveAssessment | undefined;
+    if (
+        playedIndex > 0 &&
+        playedBoard &&
+        comparedBest.pvUci[0] === first.pvUci[0] &&
+        comparisonMeasured?.lines.length === comparison.length &&
+        !moves.some(move => afterChoice(move.moveUci) === playedBoard)
+    ) {
+        const line = comparison[playedIndex];
+        const assessment = comparedPlayedAssessment ?? assessMove(
+            { ...input, candidates: comparison, quietReply: undefined }, line,
+        );
+        playedMoveAssessment = {
+            ...assessment, moveUci: line.pvUci[0], evaluationCp: line.cp, depth: line.depth,
+        };
+    }
     return {
         version: DECISION_ASSESSMENT_VERSION,
         fen: input.fen,
         position,
         moves,
+        ...(playedMoveAssessment ? { playedMoveAssessment } : {}),
         mistake,
         mistakeStatus,
     };

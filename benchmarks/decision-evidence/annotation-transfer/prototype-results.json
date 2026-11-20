@@ -1,0 +1,6278 @@
+{
+  "cohorts": {
+    "development": {
+      "cases": 28,
+      "scopes": {
+        "position": {
+          "original": {
+            "categories": null,
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 4,
+                "tn": 0,
+                "unknownReference": 23,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2,
+                  "numerator": 1,
+                  "denominator": 5,
+                  "interval95": [
+                    0.03622410863243014,
+                    0.6244653702374747
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2,
+                  "numerator": 1,
+                  "denominator": 5,
+                  "interval95": [
+                    0.03622410863243014,
+                    0.6244653702374747
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "v62": {
+            "categories": {
+              "tactical": 2,
+              "unclear": 18,
+              "positional": 7,
+              "mixed": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 4,
+                "tn": 0,
+                "unknownReference": 23,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2,
+                  "numerator": 1,
+                  "denominator": 5,
+                  "interval95": [
+                    0.03622410863243014,
+                    0.6244653702374747
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2,
+                  "numerator": 1,
+                  "denominator": 5,
+                  "interval95": [
+                    0.03622410863243014,
+                    0.6244653702374747
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 7,
+                "fp": 0,
+                "fn": 17,
+                "tn": 0,
+                "unknownReference": 4,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 7,
+                  "denominator": 7,
+                  "interval95": [
+                    0.6456695649333126,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2916666666666667,
+                  "numerator": 7,
+                  "denominator": 24,
+                  "interval95": [
+                    0.14914648196960875,
+                    0.49167693664496637
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2916666666666667,
+                  "numerator": 7,
+                  "denominator": 24,
+                  "interval95": [
+                    0.14914648196960875,
+                    0.49167693664496637
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 4,
+                "tn": 0,
+                "unknownReference": 24,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 4,
+                  "interval95": [
+                    0.0,
+                    0.4898908364545973
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 4,
+                  "interval95": [
+                    0.0,
+                    0.4898908364545973
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "paired-target": {
+            "categories": {
+              "tactical": 2,
+              "unclear": 18,
+              "positional": 7,
+              "mixed": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 4,
+                "tn": 0,
+                "unknownReference": 23,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2,
+                  "numerator": 1,
+                  "denominator": 5,
+                  "interval95": [
+                    0.03622410863243014,
+                    0.6244653702374747
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2,
+                  "numerator": 1,
+                  "denominator": 5,
+                  "interval95": [
+                    0.03622410863243014,
+                    0.6244653702374747
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 7,
+                "fp": 0,
+                "fn": 17,
+                "tn": 0,
+                "unknownReference": 4,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 7,
+                  "denominator": 7,
+                  "interval95": [
+                    0.6456695649333126,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2916666666666667,
+                  "numerator": 7,
+                  "denominator": 24,
+                  "interval95": [
+                    0.14914648196960875,
+                    0.49167693664496637
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2916666666666667,
+                  "numerator": 7,
+                  "denominator": 24,
+                  "interval95": [
+                    0.14914648196960875,
+                    0.49167693664496637
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 4,
+                "tn": 0,
+                "unknownReference": 24,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 4,
+                  "interval95": [
+                    0.0,
+                    0.4898908364545973
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 4,
+                  "interval95": [
+                    0.0,
+                    0.4898908364545973
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          }
+        },
+        "move": {
+          "original": {
+            "categories": null,
+            "axes": {
+              "tactical": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 3,
+                "tn": 0,
+                "unknownReference": 25,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 3,
+                  "interval95": [
+                    5.551115123125783e-17,
+                    0.5614970317550454
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 3,
+                  "interval95": [
+                    5.551115123125783e-17,
+                    0.5614970317550454
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "v62": {
+            "categories": {
+              "unclear": 17,
+              "tactical": 1,
+              "unavailable": 5,
+              "positional": 4,
+              "mixed": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 2,
+                "tn": 0,
+                "unknownReference": 25,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.3333333333333333,
+                  "numerator": 1,
+                  "denominator": 3,
+                  "interval95": [
+                    0.06149194472039621,
+                    0.7923403991979522
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.3333333333333333,
+                  "numerator": 1,
+                  "denominator": 3,
+                  "interval95": [
+                    0.06149194472039621,
+                    0.7923403991979522
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 3,
+                "fp": 0,
+                "fn": 8,
+                "tn": 0,
+                "unknownReference": 17,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 3,
+                  "denominator": 3,
+                  "interval95": [
+                    0.4385029682449546,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2727272727272727,
+                  "numerator": 3,
+                  "denominator": 11,
+                  "interval95": [
+                    0.09746059290024889,
+                    0.5656453011761291
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2727272727272727,
+                  "numerator": 3,
+                  "denominator": 11,
+                  "interval95": [
+                    0.09746059290024889,
+                    0.5656453011761291
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 0,
+                "tn": 0,
+                "unknownReference": 28,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "paired-target": {
+            "categories": {
+              "unclear": 21,
+              "tactical": 1,
+              "positional": 5,
+              "mixed": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 2,
+                "tn": 0,
+                "unknownReference": 25,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.3333333333333333,
+                  "numerator": 1,
+                  "denominator": 3,
+                  "interval95": [
+                    0.06149194472039621,
+                    0.7923403991979522
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.3333333333333333,
+                  "numerator": 1,
+                  "denominator": 3,
+                  "interval95": [
+                    0.06149194472039621,
+                    0.7923403991979522
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 3,
+                "fp": 0,
+                "fn": 8,
+                "tn": 0,
+                "unknownReference": 17,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 3,
+                  "denominator": 3,
+                  "interval95": [
+                    0.4385029682449546,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2727272727272727,
+                  "numerator": 3,
+                  "denominator": 11,
+                  "interval95": [
+                    0.09746059290024889,
+                    0.5656453011761291
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2727272727272727,
+                  "numerator": 3,
+                  "denominator": 11,
+                  "interval95": [
+                    0.09746059290024889,
+                    0.5656453011761291
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 0,
+                "tn": 0,
+                "unknownReference": 28,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                }
+              }
+            },
+            "namedMotifs": {}
+          }
+        },
+        "mistake": {
+          "original": {
+            "categories": null,
+            "axes": {
+              "tactical": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 2,
+                "tn": 21,
+                "unknownReference": 5,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9130434782608695,
+                  "numerator": 21,
+                  "denominator": 23,
+                  "interval95": [
+                    0.7320401892425634,
+                    0.9758199955157796
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 2,
+                "tn": 21,
+                "unknownReference": 5,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9130434782608695,
+                  "numerator": 21,
+                  "denominator": 23,
+                  "interval95": [
+                    0.7320401892425634,
+                    0.9758199955157796
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "v62": {
+            "categories": {
+              "unclear": 9,
+              "unavailable": 18,
+              "positional": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 2,
+                "tn": 21,
+                "unknownReference": 5,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9130434782608695,
+                  "numerator": 21,
+                  "denominator": 23,
+                  "interval95": [
+                    0.7320401892425634,
+                    0.9758199955157796
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 1,
+                "tn": 21,
+                "unknownReference": 5,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9565217391304348,
+                  "numerator": 22,
+                  "denominator": 23,
+                  "interval95": [
+                    0.7900884492974114,
+                    0.9922833338565469
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 1,
+                "tn": 21,
+                "unknownReference": 6,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9545454545454546,
+                  "numerator": 21,
+                  "denominator": 22,
+                  "interval95": [
+                    0.7820195416134267,
+                    0.991930572378736
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "paired-target": {
+            "categories": {
+              "unclear": 9,
+              "unavailable": 18,
+              "positional": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 2,
+                "tn": 21,
+                "unknownReference": 5,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9130434782608695,
+                  "numerator": 21,
+                  "denominator": 23,
+                  "interval95": [
+                    0.7320401892425634,
+                    0.9758199955157796
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 1,
+                "tn": 21,
+                "unknownReference": 5,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9565217391304348,
+                  "numerator": 22,
+                  "denominator": 23,
+                  "interval95": [
+                    0.7900884492974114,
+                    0.9922833338565469
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 1,
+                "tn": 21,
+                "unknownReference": 6,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 21,
+                  "denominator": 21,
+                  "interval95": [
+                    0.8453609810751531,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9545454545454546,
+                  "numerator": 21,
+                  "denominator": 22,
+                  "interval95": [
+                    0.7820195416134267,
+                    0.991930572378736
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          }
+        }
+      }
+    },
+    "reserve": {
+      "cases": 28,
+      "scopes": {
+        "position": {
+          "original": {
+            "categories": null,
+            "axes": {
+              "tactical": {
+                "tp": 4,
+                "fp": 0,
+                "fn": 5,
+                "tn": 0,
+                "unknownReference": 19,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 4,
+                  "denominator": 4,
+                  "interval95": [
+                    0.5101091635454027,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.4444444444444444,
+                  "numerator": 4,
+                  "denominator": 9,
+                  "interval95": [
+                    0.18877852109766452,
+                    0.733348706504507
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.4444444444444444,
+                  "numerator": 4,
+                  "denominator": 9,
+                  "interval95": [
+                    0.18877852109766452,
+                    0.733348706504507
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "v62": {
+            "categories": {
+              "unclear": 18,
+              "tactical": 6,
+              "positional": 3,
+              "mixed": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 5,
+                "fp": 0,
+                "fn": 4,
+                "tn": 0,
+                "unknownReference": 19,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 5,
+                  "denominator": 5,
+                  "interval95": [
+                    0.5655175352168251,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.5555555555555556,
+                  "numerator": 5,
+                  "denominator": 9,
+                  "interval95": [
+                    0.26665129349549305,
+                    0.8112214789023355
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.5555555555555556,
+                  "numerator": 5,
+                  "denominator": 9,
+                  "interval95": [
+                    0.26665129349549305,
+                    0.8112214789023355
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 4,
+                "fp": 0,
+                "fn": 20,
+                "tn": 0,
+                "unknownReference": 4,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 4,
+                  "denominator": 4,
+                  "interval95": [
+                    0.5101091635454027,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.16666666666666666,
+                  "numerator": 4,
+                  "denominator": 24,
+                  "interval95": [
+                    0.06678676328632951,
+                    0.3585307064969906
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.16666666666666666,
+                  "numerator": 4,
+                  "denominator": 24,
+                  "interval95": [
+                    0.06678676328632951,
+                    0.3585307064969906
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 0,
+                "unknownReference": 21,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 7,
+                  "interval95": [
+                    5.551115123125783e-17,
+                    0.35433043506668743
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 7,
+                  "interval95": [
+                    5.551115123125783e-17,
+                    0.35433043506668743
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "paired-target": {
+            "categories": {
+              "unclear": 18,
+              "tactical": 6,
+              "positional": 3,
+              "mixed": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 5,
+                "fp": 0,
+                "fn": 4,
+                "tn": 0,
+                "unknownReference": 19,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 5,
+                  "denominator": 5,
+                  "interval95": [
+                    0.5655175352168251,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.5555555555555556,
+                  "numerator": 5,
+                  "denominator": 9,
+                  "interval95": [
+                    0.26665129349549305,
+                    0.8112214789023355
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.5555555555555556,
+                  "numerator": 5,
+                  "denominator": 9,
+                  "interval95": [
+                    0.26665129349549305,
+                    0.8112214789023355
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 4,
+                "fp": 0,
+                "fn": 20,
+                "tn": 0,
+                "unknownReference": 4,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 4,
+                  "denominator": 4,
+                  "interval95": [
+                    0.5101091635454027,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.16666666666666666,
+                  "numerator": 4,
+                  "denominator": 24,
+                  "interval95": [
+                    0.06678676328632951,
+                    0.3585307064969906
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.16666666666666666,
+                  "numerator": 4,
+                  "denominator": 24,
+                  "interval95": [
+                    0.06678676328632951,
+                    0.3585307064969906
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 7,
+                "tn": 0,
+                "unknownReference": 21,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 7,
+                  "interval95": [
+                    5.551115123125783e-17,
+                    0.35433043506668743
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 7,
+                  "interval95": [
+                    5.551115123125783e-17,
+                    0.35433043506668743
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          }
+        },
+        "move": {
+          "original": {
+            "categories": null,
+            "axes": {
+              "tactical": {
+                "tp": 2,
+                "fp": 1,
+                "fn": 1,
+                "tn": 1,
+                "unknownReference": 23,
+                "precision": {
+                  "value": 0.6666666666666666,
+                  "numerator": 2,
+                  "denominator": 3,
+                  "interval95": [
+                    0.2076596008020477,
+                    0.9385080552796037
+                  ]
+                },
+                "recall": {
+                  "value": 0.6666666666666666,
+                  "numerator": 2,
+                  "denominator": 3,
+                  "interval95": [
+                    0.2076596008020477,
+                    0.9385080552796037
+                  ]
+                },
+                "specificity": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "agreement": {
+                  "value": 0.6,
+                  "numerator": 3,
+                  "denominator": 5,
+                  "interval95": [
+                    0.2307242812760128,
+                    0.882379225767352
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {
+              "intermezzo": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 1,
+                "tn": 0,
+                "unknownReference": 27,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                }
+              },
+              "hangingPiece": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 0,
+                "tn": 0,
+                "unknownReference": 27,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                }
+              }
+            }
+          },
+          "v62": {
+            "categories": {
+              "unavailable": 7,
+              "tactical": 2,
+              "positional": 4,
+              "unclear": 13,
+              "mixed": 2
+            },
+            "axes": {
+              "tactical": {
+                "tp": 2,
+                "fp": 1,
+                "fn": 1,
+                "tn": 1,
+                "unknownReference": 23,
+                "precision": {
+                  "value": 0.6666666666666666,
+                  "numerator": 2,
+                  "denominator": 3,
+                  "interval95": [
+                    0.2076596008020477,
+                    0.9385080552796037
+                  ]
+                },
+                "recall": {
+                  "value": 0.6666666666666666,
+                  "numerator": 2,
+                  "denominator": 3,
+                  "interval95": [
+                    0.2076596008020477,
+                    0.9385080552796037
+                  ]
+                },
+                "specificity": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "agreement": {
+                  "value": 0.6,
+                  "numerator": 3,
+                  "denominator": 5,
+                  "interval95": [
+                    0.2307242812760128,
+                    0.882379225767352
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 3,
+                "fp": 0,
+                "fn": 11,
+                "tn": 0,
+                "unknownReference": 14,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 3,
+                  "denominator": 3,
+                  "interval95": [
+                    0.4385029682449546,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.21428571428571427,
+                  "numerator": 3,
+                  "denominator": 14,
+                  "interval95": [
+                    0.07571386712693184,
+                    0.47589230586600295
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.21428571428571427,
+                  "numerator": 3,
+                  "denominator": 14,
+                  "interval95": [
+                    0.07571386712693184,
+                    0.47589230586600295
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 1,
+                "fn": 2,
+                "tn": 1,
+                "unknownReference": 24,
+                "precision": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "agreement": {
+                  "value": 0.25,
+                  "numerator": 1,
+                  "denominator": 4,
+                  "interval95": [
+                    0.04558726080970055,
+                    0.6993581574175981
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {
+              "intermezzo": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 1,
+                "tn": 0,
+                "unknownReference": 27,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                }
+              },
+              "hangingPiece": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 0,
+                "tn": 0,
+                "unknownReference": 27,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                }
+              }
+            }
+          },
+          "paired-target": {
+            "categories": {
+              "unclear": 18,
+              "tactical": 2,
+              "positional": 6,
+              "mixed": 2
+            },
+            "axes": {
+              "tactical": {
+                "tp": 2,
+                "fp": 1,
+                "fn": 1,
+                "tn": 1,
+                "unknownReference": 23,
+                "precision": {
+                  "value": 0.6666666666666666,
+                  "numerator": 2,
+                  "denominator": 3,
+                  "interval95": [
+                    0.2076596008020477,
+                    0.9385080552796037
+                  ]
+                },
+                "recall": {
+                  "value": 0.6666666666666666,
+                  "numerator": 2,
+                  "denominator": 3,
+                  "interval95": [
+                    0.2076596008020477,
+                    0.9385080552796037
+                  ]
+                },
+                "specificity": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "agreement": {
+                  "value": 0.6,
+                  "numerator": 3,
+                  "denominator": 5,
+                  "interval95": [
+                    0.2307242812760128,
+                    0.882379225767352
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 4,
+                "fp": 0,
+                "fn": 10,
+                "tn": 0,
+                "unknownReference": 14,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 4,
+                  "denominator": 4,
+                  "interval95": [
+                    0.5101091635454027,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.2857142857142857,
+                  "numerator": 4,
+                  "denominator": 14,
+                  "interval95": [
+                    0.11721378644576919,
+                    0.5464908432989318
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.2857142857142857,
+                  "numerator": 4,
+                  "denominator": 14,
+                  "interval95": [
+                    0.11721378644576919,
+                    0.5464908432989318
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 1,
+                "fn": 2,
+                "tn": 1,
+                "unknownReference": 24,
+                "precision": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "agreement": {
+                  "value": 0.25,
+                  "numerator": 1,
+                  "denominator": 4,
+                  "interval95": [
+                    0.04558726080970055,
+                    0.6993581574175981
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {
+              "intermezzo": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 1,
+                "tn": 0,
+                "unknownReference": 27,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                }
+              },
+              "hangingPiece": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 0,
+                "tn": 0,
+                "unknownReference": 27,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "specificity": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "agreement": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "mistake": {
+          "original": {
+            "categories": null,
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 3,
+                "tn": 20,
+                "unknownReference": 4,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.25,
+                  "numerator": 1,
+                  "denominator": 4,
+                  "interval95": [
+                    0.04558726080970055,
+                    0.6993581574175981
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.875,
+                  "numerator": 21,
+                  "denominator": 24,
+                  "interval95": [
+                    0.6899611872949993,
+                    0.9565566591987655
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 1,
+                "tn": 20,
+                "unknownReference": 6,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "interval95": [
+                    0.09453120573423074,
+                    0.9054687942657693
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9545454545454546,
+                  "numerator": 21,
+                  "denominator": 22,
+                  "interval95": [
+                    0.7820195416134267,
+                    0.991930572378736
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "v62": {
+            "categories": {
+              "unclear": 9,
+              "unavailable": 18,
+              "tactical": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 3,
+                "tn": 20,
+                "unknownReference": 4,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.25,
+                  "numerator": 1,
+                  "denominator": 4,
+                  "interval95": [
+                    0.04558726080970055,
+                    0.6993581574175981
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.875,
+                  "numerator": 21,
+                  "denominator": 24,
+                  "interval95": [
+                    0.6899611872949993,
+                    0.9565566591987655
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 2,
+                "tn": 20,
+                "unknownReference": 6,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9090909090909091,
+                  "numerator": 20,
+                  "denominator": 22,
+                  "interval95": [
+                    0.7218505315839417,
+                    0.9747045710090046
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 1,
+                "tn": 20,
+                "unknownReference": 7,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9523809523809523,
+                  "numerator": 20,
+                  "denominator": 21,
+                  "interval95": [
+                    0.7733063992587743,
+                    0.9915440121901737
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          },
+          "paired-target": {
+            "categories": {
+              "unclear": 9,
+              "unavailable": 18,
+              "tactical": 1
+            },
+            "axes": {
+              "tactical": {
+                "tp": 1,
+                "fp": 0,
+                "fn": 3,
+                "tn": 20,
+                "unknownReference": 4,
+                "precision": {
+                  "value": 1.0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "interval95": [
+                    0.20654931437723745,
+                    1.0
+                  ]
+                },
+                "recall": {
+                  "value": 0.25,
+                  "numerator": 1,
+                  "denominator": 4,
+                  "interval95": [
+                    0.04558726080970055,
+                    0.6993581574175981
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.875,
+                  "numerator": 21,
+                  "denominator": 24,
+                  "interval95": [
+                    0.6899611872949993,
+                    0.9565566591987655
+                  ]
+                }
+              },
+              "positional": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 2,
+                "tn": 20,
+                "unknownReference": 6,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 2,
+                  "interval95": [
+                    0.0,
+                    0.6576197724933469
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9090909090909091,
+                  "numerator": 20,
+                  "denominator": 22,
+                  "interval95": [
+                    0.7218505315839417,
+                    0.9747045710090046
+                  ]
+                }
+              },
+              "mixed": {
+                "tp": 0,
+                "fp": 0,
+                "fn": 1,
+                "tn": 20,
+                "unknownReference": 7,
+                "precision": {
+                  "value": null,
+                  "numerator": 0,
+                  "denominator": 0,
+                  "interval95": null
+                },
+                "recall": {
+                  "value": 0.0,
+                  "numerator": 0,
+                  "denominator": 1,
+                  "interval95": [
+                    0.0,
+                    0.7934506856227626
+                  ]
+                },
+                "specificity": {
+                  "value": 1.0,
+                  "numerator": 20,
+                  "denominator": 20,
+                  "interval95": [
+                    0.8388748419471806,
+                    1.0
+                  ]
+                },
+                "agreement": {
+                  "value": 0.9523809523809523,
+                  "numerator": 20,
+                  "denominator": 21,
+                  "interval95": [
+                    0.7733063992587743,
+                    0.9915440121901737
+                  ]
+                }
+              }
+            },
+            "namedMotifs": {}
+          }
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "0ac5572e36b9f0f536fa",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "24ee5afbe57a53fe9d37",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "0a2c8c3d7866b4f6e247",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "1108a7974e1d54b53990",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [
+              "tacticalPreparation"
+            ],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [
+              "tacticalPreparation"
+            ],
+            "category": "tactical"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "0107ab69e0cbdba8499f",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "113c26ece8386e51b258",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "4bfb3ee90e90f7c724dc",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "16e6e40b09b9dc9cda22",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "2e23c752c05d28d131f5",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "04b092f6a111b55244cd",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "1a6e40d6e27c5f02ba4d",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "35ed665d17e0dadce5fb",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "31f745fd552126bea1d9",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "04fea833d79be25be661",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "1c048483ab7d924db0dd",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "65e39ef437aa1ba21923",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "41a738ae8e474b7933ad",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "12c09a5bc5bb327a706b",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "29c3df5a3570499634cc",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "8bca07e629b49d5be38a",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "68a557824f5d76c89eff",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "1a4bb5b8e6dc1ece73b2",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "pin",
+              "discoveredAttack"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [],
+            "category": "mixed"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [],
+            "category": "mixed"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "pin",
+              "discoveredAttack"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [
+              "discoveredAttack",
+              "pin"
+            ],
+            "category": "mixed"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [
+              "discoveredAttack",
+              "pin"
+            ],
+            "category": "mixed"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "532f1f6a7d78180329ff",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        }
+      }
+    },
+    {
+      "id": "aabfe6b6f27e48ca0ee7",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "20544f942a2ae04ab4dc",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "62971b18eb13eeca95f2",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "20ef0e3be893edcd5e7b",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "d748c2a0e629f2592ba7",
+      "split": "development",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "03d54ad91e3b4b9eb3ce",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "09649d1822ef052c427d",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "discoveredCheck"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "discoveredCheck"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [
+              "discoveredCheck"
+            ],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [
+              "discoveredCheck"
+            ],
+            "category": "tactical"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "0095d1cdc5f553fb47d8",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "0418bbb92230ba9be803",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "0361dc88a45ebd058ca7",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [
+              "hangingPiece"
+            ],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [
+              "hangingPiece"
+            ],
+            "category": "tactical"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "11e4773cb6be87b445ea",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "0e822c2166b508e81f9f",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "matingThreat"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "0bcd30b36925a278ed73",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "0dde2de3c123a6750dad",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [],
+            "category": "mixed"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [],
+            "category": "mixed"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [
+              "hangingPiece"
+            ],
+            "category": "mixed"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [
+              "hangingPiece"
+            ],
+            "category": "mixed"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "0cf222e4f1b274a5f60a",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "198d97b7085ea923fe81",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "11d9124b00cb7ed7b6ef",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "3a891db19cb163e196c3",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "189b46b09da0a6d7299a",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "1f34ed72a88c0aef01e3",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "1cee99e8c1b9cd08634a",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "225022b48897cb21a832",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "48fd30cf4e3aad01dfe5",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false,
+            "motifs": [],
+            "category": "positional"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": true,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "2e2656833ad2e3208874",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "2ac09b955883115b2510",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "1e073da996edbf472b92",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": true,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        }
+      }
+    },
+    {
+      "id": "a65cd4d8d858ce0609eb",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "618328225dcc34c946e5",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "4070dd5a11a1b22087cc",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "4aecb8c78d00292b8023",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "tactical"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": true,
+            "positional": null,
+            "mixed": null,
+            "motifs": [
+              "hangingPiece"
+            ]
+          },
+          "v62": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [
+              "hangingPiece"
+            ],
+            "category": "mixed"
+          },
+          "paired-target": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true,
+            "motifs": [
+              "hangingPiece"
+            ],
+            "category": "mixed"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "1efff7290d422ca64bfb",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        }
+      }
+    },
+    {
+      "id": "7ea8ca140d44e6804ea6",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    },
+    {
+      "id": "89bda6b54c285e41f75e",
+      "split": "reserve",
+      "scores": {
+        "position": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "move": {
+          "original": {
+            "tactical": false,
+            "positional": null,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unclear"
+          }
+        },
+        "mistake": {
+          "original": {
+            "tactical": false,
+            "positional": false,
+            "mixed": null,
+            "motifs": []
+          },
+          "v62": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          },
+          "paired-target": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false,
+            "motifs": [],
+            "category": "unavailable"
+          }
+        }
+      }
+    }
+  ],
+  "appFrameSha256": "c47b00686f4517e18cef3c5752067deac7cd1a46693aeb8010de01290870d11e",
+  "referenceSha256": "7d4aafbf64bcc105a25b8bb21ad08da8791d2bfb3cd4b9d890922adbf90686c3"
+}

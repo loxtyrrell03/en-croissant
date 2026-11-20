@@ -1,0 +1,966 @@
+{
+  "reviewer": "One engine-assisted reviewer, working from outside annotations and deeper legal lines. Classifier verdicts were hidden before sealing.",
+  "appFrameSha256": "c47b00686f4517e18cef3c5752067deac7cd1a46693aeb8010de01290870d11e",
+  "referenceFrameSha256": "418132244e639ed115875aaae873f86c9f03407c0397a3027d125f4f9642acb8",
+  "sourceNoteSha256": "f2f75fd7673b1b9113e4d50b256c54b35793cf2446c061da0a2bbf004b8baf1c",
+  "cases": [
+    {
+      "id": "0ac5572e36b9f0f536fa",
+      "uci": "e2d3",
+      "review": "The queen recapture permits Ba4 against the rook. Rxd3 avoids that reply's purpose and keeps Nc5 and Qe5 ideas.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": null
+      }
+    },
+    {
+      "id": "24ee5afbe57a53fe9d37",
+      "uci": "f6d7",
+      "review": "Rc8 and the a-pawn are persistent plans across the two candidate moves. Nd7 itself does not uniquely establish either.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "0a2c8c3d7866b4f6e247",
+      "uci": "f7f6",
+      "review": "f6 challenges e5. The pawn capture and the alternative Bf2 give different ways for Black to reopen the centre.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "1108a7974e1d54b53990",
+      "uci": "a6e6",
+      "review": "Re6 is viable and Nxe6 permits a forcing mating attack. Qf8 is a different defence.",
+      "position": {
+        "tactical": true,
+        "positional": null
+      },
+      "move": {
+        "tactical": true,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "0107ab69e0cbdba8499f",
+      "uci": "h4h5",
+      "review": "h5 advances a kingside lever and keeps h-file pressure against g5 or gxf5. Earlier advantages predate the move.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "113c26ece8386e51b258",
+      "uci": "f6f5",
+      "review": "f5 leaves e6 vulnerable to Bc4 and Bxe6 in one line. Be3 gives an alternative with a similar score.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null
+      }
+    },
+    {
+      "id": "4bfb3ee90e90f7c724dc",
+      "uci": "g5f6",
+      "review": "Qf6 permits the queen trade while keeping the e-pawn's advance. The unrestricted rook alternative retains that asset too.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "16e6e40b09b9dc9cda22",
+      "uci": "h7h6",
+      "review": "h6 prepares g5 against multiple defences. Black can establish a passer on the other wing as well.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "2e23c752c05d28d131f5",
+      "uci": "c5b6",
+      "review": "Black needs counterplay and rook activity. Qb3 actually permits a queen trade, so the exact prevention claim remains open.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "04b092f6a111b55244cd",
+      "uci": "f3g4",
+      "review": "Qg4 does not reliably keep queens. The g6 and Qf5 line can force an exchange, and the paired difference is small.",
+      "position": {
+        "tactical": null,
+        "positional": null
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "1a6e40d6e27c5f02ba4d",
+      "uci": "g3g4",
+      "review": "g4 allows h5 and king access through h6 after the exchange. The practical drawback is clearer than the small evaluation difference.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null
+      }
+    },
+    {
+      "id": "35ed665d17e0dadce5fb",
+      "uci": "b7b5",
+      "review": "Black has a structural target in the doubled pawns. b5 also gains queenside ground and supports b4 against Nd2.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "31f745fd552126bea1d9",
+      "uci": "f8b8",
+      "review": "Rb8 activates the rook while both close responses allow the a-pawn to advance. Pawn compensation can persist without a forcing combination.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "04fea833d79be25be661",
+      "uci": "a8c8",
+      "review": "Rac8 activates the rook before Ba6 and pressure on c4. The wider frame prefers a different coordination scheme and the mistake cause is uncertain.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null
+      }
+    },
+    {
+      "id": "1c048483ab7d924db0dd",
+      "uci": "f4d2",
+      "review": "Bd2 gives Qe8 Qa4+ before White castles. The checks force the king to d1 and take away lasting king safety. Castling first neutralises that sequence.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": true
+      }
+    },
+    {
+      "id": "65e39ef437aa1ba21923",
+      "uci": "h7h6",
+      "review": "h6 is competitive, but the main lines do not establish why its improvement is necessary against the strongest options.",
+      "position": {
+        "tactical": null,
+        "positional": null
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "41a738ae8e474b7933ad",
+      "uci": "d8f6",
+      "review": "Qf6 links the attack on b2 and the g5 idea. Rxb2 is concrete after Bd2, while Rd1 needs a separate queenside passer plan.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": true,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "12c09a5bc5bb327a706b",
+      "uci": "b6b5",
+      "review": "b5 changes queenside space. Both the a5 continuation and the c4 continuation exploit the resulting pawn leverage.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "29c3df5a3570499634cc",
+      "uci": "a7a6",
+      "review": "Kingside space is a plausible long-term contrast. The exact a6 move and the better choices score too closely for a mistake explanation.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "8bca07e629b49d5be38a",
+      "uci": "c7c6",
+      "review": "c6 permits both Nxf6+ and Bxf6 with gxf6. The half-open g-file is then used by Rg8 in both lines.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "68a557824f5d76c89eff",
+      "uci": "c1g5",
+      "review": "The bishop trade and d4 blockade are coherent positional aims. The available strong PVs stop short of verifying occupation of d4 by the knight.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "1a4bb5b8e6dc1ece73b2",
+      "uci": "f3g3",
+      "review": "Rxg3 takes a pawn in an already winning position. The note concerns the whole game, and later rook checks do not establish an exact tactical mechanism.",
+      "position": {
+        "tactical": null,
+        "positional": null
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "532f1f6a7d78180329ff",
+      "uci": "c4b3",
+      "review": "Bb3 spends time without advancing the kingside plan. h4 and h5 retain a comparative lever, while after Bb3 the piece must retreat.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true
+      }
+    },
+    {
+      "id": "aabfe6b6f27e48ca0ee7",
+      "uci": "d8d5",
+      "review": "Qd5+ and Qd7+ gain time for h7 and promotion. The advanced passer is the lasting strategic asset.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": true,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "20544f942a2ae04ab4dc",
+      "uci": "b1b4",
+      "review": "Rb4 activates the rook laterally. Rc4 and Rh4 appear after different defensive choices.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "62971b18eb13eeca95f2",
+      "uci": "e6d5",
+      "review": "Taking with the pawn allows a different isolated d-pawn and b7 capture. The small sustained evaluation gap leaves a definite mechanism ambiguous.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null
+      }
+    },
+    {
+      "id": "20ef0e3be893edcd5e7b",
+      "uci": "e1g1",
+      "review": "Castling improves king safety and connects the rook for development. The bishop activity problem persists under different replies.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "d748c2a0e629f2592ba7",
+      "uci": "e8e6",
+      "review": "The f6 break challenges e5 in both rook setups. After Re6 there are also earlier tactical replies and the exact contribution is unresolved.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "03d54ad91e3b4b9eb3ce",
+      "uci": "g8h8",
+      "review": "After Kh8, Ne3 changes the f-file play. The independent searches do not settle a single material or positional cause of the modest loss.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null
+      }
+    },
+    {
+      "id": "09649d1822ef052c427d",
+      "uci": "c6e7",
+      "review": "Ne7+ inserts a check before Nxd5, preserving the e6-pawn instead of relying on exd5. The captured rook and unchanged pawn structure establish separate evidence.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "motifs": {
+          "intermezzo": true
+        }
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "0095d1cdc5f553fb47d8",
+      "uci": "c2c4",
+      "review": "c4 gains space and d5 control. Black has more than one viable reply, and Nc3 follows both.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "0418bbb92230ba9be803",
+      "uci": "h2h4",
+      "review": "h4 permits Bxa4 followed by Nxh5 in the strongest reply. Nd4 gives a different defensive route before White begins the pawn charge.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": null
+      }
+    },
+    {
+      "id": "0361dc88a45ebd058ca7",
+      "uci": "h4e7",
+      "review": "Qxe7 takes the original unprotected queen on e7. The following play is a conversion of that material.",
+      "position": {
+        "tactical": true,
+        "positional": null
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "motifs": {
+          "hangingPiece": true
+        }
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "11e4773cb6be87b445ea",
+      "uci": "h7h5",
+      "review": "The note identifies g6, and both paired choices keep an advantage. The deeper principal continuations do not directly verify the exact g6 resource.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null
+      }
+    },
+    {
+      "id": "0e822c2166b508e81f9f",
+      "uci": "a8b8",
+      "review": "Rb8 obtains queenside file activity as compensation. a5 and the b3 exchange continue the queenside pressure.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "0bcd30b36925a278ed73",
+      "uci": "a4d1",
+      "review": "Qd1 redeploys the queen without committing the a-pawn. The outside passer remains the clear plan across different rook replies.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "0dde2de3c123a6750dad",
+      "uci": "g3g4",
+      "review": "Kxg4 collects a free pawn with the king in an already winning ending. The retained extra pawns and active king are the point rather than a forcing sequence.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": false,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "0cf222e4f1b274a5f60a",
+      "uci": "e6d6",
+      "review": "Qd6 permits dxe5 and invasion on c6 or c7. e4 in the better choice removes the target and improves how the pieces cover the entry squares.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": null
+      }
+    },
+    {
+      "id": "198d97b7085ea923fe81",
+      "uci": "f8d6",
+      "review": "Bd6 preserves the winning endgame against Kf2 and Kg2. The note describes an earlier blunder, not this move.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "11d9124b00cb7ed7b6ef",
+      "uci": "a1c1",
+      "review": "Rc1 uses the file as the c- and d-pawn exchanges produce lasting structural targets. It also retains the option of pressure after Re8.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "3a891db19cb163e196c3",
+      "uci": "d8c7",
+      "review": "The e6 break is the positional task. Qc7 itself does not execute or clearly support it in the compared lines, and the measured loss is modest.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "189b46b09da0a6d7299a",
+      "uci": "b2e2",
+      "review": "Qe2 keeps queens available for Qb2 after both White alternatives. Black retains queenside initiative instead of simplifying.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "1f34ed72a88c0aef01e3",
+      "uci": "h7h6",
+      "review": "h6 makes g5 unavailable to pieces or pawns without a trade. Both main alternatives retain this control and develop the knight.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "1cee99e8c1b9cd08634a",
+      "uci": "h3g4",
+      "review": "The g4 and c2 exchanges determine the playable routes, and the open kingside remains relevant. The annotation criticises the later bishop recapture, not hxg4.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "225022b48897cb21a832",
+      "uci": "e1e3",
+      "review": "Re3 gives the rook access to g3 while leaving e-file coordination available. The exact forcing threat remains unresolved.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "48fd30cf4e3aad01dfe5",
+      "uci": "h2h4",
+      "review": "h4 fixes the pawn structure. The stronger Rc5 exploits activity immediately, and the played line gives Black room to reposition its rook against the structure.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true
+      }
+    },
+    {
+      "id": "2e2656833ad2e3208874",
+      "uci": "e5f5",
+      "review": "A possible tactic on e5 is mentioned, but the leading compared branch returns the rook there. The exact danger needs a separate search.",
+      "position": {
+        "tactical": null,
+        "positional": null
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "2ac09b955883115b2510",
+      "uci": "c6b7",
+      "review": "Black can press b2 and the queenside. Qb7 allows a different response from Rxb2, with the cost of the time left unresolved.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null
+      }
+    },
+    {
+      "id": "1e073da996edbf472b92",
+      "uci": "f7d5",
+      "review": "Qxd5 gives Nf4 and the forced queen and rook sequence. Qxh5+ keeps the attacking line, and the played capture has no established sound tactical purpose.",
+      "position": {
+        "tactical": true,
+        "positional": null
+      },
+      "move": {
+        "tactical": false,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": null
+      }
+    },
+    {
+      "id": "a65cd4d8d858ce0609eb",
+      "uci": "a1f1",
+      "review": "Raf1 doubles the rooks for the planned kingside play. Both f-pawn replies retain that coordination at first.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "618328225dcc34c946e5",
+      "uci": "e2e3",
+      "review": "e3 develops after the central structure settles. The pawn support and bishop development remain available against both replies.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "4070dd5a11a1b22087cc",
+      "uci": "g7g5",
+      "review": "g5 opens g7 as a king flight against the Rc7 and b7 sequence. The passed pawn race remains the strategic reason for the defence.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": true,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "4aecb8c78d00292b8023",
+      "uci": "b1a1",
+      "review": "The exposed king and two pawns offset a piece. Nb8 allows the concrete Ra8 sequence, while the exact Rxa1 choice includes an immediate recapture whose causal role is open.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "1efff7290d422ca64bfb",
+      "uci": "f3g3",
+      "review": "Qg3 allows Rxc5 and loses control of the rook entry. Qg4 enables a queen exchange and a more favourable technical ending, preserving a separate strategic route.",
+      "position": {
+        "tactical": true,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": true
+      }
+    },
+    {
+      "id": "7ea8ca140d44e6804ea6",
+      "uci": "e4f6",
+      "review": "Nxf6 exchanges a piece and changes the kingside structure or bishop activity. The alternative g5 preserves pressure, but the measured root gap stays small.",
+      "position": {
+        "tactical": null,
+        "positional": true
+      },
+      "move": {
+        "tactical": null,
+        "positional": true
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    },
+    {
+      "id": "89bda6b54c285e41f75e",
+      "uci": "f7f6",
+      "review": "Kf6 and the engine alternative both hold with different bishop and king moves. The closing note provides no decision-specific plan.",
+      "position": {
+        "tactical": null,
+        "positional": null
+      },
+      "move": {
+        "tactical": null,
+        "positional": null
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false
+      }
+    }
+  ]
+}

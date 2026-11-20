@@ -6271,6 +6271,8 @@ Isolated Windows build 9812c1bf verifies the Chilean Bf2 as mixed with independe
 
 Decision Evidence v62 adds the matched reply after the independent mistake proofs so an engine-supported ray cannot suppress tactical recovery, checked defence or positional pawn evidence. The release comparator asserts that only the intended tactical reason and its evidence change.
 
+Decision Evidence v63 exposes a separately scored recorded move when it falls outside the engine shortlist. It uses the existing complete paired comparison and keeps the position and mistake evidence independent. On 56 externally annotated Candidates decisions availability rises from 44 to 56 and the reserve positional move count from three to four of 14. Nine added moves remain unclear. See benchmarks/decision-evidence/annotation-transfer for baseline scores, proof and unresolved mixed coverage.
+
 The annotation-transfer audit freezes 56 publicly annotated Candidates games, one exact played move per game. Open is development and Women is reserve. A separate review covers position, the exact annotated move and played mistake. Source comments remain local. See benchmarks/decision-evidence/annotation-transfer.
 
 The final v62 worker cd14819e reproduces three matched-reply explanations on the 119-game transfer and leaves all 1869 available archival reports unchanged apart from version. One of three restricted queries is incremental over v61. Both new explanations and the rear-piece trade pass with live Stockfish in the isolated Windows build. Narrow source panels and 43 focused tests pass. The original Chilean Bh4 case also verifies on development frames outside the holdout. See transfer.md and its receipts.

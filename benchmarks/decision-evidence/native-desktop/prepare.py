@@ -117,4 +117,8 @@ if aligned.is_file():
         target = cases.get(key)
         if target:
             history_fixture(label, target["history"], [target["playedMoveUci"]])
+annotation = fixtures / "annotation-transfer" / "fixtures.json"
+if annotation.is_file():
+    target = load("annotation-transfer", "fixtures.json")["pawnLock"]
+    history_fixture("Played Pawn Lock", target["history"], [target["playedMoveUci"]])
 print("Isolated app settings and legal PGN fixtures prepared.")

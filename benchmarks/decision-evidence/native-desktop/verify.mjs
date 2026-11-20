@@ -323,4 +323,22 @@ for (const [name, played, witness] of [
   });
 }
 
+if (wanted.has("Played Pawn Lock")) {
+  await run("Played Pawn Lock", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const section = page.getByText("What the move achieves", { exact: true }).locator("../..");
+    await section.getByRole("textbox", { name: "Candidate move" }).click();
+    await page.getByRole("option", { name: "h4 · Played move", exact: true }).click();
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const move = await section.innerText();
+    assert.match(move, /POSITIONAL/i);
+    assert.match(move, /fixes opposing pawns on h4 and h5/);
+    const mistake = await page.getByText("What h4 missed or allowed", { exact: true }).locator("../..").innerText();
+    assert.match(mistake, /evaluation loss/);
+    return { move, mistake };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

@@ -23,7 +23,7 @@ The study was also one source for the published ACT-Eval commentary
 benchmark. Its linked repository returned 404 when checked. These are
 our independently selected boards and review labels. The source prose
 and variations are read locally and are not redistributed in this
-repository. [Paper and source description](https://arxiv.org/html/2608.04240v1#A3.SS1)
+repository. [Paper and source description](https://arxiv.org/html/2608.04240v1)
 
 ## Review and measurement
 
@@ -59,3 +59,57 @@ $frames = 'benchmarks/decision-evidence/current-classifier-audit/classical-frame
 python $frames app $source $stockfish app.json
 python $frames reference $source $stockfish deep.json --app-frames app.json
 ```
+
+## Baseline and exact-move availability
+
+Of 56 annotated moves, the v62 report makes 44 available as
+exact choices even though the paired search has all 56. The
+prototype feeds the otherwise unavailable move's paired line
+back through the exact-move assessor with no additional engine
+search.
+
+| Reserve question | Reviewed positives | Original | v62 | Paired move prototype |
+| --- | ---: | ---: | ---: | ---: |
+| Tactical position | 9 | 4 | 5 | 5 |
+| Positional position | 24 | — | 4 | 4 |
+| Mixed position | 7 | — | 0 | 0 |
+| Tactical exact move | 3 | 2 | 2 | 2 |
+| Positional exact move | 14 | — | 3 | 4 |
+| Mixed exact move | 2 | — | 0 | 0 |
+| Tactical mistake | 4 | 1 | 1 | 1 |
+| Positional mistake | 2 | 1 | 0 | 0 |
+
+All 12 missing moves become inspectable. Nine remain unclear.
+Three receive positional observations, including one agreed
+positive and two unresolved references. The verified improvement
+is `h4` fixing the h4–h5 pawn lock. It remains an evaluation
+setback against the stronger alternative. The position and
+mistake questions stay unchanged. The prototype adds no calls on
+reviewed negatives. There are no definite position negatives in
+this reserve, so it cannot estimate position precision.
+[Reviewed labels](reference.json) · [Complete prototype scores](prototype-results.json)
+
+Decision Evidence v63 stores the supplemental played move
+outside the engine shortlist. Only the existing move selector
+lists it, labelled **Played move**. Move-selection and
+mistake comparisons share the already scored exact line.
+
+## Links to the earlier benchmarks
+
+On the earlier 72 classical games, v62 with the one already
+verified optional capture-order comparison explains one of
+17 positive mixed positions and one of seven mixed exact
+moves. The earlier v57 replay explains neither. The cached
+Woodpecker comparison gives v62 20/35 tactical, 6/24 positional
+and 2/9 mixed exact-move positives. The original tactical
+proxy detects 7/35. Those boards informed earlier development.
+Only the aggregate counts are shared here.
+[Retrospective results](retrospective.json)
+
+The Candidates review gives two useful priority cases. The
+`Ne7+` discovered check is detected, while its purpose of
+retaining the e6 pawn structure is absent. The defender's
+`g5` king-flight resource against the b-pawn remains unclear on
+both axes. Conversely, the technical `Kxg4` conversion is called
+tactical because it wins a loose pawn. These are distinct gaps
+in attribution. The new selector does not change them.
