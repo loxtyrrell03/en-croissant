@@ -1,0 +1,54 @@
+{
+  "archiveSha256": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+  "depthSha256": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97",
+  "counts": {
+    "archive-mistakes": 318,
+    "mixed-depth": 68,
+    "reserve": 254,
+    "course": 52,
+    "independent": 48
+  },
+  "reserveSources": {
+    "tactical-recovery/controls.json": {
+      "total": 34,
+      "retained": 9,
+      "noExactComparison": 25,
+      "sha256": "b07ae4c6ad2ee7970ce76566a93f23870f57731997eac99a3b008f164ce432a8"
+    },
+    "tactical-recovery/deeper.json": {
+      "total": 2,
+      "retained": 2,
+      "sha256": "9901f7b68bfc7f4f93887a09e64a29f8b1ec9a496eedc0479bb8cb9d35009f98"
+    },
+    "passed-pawn-interception/app-transfer/annotated.json": {
+      "total": 126,
+      "retained": 85,
+      "noPlayedReply": 41,
+      "sha256": "e4006fda2dd290465e0c1f5738a44c0c8bf691fe81bf8fc384b901057461cdeb"
+    },
+    "passed-pawn-interception/app-transfer/summer.json": {
+      "total": 88,
+      "retained": 59,
+      "noPlayedReply": 29,
+      "sha256": "77318418f84e4ca74be48416b34790b58f7b828b5c2666e958bdc69d3225a454"
+    },
+    "passed-pawn-interception/app-transfer/late-reserve.json": {
+      "total": 75,
+      "noPlayedReply": 29,
+      "retained": 46,
+      "sha256": "ac09826304f076c161ef3952ffd1e491a1498c76efb4b151fdd57577a1441019"
+    },
+    "strategic-asset-contrast/replication.json": {
+      "total": 135,
+      "noPlayedReply": 108,
+      "retained": 27,
+      "sha256": "8dec47fb5335ea801a63d846dfcd922039d5716ef92fe6f345048f35b954bd8b"
+    },
+    "strategic-asset-contrast/reserve.json": {
+      "total": 170,
+      "noPlayedReply": 144,
+      "retained": 26,
+      "sha256": "477253465f002850c85d7b89f55499c7fd87d515cfe52e2f7003de0507da4191"
+    }
+  }
+}

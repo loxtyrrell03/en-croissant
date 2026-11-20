@@ -83,7 +83,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 39;
+export const DECISION_ASSESSMENT_VERSION = 40;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -1041,10 +1041,15 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     basis: tacticalEpisode?.kind === "trap" ? "bounded-proof" : "engine-supported",
                     reasons: [
                         ...(promotion ? [promotion.tactical] : []),
-                        ...missed.map(
-                            (item) =>
-                                `The better choice uses ${item.mechanism}. The played continuation retains less material in the analysed horizon. ${item.description}`,
-                        ),
+                        ...missed.map((item) => {
+                            const otherFork = item.mechanism === "fork" && playedAssessment.mechanisms.find(
+                                (other) => other.mechanism === "fork" && other.rootMoveInvolved &&
+                                    other.actor === item.actor && other.mechanismPly === item.mechanismPly,
+                            );
+                            return otherFork
+                                ? `The two choices use different forks in the analysed lines. ${item.description} ${otherFork.description} The stronger line retains more material over the compared moves.`
+                                : `The better choice uses ${item.mechanism}. The played continuation retains less material in the analysed horizon. ${item.description}`;
+                        }),
                         ...allowed.map(
                             (item) =>
                                 `The opponent can use ${item.mechanism} after the played move. This mechanism is absent from the compared better line, which retains more material. ${item.description}`,

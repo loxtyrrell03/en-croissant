@@ -4024,3 +4024,21 @@ valid report matches apart from its version and one remains unavailable.
 The proof reuses all existing searches. Intermediate checks and indirect
 payoffs still defeat the immediate material test.
 [Benchmark, exact continuations and panel checks](../benchmarks/decision-evidence/fork-defence-concession/README.md)
+
+## The same king can face two different forks
+
+Decision assessment v40 compares a fork's entry square and both targets.
+This preserves a different fork when both threats include the same king
+or another shared target. In the 254-game transfer, the Sparkassen case
+gains a tactical diagnosis and Cork gains a specific fork explanation
+under its existing verdict. The more complex original-piece tracker
+changes the same reports. All 318 archived mistake reports match. The
+correction uses the existing engine searches.
+
+The refreshed cross-scope audit includes exact matches against the
+Woodpecker and independent exercise inputs. Eight historical mixed
+mistakes survived independent re-review. Six already had corroborated
+replies for both choices, and a deeper paired root and reply replay
+raises that to eight. It adds no mixed diagnosis. The remaining
+positional and causal gaps require more than additional search depth.
+[Evidence, archived metrics and replay](../benchmarks/decision-evidence/compared-motif-identity/README.md)

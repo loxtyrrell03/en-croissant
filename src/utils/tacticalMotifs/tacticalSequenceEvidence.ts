@@ -41,8 +41,8 @@ export type TacticalSequenceWitness = {
     alternatives?: TacticalSequenceWitness[];
 };
 
-/** Two discoveries aimed at the same square can arise from entirely
- * different threats. Match the revealed slider, target and opening move. */
+/** Compare the roles in forks and discoveries. A king or any other shared
+ * square alone cannot make two distinct double attacks equivalent. */
 export function sameTacticalMechanism(a: TacticalSequenceWitness, b: TacticalSequenceWitness) {
     if (a.actor !== b.actor || a.mechanism !== b.mechanism) return false;
     if (a.mechanism === "discoveredAttack")
@@ -51,6 +51,15 @@ export function sameTacticalMechanism(a: TacticalSequenceWitness, b: TacticalSeq
             a.squares[2] === b.squares[2] &&
             a.lineUci[a.mechanismPly - 1] === b.lineUci[b.mechanismPly - 1]
         );
+    if (a.mechanism === "fork" && a.squares.length === 3 && b.squares.length === 3) {
+        const [from, first, second] = a.squares;
+        const [otherFrom, otherFirst, otherSecond] = b.squares;
+        return (
+            from === otherFrom &&
+            ((first === otherFirst && second === otherSecond) ||
+                (first === otherSecond && second === otherFirst))
+        );
+    }
     return a.squares.some((square) => b.squares.includes(square));
 }
 
