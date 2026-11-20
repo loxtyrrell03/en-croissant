@@ -77,3 +77,9 @@ original checker after analysing a played move. Both ran with real
 Stockfish and joined the three passing capture-order checks.
 [Run receipt](../checking-order-defences/windows.json) ·
 [Held-out benchmark](../checking-order-defences/README.md)
+
+Revision `9adb8b38` adds `Quiet Counterattack`. The native
+test shows h3 and Qg3 with an engine-supported explanation and
+the conditional scope note in both sections. The Finnish and
+Berjaya scenarios also pass on this revision.
+[Run receipt](../quiet-reply-counterplay/windows.json)

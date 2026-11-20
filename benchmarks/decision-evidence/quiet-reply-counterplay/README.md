@@ -98,3 +98,8 @@ Vitest config and the v58 revision. Use the result filenames in
 Vitest config with `QUIET_REPLY_ENGINE` set to Stockfish to
 exercise the actual engine boundary. The browser fixture checks
 both evidence expansion and changing the selected candidate.
+
+The isolated Windows build of `9adb8b38` passed the quiet
+counterattack example and the Finnish and Berjaya regressions.
+The source renderer also passed at 320, 390 and 900 pixels.
+[Windows receipt](windows.json)

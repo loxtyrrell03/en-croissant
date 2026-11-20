@@ -1,0 +1,37 @@
+{
+  "revision": "9adb8b38a43a46337a80840af61162d1f6264ac2",
+  "scenarios": {
+    "Finnish Capture Order": {
+      "passed": true,
+      "seconds": 7.179,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Engine supported. After Qe6, Rd1+ comes before gxf4, which takes the bishop on f4. Taking immediately allows Qxd3 to capture the rook that gives check. Be3 moves the bishop out of that capture.\n\nPositional · Strategic interpretation. White's minor piece on e3 has pawn support and no opposing pawn able to advance to attack that square. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence.\n\nCheck first. Qe6 Rd1+ Kg2 gxf4 Qf5+ Kg8 Qc8+ Kf7 e6+ Kf6\n\nTake immediately. Qe6 gxf4 Qf5+ Kg8 Qxd3 fxg3 Qxg3 Rxb2 Qd3 Rb4\n\nBetter line. Be3 Rd5 e6 Re5 b3 Rbe4 Qc7 Rxe6 Qxa5 Bf8\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence"
+    },
+    "Berjaya Checking Defence": {
+      "passed": true,
+      "seconds": 9.174,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nTACTICAL\n\n3 candidate moves examined\n\nTactical · Engine supported. After Rxb4, Qh8+ comes before Rxc8, which takes the knight on c8. Taking immediately scores worse for the attacker. The line continues with Qxc8 Qa7 Kg8. After Kg6, Qh8 comes without check and gives time for Qf6.\n\nCheck first. Rxb4 Qh8+ Kg6 Rxc8 Rb6 c5 Rb1+ Kh2 Qxc8 Qxc8\n\nTake immediately. Rxb4 Rxc8 Qxc8 Qa7 Kg8 Qd4 Rb1+ Kh2 Qe6 Qd2\n\nSame reply after the better move. Kg6 Qh8 Qf6 Qxf6+ Kxf6 Nc6 Ra8 Bf1 Be6 c5\n\nBetter line. Kg6 Qc5 Qb6 Rxc8 Qxc5 Rxc5 Rxb4 Nc6 Rb1+ Kh2\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence"
+    },
+    "Quiet Counterattack": {
+      "passed": true,
+      "seconds": 10.814,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nTACTICAL\n\n3 candidate moves examined\n\nTactical · Engine supported. After h3, Qg3 tries to protect the knight on g4. The compared continuations still capture that piece and keep a material gain through the shown exchange.\n\nIf Qg3. h3 Qg3 hxg4 Bd8 Be3 Bc7 Bf2 Qd6 Re5 Bc8 Qd2 Bxg4 Nh2 Qg6\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThe resource applies to this reply. Other defences can change the continuation.\n\nHide evidence",
+      "move": "What the move achieves\n\nTACTICAL\n\nTactical · Engine supported. After h3, Qg3 tries to protect the knight on g4. The compared continuations still capture that piece and keep a material gain through the shown exchange.\n\nIf Qg3. h3 Qg3 hxg4 Bd8 Be3 Bc7 Bf2 Qd6 Re5 Bc8 Qd2 Bxg4 Nh2 Qg6\n\nThe resource applies to this reply. Other defences can change the continuation.\n\nHide evidence"
+    }
+  },
+  "applicationSha256": "459cfb97c609f20cae31b59ea71c9f4a97295ca8f2cac9a669553979dc887e52",
+  "scope": "Isolated Windows Tauri and WebView2 with local Stockfish 19 and a QA profile",
+  "sourceRendererWidthsPx": [
+    320,
+    390,
+    900
+  ]
+}
