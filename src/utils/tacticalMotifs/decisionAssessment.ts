@@ -93,7 +93,12 @@ import {
     type PassedAdvanceRequest,
 } from "./decisionCheckingDefence";
 
-export const DECISION_ASSESSMENT_VERSION = 41;
+import {
+    corroborateDecisionLineRoutes,
+    isStructuralEffectFromTacticalCapture,
+} from "./decisionLineRoutes";
+
+export const DECISION_ASSESSMENT_VERSION = 42;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -554,6 +559,51 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
         result.limitations.push(
             "This is an engine-supported mating conclusion. No more specific mating motif is inferred from the score.",
         );
+    }
+    if (corroborated) {
+        const routes = corroborateDecisionLineRoutes(input.fen, line, probe!.lines[0], input.history)
+            .filter(
+                (route) => result.tactical.support !== "supported" ||
+                    (!result.mechanisms.some(item => item.mechanism === route.mechanism && item.rootMoveInvolved) &&
+                     !result.verifiedMotifs.some(item => item.id === route.mechanism)),
+            );
+        if (routes.length) {
+            result.mechanisms = mergeTacticalSequenceWitnesses([
+                ...result.mechanisms.filter(
+                    item => !routes.some(route => route.mechanism === item.mechanism && route.mechanismPly === item.mechanismPly),
+                ),
+                ...routes,
+            ]);
+            if (result.tactical.support !== "supported") {
+                result.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: routes.map(route => route.description),
+                };
+            }
+            result.limitations.push("These mechanisms apply to the shown defence. Other replies can change the route or payoff.");
+
+            const kept = [];
+            const reasons = [];
+            for (const [index, factor] of result.positionalFactors.entries()) {
+                if (isStructuralEffectFromTacticalCapture(input.fen, line.pvUci[0], factor)) {
+                    result.limitations.push(`${factor.description} Its strategic importance alongside the material gain remains uncertain.`);
+                } else {
+                    kept.push(factor);
+                    reasons.push(result.positional.reasons[index]);
+                }
+            }
+            if (kept.length < result.positionalFactors.length) {
+                result.positionalFactors = kept;
+                result.positional = kept.length
+                    ? { ...result.positional, reasons }
+                    : {
+                          support: "suggestive",
+                          basis: "insufficient",
+                          reasons: ["The capture changes the position. Its separate strategic impact is uncertain."],
+                      };
+            }
+        }
     }
     result.category = category(result.tactical, result.positional);
     return result;

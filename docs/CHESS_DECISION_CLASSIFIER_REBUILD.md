@@ -4079,3 +4079,21 @@ The separate cached check and the prospective refresh of 78 selected
 classical games give zero supported cases. The experiment separates
 lasting pawn pressure from a tactical exchange and remains offline.
 [Exact variations, results and reproduction](../benchmarks/decision-evidence/passer-mobility/README.md)
+
+## Reusing checked clearance and deflection in decision reports
+
+Decision assessment v42 reuses scored line routes that independently
+agree on the tactical mechanism. It follows same-square recaptures and
+requires a retained gain from the payoff itself. This distinguishes
+the use of a cleared square for an even exchange from a tactical gain.
+The position and move report can show the verified variation. A pawn or
+bishop directly removed by the tactical capture can also change the
+structure. Its separate strategic relevance remains uncertain unless
+the existing comparison provides further corroboration.
+
+In the frozen 56-puzzle named-motif reference, verified root clearances
+rise from zero to six of ten and the 33 known clearance negatives
+remain correctly unlabelled. The frozen deflection score is unchanged.
+Two additional 36-puzzle samples gain nine named explanations and two
+tactical move assessments each. This uses existing app engine frames.
+[Matched benchmark, exact cases and reproduction](../benchmarks/decision-evidence/scored-route-decisions/README.md)

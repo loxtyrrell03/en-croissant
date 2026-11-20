@@ -1,0 +1,1668 @@
+{
+  "comparisons": {
+    "archive": {
+      "inputSha256": "69a0dca6e44cc2cfac1bb1af0665615ea0a6425b102d600fcd0f794f789d52a9",
+      "arms": {
+        "baseline": {
+          "valid": 1050,
+          "medianWorkerMs": 66.72,
+          "byCohort": {
+            "archive-rook-file-consequence/fresh": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-rook-file-consequence/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/independent": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/heldout": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/locks": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-fresh-tournaments": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-mate-challenge": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-x": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            }
+          },
+          "publicWitnesses": []
+        },
+        "repeated": {
+          "valid": 1050,
+          "medianWorkerMs": 67.32,
+          "byCohort": {
+            "archive-rook-file-consequence/fresh": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-rook-file-consequence/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/independent": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/heldout": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/locks": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-fresh-tournaments": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-mate-challenge": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-x": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 3,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 3,
+              "deflectionAdded": 2,
+              "clearanceAdded": 1
+            }
+          },
+          "publicWitnesses": []
+        },
+        "named-repeated": {
+          "valid": 1050,
+          "medianWorkerMs": 67.09,
+          "byCohort": {
+            "archive-rook-file-consequence/fresh": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-rook-file-consequence/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/independent": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/heldout": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/locks": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-fresh-tournaments": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-mate-challenge": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-x": {
+              "positionChanged": 12,
+              "positionCategoryChanged": 3,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 12,
+              "moveCategoryChanged": 3,
+              "clearanceAdded": 8,
+              "deflectionAdded": 4
+            }
+          },
+          "publicWitnesses": []
+        },
+        "settled": {
+          "valid": 1050,
+          "medianWorkerMs": 63.47,
+          "byCohort": {
+            "archive-rook-file-consequence/fresh": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-rook-file-consequence/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/independent": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/heldout": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/locks": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-fresh-tournaments": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-mate-challenge": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-x": {
+              "positionChanged": 9,
+              "positionCategoryChanged": 3,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 9,
+              "moveCategoryChanged": 3,
+              "clearanceAdded": 5,
+              "deflectionAdded": 4
+            }
+          },
+          "publicWitnesses": []
+        },
+        "final": {
+          "valid": 1050,
+          "medianWorkerMs": 63.38,
+          "byCohort": {
+            "archive-rook-file-consequence/fresh": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-rook-file-consequence/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/independent": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-strategic-continuation-contrast/reserve": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/heldout": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-reply-consequence/locks": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-fresh-tournaments": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-mate-challenge": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "archive-x": {
+              "positionChanged": 10,
+              "positionCategoryChanged": 3,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 10,
+              "moveCategoryChanged": 4,
+              "clearanceAdded": 6,
+              "deflectionAdded": 4
+            }
+          },
+          "publicWitnesses": []
+        }
+      }
+    },
+    "cached": {
+      "inputSha256": "5375927ae780222cbc7eb50ffb2d0256214577d33eda81a733e4d7d209a16cbe",
+      "arms": {
+        "baseline": {
+          "valid": 156,
+          "medianWorkerMs": 77.82,
+          "byCohort": {
+            "course": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "independent": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "named": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            }
+          },
+          "publicWitnesses": []
+        },
+        "leading-reply": {
+          "valid": 156,
+          "medianWorkerMs": 78.71,
+          "byCohort": {
+            "course": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1
+            },
+            "independent": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1
+            },
+            "named": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "route:1OxfT",
+              "candidate": 1,
+              "motif": "deflection",
+              "line": "16...Bxg2 17. Rxg2 Rxf1+",
+              "previous": "positional",
+              "verdict": "mixed"
+            }
+          ]
+        },
+        "repeated": {
+          "valid": 156,
+          "medianWorkerMs": 78.03,
+          "byCohort": {
+            "course": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1
+            },
+            "independent": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1
+            },
+            "named": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "route:1OxfT",
+              "candidate": 1,
+              "motif": "deflection",
+              "line": "16...Bxg2 17. Rxg2 Rxf1+",
+              "previous": "positional",
+              "verdict": "mixed"
+            }
+          ]
+        },
+        "named-repeated": {
+          "valid": 156,
+          "medianWorkerMs": 85.5,
+          "byCohort": {
+            "course": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 1,
+              "clearanceAdded": 1,
+              "deflectionAdded": 2
+            },
+            "independent": {
+              "positionChanged": 8,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 8,
+              "moveCategoryChanged": 1,
+              "clearanceAdded": 6,
+              "deflectionAdded": 2
+            },
+            "named": {
+              "positionChanged": 7,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 7,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1,
+              "clearanceAdded": 6
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "route:1OxfT",
+              "candidate": 1,
+              "motif": "deflection",
+              "line": "16...Bxg2 17. Rxg2 Rxf1+",
+              "previous": "positional",
+              "verdict": "mixed"
+            },
+            {
+              "id": "route:18txR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29. Rf7+ Qxf7 30. Qxf7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0aiUV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "32. Rxc2 Nxc2 33. Rxd5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0Vz77",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16. dxc6 Bxc6 17. Bxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0WVAk",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "25. Qc4+ Bf7 26. Rxe7",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0RYob",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Qxe1+ 18. Nxe1 Rxe1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:033eV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "27. Rxh6+ Bxh6 28. Qf7+ Bg7 29. Rh1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        },
+        "separated": {
+          "valid": 156,
+          "medianWorkerMs": 76.77,
+          "byCohort": {
+            "course": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 1,
+              "clearanceAdded": 1,
+              "deflectionAdded": 2
+            },
+            "independent": {
+              "positionChanged": 8,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 8,
+              "moveCategoryChanged": 2,
+              "clearanceAdded": 6,
+              "deflectionAdded": 2
+            },
+            "named": {
+              "positionChanged": 7,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 7,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1,
+              "clearanceAdded": 6
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "route:1OxfT",
+              "candidate": 1,
+              "motif": "deflection",
+              "line": "16...Bxg2 17. Rxg2 Rxf1+",
+              "previous": "positional",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:18txR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29. Rf7+ Qxf7 30. Qxf7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0aiUV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "32. Rxc2 Nxc2 33. Rxd5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0Vz77",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16. dxc6 Bxc6 17. Bxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0WVAk",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "25. Qc4+ Bf7 26. Rxe7",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0RYob",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Qxe1+ 18. Nxe1 Rxe1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:033eV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "27. Rxh6+ Bxh6 28. Qf7+ Bg7 29. Rh1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        },
+        "settled": {
+          "valid": 156,
+          "medianWorkerMs": 80.02,
+          "byCohort": {
+            "course": {
+              "positionChanged": 2,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 2,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 2
+            },
+            "independent": {
+              "positionChanged": 7,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 7,
+              "moveCategoryChanged": 2,
+              "clearanceAdded": 5,
+              "deflectionAdded": 2
+            },
+            "named": {
+              "positionChanged": 6,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 6,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 6
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "route:18txR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29. Rf7+ Qxf7 30. Qxf7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0aiUV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "32. Rxc2 Nxc2 33. Rxd5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0Vz77",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16. dxc6 Bxc6 17. Bxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0WVAk",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "25. Qc4+ Bf7 26. Rxe7",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0RYob",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Qxe1+ 18. Nxe1 Rxe1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:033eV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "27. Rxh6+ Bxh6 28. Qf7+ Bg7 29. Rh1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        },
+        "final": {
+          "valid": 156,
+          "medianWorkerMs": 80.39,
+          "byCohort": {
+            "course": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 1,
+              "clearanceAdded": 1,
+              "deflectionAdded": 2
+            },
+            "independent": {
+              "positionChanged": 7,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 7,
+              "moveCategoryChanged": 3,
+              "clearanceAdded": 5,
+              "deflectionAdded": 2
+            },
+            "named": {
+              "positionChanged": 7,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 7,
+              "moveCategoryChanged": 1,
+              "deflectionAdded": 1,
+              "clearanceAdded": 6
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "route:1OxfT",
+              "candidate": 1,
+              "motif": "deflection",
+              "line": "16...Bxg2 17. Rxg2 Rxf1+ 18. Qxf1 Rxf1+ 19. Kxf1",
+              "previous": "positional",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:18txR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29. Rf7+ Qxf7 30. Qxf7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0aiUV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "32. Rxc2 Nxc2 33. Rxd5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0Vz77",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16. dxc6 Bxc6 17. Bxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0WVAk",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "25. Qc4+ Bf7 26. Rxe7",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:0RYob",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Qxe1+ 18. Nxe1 Rxe1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "route:033eV",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "27. Rxh6+ Bxh6 28. Qf7+ Bg7 29. Rh1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        }
+      }
+    },
+    "scored": {
+      "inputSha256": "bf427288a29e6f988e9c35eaa296d033b16f91b5a09743938fb65c7cf08e16b0",
+      "arms": {
+        "baseline": {
+          "valid": 36,
+          "medianWorkerMs": 82.22,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "deflection": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "other": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            }
+          },
+          "publicWitnesses": []
+        },
+        "repeated": {
+          "valid": 36,
+          "medianWorkerMs": 84.95,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 2,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 2,
+              "moveCategoryChanged": 2,
+              "clearanceAdded": 2
+            },
+            "deflection": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "other": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "0xCfJ",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "18...Nxe2+ 19. Qxe2 Qd4+ 20. Kh2 Qxe5",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0zkqy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "30. Ng4 Rg8 31. Rf7 Rg7 32. Rxe7",
+              "previous": "unclear",
+              "verdict": "tactical"
+            }
+          ]
+        },
+        "named-repeated": {
+          "valid": 36,
+          "medianWorkerMs": 86.12,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 5,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 5,
+              "moveCategoryChanged": 2,
+              "clearanceAdded": 5
+            },
+            "deflection": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 1
+            },
+            "other": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 3
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "0xCfJ",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "18...Nxe2+ 19. Qxe2 Qd4+ 20. Kh2 Qxe5",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0v9lR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "19. Rxe6+ fxe6 20. Qe7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0WWLy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29...Rg3+ 30. hxg3 Qg2#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0fKJc",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Nb3+ 18. cxb3 Qc5#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0zkqy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "30. Ng4 Rg8 31. Rf7 Rg7 32. Rxe7",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "3GYqO",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "43...Rxc3+ 44. Kd1 Rxb1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0E7PI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Bh2+ 18. Kxh2 Qxd3",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0DwLS",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "51. f7+ Kxf7 52. Bxg5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0I6QI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16...Bxh2+ 17. Kxh2 Qxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        },
+        "separated": {
+          "valid": 36,
+          "medianWorkerMs": 83.83,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 5,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 5,
+              "moveCategoryChanged": 2,
+              "clearanceAdded": 5
+            },
+            "deflection": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 1
+            },
+            "other": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 3
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "0xCfJ",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "18...Nxe2+ 19. Qxe2 Qd4+ 20. Kh2 Qxe5",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0v9lR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "19. Rxe6+ fxe6 20. Qe7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0WWLy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29...Rg3+ 30. hxg3 Qg2#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0fKJc",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Nb3+ 18. cxb3 Qc5#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0zkqy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "30. Ng4 Rg8 31. Rf7 Rg7 32. Rxe7",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "3GYqO",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "43...Rxc3+ 44. Kd1 Rxb1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0E7PI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Bh2+ 18. Kxh2 Qxd3",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0DwLS",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "51. f7+ Kxf7 52. Bxg5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0I6QI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16...Bxh2+ 17. Kxh2 Qxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        },
+        "settled": {
+          "valid": 36,
+          "medianWorkerMs": 80.81,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 5,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 5,
+              "moveCategoryChanged": 2,
+              "clearanceAdded": 5
+            },
+            "deflection": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 1
+            },
+            "other": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 3
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "0xCfJ",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "18...Nxe2+ 19. Qxe2 Qd4+ 20. Kh2 Qxe5",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0v9lR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "19. Rxe6+ fxe6 20. Qe7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0WWLy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29...Rg3+ 30. hxg3 Qg2#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0fKJc",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Nb3+ 18. cxb3 Qc5#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0zkqy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "30. Ng4 Rg8 31. Rf7 Rg7 32. Rxe7",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "3GYqO",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "43...Rxc3+ 44. Kd1 Rxb1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0E7PI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Bh2+ 18. Kxh2 Qxd3",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0DwLS",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "51. f7+ Kxf7 52. Bxg5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0I6QI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16...Bxh2+ 17. Kxh2 Qxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        },
+        "final": {
+          "valid": 36,
+          "medianWorkerMs": 104.45,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 5,
+              "positionCategoryChanged": 2,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 5,
+              "moveCategoryChanged": 2,
+              "clearanceAdded": 5
+            },
+            "deflection": {
+              "positionChanged": 1,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 1,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 1
+            },
+            "other": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 3
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "0xCfJ",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "18...Nxe2+ 19. Qxe2 Qd4+ 20. Kh2 Qxe5",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0v9lR",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "19. Rxe6+ fxe6 20. Qe7#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0WWLy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "29...Rg3+ 30. hxg3 Qg2#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0fKJc",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Nb3+ 18. cxb3 Qc5#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0zkqy",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "30. Ng4 Rg8 31. Rf7 Rg7 32. Rxe7 Rexe7",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "3GYqO",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "43...Rxc3+ 44. Kd1 Rxb1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0E7PI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "17...Bh2+ 18. Kxh2 Qxd3",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0DwLS",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "51. f7+ Kxf7 52. Bxg5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0I6QI",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "16...Bxh2+ 17. Kxh2 Qxc6",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        }
+      }
+    },
+    "holdout": {
+      "inputSha256": "269f47ad52f9c80358bd92cac8e68dcc396fb39227ec5cee35a017d390190876",
+      "arms": {
+        "baseline": {
+          "valid": 36,
+          "medianWorkerMs": 78.3,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "deflection": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            },
+            "other": {
+              "positionChanged": 0,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 0,
+              "moveCategoryChanged": 0
+            }
+          },
+          "publicWitnesses": []
+        },
+        "final": {
+          "valid": 36,
+          "medianWorkerMs": 85.31,
+          "byCohort": {
+            "clearance": {
+              "positionChanged": 4,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 4,
+              "moveCategoryChanged": 1,
+              "clearanceAdded": 4
+            },
+            "deflection": {
+              "positionChanged": 3,
+              "positionCategoryChanged": 1,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 3,
+              "moveCategoryChanged": 1,
+              "clearanceAdded": 1,
+              "deflectionAdded": 2
+            },
+            "other": {
+              "positionChanged": 2,
+              "positionCategoryChanged": 0,
+              "mistakeChanged": 0,
+              "mistakeCategoryChanged": 0,
+              "movesChanged": 2,
+              "moveCategoryChanged": 0,
+              "clearanceAdded": 2
+            }
+          },
+          "publicWitnesses": [
+            {
+              "id": "00UyQ",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "22...Rxf3 23. gxf3 Qd4+ 24. Kg2 Qxa1",
+              "previous": "unclear",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0nwgQ",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "14...Qxc3+ 15. bxc3 Ba3#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "00rNc",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "26...Rxa2+ 27. Kxa2 Qb2#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "12dSj",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "26...Qxd1+ 27. Bxd1 Re1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "03gHj",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "34...Qxh3+ 35. Kg1 Rxe1#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "0ECGi",
+              "candidate": 1,
+              "motif": "deflection",
+              "line": "23...Re1+ 24. Rxe1 Qxd5",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "230Nf",
+              "candidate": 1,
+              "motif": "deflection",
+              "line": "17. Rxe7+ Qxe7 18. Qxa8+",
+              "previous": "positional",
+              "verdict": "tactical"
+            },
+            {
+              "id": "09aae",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "31. Nxe6+ fxe6 32. Rxd7",
+              "previous": "tactical",
+              "verdict": "tactical"
+            },
+            {
+              "id": "094vN",
+              "candidate": 1,
+              "motif": "clearance",
+              "line": "18...Nf3+ 19. Bxf3 Qxh2#",
+              "previous": "tactical",
+              "verdict": "tactical"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "frozenNamedMotifs": {
+    "baseline": {
+      "clearance": {
+        "tn": 33,
+        "unknown": 13,
+        "fn": 10
+      },
+      "deflection": {
+        "unknown": 8,
+        "unknown-positive": 2,
+        "tp": 3,
+        "fn": 2,
+        "tn": 40,
+        "fp": 1
+      }
+    },
+    "leading-reply": {
+      "clearance": {
+        "tn": 33,
+        "unknown": 13,
+        "fn": 10
+      },
+      "deflection": {
+        "unknown": 7,
+        "unknown-positive": 3,
+        "tp": 3,
+        "fn": 2,
+        "tn": 40,
+        "fp": 1
+      }
+    },
+    "repeated": {
+      "clearance": {
+        "tn": 33,
+        "unknown": 13,
+        "fn": 10
+      },
+      "deflection": {
+        "unknown": 7,
+        "unknown-positive": 3,
+        "tp": 3,
+        "fn": 2,
+        "tn": 40,
+        "fp": 1
+      }
+    },
+    "named-repeated": {
+      "clearance": {
+        "tn": 33,
+        "unknown": 13,
+        "fn": 4,
+        "tp": 6
+      },
+      "deflection": {
+        "unknown": 7,
+        "unknown-positive": 3,
+        "tp": 3,
+        "fn": 2,
+        "tn": 40,
+        "fp": 1
+      }
+    },
+    "separated": {
+      "clearance": {
+        "tn": 33,
+        "unknown": 13,
+        "fn": 4,
+        "tp": 6
+      },
+      "deflection": {
+        "unknown": 7,
+        "unknown-positive": 3,
+        "tp": 3,
+        "fn": 2,
+        "tn": 40,
+        "fp": 1
+      }
+    },
+    "settled": {
+      "clearance": {
+        "tn": 33,
+        "unknown": 13,
+        "fn": 4,
+        "tp": 6
+      },
+      "deflection": {
+        "unknown": 8,
+        "unknown-positive": 2,
+        "tp": 3,
+        "fn": 2,
+        "tn": 40,
+        "fp": 1
+      }
+    },
+    "final": {
+      "clearance": {
+        "tn": 33,
+        "unknown": 13,
+        "fn": 4,
+        "tp": 6
+      },
+      "deflection": {
+        "unknown": 7,
+        "unknown-positive": 3,
+        "tp": 3,
+        "fn": 2,
+        "tn": 40,
+        "fp": 1
+      }
+    }
+  }
+}

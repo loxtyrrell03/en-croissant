@@ -103,7 +103,13 @@ function displacedDuty(
         : null;
 }
 
-type Route = { id: "deflection" | "clearance"; through: number; text: string };
+type Route = {
+    id: "deflection" | "clearance";
+    through: number;
+    text: string;
+    squares: Square[];
+    outcome: { mate: true } | { gain: number };
+};
 
 function deflection(
     steps: TacticalReplayStep[],
@@ -149,11 +155,14 @@ function deflection(
             ? `opens the route to ${destination}`
             : `removes its defence of ${destination}`;
     const start = `In this line, ${root.san} draws the ${guard.role} from ${guardSquare} with ${reply.san} and ${outcome}.`;
+    const squares = [reply.move.from, reply.move.to, payoff.move.from, payoff.move.to];
     if (mate)
         return {
             id: "deflection",
             through: steps.length,
             text: `${start} The checking continuation ends with ${mate.san}.`,
+            squares,
+            outcome: { mate: true },
         };
     const gain = captureGain(payoff);
     if (gain !== null && reply.balance + gain >= MIN_GAIN)
@@ -161,6 +170,8 @@ function deflection(
             id: "deflection",
             through: 3,
             text: `${start} ${payoff.san} recovers the offer with material to spare.`,
+            squares,
+            outcome: { gain: reply.balance + gain },
         };
     // If the first capture is short of recovering the offer, require the
     // same displaced defender to be collected on the shown checking route.
@@ -179,6 +190,8 @@ function deflection(
                 id: "deflection",
                 through: index + 1,
                 text: `${start} ${payoff.san} uses that route, and ${answer.san} takes the displaced ${guard.role} to recover the offer.`,
+                squares,
+                outcome: { gain: steps[index - 1].balance + recovery },
             };
         break;
     }
@@ -214,14 +227,23 @@ function clearance(steps: TacticalReplayStep[], scoredMate: boolean): Route | nu
         blocked.board.set(square, old);
         if (blocked.isLegal(entry.move)) continue;
         const start = `In this line, ${root.san} clears ${vacancy}. The ${entrant.role} from ${makeSquare(entry.move.from)} uses the opening with ${entry.san}.`;
+        const squares = [square, entry.move.from, entry.move.to];
         if (scoredMate && entry.after.isCheckmate())
-            return { id: "clearance", through: index + 1, text: `${start} That move gives mate.` };
+            return {
+                id: "clearance",
+                through: index + 1,
+                text: `${start} That move gives mate.`,
+                squares,
+                outcome: { mate: true },
+            };
         const entryGain = captureGain(entry);
         if (entryGain !== null && steps[index - 1].balance + entryGain >= MIN_GAIN)
             return {
                 id: "clearance",
                 through: index + 1,
                 text: `${start} That capture gains material along the cleared route.`,
+                squares,
+                outcome: { gain: steps[index - 1].balance + entryGain },
             };
         const payoff = steps[index + 2];
         if (
@@ -239,6 +261,8 @@ function clearance(steps: TacticalReplayStep[], scoredMate: boolean): Route | nu
                 id: "clearance",
                 through: index + 3,
                 text: `${start} From there it can attack the ${payoff.before.board.get(payoff.move.to)!.role} on ${makeSquare(payoff.move.to)}, which it captures with ${payoff.san}.`,
+                squares: [...squares, payoff.move.to],
+                outcome: { gain: steps[index + 1].balance + payoffGain },
             };
     }
     return null;
@@ -246,14 +270,14 @@ function clearance(steps: TacticalReplayStep[], scoredMate: boolean): Route | nu
 
 /** Checked witnesses from one viable scored variation. Their scope is
  * explicitly local to its replies, including the actual route to the payoff. */
-export function findLineRouteEvidence(
+export function findScoredLineRoutes(
     fen: string,
     pv: string[],
     cp: number | null | undefined,
     mate: number | null | undefined,
     depth: number | undefined,
     history?: TacticalGameHistory | null,
-): TacticalMotifEvidence[] {
+) {
     const scoredMaterial =
         typeof cp === "number" && Number.isFinite(cp) && cp >= MIN_GAIN && mate == null;
     const scoredMate =
@@ -263,27 +287,28 @@ export function findLineRouteEvidence(
     if (steps.length < 3 || castlingSide(steps[0].before, steps[0].move)) return [];
     const verified = steps.slice(0, reliablePrefix(steps, history));
     if (verified.length < 3) return [];
-    return [
-        deflection(verified, scoredMaterial, scoredMate),
-        clearance(verified, scoredMate),
-    ].flatMap((route) =>
-        !route
-            ? []
-            : [
-                  {
-                      id: route.id,
-                      label:
-                          route.id === "deflection"
-                              ? "Deflection in this line"
-                              : "Clearance in this line",
-                      confidence: "high",
-                      source: "available",
-                      ply: 1,
-                      moveUci: verified[0].uci,
-                      relevance: "secondary",
-                      lineThroughPly: route.through,
-                      evidence: route.text,
-                  } satisfies TacticalMotifEvidence,
-              ],
-    );
+    return [deflection(verified, scoredMaterial, scoredMate), clearance(verified, scoredMate)]
+        .filter((route): route is Route => route !== null)
+        .map((route) => ({ ...route, moveUci: verified[0].uci }));
+}
+
+export function findLineRouteEvidence(
+    fen: string,
+    pv: string[],
+    cp: number | null | undefined,
+    mate: number | null | undefined,
+    depth: number | undefined,
+    history?: TacticalGameHistory | null,
+): TacticalMotifEvidence[] {
+    return findScoredLineRoutes(fen, pv, cp, mate, depth, history).map((route) => ({
+        id: route.id,
+        label: route.id === "deflection" ? "Deflection in this line" : "Clearance in this line",
+        confidence: "high",
+        source: "available",
+        ply: 1,
+        moveUci: route.moveUci,
+        relevance: "secondary",
+        lineThroughPly: route.through,
+        evidence: route.text,
+    }));
 }
