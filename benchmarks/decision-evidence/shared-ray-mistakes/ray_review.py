@@ -129,7 +129,7 @@ def payments(root, branch, ray, targets, *, require_local_exchange=False):
                     yield (square, ply, take)
 
 
-def preview(row):
+def preview(row, *, allow_refuted_reply=False):
     context = evaluated(row)
     if not context:
         return None
@@ -153,7 +153,8 @@ def preview(row):
         independent_payoffs = list(payments(root, second, ray, pair))
         if not same_reply or same_reply["pvUci"][0] != reply or same_reply["cp"] is None:
             continue
-        if same_reply["depth"] < 16 or abs(-better["cp"] - same_reply["cp"]) > 100:
+        deviation = same_reply["cp"] + better["cp"]
+        if same_reply["depth"] < 16 or deviation > 100 or (deviation < -100 and not allow_refuted_reply):
             continue
         if (opponent["cp"] - same_reply["cp"] < 100 or same_reply["fen"] != prefix(root, control_prefix[:1]).fen()
             or same_reply.get("mate") is not None):
@@ -221,11 +222,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
     parser.add_argument("inputs", type=Path, nargs="+")
+    parser.add_argument("--allow-refuted-reply", action="store_true")
     args = parser.parse_args()
     results = []
     for path in args.inputs:
         rows = json.loads(path.read_bytes())
-        cases = [case for row in rows if (case := preview(row))]
+        cases = [case for row in rows if (case := preview(row, allow_refuted_reply=args.allow_refuted_reply))]
         results.append(dict(file=path.name, sha256=sha256(path.read_bytes()).hexdigest(),
                             count=len(rows), cases=cases))
         print(path.name, len(rows), len(cases))

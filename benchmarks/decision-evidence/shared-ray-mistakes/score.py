@@ -33,6 +33,7 @@ def main():
     parser.add_argument("baseline", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("frames", type=Path, nargs="+")
+    parser.add_argument("--allow-refuted-reply", action="store_true")
     args = parser.parse_args()
     rows = [row for path in args.frames for row in load_index(path)]
     reference = load_index(args.reference)
@@ -40,7 +41,9 @@ def main():
     by_id = {row["id"]: row for row in rows}
     if len(by_id) != len(rows) or not sealed.keys() <= by_id.keys():
         raise ValueError("Reference or benchmark IDs do not match.")
-    cases = [case for row in rows if (case := preview(row))]
+    cases = [case for row in rows if (
+        case := preview(row, allow_refuted_reply=args.allow_refuted_reply)
+    )]
     baseline = {row["id"]: row["report"] for row in load_index(args.baseline)}
     if set(baseline) != set(by_id):
         raise ValueError("Baseline did not cover the complete frame set.")

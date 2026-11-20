@@ -289,4 +289,19 @@ for (const [name, square, mechanism] of [
   });
 }
 
+if (wanted.has("Rear-Piece Trade")) {
+  await run("Rear-Piece Trade", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const section = page.getByText("What Rf6 missed or allowed", { exact: true }).locator("../..");
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const mistake = await section.innerText();
+    assert.doesNotMatch(mistake, /skewer/i);
+    assert.match(mistake, /Tactical · Engine supported/);
+    assert.match(mistake, /Bxe7.*Rxe7.*Qxd6/s);
+    return { mistake };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

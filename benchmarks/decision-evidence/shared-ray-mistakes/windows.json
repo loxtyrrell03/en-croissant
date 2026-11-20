@@ -1,0 +1,30 @@
+{
+  "revision": "9ebfae26e6c97a940944058feaeebb809486dc04",
+  "scenarios": {
+    "Chile Passed Pawn": {
+      "passed": true,
+      "seconds": 6.571,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Engine supported. Bf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical · Engine supported. Bf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.\n\nThis is the material change in the displayed tactical episode after settling replies. Later play and other defences can alter it.\n\nHide evidence"
+    },
+    "Rear-Piece Trade": {
+      "passed": true,
+      "seconds": 12.397,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What Rf6 missed or allowed\n\nTACTICAL\n\nEngine evaluation loss 3.45 pawns\n\nTactical · Engine supported. The opponent can use tacticalPreparation after the played move. This mechanism is absent from the compared better line, which retains more material. Bg5 gives this piece access to e7. In the analysed continuation, Bxe7 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bxe7 removes the piece on e7 which could legally recapture on d6. The line continues Rxe7 Qxd6. The played line retains 1.0 fewer material points after 13 plies of both compared lines.\n\nBg5 gives this piece access to e7. In the analysed continuation, Bxe7 uses capturingDefender at ply 3. Bg5 Rf7 Bxe7 Rxe7 Qxd6\n\nBxe7 removes the piece on e7 which could legally recapture on d6. The line continues Rxe7 Qxd6. Bg5 Rf7 Bxe7 Rxe7 Qxd6\n\nPlayed line. Rf6 Bg5 Rf7 Bxe7 Rxe7 Qxd6 Qe8 Re3 Rf7 Red3 Kg8 h3 a5\n\nBetter line. Qe6 Qd3 b5 b3 h6 c4 Rad8 a4 bxa4 bxa4 a5 Bd2 Qf7\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    }
+  },
+  "sourcePanelWidths": [
+    320,
+    390,
+    900
+  ],
+  "regressionTestsPassed": 25,
+  "pythonRegressionsPassed": 3,
+  "typeCheckPassed": true
+}

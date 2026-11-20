@@ -1,0 +1,162 @@
+{
+  "development-baseline": {
+    "baselineSha256": "6b9af4efc29644638ddd864e76911ea2ee798d2813538730321af91356bb82f5",
+    "guardSha256": "e7764bdf4fdb7ae8b11a5bf5db954b666f23f3228d7c44a6dd47537af5f8110c",
+    "rows": 90,
+    "valid": 90,
+    "changed": 1,
+    "changedStatus": 0,
+    "changes": [
+      {
+        "id": "136c82426d59afc64a20",
+        "sections": [
+          "mistake"
+        ],
+        "previous": {
+          "category": "tactical",
+          "evaluationLossCp": 477,
+          "tacticalReasons": [
+            "The opponent can use skewer after the played move. This mechanism is absent from the compared better line, which retains more material. Bd5 attacks the more valuable piece on c4. After it moves, Bxb3 takes the piece behind it."
+          ]
+        },
+        "guard": {
+          "category": "unclear",
+          "evaluationLossCp": 477,
+          "tacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ]
+        }
+      }
+    ],
+    "baselineMedianMs": 89.57,
+    "guardMedianMs": 92.99
+  },
+  "reserve-baseline": {
+    "baselineSha256": "1eb8192fe6680f485323b11f281b5d354f859c0010e637e495211b87ac6d5a83",
+    "guardSha256": "5a00b7279654720cbcf7bc3a9d7922dc226908769f402405bb56e4fec1d3b320",
+    "rows": 189,
+    "valid": 189,
+    "changed": 1,
+    "changedStatus": 0,
+    "changes": [
+      {
+        "id": "eb19ffef9ff9d642c782",
+        "sections": [
+          "mistake"
+        ],
+        "previous": {
+          "category": "tactical",
+          "evaluationLossCp": 345,
+          "tacticalReasons": [
+            "The opponent can use skewer after the played move. This mechanism is absent from the compared better line, which retains more material. Bg5 attacks the more valuable piece on f6. After it moves, Bxe7 takes the piece behind it.",
+            "The opponent can use tacticalPreparation after the played move. This mechanism is absent from the compared better line, which retains more material. Bg5 gives this piece access to e7. In the analysed continuation, Bxe7 uses capturingDefender at ply 3.",
+            "Bg5 attacks the more valuable piece on f6. After it moves, Bxe7 takes the piece behind it. The played line retains 1.0 fewer material points after 13 plies of both compared lines."
+          ]
+        },
+        "guard": {
+          "category": "tactical",
+          "evaluationLossCp": 345,
+          "tacticalReasons": [
+            "The opponent can use tacticalPreparation after the played move. This mechanism is absent from the compared better line, which retains more material. Bg5 gives this piece access to e7. In the analysed continuation, Bxe7 uses capturingDefender at ply 3.",
+            "Bxe7 removes the piece on e7 which could legally recapture on d6. The line continues Rxe7 Qxd6. The played line retains 1.0 fewer material points after 13 plies of both compared lines."
+          ]
+        }
+      }
+    ],
+    "baselineMedianMs": 62.01,
+    "guardMedianMs": 63.6
+  },
+  "archive-baseline": {
+    "baselineSha256": "dc9d4a322dd6ca98e2bbbfbfa39d3ce6eb9e7c0074a14fe7205c0a67effa4d7b",
+    "guardSha256": "f9ec991d4a5acb60928b4953611938f13757208899573d6b02d7c49c2619950c",
+    "rows": 1875,
+    "valid": 1869,
+    "changed": 5,
+    "changedStatus": 0,
+    "changes": [
+      {
+        "id": "tournament-english-open-2026-9d2486608ef2621a-41",
+        "sections": [
+          "moves"
+        ],
+        "previous": null,
+        "guard": null
+      },
+      {
+        "id": "classical-transfer-8157cec2f8d3f1d7",
+        "sections": [
+          "moves"
+        ],
+        "previous": {
+          "category": "unclear",
+          "evaluationLossCp": 204,
+          "tacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ]
+        },
+        "guard": {
+          "category": "unclear",
+          "evaluationLossCp": 204,
+          "tacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ]
+        }
+      },
+      {
+        "id": "deeper-loss-53465394cc4f3eda",
+        "sections": [
+          "position",
+          "moves"
+        ],
+        "previous": {
+          "category": "tactical",
+          "evaluationLossCp": 167,
+          "tacticalReasons": [
+            "Your move allowed this tactic: Rxe3 wins the loose pawn on e3. After Bb2, Rxe3 no longer wins material in the same-square exchange."
+          ]
+        },
+        "guard": {
+          "category": "tactical",
+          "evaluationLossCp": 167,
+          "tacticalReasons": [
+            "Your move allowed this tactic: Rxe3 wins the loose pawn on e3. After Bb2, Rxe3 no longer wins material in the same-square exchange."
+          ]
+        }
+      },
+      {
+        "id": "deeper-loss-12f73eff190499a0",
+        "sections": [
+          "position",
+          "mistake"
+        ],
+        "previous": {
+          "category": "tactical",
+          "evaluationLossCp": 176,
+          "tacticalReasons": [
+            "The opponent can use skewer after the played move. This mechanism is absent from the compared better line, which retains more material. Bf4 attacks the more valuable piece on d6. After it moves, Bxc7 takes the piece behind it.",
+            "The opponent can use tacticalPreparation after the played move. This mechanism is absent from the compared better line, which retains more material. Bf4 gives this piece access to c7. In the analysed continuation, Bxc7 uses deflection at ply 3.",
+            "Bf4 attacks the more valuable piece on d6. After it moves, Bxc7 takes the piece behind it. The played line retains 1.0 fewer material points after 13 plies of both compared lines."
+          ]
+        },
+        "guard": {
+          "category": "tactical",
+          "evaluationLossCp": 176,
+          "tacticalReasons": [
+            "The opponent can use tacticalPreparation after the played move. This mechanism is absent from the compared better line, which retains more material. Bf4 gives this piece access to c7. In the analysed continuation, Bxc7 uses deflection at ply 3.",
+            "Bxc7 is met by Qxc7, taking the defender from d7. Nxd5 then captures the target it could previously recapture on. The played line retains 1.0 fewer material points after 13 plies of both compared lines."
+          ]
+        }
+      },
+      {
+        "id": "broadcast-f9963a3fc2ab297f",
+        "sections": [
+          "moves"
+        ],
+        "previous": null,
+        "guard": null
+      }
+    ],
+    "baselineMedianMs": 76.48,
+    "guardMedianMs": 77.34
+  }
+}

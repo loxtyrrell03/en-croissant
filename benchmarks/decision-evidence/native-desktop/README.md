@@ -102,3 +102,10 @@ checks `Kf2` against the f3 pawn. All three passed with real
 Stockfish alongside the Amager scenario.
 [Run receipt](../passer-role-contrasts/windows.json) ·
 [Held-out benchmark](../passer-role-contrasts/README.md)
+
+Use revision `9ebfae26` for the `Rear-Piece Trade` scenario.
+Pass the name after the Playwright entry point. It analyses the
+last move `...Rf6` with live Stockfish and checks that the
+mistake still explains `Bxe7 Rxe7 Qxd6`. The equal rear-piece
+exchange no longer appears as a skewer. `Chile Passed Pawn`
+also passes on this build. [Run receipt](../shared-ray-mistakes/windows.json)

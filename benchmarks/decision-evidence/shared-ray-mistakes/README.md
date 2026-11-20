@@ -87,6 +87,23 @@ on a targeted sample and are too small to estimate general
 tactical recall. [Sealed reference](reserve-reference.json) ·
 [Scores and lines](reserve-results.json)
 
+### Follow-up after opening the reserve
+
+The strict comparison rejects a reply when its score after the
+better move is far from that move's unconstrained score. Four
+misses show why that is too symmetric. The better move can make
+the same attacking reply much worse for the opponent, sometimes
+by allowing a concrete countercapture.
+
+Allowing refuted replies in the *better* branch raises the local
+two-search method from one to five of eight checked positives
+with zero calls on the 32 negatives and one unresolved call.
+It identifies a new tactical classification after `...Rd6 Bf4`
+and an earlier cause after `...Re8 Bc6`, where the existing
+report cites a later pawn capture. This comparison reused the
+opened reserve. It needs independent transfer before use in the
+app. [Follow-up results](refuted-reply-results.json)
+
 ## Existing classifier correction
 
 The run exposed an attribution defect in the existing named
@@ -102,6 +119,29 @@ defender removal, `Bxe7 Rxe7 Qxd6`. Both reports retain their
 played-move evaluation losses. No extra engine searches are
 needed for this correction. The rendered evidence was checked
 with recorded Stockfish frames at 320, 390 and 900 pixels.
+
+The correction changed one report among 90 development requests,
+one among 189 held-out requests, and five among 1,875 archived
+requests. Six archive requests remained unavailable. The five
+archive changes all involve a legal recapture that cancels the
+claimed material gain. They include `Rfc8 Qd1 Rxc1 Qxc1`,
+`Bb2 Rc2 Bxg7 Kxg7` and `Bf4 Qd7 Bxc7 Qxc7`. The last line
+still supports deflection because it gives White `Nxd5`.
+The two remaining archive recaptures are `Kxb3` after
+`Rb6+ Ka4 Rxb3` and `Nxa7` after `Be3+ Kc7 Bxa7`.
+The played-move evaluation and availability
+were identical on every comparison. The archive's cached worker
+median was 76.5 ms before and 77.3 ms after in separate runs.
+[Worker comparison](worker-results.json)
+
+An isolated Windows build of `9ebfae26` reproduced the
+`...Rf6` explanation using live Stockfish 19. It showed the
+3.45-pawn setback and `Bxe7 Rxe7 Qxd6` without the skewer
+label. The existing Chilean `...Bf2` analysis still showed
+separate tactical and positional support. The scenarios took
+12.4 and 6.6 seconds respectively in the isolated app. The type
+check, 25 targeted classifier tests and three Python
+regressions passed. [Windows receipt](windows.json)
 
 ## Reproduce
 
@@ -125,6 +165,12 @@ python "$bench/verify_exact.py" $stockfish review-reserve.json reserve.json enri
 python "$bench/score.py" "$bench/reserve-reference.json" reserve-baseline.json reserve-scores.json reserve.json enriched-reserve.json
 ```
 
+To repeat the post-review comparison, pass `--allow-refuted-reply`
+to the last command with a different output path.
+```powershell
+python "$bench/score.py" "$bench/reserve-reference.json" reserve-baseline.json refuted-scores.json reserve.json enriched-reserve.json --allow-refuted-reply
+```
+
 The worker baseline uses revision `c62e78f0`, the same frames
 and the [replay config](replay.config.mjs). Set `INTERFERENCE_MODE=archive`,
 `INTERFERENCE_INPUT` to the combined frame array and
@@ -135,3 +181,6 @@ only the revised skewer check on the baseline. Use
 `test_ray_review.py` and `tacticalSequenceEvidence.test.ts` for
 the local regressions. Run `verify-panel.mjs` with Playwright's
 `index.mjs` and the Chrome executable for the rendered check.
+Use `compare_worker.py OUTPUT BASELINE GUARD` for each pair of
+worker outputs. The archive frames are from the existing
+[played-move replay](../allowed-route-mistakes/README.md).

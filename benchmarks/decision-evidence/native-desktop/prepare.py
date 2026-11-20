@@ -106,4 +106,8 @@ if passer_roles.is_file():
     for key, label in (("chile", "Chile Passed Pawn"), ("handoff", "Passed Pawn Handoff"), ("direct", "Direct Pawn Blockade")):
         target = plans[key]
         history_fixture(label, target["history"], target["candidates"][0]["pvUci"][:1])
+ray_trade = fixtures / "shared-ray-mistakes" / "retained-tactic.json"
+if ray_trade.is_file():
+    target = load("shared-ray-mistakes", "retained-tactic.json")
+    history_fixture("Rear-Piece Trade", target["history"], [target["playedMoveUci"]])
 print("Isolated app settings and legal PGN fixtures prepared.")
