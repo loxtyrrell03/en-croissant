@@ -1,0 +1,38 @@
+{
+  "counts": {
+    "games": 48,
+    "requests": 48,
+    "maximumRequests": 2,
+    "verified": 47,
+    "sameOutcome": 46,
+    "worseOutcome": 1,
+    "optimal-reply": 1,
+    "unavailable": 1,
+    "verifiedWithoutCompleteEngineReport": 4
+  },
+  "cases": [
+    {
+      "id": "endgame-bd483232f82f3b62",
+      "site": "https://lichess.org/broadcast/20-pojedinacno-prvenstvo-srbije-za-sahistkinje/round-2/22RJ28ho/VVDJIKjh",
+      "fen": "8/8/7K/4n3/1k6/7P/6P1/8 w - - 0 66",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 1,
+      "played": {
+        "san": "g4",
+        "outcome": 0,
+        "reply": {
+          "san": "Kc3",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    }
+  ],
+  "inputHashes": {
+    "sample.json": "5b7ad4742309b0197f6dcf803848c5a60714ccf59936f625949422ef123dbec8",
+    "records.json": "578b8f503e594b1af1a576d2774cfce26eea80f35b0b21b87c736bf3cd8378a3",
+    "exact-results.json": "e5b4251fe1c4d9d8558b386bda079a3d7860c445d9eada679a9258b16493b35f",
+    "exact-baseline.json": "0983341a9ed99ecdb88b83bd9bb6c8f172334f12ee99f0d2122e34dcf270dfb1"
+  }
+}

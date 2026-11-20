@@ -4448,3 +4448,22 @@ a pawn advance loses. The temporary material stability in the engine
 variations could not isolate a positional mechanism. The experiment
 stays offline. It adds no runtime cost to Decision Evidence.
 [Reproducible comparisons and exact endgame results](../benchmarks/decision-evidence/strategic-choice-contrast/README.md)
+
+## Exact endgame decisions
+
+Decision Evidence can verify every legal outcome in a small ending with
+an explicit online action. It can use an exact winning reply to
+explain a narrow drawing route, or independently diagnose an outcome
+change after the played move. The verification remains available when
+the engine could not build the normal report. The European Youth
+position now shows the mixed decision, the three drawing rook moves
+and the concrete capture after Rg5. The counterfactual Kf1 has its own
+proved pawn check on e2.
+
+In 48 sampled classical games the check verifies 47 exact outcomes
+and one recorded change from a win to a draw. In 30 hypothetical
+inferior choices on those boards it names nine precise tactical
+consequences. Four previously had no tactical diagnosis. The normal
+engine path sends no online requests. Installed verification remains
+open.
+[Exact board records, comparison and browser replay](../benchmarks/decision-evidence/exact-endgame-decisions/README.md)

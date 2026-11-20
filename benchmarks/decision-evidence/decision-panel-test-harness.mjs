@@ -11,6 +11,7 @@ export async function verifyDecisionPanel({
   previousSan,
   assessment,
   baseline,
+  prepare,
   verify,
   description,
 }) {
@@ -53,6 +54,7 @@ export async function verifyDecisionPanel({
           return `
         export const DECISION_SEARCH_SESSION_MS = 28000;
         export async function gatherDecisionEvidence() {
+          ${input.forceFailure ? 'throw new Error("No completed engine result.");' : ""}
           return ${JSON.stringify(input)};
         }
         export async function gatherExtraPositionChoice() { return null; }
@@ -113,6 +115,7 @@ export async function verifyDecisionPanel({
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
       page.setDefaultTimeout(12_000);
+      await prepare?.(page);
       await page.goto(`http://127.0.0.1:${server.address().port}/`);
       await page.getByRole("button", { name: "Analyse last move" }).click();
       await verify(page);

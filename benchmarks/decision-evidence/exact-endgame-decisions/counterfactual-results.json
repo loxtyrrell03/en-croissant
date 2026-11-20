@@ -1,0 +1,538 @@
+{
+  "counts": {
+    "games": 30,
+    "requests": 59,
+    "maximumRequests": 2,
+    "verified": 30,
+    "worseOutcome": 30,
+    "optimal-reply": 20,
+    "unrecaptured-piece": 7,
+    "namedTacticalProof": 9,
+    "mate-in-one": 2,
+    "newTacticalExplanation": 4,
+    "verifiedWithoutCompleteEngineReport": 4
+  },
+  "cases": [
+    {
+      "id": "endgame-07082512f75d326b",
+      "site": "https://lichess.org/broadcast/1-aberto-do-brasil-de-xadrez-arcelormittal/round-2/V0af1eSI/HMTxOeqn",
+      "fen": "8/3Q4/7p/5p1k/8/6qP/8/5K2 b - - 4 58",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 1,
+      "played": {
+        "san": "Qb3",
+        "outcome": -1,
+        "reply": {
+          "san": "Qxf5+",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-27a0a0547ac018dc",
+      "site": "https://lichess.org/broadcast/1-vechta-open-a-open/round-5/Xocym0Bi/vwDp31Rw",
+      "fen": "7R/1P6/3k3p/1r6/5K2/6P1/8/8 w - - 3 50",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 1,
+      "played": {
+        "san": "Ra8",
+        "outcome": 0,
+        "reply": {
+          "san": "Rxb7",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-bd483232f82f3b62",
+      "site": "https://lichess.org/broadcast/20-pojedinacno-prvenstvo-srbije-za-sahistkinje/round-2/22RJ28ho/VVDJIKjh",
+      "fen": "8/8/7K/4n3/1k6/7P/6P1/8 w - - 0 66",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 1,
+      "played": {
+        "san": "g3",
+        "outcome": 0,
+        "reply": {
+          "san": "Kc3",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-00e4d96c27a41a6f",
+      "site": "https://lichess.org/broadcast/36th-nato-chess-championship-2026/round-6/Q1oXdYo5/MsRlo6j9",
+      "fen": "5R2/8/6p1/8/5nk1/r7/5K2/8 b - - 8 58",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 1,
+      "played": {
+        "san": "Kh3",
+        "outcome": 0,
+        "reply": {
+          "san": "Rxf4",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-02620684b5b4c7a1",
+      "site": "https://lichess.org/broadcast/43-munsterland-open-34-challengers-2026-a-open/runde-6/Nb5HURJx/cU3wHube",
+      "fen": "8/8/8/2K5/p1N5/8/1Pk5/8 w - - 5 64",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 1,
+      "played": {
+        "san": "b4",
+        "outcome": 0
+      },
+      "verifiedReplyKind": null
+    },
+    {
+      "id": "endgame-03820d28b93697ee",
+      "site": "https://lichess.org/broadcast/46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12/round/oQds2Dcv",
+      "fen": "4R3/3r4/3k4/8/5pP1/2p2K2/8/8 b - - 7 50",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 1,
+      "played": {
+        "san": "Kc7",
+        "outcome": 0,
+        "reply": {
+          "san": "Re1",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-1e0b1523c184819e",
+      "site": "https://lichess.org/broadcast/allsvenskan-2627-swedish-team-championship/round-2/09x0RAmi/Woj6W61P",
+      "fen": "8/4Kpk1/8/5BP1/2b2P2/8/8/8 w - - 1 64",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 1,
+      "played": {
+        "san": "Bh3",
+        "outcome": 0,
+        "reply": {
+          "san": "Bd3",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-0ae73c6536f88614",
+      "site": "https://lichess.org/broadcast/campeonato-sudamericano-montevideo-2026-absoluto/round-7/ImJop8G2/I5FCwdtj",
+      "fen": "3k4/8/2PK4/3P1P1p/6b1/8/8/8 b - - 0 67",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 1,
+      "played": {
+        "san": "Kc8",
+        "outcome": -1,
+        "reply": {
+          "san": "f6",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-1152e122c747c2cf",
+      "site": "https://lichess.org/broadcast/dutch-meesterklasse-2026-2027/round-1/isTlRIXU/Xiv9psgG",
+      "fen": "1K6/8/1P4p1/5k1p/7P/6P1/8/8 w - - 1 53",
+      "oldMistakeCategory": "mixed",
+      "previousTacticalSupport": true,
+      "bestOutcome": 1,
+      "played": {
+        "san": "g4+",
+        "outcome": 0,
+        "reply": {
+          "san": "hxg4",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-8ee971d879df9718",
+      "site": "https://lichess.org/broadcast/1-aberto-do-brasil-de-xadrez-arcelormittal/round-4/vriVuOsB/yctz6OkG",
+      "fen": "4R3/2r3P1/7k/8/7K/6P1/2p5/8 b - - 0 54",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 1,
+      "played": {
+        "san": "Ra7",
+        "outcome": -1,
+        "reply": {
+          "san": "g8=Q",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-0062e2f6dd789227",
+      "site": "https://lichess.org/broadcast/1-vechta-open-a-open/round-4/oNc4C8XB/a9Yz9CFI",
+      "fen": "8/R7/2rp4/4k3/P7/8/5K2/8 w - - 1 54",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Rc7",
+        "outcome": -1,
+        "reply": {
+          "san": "Rxc7",
+          "cause": "Rxc7 takes the rook without a recapture.",
+          "capturedMover": true
+        }
+      },
+      "verifiedReplyKind": "unrecaptured-piece"
+    },
+    {
+      "id": "endgame-01f79d1a0c6797cd",
+      "site": "https://lichess.org/broadcast/19th-arad-open-grand-prix-classic-2026-open-a/round-9/KuVy4Gsx/sI8RYURB",
+      "fen": "8/8/p7/1b3k2/1R3p2/7K/6P1/8 b - - 15 74",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Ke6",
+        "outcome": -1,
+        "reply": {
+          "san": "Rxf4",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-019d90c03694a4da",
+      "site": "https://lichess.org/broadcast/1st-berjaya-global-chess-open-2026-masters/round/OFkP5zwn",
+      "fen": "7R/r7/8/4k3/4p3/4P3/5P2/5K2 w - - 44 64",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Rh7",
+        "outcome": -1,
+        "reply": {
+          "san": "Rxh7",
+          "cause": "Rxh7 takes the rook without a recapture.",
+          "capturedMover": true
+        }
+      },
+      "verifiedReplyKind": "unrecaptured-piece"
+    },
+    {
+      "id": "endgame-072ee3fdadb01486",
+      "site": "https://lichess.org/broadcast/20-pojedinacno-prvenstvo-srbije-za-sahistkinje/round-2/22RJ28ho/u7r8sore",
+      "fen": "8/8/7r/8/1p6/3k4/P1R5/3K4 w - - 20 59",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Rc8",
+        "outcome": -1,
+        "reply": {
+          "san": "Rh1#",
+          "cause": "Rh1# is checkmate.",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "mate-in-one"
+    },
+    {
+      "id": "endgame-01304d5dc240ba7e",
+      "site": "https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-13/zbeM6PPX/4w3DYmrr",
+      "fen": "8/8/8/3k4/pR6/P5r1/1K6/8 b - - 4 71",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Rxa3",
+        "outcome": -1,
+        "reply": {
+          "san": "Kxa3",
+          "cause": "Kxa3 takes the rook without a recapture.",
+          "capturedMover": true
+        }
+      },
+      "verifiedReplyKind": "unrecaptured-piece"
+    },
+    {
+      "id": "endgame-007e61780a2ed038",
+      "site": "https://lichess.org/broadcast/23rd-calvia-chess-festival-2026/round-6/xRDG10tY/7L9xVleA",
+      "fen": "1r6/R7/5k2/3K2p1/3P4/5P2/8/8 b - - 0 58",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "g4",
+        "outcome": -1,
+        "reply": {
+          "san": "fxg4",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-02f828d2de359a98",
+      "site": "https://lichess.org/broadcast/2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a/round-4/iA7Yri6A/0Ns5p6SQ",
+      "fen": "7R/r7/5K2/2k5/p6P/6P1/8/8 b - - 3 47",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Kd6",
+        "outcome": -1,
+        "reply": {
+          "san": "Rd8+",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-030c861a5e13ecd4",
+      "site": "https://lichess.org/broadcast/36th-nato-chess-championship-2026/round-3/g1jUkHiN/fvY3cVOO",
+      "fen": "8/5r2/6k1/R3p1P1/4P1K1/8/8/8 b - - 0 55",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Rh7",
+        "outcome": -1,
+        "reply": {
+          "san": "Rxe5",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-006181a0629294ea",
+      "site": "https://lichess.org/broadcast/46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12/round/WCYaLfnP",
+      "fen": "6k1/8/5rP1/2R5/1p6/3P4/3K4/8 w - - 1 47",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Rc6",
+        "outcome": -1,
+        "reply": {
+          "san": "Rxc6",
+          "cause": "Rxc6 takes the rook without a recapture.",
+          "capturedMover": true
+        }
+      },
+      "verifiedReplyKind": "unrecaptured-piece"
+    },
+    {
+      "id": "endgame-0333c588c99c03a0",
+      "site": "https://lichess.org/broadcast/50-obert-internacional-descacs-ciutat-de-badalona/round-6/8dDyvm6J/EUiaOQC7",
+      "fen": "8/5K1k/8/5P2/R7/6rp/8/8 b - - 1 79",
+      "oldMistakeCategory": "tactical",
+      "previousTacticalSupport": true,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Rg8",
+        "outcome": -1,
+        "reply": {
+          "san": "Rh4#",
+          "cause": "Rh4# is checkmate.",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "mate-in-one"
+    },
+    {
+      "id": "endgame-03df9d80a0a325f3",
+      "site": "https://lichess.org/broadcast/allsvenskan-2627-swedish-team-championship/round-1/gYL8PpMJ/RNtaoyzt",
+      "fen": "8/R6P/8/4pk2/8/7r/4p1K1/8 w - - 0 84",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Ra6",
+        "outcome": -1,
+        "reply": {
+          "san": "e1=Q",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-105f513c009bee78",
+      "site": "https://lichess.org/broadcast/1-vechta-open-a-open/round-4/oNc4C8XB/jYzvn4d4",
+      "fen": "8/8/4k3/2p5/2Pp1K2/3P4/8/8 b - - 8 79",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Ke7",
+        "outcome": -1,
+        "reply": {
+          "san": "Ke5",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-0c507163309bdc50",
+      "site": "https://lichess.org/broadcast/19th-arad-open-grand-prix-classic-2026-open-a/round-9/KuVy4Gsx/qoB4yc3l",
+      "fen": "8/b7/P1B5/8/2K5/6p1/5k2/8 b - - 1 83",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Bc5",
+        "outcome": -1,
+        "reply": {
+          "san": "Kxc5",
+          "cause": "Kxc5 takes the bishop without a recapture.",
+          "capturedMover": true
+        }
+      },
+      "verifiedReplyKind": "unrecaptured-piece"
+    },
+    {
+      "id": "endgame-017d12c4c92bf9da",
+      "site": "https://lichess.org/broadcast/1st-berjaya-global-chess-open-2026-masters/round-9/OHdudPFf/jOqLTUso",
+      "fen": "8/K4q2/8/4Q3/8/8/6p1/6k1 w - - 2 72",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Kb8",
+        "outcome": -1,
+        "reply": {
+          "san": "Kf1",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-1059ffd6e7233641",
+      "site": "https://lichess.org/broadcast/20-int-deizisauer-herbstopen-2026/round/MMOmr1cU",
+      "fen": "8/2K4p/8/8/1p4k1/1P6/7P/8 w - - 2 50",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Kb8",
+        "outcome": -1,
+        "reply": {
+          "san": "h5",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-1fe22cad192b0416",
+      "site": "https://lichess.org/broadcast/23rd-calvia-chess-festival-2026/round-9/9F21RcCs/VyBLa1v2",
+      "fen": "8/8/8/7p/2k2Kp1/6P1/8/8 b - - 3 57",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Kb5",
+        "outcome": -1,
+        "reply": {
+          "san": "Kg5",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-0370db4559dcfe57",
+      "site": "https://lichess.org/broadcast/2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a/round-3/VSiTo8l4/XFxopgQr",
+      "fen": "8/8/5k1N/8/5KP1/8/8/3b4 b - - 0 61",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Bf3",
+        "outcome": -1,
+        "reply": {
+          "san": "Kxf3",
+          "cause": "Kxf3 takes the bishop without a recapture.",
+          "capturedMover": true
+        }
+      },
+      "verifiedReplyKind": "unrecaptured-piece"
+    },
+    {
+      "id": "endgame-013864685df2aac9",
+      "site": "https://lichess.org/broadcast/2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a/round-8/H3ikp0of/f4vvWmQ0",
+      "fen": "8/8/5p2/4p3/2K5/5k2/1P3P2/8 w - - 2 55",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Kb4",
+        "outcome": -1,
+        "reply": {
+          "san": "Kxf2",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    },
+    {
+      "id": "endgame-01b1c5be7653e12d",
+      "site": "https://lichess.org/broadcast/43-munsterland-open-34-challengers-2026-a-open/runde-7/VXq2ZO6H/d2uuGQtZ",
+      "fen": "1B6/8/8/6p1/6kn/8/5K1P/8 b - - 4 89",
+      "oldMistakeCategory": "unclear",
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "Ng2",
+        "outcome": -1,
+        "reply": {
+          "san": "Kxg2",
+          "cause": "Kxg2 takes the knight without a recapture.",
+          "capturedMover": true
+        }
+      },
+      "verifiedReplyKind": "unrecaptured-piece"
+    },
+    {
+      "id": "endgame-26af542e7e1c633f",
+      "site": "https://lichess.org/broadcast/50-obert-internacional-descacs-ciutat-de-badalona/round-4/qWlzZNTn/qHlSV3Ti",
+      "fen": "8/8/8/1p1k4/6p1/PP2K3/8/8 w - - 0 40",
+      "oldMistakeCategory": null,
+      "previousTacticalSupport": false,
+      "bestOutcome": 0,
+      "played": {
+        "san": "b4",
+        "outcome": -1,
+        "reply": {
+          "san": "Kc4",
+          "capturedMover": false
+        }
+      },
+      "verifiedReplyKind": "optimal-reply"
+    }
+  ],
+  "inputHashes": {
+    "counterfactual-sample.json": "6d5238a28ede7e47da01d62dbb6ccd2af9f1e3a7db614612f056068ac26eac00",
+    "counterfactual-records.json": "69b8fa5c989373fa7436439146223678039af26ae63777d0a14cc0c5c65e6ec6",
+    "endgame-counterfactual-results.json": "2b9ac055f01368bd2682e1373a8d6e6b20fb385027477e092c6e01bf865f8c4b",
+    "exact-counterfactual-baseline.json": "e254e66ffb9d7daabf3807b40939ac0331bb2fe381aefb82081bf5e058ac221a"
+  }
+}

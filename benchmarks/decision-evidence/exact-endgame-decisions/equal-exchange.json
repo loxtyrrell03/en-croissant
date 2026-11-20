@@ -1,0 +1,214 @@
+{
+  "fen": "8/8/p7/8/8/8/2k4K/3r2R1 w - - 0 1",
+  "evidence": {
+    "provider": "lichess-syzygy",
+    "records": [
+      {
+        "fen": "8/8/p7/8/8/8/2k4K/3r2R1 w - - 0 1",
+        "result": {
+          "category": "draw",
+          "checkmate": false,
+          "stalemate": false,
+          "variant_win": false,
+          "variant_loss": false,
+          "insufficient_material": false,
+          "moves": [
+            {
+              "uci": "g1g5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1g7",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1g8",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1g6",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1g4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1g3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1g2",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1d1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1h1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "h2h1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "h2g2",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "h2g3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1e1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "g1f1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "h2h3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            }
+          ]
+        }
+      },
+      {
+        "fen": "8/8/p7/8/8/8/2k4K/3R4 b - - 0 1",
+        "result": {
+          "category": "win",
+          "checkmate": false,
+          "stalemate": false,
+          "variant_win": false,
+          "variant_loss": false,
+          "insufficient_material": false,
+          "moves": [
+            {
+              "uci": "c2d1",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "c2b2",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "c2b3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "c2c3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            },
+            {
+              "uci": "a6a5",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "variant_win": false,
+              "variant_loss": false,
+              "insufficient_material": false
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

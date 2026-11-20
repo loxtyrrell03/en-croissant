@@ -6,12 +6,14 @@ import { parseUci } from "chessops/util";
 import { useEffect, useRef, useState } from "react";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import type { LocalEngine } from "@/utils/engines";
+import type { DecisionEndgameAssessment } from "@/utils/tacticalMotifs/decisionEndgame";
 import type {
   ChessDecisionReport,
   DecisionAssessment,
   DecisionCategory,
 } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { DecisionTacticalRecovery } from "@/utils/tacticalMotifs/decisionTacticalRecovery";
+import { DecisionEndgameCheck } from "./DecisionEndgameCheck";
 import {
   DECISION_SEARCH_SESSION_MS,
   gatherCheckingDefence,
@@ -48,6 +50,7 @@ const mistakeSummary = {
   "not-requested": "",
   assessed: "",
 };
+const endgameOutcome = { [-1]: "Loss", 0: "Draw", 1: "Win" } as const;
 
 function lineSan(fen: string, moves: string[]) {
   const board = parseFen(fen).chain((setup) => Chess.fromSetup(setup));
@@ -88,22 +91,29 @@ function EvidenceSummary({
   assessment,
   children,
   comparedLines,
+  exactTactic,
 }: {
   title: string;
   assessment: DecisionAssessment;
   children?: React.ReactNode;
   comparedLines?: Array<{ label: string; san: string }>;
+  exactTactic?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const dimensions = [
-    { label: "Tactical", value: assessment.tactical },
-    { label: "Positional", value: assessment.positional },
+  const tactical = { label: "Tactical", value: assessment.tactical };
+  const positional = { label: "Positional", value: assessment.positional };
+  const dimensions = exactTactic ? [positional, tactical] : [tactical, positional];
+  const reasons = [
+    ...(exactTactic ? [{ label: "Tactical", reason: exactTactic, basis: "Tablebase verified" }] : []),
+    ...dimensions.flatMap(({ label, value }) =>
+      value.support === "unestablished"
+        ? []
+        : value.reasons.map((reason) => ({ label, reason, basis: basisLabels[value.basis] })),
+    ),
   ];
-  const reasons = dimensions.flatMap(({ label, value }) =>
-    value.support === "unestablished"
-      ? []
-      : value.reasons.map((reason) => ({ label, reason, basis: basisLabels[value.basis] })),
-  );
+  const category = exactTactic
+    ? assessment.positional.support === "supported" ? "mixed" : "tactical"
+    : assessment.category;
   const resources = assessment.conditionalResources;
   const conditionalFork = assessment.conditionalFork;
   const forkConsequence = conditionalFork?.defenceConsequence?.description;
@@ -118,8 +128,8 @@ function EvidenceSummary({
           <Text fw={600} size="sm">
             {title}
           </Text>
-          <Badge size="sm" variant="light" color={categoryColors[assessment.category]}>
-            {categoryLabels[assessment.category]}
+          <Badge size="sm" variant="light" color={categoryColors[category]}>
+            {categoryLabels[category]}
           </Badge>
         </Group>
         {children}
@@ -289,12 +299,23 @@ function EvidenceSummary({
 function DecisionReport({
   report,
   playedSan,
+  target,
 }: {
   report: ChessDecisionReport;
   playedSan?: string;
+  target: DecisionSearchTarget;
 }) {
   const [move, setMove] = useState(report.moves[0]?.moveUci);
+  const [endgame, setEndgame] = useState<DecisionEndgameAssessment | null>(null);
   const selected = report.moves.find((item) => item.moveUci === move);
+  const selectedOutcome = endgame?.moveOutcomes.find(({ uci }) => uci === move)?.outcome;
+  const exactDefence = endgame?.defensiveTactic;
+  const played = endgame?.played;
+  const exactMistake = played && endgame && played.outcome < endgame.bestOutcome ? played : undefined;
+  const exactMistakeTitle = exactMistake ? `What ${exactMistake.san} allows` : undefined;
+  const exactMistakeDetails = exactMistake && endgame && (
+    <EndgameMistakeOutcome result={endgame} played={exactMistake} />
+  );
   const episode = report.mistake?.tacticalEpisode;
   const mate = report.mistake?.mateConsequence;
   const recovery = report.mistake?.tacticalRecovery;
@@ -377,6 +398,7 @@ function DecisionReport({
       <EvidenceSummary
         title="Position character"
         assessment={report.position}
+        exactTactic={exactDefence?.avoidingCapture}
         comparedLines={[
           ...(contrast
             ? [
@@ -400,12 +422,20 @@ function DecisionReport({
         <Text size="xs" c="dimmed">
           {report.position.examinedChoices} candidate moves examined
         </Text>
+        {endgame ? (
+          <EndgamePositionOutcome result={endgame} />
+        ) : (
+          <DecisionEndgameCheck target={target} onResult={setEndgame} />
+        )}
       </EvidenceSummary>
       {selected && (
         <EvidenceSummary
           key={selected.moveUci}
           title="What the move achieves"
           assessment={selected}
+          exactTactic={move && exactDefence?.safeMoves.includes(move)
+            ? "The piece stays out of immediate capture and the draw holds."
+            : undefined}
           comparedLines={[
             ...(selected.promotionTactic?.linesUci ?? []),
             ...(selected.passerFlight?.linesUci ?? []),
@@ -433,20 +463,32 @@ function DecisionReport({
               label: `${lineSan(report.fen, [item.moveUci]) || item.moveUci}${index === 0 ? " · Engine’s first choice" : ""}`,
             }))}
           />
+          {selectedOutcome !== undefined && (
+            <Text size="xs" c="dimmed">Tablebase · {endgameOutcome[selectedOutcome]}</Text>
+          )}
         </EvidenceSummary>
       )}
       {report.mistake ? (
         <EvidenceSummary
-          title={playedSan ? `What ${playedSan} missed or allowed` : "Mistake mechanism"}
+          title={exactMistakeTitle ?? (playedSan ? `What ${playedSan} missed or allowed` : "Mistake mechanism")}
           assessment={report.mistake}
           comparedLines={mistakeLines}
+          exactTactic={exactMistake?.reply?.cause}
         >
+          {exactMistakeDetails}
+          {played && !exactMistake && (
+            <Text size="xs" c="dimmed">Tablebase · {played.san} keeps the same outcome.</Text>
+          )}
           {report.mistake.evaluationLossCp !== null && (
             <Text size="xs" c="dimmed">
               Engine evaluation loss {(report.mistake.evaluationLossCp / 100).toFixed(2)} pawns
             </Text>
           )}
         </EvidenceSummary>
+      ) : exactMistake && endgame ? (
+        <ExactEndgameMistake result={endgame} played={exactMistake} />
+      ) : played ? (
+        <Text size="xs" c="dimmed">Tablebase · {played.san} keeps the same outcome.</Text>
       ) : report.mistakeStatus !== "not-requested" && report.mistakeStatus !== "assessed" ? (
         <Text size="xs" c="dimmed">
           {mistakeSummary[report.mistakeStatus]}
@@ -456,11 +498,78 @@ function DecisionReport({
   );
 }
 
+function EndgamePositionOutcome({ result }: { result: DecisionEndgameAssessment }) {
+  const count = result.bestMoves.length;
+  return (
+    <Text size="xs">
+      Tablebase · {endgameOutcome[result.bestOutcome]} with best play.
+      {result.bestOutcome >= 0 && (
+        <>
+          {" "}{count} of {result.legalMoveCount} legal moves {result.bestOutcome === 0 ? "draw" : "win"}.
+          {count <= 6 && count < result.legalMoveCount &&
+            ` ${result.bestMoves.map(({ san }) => san).join(", ")}.`}
+        </>
+      )}
+    </Text>
+  );
+}
+
+type EndgameMistakeProps = {
+  result: DecisionEndgameAssessment;
+  played: NonNullable<DecisionEndgameAssessment["played"]>;
+};
+
+function EndgameMistakeOutcome({ result, played }: EndgameMistakeProps) {
+  return (
+    <Text size="xs" c="dimmed">
+      Tablebase · {endgameOutcome[result.bestOutcome]} → {endgameOutcome[played.outcome]}.
+      {played.reply
+        ? !played.reply.cause && ` Best reply ${played.reply.san}.`
+        : " A reply could not be verified."}
+    </Text>
+  );
+}
+
+function ExactEndgameMistake({ result, played }: EndgameMistakeProps) {
+  return (
+    <Paper withBorder p="xs">
+      <Stack gap={6}>
+        <Group gap="xs">
+          <Text fw={600} size="sm">What {played.san} allows</Text>
+          {played.reply?.cause && <Badge variant="light" color="orange" size="sm">Tactical</Badge>}
+        </Group>
+        <EndgameMistakeOutcome result={result} played={played} />
+        {played.reply?.cause && (
+          <Text size="xs">Tablebase verified. {played.reply.cause}</Text>
+        )}
+      </Stack>
+    </Paper>
+  );
+}
+
+function EndgameFallback({ target }: { target: DecisionSearchTarget }) {
+  const [result, setResult] = useState<DecisionEndgameAssessment | null>(null);
+  if (!result) return <DecisionEndgameCheck target={target} onResult={setResult} />;
+  return (
+    <Stack gap={6}>
+      <EndgamePositionOutcome result={result} />
+      {result.defensiveTactic && (
+        <Text size="xs">Tactical · Tablebase verified. {result.defensiveTactic.avoidingCapture}</Text>
+      )}
+      {result.played && (result.played.outcome < result.bestOutcome ? (
+        <ExactEndgameMistake result={result} played={result.played} />
+      ) : (
+        <Text size="xs" c="dimmed">Tablebase · {result.played.san} keeps the same outcome.</Text>
+      ))}
+    </Stack>
+  );
+}
+
 type RunState =
   | { status: "idle" }
   | { status: "running"; phase: string }
-  | { status: "done"; report: ChessDecisionReport; playedSan?: string }
-  | { status: "error"; message: string };
+  | { status: "done"; report: ChessDecisionReport; target: DecisionSearchTarget; playedSan?: string }
+  | { status: "error"; target: DecisionSearchTarget; message: string };
 
 // Results are local to a mounted board/engine identity. A small memo permits
 // switching between this position and its previous move without a new search.
@@ -487,7 +596,7 @@ export function DecisionEvidencePanel({
     const identity = JSON.stringify([engine.id, engine.version, target]);
     const cached = saved.current.get(identity);
     if (cached) {
-      setState({ status: "done", report: cached, playedSan });
+      setState({ status: "done", report: cached, target, playedSan });
       return;
     }
     const owned = new AbortController();
@@ -578,11 +687,12 @@ export function DecisionEvidencePanel({
       }
       if (!active()) return;
       saved.current.set(identity, report);
-      setState({ status: "done", report, playedSan });
+      setState({ status: "done", report, target, playedSan });
     } catch (error) {
       if (active())
         setState({
           status: "error",
+          target,
           message: error instanceof Error ? error.message : "The decision check failed.",
         });
     } finally {
@@ -633,16 +743,18 @@ export function DecisionEvidencePanel({
         </Text>
       )}
       {state.status === "error" && (
-        <Alert color="orange" role="alert">
-          {state.message}
-        </Alert>
+        <>
+          <Alert color="orange" role="alert">{state.message}</Alert>
+          <EndgameFallback key={JSON.stringify(state.target)} target={state.target} />
+        </>
       )}
       {state.status === "done" && (
         <ScrollArea.Autosize mah={340} offsetScrollbars>
           <DecisionReport
-            key={JSON.stringify([state.report.fen, state.playedSan])}
+            key={JSON.stringify(state.target)}
             report={state.report}
             playedSan={state.playedSan}
+            target={state.target}
           />
         </ScrollArea.Autosize>
       )}

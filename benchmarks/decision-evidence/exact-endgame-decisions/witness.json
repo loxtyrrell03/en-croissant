@@ -1,0 +1,747 @@
+{
+  "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+  "site": "https://lichess.org/broadcast/european-youth-chess-championship-2026-o18/round-6/B7IXGP6j/OrZik0ID",
+  "evidence": {
+    "provider": "lichess-syzygy",
+    "records": [
+      {
+        "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+        "result": {
+          "category": "draw",
+          "checkmate": false,
+          "stalemate": false,
+          "insufficient_material": false,
+          "variant_win": false,
+          "variant_loss": false,
+          "moves": [
+            {
+              "uci": "g4g6",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4g7",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4g8",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e2d1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e2e1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e2f1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4f4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4a4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4b4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4c4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4d4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4h4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e2d3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e2f3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4e4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4g5",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4g1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4g3",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "g4g2",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            }
+          ]
+        }
+      },
+      {
+        "fen": "8/8/8/4r1R1/8/4p2p/4K2k/8 b - - 1 62",
+        "result": {
+          "category": "win",
+          "checkmate": false,
+          "stalemate": false,
+          "insufficient_material": false,
+          "variant_win": false,
+          "variant_loss": false,
+          "moves": [
+            {
+              "uci": "e5g5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e4",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5a5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5b5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5c5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5d5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5f5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e6",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e7",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e8",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "h2h1",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            }
+          ]
+        }
+      },
+      {
+        "fen": "8/8/8/4r3/6R1/4p2p/7k/5K2 b - - 1 62",
+        "result": {
+          "category": "win",
+          "checkmate": false,
+          "stalemate": false,
+          "insufficient_material": false,
+          "variant_win": false,
+          "variant_loss": false,
+          "moves": [
+            {
+              "uci": "e3e2",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5a5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5b5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5c5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5d5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5f5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5h5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e6",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e7",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e8",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "h2h1",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e4",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5g5",
+              "category": "win",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            }
+          ]
+        }
+      },
+      {
+        "fen": "8/8/8/4r3/3R4/4p2p/4K2k/8 b - - 1 62",
+        "result": {
+          "category": "win",
+          "checkmate": false,
+          "stalemate": false,
+          "insufficient_material": false,
+          "variant_win": false,
+          "variant_loss": false,
+          "moves": [
+            {
+              "uci": "h2g3",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5g5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5a5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5b5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5c5",
+              "category": "loss",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e4",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5d5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5f5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5h5",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e6",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e7",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "e5e8",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "h2g1",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "h2h1",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            },
+            {
+              "uci": "h2g2",
+              "category": "draw",
+              "checkmate": false,
+              "stalemate": false,
+              "insufficient_material": false,
+              "variant_win": false,
+              "variant_loss": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "panelInput": {
+    "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+    "candidates": [
+      {
+        "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+        "cp": 0,
+        "mate": null,
+        "depth": 66,
+        "nodes": 2400345,
+        "pvUci": [
+          "g4g7",
+          "h2h1",
+          "g7g3",
+          "h3h2",
+          "g3g6",
+          "e5e7",
+          "g6g8",
+          "e7e6",
+          "g8g7",
+          "e6e8",
+          "g7g6",
+          "e8e5",
+          "g6g7",
+          "e5e6",
+          "g7g8",
+          "e6e7",
+          "g8g6",
+          "e7f7",
+          "e2e3",
+          "f7f1",
+          "g6h6",
+          "h1g2",
+          "h6g6",
+          "g2h3",
+          "g6h6",
+          "h3g3",
+          "h6g6"
+        ]
+      },
+      {
+        "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+        "cp": 0,
+        "mate": null,
+        "depth": 66,
+        "nodes": 2400345,
+        "pvUci": [
+          "g4g8",
+          "h2h1",
+          "g8g3",
+          "h3h2",
+          "g3g6",
+          "e5e7",
+          "g6g8",
+          "e7e6",
+          "g8g7",
+          "e6e8",
+          "g7g6",
+          "e8e5",
+          "g6g7"
+        ]
+      },
+      {
+        "fen": "8/8/8/4r3/6R1/4p2p/4K2k/8 w - - 0 62",
+        "cp": 0,
+        "mate": null,
+        "depth": 66,
+        "nodes": 2400345,
+        "pvUci": [
+          "g4g6",
+          "h2h1",
+          "g6g3",
+          "h3h2",
+          "g3g6",
+          "e5e7",
+          "g6g8",
+          "e7e6",
+          "g8g7",
+          "e6e8",
+          "g7g6"
+        ]
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "g4g7",
+        "lines": [
+          {
+            "fen": "8/6R1/8/4r3/8/4p2p/4K2k/8 b - - 1 62",
+            "cp": 0,
+            "mate": null,
+            "depth": 44,
+            "nodes": 1332384,
+            "pvUci": [
+              "e5e6",
+              "g7g8",
+              "e6e4",
+              "g8g6",
+              "e4e7",
+              "g6g5",
+              "e7c7",
+              "e2e3",
+              "c7c3",
+              "e3f2",
+              "c3c2",
+              "f2f1",
+              "c2g2",
+              "g5c5",
+              "g2g1",
+              "f1f2",
+              "g1g8",
+              "c5c7",
+              "g8g2",
+              "f2f3",
+              "g2g3",
+              "f3f2",
+              "g3g2"
+            ]
+          },
+          {
+            "fen": "8/6R1/8/4r3/8/4p2p/4K2k/8 b - - 1 62",
+            "cp": 0,
+            "mate": null,
+            "depth": 44,
+            "nodes": 1332384,
+            "pvUci": [
+              "h2h1",
+              "g7g3",
+              "h3h2",
+              "g3g8",
+              "e5f5",
+              "e2e3",
+              "f5f1",
+              "g8a8",
+              "f1f6",
+              "a8g8",
+              "f6f1"
+            ]
+          },
+          {
+            "fen": "8/6R1/8/4r3/8/4p2p/4K2k/8 b - - 1 62",
+            "cp": 0,
+            "mate": null,
+            "depth": 44,
+            "nodes": 1332384,
+            "pvUci": [
+              "e5e8",
+              "g7g5",
+              "e8e7",
+              "g5g6",
+              "h2h1",
+              "g6g8",
+              "h3h2",
+              "g8g6",
+              "e7e8",
+              "g6g7",
+              "e8e4",
+              "g7g6"
+            ]
+          }
+        ]
+      }
+    ],
+    "playedMoveUci": "e2f1"
+  }
+}

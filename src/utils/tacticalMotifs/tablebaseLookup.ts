@@ -1,21 +1,22 @@
 import {
+    decisionEndgameFen,
+    decisionEndgameReplyFens,
+    type DecisionEndgameTarget,
+} from "./decisionEndgame";
+import {
     tablebaseTacticalRequests,
     validateTablebaseRecord,
     type TablebaseEvidence,
+    type TablebaseRecord,
 } from "./tablebaseEvidence";
 
 const LOOKUP_TIMEOUT_MS = 8_000;
 const MAX_RESPONSE_BYTES = 128_000;
 
-/** Called only by the explicit online-verification action, never by a normal
- * scan or the CPU worker. At most two bounded requests, no private-game batch. */
-export async function lookupTacticalEndgameEvidence(
-    fen: string,
-    move: string,
+async function withTablebaseLookup(
     signal: AbortSignal,
+    run: (fetchRecord: (fen: string) => Promise<TablebaseRecord>) => Promise<TablebaseRecord[]>,
 ): Promise<TablebaseEvidence> {
-    const request = tablebaseTacticalRequests(fen, move);
-    if (!request) throw new Error("This move is not eligible for an exact endgame check.");
     const controller = new AbortController();
     const abort = () => controller.abort(signal.reason);
     signal.addEventListener("abort", abort, { once: true });
@@ -25,10 +26,7 @@ export async function lookupTacticalEndgameEvidence(
         LOOKUP_TIMEOUT_MS,
     );
     try {
-        const records = [];
-        // Sequential probing respects the public service. Both records are
-        // necessary; a failed or uncertain response never becomes a negative.
-        for (const target of request.targets) {
+        const records = await run(async (target) => {
             controller.signal.throwIfAborted();
             const response = await fetch(
                 `https://tablebase.lichess.org/standard?fen=${encodeURIComponent(target)}`,
@@ -64,12 +62,52 @@ export async function lookupTacticalEndgameEvidence(
             const record = { fen: target, result: JSON.parse(text) as unknown };
             if (!validateTablebaseRecord(record, target))
                 throw new Error("Lichess did not return a complete, certain endgame result.");
-            records.push(record);
-        }
+            return record;
+        });
+        signal.throwIfAborted();
         return { provider: "lichess-syzygy", records };
     } finally {
         clearTimeout(timer);
         signal.removeEventListener("abort", abort);
         controller.abort();
     }
+}
+
+/** Called by explicit verification. The original capture and zugzwang
+ * checks still need all requested boards. */
+export async function lookupTacticalEndgameEvidence(
+    fen: string,
+    move: string,
+    signal: AbortSignal,
+): Promise<TablebaseEvidence> {
+    const request = tablebaseTacticalRequests(fen, move);
+    if (!request) throw new Error("This move is not eligible for an exact endgame check.");
+    return withTablebaseLookup(signal, async (fetchRecord) => {
+        const records = [];
+        for (const fen of request.targets) records.push(await fetchRecord(fen));
+        return records;
+    });
+}
+
+/** One exact position and up to two specific replies share one deadline.
+ * A valid root remains useful when a follow-up is unavailable. */
+export async function lookupDecisionEndgameEvidence(
+    target: DecisionEndgameTarget,
+    signal: AbortSignal,
+): Promise<TablebaseEvidence> {
+    const rootFen = decisionEndgameFen(target);
+    if (!rootFen) throw new Error("This position is not eligible for an exact endgame check.");
+    return withTablebaseLookup(signal, async (fetchRecord) => {
+        const records = [await fetchRecord(rootFen)];
+        const replies = decisionEndgameReplyFens(target, { provider: "lichess-syzygy", records });
+        for (const fen of replies) {
+            try {
+                records.push(await fetchRecord(fen));
+            } catch {
+                signal.throwIfAborted();
+                break;
+            }
+        }
+        return records;
+    });
 }
