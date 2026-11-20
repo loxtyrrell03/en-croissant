@@ -62,6 +62,7 @@ export async function verifyDecisionPanel({
         export async function gatherCheckingOrder() { return ${JSON.stringify(input.fixtureCheckingOrder)}; }
         export async function gatherQuietReply() { return ${JSON.stringify(input.fixtureQuietReply)}; }
         export async function gatherCaptureOrder() { return ${JSON.stringify(input.fixtureCaptureOrder)}; }
+        export async function gatherCaptureRouteReply() { return ${JSON.stringify(input.fixtureCaptureRouteReply)}; }
         export async function gatherCheckingDefence() { return null; }
         export async function gatherPassedAdvance() { return []; }
         export async function gatherPreparedCheckpoint() { return []; }

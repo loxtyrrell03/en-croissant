@@ -133,10 +133,12 @@ import {
 import { availableCaptureOrders, confirmCaptureOrder, type CaptureOrderEvidence, type CaptureOrderProbe } from "./captureOrderEvidence";
 import { findPassedPawnRoles } from "./decisionPassedPawnRole";
 
+import { verifyCaptureRouteStructure } from "./decisionCaptureRouteStructure";
+
 const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
 const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
 
-export const DECISION_ASSESSMENT_VERSION = 63;
+export const DECISION_ASSESSMENT_VERSION = 64;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -163,6 +165,7 @@ export type DecisionAssessment = {
     promotionTactic?: PositionStrategicPlan;
     passerFlight?: PositionStrategicPlan;
     settledExchangePlan?: PositionStrategicPlan;
+    retainedPawnSupport?: PositionStrategicPlan;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -187,6 +190,7 @@ export type DecisionAssessmentInput = {
     checkingOrder?: CheckingOrderProbe;
     quietReply?: QuietReplyProbe;
     captureOrder?: CaptureOrderProbe;
+    captureRouteReply?: DecisionReplyProbe;
     sharedReply?: DecisionSharedReplyProbe;
     passerFlight?: PasserFlightProbe;
     checkingDefence?: CheckingDefenceProbe;
@@ -1681,6 +1685,20 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         for (const move of moves) support(move, plans.moves.get(move.moveUci));
     }
     let playedMoveAssessment: DecisionMoveAssessment | undefined;
+    if (!rejectedChoices && leader.tactical.support === "supported" &&
+        leader.positional.support !== "supported") {
+        const plan = verifyCaptureRouteStructure(input.fen, validCandidates, input.replyProbes ?? [], input.captureRouteReply);
+        if (plan) {
+            const attach = (assessment: DecisionAssessment) => {
+                assessment.retainedPawnSupport = plan;
+                assessment.positional = { support: "supported", basis: "heuristic", reasons: [plan.description] };
+                assessment.category = category(assessment.tactical, assessment.positional);
+                assessment.limitations.push("The pawn link survives in the shown lines. Other replies can change the structure.");
+            };
+            attach(leader);
+            if (position.positional.support !== "supported") attach(position);
+        }
+    }
     if (
         playedIndex > 0 &&
         playedBoard &&

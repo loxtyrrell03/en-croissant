@@ -64,6 +64,7 @@ import {
     confirmCaptureOrder,
     type CaptureOrderProbe,
 } from "@/utils/tacticalMotifs/captureOrderEvidence";
+import { captureRouteStructureRequest } from "@/utils/tacticalMotifs/decisionCaptureRouteStructure";
 
 export type DecisionSearchTarget = {
     fen: string;
@@ -105,6 +106,27 @@ export async function gatherCheckingDefence(
         engine, request.played, signal, deadline, target.history,
     );
     return played && played.depth >= 16 ? { capture, played } : null;
+}
+
+export async function gatherCaptureRouteReply(
+    engine: LocalEngine,
+    target: DecisionSearchTarget,
+    input: DecisionAssessmentInput,
+    signal: AbortSignal,
+    deadline: number,
+    progress: (phase: string) => void,
+): Promise<DecisionReplyProbe | undefined> {
+    const request = captureRouteStructureRequest(target.fen, input.candidates, input.replyProbes ?? []);
+    if (!request) return;
+    progress("Comparing the two captures…");
+    const lines = await searchDecisionCheckpoint(
+        engine, { fen: request.fen, prefix: [request.moveUci] }, signal,
+        deadline, target.history, undefined, 1_400_000, 2,
+    ).catch(() => {
+        signal.throwIfAborted();
+        return [];
+    });
+    if (lines.length) return { moveUci: request.moveUci, lines };
 }
 
 export async function gatherPassedAdvance(

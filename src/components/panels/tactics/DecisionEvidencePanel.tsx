@@ -21,6 +21,7 @@ import {
   gatherCheckingOrder,
   gatherQuietReply,
   gatherCaptureOrder,
+  gatherCaptureRouteReply,
   gatherDecisionEvidence,
   gatherExtraPositionChoice,
   gatherPassedAdvance,
@@ -443,6 +444,7 @@ function DecisionReport({
   const pawnRole = report.position.sharedPassedPawn;
   const positionLines = [
     ...(plan?.linesUci ?? []), ...(promotion?.linesUci ?? []), ...(pawnRole?.linesUci ?? []),
+    ...(report.position.retainedPawnSupport?.linesUci ?? []),
   ];
   const distinctPositionLines = positionLines.filter(
     (line, index) =>
@@ -508,6 +510,7 @@ function DecisionReport({
             ...(selected.passerFlight?.linesUci ?? []),
             ...(selected.settledExchangePlan?.linesUci ?? []),
             ...(selected.sharedPassedPawn?.linesUci ?? []),
+            ...(selected.retainedPawnSupport?.linesUci ?? []),
           ]
             .filter(
               (moves, index, lines) =>
@@ -750,6 +753,17 @@ export function DecisionEvidencePanel({
         mistake: !!report.mistake,
         position: report.position.tactical.support !== "supported",
       };
+      const leadingMove = report.moves[0];
+      if (leadingMove?.tactical.support === "supported" && leadingMove.positional.support !== "supported"
+          && active() && Date.now() < deadline) {
+        const captureRouteReply = await gatherCaptureRouteReply(engine, target, input, owned.signal, deadline, progress);
+        if (active() && captureRouteReply) {
+          input = { ...input, captureRouteReply };
+          report = await classifyDecisionInWorker(
+            { input, engineName: engine.name, history: target.history }, owned.signal,
+          ).catch(() => report);
+        }
+      }
       if ((scopes.mistake || scopes.position) && active() && Date.now() < deadline) {
         const checkingOrder = await gatherCheckingOrder(
           engine, target, input, scopes, owned.signal, deadline, progress,

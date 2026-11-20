@@ -152,7 +152,7 @@ def examine(board, row, item, settle=False):
 
 def assess(row, settle=False):
     board = initial(row)
-    usual_replies = {line["pvUci"][0] for line in row["candidates"][:2]} | {row["playedMoveUci"]}
+    usual_replies = {line["pvUci"][0] for line in row["candidates"][:1]} | {row["playedMoveUci"]}
     return [dict(examine(board, row, item, settle=settle), pair=item["pair"],
                  extraRoot=item["targeted"],
                  extraReplies=[move for move in item["pair"] if move not in usual_replies])

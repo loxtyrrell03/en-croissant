@@ -1,0 +1,244 @@
+{
+  "experiment": {
+    "calibration": {
+      "totals": {
+        "reference positive": 1,
+        "shortlist pattern positive": 1,
+        "targeted settled exchange positive": 1
+      },
+      "hashes": [
+        "a9a32cace56741c250f8858c08f9a1149e1bd6f6f5f8d985a35603fc0cc1d686",
+        "fb25bddc56d8e649fe8f0a36d6718fa5fe7e1983b83c57e0725276395d7f115f"
+      ]
+    },
+    "development": {
+      "totals": {
+        "reference negative": 29,
+        "reference uncertain": 6,
+        "shortlist pattern uncertain": 1
+      },
+      "hashes": [
+        "f4abb6aa6051df0b1e313391b6d4f67498b8a6bc775d271e64155e88ed3e32a4",
+        "14b91927bde838af7b0c99a90eae9ce0cbde36aa36760f68c8a41e3bd1db94a6"
+      ]
+    },
+    "reserve": {
+      "totals": {
+        "reference uncertain": 12,
+        "reference negative": 34,
+        "shortlist pattern negative": 3,
+        "shortlist pattern uncertain": 2,
+        "reference positive": 1,
+        "shortlist pattern positive": 1,
+        "targeted settled exchange positive": 1
+      },
+      "hashes": [
+        "cc1cbbd9a975cce6f6ba76c944f77c202f25b245a5df5c77380a530acf5d169a",
+        "52ae8ec3d3013909a89fecd1a54238f86b871b45e50789054a56a01639747fdc"
+      ]
+    }
+  },
+  "replay": {
+    "cohorts": {
+      "calibration": {
+        "requests": 1,
+        "extraRepliesRequested": 1,
+        "extraRepliesAvailable": 1,
+        "positionChanges": 1,
+        "leadingMoveChanges": 1
+      },
+      "development": {
+        "requests": 35,
+        "extraRepliesRequested": 1,
+        "extraRepliesAvailable": 1
+      },
+      "reserve": {
+        "requests": 47,
+        "extraRepliesRequested": 2,
+        "extraRepliesAvailable": 2,
+        "positionChanges": 1,
+        "leadingMoveChanges": 1
+      },
+      "annotated": {
+        "requests": 55
+      },
+      "classical": {
+        "requests": 72
+      }
+    },
+    "changes": [
+      {
+        "id": "09649d1822ef052c427d",
+        "cohort": "calibration",
+        "position": {
+          "before": "tactical",
+          "after": "mixed",
+          "evidence": {
+            "description": "After Ne7+ Kb2 Nxd5, the pawn on e6 still supports f5. Taking the same rook immediately with exd5 breaks that pawn link.",
+            "linesUci": [
+              [
+                "c6e7",
+                "c3b2",
+                "e7d5",
+                "g2g3",
+                "c8g8",
+                "c2d4"
+              ],
+              [
+                "e6d5",
+                "c2d4",
+                "c6a5",
+                "c3b4",
+                "a5c6",
+                "d4c6",
+                "b7c6"
+              ]
+            ]
+          }
+        },
+        "move": {
+          "before": "tactical",
+          "after": "mixed",
+          "evidence": {
+            "description": "After Ne7+ Kb2 Nxd5, the pawn on e6 still supports f5. Taking the same rook immediately with exd5 breaks that pawn link.",
+            "linesUci": [
+              [
+                "c6e7",
+                "c3b2",
+                "e7d5",
+                "g2g3",
+                "c8g8",
+                "c2d4"
+              ],
+              [
+                "e6d5",
+                "c2d4",
+                "c6a5",
+                "c3b4",
+                "a5c6",
+                "d4c6",
+                "b7c6"
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "id": "a062fdfdd19800fcf7fa",
+        "cohort": "reserve",
+        "position": {
+          "before": "tactical",
+          "after": "mixed",
+          "evidence": {
+            "description": "After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.",
+            "linesUci": [
+              [
+                "c3d4",
+                "g1h1",
+                "d4d5",
+                "f5e5",
+                "d5e5",
+                "f4e5"
+              ],
+              [
+                "c6d5",
+                "f5f7",
+                "c3c5",
+                "g1h1",
+                "d5d4",
+                "a1b1"
+              ]
+            ]
+          }
+        },
+        "move": {
+          "before": "tactical",
+          "after": "mixed",
+          "evidence": {
+            "description": "After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.",
+            "linesUci": [
+              [
+                "c3d4",
+                "g1h1",
+                "d4d5",
+                "f5e5",
+                "d5e5",
+                "f4e5"
+              ],
+              [
+                "c6d5",
+                "f5f7",
+                "c3c5",
+                "g1h1",
+                "d5d4",
+                "a1b1"
+              ]
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "cached": [
+    {
+      "source": "app-frames.json",
+      "sha256": "c47b00686f4517e18cef3c5752067deac7cd1a46693aeb8010de01290870d11e",
+      "decisions": 56,
+      "eligible": 1,
+      "pairStatuses": {
+        "positive": 1
+      },
+      "matches": [
+        {
+          "id": "09649d1822ef052c427d",
+          "fen": "2r5/1p3k2/p1n1p3/P2R1p1p/5P1P/1PK5/2N3P1/4R3 b - - 0 40",
+          "pairs": [
+            {
+              "broad": true,
+              "leadGapCp": 0,
+              "rootPreferenceCp": 63,
+              "replyPreferenceCp": 57,
+              "rootSan": "40...Ne7+ 41. Kb2 Nxd5 42. g3 Rg8 43. Nd4 Rxg3 44. Nxe6",
+              "pawnSan": "40...exd5 41. Nd4 Nxa5+ 42. Kd3 Nc6 43. Nxf5 Nb4+ 44. Kd2",
+              "checkReplySan": "40...Ne7+ 41. Kb2 Nxd5 42. g3 Rg8 43. Nd4 Rxg3 44. Nxe6",
+              "pawnReplySan": "40...exd5 41. Nd4 Nxa5+ 42. Kb4 Nc6+ 43. Nxc6 bxc6 44. Kc5",
+              "status": "positive",
+              "why": "the original pawn support persists through the alternative capture",
+              "support": [
+                "e6",
+                "f5"
+              ],
+              "materialByLine": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "pair": [
+                "c6e7",
+                "e6d5"
+              ],
+              "extraRoot": false,
+              "extraReplies": [
+                "e6d5"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "classical-app-frames.json",
+      "sha256": "a39fdeb343e7c5219d7a77429f78613222179b1b868bf8370c888bdd1d3a0cb7",
+      "decisions": 72,
+      "eligible": 0,
+      "pairStatuses": {},
+      "matches": []
+    }
+  ],
+  "replayHashes": {
+    "runtime-input.json": "dad4d0c57b10b439a1b832b5feffaab2369c63f5fb2b0750793943489508d79b",
+    "runtime-v63.json": "85ca90b20c3924c552d9f8e498ce8a6620d68f9e0f5801344c397b047cf94e14",
+    "runtime-v64.json": "041ee4d9c5e8de6980700f59d126eed580121c990b528182c9f51f5a04397277"
+  }
+}

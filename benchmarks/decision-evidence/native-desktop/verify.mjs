@@ -341,4 +341,26 @@ if (wanted.has("Played Pawn Lock")) {
   });
 }
 
+for (const [name, witness] of [
+  ["Knight Keeps the Pawn Chain", /Ne7\+.*Nxd5.*pawn on e6 still supports f5/s],
+  ["Queen Keeps the Pawn Chain", /Q(?:d4|c5)\+.*Qxd5.*pawn on b7 still supports c6/s],
+]) {
+  if (!wanted.has(name)) continue;
+  await run(name, async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const position = await (await expandPosition(page)).innerText();
+    const section = page.getByText("What the move achieves", { exact: true }).locator("../..");
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const move = await section.innerText();
+    for (const evidence of [position, move]) {
+      assert.match(evidence, /\bMixed\b/i);
+      assert.match(evidence, witness);
+      assert.match(evidence, /Strategic interpretation/);
+    }
+    return { position, move };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

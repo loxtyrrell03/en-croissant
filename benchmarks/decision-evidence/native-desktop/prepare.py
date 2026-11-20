@@ -121,4 +121,10 @@ annotation = fixtures / "annotation-transfer" / "fixtures.json"
 if annotation.is_file():
     target = load("annotation-transfer", "fixtures.json")["pawnLock"]
     history_fixture("Played Pawn Lock", target["history"], [target["playedMoveUci"]])
+capture_route = fixtures / "capture-route-structure" / "fixtures.json"
+if capture_route.is_file():
+    cases = load("capture-route-structure", "fixtures.json")
+    for key, title in (("candidates", "Knight Keeps the Pawn Chain"), ("clubCup", "Queen Keeps the Pawn Chain")):
+        target = cases[key]
+        history_fixture(title, target["history"], [target["playedMoveUci"]])
 print("Isolated app settings and legal PGN fixtures prepared.")

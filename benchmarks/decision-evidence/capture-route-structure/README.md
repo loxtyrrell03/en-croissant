@@ -74,3 +74,61 @@ The original pawn link must last through any extension in its branch.
 Both fixed and settled candidates are scored on the same reference.
 The Candidates example becomes verifiable after settlement. The
 variant was fixed before looking at reserve outcomes.
+
+## Results and app integration
+
+| Exact mechanism | 35 development games | 47 reserve games |
+| --- | ---: | ---: |
+| Deeper verified positives | 0 | 1 |
+| Deeper verified negatives | 29 | 34 |
+| Unresolved references | 6 | 12 |
+| Existing v63 verified positive explanations | 0 | 0 |
+| Root pattern hits, including negatives and unknowns | 1 | 6 |
+| Cached verification with no extra replies | 0 | 0 |
+| Verified explanations with targeted reply | 0 | 1 |
+
+The root pattern selects one true positive, three known negatives
+and two uncertain cases in reserve. The verified approach finds the
+same positive and makes no claim on the other five. The reserve case
+is `...Qd4+ Kh1 Qxd5` in the European Club Cup. Black retains the
+b7–c6 pawn link. The alternatives after `...cxd5` include `Qxf7`,
+and Black has moved the c6 pawn. The check is already a verified fork
+in v63. A restricted replay confirms the new structural comparison.
+[Game](https://lichess.org/broadcast/41st-european-chess-club-cup-2026-open/round-2/ETE9LeyG/fVYl3mxV)
+
+Decision Evidence v64 requires the checking move to be first in the
+normal shortlist, with an independently supported tactic. The pawn
+capture must already be scored in the same shortlist. It reuses
+existing replies or adds one search after the pawn capture, capped at
+1.4M nodes and 3.6 seconds inside the analysis deadline. The resulting
+strategic interpretation and both legal lines appear in the position
+and candidate-move summaries. The mistake report uses its own input.
+
+On 210 matched worker requests, the shipped policy nominates four
+additional replies. Two lead to mixed explanations, one in
+calibration and one in the reserve. Nothing else changes besides the
+report version. There are no new nominations on the other 127
+previously reviewed decisions. A source-built browser panel showed
+both explanations on the Club Cup board at 320, 390 and 900 pixels.
+The single independent positive limits inference about more general
+mixed-classification accuracy. [Results and exact board evidence](results.json)
+
+## Reproduce
+
+Use `capture.py STAGE INPUT STOCKFISH OUTPUT --split SPLIT` for both
+stages. The checked-in `transfer.json` contains development and
+reserve, and `calibration.json` contains the opened Candidates board.
+The app stage preserves the normal three root choices and records the
+extra comparisons. The reference stage clears the engine hash for
+each request and captures its own lines. Run
+`assess.py APP_FRAMES REFERENCE_FRAMES OUTPUT` to compare the methods.
+`test_assess.py` covers the legal interposition, pawn support and
+connected recapture on c6.
+
+The worker replay uses `replay.config.mjs`,
+`CAPTURE_ROUTE_INPUT` and `CAPTURE_ROUTE_OUTPUT`. The input is
+the concatenated app-frame lists, tagged with their cohort. Pin
+`DECISION_AUDIT_REVISION` to the revision being replayed and set
+`CAPTURE_ROUTE_CANDIDATE=1` when replaying v64. Use the standard
+source-panel harness for `verify-panel.mjs`. `receipt.py --help`
+lists the input order for the compact release report.
