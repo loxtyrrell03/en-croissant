@@ -1326,20 +1326,6 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     ],
                 };
             }
-            const sharedRay =
-                playedCorroborated &&
-                (assessment.tactical.support !== "supported" || assessment.tactical.basis === "engine-supported")
-                    ? compareSharedRay(input.fen, comparedBest, playedLine, playedProbe!.lines[0], input.sharedReply)
-                    : null;
-            if (sharedRay)
-                assessment.tactical = {
-                    support: "supported",
-                    basis: "engine-supported",
-                    reasons: [
-                        sharedRay.explanation,
-                        ...(assessment.tactical.support === "supported" ? assessment.tactical.reasons : []),
-                    ],
-                };
             const recoveryReply = corroborateRecoveryReply(comparedBest, betterProbe?.lines ?? []);
             const recovery =
                 assessment.tactical.support !== "supported" && recoveryReply && playedProbe?.lines[0]
@@ -1567,6 +1553,21 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     };
                 }
             }
+            // The comparison should not preempt a separate tactical or positional proof.
+            const sharedRay =
+                playedCorroborated &&
+                (assessment.tactical.support !== "supported" || assessment.tactical.basis === "engine-supported")
+                    ? compareSharedRay(input.fen, comparedBest, playedLine, playedProbe!.lines[0], input.sharedReply)
+                    : null;
+            if (sharedRay)
+                assessment.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [
+                        sharedRay.explanation,
+                        ...(assessment.tactical.support === "supported" ? assessment.tactical.reasons : []),
+                    ],
+                };
             assessment.category = category(assessment.tactical, assessment.positional);
             assessment.limitations = [
                 "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
