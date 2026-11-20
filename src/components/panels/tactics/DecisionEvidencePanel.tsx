@@ -423,6 +423,18 @@ function DecisionReport({
   }
   for (const line of recoveryLines(report.fen, recovery, "played move", mistakeLines.length > 0))
     if (!mistakeLines.some(({ san }) => san === line.san)) mistakeLines.push(line);
+  const castleDisplacement = report.mistake?.castleDisplacement;
+  if (castleDisplacement) {
+    mistakeLines.push({
+      label: "Check after delaying castling",
+      san: lineSan(report.fen, castleDisplacement.playedLineUci),
+    });
+    if (castleDisplacement.controlLineUci)
+      mistakeLines.push({
+        label: "Same check after castling first",
+        san: lineSan(report.fen, castleDisplacement.controlLineUci),
+      });
+  }
   if (episode?.controlLineUci?.length) {
     mistakeLines.push({
       label: "Same attack after the better move",

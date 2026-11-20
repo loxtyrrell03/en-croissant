@@ -65,6 +65,7 @@ import {
     type CaptureOrderProbe,
 } from "@/utils/tacticalMotifs/captureOrderEvidence";
 import { captureRouteStructureRequest } from "@/utils/tacticalMotifs/decisionCaptureRouteStructure";
+import { nominateCastleDisplacement } from "@/utils/tacticalMotifs/decisionCastleDisplacement";
 
 export type DecisionSearchTarget = {
     fen: string;
@@ -767,7 +768,8 @@ export async function gatherDecisionEvidence(
         played && replyProbes.find((probe) => probe.moveUci === played.pvUci[0])?.lines[0];
     if (played && opponent && pairedBest?.pvUci[0] === best.pvUci[0]) {
         const request = nominateSharedReply(fen, pairedBest, played, opponent)
-            ?? nominateSharedRay(fen, pairedBest, played, opponent);
+            ?? nominateSharedRay(fen, pairedBest, played, opponent)
+            ?? nominateCastleDisplacement(fen, pairedBest, played, opponent);
         if (request) {
             const cached = replyProbes
                 .find((probe) => probe.moveUci === request.betterMoveUci)

@@ -134,11 +134,12 @@ import { availableCaptureOrders, confirmCaptureOrder, type CaptureOrderEvidence,
 import { findPassedPawnRoles } from "./decisionPassedPawnRole";
 
 import { verifyCaptureRouteStructure } from "./decisionCaptureRouteStructure";
+import { confirmCastleDisplacement, type CastlingDisplacementEvidence } from "./decisionCastleDisplacement";
 
 const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
 const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
 
-export const DECISION_ASSESSMENT_VERSION = 64;
+export const DECISION_ASSESSMENT_VERSION = 65;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -244,6 +245,7 @@ export type ChessDecisionReport = {
               allowed: TacticalSequenceWitness[];
               tacticalEpisode?: TacticalMistakeEpisode;
               sharedRay?: TacticalMistakeEpisode;
+              castleDisplacement?: CastlingDisplacementEvidence;
               mateConsequence?: DecisionMateConsequence;
               promotion?: PromotionMistakeEvidence;
               rookPressure?: RookPressureEvidence;
@@ -1579,6 +1581,23 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                         ...(assessment.tactical.support === "supported" ? assessment.tactical.reasons : []),
                     ],
                 };
+            const castleDisplacement = playedCorroborated
+                ? confirmCastleDisplacement(input.fen, comparedBest, playedLine, playedProbe!.lines[0], input.sharedReply)
+                : undefined;
+            if (castleDisplacement) {
+                assessment.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [castleDisplacement.tactical, ...(assessment.tactical.support === "supported"
+                        ? assessment.tactical.reasons : [])],
+                };
+                assessment.positional = {
+                    support: "supported",
+                    basis: "heuristic",
+                    reasons: [castleDisplacement.positional, ...(assessment.positional.support === "supported"
+                        ? assessment.positional.reasons : [])],
+                };
+            }
             assessment.category = category(assessment.tactical, assessment.positional);
             assessment.limitations = [
                 "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
@@ -1593,6 +1612,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 ...assessment,
                 evaluationLossCp: loss,
                 ...(sharedRay ? { sharedRay } : {}),
+                ...(castleDisplacement ? { castleDisplacement } : {}),
                 mechanisms: [...allowed, ...missed],
                 missed,
                 allowed,

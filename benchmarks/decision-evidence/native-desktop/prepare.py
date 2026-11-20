@@ -127,4 +127,8 @@ if capture_route.is_file():
     for key, title in (("candidates", "Knight Keeps the Pawn Chain"), ("clubCup", "Queen Keeps the Pawn Chain")):
         target = cases[key]
         history_fixture(title, target["history"], [target["playedMoveUci"]])
+castle = fixtures / "castling-interruption" / "fixtures.json"
+if castle.is_file():
+    target = load("castling-interruption", "fixtures.json")["checked"]
+    history_fixture("Castle Before the Check", target["history"], [target["playedMoveUci"]])
 print("Isolated app settings and legal PGN fixtures prepared.")

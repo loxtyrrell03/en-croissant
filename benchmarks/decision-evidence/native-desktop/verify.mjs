@@ -363,4 +363,20 @@ for (const [name, witness] of [
   });
 }
 
+if (wanted.has("Castle Before the Check")) {
+  await run("Castle Before the Check", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const summary = page.getByText("What c6 missed or allowed", { exact: true }).locator("../..");
+    await summary.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const mistake = await summary.innerText();
+    assert.match(mistake, /\bMixed\b/i);
+    assert.match(mistake, /Nd6\+.*Every legal reply moves the king.*Kd7/s);
+    assert.match(mistake, /permanently gives up castling/);
+    assert.match(mistake, /Same check after castling first.*O-O-O/s);
+    return { mistake };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;
