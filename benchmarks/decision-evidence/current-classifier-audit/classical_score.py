@@ -182,17 +182,27 @@ def main():
     parser.add_argument("reference", type=Path)
     parser.add_argument("directory", type=Path)
     parser.add_argument("--score", type=Path, help="Score matched replays instead of preparing them")
+    parser.add_argument("--original", type=Path, help="Override the original replay path")
+    parser.add_argument("--worker", action="append", nargs=3, metavar=("VERSION", "REVISION", "REPLAY"),
+                        help="Score a selected worker replay. Repeat to compare several versions.")
     args = parser.parse_args()
     cases, reviewed = checked_inputs(args.app, args.reference)
     if not args.score:
         prepare(cases, args.directory)
         return
-    original = read(args.directory / "classical-original.json")
-    workers = {version: read(args.directory / f"classical-{version}.json") for version in ("v47", "v57")}
+    original = read(args.original or args.directory / "classical-original.json")
+    specifications = args.worker or [
+        ("v47", "ae4bf1fc", args.directory / "classical-v47.json"),
+        ("v57", "27580772", args.directory / "classical-v57.json"),
+    ]
+    revisions = {version: revision for version, revision, _ in specifications}
+    if "original" in revisions or len(revisions) != len(specifications):
+        parser.error("Worker version names must be distinct and must not include 'original'.")
+    workers = {version: read(Path(path)) for version, _, path in specifications}
     result = scores(cases, reviewed, original, workers)
     write(args.score, dict(
         references=dict(path=args.reference.name, sha256=digest(args.reference), appFrameSha256=digest(args.app)),
-        versions=dict(original="a4428e35 with the original recorded causal patch", v47="ae4bf1fc", v57="27580772"),
+        versions=dict(original="a4428e35 with the original recorded causal patch", **revisions),
         groups=len({row["group"] for row in cases}),
         review="Single engine-assisted reviewer, blinded to all classifier output before sealing.",
         runtime=dict(

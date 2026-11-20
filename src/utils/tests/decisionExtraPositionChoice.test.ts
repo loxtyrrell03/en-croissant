@@ -101,7 +101,10 @@ test("the same pawn-capture reply can answer a plausible threat to a piece", () 
     ];
     const [choice] = replayTacticalLine(fen, ["e4e3"]);
     const reply = line(296, 16, "f2e3 d7f6 g4g5 e7g7 f1f3 f6e4 e2d3 c8f5 g1e2", makeFen(choice.after.toSetup()));
-    expect(confirmExtraPositionChoice(fen, candidates, {
+    const proof = confirmExtraPositionChoice(fen, candidates, {
         shortlist, pair, replies: [reply],
-    })?.explanation).toContain("fxe3 can take the pawn on e3");
+    });
+    expect(proof?.playedLineUci.slice(0, 2)).toEqual(["e4e3", "f2e3"]);
+    expect(proof?.betterLineUci[0]).toBe("e7h4");
+    expect(proof?.explanation).toMatch(/fxe3 takes the pawn on e3.*unavailable after Qh4/);
 });

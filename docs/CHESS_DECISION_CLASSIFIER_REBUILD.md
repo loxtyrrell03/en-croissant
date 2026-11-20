@@ -1,5 +1,10 @@
 # Chess decision classifier rebuild
 
+The [Decision Evidence release record](CHESS_DECISION_CLASSIFIER_RELEASE.md)
+describes the current app behavior, the matched scores and the
+remaining gaps. The milestones below preserve their historical
+source and benchmark states.
+
 ## Objective and completion evidence
 
 The owner requests a substantially better diagnostic system in En Croissant.
