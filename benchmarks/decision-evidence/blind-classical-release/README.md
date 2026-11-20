@@ -32,3 +32,81 @@ include legal UCI witnesses from them. `seal.py` checked the
 witnesses against the frame prefixes and the exact move in each
 scope before either classifier produced a prediction.
 [Common frames](app-frames.json) · [Deeper frames](reference-frames.json)
+
+## Matched fixed-budget result
+
+Positive counts and false calls refer to definite reference labels.
+One person reviewed the frames with Stockfish assistance. Unresolved
+axes are excluded from both the positive and negative denominators.
+
+| Reviewed question | Original found | Rebuild found | False calls, original → rebuild |
+| --- | ---: | ---: | ---: |
+| Tactical position | 1/22 | 3/22 | 0 → 0 of 4 |
+| Tactical exact move | 0/16 | 0/16 | 0 → 0 of 9 |
+| Tactical actual mistake | 0/2 | 1/2 | 0 → 0 of 31 |
+| Positional position | — | 6/26 | No definite negatives |
+| Positional exact move | — | 4/19 | No definite negatives |
+| Positional actual mistake | 0/2 | 0/2 | 0 → 0 of 31 |
+| Mixed position | — | 0/12 | — → 0 of 4 |
+| Mixed exact move | — | 0/6 | — → 0 of 9 |
+
+The rebuilt report is unclear about the position on 26 boards and
+about the exact move on 28. The exact tactical move has one
+additional called case with an unresolved tactical reference. The
+separate motif checks include one positive for removing the defender,
+which both versions miss. The sample has no definite mixed mistake.
+Individual motif results and event-group intervals are in the
+[scorecard](results.json).
+
+- In an Oskemen game, `...Kc7` allows `Nxd6` and the loss of two
+  central pawns after the exchanges. The rebuild explains that
+  contrast in the **position** summary, and the **exact choice**
+  summary still misses why `...Bc7` works.
+  [Game](https://lichess.org/broadcast/oskemen-open-2025-masters/round-2/QL92CGX8/ugZnE2VF)
+- In a US Masters game the new mistake report follows
+  `Rh1 Qd2+ Kc4 Qb4+ Kd3 Qxe4+ Kxe4 Rxh1`. The checks lead to
+  the queen trade and remove the h1 rook's defender.
+  [Game](https://lichess.org/broadcast/2025-us-masters/round-1/IPBsoUzM/CZ3C3NCa)
+- The quiet `Qf4` stops `...Qh2+` and supports e5. Both
+  fixed-budget reports miss the relationship. A search giving
+  `...Qh2+` against other candidates is useful evidence even
+  when the exact good move prevents it.
+  [Game](https://lichess.org/broadcast/2025-australasian-masters/round-1/5v265rsE/I8ER9zId)
+
+The worker took 99 ms median for all three questions. The original
+root scanner took 47 ms median and its mistake pass took less than
+a millisecond median. Those timings skip Stockfish. The common
+captures completed about 205 million search nodes across 36 games.
+The offline review completed about 481 million and disagreed with
+the common frame's first move in 11 of 36 games.
+[Search and baseline receipt](frame-receipt.json)
+
+## Reproduce
+
+Run from the repository root with the project's dependencies and
+Python with python-chess. Use a new scratch directory whose path is
+in `$decisionReserve`. The comparison uses the checked-in frames,
+so an engine run is optional. The committed pre-rebuild source
+matches the original working scanner on every non-timing field
+in this replay.
+
+```powershell
+$bench = 'benchmarks/decision-evidence/blind-classical-release'
+$audit = 'benchmarks/decision-evidence/current-classifier-audit'
+$old = 'benchmarks/decision-evidence/cross-scope-audit'
+python "$audit/classical_score.py" "$bench/app-frames.json" "$bench/reference.json" $decisionReserve
+git show a4428e35:src/utils/tacticalMotifs/causalTactics.ts |
+  Set-Content "$decisionReserve/original-causal.ts" -Encoding utf8NoBOM
+$env:DECISION_SCORE_ARM = 'original'
+$env:DECISION_SCORE_ROOT_MOTIFS = '1'
+$env:DECISION_BASELINE_CAUSAL = "$decisionReserve/original-causal.ts"
+$env:DECISION_SCORE_INPUT = "$decisionReserve/classical-legacy-input.json"
+$env:DECISION_SCORE_OUTPUT = "$decisionReserve/classical-original.json"
+node node_modules/vitest/vitest.mjs run --config "$old/archive.config.mjs" archive.bench.ts
+$env:DECISION_AUDIT_REVISION = 'dde59f6f'
+$env:INTERFERENCE_MODE = 'archive'
+$env:INTERFERENCE_INPUT = "$decisionReserve/classical-replay-input.json"
+$env:INTERFERENCE_OUTPUT = "$decisionReserve/current.json"
+node node_modules/vitest/vitest.mjs run --config "$audit/replay.config.mjs"
+python "$audit/classical_score.py" "$bench/app-frames.json" "$bench/reference.json" $decisionReserve --score "$decisionReserve/results.json" --worker v66 dde59f6f "$decisionReserve/current.json"
+```

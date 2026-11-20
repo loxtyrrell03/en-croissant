@@ -183,3 +183,12 @@ The regression includes the exact three captured frames and checks
 the retry sequence. Use `Repetition Search Recovery` to verify the
 application path with live Stockfish.
 [Windows recovery receipt](repetition-retry-windows.json)
+
+### Latest decision wording
+
+Revision `dde59f6f` passed the live Chile passed pawn, mixed queen
+fork, deferred pawn and repetition recovery scenarios. The evidence
+panel shows the actual moves, defender and target squares. Replaying
+all 72 captured inputs changes the wording of seven reports and
+preserves all their structured conclusions and supporting lines.
+[Windows and matched-replay receipt](latest-windows.json)

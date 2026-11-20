@@ -1,0 +1,5 @@
+# The sealed fixture hashes cover exact bytes on every operating system.
+selection.json -text whitespace=cr-at-eol
+app-frames.json -text whitespace=cr-at-eol
+reference-frames.json -text whitespace=cr-at-eol
+reference.json -text

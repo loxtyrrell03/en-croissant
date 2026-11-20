@@ -1,0 +1,49 @@
+{
+  "revision": "dde59f6f21d84ff8ed0e81f34b438c6e9c358bc5",
+  "scenarios": {
+    "Chile Passed Pawn": {
+      "passed": true,
+      "seconds": 7.649,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Engine supported. Bf2 gives this piece access to e3. Bxe3 removes the piece on e3 which could legally recapture on b6. The line continues Kxe3 Rxb6.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. Bxe3 removes the piece on e3 which could legally recapture on b6. The line continues Kxe3 Rxb6. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical · Engine supported. Bf2 gives this piece access to e3. Bxe3 removes the piece on e3 which could legally recapture on b6. The line continues Kxe3 Rxb6.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. Bxe3 removes the piece on e3 which could legally recapture on b6. The line continues Kxe3 Rxb6. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.\n\nThis is the material change in the displayed tactical episode after settling replies. Later play and other defences can alter it.\n\nHide evidence"
+    },
+    "Queen Keeps the Pawn Chain": {
+      "passed": true,
+      "seconds": 8.623,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional · Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical · Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional · Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+ Kh1. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5 Qxf7. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence"
+    },
+    "Pawn Capture Can Wait": {
+      "passed": true,
+      "seconds": 7.899,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "move": "What the move achieves\n\nUNCLEAR\n\nThe search did not establish a specific cause.\n\nAfter h3 Qd8. h3 Qd8 Qxa3\n\nThe pawn on a3 can also be taken later. With h3, the engine keeps a large advantage and still plays Qxa3 in the shown line.\n\nHide evidence"
+    },
+    "Repetition Search Recovery": {
+      "passed": true,
+      "seconds": 22.285,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nUNCLEAR\n\n3 candidate moves examined\n\nThe search did not establish a specific cause.\n\nShow evidence"
+    }
+  },
+  "binarySha256": "6421f7b125f62668117caaa294b3fabff3fac4fdda6e4cb22199a4cd7cc1b644",
+  "matchedReplays": {
+    "previousRevision": "8de750330c3fe5024694d9d1dbf42b6da2e48d06",
+    "cases": 72,
+    "dataSha256": "c2ce70e2c2c07b43f397ad8d8732360c86e392f73243cc3903e74f91f049103e",
+    "reportSha256": "f6a4d458e8ca6a45c3dd52260b6a230801b06560d0c0c926aab818fd7c151271",
+    "structuredReportChanges": 0,
+    "reportTextChanges": 7,
+    "workerMedianMs": 59.104300000000194
+  }
+}

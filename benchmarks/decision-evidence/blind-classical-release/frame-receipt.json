@@ -1,0 +1,35 @@
+{
+  "engine": {
+    "name": "Stockfish 19",
+    "binarySha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+    "threadsPerProcess": 1,
+    "hashMiBPerProcess": 64,
+    "workers": 6
+  },
+  "cleanBaseline": {
+    "revision": "a4428e35b42a1cc87f15003262268ed2c2baf26a",
+    "sourceSha256": "2b4e13ad924d133042d5edf7c44052ad4f91b6e19f186b49862cd77ddc1dd3fd",
+    "matchesWorkingBaselineOnAllNonTimingFields": true,
+    "requests": 72
+  },
+  "sameLeadingChoiceAtBothBudgets": 25,
+  "cases": 36,
+  "frames": {
+    "app": {
+      "file": "app-frames.json",
+      "sha256": "83b2170b732424706aa40976281ba1dc249e2bfc5d58206e0681099efe4e1adf",
+      "queries": 130,
+      "requestedNodes": 232000000,
+      "lastCompleteFrameNodes": 204931321,
+      "concurrentMedianSearchMsPerCase": 7149.0
+    },
+    "reference": {
+      "file": "reference-frames.json",
+      "sha256": "106ca2f35e552a57a5bd80aceff287e97cab15a2e393f3961fdffa6d1fb5a257",
+      "queries": 133,
+      "requestedNodes": 535600000,
+      "lastCompleteFrameNodes": 480735413,
+      "concurrentMedianSearchMsPerCase": 14953.0
+    }
+  }
+}

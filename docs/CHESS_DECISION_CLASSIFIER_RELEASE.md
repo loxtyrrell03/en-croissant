@@ -110,6 +110,30 @@ game board are bound together in the audit.
 [Live scores and uncertainty](../benchmarks/decision-evidence/native-desktop/classical-live-v66.json) ·
 [Run instructions](../benchmarks/decision-evidence/native-desktop/README.md)
 
+## New classical events
+
+A separate 36-game reserve comes from six public classical
+events unused during development. The revision and positions
+were frozen first. A single engine-assisted reviewer sealed all
+36 exact-move notes before either classifier was run.
+
+With matched fixed-budget searches, tactical position detection
+rose from 1 to 3 of 22 and tactical mistake detection from 0 to
+1 of 2. Exact-move tactical detection stayed at 0 of 16. The
+rebuild recognized 6 of 26 positional positions and 4 of 19
+positional move justifications, with no combined calls among
+the 12 mixed positions or 6 mixed moves. Neither classifier
+called any of the reviewed tactical negatives. There were only
+four such position negatives, nine exact-move negatives and
+31 mistake negatives.
+
+The quiet `Qf4` is a missed mixed case. It covers the queen check
+on h2 and supports the advanced e5 pawn. The position and candidate
+summaries stay unclear at the fixed budget. The reserve shows
+an improvement in tactical position and mistake coverage and
+continued difficulty explaining the strongest exact candidate.
+[New reserve, position notes and scorecard](../benchmarks/decision-evidence/blind-classical-release/README.md)
+
 ## Verified scope and remaining issues
 
 The v65 follow-up explains an actual castling delay when a
@@ -134,6 +158,13 @@ tactical positives. The change adds no Stockfish queries.
   panel also passed at 320, 390 and 900 pixels. The installed app
   and phone service are outside those checks.
   [Build receipt](../benchmarks/decision-evidence/capture-route-structure/windows.json)
+- The latest isolated Windows build at `dde59f6f` passed four
+  live scenarios covering mixed evidence, the queen fork,
+  deferred pawn captures and the repetition retry. Its revised
+  wording uses the actual move and piece. All structured fields
+  remain equal on the 72 captured inputs, with seven reports
+  receiving revised text.
+  [Latest Windows receipt](../benchmarks/decision-evidence/native-desktop/latest-windows.json)
 - The 47-game pawn-chain transfer had one verified
   positive and 34 negatives. The new rule diagnosed the positive
   with zero false calls on those negatives. The separately
