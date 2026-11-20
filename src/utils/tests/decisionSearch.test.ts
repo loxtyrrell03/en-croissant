@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import {
     decisionCaptureChoices,
+    gatherCheckingDefence,
     gatherDecisionEvidence,
     gatherExtraPositionChoice,
 } from "@/components/panels/tactics/decisionSearch";
 import { assessChessDecision } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { BestMoves, EngineOptions } from "@/bindings";
 import type { LocalEngine } from "@/utils/engines";
+import cases from "../../../benchmarks/decision-evidence/defence-after-attack/fixtures.json";
 
 const native = vi.hoisted(() => ({ listen: vi.fn(), getBestMoves: vi.fn(), kill: vi.fn() }));
 vi.mock("@/bindings", () => ({ events: { bestMovesPayload: { listen: native.listen } } }));
@@ -145,6 +147,33 @@ test("capture nominations allow en passant and reject an ordinary defended-piece
         "d4e3",
     ]);
     expect(decisionCaptureChoices("1q3rk1/2N2ppp/8/7Q/8/3B4/8/R5K1 w - - 0 1", "a1a8")).toEqual([]);
+});
+
+test("checking defence searches the exact alternative and played checkpoints within the session", async () => {
+    const { input, checkingDefence, captures, expectedBoards } = cases.passedPawn;
+    const target = { fen: input.fen, history: { fen: input.fen, moves: [] } };
+    const request = {
+        better: { fen: expectedBoards[0], prefix: ["f8f7", "e6e7"] },
+        played: { fen: expectedBoards[1], prefix: ["c6d7", "e6e7"] },
+        captures,
+    };
+    const abort = new AbortController();
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) => {
+        if (options.searchMoves) {
+            const frame = checkingDefence.capture;
+            return Promise.resolve([100, lines([frame.pvUci], [frame.cp], frame.depth)]);
+        }
+        return Promise.resolve([100, lines([["d7c6"], ["d7d8"], ["d7c8"]], [-740, -800, -830])]);
+    });
+    const result = await gatherCheckingDefence(engine, target, request, abort.signal, Date.now() + 5000);
+    expect(result?.capture).toMatchObject({ fen: request.better.fen, pvUci: checkingDefence.capture.pvUci });
+    expect(result?.played).toMatchObject({ fen: request.played.fen, pvUci: ["d7c6"] });
+    const calls = native.getBestMoves.mock.calls;
+    expect(calls.map((call) => call[2])).toEqual([{ t: "Nodes", c: 2_400_000 }, { t: "Nodes", c: 2_400_000 }]);
+    expect(calls[0][3]).toMatchObject({ fen: input.fen, moves: request.better.prefix, searchMoves: captures });
+    expect(calls[1][3]).toMatchObject({ fen: input.fen, moves: request.played.prefix });
+    await expect(gatherCheckingDefence(engine, target, request, abort.signal, Date.now())).resolves.toBeNull();
+    expect(native.getBestMoves).toHaveBeenCalledTimes(2);
 });
 
 test("the extra comparison uses a short list, one paired search and an independent reply", async () => {

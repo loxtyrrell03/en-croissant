@@ -1,0 +1,243 @@
+{
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "nodesPerCheckpoint": 2400000,
+  "offline": {
+    "hashMiB": 32,
+    "threads": 1,
+    "cohorts": {
+      "archive": {
+        "screen": {
+          "no-stable-comparison": 946,
+          "shared-line-diverges": 110,
+          "selected": 8,
+          "no-exclusive-capture": 7,
+          "overlap": 48
+        },
+        "arms": {
+          "full": {
+            "no-repeated-material-consequence": 2,
+            "defence-verified": 5,
+            "incomplete": 1,
+            "verifiedMixed": 0,
+            "outcomeAfterRemovingCaptures": 0
+          },
+          "targeted": {
+            "no-repeated-material-consequence": 2,
+            "defence-verified": 5,
+            "incomplete": 1,
+            "verifiedMixed": 0,
+            "outcomeAfterRemovingCaptures": 0
+          },
+          "cached": {
+            "no-repeated-material-consequence": 3,
+            "defence-verified": 5,
+            "verifiedMixed": 0,
+            "outcomeAfterRemovingCaptures": 0
+          }
+        },
+        "independentlyCheckedPawnAdvances": 1,
+        "successfulPawnComparisons": 1
+      },
+      "reserve": {
+        "screen": {
+          "no-stable-comparison": 299,
+          "shared-line-diverges": 297,
+          "no-exclusive-capture": 7,
+          "selected": 15
+        },
+        "arms": {
+          "full": {
+            "no-repeated-material-consequence": 6,
+            "defence-verified": 4,
+            "capture-does-not-hold": 3,
+            "incomplete": 2,
+            "verifiedMixed": 0,
+            "outcomeAfterRemovingCaptures": 2
+          },
+          "targeted": {
+            "no-repeated-material-consequence": 6,
+            "defence-verified": 6,
+            "incomplete": 2,
+            "capture-does-not-hold": 1,
+            "verifiedMixed": 0,
+            "outcomeAfterRemovingCaptures": 0
+          },
+          "cached": {
+            "no-repeated-material-consequence": 7,
+            "defence-verified": 7,
+            "capture-does-not-hold": 1,
+            "verifiedMixed": 0,
+            "outcomeAfterRemovingCaptures": 0
+          }
+        },
+        "independentlyCheckedPawnAdvances": 0,
+        "successfulPawnComparisons": 0
+      }
+    }
+  },
+  "app": {
+    "hashMiB": 64,
+    "threads": 1,
+    "sessionLimitMs": 28000,
+    "runs": [
+      {
+        "run": "initial",
+        "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+        "savedInitialFrames": true,
+        "verdict": "mixed",
+        "rootMs": 0,
+        "elapsedMs": 7159,
+        "reachedDepth": [
+          73,
+          32
+        ],
+        "reachedCp": [
+          0,
+          -722
+        ],
+        "pawnReachedCp": [
+          0,
+          0
+        ]
+      },
+      {
+        "run": "initial",
+        "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+        "savedInitialFrames": false,
+        "verdict": "mixed",
+        "rootMs": 3143,
+        "elapsedMs": 9768,
+        "reachedDepth": [
+          73,
+          32
+        ],
+        "reachedCp": [
+          0,
+          -722
+        ],
+        "pawnReachedCp": [
+          0,
+          0
+        ]
+      },
+      {
+        "run": "initial",
+        "id": "deeper-loss-103a55d20d0e51a4",
+        "savedInitialFrames": true,
+        "verdict": "tactical",
+        "rootMs": 0,
+        "elapsedMs": 5566,
+        "reachedDepth": [
+          25,
+          29
+        ],
+        "reachedCp": [
+          812,
+          -682
+        ],
+        "pawnReachedCp": []
+      },
+      {
+        "run": "initial",
+        "id": "deeper-loss-103a55d20d0e51a4",
+        "savedInitialFrames": false,
+        "verdict": "tactical",
+        "rootMs": 8965,
+        "elapsedMs": 13914,
+        "reachedDepth": [
+          25,
+          29
+        ],
+        "reachedCp": [
+          812,
+          -682
+        ],
+        "pawnReachedCp": []
+      },
+      {
+        "run": "repeat",
+        "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+        "savedInitialFrames": true,
+        "verdict": "mixed",
+        "rootMs": 0,
+        "elapsedMs": 7348,
+        "reachedDepth": [
+          73,
+          32
+        ],
+        "reachedCp": [
+          0,
+          -722
+        ],
+        "pawnReachedCp": [
+          0,
+          0
+        ]
+      },
+      {
+        "run": "repeat",
+        "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+        "savedInitialFrames": false,
+        "verdict": "mixed",
+        "rootMs": 3531,
+        "elapsedMs": 10782,
+        "reachedDepth": [
+          73,
+          32
+        ],
+        "reachedCp": [
+          0,
+          -722
+        ],
+        "pawnReachedCp": [
+          0,
+          0
+        ]
+      },
+      {
+        "run": "repeat",
+        "id": "deeper-loss-103a55d20d0e51a4",
+        "savedInitialFrames": true,
+        "verdict": "tactical",
+        "rootMs": 0,
+        "elapsedMs": 5001,
+        "reachedDepth": [
+          25,
+          29
+        ],
+        "reachedCp": [
+          812,
+          -682
+        ],
+        "pawnReachedCp": []
+      },
+      {
+        "run": "repeat",
+        "id": "deeper-loss-103a55d20d0e51a4",
+        "savedInitialFrames": false,
+        "verdict": "tactical",
+        "rootMs": 8752,
+        "elapsedMs": 13780,
+        "reachedDepth": [
+          25,
+          29
+        ],
+        "reachedCp": [
+          812,
+          -682
+        ],
+        "pawnReachedCp": []
+      }
+    ]
+  },
+  "panel": {
+    "widthsPx": [
+      320,
+      390,
+      900
+    ],
+    "stockfishFrames": "saved",
+    "keyboardExpansion": true
+  }
+}

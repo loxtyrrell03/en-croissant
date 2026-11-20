@@ -1,0 +1,129 @@
+{
+  "sources": {
+    "reply-coverage-audit/full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "evidence-ceiling-v38/depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97",
+    "strict-archive-search.json": "3e70189c06a04386d2f2aff8fffe2a444f95d18f6cecb63c296a3ad597d985ea",
+    "archive-passers.json": "dd93a24571561efb98ebd77ece4f34ec621032ceead68b5035d46f85ace12ccf",
+    "compared-motif-identity/reserve.json": "43b5cbcaafaa4102aa08b914c6286f04f63a3d668ece3a84f58a464e78f646ee",
+    "discovered-target-identity/classical.json": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b",
+    "blocked-defensive-resource/reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430",
+    "strict-reserve-search.json": "725144390011f175759ad365f427acbd2327d5d14debfe2e1fd0b2b246e45830",
+    "reserve-passers.json": "17c1a9a5332e8cb118b8534ced2f116623eaddeea9b4a055e5d8ea33a20f3ba5"
+  },
+  "requests": 1737,
+  "valid": 1734,
+  "unexpectedVerdictChanges": {},
+  "searchRequests": {
+    "archive": 5,
+    "repeated-input": 4,
+    "reserve": 11
+  },
+  "reviewedMistakes": {
+    "v40": {
+      "tactical": {
+        "tp": 20,
+        "fp": 0,
+        "fn": 47,
+        "tn": 165,
+        "uncertain": 78,
+        "uncertain-called": 7
+      },
+      "positional": {
+        "tp": 20,
+        "fp": 0,
+        "fn": 68,
+        "tn": 164,
+        "uncertain": 62,
+        "uncertain-called": 3
+      },
+      "mixed": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 15,
+        "tn": 185,
+        "uncertain": 116,
+        "uncertain-called": 0
+      }
+    },
+    "v41": {
+      "tactical": {
+        "tp": 23,
+        "fp": 0,
+        "fn": 44,
+        "tn": 165,
+        "uncertain": 78,
+        "uncertain-called": 7
+      },
+      "positional": {
+        "tp": 21,
+        "fp": 0,
+        "fn": 67,
+        "tn": 164,
+        "uncertain": 62,
+        "uncertain-called": 3
+      },
+      "mixed": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 14,
+        "tn": 185,
+        "uncertain": 116,
+        "uncertain-called": 0
+      }
+    }
+  },
+  "verdictChanges": [
+    {
+      "id": "mistake-world-amateur-4235c00aaafd736a-47",
+      "cohort": "archive",
+      "before": "unclear",
+      "after": "tactical",
+      "defence": "After Be6, Qd4+ cannot be met with Qxd4. That capture is available against the same attack after Qf6. The played searches lose the pawn that started on a7. The defence keeps at least 1 more material point over the compared moves.",
+      "positional": null
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+      "cohort": "archive",
+      "before": "unclear",
+      "after": "mixed",
+      "defence": "After Kd7, Re7+ cannot be met with Rxe7+. That capture is available against the same attack after Rf7. The played searches lose the rook that started on f8. The defence can trade that same piece and retain more material. The defence keeps at least 4 more material points over the compared moves.",
+      "positional": "The original passed pawn on d6 reaches d7 with support after Kd7. After Rf7, the same advance in either compared line allows the pawn to be taken without a material loss in the immediate reply sequence."
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-e69baf1ec4dddb62-55",
+      "cohort": "archive",
+      "before": "unclear",
+      "after": "tactical",
+      "defence": "After Bxb4, Rxg5+ cannot be met with fxg5. That capture is available against the same attack after f6. The played searches lose the rook that started on b8. The defence keeps at least 4.7 more material points over the compared moves.",
+      "positional": null
+    },
+    {
+      "id": "deeper-loss-103a55d20d0e51a4",
+      "cohort": "reserve",
+      "before": "unclear",
+      "after": "tactical",
+      "defence": "After e5, Bd5+ cannot be met with exd5. That capture is available against the same attack after Re7. The played searches lose the rook that started on e8. The defence keeps at least 7.3 more material points over the compared moves.",
+      "positional": null
+    },
+    {
+      "id": "blocked-defence-063256fd735eec37",
+      "cohort": "reserve",
+      "before": "unclear",
+      "after": "tactical",
+      "defence": "After Rc7, Qb8+ cannot be met with Rxb8. That capture is available against the same attack after Kc7. The played searches lose the rook that started on e8. The defence keeps at least 10.8 more material points over the compared moves.",
+      "positional": null
+    },
+    {
+      "id": "blocked-defence-44909f6c7e8e836b",
+      "cohort": "reserve",
+      "before": "unclear",
+      "after": "tactical",
+      "defence": "After Rb7, Rc5+ cannot be met with Bxc5. That capture is available against the same attack after Bxd4. The played searches lose the pawn that started on d5. The defence keeps at least 9.2 more material points over the compared moves.",
+      "positional": null
+    }
+  ],
+  "workerMedianMs": {
+    "v40": 72.69,
+    "v41": 71.66
+  }
+}

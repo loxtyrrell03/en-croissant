@@ -14,8 +14,10 @@ import type {
 import type { DecisionTacticalRecovery } from "@/utils/tacticalMotifs/decisionTacticalRecovery";
 import {
   DECISION_SEARCH_SESSION_MS,
+  gatherCheckingDefence,
   gatherDecisionEvidence,
   gatherExtraPositionChoice,
+  gatherPassedAdvance,
   gatherPreparedCheckpoint,
   type DecisionSearchTarget,
 } from "./decisionSearch";
@@ -299,6 +301,7 @@ function DecisionReport({
   const mistakeComparison = report.mistake?.promotion ?? episode;
   const rookPressure = report.mistake?.rookPressure;
   const pawnStructure = report.mistake?.pawnStructure;
+  const passedAdvance = report.mistake?.passedAdvance;
   const mistakeLines = mistakeComparison
     ? [
         { label: "Played line", san: lineSan(report.fen, mistakeComparison.playedLineUci) },
@@ -338,6 +341,20 @@ function DecisionReport({
   }
   for (const line of recoveryLines(report.fen, recovery, "played move", mistakeLines.length > 0))
     if (!mistakeLines.some(({ san }) => san === line.san)) mistakeLines.push(line);
+  if (episode?.controlLineUci?.length) {
+    mistakeLines.push({
+      label: "Same attack after the better move",
+      san: lineSan(report.fen, episode.controlLineUci),
+    });
+  }
+  if (passedAdvance) {
+    passedAdvance.testedAdvanceLines.forEach((moves, index) =>
+      mistakeLines.push({
+        label: `If the pawn advances in line ${index + 1}`,
+        san: lineSan(report.fen, moves),
+      }),
+    );
+  }
   const contrast = report.position.tacticalContrast;
   const checkpoint = report.position.preparedCheckpoint;
   const plan = report.position.strategicPlan;
@@ -469,12 +486,42 @@ export function DecisionEvidencePanel({
     };
     try {
       const deadline = Date.now() + DECISION_SEARCH_SESSION_MS;
-      const input = await gatherDecisionEvidence(engine, target, owned.signal, progress, deadline);
+      let input = await gatherDecisionEvidence(engine, target, owned.signal, progress, deadline);
       progress("Verifying the continuations…");
       let report = await classifyDecisionInWorker(
         { input, engineName: engine.name, history: target.history },
         owned.signal,
       );
+      const checkDefence = report.mistake?.checkingDefenceRequest;
+      if (checkDefence && active() && Date.now() < deadline) {
+        progress("Comparing defensive replies…");
+        const checkingDefence = await gatherCheckingDefence(
+          engine,
+          target,
+          checkDefence,
+          owned.signal,
+          deadline,
+        ).catch(() => null);
+        if (checkingDefence && active()) {
+          input = { ...input, checkingDefence };
+          report = await classifyDecisionInWorker(
+            { input, engineName: engine.name, history: target.history },
+            owned.signal,
+          ).catch(() => report);
+        }
+      }
+      const pawn = report.mistake?.passedAdvanceRequest;
+      if (pawn && active() && Date.now() < deadline) {
+        progress("Checking whether the passed pawn can advance…");
+        const passedAdvance = await gatherPassedAdvance(engine, target, pawn, owned.signal, deadline).catch(() => []);
+        if (passedAdvance.length && active()) {
+          input = { ...input, passedAdvance };
+          report = await classifyDecisionInWorker(
+            { input, engineName: engine.name, history: target.history },
+            owned.signal,
+          ).catch(() => report);
+        }
+      }
       const checkpoint = report.position.preparedCheckpointRequest;
       if (checkpoint && active() && Date.now() < deadline) {
         progress("Checking the critical move in the line…");

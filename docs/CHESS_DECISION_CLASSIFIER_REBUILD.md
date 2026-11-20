@@ -4042,3 +4042,23 @@ replies for both choices, and a deeper paired root and reply replay
 raises that to eight. It adds no mixed diagnosis. The remaining
 positional and causal gaps require more than additional search depth.
 [Evidence, archived metrics and replay](../benchmarks/decision-evidence/compared-motif-identity/README.md)
+
+## When the stronger move preserves a defence
+
+Decision assessment v41 follows the same legal attack after two different
+choices. It checks a defensive capture available after the stronger move
+and repeats the played punishment from the exact position. Material
+outcomes must persist across separate searches. A second pair of searches
+can verify a positional effect by testing the same passed-pawn advance
+after the stronger move in two distinct continuations.
+
+On 317 previously labelled archived mistakes, tactical true positives
+increase from 20/67 to 23/67, positional from 20/88 to 21/88, and mixed from
+1/16 to 2/16. All three known-negative counts remain at zero false
+positives. Three separate reserve games gain a tactical explanation.
+The reserve supplies no eligible mixed case for this check. The 1,734
+valid same-input reports agree before the optional engine evidence.
+The narrower proof addresses a specific missing causal comparison.
+The spatial neural results still favour the simpler search ranking
+for finding previously missed classical forks.
+[Comparison, limits and reproduction](../benchmarks/decision-evidence/defence-after-attack/README.md)

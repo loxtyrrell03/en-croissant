@@ -83,7 +83,17 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 40;
+import {
+    confirmCheckingDefence,
+    confirmPassedAdvance,
+    nominateCheckingDefence,
+    type CheckingDefenceProbe,
+    type CheckingDefenceRequest,
+    type PassedAdvanceEvidence,
+    type PassedAdvanceRequest,
+} from "./decisionCheckingDefence";
+
+export const DECISION_ASSESSMENT_VERSION = 41;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -126,6 +136,8 @@ export type DecisionAssessmentInput = {
     preparedCheckpoint?: DecisionEngineLine[];
     extraPositionChoice?: ExtraPositionChoice;
     sharedReply?: DecisionSharedReplyProbe;
+    checkingDefence?: CheckingDefenceProbe;
+    passedAdvance?: DecisionEngineLine[];
     rootCertificates?: Array<{ fen: string; moveUci: string; motifs: TacticalMotifEvidence[] }>;
     mistakeCertificate?: {
         fen: string;
@@ -173,6 +185,9 @@ export type ChessDecisionReport = {
               rookPressure?: RookPressureEvidence;
               tacticalRecovery?: DecisionTacticalRecovery;
               pawnStructure?: PawnStructureEvidence;
+              checkingDefenceRequest?: CheckingDefenceRequest;
+              passedAdvanceRequest?: PassedAdvanceRequest;
+              passedAdvance?: PassedAdvanceEvidence;
           })
         | null;
 };
@@ -1119,6 +1134,24 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     };
                 }
             }
+            let checkingDefenceRequest: CheckingDefenceRequest | null = null;
+            let checkedDefence: ReturnType<typeof confirmCheckingDefence> = null;
+            if (corroboratedChoices && assessment.tactical.support !== "supported") {
+                const frames = [input.fen, comparedBest, playedLine, betterProbe!.lines[0], playedProbe!.lines[0]] as const;
+                if (input.checkingDefence) {
+                    checkedDefence = confirmCheckingDefence(...frames, input.checkingDefence, input.history);
+                    if (checkedDefence) {
+                        tacticalEpisode = checkedDefence.episode;
+                        assessment.tactical = {
+                            support: "supported",
+                            basis: "engine-supported",
+                            reasons: [tacticalEpisode.explanation],
+                        };
+                    }
+                } else {
+                    checkingDefenceRequest = nominateCheckingDefence(...frames, input.history);
+                }
+            }
             // Compare this particular played choice, not a different alternative.
             const factors = comparePositionalTransitions(input.fen, comparedBest, [playedLine]);
             const lostOutpost = compareLostOutpost(input.fen, comparedBest, playedLine);
@@ -1226,6 +1259,26 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     ...(pawnStructure ? [pawnStructure.factor] : []),
                 ];
             }
+            let passedAdvance: PassedAdvanceEvidence | null = null;
+            let passedAdvanceRequest: PassedAdvanceRequest | null = null;
+            if (checkedDefence?.pawnRequest && assessment.positional.support !== "supported") {
+                if (input.passedAdvance) {
+                    passedAdvance = confirmPassedAdvance(
+                        input.fen, comparedBest, playedLine, checkedDefence.pawnRequest,
+                        input.passedAdvance, input.history,
+                    );
+                    if (passedAdvance) {
+                        assessment.positional = {
+                            support: "supported",
+                            basis: "heuristic",
+                            reasons: [passedAdvance.factor.description],
+                        };
+                        assessment.positionalFactors.push(passedAdvance.factor);
+                    }
+                } else {
+                    passedAdvanceRequest = checkedDefence.pawnRequest;
+                }
+            }
             assessment.category = category(assessment.tactical, assessment.positional);
             assessment.limitations = [
                 "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
@@ -1246,6 +1299,9 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 ...(promotion ? { promotion } : {}),
                 ...(rookPressure ? { rookPressure } : {}),
                 ...(pawnStructure ? { pawnStructure } : {}),
+                ...(checkingDefenceRequest ? { checkingDefenceRequest } : {}),
+                ...(passedAdvanceRequest ? { passedAdvanceRequest } : {}),
+                ...(passedAdvance ? { passedAdvance } : {}),
                 ...(recovery ? { tacticalRecovery: recovery } : {}),
             };
         }

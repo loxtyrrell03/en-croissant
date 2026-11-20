@@ -43,6 +43,8 @@ function fixturePlugin() {
         }
         export async function gatherExtraPositionChoice() { return null; }
         export async function gatherPreparedCheckpoint() { return []; }
+        export async function gatherCheckingDefence() { return null; }
+        export async function gatherPassedAdvance() { return []; }
       `;
       return pinned.get(id.replaceAll("\\", "/").split("/").at(-1)) ?? null;
     },

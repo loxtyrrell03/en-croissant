@@ -15,6 +15,12 @@ import type {
     DecisionReplyProbe,
 } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
+import type {
+    CheckingDefenceRequest,
+    CheckingDefenceProbe,
+    DecisionCheckpoint,
+    PassedAdvanceRequest,
+} from "@/utils/tacticalMotifs/decisionCheckingDefence";
 import { findAllowedImmediateMate } from "@/utils/tacticalMotifs/decisionMateConsequence";
 import {
     compareExtraPositionMove,
@@ -37,6 +43,44 @@ export type DecisionSearchTarget = {
     playedMoveUci?: string;
     history?: TacticalGameHistory;
 };
+
+function searchDecisionCheckpoint(
+    engine: LocalEngine, checkpoint: DecisionCheckpoint, signal: AbortSignal,
+    deadline: number, history?: TacticalGameHistory, restricted?: string[],
+) {
+    return searchPosition(
+        engine, checkpoint.fen, 2_400_000, signal, Math.min(deadline, Date.now() + 3_600),
+        history ? { fen: history.fen, moves: [...history.moves, ...checkpoint.prefix] } : undefined,
+        restricted,
+    );
+}
+
+export async function gatherCheckingDefence(
+    engine: LocalEngine, target: DecisionSearchTarget, request: CheckingDefenceRequest,
+    signal: AbortSignal, deadline: number,
+): Promise<CheckingDefenceProbe | null> {
+    const [capture] = await searchDecisionCheckpoint(
+        engine, request.better, signal, deadline, target.history, request.captures,
+    );
+    if (!capture || capture.depth < 16 || !request.captures.includes(capture.pvUci[0])) return null;
+    const [played] = await searchDecisionCheckpoint(
+        engine, request.played, signal, deadline, target.history,
+    );
+    return played && played.depth >= 16 ? { capture, played } : null;
+}
+
+export async function gatherPassedAdvance(
+    engine: LocalEngine, target: DecisionSearchTarget, request: PassedAdvanceRequest,
+    signal: AbortSignal, deadline: number,
+) {
+    const lines: DecisionEngineLine[] = [];
+    for (const checkpoint of request.checks) {
+        const [line] = await searchDecisionCheckpoint(engine, checkpoint, signal, deadline, target.history);
+        if (!line || line.depth < 16) return [];
+        lines.push(line);
+    }
+    return lines;
+}
 const ROOT_BUDGETS = [600_000, 2_400_000, 9_600_000];
 const REPLY_BUDGETS = [1_000_000, 4_000_000];
 export const DECISION_SEARCH_SESSION_MS = 28_000;
