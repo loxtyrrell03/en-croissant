@@ -1,0 +1,22 @@
+{
+  "baselineRevision": "7e1524d5",
+  "engine": "Stockfish 19",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "hashMiB": 64,
+  "threadsPerSearch": 1,
+  "minimumCommonDepth": 16,
+  "appRootNodes": 2400000,
+  "appRootMultiPv": 3,
+  "optionalSearchesPerBoard": 1,
+  "appOrderNodes": 1400000,
+  "referenceOrderNodes": 5400000,
+  "repeatOrderNodes": 8000000,
+  "minimumOrderLossCp": 100,
+  "closeControlMaximumGapCp": 50,
+  "maxRootOrRemovalGapCp": 50,
+  "maxReplyGapCp": 100,
+  "positives": "The same capture order and defender's role repeat at both reference budgets. The initial choice, reply and later guard removal stay near the independent leading choices.",
+  "unknown": "The frame is incomplete, the original guard does not carry out the refutation, the relevant choice is unverified, or the pattern differs from the reference. Ordinary boards are runtime controls and any new call gets a separate review.",
+  "selection": "One board per game, split from discovery by event family, game prefix and color-normalized root. The enriched selector sees the recorded line but no engine scores. The app replay uses only MultiPV engine continuations.",
+  "decision": "Retain the result offline unless it recovers repeated independent exact-choice examples at the normal budget and added searches remain sparse on the ordinary controls. Do not fit a neural ranking model on the held-out fragment."
+}
