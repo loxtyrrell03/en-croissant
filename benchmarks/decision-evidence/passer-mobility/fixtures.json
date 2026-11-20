@@ -1,0 +1,2709 @@
+[
+  {
+    "run": "reserve",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "supported",
+      "persistent": "supported",
+      "prepared": "supported"
+    },
+    "id": "classical-transfer-8717a9b3de261d55",
+    "game": "22a79dc9837c32b3",
+    "event": "36th-nato-chess-championship-2026",
+    "site": "https://lichess.org/broadcast/36th-nato-chess-championship-2026/round-7/Cd33Pm6w/k8M4L4fz",
+    "fen": "3R4/8/8/8/8/5p2/PP2k2r/2K5 w - - 4 54",
+    "history": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "d2d4",
+        "d7d5",
+        "g1f3",
+        "g8f6",
+        "e2e3",
+        "c8f5",
+        "f3h4",
+        "f5g6",
+        "b1d2",
+        "e7e6",
+        "h4g6",
+        "h7g6",
+        "c2c4",
+        "c7c6",
+        "d1b3",
+        "d8c7",
+        "d2f3",
+        "b8d7",
+        "c1d2",
+        "f8d6",
+        "c4c5",
+        "d6e7",
+        "b3c2",
+        "e6e5",
+        "d4e5",
+        "d7e5",
+        "f3e5",
+        "c7e5",
+        "d2c3",
+        "e5e4",
+        "c2e4",
+        "f6e4",
+        "c3g7",
+        "h8g8",
+        "g7e5",
+        "f7f6",
+        "e5d4",
+        "e7c5",
+        "d4c5",
+        "e4c5",
+        "h2h4",
+        "a7a5",
+        "g2g4",
+        "e8e7",
+        "f2f3",
+        "b7b5",
+        "a1c1",
+        "e7d6",
+        "h4h5",
+        "a8e8",
+        "e1d2",
+        "g8h8",
+        "f1g2",
+        "g6h5",
+        "h1h5",
+        "h8h5",
+        "g4h5",
+        "e8h8",
+        "c1h1",
+        "h8h6",
+        "g2f1",
+        "c5e6",
+        "f1d3",
+        "d5d4",
+        "d3g6",
+        "d4e3",
+        "d2e3",
+        "c6c5",
+        "h1g1",
+        "d6e5",
+        "g6e8",
+        "b5b4",
+        "g1c1",
+        "a5a4",
+        "e8f7",
+        "f6f5",
+        "f3f4",
+        "e5f6",
+        "f7e6",
+        "f6e6",
+        "c1c5",
+        "h6h5",
+        "c5c6",
+        "e6d5",
+        "c6b6",
+        "h5h3",
+        "e3d2",
+        "h3h2",
+        "d2c1",
+        "d5c4",
+        "b6c6",
+        "c4d3",
+        "c6d6",
+        "d3e3",
+        "d6b6",
+        "e3f4",
+        "b6b4",
+        "f4e3",
+        "b4a4",
+        "f5f4",
+        "a4a8",
+        "f4f3",
+        "a8e8",
+        "e3d3",
+        "e8d8",
+        "d3e2"
+      ]
+    },
+    "pawn": "f3",
+    "better": "d8d2",
+    "played": "d8e8",
+    "bestCp": 751,
+    "playedCp": 0,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d8e8",
+          "e2d3",
+          "e8d8",
+          "d3e3",
+          "d8e8",
+          "e3f2",
+          "c1d2",
+          "f2g3",
+          "d2c3"
+        ],
+        "advance": "f3f2",
+        "fen": "4R3/8/8/8/8/2K2pk1/PP5r/8 b - - 13 58",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d8e8",
+          "e2f2",
+          "e8f8",
+          "f2e2",
+          "f8e8",
+          "e2f1",
+          "e8f8"
+        ],
+        "advance": "f3f2",
+        "fen": "5R2/8/8/8/8/5p2/PP5r/2K2k2 b - - 11 57",
+        "natural": false
+      }
+    ],
+    "controls": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d8d2",
+          "e2e3",
+          "d2h2",
+          "e3d4",
+          "h2c2",
+          "d4d3",
+          "a2a4",
+          "d3e4",
+          "a4a5"
+        ],
+        "advance": "f3f2",
+        "fen": "8/8/8/P7/4k3/5p2/1PR5/2K5 b - - 0 58"
+      },
+      {
+        "kind": "already-contained"
+      }
+    ],
+    "goodLines": [
+      [
+        "d8d2",
+        "e2e3",
+        "d2h2",
+        "e3d4",
+        "h2c2",
+        "d4d3",
+        "a2a4",
+        "d3e4",
+        "a4a5",
+        "e4d5",
+        "a5a6",
+        "f3f2",
+        "c2f2",
+        "d5c6",
+        "f2f6",
+        "c6c7",
+        "f6g6",
+        "c7c8",
+        "g6g8",
+        "c8c7"
+      ],
+      [
+        "d8d2",
+        "e2e3",
+        "d2h2",
+        "e3d4",
+        "c1d2",
+        "f3f2",
+        "h2f2",
+        "d4c4",
+        "a2a4",
+        "c4b4",
+        "f2f4",
+        "b4a5",
+        "b2b3",
+        "a5a6",
+        "d2e3",
+        "a6a5",
+        "f4f5",
+        "a5b6"
+      ]
+    ],
+    "playedLines": [
+      [
+        "d8e8",
+        "e2d3",
+        "e8d8",
+        "d3e3",
+        "d8e8",
+        "e3f2",
+        "c1d2",
+        "f2g3",
+        "d2c3",
+        "f3f2",
+        "e8g8",
+        "g3f4",
+        "g8f8",
+        "f4e4",
+        "f8e8",
+        "e4f3",
+        "e8f8",
+        "f3e2",
+        "f8e8",
+        "e2f3"
+      ],
+      [
+        "d8e8",
+        "e2f2",
+        "e8f8",
+        "f2e2",
+        "f8e8",
+        "e2f1",
+        "e8f8"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "f2",
+        "reached": "4R3/8/8/8/8/2K3k1/PP3p1r/8 w - - 0 59",
+        "line": {
+          "depth": 18,
+          "cp": 0,
+          "mate": null,
+          "nodes": 1800253,
+          "pvUci": [
+            "e8g8",
+            "g3f3",
+            "g8f8",
+            "f3g2",
+            "f8g8",
+            "g2f1",
+            "g8f8"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "f2",
+        "reached": "5R2/8/8/8/8/8/PP3p1r/2K2k2 w - - 0 58",
+        "line": {
+          "depth": 20,
+          "cp": 0,
+          "mate": null,
+          "nodes": 1780409,
+          "pvUci": [
+            "c1d2",
+            "f1g1",
+            "d2d3",
+            "h2h8",
+            "f8f7",
+            "h8b8",
+            "b2b3"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      {
+        "status": "checked",
+        "san": "f2",
+        "reached": "8/8/8/P7/4k3/8/1PR2p2/2K5 w - - 0 59",
+        "line": {
+          "depth": 31,
+          "cp": null,
+          "mate": 11,
+          "nodes": 1278125,
+          "pvUci": [
+            "c2f2",
+            "e4d5",
+            "a5a6",
+            "d5c6",
+            "f2f7",
+            "c6d6",
+            "a6a7"
+          ]
+        }
+      },
+      null
+    ],
+    "queries": 3
+  },
+  {
+    "run": "reserve",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "supported",
+      "persistent": "supported",
+      "prepared": "supported"
+    },
+    "id": "blocked-defence-d92503ccccdff208",
+    "game": "68436d0a991c9070",
+    "event": "misamis-occidental-philippines-international-chess-championship",
+    "site": "https://lichess.org/broadcast/misamis-occidental-philippines-international-chess-championship/round/fE7yhPKg",
+    "fen": "k1n4r/pp1nq3/2p1P3/P5pr/3P4/1Q2p2B/1P1B4/1K4RR b - - 0 34",
+    "history": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "d2d4",
+        "d7d5",
+        "c2c4",
+        "c7c6",
+        "g1f3",
+        "g8f6",
+        "e2e3",
+        "c8g4",
+        "b1c3",
+        "e7e6",
+        "h2h3",
+        "g4h5",
+        "g2g4",
+        "h5g6",
+        "f3e5",
+        "b8d7",
+        "h3h4",
+        "d5c4",
+        "e5g6",
+        "h7g6",
+        "g4g5",
+        "f6d5",
+        "f1c4",
+        "f8b4",
+        "c1d2",
+        "d5b6",
+        "c4f1",
+        "e6e5",
+        "d1b3",
+        "d8e7",
+        "e1c1",
+        "e8c8",
+        "f1g2",
+        "f7f5",
+        "c1b1",
+        "c8b8",
+        "a2a3",
+        "b4d6",
+        "d2c1",
+        "e5e4",
+        "f2f3",
+        "d6g3",
+        "f3e4",
+        "g3h4",
+        "a3a4",
+        "e7g5",
+        "g2h3",
+        "h4f2",
+        "a4a5",
+        "b6c8",
+        "e4e5",
+        "f2e3",
+        "c3e4",
+        "f5e4",
+        "c1e3",
+        "g5e7",
+        "d1g1",
+        "h8h5",
+        "g1g6",
+        "d8h8",
+        "e3f4",
+        "b8a8",
+        "g6g1",
+        "g7g5",
+        "f4d2",
+        "e4e3",
+        "e5e6"
+      ]
+    },
+    "pawn": "e6",
+    "better": "d7f6",
+    "played": "d7b8",
+    "bestCp": 554,
+    "playedCp": 188,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d7b8",
+          "b3e3",
+          "e7h7",
+          "b1a2",
+          "h5h3",
+          "e3h3",
+          "h7h3",
+          "h1h3",
+          "h8h3",
+          "d2g5",
+          "h3h8"
+        ],
+        "advance": "e6e7",
+        "fen": "knn4r/pp6/2p1P3/P5B1/3P4/8/KP6/6R1 w - - 1 40",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d7b8",
+          "b3e3",
+          "e7h7",
+          "b1c1",
+          "h5h3",
+          "h1h3",
+          "h7h3",
+          "e3h3",
+          "h8h3",
+          "d2g5",
+          "h3h8"
+        ],
+        "advance": "e6e7",
+        "fen": "knn4r/pp6/2p1P3/P5B1/3P4/8/1P6/2K3R1 w - - 1 40",
+        "natural": true
+      }
+    ],
+    "controls": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d7f6",
+          "b3e3",
+          "e7h7",
+          "b1a2",
+          "f6d5",
+          "e3e5",
+          "h5h3",
+          "h1h3",
+          "h7h3",
+          "g1g3",
+          "h3h7"
+        ],
+        "advance": "e6e7",
+        "fen": "k1n4r/pp5q/2p1P3/P2nQ1p1/3P4/6R1/KP1B4/8 w - - 2 40"
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d7f6",
+          "b3e3",
+          "e7h7",
+          "b1a2",
+          "f6d5",
+          "e3f3",
+          "h5h3",
+          "h1h3",
+          "h7h3",
+          "f3h3",
+          "h8h3"
+        ],
+        "advance": "e6e7",
+        "fen": "k1n5/pp6/2p1P3/P2n2p1/3P4/7r/KP1B4/6R1 w - - 0 40"
+      }
+    ],
+    "goodLines": [
+      [
+        "d7f6",
+        "b3e3",
+        "e7h7",
+        "b1a2",
+        "f6d5",
+        "e3e5",
+        "h5h3",
+        "h1h3",
+        "h7h3",
+        "g1g3",
+        "h3h7",
+        "d2g5",
+        "a7a6",
+        "g5f4",
+        "d5f4",
+        "e5f4",
+        "h7e7",
+        "f4f7",
+        "e7b4",
+        "g3g7",
+        "b4a5",
+        "a2b1",
+        "h8h1",
+        "b1c2",
+        "a5a4",
+        "c2d3"
+      ],
+      [
+        "d7f6",
+        "b3e3",
+        "e7h7",
+        "b1a2",
+        "f6d5",
+        "e3f3",
+        "h5h3",
+        "h1h3",
+        "h7h3",
+        "f3h3",
+        "h8h3",
+        "d2g5",
+        "h3h8",
+        "g1f1",
+        "a7a6",
+        "a2b3",
+        "h8g8",
+        "g5h4",
+        "a8a7",
+        "b3a4",
+        "g8e8",
+        "h4g3",
+        "e8e6",
+        "f1f7",
+        "e6e8",
+        "g3e5",
+        "a7a8",
+        "f7g7"
+      ]
+    ],
+    "playedLines": [
+      [
+        "d7b8",
+        "b3e3",
+        "e7h7",
+        "b1a2",
+        "h5h3",
+        "e3h3",
+        "h7h3",
+        "h1h3",
+        "h8h3",
+        "d2g5",
+        "h3h8",
+        "e6e7",
+        "h8e8",
+        "g1f1",
+        "b8a6",
+        "a2b3",
+        "a6c7",
+        "f1f8",
+        "a7a6",
+        "b3c2",
+        "a8a7",
+        "c2d3",
+        "c8d6"
+      ],
+      [
+        "d7b8",
+        "b3e3",
+        "e7h7",
+        "b1c1",
+        "h5h3",
+        "h1h3",
+        "h7h3",
+        "e3h3",
+        "h8h3",
+        "d2g5",
+        "h3h8",
+        "e6e7",
+        "h8e8",
+        "g1f1",
+        "b8d7",
+        "c1d2",
+        "a7a6",
+        "d4d5",
+        "c6c5"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "knn4r/pp2P3/2p5/P5B1/3P4/8/KP6/6R1 b - - 0 40",
+        "line": {
+          "depth": 19,
+          "cp": 221,
+          "mate": null,
+          "nodes": 1800210,
+          "pvUci": [
+            "b8a6",
+            "g1f1",
+            "h8e8",
+            "f1f8",
+            "a6c7",
+            "a2b3",
+            "a7a6"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "knn4r/pp2P3/2p5/P5B1/3P4/8/1P6/2K3R1 b - - 0 40",
+        "line": {
+          "depth": 21,
+          "cp": 237,
+          "mate": null,
+          "nodes": 1800310,
+          "pvUci": [
+            "h8e8",
+            "g1f1",
+            "b8d7",
+            "c1c2",
+            "b7b5",
+            "d4d5",
+            "a8b7"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "k1n4r/pp2P2q/2p5/P2nQ1p1/3P4/6R1/KP1B4/8 b - - 0 40",
+        "line": {
+          "depth": 21,
+          "cp": 694,
+          "mate": null,
+          "nodes": 1800593,
+          "pvUci": [
+            "h8e8",
+            "g3g5",
+            "c8e7",
+            "g5h5",
+            "h7f7",
+            "b2b3",
+            "a7a6"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "k1n5/pp2P3/2p5/P2n2p1/3P4/7r/KP1B4/6R1 b - - 0 40",
+        "line": {
+          "depth": 19,
+          "cp": 664,
+          "mate": null,
+          "nodes": 1684391,
+          "pvUci": [
+            "c8e7",
+            "g1g5",
+            "a8b8",
+            "g5g7",
+            "b8c8",
+            "a5a6",
+            "b7b5"
+          ]
+        }
+      }
+    ],
+    "queries": 4
+  },
+  {
+    "run": "reserve",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "incomplete",
+      "persistent": "incomplete",
+      "prepared": "incomplete"
+    },
+    "id": "classical-transfer-8367c04911a82dc9",
+    "game": "55986757033dc2d9",
+    "event": "cork-congress-2026-masters-1825",
+    "site": "https://lichess.org/broadcast/cork-congress-2026-masters-1825/round-1/6jT7GvmT",
+    "fen": "8/4Qp1k/3P3p/p2q4/1p6/7P/P5PK/8 b - - 3 41",
+    "history": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "d2d4",
+        "d7d5",
+        "g1f3",
+        "g8f6",
+        "c2c4",
+        "e7e6",
+        "c1g5",
+        "f8e7",
+        "e2e3",
+        "e8g8",
+        "f1d3",
+        "d5c4",
+        "d3c4",
+        "c7c5",
+        "e1g1",
+        "b7b6",
+        "b1c3",
+        "c8b7",
+        "c4e2",
+        "f6d5",
+        "g5e7",
+        "d8e7",
+        "a1c1",
+        "b8d7",
+        "d4c5",
+        "d7c5",
+        "f3d4",
+        "f8d8",
+        "c3d5",
+        "b7d5",
+        "e2f3",
+        "e7f6",
+        "f3d5",
+        "d8d5",
+        "b2b4",
+        "e6e5",
+        "b4c5",
+        "e5d4",
+        "c5c6",
+        "d5c5",
+        "e3d4",
+        "c5c6",
+        "d1a4",
+        "c6c1",
+        "f1c1",
+        "a8d8",
+        "c1e1",
+        "h7h6",
+        "e1e8",
+        "d8e8",
+        "a4e8",
+        "g8h7",
+        "e8e4",
+        "g7g6",
+        "h2h3",
+        "b6b5",
+        "d4d5",
+        "f6d6",
+        "f2f4",
+        "d6c5",
+        "g1h2",
+        "b5b4",
+        "e4e5",
+        "h7g8",
+        "f4f5",
+        "c5c3",
+        "e5b8",
+        "g8g7",
+        "f5g6",
+        "g7g6",
+        "b8f4",
+        "c3f6",
+        "f4g4",
+        "g6h7",
+        "g4g3",
+        "f6f5",
+        "d5d6",
+        "a7a5",
+        "g3e3",
+        "f5d5",
+        "e3e7"
+      ]
+    },
+    "pawn": "d6",
+    "better": "b4b3",
+    "played": "d5f5",
+    "bestCp": -222,
+    "playedCp": -716,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d5f5"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p4q2/1p6/7P/P5PK/8 w - - 4 42",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d5f5"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p4q2/1p6/7P/P5PK/8 w - - 4 42",
+        "natural": true
+      }
+    ],
+    "controls": [
+      {
+        "kind": "test",
+        "prefix": [
+          "b4b3"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p2q4/8/1p5P/P5PK/8 w - - 0 42"
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "b4b3"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p2q4/8/1p5P/P5PK/8 w - - 0 42"
+      }
+    ],
+    "goodLines": [
+      [
+        "b4b3",
+        "a2b3",
+        "d5f5",
+        "h2g3",
+        "f5d3",
+        "g3f4",
+        "h7g7",
+        "e7e5",
+        "g7g8",
+        "h3h4",
+        "d3d1",
+        "f4f5",
+        "d1f1",
+        "f5e4",
+        "a5a4",
+        "b3a4",
+        "f1e2",
+        "e4d4"
+      ],
+      [
+        "b4b3",
+        "a2b3",
+        "d5f5",
+        "h2g3",
+        "f5d3",
+        "g3f4",
+        "h7g7",
+        "e7e5",
+        "g7g8",
+        "h3h4",
+        "d3d1",
+        "f4f5",
+        "d1f1",
+        "f5e4",
+        "f1g2",
+        "e4d4",
+        "g2c6"
+      ]
+    ],
+    "playedLines": [
+      [
+        "d5f5",
+        "d6d7",
+        "f5f4",
+        "h2g1",
+        "f4c1",
+        "g1f2",
+        "c1f4",
+        "f2e2",
+        "f4c4",
+        "e2e3",
+        "c4c3",
+        "e3f4",
+        "c3d2",
+        "f4e5",
+        "d2e3",
+        "e5d6",
+        "e3d3",
+        "d6c5",
+        "d3f5",
+        "c5b6"
+      ],
+      [
+        "d5f5",
+        "d6d7",
+        "f5f4",
+        "h2g1",
+        "f4c1",
+        "g1f2",
+        "c1c2",
+        "f2g3",
+        "c2c7",
+        "g3f3",
+        "c7c3",
+        "f3f4",
+        "c3c1",
+        "f4e5",
+        "c1e3",
+        "e5d6",
+        "e3g3",
+        "d6c5",
+        "g3c7",
+        "c5d5"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p4q2/1p6/7P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 15,
+          "cp": -838,
+          "mate": null,
+          "nodes": 1800179,
+          "pvUci": [
+            "f5f4",
+            "h2g1",
+            "f4c1",
+            "g1f2",
+            "c1f4",
+            "f2e2",
+            "f4c4"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p4q2/1p6/7P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 15,
+          "cp": -838,
+          "mate": null,
+          "nodes": 1800179,
+          "pvUci": [
+            "f5f4",
+            "h2g1",
+            "f4c1",
+            "g1f2",
+            "c1f4",
+            "f2e2",
+            "f4c4"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p2q4/8/1p5P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 26,
+          "cp": 0,
+          "mate": null,
+          "nodes": 1800042,
+          "pvUci": [
+            "b3a2",
+            "d7d8r",
+            "d5d8",
+            "e7f7",
+            "h7h8",
+            "f7a2",
+            "d8d6"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p2q4/8/1p5P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 26,
+          "cp": 0,
+          "mate": null,
+          "nodes": 1800042,
+          "pvUci": [
+            "b3a2",
+            "d7d8r",
+            "d5d8",
+            "e7f7",
+            "h7h8",
+            "f7a2",
+            "d8d6"
+          ]
+        }
+      }
+    ],
+    "queries": 2
+  },
+  {
+    "run": "archive-6m",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "supported",
+      "persistent": "weak-advance-contained",
+      "prepared": "weak-advance-contained"
+    },
+    "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84#replies",
+    "game": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84#replies",
+    "event": null,
+    "site": null,
+    "fen": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p3P/1P3QP1/3RR2K w - - 2 43",
+    "history": null,
+    "pawn": "d3",
+    "better": "f2f1",
+    "played": "g2g3",
+    "bestCp": 532,
+    "playedCp": 95,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "g2g3"
+        ],
+        "advance": "d3d2",
+        "fen": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p2PP/1P3Q2/3RR2K b - - 0 43",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "g2g3"
+        ],
+        "advance": "d3d2",
+        "fen": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p2PP/1P3Q2/3RR2K b - - 0 43",
+        "natural": true
+      }
+    ],
+    "controls": [
+      {
+        "kind": "test",
+        "prefix": [
+          "f2f1"
+        ],
+        "advance": "d3d2",
+        "fen": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p3P/1P4P1/3RRQ1K b - - 3 43"
+      },
+      {
+        "kind": "already-contained"
+      }
+    ],
+    "goodLines": [
+      [
+        "f2f1",
+        "e5e7",
+        "f1d3",
+        "c4d3",
+        "d1d3",
+        "f7f6",
+        "b2b3",
+        "a4b3",
+        "g2g3",
+        "f4d6",
+        "d3b3",
+        "h7h5",
+        "a3a4",
+        "g7g6",
+        "a4a5",
+        "g5g4",
+        "h1g2",
+        "e7c7"
+      ],
+      [
+        "f2f1",
+        "c4b5",
+        "f1d3",
+        "b5d7",
+        "d5d6",
+        "h7h6",
+        "d3f3",
+        "f7f6",
+        "f3g4",
+        "d7g4",
+        "h3g4",
+        "e5e8",
+        "d1d3",
+        "e8d8",
+        "d6d7",
+        "g7f7",
+        "e1d1",
+        "f7e6",
+        "g2g3",
+        "f4e5",
+        "d1d2",
+        "e6e7"
+      ]
+    ],
+    "playedLines": [
+      [
+        "g2g3",
+        "d3d2",
+        "d1d2",
+        "f4d2",
+        "f2d2",
+        "g7f8",
+        "d2e3",
+        "f7f6",
+        "h1g2",
+        "h7h5",
+        "e3e2",
+        "c4d4",
+        "e2h5",
+        "d4b2",
+        "e1e2",
+        "b2d4",
+        "h5g6",
+        "e5e7",
+        "g2h2",
+        "d4e5"
+      ],
+      [
+        "g2g3",
+        "d3d2",
+        "d1d2",
+        "f4d2",
+        "f2d2",
+        "g7f8",
+        "d2e3",
+        "f7f6",
+        "h1g2",
+        "f8f7",
+        "g3g4",
+        "e5e8",
+        "g2f3",
+        "e8c8",
+        "e1d1",
+        "c4c2",
+        "e3e2",
+        "c8c4",
+        "e2c2",
+        "c4c2",
+        "f3e3"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "d2",
+        "reached": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P5PP/1P1p1Q2/3RR2K w - - 0 44",
+        "line": {
+          "depth": 27,
+          "cp": 69,
+          "mate": null,
+          "nodes": 5315459,
+          "pvUci": [
+            "d1d2",
+            "f4d2",
+            "f2d2",
+            "g7f8",
+            "d2e3",
+            "f7f6",
+            "h3h4"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "d2",
+        "reached": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P5PP/1P1p1Q2/3RR2K w - - 0 44",
+        "line": {
+          "depth": 27,
+          "cp": 69,
+          "mate": null,
+          "nodes": 5315459,
+          "pvUci": [
+            "d1d2",
+            "f4d2",
+            "f2d2",
+            "g7f8",
+            "d2e3",
+            "f7f6",
+            "h3h4"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      {
+        "status": "checked",
+        "san": "d2",
+        "reached": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P6P/1P1p2P1/3RRQ1K w - - 0 44",
+        "line": {
+          "depth": 23,
+          "cp": 899,
+          "mate": null,
+          "nodes": 6000317,
+          "pvUci": [
+            "f1c4",
+            "d2e1q",
+            "d1e1",
+            "e5e7",
+            "c4c8",
+            "e7c7",
+            "c8d8"
+          ]
+        }
+      },
+      null
+    ],
+    "queries": 2
+  },
+  {
+    "run": "reserve-6m",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "weak-advance-contained",
+      "persistent": "weak-advance-contained",
+      "prepared": "weak-advance-contained"
+    },
+    "id": "classical-transfer-8717a9b3de261d55",
+    "game": "22a79dc9837c32b3",
+    "event": "36th-nato-chess-championship-2026",
+    "site": "https://lichess.org/broadcast/36th-nato-chess-championship-2026/round-7/Cd33Pm6w/k8M4L4fz",
+    "fen": "3R4/8/8/8/8/5p2/PP2k2r/2K5 w - - 4 54",
+    "history": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "d2d4",
+        "d7d5",
+        "g1f3",
+        "g8f6",
+        "e2e3",
+        "c8f5",
+        "f3h4",
+        "f5g6",
+        "b1d2",
+        "e7e6",
+        "h4g6",
+        "h7g6",
+        "c2c4",
+        "c7c6",
+        "d1b3",
+        "d8c7",
+        "d2f3",
+        "b8d7",
+        "c1d2",
+        "f8d6",
+        "c4c5",
+        "d6e7",
+        "b3c2",
+        "e6e5",
+        "d4e5",
+        "d7e5",
+        "f3e5",
+        "c7e5",
+        "d2c3",
+        "e5e4",
+        "c2e4",
+        "f6e4",
+        "c3g7",
+        "h8g8",
+        "g7e5",
+        "f7f6",
+        "e5d4",
+        "e7c5",
+        "d4c5",
+        "e4c5",
+        "h2h4",
+        "a7a5",
+        "g2g4",
+        "e8e7",
+        "f2f3",
+        "b7b5",
+        "a1c1",
+        "e7d6",
+        "h4h5",
+        "a8e8",
+        "e1d2",
+        "g8h8",
+        "f1g2",
+        "g6h5",
+        "h1h5",
+        "h8h5",
+        "g4h5",
+        "e8h8",
+        "c1h1",
+        "h8h6",
+        "g2f1",
+        "c5e6",
+        "f1d3",
+        "d5d4",
+        "d3g6",
+        "d4e3",
+        "d2e3",
+        "c6c5",
+        "h1g1",
+        "d6e5",
+        "g6e8",
+        "b5b4",
+        "g1c1",
+        "a5a4",
+        "e8f7",
+        "f6f5",
+        "f3f4",
+        "e5f6",
+        "f7e6",
+        "f6e6",
+        "c1c5",
+        "h6h5",
+        "c5c6",
+        "e6d5",
+        "c6b6",
+        "h5h3",
+        "e3d2",
+        "h3h2",
+        "d2c1",
+        "d5c4",
+        "b6c6",
+        "c4d3",
+        "c6d6",
+        "d3e3",
+        "d6b6",
+        "e3f4",
+        "b6b4",
+        "f4e3",
+        "b4a4",
+        "f5f4",
+        "a4a8",
+        "f4f3",
+        "a8e8",
+        "e3d3",
+        "e8d8",
+        "d3e2"
+      ]
+    },
+    "pawn": "f3",
+    "better": "d8d2",
+    "played": "d8e8",
+    "bestCp": 751,
+    "playedCp": 0,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d8e8",
+          "e2d3",
+          "e8d8",
+          "d3e3",
+          "d8e8",
+          "e3f2",
+          "c1d2",
+          "f2g3",
+          "d2c3"
+        ],
+        "advance": "f3f2",
+        "fen": "4R3/8/8/8/8/2K2pk1/PP5r/8 b - - 13 58",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d8e8",
+          "e2f2",
+          "e8f8",
+          "f2e2",
+          "f8e8",
+          "e2f1",
+          "e8f8"
+        ],
+        "advance": "f3f2",
+        "fen": "5R2/8/8/8/8/5p2/PP5r/2K2k2 b - - 11 57",
+        "natural": false
+      }
+    ],
+    "controls": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d8d2",
+          "e2e3",
+          "d2h2",
+          "e3d4",
+          "h2c2",
+          "d4d3",
+          "a2a4",
+          "d3e4",
+          "a4a5"
+        ],
+        "advance": "f3f2",
+        "fen": "8/8/8/P7/4k3/5p2/1PR5/2K5 b - - 0 58"
+      },
+      {
+        "kind": "already-contained"
+      }
+    ],
+    "goodLines": [
+      [
+        "d8d2",
+        "e2e3",
+        "d2h2",
+        "e3d4",
+        "h2c2",
+        "d4d3",
+        "a2a4",
+        "d3e4",
+        "a4a5",
+        "e4d5",
+        "a5a6",
+        "f3f2",
+        "c2f2",
+        "d5c6",
+        "f2f6",
+        "c6c7",
+        "f6g6",
+        "c7c8",
+        "g6g8",
+        "c8c7"
+      ],
+      [
+        "d8d2",
+        "e2e3",
+        "d2h2",
+        "e3d4",
+        "c1d2",
+        "f3f2",
+        "h2f2",
+        "d4c4",
+        "a2a4",
+        "c4b4",
+        "f2f4",
+        "b4a5",
+        "b2b3",
+        "a5a6",
+        "d2e3",
+        "a6a5",
+        "f4f5",
+        "a5b6"
+      ]
+    ],
+    "playedLines": [
+      [
+        "d8e8",
+        "e2d3",
+        "e8d8",
+        "d3e3",
+        "d8e8",
+        "e3f2",
+        "c1d2",
+        "f2g3",
+        "d2c3",
+        "f3f2",
+        "e8g8",
+        "g3f4",
+        "g8f8",
+        "f4e4",
+        "f8e8",
+        "e4f3",
+        "e8f8",
+        "f3e2",
+        "f8e8",
+        "e2f3"
+      ],
+      [
+        "d8e8",
+        "e2f2",
+        "e8f8",
+        "f2e2",
+        "f8e8",
+        "e2f1",
+        "e8f8"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "f2",
+        "reached": "4R3/8/8/8/8/2K3k1/PP3p1r/8 w - - 0 59",
+        "line": {
+          "depth": 32,
+          "cp": 0,
+          "mate": null,
+          "nodes": 4536798,
+          "pvUci": [
+            "e8g8",
+            "g3f3",
+            "g8f8",
+            "f3e4",
+            "f8e8",
+            "e4f4",
+            "e8f8"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "f2",
+        "reached": "5R2/8/8/8/8/8/PP3p1r/2K2k2 w - - 0 58",
+        "line": {
+          "depth": 28,
+          "cp": 0,
+          "mate": null,
+          "nodes": 4118230,
+          "pvUci": [
+            "c1d2",
+            "f1g1",
+            "d2c3",
+            "f2f1r",
+            "f8f1",
+            "g1f1",
+            "a2a4"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      {
+        "status": "checked",
+        "san": "f2",
+        "reached": "8/8/8/P7/4k3/8/1PR2p2/2K5 w - - 0 59",
+        "line": {
+          "depth": 52,
+          "cp": null,
+          "mate": 10,
+          "nodes": 6000345,
+          "pvUci": [
+            "c2f2",
+            "e4d5",
+            "a5a6",
+            "d5c6",
+            "f2f6",
+            "c6d5",
+            "a6a7"
+          ]
+        }
+      },
+      null
+    ],
+    "queries": 3
+  },
+  {
+    "run": "reserve-6m",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "supported",
+      "persistent": "supported",
+      "prepared": "supported"
+    },
+    "id": "blocked-defence-d92503ccccdff208",
+    "game": "68436d0a991c9070",
+    "event": "misamis-occidental-philippines-international-chess-championship",
+    "site": "https://lichess.org/broadcast/misamis-occidental-philippines-international-chess-championship/round/fE7yhPKg",
+    "fen": "k1n4r/pp1nq3/2p1P3/P5pr/3P4/1Q2p2B/1P1B4/1K4RR b - - 0 34",
+    "history": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "d2d4",
+        "d7d5",
+        "c2c4",
+        "c7c6",
+        "g1f3",
+        "g8f6",
+        "e2e3",
+        "c8g4",
+        "b1c3",
+        "e7e6",
+        "h2h3",
+        "g4h5",
+        "g2g4",
+        "h5g6",
+        "f3e5",
+        "b8d7",
+        "h3h4",
+        "d5c4",
+        "e5g6",
+        "h7g6",
+        "g4g5",
+        "f6d5",
+        "f1c4",
+        "f8b4",
+        "c1d2",
+        "d5b6",
+        "c4f1",
+        "e6e5",
+        "d1b3",
+        "d8e7",
+        "e1c1",
+        "e8c8",
+        "f1g2",
+        "f7f5",
+        "c1b1",
+        "c8b8",
+        "a2a3",
+        "b4d6",
+        "d2c1",
+        "e5e4",
+        "f2f3",
+        "d6g3",
+        "f3e4",
+        "g3h4",
+        "a3a4",
+        "e7g5",
+        "g2h3",
+        "h4f2",
+        "a4a5",
+        "b6c8",
+        "e4e5",
+        "f2e3",
+        "c3e4",
+        "f5e4",
+        "c1e3",
+        "g5e7",
+        "d1g1",
+        "h8h5",
+        "g1g6",
+        "d8h8",
+        "e3f4",
+        "b8a8",
+        "g6g1",
+        "g7g5",
+        "f4d2",
+        "e4e3",
+        "e5e6"
+      ]
+    },
+    "pawn": "e6",
+    "better": "d7f6",
+    "played": "d7b8",
+    "bestCp": 554,
+    "playedCp": 188,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d7b8",
+          "b3e3",
+          "e7h7",
+          "b1a2",
+          "h5h3",
+          "e3h3",
+          "h7h3",
+          "h1h3",
+          "h8h3",
+          "d2g5",
+          "h3h8"
+        ],
+        "advance": "e6e7",
+        "fen": "knn4r/pp6/2p1P3/P5B1/3P4/8/KP6/6R1 w - - 1 40",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d7b8",
+          "b3e3",
+          "e7h7",
+          "b1c1",
+          "h5h3",
+          "h1h3",
+          "h7h3",
+          "e3h3",
+          "h8h3",
+          "d2g5",
+          "h3h8"
+        ],
+        "advance": "e6e7",
+        "fen": "knn4r/pp6/2p1P3/P5B1/3P4/8/1P6/2K3R1 w - - 1 40",
+        "natural": true
+      }
+    ],
+    "controls": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d7f6",
+          "b3e3",
+          "e7h7",
+          "b1a2",
+          "f6d5",
+          "e3e5",
+          "h5h3",
+          "h1h3",
+          "h7h3",
+          "g1g3",
+          "h3h7"
+        ],
+        "advance": "e6e7",
+        "fen": "k1n4r/pp5q/2p1P3/P2nQ1p1/3P4/6R1/KP1B4/8 w - - 2 40"
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d7f6",
+          "b3e3",
+          "e7h7",
+          "b1a2",
+          "f6d5",
+          "e3f3",
+          "h5h3",
+          "h1h3",
+          "h7h3",
+          "f3h3",
+          "h8h3"
+        ],
+        "advance": "e6e7",
+        "fen": "k1n5/pp6/2p1P3/P2n2p1/3P4/7r/KP1B4/6R1 w - - 0 40"
+      }
+    ],
+    "goodLines": [
+      [
+        "d7f6",
+        "b3e3",
+        "e7h7",
+        "b1a2",
+        "f6d5",
+        "e3e5",
+        "h5h3",
+        "h1h3",
+        "h7h3",
+        "g1g3",
+        "h3h7",
+        "d2g5",
+        "a7a6",
+        "g5f4",
+        "d5f4",
+        "e5f4",
+        "h7e7",
+        "f4f7",
+        "e7b4",
+        "g3g7",
+        "b4a5",
+        "a2b1",
+        "h8h1",
+        "b1c2",
+        "a5a4",
+        "c2d3"
+      ],
+      [
+        "d7f6",
+        "b3e3",
+        "e7h7",
+        "b1a2",
+        "f6d5",
+        "e3f3",
+        "h5h3",
+        "h1h3",
+        "h7h3",
+        "f3h3",
+        "h8h3",
+        "d2g5",
+        "h3h8",
+        "g1f1",
+        "a7a6",
+        "a2b3",
+        "h8g8",
+        "g5h4",
+        "a8a7",
+        "b3a4",
+        "g8e8",
+        "h4g3",
+        "e8e6",
+        "f1f7",
+        "e6e8",
+        "g3e5",
+        "a7a8",
+        "f7g7"
+      ]
+    ],
+    "playedLines": [
+      [
+        "d7b8",
+        "b3e3",
+        "e7h7",
+        "b1a2",
+        "h5h3",
+        "e3h3",
+        "h7h3",
+        "h1h3",
+        "h8h3",
+        "d2g5",
+        "h3h8",
+        "e6e7",
+        "h8e8",
+        "g1f1",
+        "b8a6",
+        "a2b3",
+        "a6c7",
+        "f1f8",
+        "a7a6",
+        "b3c2",
+        "a8a7",
+        "c2d3",
+        "c8d6"
+      ],
+      [
+        "d7b8",
+        "b3e3",
+        "e7h7",
+        "b1c1",
+        "h5h3",
+        "h1h3",
+        "h7h3",
+        "e3h3",
+        "h8h3",
+        "d2g5",
+        "h3h8",
+        "e6e7",
+        "h8e8",
+        "g1f1",
+        "b8d7",
+        "c1d2",
+        "a7a6",
+        "d4d5",
+        "c6c5"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "knn4r/pp2P3/2p5/P5B1/3P4/8/KP6/6R1 b - - 0 40",
+        "line": {
+          "depth": 23,
+          "cp": 276,
+          "mate": null,
+          "nodes": 5550581,
+          "pvUci": [
+            "c8d6",
+            "g1d1",
+            "b8a6",
+            "d1f1",
+            "h8c8",
+            "f1f8",
+            "d6e8"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "knn4r/pp2P3/2p5/P5B1/3P4/8/1P6/2K3R1 b - - 0 40",
+        "line": {
+          "depth": 24,
+          "cp": 237,
+          "mate": null,
+          "nodes": 5506499,
+          "pvUci": [
+            "h8e8",
+            "g1f1",
+            "b8d7",
+            "c1c2",
+            "b7b5",
+            "d4d5",
+            "a8b7"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "k1n4r/pp2P2q/2p5/P2nQ1p1/3P4/6R1/KP1B4/8 b - - 0 40",
+        "line": {
+          "depth": 23,
+          "cp": 690,
+          "mate": null,
+          "nodes": 4622469,
+          "pvUci": [
+            "c8e7",
+            "g3g5",
+            "h8e8",
+            "g5h5",
+            "h7g8",
+            "b2b3",
+            "a7a6"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "e7",
+        "reached": "k1n5/pp2P3/2p5/P2n2p1/3P4/7r/KP1B4/6R1 b - - 0 40",
+        "line": {
+          "depth": 25,
+          "cp": 681,
+          "mate": null,
+          "nodes": 6000694,
+          "pvUci": [
+            "c8e7",
+            "d2g5",
+            "a8b8",
+            "g5e7",
+            "d5e7",
+            "g1g7",
+            "e7d5"
+          ]
+        }
+      }
+    ],
+    "queries": 4
+  },
+  {
+    "run": "reserve-6m",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "supported",
+      "persistent": "supported",
+      "prepared": "supported"
+    },
+    "id": "classical-transfer-8367c04911a82dc9",
+    "game": "55986757033dc2d9",
+    "event": "cork-congress-2026-masters-1825",
+    "site": "https://lichess.org/broadcast/cork-congress-2026-masters-1825/round-1/6jT7GvmT",
+    "fen": "8/4Qp1k/3P3p/p2q4/1p6/7P/P5PK/8 b - - 3 41",
+    "history": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "d2d4",
+        "d7d5",
+        "g1f3",
+        "g8f6",
+        "c2c4",
+        "e7e6",
+        "c1g5",
+        "f8e7",
+        "e2e3",
+        "e8g8",
+        "f1d3",
+        "d5c4",
+        "d3c4",
+        "c7c5",
+        "e1g1",
+        "b7b6",
+        "b1c3",
+        "c8b7",
+        "c4e2",
+        "f6d5",
+        "g5e7",
+        "d8e7",
+        "a1c1",
+        "b8d7",
+        "d4c5",
+        "d7c5",
+        "f3d4",
+        "f8d8",
+        "c3d5",
+        "b7d5",
+        "e2f3",
+        "e7f6",
+        "f3d5",
+        "d8d5",
+        "b2b4",
+        "e6e5",
+        "b4c5",
+        "e5d4",
+        "c5c6",
+        "d5c5",
+        "e3d4",
+        "c5c6",
+        "d1a4",
+        "c6c1",
+        "f1c1",
+        "a8d8",
+        "c1e1",
+        "h7h6",
+        "e1e8",
+        "d8e8",
+        "a4e8",
+        "g8h7",
+        "e8e4",
+        "g7g6",
+        "h2h3",
+        "b6b5",
+        "d4d5",
+        "f6d6",
+        "f2f4",
+        "d6c5",
+        "g1h2",
+        "b5b4",
+        "e4e5",
+        "h7g8",
+        "f4f5",
+        "c5c3",
+        "e5b8",
+        "g8g7",
+        "f5g6",
+        "g7g6",
+        "b8f4",
+        "c3f6",
+        "f4g4",
+        "g6h7",
+        "g4g3",
+        "f6f5",
+        "d5d6",
+        "a7a5",
+        "g3e3",
+        "f5d5",
+        "e3e7"
+      ]
+    },
+    "pawn": "d6",
+    "better": "b4b3",
+    "played": "d5f5",
+    "bestCp": -222,
+    "playedCp": -716,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "d5f5"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p4q2/1p6/7P/P5PK/8 w - - 4 42",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "d5f5"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p4q2/1p6/7P/P5PK/8 w - - 4 42",
+        "natural": true
+      }
+    ],
+    "controls": [
+      {
+        "kind": "test",
+        "prefix": [
+          "b4b3"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p2q4/8/1p5P/P5PK/8 w - - 0 42"
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "b4b3"
+        ],
+        "advance": "d6d7",
+        "fen": "8/4Qp1k/3P3p/p2q4/8/1p5P/P5PK/8 w - - 0 42"
+      }
+    ],
+    "goodLines": [
+      [
+        "b4b3",
+        "a2b3",
+        "d5f5",
+        "h2g3",
+        "f5d3",
+        "g3f4",
+        "h7g7",
+        "e7e5",
+        "g7g8",
+        "h3h4",
+        "d3d1",
+        "f4f5",
+        "d1f1",
+        "f5e4",
+        "a5a4",
+        "b3a4",
+        "f1e2",
+        "e4d4"
+      ],
+      [
+        "b4b3",
+        "a2b3",
+        "d5f5",
+        "h2g3",
+        "f5d3",
+        "g3f4",
+        "h7g7",
+        "e7e5",
+        "g7g8",
+        "h3h4",
+        "d3d1",
+        "f4f5",
+        "d1f1",
+        "f5e4",
+        "f1g2",
+        "e4d4",
+        "g2c6"
+      ]
+    ],
+    "playedLines": [
+      [
+        "d5f5",
+        "d6d7",
+        "f5f4",
+        "h2g1",
+        "f4c1",
+        "g1f2",
+        "c1f4",
+        "f2e2",
+        "f4c4",
+        "e2e3",
+        "c4c3",
+        "e3f4",
+        "c3d2",
+        "f4e5",
+        "d2e3",
+        "e5d6",
+        "e3d3",
+        "d6c5",
+        "d3f5",
+        "c5b6"
+      ],
+      [
+        "d5f5",
+        "d6d7",
+        "f5f4",
+        "h2g1",
+        "f4c1",
+        "g1f2",
+        "c1c2",
+        "f2g3",
+        "c2c7",
+        "g3f3",
+        "c7c3",
+        "f3f4",
+        "c3c1",
+        "f4e5",
+        "c1e3",
+        "e5d6",
+        "e3g3",
+        "d6c5",
+        "g3c7",
+        "c5d5"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p4q2/1p6/7P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 27,
+          "cp": -850,
+          "mate": null,
+          "nodes": 5676905,
+          "pvUci": [
+            "f5f4",
+            "h2g1",
+            "f4c1",
+            "g1f2",
+            "c1f4",
+            "f2e2",
+            "f4c4"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p4q2/1p6/7P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 27,
+          "cp": -850,
+          "mate": null,
+          "nodes": 5676905,
+          "pvUci": [
+            "f5f4",
+            "h2g1",
+            "f4c1",
+            "g1f2",
+            "c1f4",
+            "f2e2",
+            "f4c4"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p2q4/8/1p5P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 32,
+          "cp": 0,
+          "mate": null,
+          "nodes": 6000269,
+          "pvUci": [
+            "b3a2",
+            "d7d8r",
+            "d5d8",
+            "e7f7",
+            "h7h8",
+            "f7a2",
+            "d8d6"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "d7",
+        "reached": "8/3PQp1k/7p/p2q4/8/1p5P/P5PK/8 b - - 0 42",
+        "line": {
+          "depth": 32,
+          "cp": 0,
+          "mate": null,
+          "nodes": 6000269,
+          "pvUci": [
+            "b3a2",
+            "d7d8r",
+            "d5d8",
+            "e7f7",
+            "h7h8",
+            "f7a2",
+            "d8d6"
+          ]
+        }
+      }
+    ],
+    "queries": 2
+  },
+  {
+    "run": "wide-archive-6m",
+    "expected": {
+      "natural": "supported",
+      "counterfactual": "supported",
+      "persistent": "weak-advance-contained",
+      "prepared": "supported"
+    },
+    "id": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101#pair",
+    "game": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101#pair",
+    "event": null,
+    "site": null,
+    "fen": "5n2/1k4p1/2P3p1/8/R2N3r/2K5/8/8 b - - 0 51",
+    "history": null,
+    "pawn": "c6",
+    "better": "b7c7",
+    "played": "b7b8",
+    "bestCp": -30,
+    "playedCp": -392,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "b7b8",
+          "a4b4",
+          "b8c8",
+          "b4b7",
+          "h4h1",
+          "b7e7",
+          "f8h7",
+          "d4b5",
+          "h7f6",
+          "c3b2",
+          "h1h2",
+          "b2b3",
+          "h2h3",
+          "b3a4",
+          "h3h1",
+          "b5a7",
+          "c8d8"
+        ],
+        "advance": "c6c7",
+        "fen": "3k4/N3R1p1/2P2np1/8/K7/8/8/7r w - - 17 60",
+        "natural": true
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "b7b8",
+          "a4b4",
+          "b8c8",
+          "b4b7",
+          "h4h1",
+          "b7e7",
+          "f8h7",
+          "d4b5",
+          "h7f6",
+          "c3b2",
+          "h1h2",
+          "b2b3",
+          "h2h3",
+          "b3a4",
+          "h3h1",
+          "b5a7",
+          "c8d8"
+        ],
+        "advance": "c6c7",
+        "fen": "3k4/N3R1p1/2P2np1/8/K7/8/8/7r w - - 17 60",
+        "natural": true
+      }
+    ],
+    "controls": [
+      {
+        "kind": "already-contained"
+      },
+      {
+        "kind": "already-contained"
+      }
+    ],
+    "goodLines": [
+      [
+        "b7c7",
+        "d4b5",
+        "c7c6",
+        "b5a7",
+        "c6b7",
+        "a4h4",
+        "b7a7",
+        "h4f4",
+        "f8e6",
+        "f4e4",
+        "e6c7",
+        "c3c4",
+        "a7b6",
+        "e4g4",
+        "c7e8",
+        "g4g6",
+        "b6c7",
+        "c4c5",
+        "c7d7",
+        "g6a6",
+        "d7e7",
+        "a6a7",
+        "e7e6",
+        "c5c6"
+      ],
+      [
+        "b7c7",
+        "d4b5",
+        "c7c6",
+        "b5a7",
+        "c6b7",
+        "a4h4",
+        "b7a7",
+        "h4b4",
+        "g6g5",
+        "c3c4",
+        "a7a6",
+        "c4d5",
+        "f8d7",
+        "d5c6",
+        "a6a5",
+        "b4e4"
+      ]
+    ],
+    "playedLines": [
+      [
+        "b7b8",
+        "a4b4",
+        "b8c8",
+        "b4b7",
+        "h4h1",
+        "b7e7",
+        "f8h7",
+        "d4b5",
+        "h7f6",
+        "c3b2",
+        "h1h2",
+        "b2b3",
+        "h2h3",
+        "b3a4",
+        "h3h1",
+        "b5a7",
+        "c8d8",
+        "c6c7",
+        "d8e7",
+        "c7c8q",
+        "f6e4"
+      ],
+      [
+        "b7b8",
+        "a4b4",
+        "b8c8",
+        "b4b7",
+        "h4h1",
+        "b7e7",
+        "f8h7",
+        "d4b5",
+        "h7f6",
+        "c3b2",
+        "h1h2",
+        "b2b3",
+        "h2h3",
+        "b3a4",
+        "h3h1",
+        "b5a7",
+        "c8d8",
+        "c6c7",
+        "d8e7",
+        "c7c8q",
+        "h1h4",
+        "a4b3",
+        "e7f7",
+        "a7b5",
+        "f7e7"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "c7+",
+        "reached": "3k4/N1P1R1p1/5np1/8/K7/8/8/7r b - - 0 60",
+        "line": {
+          "depth": 25,
+          "cp": -426,
+          "mate": null,
+          "nodes": 6000402,
+          "pvUci": [
+            "d8e7",
+            "c7c8q",
+            "h1h4",
+            "a4a3",
+            "h4h5",
+            "a7c6",
+            "e7d6"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "c7+",
+        "reached": "3k4/N1P1R1p1/5np1/8/K7/8/8/7r b - - 0 60",
+        "line": {
+          "depth": 25,
+          "cp": -426,
+          "mate": null,
+          "nodes": 6000402,
+          "pvUci": [
+            "d8e7",
+            "c7c8q",
+            "h1h4",
+            "a4a3",
+            "h4h5",
+            "a7c6",
+            "e7d6"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      null,
+      null
+    ],
+    "queries": 1
+  },
+  {
+    "run": "wide-prospective",
+    "expected": {
+      "natural": "needs-counterfactual",
+      "counterfactual": "weak-advance-underperforms",
+      "persistent": "weak-advance-underperforms",
+      "prepared": "weak-advance-underperforms"
+    },
+    "id": "exchange-outpost-04c8ecd9689f6a16",
+    "game": "b053c8c64f833cdf",
+    "event": "wroclaw-chess-festival-2025-open-a",
+    "site": "https://lichess.org/broadcast/wroclaw-chess-festival-2025-open-a/round-1/BeBrP9J2",
+    "fen": "2kq2r1/ppp3PQ/4p3/bP6/2p1N3/2Pp4/P1n2PPP/5RK1 w - - 2 21",
+    "history": {
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": [
+        "e2e4",
+        "e7e5",
+        "g1f3",
+        "b8c6",
+        "f1c4",
+        "f8c5",
+        "c2c3",
+        "g8f6",
+        "d2d4",
+        "e5d4",
+        "b2b4",
+        "c5b6",
+        "e4e5",
+        "d7d5",
+        "e5f6",
+        "d5c4",
+        "d1e2",
+        "c8e6",
+        "b4b5",
+        "d4d3",
+        "e2e4",
+        "c6b4",
+        "e1g1",
+        "d8d5",
+        "f6g7",
+        "h8g8",
+        "e4h7",
+        "e8c8",
+        "c1g5",
+        "b4c2",
+        "g5d8",
+        "d5d8",
+        "b1d2",
+        "c2a1",
+        "f3g5",
+        "b6a5",
+        "g5e6",
+        "f7e6",
+        "d2e4",
+        "a1c2"
+      ]
+    },
+    "pawn": "d3",
+    "better": "a2a4",
+    "played": "h2h4",
+    "bestCp": -54,
+    "playedCp": -204,
+    "tests": [
+      {
+        "kind": "test",
+        "prefix": [
+          "h2h4",
+          "c2a3",
+          "h4h5",
+          "a3b5",
+          "h5h6",
+          "a5c3",
+          "a2a4",
+          "c3g7",
+          "h6g7",
+          "b5d4",
+          "e4f6",
+          "g8g7",
+          "h7g7",
+          "c4c3",
+          "g7h6"
+        ],
+        "advance": "d3d2",
+        "fen": "2kq4/ppp5/4pN1Q/8/P2n4/2pp4/5PP1/5RK1 b - - 1 28",
+        "natural": false
+      },
+      {
+        "kind": "test",
+        "prefix": [
+          "h2h4",
+          "c2a3",
+          "h4h5",
+          "a3b5",
+          "h5h6",
+          "a5c3",
+          "a2a4",
+          "c3g7",
+          "h6g7",
+          "b5d4",
+          "g2g4",
+          "d4e2",
+          "g1g2",
+          "c4c3",
+          "f1h1",
+          "e2f4",
+          "g2f3"
+        ],
+        "advance": "d3d2",
+        "fen": "2kq2r1/ppp3PQ/4p3/8/P3NnP1/2pp1K2/5P2/7R b - - 3 29",
+        "natural": true
+      }
+    ],
+    "controls": [
+      {
+        "kind": "already-contained"
+      },
+      {
+        "kind": "already-contained"
+      }
+    ],
+    "goodLines": [
+      [
+        "a2a4",
+        "d8e8",
+        "e4f6",
+        "g8g7",
+        "h7g7",
+        "a5c3",
+        "g7g4",
+        "c3f6",
+        "g4c4",
+        "e8d7",
+        "f1d1",
+        "d7d6",
+        "c4d3",
+        "c2d4",
+        "h2h4",
+        "d6d5",
+        "g1h2",
+        "d5a2",
+        "h2h3",
+        "b7b6",
+        "f2f3"
+      ],
+      [
+        "a2a4",
+        "d8e8",
+        "e4f6",
+        "g8g7",
+        "h7g7",
+        "a5c3",
+        "g7g4",
+        "c3f6",
+        "g4c4",
+        "e8d8",
+        "f1d1",
+        "d8d5",
+        "c4d3",
+        "c2d4",
+        "d1e1",
+        "c8d7",
+        "d3g6",
+        "f6e7",
+        "g6h7"
+      ]
+    ],
+    "playedLines": [
+      [
+        "h2h4",
+        "c2a3",
+        "h4h5",
+        "a3b5",
+        "h5h6",
+        "a5c3",
+        "a2a4",
+        "c3g7",
+        "h6g7",
+        "b5d4",
+        "e4f6",
+        "g8g7",
+        "h7g7",
+        "c4c3",
+        "g7h6",
+        "c3c2"
+      ],
+      [
+        "h2h4",
+        "c2a3",
+        "h4h5",
+        "a3b5",
+        "h5h6",
+        "a5c3",
+        "a2a4",
+        "c3g7",
+        "h6g7",
+        "b5d4",
+        "g2g4",
+        "d4e2",
+        "g1g2",
+        "c4c3",
+        "f1h1",
+        "e2f4",
+        "g2f3",
+        "d3d2",
+        "e4c3",
+        "f4d5",
+        "c3d5",
+        "d8d5",
+        "f3e2"
+      ]
+    ],
+    "testResults": [
+      {
+        "status": "checked",
+        "san": "d2",
+        "reached": "2kq4/ppp5/4pN1Q/8/P2n4/2p5/3p1PP1/5RK1 w - - 0 29",
+        "line": {
+          "depth": 21,
+          "cp": 0,
+          "mate": null,
+          "nodes": 1664586,
+          "pvUci": [
+            "f6e4",
+            "d4e2",
+            "g1h2",
+            "d2d1r",
+            "f1d1",
+            "d8d1",
+            "h6e6"
+          ]
+        }
+      },
+      {
+        "status": "checked",
+        "san": "d2",
+        "reached": "2kq2r1/ppp3PQ/4p3/8/P3NnP1/2p2K2/3p1P2/7R w - - 0 30",
+        "line": {
+          "depth": 20,
+          "cp": 37,
+          "mate": null,
+          "nodes": 1311943,
+          "pvUci": [
+            "e4c3",
+            "f4d5",
+            "h7g8",
+            "d8g8",
+            "h1h8",
+            "d5e7",
+            "f3e2"
+          ]
+        }
+      }
+    ],
+    "controlResults": [
+      null,
+      null
+    ],
+    "queries": 2
+  }
+]

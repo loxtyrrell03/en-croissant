@@ -1,0 +1,910 @@
+{
+  "runs": {
+    "archive": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "no-advanced-passer": 94,
+        "unstable": 193,
+        "no-matched-advance": 29,
+        "nominated": 2
+      },
+      "sources": {
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 3007.6985000050627,
+      "rawSha256": "91b2f183516d0704dec2e730dc22103b6547e5e069277302cf279378c06179ba",
+      "targetRank": 7,
+      "horizon": 16,
+      "nominations": 2,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 2
+        },
+        "counterfactual": {
+          "incomplete": 1,
+          "supported": 1
+        },
+        "persistent": {
+          "incomplete": 1,
+          "weak-advance-contained": 1
+        },
+        "prepared": {
+          "incomplete": 1,
+          "weak-advance-contained": 1
+        }
+      },
+      "outcomes": {
+        "annotated-pawn-grand-swiss-open-2025-558f540bb676c79b-93": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "incomplete",
+          "persistent": "incomplete",
+          "prepared": "incomplete"
+        },
+        "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84#replies": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        }
+      }
+    },
+    "reserve": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "unstable": 299,
+        "no-matched-advance": 116,
+        "no-advanced-passer": 196,
+        "nominated": 7
+      },
+      "sources": {
+        "reserve.json": "43b5cbcaafaa4102aa08b914c6286f04f63a3d668ece3a84f58a464e78f646ee",
+        "classical.json": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b",
+        "reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430",
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 3106.769100006204,
+      "rawSha256": "601193f09df177c75ee178b4a28671385da1c1334bb7cdde9a4378c3ee3a24d8",
+      "targetRank": 7,
+      "horizon": 16,
+      "nominations": 7,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 7
+        },
+        "counterfactual": {
+          "same-threat-in-control": 2,
+          "incomplete": 1,
+          "weak-advance-contained": 1,
+          "supported": 3
+        },
+        "persistent": {
+          "weak-advance-contained": 3,
+          "incomplete": 1,
+          "supported": 2,
+          "same-threat-in-control": 1
+        },
+        "prepared": {
+          "weak-advance-contained": 3,
+          "incomplete": 1,
+          "supported": 2,
+          "same-threat-in-control": 1
+        }
+      },
+      "outcomes": {
+        "classical-transfer-e78439f0ee51e12c": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "classical-transfer-8367c04911a82dc9": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "incomplete",
+          "persistent": "incomplete",
+          "prepared": "incomplete"
+        },
+        "classical-transfer-c384681d159881ff": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-contained",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "classical-transfer-8717a9b3de261d55": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        },
+        "classical-transfer-a3728bd060041b8d": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "blocked-defence-30d200c3bb9bfb8e": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        },
+        "blocked-defence-d92503ccccdff208": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        }
+      }
+    },
+    "archive-6m": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 6000000,
+      "screened": {
+        "no-advanced-passer": 94,
+        "unstable": 193,
+        "no-matched-advance": 29,
+        "nominated": 2
+      },
+      "sources": {
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 11744.356999988668,
+      "rawSha256": "72602d832cf6554aaf804ed0140095b5c503e52b761a964cdf901ef3f17103ad",
+      "targetRank": 7,
+      "horizon": 16,
+      "nominations": 2,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 2
+        },
+        "counterfactual": {
+          "same-threat-in-control": 1,
+          "supported": 1
+        },
+        "persistent": {
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1
+        },
+        "prepared": {
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1
+        }
+      },
+      "outcomes": {
+        "annotated-pawn-grand-swiss-open-2025-558f540bb676c79b-93": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        },
+        "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84#replies": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        }
+      }
+    },
+    "reserve-6m": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 6000000,
+      "screened": {
+        "unstable": 299,
+        "no-matched-advance": 116,
+        "no-advanced-passer": 196,
+        "nominated": 7
+      },
+      "sources": {
+        "reserve.json": "43b5cbcaafaa4102aa08b914c6286f04f63a3d668ece3a84f58a464e78f646ee",
+        "classical.json": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b",
+        "reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430",
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 11196.094299957622,
+      "rawSha256": "0dec7986b3183258af9a5312ad00298814a95c3c2b08d009afc8bf15fb1a8d16",
+      "targetRank": 7,
+      "horizon": 16,
+      "nominations": 7,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 7
+        },
+        "counterfactual": {
+          "weak-advance-contained": 3,
+          "supported": 3,
+          "same-threat-in-control": 1
+        },
+        "persistent": {
+          "weak-advance-contained": 4,
+          "supported": 2,
+          "same-threat-in-control": 1
+        },
+        "prepared": {
+          "weak-advance-contained": 4,
+          "supported": 2,
+          "same-threat-in-control": 1
+        }
+      },
+      "outcomes": {
+        "classical-transfer-e78439f0ee51e12c": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-contained",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "classical-transfer-8367c04911a82dc9": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        },
+        "classical-transfer-c384681d159881ff": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-contained",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "classical-transfer-8717a9b3de261d55": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-contained",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "classical-transfer-a3728bd060041b8d": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "blocked-defence-30d200c3bb9bfb8e": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        },
+        "blocked-defence-d92503ccccdff208": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        }
+      }
+    },
+    "holdout": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "unstable": 382,
+        "no-advanced-passer": 67,
+        "no-matched-advance": 4,
+        "nominated": 1
+      },
+      "sources": {
+        "reserve.json": "43b5cbcaafaa4102aa08b914c6286f04f63a3d668ece3a84f58a464e78f646ee",
+        "late-reserve.json": "ac09826304f076c161ef3952ffd1e491a1498c76efb4b151fdd57577a1441019",
+        "classical-reserve-frames.jsonl": "bc16f9e59b94f36c3954a7f0d05c761d6d8aca3a5bff843b1138cb89d4b5fc13",
+        "complete-reserve-frames.jsonl": "f5223f625a663b648514e0a1c69f39efe953768282d57a76062498abc1dea8f7",
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97",
+        "classical.json": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b",
+        "reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430"
+      },
+      "medianMs": 5508.205300022382,
+      "rawSha256": "f67ecf8e18c67913fad70bca94514a59f3a27a61f34e794ac2445d0f6739130f",
+      "targetRank": 7,
+      "horizon": 16,
+      "nominations": 1,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 1
+        },
+        "counterfactual": {
+          "same-threat-in-control": 1
+        },
+        "persistent": {
+          "same-threat-in-control": 1
+        },
+        "prepared": {
+          "same-threat-in-control": 1
+        }
+      },
+      "outcomes": {
+        "exchange-outpost-130f89b99f7c8bc4": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        }
+      }
+    },
+    "prospective": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "unstable": 22,
+        "no-matched-advance": 2
+      },
+      "sources": {
+        "passer-mobility-prospective-frames.json": "24997414badd3e999f81f66e81083301b487f767933245810d61cfb444463f85"
+      },
+      "medianMs": null,
+      "rawSha256": "1843c2b3aba72f6814e7b54e5c65b296992e6c7eae434f2f98af4a4626d3b666",
+      "targetRank": 7,
+      "horizon": 16,
+      "nominations": 0,
+      "arms": {
+        "natural": {},
+        "counterfactual": {},
+        "persistent": {},
+        "prepared": {}
+      },
+      "outcomes": {}
+    },
+    "remaining": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "unstable": 49,
+        "no-matched-advance": 5
+      },
+      "sources": {
+        "passer-mobility-remaining-frames.json": "c1f7cf1178a6816ffbd07ca77e028a1ae47a3e72df67a01f3b96a7d58ca5edf4"
+      },
+      "medianMs": null,
+      "rawSha256": "2a6f4368f3e32deccb0f1ce49b3cb8ac20eb7d95c2838a4ef2ab5523feec41ce",
+      "targetRank": 7,
+      "horizon": 16,
+      "nominations": 0,
+      "arms": {
+        "natural": {},
+        "counterfactual": {},
+        "persistent": {},
+        "prepared": {}
+      },
+      "outcomes": {}
+    },
+    "six-archive": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "no-advanced-passer": 94,
+        "unstable": 193,
+        "no-matched-advance": 31
+      },
+      "sources": {
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": null,
+      "rawSha256": "bcb64ad29f152d7ade8e83272e6649324bf7e87f7a6698bc7af6c46e67935894",
+      "targetRank": 6,
+      "horizon": 16,
+      "nominations": 0,
+      "arms": {
+        "natural": {},
+        "counterfactual": {},
+        "persistent": {},
+        "prepared": {}
+      },
+      "outcomes": {}
+    },
+    "six-reserve": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "unstable": 299,
+        "no-matched-advance": 118,
+        "no-advanced-passer": 196,
+        "nominated": 5
+      },
+      "sources": {
+        "reserve.json": "43b5cbcaafaa4102aa08b914c6286f04f63a3d668ece3a84f58a464e78f646ee",
+        "classical.json": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b",
+        "reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430",
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 3460.7617000001483,
+      "rawSha256": "a077a6d5108aa9d4aca5629e9364fd54d628f2571e56de7682b114812fd3cb68",
+      "targetRank": 6,
+      "horizon": 16,
+      "nominations": 5,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 5
+        },
+        "counterfactual": {
+          "weak-advance-underperforms": 1,
+          "incomplete": 1,
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1,
+          "supported": 1
+        },
+        "persistent": {
+          "weak-advance-underperforms": 1,
+          "incomplete": 1,
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1,
+          "supported": 1
+        },
+        "prepared": {
+          "weak-advance-underperforms": 1,
+          "incomplete": 1,
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1,
+          "supported": 1
+        }
+      },
+      "outcomes": {
+        "classical-transfer-92d01fadc7924e04": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-underperforms",
+          "persistent": "weak-advance-underperforms",
+          "prepared": "weak-advance-underperforms"
+        },
+        "classical-transfer-a5fa701ce279ebe8": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "incomplete",
+          "persistent": "incomplete",
+          "prepared": "incomplete"
+        },
+        "classical-transfer-04dbd09590c83a6a": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        },
+        "classical-transfer-2396724a0f618d4e": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-contained",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "deeper-loss-25c5000eb163abc0": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        }
+      }
+    },
+    "six-reserve-6m": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 6000000,
+      "screened": {
+        "unstable": 299,
+        "no-matched-advance": 118,
+        "no-advanced-passer": 196,
+        "nominated": 5
+      },
+      "sources": {
+        "reserve.json": "43b5cbcaafaa4102aa08b914c6286f04f63a3d668ece3a84f58a464e78f646ee",
+        "classical.json": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b",
+        "reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430",
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 11817.564699973445,
+      "rawSha256": "722372441dae5a6e9f7c8912fc23975557905e4354601ca8f20ce7feaed752f5",
+      "targetRank": 6,
+      "horizon": 16,
+      "nominations": 5,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 5
+        },
+        "counterfactual": {
+          "weak-advance-underperforms": 1,
+          "supported": 2,
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1
+        },
+        "persistent": {
+          "weak-advance-underperforms": 1,
+          "supported": 2,
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1
+        },
+        "prepared": {
+          "weak-advance-underperforms": 1,
+          "supported": 2,
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1
+        }
+      },
+      "outcomes": {
+        "classical-transfer-92d01fadc7924e04": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-underperforms",
+          "persistent": "weak-advance-underperforms",
+          "prepared": "weak-advance-underperforms"
+        },
+        "classical-transfer-a5fa701ce279ebe8": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        },
+        "classical-transfer-04dbd09590c83a6a": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        },
+        "classical-transfer-2396724a0f618d4e": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-contained",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "deeper-loss-25c5000eb163abc0": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        }
+      }
+    },
+    "wide-archive": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "no-advanced-passer": 94,
+        "unstable": 193,
+        "no-matched-advance": 28,
+        "nominated": 3
+      },
+      "sources": {
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 4119.156499975361,
+      "rawSha256": "8e29484c63e1d9eaaac2fda57f1f774a4bb6144d9594dd805a35f15063bed239",
+      "targetRank": 7,
+      "horizon": 24,
+      "nominations": 3,
+      "arms": {
+        "natural": {
+          "supported": 1,
+          "needs-counterfactual": 2
+        },
+        "counterfactual": {
+          "supported": 2,
+          "incomplete": 1
+        },
+        "persistent": {
+          "weak-advance-contained": 2,
+          "incomplete": 1
+        },
+        "prepared": {
+          "supported": 1,
+          "incomplete": 1,
+          "weak-advance-contained": 1
+        }
+      },
+      "outcomes": {
+        "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101#pair": {
+          "natural": "supported",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "supported"
+        },
+        "annotated-pawn-grand-swiss-open-2025-558f540bb676c79b-93": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "incomplete",
+          "persistent": "incomplete",
+          "prepared": "incomplete"
+        },
+        "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84#replies": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        }
+      }
+    },
+    "wide-reserve": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "unstable": 299,
+        "no-matched-advance": 116,
+        "no-advanced-passer": 196,
+        "nominated": 7
+      },
+      "sources": {
+        "reserve.json": "43b5cbcaafaa4102aa08b914c6286f04f63a3d668ece3a84f58a464e78f646ee",
+        "classical.json": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b",
+        "reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430",
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 3818.686200014781,
+      "rawSha256": "14cac6961b721b7dca28496ea2ffdfb99a4753756bd046676737a0bf3591351d",
+      "targetRank": 7,
+      "horizon": 24,
+      "nominations": 7,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 7
+        },
+        "counterfactual": {
+          "same-threat-in-control": 2,
+          "incomplete": 1,
+          "weak-advance-contained": 1,
+          "supported": 3
+        },
+        "persistent": {
+          "weak-advance-contained": 3,
+          "incomplete": 1,
+          "supported": 2,
+          "same-threat-in-control": 1
+        },
+        "prepared": {
+          "weak-advance-contained": 3,
+          "incomplete": 1,
+          "supported": 2,
+          "same-threat-in-control": 1
+        }
+      },
+      "outcomes": {
+        "classical-transfer-e78439f0ee51e12c": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "classical-transfer-8367c04911a82dc9": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "incomplete",
+          "persistent": "incomplete",
+          "prepared": "incomplete"
+        },
+        "classical-transfer-c384681d159881ff": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-contained",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "classical-transfer-8717a9b3de261d55": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        },
+        "classical-transfer-a3728bd060041b8d": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        },
+        "blocked-defence-30d200c3bb9bfb8e": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        },
+        "blocked-defence-d92503ccccdff208": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "supported",
+          "prepared": "supported"
+        }
+      }
+    },
+    "wide-archive-6m": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 6000000,
+      "screened": {
+        "no-advanced-passer": 94,
+        "unstable": 193,
+        "no-matched-advance": 28,
+        "nominated": 3
+      },
+      "sources": {
+        "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+        "depth-input.json": "239ae925ce34b962d6e88a5b6004e270af7d67a4dc288be3f3d27a863c1fef97"
+      },
+      "medianMs": 8478.370999975596,
+      "rawSha256": "df3aa89d4ec5f2d0e1ce52b3b01aee6762023fdc8fa4e2cc4b8cdaa9597c0855",
+      "targetRank": 7,
+      "horizon": 24,
+      "nominations": 3,
+      "arms": {
+        "natural": {
+          "supported": 1,
+          "needs-counterfactual": 2
+        },
+        "counterfactual": {
+          "supported": 2,
+          "same-threat-in-control": 1
+        },
+        "persistent": {
+          "weak-advance-contained": 2,
+          "same-threat-in-control": 1
+        },
+        "prepared": {
+          "supported": 1,
+          "same-threat-in-control": 1,
+          "weak-advance-contained": 1
+        }
+      },
+      "outcomes": {
+        "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101#pair": {
+          "natural": "supported",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "supported"
+        },
+        "annotated-pawn-grand-swiss-open-2025-558f540bb676c79b-93": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "same-threat-in-control",
+          "persistent": "same-threat-in-control",
+          "prepared": "same-threat-in-control"
+        },
+        "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84#replies": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "supported",
+          "persistent": "weak-advance-contained",
+          "prepared": "weak-advance-contained"
+        }
+      }
+    },
+    "wide-prospective": {
+      "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "nodes": 1800000,
+      "screened": {
+        "unstable": 71,
+        "no-matched-advance": 6,
+        "nominated": 1
+      },
+      "sources": {
+        "passer-mobility-prospective-frames.json": "24997414badd3e999f81f66e81083301b487f767933245810d61cfb444463f85",
+        "passer-mobility-remaining-frames.json": "c1f7cf1178a6816ffbd07ca77e028a1ae47a3e72df67a01f3b96a7d58ca5edf4"
+      },
+      "medianMs": 3911.3580000121146,
+      "rawSha256": "10145e70c58282ecf087b3fa8895d40b893c1f1f4384e3813ea0819bf7bcc99b",
+      "targetRank": 7,
+      "horizon": 24,
+      "nominations": 1,
+      "arms": {
+        "natural": {
+          "needs-counterfactual": 1
+        },
+        "counterfactual": {
+          "weak-advance-underperforms": 1
+        },
+        "persistent": {
+          "weak-advance-underperforms": 1
+        },
+        "prepared": {
+          "weak-advance-underperforms": 1
+        }
+      },
+      "outcomes": {
+        "exchange-outpost-04c8ecd9689f6a16": {
+          "natural": "needs-counterfactual",
+          "counterfactual": "weak-advance-underperforms",
+          "persistent": "weak-advance-underperforms",
+          "prepared": "weak-advance-underperforms"
+        }
+      }
+    }
+  },
+  "refreshedFrames": {
+    "prospective": {
+      "sha256": "24997414badd3e999f81f66e81083301b487f767933245810d61cfb444463f85",
+      "counts": {
+        "preferred-choice-changed": 1,
+        "no-finite-paired-loss": 6,
+        "played-leads-preview": 14,
+        "stable": 2,
+        "unconfirmed": 1
+      },
+      "sampleIds": [
+        "classical-transfer-65ae3cc1029e3c2d",
+        "classical-transfer-dfd4d0c61851b42c",
+        "classical-transfer-d51bb724cdc43d81",
+        "classical-9af2a8eed0ba32db",
+        "classical-4f486af84210d522",
+        "classical-49173effdd64fb29",
+        "classical-transfer-f19d60cbbfdf6fd0",
+        "exchange-outpost-7cd41be47cd4c26c",
+        "classical-transfer-de95349ecf6e88a8",
+        "classical-transfer-ce574483ffba05e2",
+        "classical-transfer-ab84cb4a44958d4b",
+        "classical-transfer-4bf236160f6933d2",
+        "011b8df8e076a6ab",
+        "072acb3914ec493c",
+        "exchange-outpost-89b17f6e4d9350e3",
+        "classical-transfer-d3a3b2f8c2985a50",
+        "classical-9bac1866102b688d",
+        "classical-e10a5af557a58228",
+        "exchange-outpost-e472163e7292d367",
+        "classical-transfer-7068acdf4cacb9c2",
+        "exchange-outpost-014f736139dd60a6",
+        "classical-a919447236c89bd6",
+        "0a74f074898261ce",
+        "classical-transfer-c46e007f0f2182a8"
+      ]
+    },
+    "remaining": {
+      "sha256": "c1f7cf1178a6816ffbd07ca77e028a1ae47a3e72df67a01f3b96a7d58ca5edf4",
+      "counts": {
+        "no-finite-paired-loss": 12,
+        "played-leads-preview": 29,
+        "stable": 5,
+        "preferred-choice-changed": 5,
+        "unconfirmed": 3
+      },
+      "sampleIds": [
+        "classical-transfer-24ff9364e931c863",
+        "classical-70bcf2d21fec7f85",
+        "classical-transfer-97a9831b4267dccf",
+        "classical-transfer-71e4e1ed73c35ae5",
+        "classical-transfer-d02309dae18334c6",
+        "classical-transfer-f88b2e22e2833b07",
+        "classical-transfer-62b3c979f59a95db",
+        "classical-transfer-42113167b69fbda8",
+        "exchange-outpost-04c8ecd9689f6a16",
+        "classical-transfer-f5bf71edf6d56747",
+        "classical-transfer-991dd61fc745a4fd",
+        "exchange-outpost-13173b6e2e03eaf5",
+        "classical-transfer-649ac702fb2cd9c6",
+        "classical-transfer-25458edcdfa6119a",
+        "classical-transfer-b6e8a705ef628f58",
+        "classical-transfer-ccc2185f56bae894",
+        "classical-transfer-16b64fd2aeff1863",
+        "classical-transfer-94db842a3bd2b60a",
+        "classical-transfer-3df7d483c9cb161f",
+        "classical-transfer-14ddf4764b220ecb",
+        "classical-transfer-84e2cb9701e845a1",
+        "classical-transfer-069b2326d921af66",
+        "classical-transfer-7b9328fc746df539",
+        "classical-transfer-28fa649ce46b4dfd",
+        "classical-transfer-0ab88649ffb9624b",
+        "exchange-outpost-dcfc496e5fe9d9a4",
+        "classical-ff416a5edb06e33d",
+        "classical-transfer-553fa12d21e84af9",
+        "exchange-outpost-d36b69d076ab4e11",
+        "classical-transfer-a447bb7e884d4abf",
+        "classical-transfer-680627bbef6db796",
+        "classical-transfer-2ccb6c7eed31d7fa",
+        "classical-transfer-091cf200d8a8b860",
+        "classical-9db5106ce6b3f88f",
+        "exchange-outpost-4b08a15b363424a4",
+        "exchange-outpost-43440c99737e85ee",
+        "034665e5ef9d9eec",
+        "exchange-outpost-70116c08b2c0c612",
+        "classical-transfer-82c25006332fa9b3",
+        "classical-bc0f780f2296f45b",
+        "classical-transfer-47910b9d3910aeee",
+        "classical-transfer-bc4b82b598b90c7f",
+        "exchange-outpost-75606ce7befc8b92",
+        "exchange-outpost-50f516cb81186e45",
+        "classical-4ea77f163cf7ec7d",
+        "exchange-outpost-d188023499793881",
+        "classical-transfer-a69e9af049e35abe",
+        "exchange-outpost-f826ad352ffb062c",
+        "classical-transfer-8f861c54bfb8d5f7",
+        "exchange-outpost-e2fa5cf9963ecf0c",
+        "classical-4ecab63f641ba167",
+        "classical-transfer-4546961255e16dca",
+        "classical-transfer-541b140bfb80a35b",
+        "0ec96ef512c5cfb9"
+      ]
+    }
+  },
+  "cachedCheckInputs": {
+    "outposts-after-exchanges/reserve.json": "bc4ac4193d730161dbc32fa78d17b6ff8b5d2f69793c2689f7a96d80886c7de9",
+    "app-transfer/late-reserve.json": "ac09826304f076c161ef3952ffd1e491a1498c76efb4b151fdd57577a1441019",
+    "passer-interception-transfer/classical-reserve-frames.jsonl": "bc16f9e59b94f36c3954a7f0d05c761d6d8aca3a5bff843b1138cb89d4b5fc13",
+    "mixed-mistake-contrast/complete-reserve-frames.jsonl": "f5223f625a663b648514e0a1c69f39efe953768282d57a76062498abc1dea8f7",
+    "strategic-asset-contrast/reserve.json": "477253465f002850c85d7b89f55499c7fd87d515cfe52e2f7003de0507da4191"
+  }
+}

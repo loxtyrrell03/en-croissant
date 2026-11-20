@@ -4062,3 +4062,20 @@ The narrower proof addresses a specific missing causal comparison.
 The spatial neural results still favour the simpler search ranking
 for finding previously missed classical forks.
 [Comparison, limits and reproduction](../benchmarks/decision-evidence/defence-after-attack/README.md)
+
+## Advanced pawns when the played continuations diverge
+
+An offline experiment tests the same legal advance by an original
+passed pawn in two played branches and matches it against both stronger
+branches. A seventh-rank test leaves two supported cases in each of
+two search budgets across 319 stable reserve comparisons, with different
+positives at the two budgets. Searching to the sixth rank adds coverage
+of a different set of examples. In a Grand Swiss ending, asking for the
+pawn to survive after the advance is too strict because it promotes.
+Comparing the pawn's persistence before promotion establishes the more
+durable difference.
+
+The separate cached check and the prospective refresh of 78 selected
+classical games give zero supported cases. The experiment separates
+lasting pawn pressure from a tactical exchange and remains offline.
+[Exact variations, results and reproduction](../benchmarks/decision-evidence/passer-mobility/README.md)
