@@ -19,6 +19,7 @@ import {
   DECISION_SEARCH_SESSION_MS,
   gatherCheckingDefence,
   gatherCheckingOrder,
+  gatherQuietReply,
   gatherDecisionEvidence,
   gatherExtraPositionChoice,
   gatherPassedAdvance,
@@ -164,6 +165,22 @@ function EvidenceSummary({
               {lineSan(resource.replyFen, resource.lineUci)}. {resource.limitation}
             </Text>
           ))}
+        {expanded && assessment.quietReply && (
+          <Stack gap={4}>
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">
+                If {assessment.quietReply.replySan}.{" "}
+              </Text>
+              {lineSan(assessment.quietReply.fen, assessment.quietReply.lineUci)}
+            </Text>
+            {assessment.quietReply.otherLineUci && (
+              <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+                <Text component="span" fw={600} size="xs">Other response.{" "}</Text>
+                {lineSan(assessment.quietReply.fen, assessment.quietReply.otherLineUci)}
+              </Text>
+            )}
+          </Stack>
+        )}
         {expanded &&
           assessment.mechanisms.slice(0, 4).map((witness) => (
             <Text
@@ -718,6 +735,18 @@ export function DecisionEvidencePanel({
         );
         if (active() && checkingOrder) {
           input = { ...input, checkingOrder };
+          report = await classifyDecisionInWorker(
+            { input, engineName: engine.name, history: target.history },
+            owned.signal,
+          ).catch(() => report);
+        }
+      }
+      if (active() && Date.now() < deadline) {
+        const unproved = new Set(report.moves
+          .filter(move => move.tactical.support !== "supported").map(move => move.moveUci));
+        const quietReply = await gatherQuietReply(engine, target, input, unproved, owned.signal, deadline, progress);
+        if (active() && quietReply) {
+          input = { ...input, quietReply };
           report = await classifyDecisionInWorker(
             { input, engineName: engine.name, history: target.history },
             owned.signal,

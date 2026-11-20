@@ -52,6 +52,12 @@ import {
     nominateCheckingOrder,
     type CheckingOrderProbe,
 } from "@/utils/tacticalMotifs/decisionCheckingOrder";
+import {
+    confirmQuietReply,
+    nominateQuietReply,
+    nominateUnsearchedQuietReply,
+    type QuietReplyProbe,
+} from "@/utils/tacticalMotifs/quietReplyEvidence";
 
 export type DecisionSearchTarget = {
     fen: string;
@@ -120,6 +126,59 @@ const PIECE_VALUE: Record<Role, number> = {
     queen: 900,
     king: 20000,
 };
+
+export async function gatherQuietReply(
+    engine: LocalEngine,
+    target: DecisionSearchTarget,
+    input: DecisionAssessmentInput,
+    movesWithoutProof: ReadonlySet<string>,
+    signal: AbortSignal,
+    deadline: number,
+    progress: (phase: string) => void,
+): Promise<QuietReplyProbe | undefined> {
+    const leader = input.candidates[0];
+    if (leader?.cp == null) return;
+    const choices = input.candidates.flatMap(root => {
+        const move = root.pvUci[0];
+        if (!movesWithoutProof.has(move) || root.cp == null || root.depth !== leader.depth ||
+            leader.cp! - root.cp > 50) return [];
+        const probe = input.replyProbes?.find(probe => probe.moveUci === move);
+        return probe ? [{ root, replies: probe.lines }] : [];
+    });
+    let request = choices.map(({ root, replies }) => ({
+        proposal: nominateQuietReply(target.fen, root, replies, target.history), replies,
+    })).find(({ proposal }) => proposal);
+    const stopAt = Math.min(deadline, Date.now() + 4_800);
+    try {
+        if (!request) {
+            for (const { root, replies } of choices) {
+                const extra = nominateUnsearchedQuietReply(target.fen, root, replies, target.history);
+                if (!extra) continue;
+                progress("Checking another defensive reply…");
+                const matched = await searchDecisionCheckpoint(
+                    engine, { fen: extra.fen, prefix: [extra.root] }, signal, stopAt,
+                    target.history, [extra.safer, extra.reply], 1_400_000, 2,
+                );
+                const proposal = nominateQuietReply(target.fen, root, matched, target.history);
+                if (!proposal || proposal.reply.uci !== extra.reply) return;
+                request = { proposal, replies: matched };
+                break;
+            }
+        }
+        if (!request?.proposal || Date.now() >= stopAt) return;
+        const { proposal } = request;
+        progress("Checking the tactical answer…");
+        const answers = await searchDecisionCheckpoint(
+            engine, { fen: proposal.checkpoint, prefix: [proposal.root.uci, proposal.reply.uci] },
+            signal, stopAt, target.history, undefined, 1_400_000, 3,
+        );
+        if (!confirmQuietReply(proposal, answers, target.history)) return;
+        return { rootMoveUci: proposal.root.uci, replies: request.replies, answers };
+    } catch {
+        signal.throwIfAborted();
+        return;
+    }
+}
 
 function board(fen: string) {
     return parseFen(fen)

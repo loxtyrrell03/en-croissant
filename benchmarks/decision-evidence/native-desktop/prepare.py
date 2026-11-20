@@ -77,6 +77,7 @@ for folder, scenarios in (
     ("checking-order-defences", (
         ("sameReply", "Berjaya Checking Defence"), ("removeAttacker", "La Roda Checking Defence"),
     )),
+    ("quiet-reply-counterplay", (("heldout", "Quiet Counterattack"),)),
 ):
     if not (fixtures / folder / "fixture.json").is_file():
         continue

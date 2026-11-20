@@ -226,4 +226,19 @@ if (wanted.has("La Roda Checking Defence")) {
   });
 }
 
+if (wanted.has("Quiet Counterattack")) {
+  await run("Quiet Counterattack", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse position");
+    const position = await (await expandPosition(page)).innerText();
+    const move = page.getByText("What the move achieves", { exact: true }).locator("../..");
+    await move.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const evidence = await move.innerText();
+    assert.match(position, /Engine supported.*After h3, Qg3.*on g4/);
+    assert.match(evidence, /If Qg3\..*h3.*Qg3/);
+    return { position, move: evidence };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

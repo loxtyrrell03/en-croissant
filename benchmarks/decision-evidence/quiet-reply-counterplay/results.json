@@ -1,0 +1,200 @@
+{
+  "baseline": "27580772",
+  "sampleSha256": "dae0ac223bc0fa376fc78768942369a1e52115d7681e246fe75e69beb2278d45",
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "cases": 106,
+  "groups": 18,
+  "sampleClasses": {
+    "attack-reply": 58,
+    "ordinary": 48
+  },
+  "recordedReferences": {
+    "reply-competitive": 47,
+    "needs-review": 4,
+    "root-not-competitive": 6,
+    "positive": 1,
+    "ordinary-unreviewed": 48
+  },
+  "trials": {
+    "cached": {
+      "attempts": 0,
+      "previewNominations": 0,
+      "confirmed": 0
+    },
+    "targeted": {
+      "attempts": 8,
+      "previewNominations": 4,
+      "confirmed": 3
+    }
+  },
+  "extraSearch": {
+    "queries": 12,
+    "requestedNodes": 16800000,
+    "lastCompleteFrameNodes": 14174263,
+    "queryTypes": {
+      "target": 8,
+      "confirm": 4
+    },
+    "ordinaryQueries": 0
+  },
+  "matchesToRecordedPositive": 1,
+  "publishedExplanations": 2,
+  "changedReports": [
+    "5a0c9fcc87c172798f5d",
+    "05b022ef86d46536eff7"
+  ],
+  "changedMistakes": 0,
+  "casesWithConfirmedCounterplay": [
+    {
+      "id": "5a0c9fcc87c172798f5d",
+      "event": "skakligaen-20262027",
+      "site": "https://lichess.org/broadcast/skakligaen-20262027/round-1/mqrJwMy3/HIJTOOmv",
+      "originalRecordedReply": "c2b2",
+      "provenReply": "c2a4",
+      "root": "b5b4",
+      "recordedReference": "reply-competitive",
+      "exactReferenceMatch": false,
+      "appReplyGapCp": 442,
+      "deeperReplyGapCp": 424,
+      "position": [
+        "positional",
+        "mixed"
+      ],
+      "candidate": [
+        "positional",
+        "mixed"
+      ],
+      "laterLineUci": [
+        "b5b4",
+        "c2a4",
+        "b4a3",
+        "a1b1",
+        "g8h6",
+        "d2d4",
+        "h6f5",
+        "e2e3",
+        "f8e7",
+        "g3g4",
+        "f5d6",
+        "c1a3"
+      ],
+      "proof": {
+        "fen": "rn2kbnr/p5pp/2p1qp2/1p2p3/2P5/N5P1/P1QPPPNP/R1B2RK1 b kq - 0 13",
+        "moveUci": "b5b4",
+        "replyUci": "c2a4",
+        "replySan": "Qa4",
+        "effect": "kept-material",
+        "lineUci": [
+          "b5b4",
+          "c2a4",
+          "b4a3",
+          "d2d4",
+          "b8d7",
+          "a1b1",
+          "e5d4",
+          "g2f4",
+          "e6e4",
+          "f4d3",
+          "g8e7",
+          "c1a3",
+          "e7g6",
+          "b1b7"
+        ],
+        "explanation": "After b4, Qa4 tries to protect the knight on a3. The compared continuations still capture that piece and keep a material gain through the shown exchange."
+      }
+    },
+    {
+      "id": "05b022ef86d46536eff7",
+      "event": "4th-asian-chess-championship-for-players-with-disabilities-2026-men-juniors",
+      "site": "https://lichess.org/broadcast/4th-asian-chess-championship-for-players-with-disabilities-2026-men-juniors/round-5/4aLETl6X/6TpESJyq",
+      "originalRecordedReply": "d6g3",
+      "provenReply": "d6g3",
+      "root": "h2h3",
+      "recordedReference": "positive",
+      "exactReferenceMatch": true,
+      "appReplyGapCp": 440,
+      "deeperReplyGapCp": 390,
+      "position": [
+        "unclear",
+        "tactical"
+      ],
+      "candidate": [
+        "unclear",
+        "tactical"
+      ],
+      "laterLineUci": [
+        "h2h3",
+        "d6g3",
+        "h3g4",
+        "f6h4",
+        "c1e3",
+        "g7g5",
+        "c3e2",
+        "g3g4",
+        "f3h4",
+        "g4h4",
+        "d1d2",
+        "h7h6"
+      ],
+      "proof": {
+        "fen": "r4rk1/p5pp/b1pq1b2/3p4/3P2n1/2N2N2/PPP3PP/R1BQR1K1 w - - 4 15",
+        "moveUci": "h2h3",
+        "replyUci": "d6g3",
+        "replySan": "Qg3",
+        "effect": "kept-material",
+        "lineUci": [
+          "h2h3",
+          "d6g3",
+          "h3g4",
+          "f6d8",
+          "c1e3",
+          "d8c7",
+          "e3f2",
+          "g3d6",
+          "e1e5",
+          "a6c8",
+          "d1d2",
+          "c8g4",
+          "f3h2",
+          "d6g6"
+        ],
+        "explanation": "After h3, Qg3 tries to protect the knight on g4. The compared continuations still capture that piece and keep a material gain through the shown exchange."
+      }
+    },
+    {
+      "id": "213c377b114f6e5ee194",
+      "event": "7th-asenso-asean-individual-chess-championship-open",
+      "site": "https://lichess.org/broadcast/7th-asenso-asean-individual-chess-championship-open/round-1/Qnv5cvPb/t8vmA7lA",
+      "originalRecordedReply": "f5e6",
+      "provenReply": "g7f6",
+      "root": "c6e7",
+      "recordedReference": "reply-competitive",
+      "exactReferenceMatch": false,
+      "appReplyGapCp": 709,
+      "deeperReplyGapCp": 728,
+      "position": [
+        "tactical",
+        "tactical"
+      ],
+      "candidate": [
+        "tactical",
+        "tactical"
+      ],
+      "laterLineUci": [
+        "c6e7",
+        "g7f6",
+        "e7f5",
+        "e5e4",
+        "e3d4",
+        "d5d4",
+        "f5d4",
+        "c7c5",
+        "d4e6",
+        "f8e8",
+        "c4e4",
+        "f7e5"
+      ],
+      "proof": null
+    }
+  ]
+}

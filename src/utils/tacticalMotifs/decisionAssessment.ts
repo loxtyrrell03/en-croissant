@@ -122,7 +122,14 @@ import {
     type CheckingOrderProbe,
 } from "./decisionCheckingOrder";
 
-export const DECISION_ASSESSMENT_VERSION = 57;
+import {
+    confirmQuietReply,
+    nominateQuietReply,
+    type QuietReplyEvidence,
+    type QuietReplyProbe,
+} from "./quietReplyEvidence";
+
+export const DECISION_ASSESSMENT_VERSION = 58;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -138,6 +145,7 @@ export type DecisionAssessment = {
     localProofs: DecisionLocalProof[];
     episodeOutcomes: TacticalEpisodeOutcome[];
     conditionalResources: ConditionalTacticalResource[];
+    quietReply?: QuietReplyEvidence;
     conditionalFork?: ConditionalForkEvidence;
     conditionalMate?: DecisionConditionalMate;
     matingLines?: ConfirmedMatingLines;
@@ -168,6 +176,7 @@ export type DecisionAssessmentInput = {
     extraPositionChoice?: ExtraPositionChoice;
     siblingRefutation?: SiblingRefutationFrames;
     checkingOrder?: CheckingOrderProbe;
+    quietReply?: QuietReplyProbe;
     sharedReply?: DecisionSharedReplyProbe;
     passerFlight?: PasserFlightProbe;
     checkingDefence?: CheckingDefenceProbe;
@@ -674,6 +683,16 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             );
         }
     }
+    const quietReply = input.quietReply;
+    if (corroborated && result.tactical.support !== "supported" && quietReply?.rootMoveUci === line.pvUci[0]) {
+        const request = nominateQuietReply(input.fen, line, quietReply.replies, input.history);
+        const proof = request && confirmQuietReply(request, quietReply.answers, input.history);
+        if (proof) {
+            result.quietReply = proof;
+            result.tactical = { support: "supported", basis: "engine-supported", reasons: [proof.explanation] };
+            result.limitations.push("The resource applies to this reply. Other defences can change the continuation.");
+        }
+    }
     result.category = category(result.tactical, result.positional);
     return result;
 }
@@ -750,6 +769,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 move.promotionTactic ||
                 move.tactical.basis === "bounded-proof" ||
                 move.conditionalResources.length > 0 ||
+                move.quietReply ||
                 move.mechanisms.length === 0 ||
                 move.mechanisms.some(
                     (witness) =>
@@ -762,6 +782,10 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.localProofs = tactical?.localProofs ?? [];
     position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
     position.conditionalResources = tactical?.conditionalResources ?? [];
+    if (tactical?.quietReply) {
+        position.quietReply = tactical.quietReply;
+        position.limitations.push("The resource applies to this reply. Other defences can change the continuation.");
+    }
     if (tactical?.conditionalFork) position.conditionalFork = tactical.conditionalFork;
     if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
     if (tactical?.matingLines) position.matingLines = tactical.matingLines;
