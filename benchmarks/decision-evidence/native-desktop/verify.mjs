@@ -236,6 +236,7 @@ if (wanted.has("Quiet Counterattack")) {
     await move.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
     const evidence = await move.innerText();
     assert.match(position, /Engine supported.*After h3, Qg3.*on g4/);
+    assert.match(position, /Other defences can change the continuation/);
     assert.match(evidence, /If Qg3\..*h3.*Qg3/);
     return { position, move: evidence };
   });

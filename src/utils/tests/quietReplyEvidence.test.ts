@@ -12,6 +12,7 @@ describe("a quiet defence with a tactical drawback", () => {
         expect(exact.quietReply?.explanation).toMatch(/After h3, Qg3.*on g4/);
         expect(exact.tactical.support).toBe("supported");
         expect(after.position.quietReply).toEqual(exact.quietReply);
+        expect(after.position.limitations).toContain("The resource applies to this reply. Other defences can change the continuation.");
         expect(after.moves.filter(move => move.moveUci !== probe.rootMoveUci))
             .toEqual(before.moves.filter(move => move.moveUci !== probe.rootMoveUci));
         expect(after.mistake).toEqual(before.mistake);

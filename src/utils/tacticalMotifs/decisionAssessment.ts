@@ -129,6 +129,8 @@ import {
     type QuietReplyProbe,
 } from "./quietReplyEvidence";
 
+const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
+
 export const DECISION_ASSESSMENT_VERSION = 58;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
@@ -690,7 +692,7 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
         if (proof) {
             result.quietReply = proof;
             result.tactical = { support: "supported", basis: "engine-supported", reasons: [proof.explanation] };
-            result.limitations.push("The resource applies to this reply. Other defences can change the continuation.");
+            result.limitations.push(QUIET_REPLY_SCOPE);
         }
     }
     result.category = category(result.tactical, result.positional);
@@ -782,10 +784,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.localProofs = tactical?.localProofs ?? [];
     position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
     position.conditionalResources = tactical?.conditionalResources ?? [];
-    if (tactical?.quietReply) {
-        position.quietReply = tactical.quietReply;
-        position.limitations.push("The resource applies to this reply. Other defences can change the continuation.");
-    }
+    if (tactical?.quietReply) position.quietReply = tactical.quietReply;
     if (tactical?.conditionalFork) position.conditionalFork = tactical.conditionalFork;
     if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
     if (tactical?.matingLines) position.matingLines = tactical.matingLines;
@@ -1009,6 +1008,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.category = category(position.tactical, position.positional);
     position.limitations = [
         "The position assessment covers the candidate moves and replies examined in this search.",
+        ...(position.quietReply ? [QUIET_REPLY_SCOPE] : []),
         ...(rejectedChoices
             ? [
                   `${rejectedChoices} alternative continuation(s) could not be validated. Their scores and motifs were not used; the gap between choices is unavailable.`,
