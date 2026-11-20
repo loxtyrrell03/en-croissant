@@ -107,7 +107,9 @@ import { comparePromotionCheckTempo } from "./decisionPromotionCheckTempo";
 
 import { confirmPasserFlight, nominatePasserFlight, type PasserFlightProbe } from "./decisionPasserFlight";
 
-export const DECISION_ASSESSMENT_VERSION = 53;
+import { findSettledExchangePlan } from "./decisionSettledExchange";
+
+export const DECISION_ASSESSMENT_VERSION = 54;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -130,6 +132,7 @@ export type DecisionAssessment = {
     quietMateThreat?: QuietMateThreat;
     promotionTactic?: PositionStrategicPlan;
     passerFlight?: PositionStrategicPlan;
+    settledExchangePlan?: PositionStrategicPlan;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -632,6 +635,26 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
                       reasons: ["The capture changes the position. Its separate strategic impact is uncertain."],
                   };
             result.limitations.push(...captureEffects.values());
+        }
+    }
+    const leader = input.candidates[0];
+    if (
+        corroborated &&
+        result.positional.support !== "supported" &&
+        leader.cp !== null && line.cp !== null &&
+        line.depth === leader.depth && leader.cp - line.cp <= 50
+    ) {
+        const plan = findSettledExchangePlan(input.fen, line, probe!.lines[0]);
+        if (plan) {
+            result.settledExchangePlan = plan;
+            result.positional = {
+                support: "supported",
+                basis: "heuristic",
+                reasons: [plan.description],
+            };
+            result.limitations.push(
+                "The searches show how this plan develops after the exchange. Its share of the engine evaluation is uncertain.",
+            );
         }
     }
     result.category = category(result.tactical, result.positional);

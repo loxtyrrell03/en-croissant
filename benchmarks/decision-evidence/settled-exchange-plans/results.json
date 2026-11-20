@@ -1,0 +1,256 @@
+{
+  "baseline": "a779f152",
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "cached": {
+    "reply-coverage-audit/full-pair-input.json": {
+      "count": 1051,
+      "counts": {
+        "geometry": 51,
+        "used": 4,
+        "linked": 4
+      },
+      "sha256": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13"
+    },
+    "current-classifier-audit/matched-early.json": {
+      "count": 124,
+      "counts": {
+        "geometry": 3,
+        "used": 0,
+        "linked": 0
+      },
+      "sha256": "9a6e1f6fc25d1bc342d573cbb943d4f49f77181cab3871e167884e63429e9fe0"
+    },
+    "current-classifier-audit/prospective-scored.json": {
+      "count": 26,
+      "counts": {
+        "geometry": 1,
+        "used": 0,
+        "linked": 0
+      },
+      "sha256": "6bb0e9af250ff0487b03c5f120fc878f0fb5bfd04ed32ab67206dac784c3c6c3"
+    },
+    "reply-concordance/reserve-scored.json": {
+      "count": 160,
+      "counts": {
+        "geometry": 7,
+        "used": 0,
+        "linked": 0
+      },
+      "sha256": "b230420f9b9092568f5ec404ebb6b7351865eeff10739d93daa5b39cf108261a"
+    },
+    "alternate-capture-payoff/fresh-scored.json": {
+      "count": 120,
+      "counts": {
+        "geometry": 8,
+        "used": 2,
+        "linked": 2
+      },
+      "sha256": "e978e9d3a31a7f9ced6b3ed7de5b4be8908b3999f663cec11404357c62c3c445"
+    },
+    "promotion-check-tempo/fresh-scored.json": {
+      "count": 144,
+      "counts": {},
+      "sha256": "ee7c8fd91b646894d3d72f8bf8867871a120a6aa37c71e5290857e6e0b1ff3fc"
+    }
+  },
+  "fresh": {
+    "count": 160,
+    "counts": {
+      "geometry": 43,
+      "used": 17,
+      "linked": 16
+    },
+    "sha256": "501e506d88dd500ec78ba25e0b9bd39c9ab8e8c17d776d0420b51c543cf720d4"
+  },
+  "freshSampleSha256": "63dbe5c9c721c979aa10be903d71b8cc2503454ba0fccfc6ca0cd08102aec04c",
+  "freshExclusions": {
+    "reply-coverage-audit/full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "current-classifier-audit/matched-early.json": "9a6e1f6fc25d1bc342d573cbb943d4f49f77181cab3871e167884e63429e9fe0",
+    "current-classifier-audit/prospective-scored.json": "6bb0e9af250ff0487b03c5f120fc878f0fb5bfd04ed32ab67206dac784c3c6c3",
+    "reply-concordance/reserve-scored.json": "b230420f9b9092568f5ec404ebb6b7351865eeff10739d93daa5b39cf108261a",
+    "alternate-capture-payoff/fresh-scored.json": "e978e9d3a31a7f9ced6b3ed7de5b4be8908b3999f663cec11404357c62c3c445",
+    "promotion-check-tempo/fresh-scored.json": "ee7c8fd91b646894d3d72f8bf8867871a120a6aa37c71e5290857e6e0b1ff3fc",
+    "paired-passer-benchmark/sample.json": "afa3ece3f098a740430073f958df0f80b132f912ea9fb96b5149c90abba0e7a1",
+    "checking-flight-defence/reserve.json": "fe8b1d051edaa72b14b5420a4d41b0ab8ca2286ad8b42e88f86c4128dbca006a"
+  },
+  "reports": {
+    "cached": {
+      "requests": 1625,
+      "validReports": 1624,
+      "newMoveExplanations": 5,
+      "unclearToPositional": 5,
+      "newMoveExplanationsRepeated": 3
+    },
+    "fresh": {
+      "requests": 160,
+      "validReports": 160,
+      "newMoveExplanations": 9,
+      "unclearToPositional": 8,
+      "newMoveExplanationsRepeated": 6,
+      "tacticalToMixed": 1
+    }
+  },
+  "changes": [
+    {
+      "id": "tournament-buongoma-c9f59c3a0b84136d-27",
+      "cohort": "reply-coverage-audit/full-pair-input.json",
+      "move": "d6e5",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "annotated-pawn-asian-disabilities-men-2026-4aab4f07007807b4-39",
+      "cohort": "reply-coverage-audit/full-pair-input.json",
+      "move": "c7d6",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "mistake-pall-mall-u2000-sept-2026-88775a47af050576-38",
+      "cohort": "reply-coverage-audit/full-pair-input.json",
+      "move": "b3c4",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": false
+    },
+    {
+      "id": "051192875f0053cd",
+      "cohort": "alternate-capture-payoff/fresh-scored.json",
+      "move": "c2c4",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "011ddbd51699fe79",
+      "cohort": "alternate-capture-payoff/fresh-scored.json",
+      "move": "g5h6",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": false
+    },
+    {
+      "id": "exchange-296cc83d8135973c",
+      "cohort": "fresh",
+      "move": "f7e6",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "exchange-0a1b42a6180ad8eb",
+      "cohort": "fresh",
+      "move": "f6e5",
+      "old": "tactical",
+      "new": "mixed",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "exchange-0e24bba4dde067f7",
+      "cohort": "fresh",
+      "move": "d8c7",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "exchange-033e2440622ae39a",
+      "cohort": "fresh",
+      "move": "d3c5",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": false
+    },
+    {
+      "id": "exchange-17fc233db9acc658",
+      "cohort": "fresh",
+      "move": "h5d1",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "exchange-545c573f58e7e935",
+      "cohort": "fresh",
+      "move": "d2g5",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "exchange-09c0d3d289177457",
+      "cohort": "fresh",
+      "move": "g5c5",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": true
+    },
+    {
+      "id": "exchange-0eba6b4b8bc23087",
+      "cohort": "fresh",
+      "move": "h5h4",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": false
+    },
+    {
+      "id": "exchange-02de14db5e64d1ff",
+      "cohort": "fresh",
+      "move": "f3g4",
+      "old": "unclear",
+      "new": "positional",
+      "samePlanAtHigherBudget": false
+    }
+  ],
+  "live": {
+    "baseline": "tactical",
+    "product": "mixed",
+    "queries": [
+      {
+        "nodes": 600000,
+        "searched": 600501,
+        "restricted": [],
+        "prefix": []
+      },
+      {
+        "nodes": 2400000,
+        "searched": 2400337,
+        "restricted": [],
+        "prefix": []
+      },
+      {
+        "nodes": 1000000,
+        "searched": 1000260,
+        "restricted": [],
+        "prefix": [
+          "f6e5"
+        ]
+      }
+    ],
+    "plan": {
+      "description": "The exchange creates a passed pawn on d5, and d4 advances that pawn. Both searches show this follow-up.",
+      "linesUci": [
+        [
+          "f6e5",
+          "d4e5",
+          "d5d4",
+          "c5d6",
+          "e4d5",
+          "e2d3",
+          "e6f5"
+        ],
+        [
+          "f6e5",
+          "d4e5",
+          "d5d4",
+          "c5d6",
+          "d4d3",
+          "e2d2",
+          "e4d4"
+        ]
+      ]
+    }
+  }
+}

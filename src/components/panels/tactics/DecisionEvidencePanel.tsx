@@ -409,10 +409,16 @@ function DecisionReport({
           comparedLines={[
             ...(selected.promotionTactic?.linesUci ?? []),
             ...(selected.passerFlight?.linesUci ?? []),
-          ].map((moves) => ({
-            label: `After ${lineSan(report.fen, moves.slice(0, 2))}`,
-            san: lineSan(report.fen, moves),
-          }))}
+            ...(selected.settledExchangePlan?.linesUci ?? []),
+          ]
+            .filter(
+              (moves, index, lines) =>
+                lines.findIndex((other) => other.join(" ") === moves.join(" ")) === index,
+            )
+            .map((moves) => ({
+              label: `After ${lineSan(report.fen, moves.slice(0, 2))}`,
+              san: lineSan(report.fen, moves),
+            }))}
         >
           <Select
             aria-label="Candidate move"

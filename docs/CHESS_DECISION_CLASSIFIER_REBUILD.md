@@ -4407,3 +4407,24 @@ two extra 500k-node queries for the Lugano case. The probe is bounded by
 the existing session deadline. The evidence concerns a scoped transfer
 and does not measure overall classifier accuracy.
 [Engine comparison, live receipt and tests](../benchmarks/decision-evidence/checking-flight-defence/README.md)
+
+
+## Plans that emerge after balanced exchanges
+
+The move assessor now follows the original pieces through a
+materially balanced early capture sequence and checks that its
+resulting file or passer is used. Two agreeing searches must show
+the same original captured pieces and the same rook or pawn using
+the new opportunity. The position and mistake assessments keep
+their scoped evidence. The move check uses no additional engine
+queries.
+
+Across 160 separate games, the geometry-only arm nominates 43 and
+the original-piece use arm nominates 16. The latter adds nine move
+explanations, including one tactical-to-mixed change in Amsterdam.
+Six repeat at higher budgets across five events. Five more
+explanations appear in 1,624 valid previously studied reports, and
+three repeat. The Witney reference was also corrected after legal
+replay showed that its f6 pawn is blocked and a competitive king
+reply permits declining the queen trade.
+[Before and after, exact moves and regression checks](../benchmarks/decision-evidence/settled-exchange-plans/README.md)

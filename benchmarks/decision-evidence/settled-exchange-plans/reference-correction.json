@@ -1,0 +1,9 @@
+{
+  "id": "public-06108743fd9949a8",
+  "scope": "position-character",
+  "source": "../current-classifier-audit/README.md",
+  "previousClaim": "The exchange creates a passed pawn on f6.",
+  "axisLabels": { "tactical": true, "positional": true },
+  "reviewedRationale": "When Black meets Qh8+ with Rd8, Qf6 makes the queen trade the only near-leading tested reply. After Kb7, the queen retreat Qc3 and the trade Qxf6 score equally. After exf6, the f7 pawn remains directly ahead. The distinct Rbc1 line backs the c5 break and uses the c-file.",
+  "evidence": "reviewed-searches.json"
+}
