@@ -4115,3 +4115,21 @@ exchange. Six of seven distinct new explanations from the cached benchmark retai
 repeated-material proof at the higher budget. The production check reuses the
 existing engine searches. It did not add a supported mixed mistake in this test.
 [Exact examples, benchmark and reproduction](../benchmarks/decision-evidence/allowed-route-mistakes/README.md)
+
+## Testing the same pawn advance after a stronger move
+
+A trial follows an existing sixth-rank passer in two played lines and
+tests the exact advance against the same original defender at two
+checkpoints after a stronger move. A separate tactical test can verify
+the material cost of stopping it or a repeated exchange sacrifice
+that keeps the pawn's support. A further Stockfish search rejects a
+capture that looked safe in the local exchange alone.
+
+The confirmed trial raises reviewed archived mixed recall from 1/17
+to 2/17 with zero false mixed calls on 185 known negatives. The first
+72-game sample supplies one further mixed example and a more precise
+positional explanation. A separate 72-game replication supplies no
+nominations. The stronger capture comparison also rejects one archive
+proposal. This trial remains offline. The added searches have not been validated within the normal
+analysis budget, and the fresh coverage remains uncertain.
+[Benchmark, exact variations and reproduction](../benchmarks/decision-evidence/passer-restraint/README.md)

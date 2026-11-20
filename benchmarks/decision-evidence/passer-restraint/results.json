@@ -1,0 +1,897 @@
+{
+  "archive": {
+    "byCohort": {
+      "archive": {
+        "requests": 1051,
+        "baselineMistakes": 178,
+        "attemptedPaired": 199,
+        "advance": 2,
+        "lasting": 1,
+        "combined": 2,
+        "confirmed": 1
+      },
+      "deep": {
+        "requests": 68,
+        "baselineMistakes": 66,
+        "attemptedPaired": 66,
+        "advance": 1,
+        "lasting": 0,
+        "combined": 1
+      },
+      "classical": {
+        "requests": 700,
+        "baselineMistakes": 575,
+        "attemptedPaired": 571,
+        "advance": 3,
+        "lasting": 1,
+        "combined": 1,
+        "confirmed": 1
+      },
+      "puzzle": {
+        "requests": 56,
+        "baselineMistakes": 53,
+        "attemptedPaired": 53,
+        "advance": 0,
+        "lasting": 0,
+        "combined": 0
+      }
+    },
+    "archiveLabels": {
+      "worker": {
+        "tactical": {
+          "tp": 22,
+          "tn": 165,
+          "fn": 46,
+          "unknown": 85
+        },
+        "positional": {
+          "tn": 164,
+          "fn": 69,
+          "tp": 20,
+          "unknown": 65
+        },
+        "mixed": {
+          "tn": 185,
+          "unknown": 116,
+          "fn": 16,
+          "tp": 1
+        }
+      },
+      "confirmed": {
+        "tactical": {
+          "tp": 23,
+          "tn": 165,
+          "fn": 45,
+          "unknown": 85
+        },
+        "positional": {
+          "tn": 164,
+          "fn": 68,
+          "tp": 21,
+          "unknown": 65
+        },
+        "mixed": {
+          "tn": 185,
+          "unknown": 116,
+          "fn": 15,
+          "tp": 2
+        }
+      }
+    },
+    "examples": [
+      {
+        "id": "annotated-pawn-grand-swiss-open-2025-558f540bb676c79b-93",
+        "site": null,
+        "cohort": "archive",
+        "before": "unclear",
+        "proposed": null,
+        "tactical": null,
+        "positional": {
+          "feature": "passed-pawn",
+          "side": "white",
+          "squareOrFile": "a",
+          "description": "Kg7 keeps the rook from f7 able to take on a7 at the first two checked opportunities. After Bf8, the pawn advances without that defence in both lines.",
+          "firstPly": 1,
+          "lastConsecutivePly": 3,
+          "support": "board-fact",
+          "comparisonMoveUci": "c5f8",
+          "comparisonGapCp": 130,
+          "supportInComparison": false,
+          "comparison": "separate-reply-search",
+          "interpretation": "heuristic"
+        },
+        "comparedScoresCp": [
+          -583,
+          -713
+        ],
+        "testedLine": "47...Kg7 48. a7 Rxa7",
+        "playedLine": "47...Bf8 48. a7 Qxe4+ 49. Rg2 Qxh4+",
+        "betterLine": "47...Kg7 48. Qxc6 Qd3 49. hxg5 Bxe3",
+        "controlResults": [
+          {
+            "prefix": [
+              "h8g7",
+              "a6a7"
+            ],
+            "captureUci": "f7a7",
+            "estimateCp": -557,
+            "mate": null,
+            "unrestrictedCp": 661,
+            "unrestrictedMate": null
+          },
+          {
+            "prefix": [
+              "h8g7",
+              "c8c6",
+              "c4d3",
+              "a6a7"
+            ],
+            "captureUci": "f7a7",
+            "estimateCp": -821,
+            "mate": null,
+            "unrestrictedCp": -11,
+            "unrestrictedMate": null
+          },
+          {
+            "prefix": [
+              "h8g7",
+              "e3c5",
+              "c4c5",
+              "a6a7"
+            ],
+            "captureUci": "f7a7",
+            "estimateCp": 0,
+            "mate": null,
+            "unrestrictedCp": 0,
+            "unrestrictedMate": null
+          }
+        ],
+        "repeatedAtDeeperBudget": false
+      },
+      {
+        "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+        "site": null,
+        "cohort": "archive",
+        "before": "unclear",
+        "proposed": {
+          "tactical": true,
+          "positional": true,
+          "mixed": true
+        },
+        "tactical": {
+          "kind": "comparative",
+          "throughPly": 12,
+          "materialDifferencePoints": 4,
+          "mechanisms": [],
+          "playedLineUci": [
+            "c6d7",
+            "e6e7",
+            "d7c6",
+            "e7c7",
+            "c6d5",
+            "d6d7",
+            "f8d8",
+            "b4e7",
+            "d8d7",
+            "c7d7",
+            "d5e6",
+            "d7c7"
+          ],
+          "betterLineUci": [
+            "f8f7",
+            "e6e5",
+            "d3c2",
+            "e5g5",
+            "c2f5",
+            "e3d4",
+            "f5d7",
+            "d4e4",
+            "f7h7",
+            "g5c5",
+            "c6b6",
+            "e4e3"
+          ],
+          "controlLineUci": [
+            "f8f7",
+            "d6d7",
+            "c6d7"
+          ],
+          "explanation": "After Kd7, stopping the d6 pawn costs at least 4.0 material points in both lines. One line shows d7 Rd8 Be7 Rxd7 Rxd7+. After Rf7, d7+ can be met by Kxd7 without losing material in the exchange."
+        },
+        "positional": {
+          "feature": "passed-pawn",
+          "side": "white",
+          "squareOrFile": "d",
+          "description": "Rf7 keeps the king from c6 able to take on d7 at the first two checked opportunities. After Kd7, the pawn advances without that defence in both lines.",
+          "firstPly": 1,
+          "lastConsecutivePly": 3,
+          "support": "board-fact",
+          "comparisonMoveUci": "c6d7",
+          "comparisonGapCp": 724,
+          "supportInComparison": false,
+          "comparison": "separate-reply-search",
+          "interpretation": "heuristic"
+        },
+        "comparedScoresCp": [
+          -15,
+          -739
+        ],
+        "testedLine": "67...Rf7 68. d7+ Kxd7",
+        "playedLine": "67...Kd7 68. Re7+ Kc6 69. Rc7+ Kd5 70. d7 Rd8 71. Be7 Rxd7 72. Rxd7+ Ke6 73. Rc7",
+        "betterLine": "67...Rf7 68. Re5 Bc2 69. Rg5 Bf5 70. Kd4 Bd7 71. Ke4 Rh7 72. Rc5+ Kb6 73. Ke3",
+        "controlResults": [
+          {
+            "prefix": [
+              "f8f7",
+              "d6d7"
+            ],
+            "captureUci": "c6d7",
+            "estimateCp": 0,
+            "mate": null,
+            "unrestrictedCp": 0,
+            "unrestrictedMate": null
+          },
+          {
+            "prefix": [
+              "f8f7",
+              "e6e5",
+              "d3c2",
+              "d6d7"
+            ],
+            "captureUci": "c6d7",
+            "estimateCp": 0,
+            "mate": null,
+            "unrestrictedCp": 0,
+            "unrestrictedMate": null
+          },
+          {
+            "prefix": [
+              "f8f7",
+              "e6e8",
+              "d3f5",
+              "d6d7"
+            ],
+            "captureUci": "c6d7",
+            "estimateCp": 0,
+            "mate": null,
+            "unrestrictedCp": 0,
+            "unrestrictedMate": null
+          }
+        ],
+        "repeatedAtDeeperBudget": false
+      },
+      {
+        "id": "broadcast-5a6ffc77bf8bca73",
+        "site": "Quezon City, Philippines",
+        "cohort": "classical",
+        "before": "unclear",
+        "proposed": {
+          "tactical": false,
+          "positional": true,
+          "mixed": false
+        },
+        "tactical": null,
+        "positional": {
+          "feature": "passed-pawn",
+          "side": "white",
+          "squareOrFile": "d",
+          "description": "Rc8 keeps the king from e6 able to take on d7 at the first two checked opportunities. After Ra6, the pawn advances without that defence in both lines.",
+          "firstPly": 1,
+          "lastConsecutivePly": 3,
+          "support": "board-fact",
+          "comparisonMoveUci": "c6a6",
+          "comparisonGapCp": 407,
+          "supportInComparison": false,
+          "comparison": "separate-reply-search",
+          "interpretation": "heuristic"
+        },
+        "comparedScoresCp": [
+          -300,
+          -707
+        ],
+        "testedLine": "31...Rc8 32. d7 Kxd7",
+        "playedLine": "31...Ra6 32. c6 Rb8 33. d7 Ke7 34. Rd1 Nc7",
+        "betterLine": "31...Rc8 32. Nc4 Rxc5 33. Re1 Rb7 34. Rxe5+ Kf6",
+        "controlResults": [
+          {
+            "prefix": [
+              "c6c8",
+              "d6d7"
+            ],
+            "captureUci": "e6d7",
+            "estimateCp": -343,
+            "mate": null,
+            "unrestrictedCp": -336,
+            "unrestrictedMate": null
+          },
+          {
+            "prefix": [
+              "c6c8",
+              "a5c4",
+              "c8c5",
+              "d6d7"
+            ],
+            "captureUci": "e6d7",
+            "estimateCp": -357,
+            "mate": null,
+            "unrestrictedCp": -155,
+            "unrestrictedMate": null
+          }
+        ],
+        "repeatedAtDeeperBudget": false
+      }
+    ],
+    "medianMsForThreeArms": 0.0232,
+    "sha256": "8b1a441dc4666f722bca3e415f0827085f8e40cbd7f19ccf4d6d9d8990b8015f"
+  },
+  "transfer": {
+    "byCohort": {
+      "fresh-passer": {
+        "requests": 72,
+        "baselineMistakes": 53,
+        "attemptedPaired": 42,
+        "advance": 2,
+        "lasting": 2,
+        "combined": 2,
+        "confirmed": 2
+      }
+    },
+    "archiveLabels": {},
+    "examples": [
+      {
+        "id": "passer-restraint-119a154378bcdced",
+        "site": "https://lichess.org/broadcast/2026-british-chess-championships-championship/round-5/CetqRZ1r/HlLqoiOa",
+        "cohort": "fresh-passer",
+        "before": "positional",
+        "proposed": {
+          "tactical": false,
+          "positional": true,
+          "mixed": false
+        },
+        "tactical": null,
+        "positional": {
+          "feature": "passed-pawn",
+          "side": "white",
+          "squareOrFile": "f",
+          "description": "Rf8 keeps the rook from b8 able to take on f7 at the first two checked opportunities. After Ka6, the pawn advances without that defence in both lines.",
+          "firstPly": 1,
+          "lastConsecutivePly": 3,
+          "support": "board-fact",
+          "comparisonMoveUci": "a7a6",
+          "comparisonGapCp": 233,
+          "supportInComparison": false,
+          "comparison": "separate-reply-search",
+          "interpretation": "heuristic"
+        },
+        "comparedScoresCp": [
+          -5,
+          -238
+        ],
+        "testedLine": "58...Rf8 59. f7 Rxf7+",
+        "playedLine": "58...Ka6 59. Rc5 a4 60. Kg5 a3 61. f7 a2 62. Rc1 Rf8",
+        "betterLine": "58...Rf8 59. Rc6 Kb7 60. Re6 a4 61. Kg5 a3 62. Re2 Kb6",
+        "controlResults": [
+          {
+            "prefix": [
+              "b8f8",
+              "f6f7"
+            ],
+            "captureUci": "f8f7",
+            "estimateCp": 0,
+            "mate": null,
+            "unrestrictedCp": 0,
+            "unrestrictedMate": null
+          },
+          {
+            "prefix": [
+              "b8f8",
+              "c2c6",
+              "a7b7",
+              "f6f7"
+            ],
+            "captureUci": "f8f7",
+            "estimateCp": null,
+            "mate": 12,
+            "unrestrictedCp": null,
+            "unrestrictedMate": 11
+          }
+        ],
+        "repeatedAtDeeperBudget": true
+      },
+      {
+        "id": "passer-restraint-0165a73c6bd15279",
+        "site": "https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-13/zbeM6PPX/ePapJo47",
+        "cohort": "fresh-passer",
+        "before": "unclear",
+        "proposed": {
+          "tactical": true,
+          "positional": true,
+          "mixed": true
+        },
+        "tactical": {
+          "kind": "forcing-attack",
+          "throughPly": 7,
+          "mechanisms": [],
+          "playedLineUci": [
+            "b7b6",
+            "a5a7",
+            "b6a7",
+            "d6d7",
+            "a7b6",
+            "a3b4",
+            "h6h5"
+          ],
+          "betterLineUci": [
+            "a7c6",
+            "a5b5",
+            "b7a6",
+            "b5b1",
+            "g8c8",
+            "c1c4",
+            "a4b6"
+          ],
+          "controlLineUci": [
+            "a7c6",
+            "d6d7",
+            "g7d7"
+          ],
+          "explanation": "After Kb6, both searches show Rxa7 Kxa7 d7. The exchange sacrifice keeps the pawn on c6 to defend the advancing pawn. Nxc6 takes that supporting pawn first. After Nxc6, d7 can be met by Rxd7 without losing material in the exchange."
+        },
+        "positional": {
+          "feature": "passed-pawn",
+          "side": "white",
+          "squareOrFile": "d",
+          "description": "Nxc6 keeps the rook from g7 able to take on d7 at the first two checked opportunities. After Kb6, the pawn advances without that defence in both lines.",
+          "firstPly": 1,
+          "lastConsecutivePly": 3,
+          "support": "board-fact",
+          "comparisonMoveUci": "b7b6",
+          "comparisonGapCp": 194,
+          "supportInComparison": false,
+          "comparison": "separate-reply-search",
+          "interpretation": "heuristic"
+        },
+        "comparedScoresCp": [
+          201,
+          7
+        ],
+        "testedLine": "51...Nxc6 52. d7 Rxd7",
+        "playedLine": "51...Kb6 52. Rxa7 Kxa7 53. d7 Kb6 54. Bb4 h5",
+        "betterLine": "51...Nxc6 52. Rxb5+ Ka6 53. Rbb1 Rc8 54. Rc4 Nb6",
+        "controlResults": [
+          {
+            "prefix": [
+              "a7c6",
+              "d6d7"
+            ],
+            "captureUci": "g7d7",
+            "estimateCp": 563,
+            "mate": null,
+            "unrestrictedCp": 1094,
+            "unrestrictedMate": null
+          },
+          {
+            "prefix": [
+              "a7c6",
+              "a5b5",
+              "b7a6",
+              "d6d7"
+            ],
+            "captureUci": "g7d7",
+            "estimateCp": 539,
+            "mate": null,
+            "unrestrictedCp": 965,
+            "unrestrictedMate": null
+          }
+        ],
+        "repeatedAtDeeperBudget": true
+      }
+    ],
+    "medianMsForThreeArms": 5.0346,
+    "sha256": "c529e1b7b34e381a574b34e3cccc2f1563bd2c19cc6a1d1b5168dac1408f548c"
+  },
+  "replication": {
+    "byCohort": {
+      "fresh-passer": {
+        "requests": 72,
+        "baselineMistakes": 49,
+        "attemptedPaired": 33,
+        "advance": 0,
+        "lasting": 0,
+        "combined": 0
+      }
+    },
+    "archiveLabels": {},
+    "examples": [],
+    "medianMsForThreeArms": 5.2402,
+    "sha256": "2a1ef2b3ed4f0509be0a89de71d97274d18a6f006d6d4b3145e3cf4d2f7524fb"
+  },
+  "controlTimeSecondsMedian": 6.34,
+  "controlNodesPerSearch": 4800000,
+  "frozenSampling": {
+    "transfer": {
+      "events": {
+        "1-vechta-open-a-open": 2,
+        "10th-annual-new-york-state-girls-championship-2026": 2,
+        "12-wittelsbacher-weihnachtsopen-2025": 2,
+        "19th-arad-open-grand-prix-classic-2026-open-a": 2,
+        "1st-berjaya-global-chess-open-2026-masters": 2,
+        "2025-british-chess-championships-championship": 2,
+        "2025-british-chess-championships-major-open": 2,
+        "2025-london-chess-classic-fide-open": 2,
+        "2026-british-chess-championships-championship": 2,
+        "2026-british-chess-championships-major-open": 2,
+        "2026-turkiye-satranc-ligi-turkish-league-super-lig": 1,
+        "23rd-calvia-chess-festival-2026": 1,
+        "25th-european-womens-chess-championship-2026": 1,
+        "29th-open-bavarian-chess-championship": 1,
+        "31st-abu-dhabi-international-chess-festival-masters": 1,
+        "41st-european-chess-club-cup-2026-women": 1,
+        "43-munsterland-open-34-challengers-2026-a-open": 1,
+        "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12": 1,
+        "48th-international-chess-open-citta-di-arco-grupo-a-1-37": 1,
+        "4ncl-division-2-2025-2026": 1,
+        "50th-guernsey-international-chess-festival-challengers": 1,
+        "50th-guernsey-international-chess-festival-open": 1,
+        "51st-indian-womens-chess-championship-2025": 1,
+        "59th-biel-international-chess-festival-2026-open-amateur-ato": 1,
+        "59th-biel-international-chess-festival-2026-open-masters-mto": 1,
+        "allsvenskan-2627-swedish-team-championship": 1,
+        "buongoma-open-chess-championship-grand-prix-circuit-open": 1,
+        "campeonato-de-ajedrez-abierto-por-equipos-2026": 1,
+        "campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships": 1,
+        "chessfestival-groningen-2025-open-a": 1,
+        "dutch-meesterklasse-2026-2027": 1,
+        "dutch-open-2026-dutch-open": 1,
+        "ekipni-kup-crne-gore-2026": 1,
+        "european-chess-club-cup-2025-open-matches-1-16": 1,
+        "european-team-chess-championship-2025-open": 1,
+        "fide-world-junior-chess-championship-2026-open": 1,
+        "fide-world-senior-championship-2025-open-65": 1,
+        "fide-world-senior-chess-championships-2026-open-50": 1,
+        "german-2nd-bundesliga-north": 1,
+        "german-bundesliga-202627-schachbundesliga": 1,
+        "greek-championship-2026-75-2026": 1,
+        "hastings-international-chess-congress-2025-masters": 1,
+        "hoogeveen-open-2026": 1,
+        "iv-sunway-formentera-international-chess-festival-group-a": 1,
+        "johor-chess-festival-2025-international-open": 1,
+        "kenya-national-chess-league-2026-premier-league": 1,
+        "maia-chess-festival-2025-u2000": 1,
+        "mongolian-national-chess-championship-2026-open": 1,
+        "oberliga-baden-202627": 1,
+        "oberliga-baden-wurttemberg-202627": 1,
+        "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga": 1,
+        "romanian-team-chess-championships-2026-mens-super-league": 1,
+        "sachycz-extraliga-202627": 1,
+        "serbian-super-league-2026-open": 1,
+        "slovenian-team-championship-2026-drzavna-clanska-liga": 1,
+        "sparkassen-chess-trophy-2026-open-a": 1,
+        "tyreso-sk-km-2026": 1,
+        "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026-abierta": 1,
+        "xxii-calvia-amateur-open": 1,
+        "xxvi-torneo-internazionle-citta-di-vicenza": 1,
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-a": 1,
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-b": 1
+      },
+      "sources": {
+        "strategic-asset-contrast\\reserve\\raw\\dutch-meesterklasse-2026-2027-WXqRYeQ6.pgn": "40e0b0ed372abf4cea8ca5302d961c142c06177f1e2d6890ceec5caf7baa17cf",
+        "rook-file-consequence\\team-open.pgn": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+        "unified-audit\\senior-2025-open65.pgn": "10a64723a2defae058a33a9a3e293fcc59d22196005dfce0afea3788a916c8a4",
+        "strategic-asset-contrast\\reserve\\raw\\romanian-team-chess-championships-ie0yeJxy.pgn": "82a6fabdc3958d5e4ba0937485a66ff4c2b8c76d83d08ac8629dcdb409fcb8e6",
+        "coordination-and-cached-defences\\fresh\\revolucion.pgn": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7",
+        "passer-interception-transfer\\reserve\\raw\\1st-berjaya-global-chess-open-OFkP5zwn.pgn": "a6778cfea89596cbe9ebf2a45c594c352a2e279f3cd9c1fc04ead9dc20625ba9",
+        "strategic-asset-contrast\\replication\\raw\\vechta-Xocym0Bi.pgn": "53cd0d274f1bd2e65abbacf9f129084d13f1f6f2aee654b05272c737ef77fdee",
+        "shelter-after-exchanges\\biel-masters.pgn": "d4040be3cb26790004a76b7cdc30683e4b26f87a52e4bb2bfe386a8bafc969e1",
+        "position-transfer\\london-open-r5.pgn": "e4d5835c7d61c4efcfde14b7eb2fe2e89abd685c6d2d31bdfcb5301ae860b87d",
+        "shelter-after-exchanges\\biel-amateur.pgn": "53106a4f24412334e8cc996f03fb2c84d50ed032aa0e935850f7426ad1238fb1",
+        "shelter-after-exchanges\\sants-a.pgn": "079282c8284e3439fdfc01ed8edab95ed9df38d8db1d3fd481c7ad36599f3b23",
+        "played-immediate-mate\\wittelsbach-all.pgn": "8d30ffd55cd602172778f229250f49fbd3907db48611549d03bf923ca03a9020",
+        "missed-tactical-families\\spain.pgn": "d17fade6b8622ba88b353b9cf5cea5aa2a53cd8148ef7e89840b73a5b868153c",
+        "mixed-mistake-contrast\\raw\\germany-dppuxRu1.pgn": "a92483a1115dfbdfe6f74b7cf7f4c0b9568328e4eccc76c9a44d3980e9fe975c",
+        "passer-interception-transfer\\late-reserve\\raw\\poland-wwrkku5B.pgn": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+        "strategic-asset-contrast\\reserve\\raw\\serbian-super-league-2026-AOwRr43w.pgn": "feafe35f53b9b4913fe5ae20319d972be7b345d1b3de623600392dfe45dbcf75",
+        "aligned-strategic-plans\\challenge\\british-championship.pgn": "2cba83d6f233b4dc419975296c895d9c786e831053bd6ce1a3a75c19a662fbf7",
+        "strategic-asset-contrast\\replication\\raw\\vicenza-DSJ8dtr8.pgn": "2196b03a26c9a5e0c51ade848916fda995cc9f7b2d88367ad3b6d4c274ee0ee2",
+        "shelter-after-exchanges\\sants-b.pgn": "6015d3892665072c978b8f8bf932632dc2f49627856710f747c9f3163648dbb5",
+        "played-immediate-mate\\johor-all.pgn": "508acf9e25e85ab812a9587cdf3b1d38d959e1022655e8a6f57bcbcd36c1ff92",
+        "passer-interception-transfer\\late-reserve\\raw\\turkey-zbeM6PPX.pgn": "82ebd4d5a45570a474382a2c4373b99f2bea8f4358c62e3ea47d770dbb59d995",
+        "promotion-mistake-transfer\\challengers.pgn": "89aa94c72a2f352938aaf9387fe2783c332efa2086a23389ca01b8b341c8ecb3",
+        "missed-tactical-families\\groningen.pgn": "9b16580ba50215153da33031effc18928ce2f124b07e668116f7c351fd7eb506",
+        "promotion-mistake-transfer\\guernsey.pgn": "74232ed341751e5b2a39b379c8819808e9924225e1644fae156c601427c2f6d3",
+        "passed-pawn-choices\\challenge\\world-seniors-50-2026-event.pgn": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+        "opened-ray-exchanges\\raw\\oberliga-baden-spdi3HMW.pgn": "eb7a367054e8037d8afa96546af74a465cd9c60a6043b259889f0d8fda6c02eb",
+        "strategic-asset-contrast\\replication\\raw\\calvia-1bxtyo5f.pgn": "470567e58b5007be0de4e4952116a381eb68094012732fad599c51edac6b59ba",
+        "passed-pawn-mistake-transfer\\clubwomen.pgn": "925ca2273901e489e7521851c0122b3e00a532048c1cb0ce0c990e9c81fe8947",
+        "strategic-asset-contrast\\raw\\kenya-WT4yuPmA.pgn": "10d7b3e252f2d477bba390618d100309f9e1f374d804f205be0c05ef078ce1f8",
+        "mixed-position-transfer\\british-championship.pgn": "944ddee3f96212d7a65532b23754d5ec0e5e95283692b6803203e62a148d6e85",
+        "coordination-and-cached-defences\\fresh\\tyreso.pgn": "6b976e3ec06a84f2e548e9f66e0e01ee1ba59cb731393c4242d37d0c0d597912",
+        "coordination-and-cached-defences\\fresh\\ny-girls.pgn": "cdc49ebd994f9da954842fa583f9b72c7844757ce1d928786f4bd597e62b5bcf",
+        "equal-search-budget\\abu-round1.pgn": "9ba33fb4525968a5c1a60e3e828b45dcb96b41e08743f7558deeeb45a318f0f6",
+        "exchange-recovery\\india.pgn": "27fd794e1c20d292da71b958c7210a92ef1e7cbc3e107511b42f95dc262fcd1e",
+        "strategic-asset-contrast\\replication\\raw\\vechta-oNc4C8XB.pgn": "d45decab02be13895fb0ac6777f0d441748a6716ebb7fa6ec041a559784e2bfc",
+        "shared-reply-transfer\\european-team-r4.pgn": "7e3bbc423895bf5e63b3644c3f78997b8114f36b956053a308354bb85e486193",
+        "mixed-mistake-contrast\\raw\\montenegro-QgYT3qZX.pgn": "4fbd628509c70fdf13edc85ee542218af02c9530b373520016bb7f15a2ceb4ac",
+        "strategic-asset-contrast\\raw\\baden-wurttemberg-rQY0mYLq.pgn": "86159e02a08e68526706db74959f6c5bf2599e494b6d7d8e4996997952d5e744",
+        "strategic-transfer\\british-major-open-r7.pgn": "c783b4479ce3add0961439b2493ff4365f8e97390146d981eb44849f7e0087bb",
+        "quick-nomination-transfer\\european-women.pgn": "2623b600973a334f8f459818431b32c5f88b5211a1892a21cee9b46209c15bb5",
+        "quick-nomination-transfer\\dutch-open.pgn": "a9431bcedc8d9e55855909c04ea77a69278fe64e0ab12dd11707f0852ed8460e",
+        "file-use-transfer\\british-major-open-2026-r6.pgn": "0b47b20f265f4ce4ca14e4a390f30f1adf54d06c5a144ab223836c5b15467006",
+        "position-transfer\\4ncl-division2-r5.pgn": "36cb2b73f8f14c539b99ea46e4b94df2ba9ddb29220e8511bba27e3fad95079d",
+        "defensive-recovery\\bavarian.pgn": "cd8fbf2e5da6b6ccf043abe634d9b94931721e893fc91396c08538097258f7e8",
+        "passed-pawn-mistake-transfer\\olympiad.pgn": "5de1bea0dd205641078cc9184e595e50a2a0b2f09cc8d4ba2a22e7fc1670d70d",
+        "mixed-position-transfer\\club-cup.pgn": "7b3486990249029a0cc0a30d9bc6765de8d9516ddb943ef7b9e2f5dbf009c095",
+        "strategic-asset-contrast\\raw\\mongolia-vfxJWG67.pgn": "81ef91fe0939170ee0de44864923b2b62fc556d6cd48701469ea42e8245823f5",
+        "passer-interception-transfer\\reserve\\raw\\sparkassen-chess-trophy-2026-open-jfEpUuzg.pgn": "8f23ad71ce3a7ae2e08fb46439e695a48acd5fb0abb1d4a988e8e38e5e704037",
+        "passer-interception-transfer\\late-reserve\\raw\\arad-KuVy4Gsx.pgn": "5bf1134db69e007d61c1bf0a9ad403b34a14aeed0493b3dfeba82c02033a1b5d",
+        "structural-tradeoffs\\arco.pgn": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18",
+        "otb-transfer\\calvia-r4.pgn": "137a1754dbe7a1327b5d18d27c769a2363684825667bdbf2c94988f5ed1b59b5",
+        "strategic-asset-contrast\\replication\\raw\\hoogeveen-o4Nw35Ls.pgn": "f68b25f5874d2f9117c5d498b23a846ccd9e9194cb1ab2a330d33f0005a99b89",
+        "shared-central-plans\\structural-challenge\\german-north-2026.pgn": "9f2b63754642d52b9b0f0dbe4b3906114ce919eeb3df68fed0b508f4827553c6",
+        "strategic-asset-contrast\\reserve\\raw\\greek-championship-2026-75-ZIF8Df9w.pgn": "0fe2547130ef3bca2cd94810bca95cfdfcf0ba4cdb891488bb4660b79d4e8499",
+        "mistake-transfer\\maia-u2000-r4.pgn": "4c67fad13d87376385224fe570389ad1da450927569338fea0b527e4f7595682",
+        "strategic-asset-contrast\\replication\\raw\\munster-B8Gqv1Pd.pgn": "b3aee322c588ca2309add7f3e430854b035766a120b798559fa32dd147b569c3",
+        "paired-causal-probe\\raw\\allsvenskan-2627-swedish-team-championship-gYL8PpMJ.pgn": "297fcac19d8851dcebf91f7639df20827a6d973d5faa5172a025ee8d8a6ae36b",
+        "equal-search-budget\\formentera.pgn": "45b78fb178fe98a72be3cd3d34a9e10de2d0b954fb070f0b7a35743ec4ede47a",
+        "passer-interception-transfer\\late-reserve\\raw\\arad-6SJEilNL.pgn": "62a0905dd58cd5f08e03e8f3dea6bbc0cb922bb7f9d632ebccea23afa0acc59e",
+        "unified-audit\\british-2025.pgn": "d376eb246c885719553eaab5b3a38b72b4f0c4118c7c639c69848ecfc08c9d13",
+        "rook-file-consequence\\buongoma.pgn": "7c38efe6490a20f003a3efe8d2220eb139a9761221b811f79bf3b4bce79c3ec1",
+        "coordination-and-cached-defences\\fresh\\czech.pgn": "909413f5a46d5604717bf47a7ab3f643c05bddb9bce03f098285a02f2bd1c6fc",
+        "aligned-strategic-plans\\challenge\\hastings-masters.pgn": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4",
+        "mixed-mistake-contrast\\raw\\junior-open-5JLs2gkn.pgn": "5b77351d3d3d3e8b0f649fb1b611342d6201f4f7114dca4691166e9fd2d4851e",
+        "mixed-mistake-contrast\\raw\\slovenia-rOtCQ0iz.pgn": "86924d78f0463eb82f6bcbfd994264b12dde74b405e1bda27a64413443d813b7"
+      },
+      "eventsInEarlierBenchmarks": [
+        "1-vechta-open-a-open",
+        "10th-annual-new-york-state-girls-championship-2026",
+        "12-wittelsbacher-weihnachtsopen-2025",
+        "19th-arad-open-grand-prix-classic-2026-open-a",
+        "1st-berjaya-global-chess-open-2026-masters",
+        "2025-british-chess-championships-championship",
+        "2025-british-chess-championships-major-open",
+        "2025-london-chess-classic-fide-open",
+        "2026-british-chess-championships-championship",
+        "2026-british-chess-championships-major-open",
+        "2026-turkiye-satranc-ligi-turkish-league-super-lig",
+        "23rd-calvia-chess-festival-2026",
+        "25th-european-womens-chess-championship-2026",
+        "29th-open-bavarian-chess-championship",
+        "31st-abu-dhabi-international-chess-festival-masters",
+        "41st-european-chess-club-cup-2026-women",
+        "43-munsterland-open-34-challengers-2026-a-open",
+        "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12",
+        "48th-international-chess-open-citta-di-arco-grupo-a-1-37",
+        "4ncl-division-2-2025-2026",
+        "50th-guernsey-international-chess-festival-challengers",
+        "50th-guernsey-international-chess-festival-open",
+        "51st-indian-womens-chess-championship-2025",
+        "59th-biel-international-chess-festival-2026-open-amateur-ato",
+        "59th-biel-international-chess-festival-2026-open-masters-mto",
+        "allsvenskan-2627-swedish-team-championship",
+        "buongoma-open-chess-championship-grand-prix-circuit-open",
+        "campeonato-de-ajedrez-abierto-por-equipos-2026",
+        "campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships",
+        "chessfestival-groningen-2025-open-a",
+        "dutch-meesterklasse-2026-2027",
+        "dutch-open-2026-dutch-open",
+        "ekipni-kup-crne-gore-2026",
+        "european-chess-club-cup-2025-open-matches-1-16",
+        "european-team-chess-championship-2025-open",
+        "fide-world-junior-chess-championship-2026-open",
+        "fide-world-senior-championship-2025-open-65",
+        "fide-world-senior-chess-championships-2026-open-50",
+        "german-2nd-bundesliga-north",
+        "german-bundesliga-202627-schachbundesliga",
+        "greek-championship-2026-75-2026",
+        "hastings-international-chess-congress-2025-masters",
+        "hoogeveen-open-2026",
+        "iv-sunway-formentera-international-chess-festival-group-a",
+        "johor-chess-festival-2025-international-open",
+        "kenya-national-chess-league-2026-premier-league",
+        "maia-chess-festival-2025-u2000",
+        "mongolian-national-chess-championship-2026-open",
+        "oberliga-baden-202627",
+        "oberliga-baden-wurttemberg-202627",
+        "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga",
+        "romanian-team-chess-championships-2026-mens-super-league",
+        "sachycz-extraliga-202627",
+        "serbian-super-league-2026-open",
+        "slovenian-team-championship-2026-drzavna-clanska-liga",
+        "sparkassen-chess-trophy-2026-open-a",
+        "tyreso-sk-km-2026",
+        "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026-abierta",
+        "xxii-calvia-amateur-open",
+        "xxvi-torneo-internazionle-citta-di-vicenza",
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-a",
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-b"
+      ],
+      "sha256": "d030203369e43bc5e0ec2b8901480ced3451f7d50f27ca0ebcc9ce97804382c4"
+    },
+    "replication": {
+      "events": {
+        "1-vechta-open-a-open": 2,
+        "10th-annual-new-york-state-girls-championship-2026": 2,
+        "12-wittelsbacher-weihnachtsopen-2025": 2,
+        "19th-arad-open-grand-prix-classic-2026-open-a": 2,
+        "1st-berjaya-global-chess-open-2026-masters": 2,
+        "2025-british-chess-championships-championship": 2,
+        "2025-british-chess-championships-major-open": 2,
+        "2025-london-chess-classic-fide-open": 2,
+        "2026-british-chess-championships-championship": 2,
+        "2026-british-chess-championships-major-open": 2,
+        "2026-turkiye-satranc-ligi-turkish-league-super-lig": 2,
+        "23rd-calvia-chess-festival-2026": 2,
+        "25th-european-womens-chess-championship-2026": 2,
+        "29th-open-bavarian-chess-championship": 2,
+        "31st-abu-dhabi-international-chess-festival-masters": 1,
+        "41st-european-chess-club-cup-2026-women": 1,
+        "43-munsterland-open-34-challengers-2026-a-open": 1,
+        "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12": 1,
+        "48th-international-chess-open-citta-di-arco-grupo-a-1-37": 1,
+        "4ncl-division-2-2025-2026": 1,
+        "50th-guernsey-international-chess-festival-challengers": 1,
+        "50th-guernsey-international-chess-festival-open": 1,
+        "51st-indian-womens-chess-championship-2025": 1,
+        "59th-biel-international-chess-festival-2026-open-amateur-ato": 1,
+        "59th-biel-international-chess-festival-2026-open-masters-mto": 1,
+        "allsvenskan-2627-swedish-team-championship": 1,
+        "buongoma-open-chess-championship-grand-prix-circuit-open": 1,
+        "campeonato-de-ajedrez-abierto-por-equipos-2026": 1,
+        "campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships": 1,
+        "chessfestival-groningen-2025-open-a": 1,
+        "dutch-meesterklasse-2026-2027": 1,
+        "dutch-open-2026-dutch-open": 1,
+        "ekipni-kup-crne-gore-2026": 1,
+        "european-chess-club-cup-2025-open-matches-1-16": 1,
+        "european-team-chess-championship-2025-open": 1,
+        "fide-world-junior-chess-championship-2026-open": 1,
+        "fide-world-senior-championship-2025-open-65": 1,
+        "fide-world-senior-chess-championships-2026-open-50": 1,
+        "german-2nd-bundesliga-north": 1,
+        "german-bundesliga-202627-schachbundesliga": 1,
+        "hastings-international-chess-congress-2025-masters": 1,
+        "hoogeveen-open-2026": 1,
+        "iv-sunway-formentera-international-chess-festival-group-a": 1,
+        "johor-chess-festival-2025-international-open": 1,
+        "kenya-national-chess-league-2026-premier-league": 1,
+        "mongolian-national-chess-championship-2026-open": 1,
+        "oberliga-baden-wurttemberg-202627": 1,
+        "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga": 1,
+        "romanian-team-chess-championships-2026-mens-super-league": 1,
+        "sachycz-extraliga-202627": 1,
+        "serbian-super-league-2026-open": 1,
+        "slovenian-team-championship-2026-drzavna-clanska-liga": 1,
+        "sparkassen-chess-trophy-2026-open-a": 1,
+        "tyreso-sk-km-2026": 1,
+        "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026-abierta": 1,
+        "xxvi-torneo-internazionle-citta-di-vicenza": 1,
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-a": 1,
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-b": 1
+      },
+      "sources": {
+        "strategic-asset-contrast\\raw\\mongolia-vfxJWG67.pgn": "81ef91fe0939170ee0de44864923b2b62fc556d6cd48701469ea42e8245823f5",
+        "strategic-asset-contrast\\reserve\\raw\\romanian-team-chess-championships-wPZRidjI.pgn": "1c6024bfe95071fe9fdcc3c2bc42956618e1fc274895e3434192daff76a0013d",
+        "strategic-asset-contrast\\reserve\\raw\\serbian-super-league-2026-al8DbLfb.pgn": "d6e3ccd3ba40e036f15a01f4ec244853e2377809200cbaad037b20b006f544b2",
+        "missed-tactical-families\\groningen.pgn": "9b16580ba50215153da33031effc18928ce2f124b07e668116f7c351fd7eb506",
+        "strategic-asset-contrast\\replication\\raw\\munster-B8Gqv1Pd.pgn": "b3aee322c588ca2309add7f3e430854b035766a120b798559fa32dd147b569c3",
+        "promotion-mistake-transfer\\guernsey.pgn": "74232ed341751e5b2a39b379c8819808e9924225e1644fae156c601427c2f6d3",
+        "mixed-position-transfer\\club-cup.pgn": "7b3486990249029a0cc0a30d9bc6765de8d9516ddb943ef7b9e2f5dbf009c095",
+        "passer-interception-transfer\\late-reserve\\raw\\poland-wwrkku5B.pgn": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+        "unified-audit\\senior-2025-open65.pgn": "10a64723a2defae058a33a9a3e293fcc59d22196005dfce0afea3788a916c8a4",
+        "strategic-asset-contrast\\raw\\baden-wurttemberg-jkfgKTb7.pgn": "02a4eb153ca99e989ad861eb56c379df497f0cfb0764c0f885c89563cbe9270f",
+        "strategic-asset-contrast\\raw\\kenya-MQBrArWd.pgn": "7d9fdefc1d7b09cce57941cb765c9bd634c62bc73f08f365dd6b42385e744225",
+        "shelter-after-exchanges\\sants-b.pgn": "6015d3892665072c978b8f8bf932632dc2f49627856710f747c9f3163648dbb5",
+        "strategic-asset-contrast\\replication\\raw\\calvia-xRDG10tY.pgn": "bbd0839650849c0fa5c63a2e226fae27f233b18e4aec9c41ac48c2a83ca020a9",
+        "passer-interception-transfer\\late-reserve\\raw\\arad-dFgK7wL9.pgn": "44b59190c33b39c39a995073d570baab8622f51b32726dea4a0f09077c343559",
+        "otb-transfer\\4ncl-r4.pgn": "d8520a476efe505e4767d72599cee3cba3326ef11138c9f7b80b4fb6fcdf095f",
+        "paired-causal-probe\\raw\\allsvenskan-2627-swedish-team-championship-gYL8PpMJ.pgn": "297fcac19d8851dcebf91f7639df20827a6d973d5faa5172a025ee8d8a6ae36b",
+        "mixed-mistake-contrast\\raw\\junior-open-5JLs2gkn.pgn": "5b77351d3d3d3e8b0f649fb1b611342d6201f4f7114dca4691166e9fd2d4851e",
+        "strategic-asset-contrast\\reserve\\raw\\dutch-meesterklasse-2026-2027-7JGlrr4D.pgn": "a741e572dbdfd5ba54a5fcbdcfbcbc561aa98591c95a645105ae0b907ee7ce84",
+        "strategic-asset-contrast\\replication\\raw\\vechta-77Bo6Z9C.pgn": "9a7d50010335e611ad408b3b368c89c0e761aebf46be1d4cefda163154916308",
+        "shared-reply-transfer\\european-team-r4.pgn": "7e3bbc423895bf5e63b3644c3f78997b8114f36b956053a308354bb85e486193",
+        "mixed-mistake-contrast\\raw\\germany-Fj6C4C8U.pgn": "7aab3ea9b21926deffda496c60db5f6a5b67cae33cc4f8c1643febeb08731b86",
+        "shelter-after-exchanges\\sants-a.pgn": "079282c8284e3439fdfc01ed8edab95ed9df38d8db1d3fd481c7ad36599f3b23",
+        "strategic-asset-contrast\\replication\\raw\\vechta-oNc4C8XB.pgn": "d45decab02be13895fb0ac6777f0d441748a6716ebb7fa6ec041a559784e2bfc",
+        "equal-search-budget\\abu-round1.pgn": "9ba33fb4525968a5c1a60e3e828b45dcb96b41e08743f7558deeeb45a318f0f6",
+        "exchange-recovery\\india.pgn": "27fd794e1c20d292da71b958c7210a92ef1e7cbc3e107511b42f95dc262fcd1e",
+        "mixed-mistake-contrast\\raw\\montenegro-2cHuz9HO.pgn": "6579b812f8bc129366fe9858b5a957e9ef51ff5a473af106fb3fb16e7108def0",
+        "passer-interception-transfer\\reserve\\raw\\sparkassen-chess-trophy-2026-open-jfEpUuzg.pgn": "8f23ad71ce3a7ae2e08fb46439e695a48acd5fb0abb1d4a988e8e38e5e704037",
+        "position-transfer\\london-open-r5.pgn": "e4d5835c7d61c4efcfde14b7eb2fe2e89abd685c6d2d31bdfcb5301ae860b87d",
+        "coordination-and-cached-defences\\fresh\\ny-girls.pgn": "cdc49ebd994f9da954842fa583f9b72c7844757ce1d928786f4bd597e62b5bcf",
+        "shelter-after-exchanges\\biel-amateur.pgn": "53106a4f24412334e8cc996f03fb2c84d50ed032aa0e935850f7426ad1238fb1",
+        "quick-nomination-transfer\\dutch-open.pgn": "a9431bcedc8d9e55855909c04ea77a69278fe64e0ab12dd11707f0852ed8460e",
+        "strategic-asset-contrast\\replication\\raw\\calvia-UPG6tFCZ.pgn": "2b77a3790173ef20cecc23ceb70945205ff325ae4fd7c814411f6c6b2a2326e9",
+        "passed-pawn-choices\\challenge\\world-seniors-50-2026-event.pgn": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+        "structural-tradeoffs\\arco.pgn": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18",
+        "aligned-strategic-plans\\challenge\\british-championship.pgn": "2cba83d6f233b4dc419975296c895d9c786e831053bd6ce1a3a75c19a662fbf7",
+        "mixed-position-transfer\\british-championship.pgn": "944ddee3f96212d7a65532b23754d5ec0e5e95283692b6803203e62a148d6e85",
+        "rook-file-consequence\\team-open.pgn": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+        "file-use-transfer\\british-major-open-2026-r6.pgn": "0b47b20f265f4ce4ca14e4a390f30f1adf54d06c5a144ab223836c5b15467006",
+        "coordination-and-cached-defences\\fresh\\tyreso.pgn": "6b976e3ec06a84f2e548e9f66e0e01ee1ba59cb731393c4242d37d0c0d597912",
+        "passed-pawn-mistake-transfer\\clubwomen.pgn": "925ca2273901e489e7521851c0122b3e00a532048c1cb0ce0c990e9c81fe8947",
+        "mixed-mistake-contrast\\raw\\slovenia-5Q02uSJA.pgn": "8c8da5c349ac3a305b1c19a494d1aa2c2c939615ee89fa5fedba8aa683b69c79",
+        "passed-pawn-mistake-transfer\\olympiad.pgn": "5de1bea0dd205641078cc9184e595e50a2a0b2f09cc8d4ba2a22e7fc1670d70d",
+        "passer-interception-transfer\\reserve\\raw\\1st-berjaya-global-chess-open-OFkP5zwn.pgn": "a6778cfea89596cbe9ebf2a45c594c352a2e279f3cd9c1fc04ead9dc20625ba9",
+        "rook-file-consequence\\buongoma.pgn": "7c38efe6490a20f003a3efe8d2220eb139a9761221b811f79bf3b4bce79c3ec1",
+        "shelter-after-exchanges\\biel-masters.pgn": "d4040be3cb26790004a76b7cdc30683e4b26f87a52e4bb2bfe386a8bafc969e1",
+        "coordination-and-cached-defences\\fresh\\revolucion.pgn": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7",
+        "passer-interception-transfer\\late-reserve\\raw\\arad-AmuVNKCj.pgn": "462dfd1273d238de38384239737a8e862410488316daeac950fbba80ca714c5c",
+        "quick-nomination-transfer\\european-women.pgn": "2623b600973a334f8f459818431b32c5f88b5211a1892a21cee9b46209c15bb5",
+        "strategic-asset-contrast\\replication\\raw\\vicenza-lBMMBjIS.pgn": "338fb0515c9f7dc9add95f29165a5803e22b9e3873a5b43c464a907873ed3cd5",
+        "played-immediate-mate\\johor-all.pgn": "508acf9e25e85ab812a9587cdf3b1d38d959e1022655e8a6f57bcbcd36c1ff92",
+        "missed-tactical-families\\spain.pgn": "d17fade6b8622ba88b353b9cf5cea5aa2a53cd8148ef7e89840b73a5b868153c",
+        "aligned-strategic-plans\\challenge\\hastings-masters.pgn": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4",
+        "equal-search-budget\\formentera.pgn": "45b78fb178fe98a72be3cd3d34a9e10de2d0b954fb070f0b7a35743ec4ede47a",
+        "played-immediate-mate\\wittelsbach-all.pgn": "8d30ffd55cd602172778f229250f49fbd3907db48611549d03bf923ca03a9020",
+        "shared-central-plans\\structural-challenge\\german-north-2026.pgn": "9f2b63754642d52b9b0f0dbe4b3906114ce919eeb3df68fed0b508f4827553c6",
+        "defensive-recovery\\bavarian.pgn": "cd8fbf2e5da6b6ccf043abe634d9b94931721e893fc91396c08538097258f7e8",
+        "strategic-transfer\\british-major-open-r7.pgn": "c783b4479ce3add0961439b2493ff4365f8e97390146d981eb44849f7e0087bb",
+        "passer-interception-transfer\\late-reserve\\raw\\turkey-loIX5V6A.pgn": "6e151fb70b4fd577220fd7ca7bc3a045bb10e726306f93add7895039cf63027e",
+        "promotion-mistake-transfer\\challengers.pgn": "89aa94c72a2f352938aaf9387fe2783c332efa2086a23389ca01b8b341c8ecb3",
+        "strategic-asset-contrast\\replication\\raw\\hoogeveen-B1DrjUVO.pgn": "1d92bda4b20504dbb5aa92d4a398a73c6778bd7011928cce1942a332e49a1c8c",
+        "coordination-and-cached-defences\\fresh\\czech.pgn": "909413f5a46d5604717bf47a7ab3f643c05bddb9bce03f098285a02f2bd1c6fc"
+      },
+      "eventsInEarlierBenchmarks": [
+        "1-vechta-open-a-open",
+        "10th-annual-new-york-state-girls-championship-2026",
+        "12-wittelsbacher-weihnachtsopen-2025",
+        "19th-arad-open-grand-prix-classic-2026-open-a",
+        "1st-berjaya-global-chess-open-2026-masters",
+        "2025-british-chess-championships-championship",
+        "2025-british-chess-championships-major-open",
+        "2025-london-chess-classic-fide-open",
+        "2026-british-chess-championships-championship",
+        "2026-british-chess-championships-major-open",
+        "2026-turkiye-satranc-ligi-turkish-league-super-lig",
+        "23rd-calvia-chess-festival-2026",
+        "25th-european-womens-chess-championship-2026",
+        "29th-open-bavarian-chess-championship",
+        "31st-abu-dhabi-international-chess-festival-masters",
+        "41st-european-chess-club-cup-2026-women",
+        "43-munsterland-open-34-challengers-2026-a-open",
+        "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12",
+        "48th-international-chess-open-citta-di-arco-grupo-a-1-37",
+        "4ncl-division-2-2025-2026",
+        "50th-guernsey-international-chess-festival-challengers",
+        "50th-guernsey-international-chess-festival-open",
+        "51st-indian-womens-chess-championship-2025",
+        "59th-biel-international-chess-festival-2026-open-amateur-ato",
+        "59th-biel-international-chess-festival-2026-open-masters-mto",
+        "allsvenskan-2627-swedish-team-championship",
+        "buongoma-open-chess-championship-grand-prix-circuit-open",
+        "campeonato-de-ajedrez-abierto-por-equipos-2026",
+        "campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships",
+        "chessfestival-groningen-2025-open-a",
+        "dutch-meesterklasse-2026-2027",
+        "dutch-open-2026-dutch-open",
+        "ekipni-kup-crne-gore-2026",
+        "european-chess-club-cup-2025-open-matches-1-16",
+        "european-team-chess-championship-2025-open",
+        "fide-world-junior-chess-championship-2026-open",
+        "fide-world-senior-championship-2025-open-65",
+        "fide-world-senior-chess-championships-2026-open-50",
+        "german-2nd-bundesliga-north",
+        "german-bundesliga-202627-schachbundesliga",
+        "hastings-international-chess-congress-2025-masters",
+        "hoogeveen-open-2026",
+        "iv-sunway-formentera-international-chess-festival-group-a",
+        "johor-chess-festival-2025-international-open",
+        "kenya-national-chess-league-2026-premier-league",
+        "mongolian-national-chess-championship-2026-open",
+        "oberliga-baden-wurttemberg-202627",
+        "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga",
+        "romanian-team-chess-championships-2026-mens-super-league",
+        "sachycz-extraliga-202627",
+        "serbian-super-league-2026-open",
+        "slovenian-team-championship-2026-drzavna-clanska-liga",
+        "sparkassen-chess-trophy-2026-open-a",
+        "tyreso-sk-km-2026",
+        "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026-abierta",
+        "xxvi-torneo-internazionle-citta-di-vicenza",
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-a",
+        "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-b"
+      ],
+      "sha256": "03d2cab159409fe99eb9f26bd08dc172242efc0ff83c31bd58424f26294bd47e"
+    }
+  }
+}
