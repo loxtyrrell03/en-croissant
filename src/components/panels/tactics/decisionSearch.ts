@@ -22,6 +22,7 @@ import type {
     PassedAdvanceRequest,
 } from "@/utils/tacticalMotifs/decisionCheckingDefence";
 import { findAllowedImmediateMate } from "@/utils/tacticalMotifs/decisionMateConsequence";
+import { findAllowedMateInTwo } from "@/utils/tacticalMotifs/decisionAllowedMateInTwo";
 import {
     compareExtraPositionMove,
     nominatePositionRefutation,
@@ -446,11 +447,14 @@ export async function gatherDecisionEvidence(
     const best = candidates[0];
     const sameBest =
         playedMoveUci && afterMove(fen, playedMoveUci) === afterMove(fen, best.pvUci[0]);
-    // A legal mate on the next move needs no scored played line. The worker
+    // A verified short mate needs no scored played line. The worker
     // replays the same proof, while the usual search of the best reply continues.
-    const immediateMate = !sameBest && findAllowedImmediateMate(fen, best, playedMoveUci, history);
+    const shortMate =
+        !sameBest &&
+        (findAllowedImmediateMate(fen, best, playedMoveUci, history) ??
+            findAllowedMateInTwo(fen, best, playedMoveUci, history));
     let comparison: DecisionEngineLine[] | undefined;
-    if (playedMoveUci && !sameBest && !immediateMate) {
+    if (playedMoveUci && !sameBest && !shortMate) {
         progress("Checking the move played…");
         comparison = await searchPosition(
             engine,

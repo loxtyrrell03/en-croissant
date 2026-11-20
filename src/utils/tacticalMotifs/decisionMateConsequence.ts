@@ -13,8 +13,10 @@ import {
 export type DecisionMateConsequence = {
     kind: "allowed" | "missed";
     mateIn: number;
+    proof?: "legal";
     lineUci: string[];
     avoidingMoveUci?: string;
+    avoidingLineUci?: string[];
     explanation: string;
 };
 

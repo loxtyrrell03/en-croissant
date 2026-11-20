@@ -313,8 +313,11 @@ function DecisionReport({
           ...(mate.avoidingMoveUci
             ? [
                 {
-                  label: "Move that avoids immediate mate",
-                  san: lineSan(report.fen, [mate.avoidingMoveUci]),
+                  label:
+                    mate.mateIn === 1
+                      ? "Move that avoids immediate mate"
+                      : `Move that avoids mate in ${mate.mateIn}`,
+                  san: lineSan(report.fen, mate.avoidingLineUci ?? [mate.avoidingMoveUci]),
                 },
               ]
             : []),

@@ -1,0 +1,434 @@
+{
+  "development": {
+    "engineSha256": "de02f560f764c1e390e0cd2ac34432d8bf3f48ebda7b18451b6d0b403ba29690",
+    "proofCounts": {
+      "cooperative": {
+        "cases": 12,
+        "nominated": 0,
+        "checking": 0,
+        "all": 0
+      },
+      "allowed-two": {
+        "cases": 5,
+        "nominated": 3,
+        "checking": 3,
+        "all": 3,
+        "alreadyLosingByEngineMate": 2
+      },
+      "mate-one": {
+        "cases": 1,
+        "nominated": 0,
+        "checking": 0,
+        "all": 0
+      }
+    },
+    "workflow": {
+      "baseline": {
+        "cooperative": 0,
+        "allowed-two": 1,
+        "mate-one": 0
+      }
+    },
+    "examples": [],
+    "minimumNodesForSuccessfulProofs": 0,
+    "medianMsThreeProofArms": 0.015
+  },
+  "holdout": {
+    "engineSha256": "b4cdc36ea0e347609ca5244607be9fd6ca25057733dcf24d9b1e41e327feecc2",
+    "proofCounts": {
+      "cooperative": {
+        "cases": 18,
+        "nominated": 0,
+        "checking": 0,
+        "all": 0
+      },
+      "mate-one": {
+        "cases": 4,
+        "nominated": 0,
+        "checking": 0,
+        "all": 0
+      },
+      "unavoidable-two": {
+        "cases": 2,
+        "nominated": 0,
+        "checking": 0,
+        "all": 0
+      },
+      "allowed-two": {
+        "cases": 18,
+        "nominated": 12,
+        "checking": 11,
+        "all": 12,
+        "alreadyLosingByEngineMate": 6
+      }
+    },
+    "workflow": {
+      "fullBaseline": {
+        "cooperative": 0,
+        "mate-one": 0,
+        "unavoidable-two": 0,
+        "allowed-two": 11
+      },
+      "shortBaseline": {
+        "cooperative": 0,
+        "mate-one": 0,
+        "unavoidable-two": 0,
+        "allowed-two": 0
+      },
+      "fullCandidate": {
+        "cooperative": 0,
+        "mate-one": 0,
+        "unavoidable-two": 0,
+        "allowed-two": 12
+      },
+      "shortCandidate": {
+        "cooperative": 0,
+        "mate-one": 0,
+        "unavoidable-two": 0,
+        "allowed-two": 12
+      }
+    },
+    "examples": [
+      {
+        "id": "played-two-1404053867a65119",
+        "event": "icelandic-open",
+        "priorNodes": 1443651,
+        "played": "41. Rg1 Be5+ 42. Kh4 Rh2#",
+        "alternative": "41. Rxe2 Be5+ 42. Kf2",
+        "attackIsCheck": true,
+        "defencesChecked": 1,
+        "explanation": "Rg1 allows mate in two starting with Be5+. Rxe2 avoids mate within two moves. If the opponent tries Be5+ anyway, Kf2 stops mate on the next move."
+      },
+      {
+        "id": "played-two-2040e2955c174c7c",
+        "event": "guernsey",
+        "priorNodes": 3305747,
+        "played": "24. g4 Bd4+ 25. Kf1 Bg2#",
+        "alternative": "24. Qxc6 Bd4+ 25. Kf1",
+        "attackIsCheck": true,
+        "defencesChecked": 1,
+        "explanation": "g4 allows mate in two starting with Bd4+. Qxc6 avoids mate within two moves. If the opponent tries Bd4+ anyway, Kf1 stops mate on the next move."
+      },
+      {
+        "id": "played-two-3e5ff514c7f3ba7b",
+        "event": "poland",
+        "priorNodes": 1390216,
+        "played": "52...Qe1 53. Rg8+ Kf5 54. Qf4#",
+        "alternative": "52...f6 53. Rg8+ Kf5",
+        "attackIsCheck": true,
+        "defencesChecked": 2,
+        "explanation": "Qe1 allows mate in two starting with Rg8+. f6 avoids mate within two moves. If the opponent tries Rg8+ anyway, Kf5 stops mate on the next move."
+      },
+      {
+        "id": "played-two-477256dbcafaf495",
+        "event": "world-seniors-50-2026-event",
+        "priorNodes": 3301977,
+        "played": "38. Qb5 Qe4+ 39. Kg1 Qh1#",
+        "alternative": "38. Qf3 Qe4 39. Qxe4",
+        "attackIsCheck": true,
+        "defencesChecked": 2,
+        "explanation": "Qb5 allows mate in two starting with Qe4+. Qf3 avoids mate within two moves. If the opponent tries Qe4 anyway, Qxe4 stops mate on the next move."
+      },
+      {
+        "id": "played-two-4d6ebb0195ed9d30",
+        "event": "poland",
+        "priorNodes": 3228483,
+        "played": "29...Rhh8 30. Qg6+ Kf8 31. Qg7#",
+        "alternative": "29...Rh6 30. Qg6+ Rxg6",
+        "attackIsCheck": true,
+        "defencesChecked": 1,
+        "explanation": "Rhh8 allows mate in two starting with Qg6+. Rh6 avoids mate within two moves. If the opponent tries Qg6+ anyway, Rxg6 stops mate on the next move."
+      },
+      {
+        "id": "played-two-5f5f7f2330f78fcf",
+        "event": "icelandic-open",
+        "priorNodes": 3053494,
+        "played": "33...Nf5 34. Bd5+ Rf7 35. Rd8#",
+        "alternative": "33...Kf7 34. Bd5+ Nxd5",
+        "attackIsCheck": true,
+        "defencesChecked": 3,
+        "explanation": "Nf5 allows mate in two starting with Bd5+. Kf7 avoids mate within two moves. If the opponent tries Bd5+ anyway, Nxd5 stops mate on the next move."
+      },
+      {
+        "id": "played-two-6428d3648f715c8d",
+        "event": "misamis",
+        "priorNodes": 633735,
+        "played": "50...Kf4 51. Bb1 g4 52. Rf5#",
+        "alternative": "50...Kd4 51. Bb1 Kxc5",
+        "attackIsCheck": false,
+        "defencesChecked": 6,
+        "explanation": "Kf4 allows mate in two starting with Bb1. Kd4 avoids mate within two moves. If the opponent tries Bb1 anyway, Kxc5 stops mate on the next move."
+      },
+      {
+        "id": "played-two-7d9df72273dd4cf6",
+        "event": "kovin",
+        "priorNodes": 4032690,
+        "played": "74. Kh1 Rb1+ 75. Kh2 g3#",
+        "alternative": "74. Rh8+",
+        "attackIsCheck": true,
+        "defencesChecked": 1,
+        "explanation": "Kh1 allows mate in two starting with Rb1+. Rh8+ avoids mate within two moves. It takes away Rb1+ as a legal reply."
+      },
+      {
+        "id": "played-two-918642509b029b8f",
+        "event": "icelandic-open",
+        "priorNodes": 3388272,
+        "played": "24. Qd3 Qa3+ 25. Kb1 Qb2#",
+        "alternative": "24. a4",
+        "attackIsCheck": true,
+        "defencesChecked": 2,
+        "explanation": "Qd3 allows mate in two starting with Qa3+. a4 avoids mate within two moves. It takes away Qa3+ as a legal reply."
+      },
+      {
+        "id": "played-two-a356c5ac550f9891",
+        "event": "misamis",
+        "priorNodes": 2764942,
+        "played": "40...Ra8 41. Qh5+ Kg8 42. Ne7#",
+        "alternative": "40...Rd7 41. Qh5+ Kg8",
+        "attackIsCheck": true,
+        "defencesChecked": 1,
+        "explanation": "Ra8 allows mate in two starting with Qh5+. Rd7 avoids mate within two moves. If the opponent tries Qh5+ anyway, Kg8 stops mate on the next move."
+      },
+      {
+        "id": "played-two-de82ffbc57f59ffb",
+        "event": "kovin",
+        "priorNodes": 1013679,
+        "played": "44. Bb3 Ne2+ 45. Kh1 Rh4#",
+        "alternative": "44. Bd3 Ne2+ 45. Bxe2",
+        "attackIsCheck": true,
+        "defencesChecked": 2,
+        "explanation": "Bb3 allows mate in two starting with Ne2+. Bd3 avoids mate within two moves. If the opponent tries Ne2+ anyway, Bxe2 stops mate on the next move."
+      },
+      {
+        "id": "played-two-ef48e674da8c0def",
+        "event": "kovin",
+        "priorNodes": 3360025,
+        "played": "39...Kc7 40. Qh7+ Qe7 41. Qxe7#",
+        "alternative": "39...Kb5 40. Qh7 Qxb2",
+        "attackIsCheck": true,
+        "defencesChecked": 2,
+        "explanation": "Kc7 allows mate in two starting with Qh7+. Kb5 avoids mate within two moves. If the opponent tries Qh7 anyway, Qxb2 stops mate on the next move."
+      }
+    ],
+    "minimumNodesForSuccessfulProofs": 30916911,
+    "medianMsThreeProofArms": 4.343
+  },
+  "quietPuzzles": {
+    "engineSha256": "1e7a36218015c75f9f9c1fba9b71da4f7e857bb730512033ace4ec35100b7492",
+    "proofCounts": {
+      "allowed-two": {
+        "cases": 3,
+        "nominated": 1,
+        "checking": 0,
+        "all": 1,
+        "alreadyLosingByEngineMate": 2
+      }
+    },
+    "workflow": {
+      "fullBaseline": {
+        "allowed-two": 1
+      },
+      "shortCandidate": {
+        "allowed-two": 1
+      }
+    },
+    "examples": [
+      {
+        "id": "puzzle-played-two-00PvX",
+        "event": "lichess-quiet-start",
+        "priorNodes": 3365235,
+        "played": "53. Ka5 Kc5 54. f3 Nc6#",
+        "alternative": "53. g4",
+        "attackIsCheck": false,
+        "defencesChecked": 5,
+        "explanation": "Ka5 allows mate in two starting with Kc5. g4 avoids mate within two moves. It takes away Kc5 as a legal reply."
+      }
+    ],
+    "minimumNodesForSuccessfulProofs": 3365235,
+    "medianMsThreeProofArms": 0.168
+  },
+  "sampling": {
+    "development": {
+      "sources": {
+        "played-immediate-mate/jesenik-all.pgn": {
+          "sha256": "35b3e794d6b342085de0a480ae88d0b1e90d7a71f9fc94caf472f6661313f35f",
+          "population": {}
+        },
+        "played-immediate-mate/johor-all.pgn": {
+          "sha256": "508acf9e25e85ab812a9587cdf3b1d38d959e1022655e8a6f57bcbcd36c1ff92",
+          "population": {
+            "cooperative": 193,
+            "mate-one": 2,
+            "allowed-two": 5
+          }
+        },
+        "played-immediate-mate/wittelsbach-all.pgn": {
+          "sha256": "8d30ffd55cd602172778f229250f49fbd3907db48611549d03bf923ca03a9020",
+          "population": {
+            "cooperative": 40,
+            "mate-one": 3,
+            "allowed-two": 1,
+            "unavoidable-two": 1
+          }
+        },
+        "played-immediate-mate/zamenhof-all.pgn": {
+          "sha256": "87ff137dae821da14a0e3734f65b2b9abf7e575dc4f2d14d729e99472ef0800d",
+          "population": {}
+        },
+        "forcing-transfer/world-amateur-r4.pgn": {
+          "sha256": "29b468503c1d7e4767d3390e84b5ea4fbe957c07b3506a1465a972fbb607432d",
+          "population": {}
+        },
+        "passed-pawn-choices/box-hill-2026.pgn": {
+          "sha256": "ae811fa856119d35b49512ea8733cda7b05ba9fdd996d90216e44e2ab870dc1f",
+          "population": {
+            "cooperative": 4,
+            "allowed-two": 1,
+            "mate-one": 1
+          }
+        }
+      },
+      "cases": {
+        "cooperative": 12,
+        "allowed-two": 5,
+        "mate-one": 1
+      }
+    },
+    "holdout": {
+      "sources": {
+        "passed-pawn-choices/challenge/limerick-2026-event.pgn": {
+          "sha256": "69014e05db7966c77a14259f65b579941a062a598474171372d63cd3e6b0daeb",
+          "population": {}
+        },
+        "passed-pawn-choices/challenge/world-seniors-50-2026-event.pgn": {
+          "sha256": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+          "population": {
+            "cooperative": 121,
+            "allowed-two": 1
+          }
+        },
+        "conditional-recovery/icelandic-open.pgn": {
+          "sha256": "6ff1afae6a26aac05e6e6356be60afe357cf1f4588fb5e760e1a4a12065126b7",
+          "population": {
+            "cooperative": 71,
+            "allowed-two": 4,
+            "mate-one": 2
+          }
+        },
+        "conditional-recovery/reykjavik-r1.pgn": {
+          "sha256": "6f58004f593f277a128bac909c4c23b86c96bbbc6a2d858b81fd4f6d27df718c",
+          "population": {}
+        },
+        "rook-file-consequence/rudar.pgn": {
+          "sha256": "be9a681991b13bb72b41f39d643a01f56a84522324f39144c25b46a0e4dc6dd9",
+          "population": {}
+        },
+        "rook-file-consequence/kovin.pgn": {
+          "sha256": "37ef02c01598a22206184ee57f5f97baa42bba522f4aeb275d2638a41b86dae7",
+          "population": {
+            "cooperative": 31,
+            "allowed-two": 4,
+            "mate-one": 2
+          }
+        },
+        "rook-file-consequence/world-junior.pgn": {
+          "sha256": "248ced5e2f7389fa6a4e73a3fb46f8f62bc1d68d5004a2ef91df763ebc00b19e",
+          "population": {
+            "mate-one": 1,
+            "cooperative": 20
+          }
+        },
+        "structural-tradeoffs/halloween.pgn": {
+          "sha256": "6ba07fa0952709cf7e08453c88e2712f0e70402b3ae133e899e544706f6e34c9",
+          "population": {}
+        },
+        "structural-tradeoffs/poland.pgn": {
+          "sha256": "8c20aae8325c8504373f7729be29b33d7242647104d1f794a50ae3888e0ffdef",
+          "population": {
+            "cooperative": 184,
+            "allowed-two": 4,
+            "mate-one": 5,
+            "unavoidable-two": 3
+          }
+        },
+        "promotion-mistake-transfer/guernsey.pgn": {
+          "sha256": "74232ed341751e5b2a39b379c8819808e9924225e1644fae156c601427c2f6d3",
+          "population": {
+            "cooperative": 55,
+            "unavoidable-two": 4,
+            "allowed-two": 2,
+            "mate-one": 3
+          }
+        },
+        "rook-pressure-mistakes/misamis.pgn": {
+          "sha256": "9f9c9b645ae60d703e723669799ee2408d071cf44b0a9757a984ce680f546284",
+          "population": {
+            "cooperative": 104,
+            "allowed-two": 3,
+            "mate-one": 1
+          }
+        }
+      },
+      "cases": {
+        "cooperative": 18,
+        "mate-one": 4,
+        "unavoidable-two": 2,
+        "allowed-two": 18
+      }
+    },
+    "quiet-recovered": {
+      "sources": {
+        "C4mOV5Og": {
+          "url": "https://lichess.org/game/export/C4mOV5Og?clocks=false&evals=false",
+          "sha256": "b7393b4dcbc28061c42a42ff03980f90ce9bf72c5bdc41cdbeba20a7a87f4d8b"
+        },
+        "tH6dRFcZ": {
+          "url": "https://lichess.org/game/export/tH6dRFcZ?clocks=false&evals=false",
+          "sha256": "5bb81aa77b8e1236216acd5304a392515ce8c265c6f3a6c55c62fa5d065fc56f"
+        },
+        "uD2xHsn7": {
+          "url": "https://lichess.org/game/export/uD2xHsn7?clocks=false&evals=false",
+          "sha256": "77d43f5a3421fba05d5d4535617cab1280357488ff35ac85601a3b8ac1e4921f"
+        }
+      },
+      "selected": 3
+    }
+  },
+  "archive": {
+    "changes": {
+      "valid": 1869,
+      "position": 0,
+      "moves": 0,
+      "mistake": 1,
+      "mistakeStatus": 1
+    },
+    "newProofs": [
+      {
+        "id": "0ZuDQ",
+        "played": "19. Qe4 Nxf2+ 20. Rxf2 Qxh2#",
+        "alternative": "19. g3 Nxf2+ 20. Rxf2",
+        "attackIsCheck": true,
+        "defencesChecked": 2,
+        "explanation": "Qe4 allows mate in two starting with Nxf2+. g3 avoids mate within two moves. If the opponent tries Nxf2+ anyway, Rxf2 stops mate on the next move."
+      }
+    ],
+    "medianMs": [
+      72.22,
+      72.54
+    ]
+  },
+  "quietThreats": {
+    "changes": {
+      "valid": 48,
+      "position": 0,
+      "moves": 0,
+      "mistake": 0,
+      "mistakeStatus": 0
+    },
+    "newProofs": [],
+    "medianMs": [
+      47.82,
+      60.12
+    ]
+  }
+}

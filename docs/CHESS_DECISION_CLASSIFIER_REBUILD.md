@@ -4151,3 +4151,21 @@ explanations with the same position categories and mistake reports.
 No extra Stockfish calls are needed. The source-built evidence panel
 and all independent mating replays passed.
 [Results, examples and reproduction](../benchmarks/decision-evidence/quiet-mate-in-two/README.md)
+
+## Checkmate allowed by the played move
+
+Decision Evidence can prove a mate in two after the actual move from
+legal continuations. It also tests every short mating start after the
+stronger move. If the original attack still works as a legal move
+there, the app can show a specific reply that prevents the mate.
+
+In the 42-game held-out replay the previous full workflow identified
+11 of 18 geometry positives. The new local route identifies 12 with
+only the leading choices and best reply and records zero false calls
+in 24 controls. Six other geometry positives already lose to a longer
+forced mate under the best choice. The skipped played searches account
+for at least 30.9 million replay nodes across the 12 confirmed cases.
+An archive replay adds one diagnosis and keeps position and move
+reports unchanged. The previous quiet-threat proofs match after
+sharing the short mating logic. Source panel and regression tests pass.
+[Exact paired lines, independent checks and reproduction](../benchmarks/decision-evidence/played-mate-in-two/README.md)

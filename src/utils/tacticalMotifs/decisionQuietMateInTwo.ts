@@ -3,7 +3,7 @@ import { makeFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import type { NormalMove } from "chessops/types";
 import { makeUci, parseUci } from "chessops/util";
-import { legalMoves, mayGiveCheck, replayTacticalLine } from "./causalTactics";
+import { legalMoves, replayTacticalLine } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import type { QuietMateThreat } from "./decisionQuietMateThreat";
 import type { TacticalGameHistory } from "./gameHistory";
@@ -14,41 +14,19 @@ import {
     tacticalRepetitionClaim,
 } from "./repetitionHistory";
 
-type Budget = { remaining: number };
-type MatingLine = [NormalMove, NormalMove, NormalMove];
+import {
+    MATE_BUDGET_EXHAUSTED,
+    mateInTwoFromMove,
+    mateOnNextMove,
+    playShortMateMove,
+    type MateBudget,
+} from "./shortMateProof";
+
 type ThreatSearch = "searched" | "legal-example";
-
 const PROOF_BUDGET = 3072;
-const EXHAUSTED = Symbol("quiet mate threat budget");
 
-function after(position: Chess, move: NormalMove, budget: Budget) {
-    if (--budget.remaining < 0) throw EXHAUSTED;
-    const next = position.clone();
-    next.play(move);
-    return next;
-}
-
-function mateNext(position: Chess, budget: Budget) {
-    return legalMoves(position).find(
-        (move) => mayGiveCheck(position, move) && after(position, move, budget).isCheckmate(),
-    );
-}
-
-function checkingFinish(position: Chess, move: NormalMove, budget: Budget): MatingLine | null {
-    if (!mayGiveCheck(position, move) || !position.isLegal(move)) return null;
-    const checked = after(position, move, budget);
-    if (!checked.isCheck() || checked.isEnd() || checked.halfmoves >= 99) return null;
-    let line: MatingLine | null = null;
-    for (const reply of legalMoves(checked)) {
-        const mate = mateNext(after(checked, reply, budget), budget);
-        if (!mate) return null;
-        line ??= [move, reply, mate];
-    }
-    return line;
-}
-
-function checkingStarts(position: Chess, budget: Budget) {
-    return legalMoves(position).filter((move) => checkingFinish(position, move, budget));
+function checkingStarts(position: Chess, budget: MateBudget) {
+    return legalMoves(position).filter((move) => mateInTwoFromMove(position, move, budget, true));
 }
 
 /** Certify a new threat after a quiet move. Changing the turn only
@@ -98,11 +76,11 @@ export function findQuietMateInTwoThreat(
         const stand = quiet.after.clone();
         stand.turn = quiet.before.turn;
         stand.epSquare = undefined;
-        if (mateNext(stand, budget)) return null;
+        if (mateOnNextMove(stand, budget)) return null;
         const threats = checkingStarts(stand, budget);
         if (
             !threats.length ||
-            mateNext(quiet.before, budget) ||
+            mateOnNextMove(quiet.before, budget) ||
             checkingStarts(quiet.before, budget).length
         )
             return null;
@@ -113,15 +91,17 @@ export function findQuietMateInTwoThreat(
             if (
                 !response ||
                 response.after.isEnd() ||
-                mateNext(response.after, budget) ||
+                mateOnNextMove(response.after, budget) ||
                 checkingStarts(response.after, budget).length
             )
                 return null;
         }
         const witness = (reply: NormalMove, searched: boolean) => {
-            const board = after(quiet.after, reply, budget);
+            const board = playShortMateMove(quiet.after, reply, budget);
             if (board.isEnd()) return null;
-            const next = threats.map((move) => checkingFinish(board, move, budget)).find(Boolean);
+            const next = threats
+                .map((move) => mateInTwoFromMove(board, move, budget, true))
+                .find(Boolean);
             if (!next) return null;
             const [check, evasion, mate] = next;
             const continuation = [makeUci(check), makeUci(evasion), makeUci(mate)];
@@ -191,7 +171,7 @@ export function findQuietMateInTwoThreat(
         }
         return null;
     } catch (error) {
-        if (error !== EXHAUSTED) throw error;
+        if (error !== MATE_BUDGET_EXHAUSTED) throw error;
         return null;
     }
 }

@@ -36,6 +36,7 @@ import {
     findAllowedImmediateMate,
     type DecisionMateConsequence,
 } from "./decisionMateConsequence";
+import { findAllowedMateInTwo } from "./decisionAllowedMateInTwo";
 import type { TacticalGameHistory } from "./gameHistory";
 import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
 import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
@@ -100,7 +101,7 @@ import {
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 44;
+export const DECISION_ASSESSMENT_VERSION = 45;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -927,9 +928,12 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         comparisonMeasured?.lines.length === comparison.length
     )
         mistakeStatus = "best-supplied-choice";
-    let mateConsequence = findAllowedImmediateMate(
-        input.fen, first, input.playedMoveUci, input.history,
-    );
+    const mateHint = input.replyProbes?.find(
+        (probe) => probe.moveUci === input.playedMoveUci,
+    )?.lines[0]?.pvUci[0];
+    let mateConsequence =
+        findAllowedImmediateMate(input.fen, first, input.playedMoveUci, input.history) ??
+        findAllowedMateInTwo(input.fen, first, input.playedMoveUci, input.history, mateHint);
     if (
         !mateConsequence &&
         playedIndex > 0 &&
@@ -954,16 +958,21 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             category: "tactical",
             tactical: {
                 support: "supported",
-                basis: mateConsequence.mateIn === 1 ? "bounded-proof" : "engine-supported",
+                basis:
+                    mateConsequence.mateIn === 1 || mateConsequence.proof === "legal"
+                        ? "bounded-proof"
+                        : "engine-supported",
                 reasons: [mateConsequence.explanation],
             },
             evaluationLossCp: null,
             missed: [],
             allowed: [],
             mateConsequence,
-            limitations: [mateConsequence.avoidingMoveUci
-                ? "This compares mate on the very next move."
-                : "This is a measured mating consequence in the supplied search."],
+            limitations: [
+                mateConsequence.avoidingMoveUci
+                    ? `This checks mate within ${mateConsequence.mateIn} opposing ${mateConsequence.mateIn === 1 ? "move" : "moves"}.`
+                    : "This is a measured mating consequence in the supplied search.",
+            ],
         };
     }
     if (
