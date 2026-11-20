@@ -1,0 +1,14 @@
+{
+  "scope": "Predict a concrete strategic consequence on public classical boards: whether the same passed pawn makes a non-capturing advance and survives through the next ten plies after a candidate move.",
+  "inputs": {
+    "train.jsonl": "65f9035a53941e2233e00e42d56eb65267570b64c95ae1a258a76a98e51a773b",
+    "test.jsonl": "4f31b36b7c843f2eac85f12bc8c808d845cb0d0c057c496b14bdd9fcab6bdb02",
+    "reserve.jsonl": "27a92581680452e7fb05212f620a22192e815304ae95ddf4f8eb7b2fd25415cf",
+    "network.onnx": "0e2699c19b617781d4fbe3d00286756b125836a30c0658afc620e197bec35d04"
+  },
+  "target": "Two distinct opponent choices within 80 cp at the same depth from the deeper MultiPV search must agree with the exact candidate line in the separate paired root search. Each continuation must have the same pawn make at least one non-capturing rank advance and stay alive to ply ten or to a terminal board. A live promoted piece counts as the same asset. A valid line where the pawn is captured or stays stationary counts against this target. Disagreement, insufficient horizon or absence of a plausible second reply is uncertain. Keep uncertain cases in the review budget.",
+  "selection": "Include every geometrically passed pawn of either side on each reached candidate board with two valid shallow replies. Require a reachable continuation for both the stronger and played moves. The target and frames are on previously collected event-, board- and game-disjoint groups. No model is fitted on either transfer. Other studies have used these cohorts for different targets.",
+  "controls": "Relative rank, unobstructed file, early shallow advance count, training base rate, static and shallow-line logistic regression, shallow-line boosted tree, shallow-line plus Leela WDL, and shallow-line plus pooled Leela embeddings. The localized arms read the pawn square, next square and enemy king before any reply. Raw local piece planes control for extra square features. The classifier sees neither deeper scores nor move ranks from the reference.",
+  "primary": "Compare confirmed target nominations at the same budget of one quarter of candidate assets per event family, rounded up. Report ordinary and annotated-error transfer separately, including uncertainty and confirmed negatives. Also report definitive-label AP, probability calibration and same-pawn opposite-label candidate ordering where both labels exist.",
+  "screen": "At least two extra positives over the strongest simpler control, gains in at least two families, and no more known negatives in the ordinary sample. The reserve must at least match the strongest simpler control on confirmed positives and known negatives. Require an independent search and manual review before any app use."
+}

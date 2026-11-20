@@ -4331,3 +4331,22 @@ The new check recovers it using the valid paired frame. A live app
 search replay needs three queries instead of four. The source-built
 panel shows the mate and an exact defence against the same attack.
 [Legal proof, scored replay and live checks](../benchmarks/decision-evidence/played-mate-in-three/README.md)
+
+
+## Local neural evidence for a passed pawn
+
+A frozen Leela probe reads the exact passed pawn, its next square, and
+the enemy king. It tests whether the pawn can advance and survive
+through ten plies in several Stockfish continuations. The localized model
+raises average precision over shallow-line logistic on two disjoint
+classical samples, with higher Brier loss and fewer initial positives at
+the fixed shortlist budget than the strongest simple control.
+
+Only seven of thirteen positives repeat under the stronger search.
+The model's unique ordinary nomination against shallow-line logistic
+remains uncertain after the recheck. Neither transfer set supplies a
+same-pawn contrast with definite opposite outcomes. The model stays
+offline. The unresolved question is whether a larger reviewed set of
+legal same-position alternatives can distinguish strategic contribution
+while controlling for the tactic.
+[Target, comparisons and stronger searches](../benchmarks/decision-evidence/neural-passer-probe/README.md)

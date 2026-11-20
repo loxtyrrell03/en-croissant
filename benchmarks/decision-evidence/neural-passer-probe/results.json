@@ -1,0 +1,2951 @@
+{
+  "training": {
+    "assets": 1244,
+    "games": 303,
+    "eventFamilies": 54,
+    "positive": 39,
+    "negative": 380,
+    "uncertain": 825
+  },
+  "cost": {
+    "boards": 768,
+    "totalMsPerBoard": 4.612,
+    "additionalStockfishNodes": 0
+  },
+  "transfer": {
+    "ordinary": {
+      "cohort": {
+        "assets": 110,
+        "games": 37,
+        "eventFamilies": 8,
+        "positive": 7,
+        "negative": 32,
+        "uncertain": 71
+      },
+      "arms": {
+        "training base rate": {
+          "averagePrecision": 0.1794871794871795,
+          "brier": 0.15473794702666724,
+          "selected": {
+            "assets": 30,
+            "games": 24,
+            "eventFamilies": 8,
+            "positive": 3,
+            "negative": 9,
+            "uncertain": 18
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 5,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-4d1dd69d5d0cb2ce","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"e5","origin":"e5","target":false},
+            {"case":"reply-budget-29e9774734b11d39","branch":"better","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-00ba44014cf8eaf9","branch":"better","pawn":"h3","origin":"h3","target":false},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"reply-budget-638d15ef24800b4a","branch":"better","pawn":"a5","origin":"a5","target":null},
+            {"case":"reply-budget-151497ddc98b7fa5","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"f3","origin":"f3","target":true},
+            {"case":"reply-budget-2197449f9d6d7945","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-156ec9123e80aa45","branch":"played","pawn":"d6","origin":"d6","target":false},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-18f45ed8f10edde6","branch":"better","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"g6","origin":"g6","target":false},
+            {"case":"reply-budget-18f45ed8f10edde6","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-0165c132c718c1c0","branch":"played","pawn":"h3","origin":"h3","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-0165c132c718c1c0","branch":"better","pawn":"h3","origin":"h3","target":false},
+            {"case":"reply-budget-3946c7ea105dd736","branch":"better","pawn":"e6","origin":"e6","target":null},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"reply-budget-1a9f40b0b568f8a0","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-1f51fc7ecf3deef8","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"d6","origin":"d6","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"better","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"d6","origin":"d6","target":null},
+            {"case":"reply-budget-0ce16f45d1dba131","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"f7","origin":"f7","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true}
+          ]
+        },
+        "pawn rank": {
+          "averagePrecision": 0.1638876996019853,
+          "brier": null,
+          "selected": {
+            "assets": 30,
+            "games": 17,
+            "eventFamilies": 8,
+            "positive": 1,
+            "negative": 11,
+            "uncertain": 18
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 4,
+              "uncertain": 1
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 2,
+              "uncertain": 0
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-572989b2a1008037","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-572989b2a1008037","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"reply-budget-29e9774734b11d39","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-29e9774734b11d39","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-2a3dcd5e8c3ca978","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-156ec9123e80aa45","branch":"played","pawn":"d6","origin":"d6","target":false},
+            {"case":"reply-budget-156ec9123e80aa45","branch":"better","pawn":"d6","origin":"d6","target":false},
+            {"case":"reply-budget-638d15ef24800b4a","branch":"better","pawn":"a5","origin":"a5","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"played","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"d7","origin":"d7","target":false},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"a3","origin":"a3","target":false},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"better","pawn":"a3","origin":"a3","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-3946c7ea105dd736","branch":"better","pawn":"d3","origin":"d3","target":false},
+            {"case":"reply-budget-3946c7ea105dd736","branch":"played","pawn":"d3","origin":"d3","target":null},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-1f51fc7ecf3deef8","branch":"better","pawn":"d4","origin":"d4","target":null},
+            {"case":"reply-budget-1f51fc7ecf3deef8","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-0ce16f45d1dba131","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"reply-budget-0ce16f45d1dba131","branch":"better","pawn":"d4","origin":"d4","target":false},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true}
+          ]
+        },
+        "clear file": {
+          "averagePrecision": 0.2872230109072214,
+          "brier": null,
+          "selected": {
+            "assets": 30,
+            "games": 17,
+            "eventFamilies": 8,
+            "positive": 3,
+            "negative": 6,
+            "uncertain": 21
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"e5","origin":"e5","target":false},
+            {"case":"reply-budget-456552785963bd7f","branch":"better","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-456552785963bd7f","branch":"played","pawn":"c3","origin":"c3","target":false},
+            {"case":"reply-budget-29e9774734b11d39","branch":"better","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"b5","origin":"b5","target":true},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"f3","origin":"f3","target":true},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"reply-budget-15631f8fbf8745db","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"reply-budget-c06dc0020b705987","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-18f45ed8f10edde6","branch":"better","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-18f45ed8f10edde6","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-0165c132c718c1c0","branch":"played","pawn":"h3","origin":"h3","target":null},
+            {"case":"reply-budget-0165c132c718c1c0","branch":"better","pawn":"h3","origin":"h3","target":false},
+            {"case":"reply-budget-3946c7ea105dd736","branch":"better","pawn":"e6","origin":"e6","target":null},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"f7","origin":"f7","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"d6","origin":"d6","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"d6","origin":"d6","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"better","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"f7","origin":"f7","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"f7","origin":"f7","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"a3","origin":"a3","target":false}
+          ]
+        },
+        "shallow advance count": {
+          "averagePrecision": 0.4597069597069597,
+          "brier": null,
+          "selected": {
+            "assets": 30,
+            "games": 24,
+            "eventFamilies": 8,
+            "positive": 4,
+            "negative": 4,
+            "uncertain": 22
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-4d1dd69d5d0cb2ce","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-29e9774734b11d39","branch":"better","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-00ba44014cf8eaf9","branch":"better","pawn":"h3","origin":"h3","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-638d15ef24800b4a","branch":"better","pawn":"a5","origin":"a5","target":null},
+            {"case":"reply-budget-151497ddc98b7fa5","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"f3","origin":"f3","target":true},
+            {"case":"reply-budget-2197449f9d6d7945","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-18f45ed8f10edde6","branch":"better","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-0165c132c718c1c0","branch":"played","pawn":"h3","origin":"h3","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"better","pawn":"d4","origin":"d4","target":null},
+            {"case":"reply-budget-1a9f40b0b568f8a0","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-1f51fc7ecf3deef8","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"d6","origin":"d6","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-0ce16f45d1dba131","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"f7","origin":"f7","target":null}
+          ]
+        },
+        "static logistic": {
+          "averagePrecision": 0.6019859556725916,
+          "brier": 0.1236575460983692,
+          "selected": {
+            "assets": 30,
+            "games": 15,
+            "eventFamilies": 8,
+            "positive": 5,
+            "negative": 5,
+            "uncertain": 20
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"e5","origin":"e5","target":false},
+            {"case":"reply-budget-456552785963bd7f","branch":"better","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d4","origin":"d4","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"b5","origin":"b5","target":true},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"f3","origin":"f3","target":true},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"better","pawn":"c5","origin":"c5","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"reply-budget-1afbfab06e1dc67f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"played","pawn":"a4","origin":"a2","target":true},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"g5","origin":"g5","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"a3","origin":"a3","target":null}
+          ]
+        },
+        "line logistic": {
+          "averagePrecision": 0.7133116883116883,
+          "brier": 0.10047039150873259,
+          "selected": {
+            "assets": 30,
+            "games": 21,
+            "eventFamilies": 8,
+            "positive": 4,
+            "negative": 7,
+            "uncertain": 19
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-456552785963bd7f","branch":"better","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-00ba44014cf8eaf9","branch":"better","pawn":"h3","origin":"h3","target":false},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"b5","origin":"b5","target":true},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-1afbfab06e1dc67f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"g6","origin":"g6","target":false},
+            {"case":"reply-budget-3ed5f60b92e53ee8","branch":"played","pawn":"a3","origin":"a3","target":false},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"played","pawn":"a4","origin":"a2","target":true},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"a3","origin":"a3","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"g5","origin":"g5","target":null}
+          ]
+        },
+        "line + local board planes": {
+          "averagePrecision": 0.712469078540507,
+          "brier": 0.10018413942626224,
+          "selected": {
+            "assets": 30,
+            "games": 18,
+            "eventFamilies": 8,
+            "positive": 4,
+            "negative": 6,
+            "uncertain": 20
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 5
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-456552785963bd7f","branch":"better","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"b5","origin":"b5","target":true},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-3ed5f60b92e53ee8","branch":"played","pawn":"a3","origin":"a3","target":false},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-1afbfab06e1dc67f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"reply-budget-3ed5f60b92e53ee8","branch":"better","pawn":"a3","origin":"a3","target":false},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"played","pawn":"a4","origin":"a2","target":true},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"f7","origin":"f7","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"a3","origin":"a3","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"g5","origin":"g5","target":null}
+          ]
+        },
+        "line + Leela evaluation": {
+          "averagePrecision": 0.7213453213453214,
+          "brier": 0.09912806159088038,
+          "selected": {
+            "assets": 30,
+            "games": 20,
+            "eventFamilies": 8,
+            "positive": 3,
+            "negative": 6,
+            "uncertain": 21
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-456552785963bd7f","branch":"better","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-00ba44014cf8eaf9","branch":"better","pawn":"h3","origin":"h3","target":false},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-1afbfab06e1dc67f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"g6","origin":"g6","target":false},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"better","pawn":"a3","origin":"a3","target":null},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"played","pawn":"a4","origin":"a2","target":true},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"f7","origin":"f7","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"a3","origin":"a3","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"g5","origin":"g5","target":null}
+          ]
+        },
+        "line + pooled Leela": {
+          "averagePrecision": 0.7171768707482993,
+          "brier": 0.09994070574853184,
+          "selected": {
+            "assets": 30,
+            "games": 19,
+            "eventFamilies": 8,
+            "positive": 5,
+            "negative": 8,
+            "uncertain": 17
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-456552785963bd7f","branch":"better","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"b5","origin":"b5","target":true},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"f3","origin":"f3","target":true},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-3ed5f60b92e53ee8","branch":"played","pawn":"a3","origin":"a3","target":false},
+            {"case":"reply-budget-1afbfab06e1dc67f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"g6","origin":"g6","target":false},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"played","pawn":"h6","origin":"h6","target":false},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"played","pawn":"a4","origin":"a2","target":true},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"a3","origin":"a3","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"a3","origin":"a3","target":false}
+          ]
+        },
+        "line + localized Leela": {
+          "averagePrecision": 0.7597402597402596,
+          "brier": 0.11294102450111726,
+          "selected": {
+            "assets": 30,
+            "games": 19,
+            "eventFamilies": 8,
+            "positive": 4,
+            "negative": 6,
+            "uncertain": 20
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 4
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"f3","origin":"f3","target":true},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"g6","origin":"g6","target":false},
+            {"case":"reply-budget-3ed5f60b92e53ee8","branch":"played","pawn":"a3","origin":"a3","target":false},
+            {"case":"reply-budget-1afbfab06e1dc67f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-9cbd34c28e0d96d6","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"played","pawn":"a4","origin":"a2","target":true},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"g5","origin":"g5","target":null},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"a3","origin":"a3","target":false}
+          ]
+        },
+        "line tree": {
+          "averagePrecision": 0.649989474127405,
+          "brier": 0.10032446240549928,
+          "selected": {
+            "assets": 30,
+            "games": 18,
+            "eventFamilies": 8,
+            "positive": 4,
+            "negative": 6,
+            "uncertain": 20
+          },
+          "events": {
+            "amsterdam-chess-open-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "aq-prime-international-open-chess-championship": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "czech-open-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "dutch-meesterklasse-2026": {
+              "assets": 5,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            },
+            "fide-world-junior-chess-championship-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "german-bundesliga-202627-schachbundesliga": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "hoogeveen-open-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 4
+            },
+            "mongolian-national-chess-championship-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"reply-budget-572989b2a1008037","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"reply-budget-5e66d6265ca3770e","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"reply-budget-456552785963bd7f","branch":"better","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-03e4110e68a124d4","branch":"played","pawn":"c3","origin":"c3","target":null},
+            {"case":"reply-budget-29e9774734b11d39","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"f3","origin":"f3","target":true},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-0020eb6547c6aea0","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-2c31973a34fa2f5a","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"played","pawn":"g6","origin":"g6","target":false},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"better","pawn":"g6","origin":"g6","target":false},
+            {"case":"reply-budget-c06dc0020b705987","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"reply-budget-01ab3e36016268ff","branch":"better","pawn":"a3","origin":"a3","target":null},
+            {"case":"reply-budget-30619fd703680515","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-53df55697a204732","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"reply-budget-93becfa2df2364a9","branch":"played","pawn":"a4","origin":"a2","target":true},
+            {"case":"reply-budget-03b33b4f4a3c53a0","branch":"better","pawn":"h7","origin":"h7","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"played","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-0ed5c56be19181c4","branch":"better","pawn":"b5","origin":"b5","target":null},
+            {"case":"reply-budget-355a300a8cd57c4d","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"reply-budget-07cb1c10ce0ebc5b","branch":"played","pawn":"a2","origin":"b3","target":null},
+            {"case":"reply-budget-07bb2ef48d5bd3d9","branch":"played","pawn":"a5","origin":"a5","target":false},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"g5","origin":"g5","target":true},
+            {"case":"reply-budget-56abcb976c081c21","branch":"played","pawn":"a3","origin":"a3","target":false},
+            {"case":"reply-budget-56abcb976c081c21","branch":"better","pawn":"a3","origin":"a3","target":null}
+          ]
+        }
+      },
+      "localizedVersusControls": {
+        "line logistic": {
+          "positiveDifference": 0,
+          "negativeDifference": -1,
+          "eventsImproved": 1
+        },
+        "line tree": {
+          "positiveDifference": 0,
+          "negativeDifference": 0,
+          "eventsImproved": 0
+        },
+        "shallow advance count": {
+          "positiveDifference": 0,
+          "negativeDifference": 2,
+          "eventsImproved": 1
+        },
+        "pawn rank": {
+          "positiveDifference": 3,
+          "negativeDifference": -5,
+          "eventsImproved": 2
+        },
+        "clear file": {
+          "positiveDifference": 1,
+          "negativeDifference": 0,
+          "eventsImproved": 2
+        },
+        "static logistic": {
+          "positiveDifference": -1,
+          "negativeDifference": 1,
+          "eventsImproved": 0
+        },
+        "line + local board planes": {
+          "positiveDifference": 0,
+          "negativeDifference": 0,
+          "eventsImproved": 1
+        },
+        "line + Leela evaluation": {
+          "positiveDifference": 1,
+          "negativeDifference": 0,
+          "eventsImproved": 1
+        },
+        "line + pooled Leela": {
+          "positiveDifference": -1,
+          "negativeDifference": -2,
+          "eventsImproved": 0
+        }
+      }
+    },
+    "enriched": {
+      "cohort": {
+        "assets": 166,
+        "games": 54,
+        "eventFamilies": 10,
+        "positive": 6,
+        "negative": 46,
+        "uncertain": 114
+      },
+      "arms": {
+        "training base rate": {
+          "averagePrecision": 0.11538461538461539,
+          "brier": 0.10256855714844677,
+          "selected": {
+            "assets": 46,
+            "games": 28,
+            "eventFamilies": 10,
+            "positive": 3,
+            "negative": 11,
+            "uncertain": 32
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 5,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 6
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 1
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 5,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 6
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 3,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-17a89274607d660d","branch":"played","pawn":"b7","origin":"b7","target":null},
+            {"case":"deeper-loss-25c5000eb163abc0","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-17a89274607d660d","branch":"better","pawn":"b7","origin":"b7","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-25c5000eb163abc0","branch":"better","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-17a89274607d660d","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-012c9112d261f2b3","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"f5","origin":"f5","target":null},
+            {"case":"deeper-loss-009978f29ae1fddb","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-009978f29ae1fddb","branch":"better","pawn":"e6","origin":"e6","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"better","pawn":"b6","origin":"b6","target":true},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"better","pawn":"c6","origin":"c6","target":false},
+            {"case":"deeper-loss-0004d0351c60b5df","branch":"played","pawn":"c5","origin":"c4","target":null},
+            {"case":"deeper-loss-085345c849005ff9","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-0715263d73803f7a","branch":"better","pawn":"b5","origin":"b5","target":false},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-4bdfd92b9f986c25","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"better","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-02e26cd94f65d1b8","branch":"played","pawn":"e3","origin":"e3","target":null},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-2b7fe092d9b577c0","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"deeper-loss-2b7fe092d9b577c0","branch":"played","pawn":"c3","origin":"c3","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-103a55d20d0e51a4","branch":"played","pawn":"e5","origin":"e6","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"better","pawn":"b4","origin":"b4","target":false},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"better","pawn":"e5","origin":"e5","target":false}
+          ]
+        },
+        "pawn rank": {
+          "averagePrecision": 0.09647281060324539,
+          "brier": null,
+          "selected": {
+            "assets": 46,
+            "games": 26,
+            "eventFamilies": 10,
+            "positive": 1,
+            "negative": 16,
+            "uncertain": 29
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 4
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 5
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 6
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 3,
+              "uncertain": 0
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 4,
+              "uncertain": 1
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-17a89274607d660d","branch":"played","pawn":"b7","origin":"b7","target":null},
+            {"case":"deeper-loss-17a89274607d660d","branch":"better","pawn":"b7","origin":"b7","target":null},
+            {"case":"deeper-loss-25c5000eb163abc0","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-25c5000eb163abc0","branch":"better","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-2223fb749adc5934","branch":"better","pawn":"e4","origin":"e4","target":false},
+            {"case":"deeper-loss-2223fb749adc5934","branch":"played","pawn":"e4","origin":"e4","target":false},
+            {"case":"deeper-loss-009978f29ae1fddb","branch":"better","pawn":"e6","origin":"e6","target":null},
+            {"case":"deeper-loss-009978f29ae1fddb","branch":"played","pawn":"e6","origin":"e6","target":null},
+            {"case":"deeper-loss-012c9112d261f2b3","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"f5","origin":"f5","target":null},
+            {"case":"deeper-loss-009978f29ae1fddb","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-012c9112d261f2b3","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-009978f29ae1fddb","branch":"better","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"g2","origin":"g3","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-0004d0351c60b5df","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"deeper-loss-0004d0351c60b5df","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"deeper-loss-0004d0351c60b5df","branch":"played","pawn":"c5","origin":"c4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-085345c849005ff9","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-390806bc6c715336","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"deeper-loss-1300b19daf7faec7","branch":"played","pawn":"e6","origin":"e6","target":true},
+            {"case":"deeper-loss-390806bc6c715336","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"deeper-loss-4bdfd92b9f986c25","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"better","pawn":"c6","origin":"c6","target":false},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"c6","origin":"c6","target":false},
+            {"case":"deeper-loss-0349b1bc934f40fd","branch":"played","pawn":"d6","origin":"d6","target":null},
+            {"case":"deeper-loss-0349b1bc934f40fd","branch":"better","pawn":"d6","origin":"d6","target":false},
+            {"case":"deeper-loss-09c7d4511961a282","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-09c7d4511961a282","branch":"better","pawn":"f4","origin":"f4","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-02e26cd94f65d1b8","branch":"played","pawn":"e3","origin":"e3","target":null},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"better","pawn":"e6","origin":"e5","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-362171042a2b9808","branch":"better","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-362171042a2b9808","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"better","pawn":"b4","origin":"b4","target":false},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"played","pawn":"e5","origin":"e5","target":false},
+            {"case":"deeper-loss-174ed9361888c8c9","branch":"better","pawn":"e4","origin":"e4","target":false}
+          ]
+        },
+        "clear file": {
+          "averagePrecision": 0.35256410256410253,
+          "brier": null,
+          "selected": {
+            "assets": 46,
+            "games": 22,
+            "eventFamilies": 10,
+            "positive": 2,
+            "negative": 10,
+            "uncertain": 34
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 6
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 3,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"c2","origin":"c2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"c2","origin":"c2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"b2","origin":"b2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"b2","origin":"b2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"better","pawn":"c6","origin":"c6","target":false},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-04979d10849b2511","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-04979d10849b2511","branch":"better","pawn":"a7","origin":"a7","target":false},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"c6","origin":"c6","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-099b3b06dfc096fc","branch":"better","pawn":"f3","origin":"f3","target":null},
+            {"case":"deeper-loss-099b3b06dfc096fc","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-2d978f2234ff2986","branch":"played","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-6c6507255ee7feba","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-2b7fe092d9b577c0","branch":"played","pawn":"c3","origin":"c3","target":null},
+            {"case":"deeper-loss-2b7fe092d9b577c0","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-103a55d20d0e51a4","branch":"better","pawn":"e6","origin":"e6","target":false},
+            {"case":"deeper-loss-103a55d20d0e51a4","branch":"played","pawn":"e5","origin":"e6","target":null},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"played","pawn":"a4","origin":"a2","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false}
+          ]
+        },
+        "shallow advance count": {
+          "averagePrecision": 0.4243589743589744,
+          "brier": null,
+          "selected": {
+            "assets": 46,
+            "games": 28,
+            "eventFamilies": 10,
+            "positive": 4,
+            "negative": 7,
+            "uncertain": 35
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 5,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 6
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 3
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-25c5000eb163abc0","branch":"better","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"f7","origin":"f7","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-012c9112d261f2b3","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"better","pawn":"b6","origin":"b6","target":true},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-042f028afccbd268","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-0004d0351c60b5df","branch":"played","pawn":"c5","origin":"c4","target":null},
+            {"case":"deeper-loss-085345c849005ff9","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"d4","origin":"d4","target":null},
+            {"case":"deeper-loss-0715263d73803f7a","branch":"better","pawn":"b5","origin":"b5","target":false},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-2b7fe092d9b577c0","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"deeper-loss-2b7fe092d9b577c0","branch":"played","pawn":"c3","origin":"c3","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"better","pawn":"a5","origin":"a5","target":true},
+            {"case":"deeper-loss-103a55d20d0e51a4","branch":"played","pawn":"e5","origin":"e6","target":null}
+          ]
+        },
+        "static logistic": {
+          "averagePrecision": 0.39118104118104124,
+          "brier": 0.08419711201672844,
+          "selected": {
+            "assets": 46,
+            "games": 20,
+            "eventFamilies": 10,
+            "positive": 3,
+            "negative": 9,
+            "uncertain": 34
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 3,
+              "negative": 0,
+              "uncertain": 1
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 3,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"b2","origin":"b2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"c2","origin":"c2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"g4","origin":"g4","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-20a781500d684768","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-20a781500d684768","branch":"better","pawn":"a4","origin":"a4","target":false},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0004d0351c60b5df","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"c5","origin":"c5","target":true},
+            {"case":"deeper-loss-22996d83b892999e","branch":"better","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"a5","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"better","pawn":"h5","origin":"h5","target":false},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-06f228efc6d8058b","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"better","pawn":"b4","origin":"b4","target":false},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"played","pawn":"a4","origin":"a2","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"better","pawn":"a2","origin":"a2","target":false}
+          ]
+        },
+        "line logistic": {
+          "averagePrecision": 0.6608058608058608,
+          "brier": 0.06674807348466302,
+          "selected": {
+            "assets": 46,
+            "games": 26,
+            "eventFamilies": 10,
+            "positive": 3,
+            "negative": 8,
+            "uncertain": 35
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 2,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"b2","origin":"b2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-042f028afccbd268","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-042bc61d076b1bae","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-22996d83b892999e","branch":"better","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"a5","origin":"a7","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-06f228efc6d8058b","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-362171042a2b9808","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"better","pawn":"h5","origin":"h5","target":false},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"better","pawn":"a5","origin":"a5","target":true},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false}
+          ]
+        },
+        "line + local board planes": {
+          "averagePrecision": 0.6207264957264956,
+          "brier": 0.07291135380124876,
+          "selected": {
+            "assets": 46,
+            "games": 25,
+            "eventFamilies": 10,
+            "positive": 3,
+            "negative": 7,
+            "uncertain": 36
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 3
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-042f028afccbd268","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-042bc61d076b1bae","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-22996d83b892999e","branch":"better","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"played","pawn":"a6","origin":"a6","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"a5","origin":"a7","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-06f228efc6d8058b","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-362171042a2b9808","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"better","pawn":"h5","origin":"h5","target":false},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"better","pawn":"a5","origin":"a5","target":true},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"played","pawn":"a5","origin":"a5","target":null}
+          ]
+        },
+        "line + Leela evaluation": {
+          "averagePrecision": 0.6608058608058608,
+          "brier": 0.06643285617844544,
+          "selected": {
+            "assets": 46,
+            "games": 26,
+            "eventFamilies": 10,
+            "positive": 3,
+            "negative": 8,
+            "uncertain": 35
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 3
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"f7","origin":"f7","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-20a781500d684768","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-042f028afccbd268","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-22996d83b892999e","branch":"better","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"played","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"a5","origin":"a7","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-06f228efc6d8058b","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"better","pawn":"h5","origin":"h5","target":false},
+            {"case":"deeper-loss-362171042a2b9808","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"better","pawn":"a5","origin":"a5","target":true},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"played","pawn":"a5","origin":"a5","target":null}
+          ]
+        },
+        "line + pooled Leela": {
+          "averagePrecision": 0.6402894491129785,
+          "brier": 0.06550518424241956,
+          "selected": {
+            "assets": 46,
+            "games": 25,
+            "eventFamilies": 10,
+            "positive": 3,
+            "negative": 5,
+            "uncertain": 38
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 4,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 0,
+              "uncertain": 2
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 2,
+              "uncertain": 2
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"b2","origin":"b2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-042f028afccbd268","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-042bc61d076b1bae","branch":"played","pawn":"h7","origin":"h7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-1086dc0d223bc8ad","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-22996d83b892999e","branch":"better","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-178919a59eff2e7f","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"a5","origin":"a7","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-02e26cd94f65d1b8","branch":"played","pawn":"e3","origin":"e3","target":null},
+            {"case":"deeper-loss-362171042a2b9808","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-362171042a2b9808","branch":"better","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-06f228efc6d8058b","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"better","pawn":"a5","origin":"a5","target":true},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"better","pawn":"b4","origin":"b4","target":false}
+          ]
+        },
+        "line + localized Leela": {
+          "averagePrecision": 0.6727614490772386,
+          "brier": 0.06959644173648596,
+          "selected": {
+            "assets": 46,
+            "games": 24,
+            "eventFamilies": 10,
+            "positive": 3,
+            "negative": 8,
+            "uncertain": 35
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 1,
+              "uncertain": 1
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 2
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 1,
+              "negative": 1,
+              "uncertain": 3
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"better","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-042f028afccbd268","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-390806bc6c715336","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"deeper-loss-390806bc6c715336","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"deeper-loss-22996d83b892999e","branch":"better","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"played","pawn":"a6","origin":"a6","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"d4","origin":"d4","target":false},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"better","pawn":"e4","origin":"e4","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"better","pawn":"c5","origin":"c5","target":false},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-362171042a2b9808","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-06f228efc6d8058b","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-217fad32623105a4","branch":"played","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-198e6f03b993fc72","branch":"better","pawn":"a5","origin":"a5","target":true},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"played","pawn":"a5","origin":"a5","target":null}
+          ]
+        },
+        "line tree": {
+          "averagePrecision": 0.5007575757575757,
+          "brier": 0.08504436492102004,
+          "selected": {
+            "assets": 46,
+            "games": 26,
+            "eventFamilies": 10,
+            "positive": 2,
+            "negative": 8,
+            "uncertain": 36
+          },
+          "events": {
+            "10th-annual-new-york-state-girls-championship-2026": {
+              "assets": 6,
+              "games": 1,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 6
+            },
+            "2-meunarodni-sahovski-turnir-busovaca-open-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 7
+            },
+            "3rd-annual-thanksgiving-open": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 3
+            },
+            "asian-nations-chess-cup-2026": {
+              "assets": 7,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 6
+            },
+            "buongoma-open-chess-championship-grand-prix-circuit-open": {
+              "assets": 4,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 2,
+              "negative": 1,
+              "uncertain": 1
+            },
+            "fide-world-senior-chess-championships-2026": {
+              "assets": 3,
+              "games": 2,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 2
+            },
+            "irt-clasico-por-equipos-aniversario-17-kallpa": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 0,
+              "uncertain": 4
+            },
+            "national-championship-aruba-2026": {
+              "assets": 4,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 1,
+              "uncertain": 3
+            },
+            "stjernens-hstturnering": {
+              "assets": 3,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 1
+            },
+            "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026": {
+              "assets": 5,
+              "games": 3,
+              "eventFamilies": 1,
+              "positive": 0,
+              "negative": 2,
+              "uncertain": 3
+            }
+          },
+          "samePawnOppositeLabelPairs": 0,
+          "samePawnOrdering": 0,
+          "nominations": [
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"h5","origin":"h5","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"f7","origin":"f7","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"better","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-077c28cfa5529227","branch":"played","pawn":"g6","origin":"g6","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-077eb1e40c02374d","branch":"played","pawn":"a2","origin":"a2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-34a403fbac15cb26","branch":"better","pawn":"c4","origin":"c4","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"played","pawn":"h2","origin":"h2","target":null},
+            {"case":"deeper-loss-01f2215a34421ba8","branch":"better","pawn":"g4","origin":"g4","target":null},
+            {"case":"deeper-loss-30b12a4ffe3972dc","branch":"played","pawn":"c6","origin":"c6","target":null},
+            {"case":"deeper-loss-46af19258f5b8ba5","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-20a781500d684768","branch":"played","pawn":"a4","origin":"a4","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"played","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-02f70fa4c3f8582b","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"f4","origin":"f4","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"played","pawn":"g7","origin":"g7","target":null},
+            {"case":"deeper-loss-04cdebdacda09754","branch":"better","pawn":"h6","origin":"h6","target":null},
+            {"case":"deeper-loss-0715263d73803f7a","branch":"better","pawn":"b5","origin":"b5","target":false},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"better","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-390806bc6c715336","branch":"played","pawn":"b6","origin":"b6","target":null},
+            {"case":"deeper-loss-390806bc6c715336","branch":"better","pawn":"b6","origin":"b6","target":false},
+            {"case":"deeper-loss-0f260a2b1a57fbbb","branch":"played","pawn":"a2","origin":"a2","target":true},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"better","pawn":"a6","origin":"a6","target":false},
+            {"case":"deeper-loss-22996d83b892999e","branch":"better","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-2c953a17283213dc","branch":"played","pawn":"a6","origin":"a6","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"better","pawn":"a7","origin":"a7","target":null},
+            {"case":"deeper-loss-0a2bcf4975d63aab","branch":"played","pawn":"a5","origin":"a7","target":null},
+            {"case":"deeper-loss-00b6a8e264e59392","branch":"played","pawn":"e4","origin":"e4","target":null},
+            {"case":"deeper-loss-099b3b06dfc096fc","branch":"played","pawn":"f3","origin":"f3","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"played","pawn":"d5","origin":"d5","target":null},
+            {"case":"deeper-loss-05005bde92dda02f","branch":"played","pawn":"e5","origin":"e5","target":null},
+            {"case":"deeper-loss-26696b9af37f9b29","branch":"better","pawn":"d5","origin":"d5","target":false},
+            {"case":"deeper-loss-2105d46909b9b2d7","branch":"played","pawn":"c5","origin":"c5","target":null},
+            {"case":"deeper-loss-20c64ec808af4b60","branch":"better","pawn":"h5","origin":"h5","target":false},
+            {"case":"deeper-loss-06f228efc6d8058b","branch":"better","pawn":"g3","origin":"g3","target":null},
+            {"case":"deeper-loss-2b7fe092d9b577c0","branch":"better","pawn":"c3","origin":"c3","target":false},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"better","pawn":"a2","origin":"a2","target":false},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"better","pawn":"a5","origin":"a5","target":false},
+            {"case":"deeper-loss-1bfc7c2717444c9f","branch":"played","pawn":"b4","origin":"b4","target":null},
+            {"case":"deeper-loss-01da3c577aaca039","branch":"played","pawn":"a5","origin":"a5","target":null},
+            {"case":"deeper-loss-0f17702f41ef244a","branch":"played","pawn":"a4","origin":"a2","target":null}
+          ]
+        }
+      },
+      "localizedVersusControls": {
+        "line logistic": {
+          "positiveDifference": 0,
+          "negativeDifference": 0,
+          "eventsImproved": 0
+        },
+        "line tree": {
+          "positiveDifference": 1,
+          "negativeDifference": 0,
+          "eventsImproved": 1
+        },
+        "shallow advance count": {
+          "positiveDifference": -1,
+          "negativeDifference": 1,
+          "eventsImproved": 0
+        },
+        "pawn rank": {
+          "positiveDifference": 2,
+          "negativeDifference": -8,
+          "eventsImproved": 2
+        },
+        "clear file": {
+          "positiveDifference": 1,
+          "negativeDifference": -2,
+          "eventsImproved": 1
+        },
+        "static logistic": {
+          "positiveDifference": 0,
+          "negativeDifference": -1,
+          "eventsImproved": 1
+        },
+        "line + local board planes": {
+          "positiveDifference": 0,
+          "negativeDifference": 1,
+          "eventsImproved": 0
+        },
+        "line + Leela evaluation": {
+          "positiveDifference": 0,
+          "negativeDifference": 0,
+          "eventsImproved": 0
+        },
+        "line + pooled Leela": {
+          "positiveDifference": 0,
+          "negativeDifference": 3,
+          "eventsImproved": 0
+        }
+      }
+    }
+  }
+}
