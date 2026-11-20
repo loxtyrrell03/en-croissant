@@ -1,0 +1,649 @@
+{
+  "cases": 53,
+  "appCandidates": [
+    {
+      "id": "48ff986dfbfdbc28",
+      "label": null,
+      "events": [
+        {
+          "pawn": "h7h6",
+          "pawnSan": "h6",
+          "target": "g5",
+          "displaced": "Rg6",
+          "witness": [
+            "Rg5",
+            "h6",
+            "Rg6",
+            "Bf5",
+            "Rg2",
+            "Bxh3"
+          ],
+          "uci": [
+            "g1g5",
+            "h7h6",
+            "g5g6",
+            "e6f5",
+            "g6g2",
+            "f5h3"
+          ],
+          "through": 6,
+          "twice": true,
+          "alternate": [
+            "Rd2",
+            "Qb7",
+            "Qe3",
+            "Bf7",
+            "Bxf6",
+            "Bxf6"
+          ],
+          "samePush": false
+        }
+      ]
+    },
+    {
+      "id": "09c0edffdbc60768",
+      "label": null,
+      "events": [
+        {
+          "pawn": "b2b3",
+          "pawnSan": "b3",
+          "target": "c4",
+          "displaced": "Na5",
+          "witness": [
+            "Nc4",
+            "b3",
+            "Na5",
+            "Nf4+",
+            "Ke7",
+            "Kc2"
+          ],
+          "uci": [
+            "e5c4",
+            "b2b3",
+            "c4a5",
+            "d5f4",
+            "e6e7",
+            "c1c2"
+          ],
+          "through": 6,
+          "twice": true,
+          "alternate": [
+            "Rh8",
+            "Nf4+",
+            "Ke7",
+            "a4",
+            "Rh1+",
+            "Kc2"
+          ],
+          "samePush": false
+        }
+      ]
+    }
+  ],
+  "deepCandidates": [
+    {
+      "id": "62c447301452132b",
+      "label": null,
+      "events": [
+        {
+          "pawn": "f5f4",
+          "pawnSan": "f4",
+          "target": "e3",
+          "displaced": "Bd4",
+          "witness": [
+            "Be3",
+            "f4",
+            "Bd4",
+            "Re7",
+            "Qd2",
+            "Nc5"
+          ],
+          "uci": [
+            "f4e3",
+            "f5f4",
+            "e3d4",
+            "h7e7",
+            "f2d2",
+            "d7c5"
+          ],
+          "through": 6,
+          "twice": true,
+          "alternate": [
+            "Bh2",
+            "f4",
+            "Bc2",
+            "Re7",
+            "Rxe7",
+            "Nxe7"
+          ],
+          "samePush": true
+        }
+      ]
+    },
+    {
+      "id": "080e50848cde15ca",
+      "label": null,
+      "events": [
+        {
+          "pawn": "b4b5",
+          "pawnSan": "b5",
+          "target": "c6",
+          "displaced": "Nd8",
+          "witness": [
+            "Nc6",
+            "b5",
+            "Nd8",
+            "a4",
+            "g4",
+            "Ba3"
+          ],
+          "uci": [
+            "b8c6",
+            "b4b5",
+            "c6d8",
+            "a3a4",
+            "g5g4",
+            "c1a3"
+          ],
+          "through": 6,
+          "twice": false,
+          "alternate": [
+            "axb4",
+            "axb4",
+            "Qf7",
+            "Nd5",
+            "Kh8",
+            "Nxf6"
+          ],
+          "samePush": false
+        }
+      ]
+    },
+    {
+      "id": "09c0edffdbc60768",
+      "label": null,
+      "events": [
+        {
+          "pawn": "b2b3",
+          "pawnSan": "b3",
+          "target": "c4",
+          "displaced": "Na5",
+          "witness": [
+            "Nc4",
+            "b3",
+            "Na5",
+            "Nf4+",
+            "Ke7",
+            "Kc2"
+          ],
+          "uci": [
+            "e5c4",
+            "b2b3",
+            "c4a5",
+            "d5f4",
+            "e6e7",
+            "c1c2"
+          ],
+          "through": 6,
+          "twice": true,
+          "alternate": [
+            "Rh8",
+            "Nf4+",
+            "Ke7",
+            "Kc2",
+            "g3",
+            "a4"
+          ],
+          "samePush": false
+        }
+      ]
+    },
+    {
+      "id": "111a7965f2365087",
+      "label": null,
+      "events": [
+        {
+          "pawn": "f3f4",
+          "pawnSan": "f4",
+          "target": "e5",
+          "displaced": "Ng4+",
+          "witness": [
+            "Ne5",
+            "f4",
+            "Ng4+",
+            "Kf3",
+            "Rh1",
+            "Rc6+"
+          ],
+          "uci": [
+            "d7e5",
+            "f3f4",
+            "e5g4",
+            "f2f3",
+            "d1h1",
+            "c2c6"
+          ],
+          "through": 6,
+          "twice": true,
+          "alternate": [
+            "Rd5",
+            "Bc6",
+            "Rd6",
+            "Ke2",
+            "Nf8",
+            "Ba4"
+          ],
+          "samePush": false
+        }
+      ]
+    }
+  ],
+  "matchedNaturalControls": [],
+  "diagnosticMatchedReply": [
+    {
+      "id": "48ff986dfbfdbc28",
+      "source": "https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-11/loIX5V6A/nTptoTP5",
+      "event": {
+        "pawn": "h7h6",
+        "pawnSan": "h6",
+        "target": "g5",
+        "displaced": "Rg6",
+        "witness": [
+          "Rg5",
+          "h6",
+          "Rg6",
+          "Bf5",
+          "Rg2",
+          "Bxh3"
+        ],
+        "uci": [
+          "g1g5",
+          "h7h6",
+          "g5g6",
+          "e6f5",
+          "g6g2",
+          "f5h3"
+        ],
+        "through": 6,
+        "twice": true,
+        "alternate": [
+          "Rd2",
+          "Qb7",
+          "Qe3",
+          "Bf7",
+          "Bxf6",
+          "Bxf6"
+        ],
+        "samePush": false
+      },
+      "compared": [
+        {
+          "root": "d1d2",
+          "rootCp": -112,
+          "replies": [
+            {
+              "depth": 21,
+              "cp": 52,
+              "mate": null,
+              "nodes": 1099039,
+              "pvUci": [
+                "h7h6",
+                "f4f5",
+                "e6f7",
+                "f2e3",
+                "f7e8",
+                "e3h6",
+                "e8d7",
+                "h6f4",
+                "f6h5",
+                "f4e3",
+                "h8d4",
+                "e3d4",
+                "d7f5",
+                "c3e4",
+                "e7e5",
+                "d4e3",
+                "f5e4",
+                "e3e4",
+                "c7b6",
+                "e4g6",
+                "h5f6",
+                "g1g3",
+                "d6d5",
+                "g3f3",
+                "e5e4",
+                "f3f5",
+                "b6e3",
+                "f5f6",
+                "f8f6",
+                "g6f6",
+                "e3e1",
+                "b1a2",
+                "e1d2"
+              ],
+              "budget": 1400000,
+              "san": "25. Rd2 h6 26. f5 Bf7 27. Qe3 Be8 28. Qxh6 Bd7 29. Qf4 Nh5"
+            },
+            {
+              "depth": 23,
+              "cp": 55,
+              "mate": null,
+              "nodes": 2326229,
+              "pvUci": [
+                "h7h6",
+                "f4f5",
+                "e6f7",
+                "f2e3",
+                "f7e8",
+                "a3a4",
+                "c7b7",
+                "a4b5",
+                "e8b5",
+                "c3b5",
+                "a6b5",
+                "e3b3",
+                "e4e3",
+                "f1g2",
+                "f6e4",
+                "b3e3",
+                "e4d2",
+                "e3d2",
+                "b7c7",
+                "d4h8",
+                "f8h8",
+                "f5f6",
+                "h8g8"
+              ],
+              "budget": 3200000,
+              "san": "25. Rd2 h6 26. f5 Bf7 27. Qe3 Be8 28. a4 Qb7 29. axb5 Bxb5"
+            }
+          ]
+        },
+        {
+          "root": "g1g5",
+          "rootCp": -263,
+          "replies": [
+            {
+              "depth": 19,
+              "cp": 307,
+              "mate": null,
+              "nodes": 1139935,
+              "pvUci": [
+                "h7h6",
+                "c3b5",
+                "c7b7",
+                "d4a7",
+                "b8a8",
+                "b5d6",
+                "e7d6",
+                "g5a5",
+                "c8c6",
+                "a7e3",
+                "f8c8",
+                "f4f5",
+                "e6f7",
+                "f1b5",
+                "f6d5",
+                "d1d5",
+                "f7d5",
+                "f5f6",
+                "a8b8",
+                "b5c6",
+                "b7c6",
+                "f2d2",
+                "d5c4",
+                "d2d4",
+                "c8c7",
+                "e3f4",
+                "c4f7",
+                "c2c3",
+                "b8c8",
+                "d4d6",
+                "c6d6",
+                "f4d6",
+                "c7d7"
+              ],
+              "budget": 1400000,
+              "san": "25. Rg5 h6 26. Nxb5 Qb7 27. Ba7+ Ka8 28. Nxd6 exd6 29. Ra5 Rc6"
+            },
+            {
+              "depth": 21,
+              "cp": 312,
+              "mate": null,
+              "nodes": 2193581,
+              "pvUci": [
+                "h7h6",
+                "c3b5",
+                "c7b7",
+                "d4a7",
+                "b8a8",
+                "b5d6",
+                "e7d6",
+                "g5a5",
+                "c8c6",
+                "a7d4",
+                "e6c4",
+                "f1c4",
+                "c6c4",
+                "f2d2",
+                "e4e3",
+                "d2e3",
+                "f6d5",
+                "e3b3",
+                "d5c3",
+                "d4c3",
+                "c4c3",
+                "b3d5",
+                "b7d5",
+                "d1d5",
+                "c3c6"
+              ],
+              "budget": 3200000,
+              "san": "25. Rg5 h6 26. Nxb5 Qb7 27. Ba7+ Ka8 28. Nxd6 exd6 29. Ra5 Rc6"
+            }
+          ]
+        }
+      ],
+      "baseline": "unclear",
+      "manualReadback": "counterattack",
+      "note": "The fixed h6 search starts Nxb5 at both depths. The reported immediate rook displacement does not reproduce."
+    },
+    {
+      "id": "09c0edffdbc60768",
+      "source": "https://lichess.org/broadcast/14th-new-york-international-super-swiss/round-9/6OZ7lV9w/Ius0RnrO",
+      "event": {
+        "pawn": "b2b3",
+        "pawnSan": "b3",
+        "target": "c4",
+        "displaced": "Na5",
+        "witness": [
+          "Nc4",
+          "b3",
+          "Na5",
+          "Nf4+",
+          "Ke7",
+          "Kc2"
+        ],
+        "uci": [
+          "e5c4",
+          "b2b3",
+          "c4a5",
+          "d5f4",
+          "e6e7",
+          "c1c2"
+        ],
+        "through": 6,
+        "twice": true,
+        "alternate": [
+          "Rh8",
+          "Nf4+",
+          "Ke7",
+          "a4",
+          "Rh1+",
+          "Kc2"
+        ],
+        "samePush": false
+      },
+      "compared": [
+        {
+          "root": "c8h8",
+          "rootCp": -52,
+          "replies": [
+            {
+              "depth": 23,
+              "cp": 6,
+              "mate": null,
+              "nodes": 1015000,
+              "pvUci": [
+                "b2b3",
+                "e5g6",
+                "d4d2",
+                "e6e5",
+                "c1c2",
+                "e5e4",
+                "d2d4",
+                "e4e5",
+                "d5e3",
+                "g6f4",
+                "e3g4",
+                "e5f5",
+                "g4e3",
+                "f5g5",
+                "d4d7",
+                "h8e8",
+                "c2d2",
+                "g5f6",
+                "c3c4",
+                "b5c4",
+                "b3c4",
+                "e8e6",
+                "a3a4",
+                "e6e4",
+                "d7d6",
+                "f6e5",
+                "d6a6"
+              ],
+              "budget": 1400000,
+              "san": "37...Rh8 38. b3 Ng6 39. Rd2 Ke5 40. Kc2 Kxe4 41. Rd4+ Ke5 42. Ne3"
+            },
+            {
+              "depth": 26,
+              "cp": 0,
+              "mate": null,
+              "nodes": 2912200,
+              "pvUci": [
+                "b2b3",
+                "e5g6",
+                "d4d3",
+                "h8h1",
+                "c1c2",
+                "h1e1",
+                "d3e3",
+                "e1f1",
+                "e3g3",
+                "f1f2",
+                "c2d1",
+                "f2b2",
+                "b3b4",
+                "b2a2",
+                "g3g4",
+                "a2a3",
+                "d1c2",
+                "g6e5",
+                "g4h4",
+                "a3a2",
+                "c2b1",
+                "a2f2"
+              ],
+              "budget": 3200000,
+              "san": "37...Rh8 38. b3 Ng6 39. Rd3 Rh1+ 40. Kc2 Re1 41. Re3 Rf1 42. Rg3"
+            }
+          ]
+        },
+        {
+          "root": "e5c4",
+          "rootCp": -172,
+          "replies": [
+            {
+              "depth": 21,
+              "cp": 181,
+              "mate": null,
+              "nodes": 1160128,
+              "pvUci": [
+                "b2b3",
+                "c4a5",
+                "d5f4",
+                "e6e7",
+                "c1c2",
+                "a5c6",
+                "d4d5",
+                "c6d8",
+                "d5d1",
+                "d8e6",
+                "f4d5",
+                "e7e8",
+                "d1h1",
+                "c8c6",
+                "g5g6",
+                "f7g6",
+                "h1h4",
+                "g4g3",
+                "c2d2",
+                "e6c5"
+              ],
+              "budget": 1400000,
+              "san": "37...Nc4 38. b3 Na5 39. Nf4+ Ke7 40. Kc2 Nc6 41. Rd5 Nd8 42. Rd1"
+            },
+            {
+              "depth": 24,
+              "cp": 179,
+              "mate": null,
+              "nodes": 3200076,
+              "pvUci": [
+                "b2b3",
+                "c4a5",
+                "d5f4",
+                "e6e7",
+                "c1c2",
+                "a5c6",
+                "d4d1",
+                "g7g6",
+                "c2d3",
+                "c6a5",
+                "b3b4",
+                "a5c4",
+                "d1f1",
+                "e7d6",
+                "f4d5",
+                "c8e8",
+                "f1f6",
+                "e8e6",
+                "f6f4",
+                "c4e5",
+                "d3e3",
+                "g4g3",
+                "e3d4",
+                "e5c6",
+                "d4d3",
+                "c6e5",
+                "d3e3"
+              ],
+              "budget": 3200000,
+              "san": "37...Nc4 38. b3 Na5 39. Nf4+ Ke7 40. Kc2 Nc6 41. Rd1 g6 42. Kd3"
+            }
+          ]
+        }
+      ],
+      "baseline": "unclear",
+      "manualReadback": "confirmed",
+      "note": "Both fixed searches after Nc4 b3 choose Na5. Rh8 b3 leaves the original knight on e5 unattacked, and Ng6 starts the stronger continuation."
+    }
+  ],
+  "runtimeDecision": "offline",
+  "repeatableNewDiagnostic": 1,
+  "hashes": {
+    "transfer-app.json": "918fb8ad122a01ff43ede47e564633db5a8ab8c8cbf61c1ddf4d8b3d54e37e59",
+    "transfer-deep.json": "d1048aad949f9c76c90cfce565bb586d811b8ed5df7a7ce3eb22d757a5fcacc4",
+    "control-trial.json": "3dfb028e97c0e728571ef964a61c01574a847d0f0b451bc9b1b33b5e4eec2a26"
+  }
+}

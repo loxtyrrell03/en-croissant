@@ -37,3 +37,30 @@ show the same pawn push, same displaced original piece and control.
 Record incomplete or different search continuations as unresolved.
 Require two verified new explanations on separate event groups before
 considering integration.
+
+## Results
+
+The app-budget search produced two displacement observations, both
+corroborated in its separate reply search. Neither stronger root line
+played the same pawn move. The higher-budget searches produced four
+observations, with one matching displacement from the app budget.
+The strict natural-line test added zero verdicts.
+
+A diagnostic follow-up forced the same pawn move after each root at
+1.4M and 3.2M nodes. At the New York International, `...Nc4 b3 ...Na5`
+repeated. After `...Rh8 b3`, the knight on e5 is safe and the branch
+plays `...Ng6`. The exact manoeuvre supplies one specific explanation
+for an incumbent result of unclear.
+[New York game](https://lichess.org/broadcast/14th-new-york-international-super-swiss/round-9/6OZ7lV9w/Ius0RnrO)
+
+After `Rg5 ...h6` in the Turkish league, both fixed searches instead
+play `Nxb5` before the rook moves. The initial rook retreat was a
+search-dependent response. This comparison shows why the pawn attack
+alone is insufficient evidence of a lost tempo.
+[Turkish league game](https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-11/loIX5V6A/nTptoTP5)
+
+The comparison remains experimental. Use `screen.py` on each saved
+frame set and run `controlled.py APP_FRAMES APP_SCREEN STOCKFISH
+ENGINE_HELPERS OUTPUT` with the defence-after-attack folder as the
+helper path. The [receipt](results.json) includes both controls,
+the exact lines and the frame hashes.

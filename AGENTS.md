@@ -6273,6 +6273,8 @@ Decision Evidence v62 adds the matched reply after the independent mistake proof
 
 The v64 release record at docs/CHESS_DECISION_CLASSIFIER_RELEASE.md consolidates the exact 7a11ac6a worker on 1,051 archived requests, the 124 reviewed course and puzzle decisions, and the 26- and 72-game classical samples. Historical tactical mistakes improve from 10 to 22 of 68, with zero versus one false positive. The 72-game sample remains at zero of 17 mixed positions. The current source regression suite passes 262 tests, with 12 optional benchmark tests skipped, after updating a stale phrase assertion to verify its exact compared lines.
 
+The pawn displacement transfer produces two app-budget observations and no matching natural-line controls. Exact same-push probes confirm one New York knight displacement and find a counterattack instead of the proposed Turkish rook retreat. The rule remains offline. See benchmarks/decision-evidence/pawn-space-displacement.
+
 The pawn displacement study freezes 53 different public classical games across 30 event groups after one retrospective Na4 example. It asks whether the same pawn advance dislodges the original piece after the played move but leaves it safe on its starting square after the better choice. The exact matched deeper control is required before promoting the evidence.
 
 Tactical route explanations now use the verified move and capture description instead of mechanism identifiers. The Chilean Bf2 fixture explains removing the e3 defender before taking on b6. In 1,367 matched requests, 106 descriptions change and the structured explanations, labels and lines remain identical. Browser layouts passed at 320, 390 and 900 pixels.
