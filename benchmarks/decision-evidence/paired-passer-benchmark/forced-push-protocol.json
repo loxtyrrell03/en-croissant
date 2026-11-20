@@ -1,0 +1,12 @@
+{
+  "scope": "Counterfactual playability of the identical immediate pawn push after two defensive root choices. Analyze opposing sixth-rank passers and positions in which the exact push is legal after both choices. This is a separate reference from the archived continuation-outcome test.",
+  "inputs": "Every eligible pair from the frozen 480-game preview, with its original split, pawn and root choices. The screen has no requirement that the original principal variation already showed the pawn moving.",
+  "firstNodes": 500000,
+  "repeatNodes": 2400000,
+  "maxViableRegretCp": 55,
+  "minRefutedRegretCp": 100,
+  "viableThroughPlies": 4,
+  "refutedWithinPlies": 6,
+  "scoring": "From the pawn owner's turn, compare a single best reply search against a separate search restricted to the same legal pawn push. Viable means no more than 55 cp below the best reply and alive through four plies. Refuted means at least 100 cp below the best reply and captured within six plies. The search must report scored exact boards and moves. Mate-valued, shallow incomplete, and intermediate results are uncertain.",
+  "repeat": "Check every opposite-label pair with the same four queries at the higher budget. Only accept an orientation if both budgets repeat it. Review related tactical or positional reasons separately. Compare agreement against the original continuation target, without changing that target."
+}

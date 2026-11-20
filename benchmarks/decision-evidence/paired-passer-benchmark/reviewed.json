@@ -1,0 +1,52 @@
+[
+  {
+    "id": "passer-pair-1704a9c92c320487",
+    "split": "development",
+    "mistake": {"tactical": true, "positional": null},
+    "review": "32...Nd7 allows cxd7, winning the loose knight. 32...Ra1+ forces a reply and leaves the knight available to take the passer. The two depths show the same direct capture. The advance to d7 is also the tactic that takes the knight, so the pawn outcome supplies no separate strategic explanation by itself. The current worker identifies the tactic."
+  },
+  {
+    "id": "passer-pair-0785bc06f20c564d",
+    "split": "development",
+    "mistake": {"tactical": null, "positional": null},
+    "review": "After 40...Bb1 the deeper restricted root and leading reply show d7 and promotion, while another close reply starts Re7+ and the king eventually takes the d-pawn. After 40...Bf5 the king takes it in both searches. Both choices leave Black substantially worse. The original continuation contrast does not repeat."
+  },
+  {
+    "id": "passer-pair-24058c51cfa95ff0",
+    "split": "transfer",
+    "mistake": {"tactical": true, "positional": null},
+    "betterMoveJustification": {"tactical": true, "positional": true},
+    "review": "After 41...Rd4 42.b7 Ne3+ 43.Ke2, the king can take the exposed d5-knight on e3. After 41...Rb2, the rook controls e2 and f2. The same Ne3+ lets the knight survive while Black stops the passer. Taking immediately with 42...Rxb7 would instead allow 43.Rxb7. The rook on the b-file helps hold the passed pawn, with the knight check supplying the required time. The stronger choice and its underlying defence are supported. An independent positional cause for the played move's evaluation loss remains uncertain. The current worker leaves the mistake unclear."
+  },
+  {
+    "id": "passer-pair-03b0bbd727d6f3fb",
+    "split": "transfer",
+    "mistake": {"tactical": null, "positional": null},
+    "betterMoveJustification": {"tactical": true, "positional": true},
+    "review": "50.Kg2 supports the b6 passer by stepping off the third rank. After the same ...Rd6 b7 Rxd3, White can promote immediately after Kg2. After 50.Kf3, Rxd3+ checks and b8=Q is illegal. The immediate advance is refuted, but after Kf3 White still has other strongly favoured continuations. This is an exact tactical dependency of the promotion plan. The effect alone does not show that the played move was a practical tactical mistake. The worker identifies the positional role in position character and leaves the mistake unclear."
+  },
+  {
+    "id": "passer-pair-02efbfff0a2111b5",
+    "split": "development",
+    "mistake": {"tactical": null, "positional": null},
+    "review": "45.Kd1 makes ...c2+ Kxc2 available and the restricted line is approximately even. Against Kd1 Black can play ...Kd4 instead and retain a large advantage. Against 45.Ke3 the ...c2 push is itself strong. This is proof of a changed pawn resource. It gives no explanation of a practical evaluation improvement for White."
+  },
+  {
+    "id": "passer-pair-0aecdcd7dbd1f268",
+    "split": "transfer",
+    "mistake": {"tactical": null, "positional": null},
+    "review": "After 25.Rxd4, ...b2 misses ...Qxd4 and lets White take the pawn with Qxb2. After 25.c5, ...b2 and ...Rxd1+ keep Black winning. The opposite viability labels refer to that exact push. There is also a large material tactic on d4 in the played branch. The passer label does not isolate the root decision's cause."
+  },
+  {
+    "id": "passer-pair-01ead5f3898fcf50",
+    "split": "development",
+    "mistake": {"tactical": null, "positional": null},
+    "review": "After 46.Rb1 the independent higher-budget run finds ...b2 weaker and the pawn is lost later. The capture falls outside the cutoff. The matched MultiPV run recovers an opposite outcome, so the two reference methods disagree. The initial forced-push label stays uncertain."
+  },
+  {
+    "id": "passer-pair-5f4cd6bdcf862cf4",
+    "split": "transfer",
+    "mistake": {"tactical": null, "positional": null},
+    "review": "After 52.Kc1 Black's ...e2 is close to its other losing choices despite White capturing it with Kxe2. After 52.a6 the original superiority of ...e2 does not repeat in the two higher-budget runs. This pair is unsuitable as definite training supervision."
+  }
+]

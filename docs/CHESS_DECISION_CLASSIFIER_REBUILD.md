@@ -4350,3 +4350,22 @@ offline. The unresolved question is whether a larger reviewed set of
 legal same-position alternatives can distinguish strategic contribution
 while controlling for the tactic.
 [Target, comparisons and stronger searches](../benchmarks/decision-evidence/neural-passer-probe/README.md)
+
+
+## Paired decisions with the same passed pawn
+
+The follow-up samples 480 public games from 55 event families and
+compares legal moves which leave the same passer on the board. The
+continuation screen and the direct restricted-push test confirm five
+distinct contrasts at higher budgets. The results are too sparse for
+a separate neural fit. A changed pawn outcome can coexist with the same
+evaluation, or arise from a distinct tactical gain.
+
+Two reviewed transfer games have actionable missed mixed move
+explanations in the pinned worker. In Lugano, the same knight check
+works only when the rook's placement takes away the king flights. In
+Hoogeveen, the same rook capture prohibits immediate promotion only
+when it gives check. The first example also supports a specific
+tactical mistake diagnosis. The second leaves the mistake axis uncertain
+because the played move retains other winning continuations.
+[Paired reference, exact counterfactuals and replay](../benchmarks/decision-evidence/paired-passer-benchmark/README.md)

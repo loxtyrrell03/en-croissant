@@ -1,0 +1,29 @@
+{
+  "seed": "paired-passer-v1",
+  "source": "Retained public Lichess classical broadcasts with a verified manifest time control of at least 60 minutes. At most one decision per game. Disjoint event families, source game signatures and colour-normalized root and reached boards across splits.",
+  "sample": {
+    "development": 320,
+    "transfer": 160,
+    "targetOpponentShare": 0.5,
+    "maxPieces": 20,
+    "ranks": [5, 6]
+  },
+  "pair": "The actual game move and the best eligible distinct candidate among four preview lines. Neither root choice may move or capture the anchor pawn. The pawn must already be passed and retain its square after each move. The eligible alternative must be within 150 cp of the leading preview choice. When no such choice exists abstain. The role of the pawn owner and stronger engine choice is not a label.",
+  "preview": {
+    "rootNodes": 80000,
+    "replyNodes": 52000,
+    "matchedControlPerSplit": 20,
+    "maxNominations": {"development": 48, "transfer": 32},
+    "selection": "Rank a pair higher when more legal preview replies foresee seventh-rank progress on one branch and capture or no progress on the other. Use at most one result per sampled game. Retain twenty uniform hash-order controls per split without either direction of the preview signal."
+  },
+  "reference": {
+    "rootNodes": 1400000,
+    "replyNodes": 1800000,
+    "repeatNodes": 3600000,
+    "closeReplyCp": 80,
+    "horizonPliesAfterRoot": 12,
+    "survivalAfterAdvancePlies": 4
+  },
+  "referencePolicy": "At each candidate board search two replies independently from the forced paired root search. Compare the paired continuation and the leading reply plus the second reply if it is within 80 centipawns of the leader at equal depth. The same pawn must reach seventh or promote and survive through the 12-ply horizon and four plies past that advance. A capture or a stable enemy blockade over its last two turns below seventh is a concrete restraint. A shorter unresolved line, mate-valued comparison or any disagreement remains uncertain. The lines do not establish whether the strategic resource caused the evaluation difference.",
+  "adjudication": "Recheck all confirmed initial contrasts and any other selected pair whose first reference includes both an advance and a restraint somewhere across the opposing branches. Review the exact compared moves and high-budget lines, separately identify any tactical mechanism or positional contribution and leave unsupported parts uncertain. Report all original positives changed at greater resolution. Apparent tactic timing and position character remain separate tasks."
+}

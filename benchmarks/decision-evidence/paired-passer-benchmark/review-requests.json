@@ -1,0 +1,31 @@
+[
+  {
+    "id": "passer-pair-03b0bbd727d6f3fb",
+    "paths": [
+      ["f2f3", "c6d6"],
+      ["f2g2", "c6d6"],
+      ["f2f3", "c6d6", "b6b7"],
+      ["f2g2", "c6d6", "b6b7"],
+      ["f2f3", "c6d6", "b6b7", "d6d3", "b7b8q"],
+      ["f2g2", "c6d6", "b6b7", "d6d3", "b7b8q"]
+    ]
+  },
+  {
+    "id": "passer-pair-24058c51cfa95ff0",
+    "paths": [
+      ["d2d4", "b6b7"],
+      ["d2b2", "b6b7"],
+      ["d2d4", "b6b7", "d5e3"],
+      ["d2b2", "b6b7", "d5e3"],
+      ["d2b2", "b6b7", "b2b7"]
+    ]
+  },
+  {
+    "id": "passer-pair-02efbfff0a2111b5",
+    "paths": [
+      ["e2e3"],
+      ["e2d1"],
+      ["e2d1", "c3c2", "d1c2"]
+    ]
+  }
+]

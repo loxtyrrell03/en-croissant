@@ -1,0 +1,95 @@
+{
+  "inputSha256": {
+    "sample": "afa3ece3f098a740430073f958df0f80b132f912ea9fb96b5149c90abba0e7a1",
+    "preview": "39b1fe383c899227632f935b897bdfc1caeb2d998a946c0ade7192a0231f53d2",
+    "reference": "6c8e5de8206add93b1cfad10341f5839f4a6faebf9d56e1b9f04f3f28317d28b",
+    "adjudication": "438a5a0c57c79b7aa5419d2149437a50bb424a15accbb28934aa40d81ce59088",
+    "forced-first": "7a021237ad112211bfcfc09b21af8035f003e48d767a1512eed7fa23a368d8d7",
+    "forced-deep": "dc26de62c0f836b901bd37fa02e912598718ae29c6b496bcf5d1de3218be9d8d",
+    "forced-matched": "126b10067e13c71bec263ca14cb4917563b6ecb4d86f4af4a4b07a9ae7987e0c"
+  },
+  "splits": {
+    "development": {
+      "games": 320,
+      "events": 36,
+      "preview": {
+        "no-preview-score": 3,
+        "no-pawn-preserving-alternative": 46,
+        "paired": 271
+      },
+      "nominated": 73,
+      "reference": 68,
+      "referenceControls": {
+        "bothKnown": 3,
+        "contrast": 0
+      },
+      "referenceOpposite": {
+        "passer-pair-1704a9c92c320487": 0,
+        "passer-pair-0785bc06f20c564d": 0
+      },
+      "recheckedReference": 16,
+      "strongerOpposite": {
+        "passer-pair-1704a9c92c320487": 0
+      },
+      "repeatedOpposite": {
+        "passer-pair-1704a9c92c320487": 0
+      },
+      "forcedPairs": 38,
+      "forcedOpposite": {
+        "passer-pair-02efbfff0a2111b5": 0,
+        "passer-pair-01ead5f3898fcf50": 1
+      },
+      "forcedOppositeRepeated": {
+        "passer-pair-02efbfff0a2111b5": 0
+      },
+      "forcedOppositeMatched": {
+        "passer-pair-02efbfff0a2111b5": 0,
+        "passer-pair-01ead5f3898fcf50": 1
+      },
+      "forcedStable": {
+        "passer-pair-02efbfff0a2111b5": 0
+      },
+      "overlapOfDefiniteTargets": []
+    },
+    "transfer": {
+      "games": 160,
+      "events": 19,
+      "preview": {
+        "paired": 140,
+        "no-pawn-preserving-alternative": 20
+      },
+      "nominated": 50,
+      "reference": 52,
+      "referenceControls": {
+        "bothKnown": 3,
+        "contrast": 0
+      },
+      "referenceOpposite": {
+        "passer-pair-24058c51cfa95ff0": 0
+      },
+      "recheckedReference": 9,
+      "strongerOpposite": {
+        "passer-pair-24058c51cfa95ff0": 0,
+        "passer-pair-03b0bbd727d6f3fb": 1
+      },
+      "repeatedOpposite": {
+        "passer-pair-24058c51cfa95ff0": 0
+      },
+      "forcedPairs": 20,
+      "forcedOpposite": {
+        "passer-pair-5f4cd6bdcf862cf4": 1,
+        "passer-pair-0aecdcd7dbd1f268": 1
+      },
+      "forcedOppositeRepeated": {
+        "passer-pair-0aecdcd7dbd1f268": 1
+      },
+      "forcedOppositeMatched": {
+        "passer-pair-0aecdcd7dbd1f268": 1
+      },
+      "forcedStable": {
+        "passer-pair-0aecdcd7dbd1f268": 1
+      },
+      "overlapOfDefiniteTargets": []
+    }
+  }
+}
