@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import archive from "../current-classifier-audit/replay.config.mjs";
 
@@ -18,4 +19,10 @@ const guard = {
 export default {
   ...archive,
   plugins: process.env.RAY_EXCHANGE_GUARD ? [guard, ...archive.plugins] : archive.plugins,
+  test: {
+    ...archive.test,
+    include: process.env.RAY_INPUT
+      ? [fileURLToPath(new URL("./candidate.bench.ts", import.meta.url)).replaceAll("\\", "/")]
+      : archive.test.include,
+  },
 };
