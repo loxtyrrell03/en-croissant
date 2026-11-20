@@ -1,0 +1,136 @@
+{
+  "holdout": {
+    "cases": 69,
+    "stationary": {
+      "tp": 11,
+      "fp": 0,
+      "fn": 22,
+      "tn": 24,
+      "uncertain": 4,
+      "excluded": 8,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "tracked": {
+      "tp": 16,
+      "fp": 0,
+      "fn": 17,
+      "tn": 24,
+      "uncertain": 4,
+      "excluded": 8,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "positiveReportsWithTacticalSupport": {
+      "before": 29,
+      "after": 30
+    },
+    "newVerified": [
+      "A8SO3"
+    ],
+    "newContradictions": [],
+    "changes": [
+      "A8SO3"
+    ],
+    "timingMs": {
+      "before": 213.73,
+      "after": 219.07
+    }
+  },
+  "replication": {
+    "cases": 130,
+    "stationary": {
+      "tp": 16,
+      "fp": 0,
+      "fn": 37,
+      "tn": 54,
+      "uncertain": 8,
+      "excluded": 15,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "tracked": {
+      "tp": 27,
+      "fp": 0,
+      "fn": 26,
+      "tn": 54,
+      "uncertain": 8,
+      "excluded": 15,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "positiveReportsWithTacticalSupport": {
+      "before": 38,
+      "after": 44
+    },
+    "newVerified": [
+      "Fe9Vv",
+      "GcBsy",
+      "DVspi",
+      "F6vdw",
+      "Fx72N",
+      "C53eL"
+    ],
+    "newContradictions": [],
+    "changes": [
+      "Fe9Vv",
+      "GcBsy",
+      "DVspi",
+      "F6vdw",
+      "Fx72N",
+      "C53eL"
+    ],
+    "timingMs": {
+      "before": 180.47,
+      "after": 179.63
+    }
+  },
+  "classical": {
+    "cases": 77,
+    "stationary": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 11,
+      "uncertain": 0,
+      "excluded": 66,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "tracked": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 11,
+      "uncertain": 0,
+      "excluded": 66,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "positiveReportsWithTacticalSupport": {
+      "before": 0,
+      "after": 0
+    },
+    "newVerified": [],
+    "newContradictions": [],
+    "changes": [],
+    "timingMs": {
+      "before": 71.82,
+      "after": 75.31
+    }
+  },
+  "archivedGames": {
+    "requests": 1051,
+    "valid": 1050,
+    "medianMs": {
+      "baseline": 62.22,
+      "candidate": 62.41
+    },
+    "p95Ms": {
+      "baseline": 386.83,
+      "candidate": 393.05
+    },
+    "assessmentChangesApartFromVersion": 0
+  },
+  "additionalEngineSearches": 0
+}

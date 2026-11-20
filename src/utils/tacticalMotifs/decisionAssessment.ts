@@ -46,6 +46,7 @@ import {
     type DecisionConditionalMate,
 } from "./conditionalDecisionResources";
 import { compareExposedForcingAttack } from "./decisionForcingConsequence";
+import { compareOpenedCheckingAttack } from "./decisionOpenedCheckingAttack";
 import {
     compareTacticalRecovery,
     corroborateRecoveryReply,
@@ -79,7 +80,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 33;
+export const DECISION_ASSESSMENT_VERSION = 34;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -929,7 +930,10 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             const betterProbe = input.replyProbes?.find(
                 (item) => item.moveUci === comparedBest.pvUci[0],
             );
-            if (corroboratingReply(input.fen, playedLine, playedProbe)) {
+            const playedCorroborated = corroboratingReply(input.fen, playedLine, playedProbe);
+            const betterCorroborated = corroboratingReply(input.fen, comparedBest, betterProbe);
+            const corroboratedChoices = playedCorroborated && betterCorroborated;
+            if (playedCorroborated) {
                 const opponent = playedProbe!.lines[0];
                 const playedBranch = measureDecisionLine(input.fen, {
                     ...opponent,
@@ -987,10 +991,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                             opponent,
                             input.sharedReply,
                         );
-                if (
-                    tacticalEpisode?.kind !== "trap" &&
-                    corroboratingReply(input.fen, comparedBest, betterProbe)
-                )
+                if (tacticalEpisode?.kind !== "trap" && betterCorroborated)
                     tacticalEpisode =
                         compareExposedPieceTrap(
                             input.fen,
@@ -1076,6 +1077,24 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     basis: "engine-supported",
                     reasons: [recovery.explanation],
                 };
+            if (assessment.tactical.support !== "supported" && corroboratedChoices) {
+                const opened = compareOpenedCheckingAttack(
+                    input.fen,
+                    comparedBest,
+                    playedLine,
+                    betterProbe!.lines[0],
+                    playedProbe!.lines[0],
+                    input.history,
+                );
+                if (opened) {
+                    tacticalEpisode = opened;
+                    assessment.tactical = {
+                        support: "supported",
+                        basis: "engine-supported",
+                        reasons: [opened.explanation],
+                    };
+                }
+            }
             // Compare this particular played choice, not a different alternative.
             const factors = comparePositionalTransitions(input.fen, comparedBest, [playedLine]);
             const lostOutpost = compareLostOutpost(input.fen, comparedBest, playedLine);
@@ -1107,9 +1126,6 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                               ),
                       )
                     : [];
-            const corroboratedChoices =
-                corroboratingReply(input.fen, comparedBest, betterProbe) &&
-                corroboratingReply(input.fen, playedLine, playedProbe);
             const shelter = corroboratedChoices
                 ? compareLostKingShelter(
                       input.fen,

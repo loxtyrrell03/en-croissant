@@ -3803,3 +3803,23 @@ the trial's same-exchange comparison. Both trials remain offline.
 The replay uses complete exact Stockfish frames, includes the current
 worker, and separates initial collection defects from the scored run.
 [Benchmark, witness and reproduction](../benchmarks/decision-evidence/mixed-exchange-defence/README.md)
+
+## Checking forks that follow an opened line
+
+Decision assessment v34 follows an original piece through the
+opening move and early recaptures. If an opposing rook, bishop or
+queen uses the cleared square to give check and take that piece,
+the worker can explain the mechanism. It requires the take in both
+weaker searches, a legal local gain, and a stronger choice that
+prevents the entry or the preceding exchange. Existing tactical
+assessments keep their established explanation.
+
+The tracked variant verifies 43 of 86 positives across two fresh
+puzzle samples. The stationary-target trial verifies 27. Both make
+zero false calls across 78 reviewed negatives. In the full worker,
+tactical support on those 86 rises from 67 to 74. The control set of
+77 classical games has no verified positives for the scoped mechanism.
+No positions, move assessments, positional mistake evidence, or
+evaluation losses change in the matched replay. The app uses the
+existing searches.
+[Benchmark, source examples and replay](../benchmarks/decision-evidence/opened-checking-forks/README.md)

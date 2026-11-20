@@ -1,0 +1,372 @@
+{
+  "gate": {
+    "baseline": "b778ee8b",
+    "arms": [
+      "stationary original-piece approach",
+      "original-piece tracking with exact earlier recapture prevention"
+    ],
+    "promotion": "At least two independent reviewed positive mistakes newly supported by the real decision worker, zero contradictory new explanations, no position, move or score changes apart from version, and zero additional Stockfish searches.",
+    "scope": "An early direct or post-exchange slider check uses a necessary vacated square, threatens an original non-pawn target, and collects it with a comparative material consequence."
+  },
+  "armDigestsBeforeOpeningPredictions": {
+    "decisionOpenedCheckingAttack.ts": "99008879ae321a5aa9f700888c432e74351f011dea4dc2c7b7c7dde94257b17a",
+    "firstAttack.ts": "0031455bfbec9960e3758f455b825990520b921bbb582802a566312a1e4fdb78",
+    "test-puzzles-engine-sample.json": "364d5195098af16ca211836a1e6a4d7662a989427744eab15f8d36a1d8f11d4f"
+  },
+  "independentPuzzles": {
+    "url": "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+    "headers": {
+      "ETag": "\"6ae6f0f4-12766d85\"",
+      "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT",
+      "Content-Length": "309751173"
+    },
+    "skip": 550000,
+    "limit": 1025000,
+    "populations": {
+      "control": 4980,
+      "direct": 120,
+      "exchange": 13
+    },
+    "seed": "opened-forcing-line-b778ee8b-20261120",
+    "selected": {
+      "exchange": 13,
+      "direct": 28,
+      "control": 28
+    }
+  },
+  "engineSettings": {
+    "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+    "threadsPerEngine": 1,
+    "hashMiB": 48,
+    "rootNodes": 600000,
+    "pairNodes": 1200000,
+    "replyNodes": 900000,
+    "samples": 69,
+    "wallSeconds": 40.0,
+    "sha256": "9c91bde2df6739949c6446c96cfac3bae9357fc3092068bf3473529ed21a4c19"
+  },
+  "referenceBeforePredictionsSha256": "59c91bd45d3eb910d7cbb2bc4ee0c8e3845fad1a056d445aa3f06bc5fe1cb1fa",
+  "classicalRecorded": {
+    "events": {
+      "european-u18": {
+        "broadcast": "european-youth-chess-championship-2026-o18/round-1/2tU2wSOU",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "BdhcUgFK",
+            "name": "Round 5",
+            "bytes": 55334,
+            "sha256": "9ec7175ba25e0dea0c48ffec5aa041ac654ba02a93476f1dd0481542ac9856d6"
+          },
+          {
+            "id": "B7IXGP6j",
+            "name": "Round 6",
+            "bytes": 51875,
+            "sha256": "32410a88618da99a6460c201ade5b9cc832ec0c8c841e3712cfa8de100071c8b"
+          },
+          {
+            "id": "wPuQwJhf",
+            "name": "Round 7",
+            "bytes": 46573,
+            "sha256": "ede67ee128b2795f7d96c7f8b9ca1b2d7638916894ea8549586d82c618e13c75"
+          },
+          {
+            "id": "5RW36VYt",
+            "name": "Round 8",
+            "bytes": 52026,
+            "sha256": "bcdbd1e92bae0c3caa874e3e5fa9f2e681ae9bd01323cb2aa4ae5bee2a6e1e7c"
+          },
+          {
+            "id": "V2RevI54",
+            "name": "Round 9",
+            "bytes": 47330,
+            "sha256": "e8debb74de3c6c02bf75b39cf29cc7560b6f8e259a71838e653f70a79af035e6"
+          }
+        ],
+        "title": "European Youth Chess Championship 2026 | O18"
+      },
+      "lugano": {
+        "broadcast": "xix-international-chess-open-lugano-standard/round-1/r2h3ZELp",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "r2h3ZELp",
+            "name": "Round 1",
+            "bytes": 40832,
+            "sha256": "c3f0f1a1cad61550b8aa34c57e9a48f85430475377555c86e1c429763bef26da"
+          },
+          {
+            "id": "cm86huLi",
+            "name": "Round 2",
+            "bytes": 43990,
+            "sha256": "3bfaf1b40e51f5401d950505384def8f1fcca8f5d4af7ab102a7512cde249aaa"
+          },
+          {
+            "id": "abEFG0bZ",
+            "name": "Round 3",
+            "bytes": 44577,
+            "sha256": "55e01cc1038269202bf2ce2ab54408ffc1a1728031e6d0562382b6301327eb1a"
+          },
+          {
+            "id": "Dd8X3Smq",
+            "name": "Round 4",
+            "bytes": 43250,
+            "sha256": "37e15624474830545bd124ca67a3bae23bda7c96c38bb584eccb4943066d6bcd"
+          }
+        ],
+        "title": "XIX INTERNATIONAL CHESS OPEN LUGANO | Standard"
+      },
+      "cap-negret": {
+        "broadcast": "iv-open-internacional-de-ajedrez-cap-negret-50/round-1/Yom7Kgag",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "AntdWAjU",
+            "name": "Round 5",
+            "bytes": 30220,
+            "sha256": "e3ec52d257097e93d2fe7e63426a8362abf8ba161245693d54568ba8fafaea19"
+          },
+          {
+            "id": "vaVmzkCl",
+            "name": "Round 6",
+            "bytes": 40032,
+            "sha256": "776e154e45c5950cacfa13e25d6da120cfdfb6990e9aaadeaecd06aa790c5578"
+          },
+          {
+            "id": "631m5hs0",
+            "name": "Round 7",
+            "bytes": 38003,
+            "sha256": "4296ede36faf7122f6fbaa4bb2cf17d88979167ea455b2d4674c39a8c90af971"
+          },
+          {
+            "id": "OfeclmgF",
+            "name": "Round 8",
+            "bytes": 40709,
+            "sha256": "7743ef5c699ab16a5123a13c998b1a826229f82e2b5b2dcc764709f6c0486d59"
+          },
+          {
+            "id": "TlBNXksC",
+            "name": "Round 9",
+            "bytes": 38380,
+            "sha256": "2f97d47e89b3dbc0abdb2e8a297e34ca7a04e6fa44c3b7f61d6b3105886de713"
+          }
+        ],
+        "title": "IV OPEN INTERNACIONAL DE AJEDREZ CAP NEGRET | 50+"
+      },
+      "tajikistan": {
+        "broadcast": "2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a/round-1/a5VSQRyk",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "oiZfr0vH",
+            "name": "Round 5",
+            "bytes": 122315,
+            "sha256": "d50fc6d5ec045d605340251a5dd68a155fce732a5f90d8bd19e39cb67770355e"
+          },
+          {
+            "id": "ks5IDx73",
+            "name": "Round 6",
+            "bytes": 106693,
+            "sha256": "c6b72bd4cd59acc1055e11e3ae53409f82fed122b433ad2282a52059b19db189"
+          },
+          {
+            "id": "f7e6MwdC",
+            "name": "Round 7",
+            "bytes": 127310,
+            "sha256": "4f24511876d5337a1d2dead923facd44fde92f08912c33edf19c266aabbdc008"
+          },
+          {
+            "id": "H3ikp0of",
+            "name": "Round 8",
+            "bytes": 121521,
+            "sha256": "11e8e473dbc1410b3eea5f7336de740425da831439f31d043c2412d6bf2c2ae8"
+          },
+          {
+            "id": "k1sfVi4t",
+            "name": "Round 9",
+            "bytes": 126343,
+            "sha256": "7d169675ce55fa6770fbeaa74a440a244bc884fee766aa0b0336100d045a4f03"
+          }
+        ],
+        "title": "2nd President\u2019s Cup of the Republic of Tajikistan 2026 | Group A"
+      },
+      "misamis": {
+        "broadcast": "misamis-occidental-philippines-international-chess-championship/round-1/kP0v8thk",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "45eT7QdF",
+            "name": "Round 5",
+            "bytes": 54130,
+            "sha256": "cdc2ccd50bb7d61fea1d6fb26b5f54ae9dd23a9c658da1577eb3c48822b424ce"
+          },
+          {
+            "id": "8FX4xfq8",
+            "name": "Round 6",
+            "bytes": 43108,
+            "sha256": "f89183ad31370ae10afcfbea740af121eae56c6a898df79de3578b489c8cc525"
+          },
+          {
+            "id": "eqbjJSLO",
+            "name": "Round 7",
+            "bytes": 40987,
+            "sha256": "a89e2c59dc78fbfe39cb9ee3b278ca35780e8515d947436eea90120ed7987e81"
+          },
+          {
+            "id": "fE7yhPKg",
+            "name": "Round 8",
+            "bytes": 51313,
+            "sha256": "7ddf8b9db9f3fc0cd2c5f8a42ca94efb0744520e7e54ecdb34accb4102400861"
+          },
+          {
+            "id": "YVADZSNp",
+            "name": "Round 9",
+            "bytes": 45319,
+            "sha256": "9685e24341c10614f7a48b219f99fe4c1b631dac9bc4ac1da1fdd63df12a85a9"
+          }
+        ],
+        "title": "Misamis Occidental Philippines International Chess Championship"
+      },
+      "intercolegiados": {
+        "broadcast": "juegos-intercolegiados-nacionales-2026-clasico-juvenil-absoluto/round-1/4CXeIOvs",
+        "tc": "60 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "xFfAvZYr",
+            "name": "Round 3",
+            "bytes": 77443,
+            "sha256": "d588280f44bc190aa6eca322a06b2ec9499ad051eacde3dd9e8d4a19aa20b374"
+          },
+          {
+            "id": "xOip1yj1",
+            "name": "Round 4",
+            "bytes": 70097,
+            "sha256": "70b3058e6d581c36903fa4aafc95a83a645cadd918cd83d12b367502539b2f23"
+          },
+          {
+            "id": "kcxT7m9O",
+            "name": "Round 5",
+            "bytes": 62859,
+            "sha256": "c0ebcdcfbaaa260452da61e272d65f91f6fe6df953a6c61e78350a4e6d60f1ac"
+          },
+          {
+            "id": "lEr9QiWP",
+            "name": "Round 6",
+            "bytes": 79909,
+            "sha256": "72fbdcb006a3ccc9a68a1accf34eb28bdec4841cba0f67f8e397bf7537af13e2"
+          },
+          {
+            "id": "gVU4MrDa",
+            "name": "Round 7",
+            "bytes": 74181,
+            "sha256": "473987f8e0114a25151e785ca88725d9bb25bb9c5c1e41eaf36e59eb7aebe224"
+          }
+        ],
+        "title": "Juegos Intercolegiados Nacionales 2026 | Clasico Juvenil Absoluto"
+      },
+      "oberliga-baden": {
+        "broadcast": "oberliga-baden-202627/round-3/spdi3HMW",
+        "tc": "100 min / 40 moves + 50 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "rJo68ZdK",
+            "name": "Round 2",
+            "bytes": 29692,
+            "sha256": "f8879030c2de272e242edbea724ba34231269afd1700940712a87598f3829246"
+          },
+          {
+            "id": "spdi3HMW",
+            "name": "Round 3",
+            "bytes": 36287,
+            "sha256": "eb7a367054e8037d8afa96546af74a465cd9c60a6043b259889f0d8fda6c02eb"
+          }
+        ],
+        "title": "Oberliga Baden 2026/27"
+      }
+    },
+    "games": {
+      "european-u18": 50,
+      "lugano": 40,
+      "cap-negret": 40,
+      "tajikistan": 125,
+      "misamis": 1,
+      "intercolegiados": 80,
+      "oberliga-baden": 16
+    },
+    "populations": {
+      "control": 74,
+      "direct": 1,
+      "exchange": 0
+    },
+    "seed": "opened-forcing-line-b778ee8b-20261120",
+    "selected": {
+      "direct": 1,
+      "control": 28
+    }
+  },
+  "classicalLegal": {
+    "games": {
+      "european-u18": 46,
+      "lugano": 37,
+      "cap-negret": 37,
+      "tajikistan": 116,
+      "misamis": 1,
+      "intercolegiados": 71,
+      "oberliga-baden": 15
+    },
+    "populations": {
+      "legal-direct": 289,
+      "legal-exchange": 102
+    },
+    "chosen": {
+      "legal-exchange": 24,
+      "legal-direct": 24
+    },
+    "seed": "opened-forcing-line-b778ee8b-20261120"
+  },
+  "referenceReplyNodeBudget": 1700000,
+  "replication": {
+    "sampling": {
+      "url": "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+      "headers": {
+        "ETag": "\"6ae6f0f4-12766d85\"",
+        "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT",
+        "Content-Length": "309751173"
+      },
+      "skip": 1025000,
+      "limit": 1800000,
+      "populations": {
+        "control": 8232,
+        "direct": 195,
+        "exchange": 22
+      },
+      "seed": "opened-forcing-line-b778ee8b-20261120",
+      "selected": {
+        "exchange": 22,
+        "direct": 54,
+        "control": 54
+      }
+    },
+    "engineSettings": {
+      "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "threadsPerEngine": 1,
+      "hashMiB": 48,
+      "rootNodes": 600000,
+      "pairNodes": 1200000,
+      "replyNodes": 900000,
+      "samples": 130,
+      "wallSeconds": 75.6,
+      "sha256": "83b5c9f98c4e6e15eac655dd842dae2d1397ab6ff1d23c2129e2822e776c4ade"
+    },
+    "referenceBeforePredictionsSha256": "8a9398c1acffadd13154a424ada0db812e30a3490723c9f857ed8865298c7163"
+  },
+  "publicInputsSha256": {
+    "examples.json": "ad13cb118a1f156e237af5d5e4fca269637b57874c453346c30ef529d5b9ec69",
+    "reserve.json": "26728c93189418d91e19dcb6a4cf96ff9218705eb3fa19817caaa08e05a36438",
+    "reference.json": "31368245b432b2d1fe8268b0ea583db3dc297fbf3e3c67c327a2f0751c205747",
+    "replication.json": "d48a4e6f30381ec5dabb7e957a068604972c057e12692efc75c50b0fd2e70736",
+    "replication-reference.json": "d6732ed54dc4c0590a8a288ad1e9a40b99bb4339f58cd0633f0afc4cf25547f7",
+    "classical.json": "5dd1d8054b306749eaed76653c3e7b8a76d07913c6b8aea1413902c604e420f7",
+    "classical-reference.json": "77ad537ec50cd731f23f5a2dea6f582d5376b863583b4c92da972947dd29c612"
+  }
+}
