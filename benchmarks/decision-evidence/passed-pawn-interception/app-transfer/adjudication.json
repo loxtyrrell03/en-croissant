@@ -1,0 +1,13 @@
+{
+  "id": "classical-transfer-e78439f0ee51e12c",
+  "frozenStatus": "yes",
+  "reviewedStatus": "no",
+  "afterOutput": true,
+  "rationale": "In both stronger continuations Bxa8 Rxa8 spends a bishop on the original a5 pawn after it has promoted. The promoted piece contributes no earned material to that comparison. Before the later Kxh4 the decision still trades a bishop for a pawn, just as Bxa7 Rxa7 does after g5. The two lines differ in counterplay, but the claim of a newly costly pawn interception is not established.",
+  "betterSequences": [
+    "a8=R Bxa8 Rxa8 Kxh4",
+    "a8=B Bxa8 Rxa8 Kxh4"
+  ],
+  "playedSequence": "Bxa7 Rxa7",
+  "promotionAdjustedTradeCost": 230
+}

@@ -1,0 +1,521 @@
+{
+  "baseline": "07b48ba8435443c9cc1c4e252d1b83f4f26027d1",
+  "stockfish": "19",
+  "reviewReplyNodes": 2400000,
+  "reviewAlternativeNodes": 1650000,
+  "scope": "Distinct costly interception of an original advanced opponent pawn after the actual played choice.",
+  "priorInputs": "The first 333 source records and their labels live one level up; frozen references reused as development and regression evidence.",
+  "sets": {
+    "annotated": {
+      "sampling": {
+        "seed": "annotated-passer-cost-07b48ba8-20261120",
+        "sources": {
+          "1-aberto-do-brasil-de-xadrez-arcelormittal": {
+            "title": "1\u00ba ABERTO DO BRASIL DE XADREZ ARCELORMITTAL",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/1-aberto-do-brasil-de-xadrez-arcelormittal/round-1/pRRfMmKu"
+          },
+          "1-vechta-open-a-open": {
+            "title": "1. Vechta Open | A-Open",
+            "timeControl": "90 Min / 40 Z\u00fcge + 15 Min Rest + 30 sec. pro Zug",
+            "broadcast": "https://lichess.org/broadcast/1-vechta-open-a-open/round-1/zQKqXSHx"
+          },
+          "20-int-deizisauer-herbstopen-2026": {
+            "title": "20. Int. Deizisauer Herbstopen 2026",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/20-int-deizisauer-herbstopen-2026/round-1/NfanDDn2"
+          },
+          "2025-british-chess-championships-championship": {
+            "title": "2025 British Chess Championships | Championship",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/2025-british-chess-championships-championship/round-1/Rus7vgww"
+          },
+          "2026-fall-nyc-chess-norms": {
+            "title": "2026 Fall NYC Chess Norms",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/2026-fall-nyc-chess-norms/round-5/r5CWl5Pd"
+          },
+          "2026-marshall-premier-fide-november": {
+            "title": "2026 Marshall Premier FIDE | November",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/2026-marshall-premier-fide-november/round-1/iz7YUrIF"
+          },
+          "23rd-calvia-chess-festival-2026": {
+            "title": "23rd Calvia Chess Festival 2026",
+            "timeControl": "90 min/40 moves + 15 min + 30-sec increment from move 1",
+            "broadcast": "https://lichess.org/broadcast/23rd-calvia-chess-festival-2026/round-1/xg15NIun"
+          },
+          "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a": {
+            "title": "2nd Belt and Road China International Chess Open (Bengbu, Anhui) 2026 Group A",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a/round-1/nJcBDmFE"
+          },
+          "2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a": {
+            "title": "2nd President\u2019s Cup of the Republic of Tajikistan 2026 | Group A",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a/round-1/a5VSQRyk"
+          },
+          "31st-abu-dhabi-international-chess-festival-masters": {
+            "title": "31st Abu Dhabi International Chess Festival | Masters",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/31st-abu-dhabi-international-chess-festival-masters/round-1/lTgYQkNI"
+          },
+          "36th-nato-chess-championship-2026": {
+            "title": "36th NATO Chess Championship 2026",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/36th-nato-chess-championship-2026/round-1/vG0ow95j"
+          },
+          "43-munsterland-open-34-challengers-2026-a-open": {
+            "title": "43. M\u00fcnsterland Open / 34. Challengers 2026 - A-Open",
+            "timeControl": "90min/40moves + 30s/move + 30min/all",
+            "broadcast": "https://lichess.org/broadcast/43-munsterland-open-34-challengers-2026-a-open/runde-1/gxdiQyXE"
+          },
+          "51st-indian-womens-chess-championship-2025": {
+            "title": "51st Indian Women's Chess Championship 2025",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/51st-indian-womens-chess-championship-2025/round-1/TkAUKLnN"
+          },
+          "allsvenskan-2627-swedish-team-championship": {
+            "title": "Allsvenskan 26/27 (Swedish Team Championship)",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/allsvenskan-2627-swedish-team-championship/round-1/gYL8PpMJ"
+          },
+          "amsterdam-chess-open-2026-group-a": {
+            "title": "Amsterdam Chess Open 2026 - Group A",
+            "timeControl": "90 min + 30 sec/move",
+            "broadcast": "https://lichess.org/broadcast/amsterdam-chess-open-2026-group-a/round-1/flVz3NAx"
+          },
+          "aq-prime-international-open-chess-championship": {
+            "title": "AQ Prime International Open Chess Championship",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/aq-prime-international-open-chess-championship/round-1/wVLqrDpX"
+          },
+          "atyrau-open-2026-masters": {
+            "title": "Atyrau Open 2026 | Masters",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/atyrau-open-2026-masters/round-1/c9M0wOWT"
+          },
+          "benidorm-chess-open-2026-group-a": {
+            "title": "Benidorm Chess Open 2026 | Group A",
+            "timeControl": "90 min + 30 sec",
+            "broadcast": "https://lichess.org/broadcast/benidorm-chess-open-2026-group-a/round-2/oQe9K0D6"
+          },
+          "brazil-chess-series-masters-blumenau-2026": {
+            "title": "Brazil Chess Series Masters | Blumenau 2026",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/brazil-chess-series-masters-blumenau-2026/round-1/oinbA9PR"
+          },
+          "campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships": {
+            "title": "Campeonato de Espa\u00f1a Individual Absoluto y Femenino 2025 (Spanish Championships)",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships/round-1/s9Im6L2z"
+          },
+          "campeonato-sudamericano-montevideo-2026-absoluto": {
+            "title": "Campeonato Sudamericano Montevideo 2026 | Absoluto",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/campeonato-sudamericano-montevideo-2026-absoluto/round-4/mOeB3OzO"
+          },
+          "cascade-open-2026": {
+            "title": "Cascade Open 2026",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/cascade-open-2026/round-1/SQSpa3NH"
+          },
+          "chessfestival-groningen-2025-open-a": {
+            "title": "Chessfestival Groningen 2025 | Open A",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec/move",
+            "broadcast": "https://lichess.org/broadcast/chessfestival-groningen-2025-open-a/round-1/wK7xPNxp"
+          },
+          "cork-congress-2026-masters-1825": {
+            "title": "Cork Congress 2026 | Masters (1825+)",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/cork-congress-2026-masters-1825/round-1/6jT7GvmT"
+          },
+          "dutch-meesterklasse-2026-2027": {
+            "title": "Dutch Meesterklasse 2026-2027",
+            "timeControl": "90min/40moves + 30min + 30sec/move",
+            "broadcast": "https://lichess.org/broadcast/dutch-meesterklasse-2026-2027/round-2/7JGlrr4D"
+          },
+          "european-youth-chess-championship-2026-o18": {
+            "title": "European Youth Chess Championship 2026 | O18",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/european-youth-chess-championship-2026-o18/round-1/2tU2wSOU"
+          },
+          "fagernes-international-autumn-2026-gm": {
+            "title": "Fagernes International Autumn 2026 | GM",
+            "timeControl": "100 min / 40 moves + 40 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/fagernes-international-autumn-2026-gm/round-1/OXXd2D8A"
+          },
+          "fide-world-senior-championship-2025-open-65": {
+            "title": "FIDE World Senior Championship 2025 | Open 65+",
+            "timeControl": "90 min / 40 move + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/fide-world-senior-championship-2025-open-65/round-1/Cb9z7AQN"
+          },
+          "german-bundesliga-202627-schachbundesliga": {
+            "title": "German Bundesliga 2026/27 (Schachbundesliga)",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/german-bundesliga-202627-schachbundesliga/round-4/LHHlsufz"
+          },
+          "hong-kong-international-open-chess-championship-2025-open": {
+            "title": "Hong Kong International Open Chess Championship 2025 | Open",
+            "timeControl": "90 min + 30 sec",
+            "broadcast": "https://lichess.org/broadcast/hong-kong-international-open-chess-championship-2025-open/round-1/zCDW4I8p"
+          },
+          "hoogeveen-open-2026": {
+            "title": "Hoogeveen Open 2026",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/hoogeveen-open-2026/round-1/9PuO5RHI"
+          },
+          "icelandic-team-chess-championships-202627-premier-league": {
+            "title": "Icelandic Team Chess Championships 2026/27 - Premier League",
+            "timeControl": "90 min + 30 sec 40/15",
+            "broadcast": "https://lichess.org/broadcast/icelandic-team-chess-championships-202627-premier-league/round-1/iztO0dly"
+          },
+          "iv-open-internacional-de-ajedrez-cap-negret-50": {
+            "title": "IV OPEN INTERNACIONAL DE AJEDREZ CAP NEGRET | 50+",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/iv-open-internacional-de-ajedrez-cap-negret-50/round-1/Yom7Kgag"
+          },
+          "iv-sunway-formentera-international-chess-festival-group-a": {
+            "title": "IV Sunway Formentera International Chess Festival | Group A",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/iv-sunway-formentera-international-chess-festival-group-a/round-1/D69TguAb"
+          },
+          "juegos-intercolegiados-nacionales-2026-clasico-juvenil-absoluto": {
+            "title": "Juegos Intercolegiados Nacionales 2026 | Clasico Juvenil Absoluto",
+            "timeControl": "60 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/juegos-intercolegiados-nacionales-2026-clasico-juvenil-absoluto/round-1/4CXeIOvs"
+          },
+          "lebanese-open-chess-championship-2026": {
+            "title": "Lebanese Open Chess Championship 2026",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/lebanese-open-chess-championship-2026/round-8/2Jaw0b1I"
+          },
+          "magdeburg-open-2026": {
+            "title": "Magdeburg Open 2026",
+            "timeControl": "90 min / 40 moves + 30 min, 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/magdeburg-open-2026/round-7/Q9SV9zBF"
+          },
+          "misamis-occidental-philippines-international-chess-championship": {
+            "title": "Misamis Occidental Philippines International Chess Championship",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/misamis-occidental-philippines-international-chess-championship/round-1/kP0v8thk"
+          },
+          "mont-de-marsan-christmas-open-2025": {
+            "title": "Mont de Marsan Christmas Open 2025",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/mont-de-marsan-christmas-open-2025/round-1/A2eX7efG"
+          },
+          "new-zagreb-classic-futures-2026": {
+            "title": "New Zagreb Classic Futures 2026",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/new-zagreb-classic-futures-2026/round-1/6zOmEpto"
+          },
+          "oberliga-baden-202627": {
+            "title": "Oberliga Baden 2026/27",
+            "timeControl": "100 min / 40 moves + 50 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/oberliga-baden-202627/round-3/spdi3HMW"
+          },
+          "romanian-team-chess-championships-2026-mens-super-league": {
+            "title": "Romanian Team Chess Championships 2026 | Men\u2019s Super League",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/romanian-team-chess-championships-2026-mens-super-league/round-1/uTJet4pV"
+          },
+          "serbian-super-league-2026-open": {
+            "title": "Serbian Super League 2026 | Open",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/serbian-super-league-2026-open/round-1/Tv1lZFK4"
+          },
+          "slovenian-team-championship-2026-drzavna-clanska-liga": {
+            "title": "Slovenian Team Championship 2026 (Dr\u017eavna \u010dlanska liga)",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec/move",
+            "broadcast": "https://lichess.org/broadcast/slovenian-team-championship-2026-drzavna-clanska-liga/round-7/5Q02uSJA"
+          },
+          "tournament-of-peace-2026": {
+            "title": "Tournament of Peace 2026",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/tournament-of-peace-2026/round-8/tbc8zsWf"
+          },
+          "wroclaw-chess-festival-2025-open-a": {
+            "title": "Wroclaw Chess Festival 2025 - Open A",
+            "timeControl": "90 min + 30 sec",
+            "broadcast": "https://lichess.org/broadcast/wroclaw-chess-festival-2025-open-a/round-1/BeBrP9J2"
+          },
+          "xix-international-chess-open-lugano-standard": {
+            "title": "XIX INTERNATIONAL CHESS OPEN LUGANO | Standard",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/xix-international-chess-open-lugano-standard/round-1/r2h3ZELp"
+          },
+          "xxvi-torneo-internazionle-citta-di-vicenza": {
+            "title": "xxvI Torneo Internazionle Citt\u00e0 di Vicenza",
+            "timeControl": "90min+30\" move",
+            "broadcast": "https://lichess.org/broadcast/xxvi-torneo-internazionle-citta-di-vicenza/round-1/vlGeyYHK"
+          }
+        },
+        "scannedDistinctGames": 4257,
+        "rawNominations": {
+          "seventh": 2498,
+          "promotion": 639,
+          "paid-trade": 54
+        },
+        "chosen": {
+          "paid-trade": {
+            "misamis-occidental-philippines-international-chess-championship": 2,
+            "wroclaw-chess-festival-2025-open-a": 1,
+            "chessfestival-groningen-2025-open-a": 2,
+            "2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a": 1,
+            "23rd-calvia-chess-festival-2026": 1,
+            "1-aberto-do-brasil-de-xadrez-arcelormittal": 1,
+            "hong-kong-international-open-chess-championship-2025-open": 2,
+            "iv-sunway-formentera-international-chess-festival-group-a": 1,
+            "iv-open-internacional-de-ajedrez-cap-negret-50": 1,
+            "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a": 1,
+            "benidorm-chess-open-2026-group-a": 2,
+            "slovenian-team-championship-2026-drzavna-clanska-liga": 1,
+            "31st-abu-dhabi-international-chess-festival-masters": 1,
+            "51st-indian-womens-chess-championship-2025": 1
+          },
+          "promotion": {
+            "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a": 4,
+            "cork-congress-2026-masters-1825": 2,
+            "36th-nato-chess-championship-2026": 4,
+            "31st-abu-dhabi-international-chess-festival-masters": 1,
+            "fide-world-senior-championship-2025-open-65": 2,
+            "brazil-chess-series-masters-blumenau-2026": 1,
+            "2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a": 2,
+            "magdeburg-open-2026": 1,
+            "fagernes-international-autumn-2026-gm": 1,
+            "benidorm-chess-open-2026-group-a": 4,
+            "european-youth-chess-championship-2026-o18": 1,
+            "tournament-of-peace-2026": 2,
+            "hoogeveen-open-2026": 2,
+            "new-zagreb-classic-futures-2026": 3,
+            "hong-kong-international-open-chess-championship-2025-open": 3,
+            "43-munsterland-open-34-challengers-2026-a-open": 4,
+            "dutch-meesterklasse-2026-2027": 1,
+            "1-vechta-open-a-open": 1,
+            "juegos-intercolegiados-nacionales-2026-clasico-juvenil-absoluto": 3,
+            "amsterdam-chess-open-2026-group-a": 1,
+            "mont-de-marsan-christmas-open-2025": 1,
+            "misamis-occidental-philippines-international-chess-championship": 1,
+            "23rd-calvia-chess-festival-2026": 1,
+            "xix-international-chess-open-lugano-standard": 1,
+            "atyrau-open-2026-masters": 2,
+            "romanian-team-chess-championships-2026-mens-super-league": 1,
+            "slovenian-team-championship-2026-drzavna-clanska-liga": 1,
+            "campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships": 1
+          },
+          "seventh": {
+            "serbian-super-league-2026-open": 2,
+            "lebanese-open-chess-championship-2026": 2,
+            "german-bundesliga-202627-schachbundesliga": 2,
+            "benidorm-chess-open-2026-group-a": 4,
+            "fagernes-international-autumn-2026-gm": 4,
+            "xxvi-torneo-internazionle-citta-di-vicenza": 2,
+            "campeonato-sudamericano-montevideo-2026-absoluto": 1,
+            "20-int-deizisauer-herbstopen-2026": 1,
+            "oberliga-baden-202627": 2,
+            "36th-nato-chess-championship-2026": 4,
+            "juegos-intercolegiados-nacionales-2026-clasico-juvenil-absoluto": 1,
+            "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a": 1,
+            "2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a": 3,
+            "23rd-calvia-chess-festival-2026": 1,
+            "43-munsterland-open-34-challengers-2026-a-open": 3,
+            "1-aberto-do-brasil-de-xadrez-arcelormittal": 2,
+            "hong-kong-international-open-chess-championship-2025-open": 1,
+            "fide-world-senior-championship-2025-open-65": 1,
+            "icelandic-team-chess-championships-202627-premier-league": 1,
+            "brazil-chess-series-masters-blumenau-2026": 1,
+            "new-zagreb-classic-futures-2026": 1,
+            "2025-british-chess-championships-championship": 1,
+            "slovenian-team-championship-2026-drzavna-clanska-liga": 1,
+            "51st-indian-womens-chess-championship-2025": 2,
+            "cork-congress-2026-masters-1825": 2,
+            "cascade-open-2026": 1,
+            "hoogeveen-open-2026": 2,
+            "iv-sunway-formentera-international-chess-festival-group-a": 1,
+            "allsvenskan-2627-swedish-team-championship": 1,
+            "2026-fall-nyc-chess-norms": 1,
+            "wroclaw-chess-festival-2025-open-a": 1,
+            "2026-marshall-premier-fide-november": 1,
+            "aq-prime-international-open-chess-championship": 1,
+            "dutch-meesterklasse-2026-2027": 1
+          }
+        },
+        "annotated": 123
+      },
+      "engine": {
+        "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+        "threadsPerEngine": 1,
+        "hashMiB": 48,
+        "rootNodes": 600000,
+        "pairNodes": 1200000,
+        "replyNodes": 900000,
+        "samples": 126,
+        "wallSeconds": 52.1,
+        "sha256": "bc16f9e59b94f36c3954a7f0d05c761d6d8aca3a5bff843b1138cb89d4b5fc13"
+      },
+      "inputSha256": "e4006fda2dd290465e0c1f5738a44c0c8bf691fe81bf8fc384b901057461cdeb",
+      "frozenReferenceSha256": "2cd31571d341ce9a52639db20d14215150df0cfdfb9ad5216fec0ad39c01f798"
+    },
+    "summer": {
+      "sampling": {
+        "seed": "annotated-passer-cost-07b48ba8-summer-heldout",
+        "sources": {
+          "1st-berjaya-global-chess-open-2026-masters": {
+            "title": "1st Berjaya Global Chess Open 2026 - Masters",
+            "timeControl": "90 minutes with 30 seconds increment per move from move 1",
+            "broadcast": "https://lichess.org/broadcast/1st-berjaya-global-chess-open-2026-masters/round-1/42e8KNM4"
+          },
+          "50-obert-internacional-descacs-ciutat-de-badalona": {
+            "title": "50 Obert Internacional d'Escacs \"Ciutat de Badalona\"",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/50-obert-internacional-descacs-ciutat-de-badalona/round-1/26Bpvfou"
+          },
+          "bulgarian-team-chess-championship-standard": {
+            "title": "Bulgarian Team Chess Championship | Standard",
+            "timeControl": "90 min + 30 sec",
+            "broadcast": "https://lichess.org/broadcast/bulgarian-team-chess-championship-standard/round-1/q03NM0MO"
+          },
+          "sparkassen-chess-trophy-2026-open-a": {
+            "title": "Sparkassen Chess Trophy 2026 | Open A",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/sparkassen-chess-trophy-2026-open-a/round-1/welO8twL"
+          },
+          "zagreb-open-2026-viii-krunoslav-hulak-memorial": {
+            "title": "Zagreb Open 2026 \u2013 VIII Krunoslav Hulak Memorial",
+            "timeControl": "90 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/zagreb-open-2026-viii-krunoslav-hulak-memorial/round-1/Pa161O45"
+          }
+        },
+        "scannedDistinctGames": 570,
+        "rawNominations": {
+          "seventh": 362,
+          "promotion": 145,
+          "paid-trade": 16
+        },
+        "chosen": {
+          "paid-trade": {
+            "1st-berjaya-global-chess-open-2026-masters": 3,
+            "sparkassen-chess-trophy-2026-open-a": 2,
+            "zagreb-open-2026-viii-krunoslav-hulak-memorial": 2
+          },
+          "promotion": {
+            "zagreb-open-2026-viii-krunoslav-hulak-memorial": 12,
+            "1st-berjaya-global-chess-open-2026-masters": 5,
+            "sparkassen-chess-trophy-2026-open-a": 10,
+            "50-obert-internacional-descacs-ciutat-de-badalona": 4,
+            "bulgarian-team-chess-championship-standard": 2
+          },
+          "seventh": {
+            "sparkassen-chess-trophy-2026-open-a": 12,
+            "bulgarian-team-chess-championship-standard": 4,
+            "zagreb-open-2026-viii-krunoslav-hulak-memorial": 12,
+            "50-obert-internacional-descacs-ciutat-de-badalona": 8,
+            "1st-berjaya-global-chess-open-2026-masters": 12
+          }
+        },
+        "annotated": 85
+      },
+      "engine": {
+        "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+        "threadsPerEngine": 1,
+        "hashMiB": 48,
+        "rootNodes": 600000,
+        "pairNodes": 1200000,
+        "replyNodes": 900000,
+        "samples": 88,
+        "wallSeconds": 40.4,
+        "sha256": "fb80097d6297d8d713205847362ff115ece3ce1fb8555cebabb7870b7557bd99"
+      },
+      "inputSha256": "77318418f84e4ca74be48416b34790b58f7b828b5c2666e958bdc69d3225a454",
+      "frozenReferenceSha256": "4ee1d6cec5b68179ce8ca6e09844eb5b805c53fc213bd771ec317d636e07918d"
+    },
+    "late-reserve": {
+      "sampling": {
+        "seed": "annotated-passer-cost-07b48ba8-late-heldout",
+        "sources": {
+          "19th-arad-open-grand-prix-classic-2026-open-a": {
+            "title": "19th Arad Open Grand Prix Classic 2026 | Open A",
+            "timeControl": "90 min / 40 moves + 15 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/19th-arad-open-grand-prix-classic-2026-open-a/round-1/RcKtZr4V"
+          },
+          "2026-turkiye-satranc-ligi-turkish-league-super-lig": {
+            "title": "2026 T\u00fcrkiye Satran\u00e7 Ligi (Turkish League) | S\u00fcper Lig",
+            "timeControl": "90min/40moves+30min/end+30sec increment per move starting from move 1",
+            "broadcast": "https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-1/IyGH4WYN"
+          },
+          "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12": {
+            "title": "46th FIDE Chess Olympiad Samarkand 2026 | Open | Matches 1-12",
+            "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+            "broadcast": "https://lichess.org/broadcast/46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12/round-1/DfnuMSan"
+          },
+          "czech-open-2026-a": {
+            "title": "Czech Open 2026 | A",
+            "timeControl": "90min/40moves+30min/end+30sec increment per move starting from move 1",
+            "broadcast": "https://lichess.org/broadcast/czech-open-2026-a/round-9/hQhZs0v1"
+          },
+          "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga": {
+            "title": "Polish Team Championship 2026 Division 1 (Dru\u017cynowe Mistrzostwa Polski - I Liga)",
+            "timeControl": "90 min /40 + 30' + 30''",
+            "broadcast": "https://lichess.org/broadcast/polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga/round-1/NFQEooDB"
+          }
+        },
+        "scannedDistinctGames": 909,
+        "rawNominations": {
+          "seventh": 598,
+          "promotion": 190,
+          "paid-trade": 14
+        },
+        "chosen": {
+          "paid-trade": {
+            "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga": 3,
+            "19th-arad-open-grand-prix-classic-2026-open-a": 1,
+            "czech-open-2026-a": 3
+          },
+          "promotion": {
+            "czech-open-2026-a": 8,
+            "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga": 8,
+            "2026-turkiye-satranc-ligi-turkish-league-super-lig": 8,
+            "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12": 5,
+            "19th-arad-open-grand-prix-classic-2026-open-a": 3
+          },
+          "seventh": {
+            "19th-arad-open-grand-prix-classic-2026-open-a": 8,
+            "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12": 6,
+            "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga": 8,
+            "czech-open-2026-a": 6,
+            "2026-turkiye-satranc-ligi-turkish-league-super-lig": 8
+          }
+        },
+        "annotated": 73
+      },
+      "engine": {
+        "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+        "threadsPerEngine": 1,
+        "hashMiB": 48,
+        "rootNodes": 600000,
+        "pairNodes": 1200000,
+        "replyNodes": 900000,
+        "samples": 75,
+        "wallSeconds": 31.1,
+        "sha256": "d51375a28dd6ca12dfee8bb55cdd0c586c2904f4790e3aa00354b46b8f94c918"
+      },
+      "inputSha256": "ac09826304f076c161ef3952ffd1e491a1498c76efb4b151fdd57577a1441019",
+      "frozenReferenceSha256": "d97f0a31638117a6a09c4a5785e66daf790767341220b146cbf1ba1d37fec164"
+    }
+  },
+  "normalBudgetExamples": {
+    "rootNodes": [
+      600000,
+      2400000,
+      9600000
+    ],
+    "replyNodes": [
+      1000000,
+      4000000
+    ],
+    "hashMiB": 64,
+    "threads": 1,
+    "evidence": "Examples named appBudgetBerjaya and app-budget result receipts. Adaptive node budgets in a standalone UCI search, with exact played history where available."
+  }
+}

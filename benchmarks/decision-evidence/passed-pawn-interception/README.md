@@ -1,5 +1,8 @@
 # Costly trades to stop a passed pawn
 
+See the [application follow-up](app-transfer/README.md) for the revised
+comparison and the verified diagnoses in Decision Evidence.
+
 This trial asks whether a played move makes a near-promotion pawn expensive
 to stop. A valid explanation follows the original pawn and compares what
 happens after the played and stronger moves. The effect is tactical when

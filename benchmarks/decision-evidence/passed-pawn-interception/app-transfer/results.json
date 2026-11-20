@@ -1,0 +1,161 @@
+{
+  "groups": {
+    "previous-puzzles-and-classical": {
+      "requests": 333,
+      "valid": 326,
+      "reference": {
+        "no": 128,
+        "excluded": 128,
+        "uncertain": 29,
+        "yes": 48
+      },
+      "changes": [
+        {
+          "id": "NpQQf",
+          "status": "yes",
+          "before": "unclear",
+          "after": "tactical",
+          "evidence": [
+            "After Ra5, stopping the passed pawn from h3 costs at least 4.0 material points in both searched lines. One line shows Rxh2 Rxh2. After Ra1, both searches take the same pawn without a material loss through the next reply."
+          ]
+        },
+        {
+          "id": "IT54z",
+          "status": "yes",
+          "before": "unclear",
+          "after": "tactical",
+          "evidence": [
+            "After Ng5+, stopping the passed pawn from d2 costs at least 4.0 material points in both searched lines. One line shows Rxd2 Nxd2. After Nxd2, both searches take the same pawn without a material loss through the next reply."
+          ]
+        },
+        {
+          "id": "PS9jy",
+          "status": "yes",
+          "before": "unclear",
+          "after": "tactical",
+          "evidence": [
+            "After Rc1, stopping the passed pawn from d3 costs at least 2.3 material points in both searched lines. One line shows Bxd2 Bxd2. After Be3, both searches take the same pawn without a material loss through the next reply."
+          ]
+        },
+        {
+          "id": "PXUHv",
+          "status": "yes",
+          "before": "unclear",
+          "after": "tactical",
+          "evidence": [
+            "After c4, stopping the passed pawn from e3 costs at least 2.3 material points in both searched lines. One line shows Bxe2 Nxe2. After Kg3, both searches take the same pawn without a material loss through the next reply."
+          ]
+        }
+      ],
+      "changed": {
+        "yes": 4
+      },
+      "workerMedianMs": {
+        "before": 47.756,
+        "after": 47.262
+      }
+    },
+    "annotated": {
+      "requests": 126,
+      "valid": 126,
+      "reference": {
+        "uncertain": 10,
+        "excluded": 41,
+        "no": 70,
+        "yes": 5
+      },
+      "changes": [],
+      "changed": {},
+      "workerMedianMs": {
+        "before": 54.548,
+        "after": 51.433
+      },
+      "referenceAfterAdjudication": {
+        "uncertain": 10,
+        "excluded": 41,
+        "no": 71,
+        "yes": 4
+      }
+    },
+    "summer": {
+      "requests": 88,
+      "valid": 88,
+      "reference": {
+        "yes": 4,
+        "excluded": 29,
+        "no": 53,
+        "uncertain": 2
+      },
+      "changes": [
+        {
+          "id": "classical-transfer-3f41bef582123a79",
+          "status": "yes",
+          "before": "unclear",
+          "after": "tactical",
+          "evidence": [
+            "After Bb7, stopping the passed pawn from b6 costs at least 2.3 material points in both searched lines. One line shows Bxb7 Rxb7. After Bf3, both searches take the same pawn without a material loss through the next reply."
+          ]
+        }
+      ],
+      "changed": {
+        "yes": 1
+      },
+      "workerMedianMs": {
+        "before": 71.016,
+        "after": 62.001
+      }
+    },
+    "late-reserve": {
+      "requests": 75,
+      "valid": 75,
+      "reference": {
+        "excluded": 29,
+        "yes": 1,
+        "no": 45
+      },
+      "changes": [],
+      "changed": {},
+      "workerMedianMs": {
+        "before": 48.462,
+        "after": 43.403
+      }
+    }
+  },
+  "pairedWorkerRevision": "07b48ba8",
+  "normalBudgetExamples": {
+    "app-budget-Ng5+": {
+      "category": "tactical",
+      "evidence": [
+        "After Ng5+, stopping the passed pawn from d2 costs at least 4.0 material points in both searched lines. One line shows Rxd2 Nxd2. After Nxd2, both searches take the same pawn without a material loss through the next reply."
+      ]
+    },
+    "app-budget-Bb7": {
+      "category": "tactical",
+      "evidence": [
+        "After Bb7, stopping the passed pawn from b6 costs at least 2.3 material points in both searched lines. One line shows Bxb7 Rxb7. After Bf3, both searches take the same pawn without a material loss through the next reply."
+      ]
+    }
+  },
+  "archive": {
+    "requests": 1051,
+    "valid": 1050,
+    "changes": [
+      {
+        "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84",
+        "status": "yes",
+        "before": "unclear",
+        "after": "tactical",
+        "evidence": [
+          "After g3, stopping the passed pawn from d3 costs at least 0.7 material points in both searched lines. One line shows Rxd2 Bxd2 Qxd2. After Qf1, both searches take the same pawn without a material loss through the next reply."
+        ]
+      }
+    ],
+    "changed": {
+      "yes": 1
+    },
+    "workerMedianMs": {
+      "before": 62.727,
+      "after": 60.449
+    }
+  }
+}

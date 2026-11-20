@@ -47,6 +47,7 @@ import {
 } from "./conditionalDecisionResources";
 import { compareExposedForcingAttack } from "./decisionForcingConsequence";
 import { compareOpenedCheckingAttack } from "./decisionOpenedCheckingAttack";
+import { comparePawnInterception } from "./decisionPawnInterception";
 import {
     compareTacticalRecovery,
     corroborateRecoveryReply,
@@ -80,7 +81,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 34;
+export const DECISION_ASSESSMENT_VERSION = 35;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -1126,6 +1127,24 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                               ),
                       )
                     : [];
+            if (assessment.tactical.support !== "supported" && corroboratedChoices) {
+                const interception = comparePawnInterception(
+                    input.fen,
+                    comparedBest,
+                    playedLine,
+                    betterProbe!.lines[0],
+                    playedProbe!.lines[0],
+                    input.history,
+                );
+                if (interception) {
+                    tacticalEpisode = interception;
+                    assessment.tactical = {
+                        support: "supported",
+                        basis: "engine-supported",
+                        reasons: [interception.explanation],
+                    };
+                }
+            }
             const shelter = corroboratedChoices
                 ? compareLostKingShelter(
                       input.fen,

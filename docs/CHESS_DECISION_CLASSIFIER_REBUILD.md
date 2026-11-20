@@ -3858,3 +3858,25 @@ for the original, with zero false tactical calls across 165 reviewed
 negatives. The current positional mistake score remains 20 of 89.
 These totals carry forward the earlier archive, with its known limits.
 [Broader comparison](../benchmarks/decision-evidence/cross-scope-audit/README.md)
+
+## Economical defence against the same passed pawn
+
+Decision assessment v35 shows the cost of stopping an advanced
+opponent pawn after the actual move. Both weaker searches must
+show the same passed pawn costing material. Both stronger lines
+must take it economically. A pawn kept below the seventh rank
+can be taken later within the saved line. The replay tracks
+captures and promotion value from the original pawn, so trading
+a bishop for the pawn after its promotion remains a material cost.
+
+The 622-decision replay adds five supported tactical mistakes,
+one in a classical game and four in puzzles, with no reviewed
+false additions. The final 75-game classical subset adds none.
+The normal-budget Stockfish rerun of Savchenko–Kiriakov reproduces
+the diagnosis after Bb7. Candidate move and position reports,
+positional mistake evidence, and evaluation losses agree. No new
+engine searches are required. The source-built analysis panel
+shows the compared lines at three widths.
+The 1,051-request retrospective archive adds one reviewed
+Grand Swiss explanation and leaves the mixed count at one of 17.
+[Benchmark, exact application inputs and regression evidence](../benchmarks/decision-evidence/passed-pawn-interception/app-transfer/README.md)
