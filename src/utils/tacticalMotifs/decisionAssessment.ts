@@ -93,12 +93,13 @@ import {
     type PassedAdvanceRequest,
 } from "./decisionCheckingDefence";
 
+import { compareAllowedDecisionRoutes } from "./decisionAllowedRoutes";
 import {
     corroborateDecisionLineRoutes,
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 42;
+export const DECISION_ASSESSMENT_VERSION = 43;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -1327,6 +1328,33 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     }
                 } else {
                     passedAdvanceRequest = checkedDefence.pawnRequest;
+                }
+            }
+            if (
+                corroboratedChoices &&
+                !checkingDefenceRequest &&
+                assessment.tactical.support !== "supported"
+            ) {
+                const contrast = compareAllowedDecisionRoutes(
+                    input.fen,
+                    comparedBest,
+                    playedLine,
+                    betterProbe!.lines[0],
+                    playedProbe!.lines[0],
+                    input.history,
+                );
+                if (contrast) {
+                    tacticalEpisode = contrast;
+                    assessment.tactical = {
+                        support: "supported",
+                        basis: "engine-supported",
+                        reasons: [
+                            contrast.explanation,
+                            ...(contrast.kind === "comparative"
+                                ? [`The played continuation gives up at least ${contrast.materialDifferencePoints} more material points over the compared moves.`]
+                                : []),
+                        ],
+                    };
                 }
             }
             assessment.category = category(assessment.tactical, assessment.positional);

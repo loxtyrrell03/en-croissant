@@ -75,6 +75,53 @@ function witnesses(
 
 type RouteMethod = "repeated" | "leading-reply" | "settled" | "retained";
 
+function sameRoute(first: TacticalSequenceWitness, second: TacticalSequenceWitness) {
+    return (
+        first.mechanism === second.mechanism &&
+        first.squares.length === second.squares.length &&
+        first.squares.every((square, index) => square === second.squares[index])
+    );
+}
+
+/** The paired root continuation and a new search can have the same side to move. */
+export function compareSameBoardRoutes(
+    fen: string,
+    fromPair: DecisionEngineLine,
+    searched: DecisionEngineLine,
+    history?: TacticalGameHistory,
+) {
+    const cp = fromPair.cp,
+        independentCp = searched.cp;
+    if (
+        cp === null ||
+        independentCp === null ||
+        cp < 100 ||
+        independentCp < 100 ||
+        fromPair.mate != null ||
+        searched.mate != null ||
+        Math.abs(cp - independentCp) > 90 ||
+        fromPair.depth < 16 ||
+        searched.depth < 16 ||
+        fromPair.pvUci[0] !== searched.pvUci[0]
+    )
+        return [];
+    if (
+        measureDecisionLine(fen, fromPair)?.drawnEnding !== false ||
+        measureDecisionLine(fen, searched)?.drawnEnding !== false
+    )
+        return [];
+    const [first] = replayTacticalLine(fen, fromPair.pvUci.slice(0, 1));
+    if (!first) return [];
+    const turn = first.before.turn;
+    const replyRoutes = witnesses(fen, searched, turn, history, "retained");
+    if (!replyRoutes.length) return [];
+    const pairRoutes = witnesses(fen, fromPair, turn, history, "retained");
+    return replyRoutes.flatMap((second) => {
+        const first = pairRoutes.find((item) => sameRoute(item, second));
+        return first ? [{ first, second }] : [];
+    });
+}
+
 /** Match a legal tactical dependency in independently searched lines.
  * Keep each witness attached to the exact continuation and payoff. */
 export function corroborateDecisionLineRoutes(
@@ -118,14 +165,7 @@ export function corroborateDecisionLineRoutes(
     if (!after.length || method === "leading-reply") return after;
 
     const before = witnesses(fen, root, entry.before.turn, history, method);
-    return after.filter((route) =>
-        before.some(
-            (previous) =>
-                route.mechanism === previous.mechanism &&
-                route.squares.length === previous.squares.length &&
-                route.squares.every((square, index) => square === previous.squares[index]),
-        ),
-    );
+    return after.filter((route) => before.some((previous) => sameRoute(route, previous)));
 }
 
 /** Losing a pawn or bishop can change structure as part of the material

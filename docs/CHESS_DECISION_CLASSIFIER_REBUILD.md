@@ -4097,3 +4097,21 @@ remain correctly unlabelled. The frozen deflection score is unchanged.
 Two additional 36-puzzle samples gain nine named explanations and two
 tactical move assessments each. This uses existing app engine frames.
 [Matched benchmark, exact cases and reproduction](../benchmarks/decision-evidence/scored-route-decisions/README.md)
+
+## Concrete captures allowed by the played move
+
+Decision Evidence can now explain a played mistake when two Stockfish searches
+agree on the same material-losing capture. Both stronger continuations must avoid
+that material loss. The exact played attack is then replayed against the
+stronger move to show what changes. It tracks original pieces and can name a
+clearance or deflection when the exact continuations verify it.
+
+On 67 reviewed tactical mistake positives, recall increases from 20 to 22,
+with zero false positives on 165 reviewed negatives. All 1,941 valid position
+and candidate-move reports in the matched replay agree. The frozen sample of
+72 separate standard-chess broadcasts adds one mistake explanation. The higher
+budget confirms the same capture as the best reply but varies the ensuing
+exchange. Six of seven distinct new explanations from the cached benchmark retain the strict
+repeated-material proof at the higher budget. The production check reuses the
+existing engine searches. It did not add a supported mixed mistake in this test.
+[Exact examples, benchmark and reproduction](../benchmarks/decision-evidence/allowed-route-mistakes/README.md)

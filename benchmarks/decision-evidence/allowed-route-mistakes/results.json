@@ -1,0 +1,440 @@
+{
+  "cached": {
+    "byCohort": {
+      "archive": {
+        "valid": 1050,
+        "positionChanges": 0,
+        "moveChanges": 0,
+        "mistakeChanges": 2,
+        "addedTactical": 2,
+        "addedMixed": 0
+      },
+      "deep": {
+        "valid": 66,
+        "positionChanges": 0,
+        "moveChanges": 0,
+        "mistakeChanges": 2,
+        "addedTactical": 2,
+        "addedMixed": 0
+      },
+      "classical": {
+        "valid": 697,
+        "positionChanges": 0,
+        "moveChanges": 0,
+        "mistakeChanges": 1,
+        "addedTactical": 1,
+        "addedMixed": 0
+      },
+      "puzzle": {
+        "valid": 56,
+        "positionChanges": 0,
+        "moveChanges": 0,
+        "mistakeChanges": 4,
+        "addedTactical": 4,
+        "addedMixed": 0
+      }
+    },
+    "reviewedArchiveTactical": {
+      "v42": {
+        "tp": 20,
+        "tn": 165,
+        "fn": 47,
+        "uncertain": 78,
+        "uncertain-called": 7
+      },
+      "v43": {
+        "tp": 22,
+        "tn": 165,
+        "fn": 45,
+        "uncertain": 78,
+        "uncertain-called": 7
+      }
+    },
+    "added": [
+      {
+        "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+        "cohort": "archive",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": true,
+        "episode": "After Qc2, both searches show Rxc2 winning material. Rxd1 takes the rook that would play Rc1.",
+        "playedLine": "23...Qc2 24. Rc1 Nd4 25. Rxc2 Nxf3+ 26. gxf3 Re8",
+        "betterLine": "23...Rxd1 24. Rxd1 Re8 25. Qe4 h5 26. b4 Qb5"
+      },
+      {
+        "id": "mistake-misamis-occidental-2026-55e342aa733f1c3f-64",
+        "cohort": "archive",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": true,
+        "episode": "After Rxf4, both searches show Qxf4 winning material. After Rd4, the original target is on d4. The same move no longer takes it on f4.",
+        "playedLine": "33. Rxf4 Qxf4 34. h5",
+        "betterLine": "33. Rd4 Qb8 34. Bb3"
+      },
+      {
+        "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45#original",
+        "cohort": "deep",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": true,
+        "episode": "After Qc2, both searches show Rxc2 winning material. Rxd1 takes the rook that would play Rc1.",
+        "playedLine": "23...Qc2 24. Rc1 Nd4 25. Rxc2 Nxf3+ 26. gxf3 Re8",
+        "betterLine": "23...Rxd1 24. Rxd1 Re8 25. Qe4 h5 26. b4 Qb5"
+      },
+      {
+        "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45#pair",
+        "cohort": "deep",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": true,
+        "episode": "After Qc2, both searches show Rxc2 winning material. Rxd1 takes the rook that would play Rc1.",
+        "playedLine": "23...Qc2 24. Rc1 Nd4 25. Rxc2 Nxf3+ 26. gxf3 Re8",
+        "betterLine": "23...Rxd1 24. Rxd1 Re8 25. Qe4 h5 26. b4 Qb5"
+      },
+      {
+        "id": "classical-transfer-e22f36a8d6bbfd08",
+        "cohort": "classical",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": null,
+        "episode": "After Nxe3, both searches show fxe3 winning material. After Ra8, the original target is on d5. The same move no longer takes it on e3.",
+        "playedLine": "24...Nxe3 25. d7 Rf8 26. h5 Qf5 27. fxe3 Bb7",
+        "betterLine": "24...Ra8 25. Bf3 Red8 26. Rd4 f5 27. Re1 Qf6"
+      },
+      {
+        "id": "0e6Ej",
+        "cohort": "puzzle",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": null,
+        "episode": "After Nxc6, the opponent uses clearance. In this line, Rxd1+ clears d7. The queen from d8 uses the opening with Qxd1. That capture gains material along the cleared route. Rxd7 takes the rook that would play Rxd1+.",
+        "playedLine": "26. Nxc6 Rxd1+ 27. Qxd1 Bxb2+ 28. Kxb2 Qxd1 29. Ne5",
+        "betterLine": "26. Rxd7 Qxd7 27. Bxf7 Nf4 28. Qe3 Qc7 29. gxh6"
+      },
+      {
+        "id": "1XHCS",
+        "cohort": "puzzle",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": null,
+        "episode": "After Rc1, both searches show Rxc5 winning material. After Rxd5, the original target is on d5. The same move no longer takes it on c5.",
+        "playedLine": "23. Rc1 Bxe2 24. Qxe2 Nxd4 25. Nxd4 Rxc5 26. Rd1",
+        "betterLine": "23. Rxd5 exd5 24. Qd2 Nd8 25. Ba2 Qd7 26. Nf4"
+      },
+      {
+        "id": "0lX8X",
+        "cohort": "puzzle",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": null,
+        "episode": "After Rg3, both searches show Bxc4 winning material. After Bd5, the original target is on d5. The same move no longer takes it on c4.",
+        "playedLine": "18. Rg3 Bxc4 19. Qf3",
+        "betterLine": "18. Bd5 Rad8 19. Qc3"
+      },
+      {
+        "id": "0J4v0",
+        "cohort": "puzzle",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": null,
+        "episode": "After Bh3, both searches show Nxd4 winning material. Rxa8 takes the rook that would play Rxa1.",
+        "playedLine": "20. Bh3 Rxa1 21. Rxa1 Nxd4 22. Qd1",
+        "betterLine": "20. Rxa8 Bxa8 21. Bh3 Bg7 22. Ne2"
+      }
+    ],
+    "medianWorkerMs": {
+      "v42": 74.56,
+      "v43": 75.52
+    },
+    "sha256": "8b1a441dc4666f722bca3e415f0827085f8e40cbd7f19ccf4d6d9d8990b8015f",
+    "methods": {
+      "archive": {
+        "requests": 1051,
+        "eligible": 199,
+        "outcome": 0,
+        "prevented": 0,
+        "capture": 7
+      },
+      "deep": {
+        "requests": 68,
+        "eligible": 66,
+        "outcome": 0,
+        "prevented": 0,
+        "capture": 2
+      },
+      "classical": {
+        "requests": 700,
+        "eligible": 571,
+        "outcome": 2,
+        "prevented": 1,
+        "capture": 11
+      },
+      "puzzle": {
+        "requests": 56,
+        "eligible": 53,
+        "outcome": 1,
+        "prevented": 1,
+        "capture": 7
+      }
+    }
+  },
+  "fresh": {
+    "byCohort": {
+      "new-classical": {
+        "valid": 72,
+        "positionChanges": 0,
+        "moveChanges": 0,
+        "mistakeChanges": 1,
+        "addedTactical": 1,
+        "addedMixed": 0
+      }
+    },
+    "reviewedArchiveTactical": {
+      "v42": {},
+      "v43": {}
+    },
+    "added": [
+      {
+        "id": "causal-transfer-00d761ab65a06a70",
+        "cohort": "new-classical",
+        "prior": "unclear",
+        "after": "tactical",
+        "reference": null,
+        "episode": "After Nd5, both searches show Nxe5 winning material. After e4, the original target is on e4. The same move no longer takes it on e5.",
+        "playedLine": "18...Nd5 19. Nxe5 Nc3",
+        "betterLine": "18...e4 19. Ne5 Be6"
+      }
+    ],
+    "medianWorkerMs": {
+      "v42": 103.2,
+      "v43": 104.19
+    },
+    "sha256": "ffa7b4a75c0e84d6e18ce2750dd11e292da42f46a43a158ceaa7495fce32ada5",
+    "methods": {
+      "new-classical": {
+        "requests": 72,
+        "eligible": 67,
+        "outcome": 0,
+        "prevented": 0,
+        "capture": 4
+      }
+    }
+  },
+  "independentRechecks": [
+    {
+      "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+      "comparedScoresCp": [
+        -117,
+        -684
+      ],
+      "replyScoresCp": [
+        137,
+        705
+      ],
+      "pairedPlayedLine": "23...Qc2 24. Rc1 Nd4 25. Rxc2 Nxf3+ 26. gxf3 Re8",
+      "playedReplyLine": "24. Rc1 Qd3 25. e7 Nxe7 26. Qxd3 Rxd3",
+      "sameAttackOnBetterCp": null,
+      "sameAttackLegal": false,
+      "repeatedCapture": false,
+      "repeatedNamed": false
+    },
+    {
+      "id": "mistake-misamis-occidental-2026-55e342aa733f1c3f-64",
+      "comparedScoresCp": [
+        -255,
+        -591
+      ],
+      "replyScoresCp": [
+        272,
+        604
+      ],
+      "pairedPlayedLine": "33. Rxf4 Qxf4 34. h5 Qg4+ 35. Bg2 Qxh5 36. Qxh5",
+      "playedReplyLine": "33...Qxf4 34. h5 Qg4+ 35. Bg2 Qxh5 36. Qxh5",
+      "sameAttackOnBetterCp": null,
+      "sameAttackLegal": false,
+      "repeatedCapture": true,
+      "repeatedNamed": false
+    },
+    {
+      "id": "classical-transfer-e22f36a8d6bbfd08",
+      "comparedScoresCp": [
+        -588,
+        -710
+      ],
+      "replyScoresCp": [
+        635,
+        727
+      ],
+      "pairedPlayedLine": "24...Nxe3 25. d7 Rf8 26. h5 Qf5 27. fxe3 Bb7",
+      "playedReplyLine": "25. d7 Rf8 26. h5 Qf5 27. fxe3 Bb7",
+      "sameAttackOnBetterCp": 618,
+      "sameAttackLegal": true,
+      "repeatedCapture": true,
+      "repeatedNamed": false
+    },
+    {
+      "id": "0e6Ej",
+      "comparedScoresCp": [
+        680,
+        -486
+      ],
+      "replyScoresCp": [
+        -665,
+        463
+      ],
+      "pairedPlayedLine": "26. Nxc6 Rxd1+ 27. Qxd1 Bxb2+ 28. Kxb2 Qxd1 29. Bxf7",
+      "playedReplyLine": "26...Rxd1+ 27. Qxd1 Bxb2+ 28. Kxb2 Qxd1 29. Bxf7",
+      "sameAttackOnBetterCp": null,
+      "sameAttackLegal": false,
+      "repeatedCapture": true,
+      "repeatedNamed": true
+    },
+    {
+      "id": "1XHCS",
+      "comparedScoresCp": [
+        12,
+        -355
+      ],
+      "replyScoresCp": [
+        -6,
+        423
+      ],
+      "pairedPlayedLine": "23. Rc1 Bxe2 24. Qxe2 Nxd4 25. Nxd4 Rxc5 26. Rd1",
+      "playedReplyLine": "23...Bxe2 24. Qxe2 Nxd4 25. Nxd4 Rxc5 26. Re1",
+      "sameAttackOnBetterCp": -19,
+      "sameAttackLegal": true,
+      "repeatedCapture": true,
+      "repeatedNamed": false
+    },
+    {
+      "id": "0lX8X",
+      "comparedScoresCp": [
+        122,
+        -733
+      ],
+      "replyScoresCp": [
+        -138,
+        737
+      ],
+      "pairedPlayedLine": "18. Rg3 Bxc4 19. Qc3 Bd4 20. Qc2 Bxf1 21. Qxc6",
+      "playedReplyLine": "18...Bxc4 19. Qc3 Bd4 20. Qc1 Bxf1 21. Qxc6",
+      "sameAttackOnBetterCp": null,
+      "sameAttackLegal": false,
+      "repeatedCapture": true,
+      "repeatedNamed": false
+    },
+    {
+      "id": "0J4v0",
+      "comparedScoresCp": [
+        0,
+        -518
+      ],
+      "replyScoresCp": [
+        12,
+        560
+      ],
+      "pairedPlayedLine": "20. Bh3 Rxa1 21. Rxa1 Nxd4 22. Qd1 Nc6 23. Rb1",
+      "playedReplyLine": "20...Rxa1 21. Rxa1 Nxd4 22. Qd1 Nc6 23. Rb1",
+      "sameAttackOnBetterCp": null,
+      "sameAttackLegal": false,
+      "repeatedCapture": true,
+      "repeatedNamed": false
+    }
+  ],
+  "freshRecheck": [
+    {
+      "id": "causal-transfer-00d761ab65a06a70",
+      "comparedScoresCp": [
+        -40,
+        -271
+      ],
+      "replyScoresCp": [
+        42,
+        267
+      ],
+      "pairedPlayedLine": "18...Nd5 19. Nxe5 Nc3 20. Qd3 Bxe5 21. dxe5 Nxb5",
+      "playedReplyLine": "19. Nxe5 Bxe5 20. dxe5 Nc3 21. Qd3 Nxb5",
+      "sameAttackOnBetterCp": 26,
+      "sameAttackLegal": true,
+      "repeatedCapture": false,
+      "repeatedNamed": false
+    }
+  ],
+  "freshSampling": {
+    "sources": {
+      "strategic-asset-contrast\\raw\\tyreso-BvddwEwY.pgn": "2953a72f495c1e1cdd58b62e0708b97a7da7b8f26a1863c9356f4c46a2e15d76",
+      "missed-tactical-families\\spain.pgn": "d17fade6b8622ba88b353b9cf5cea5aa2a53cd8148ef7e89840b73a5b868153c",
+      "coordination-and-cached-defences\\fresh\\czech.pgn": "909413f5a46d5604717bf47a7ab3f643c05bddb9bce03f098285a02f2bd1c6fc",
+      "shared-central-plans\\structural-challenge\\german-north-2026.pgn": "9f2b63754642d52b9b0f0dbe4b3906114ce919eeb3df68fed0b508f4827553c6",
+      "passed-pawn-mistake-transfer\\clubwomen.pgn": "925ca2273901e489e7521851c0122b3e00a532048c1cb0ce0c990e9c81fe8947",
+      "forcing-transfer\\cherry-blossom-r4.pgn": "e84df716de320daaffe29f34eb32bbd4b5fa013ef6ffe52e5d855705f7fda286",
+      "played-immediate-mate\\johor-all.pgn": "508acf9e25e85ab812a9587cdf3b1d38d959e1022655e8a6f57bcbcd36c1ff92",
+      "rook-file-consequence\\team-open.pgn": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+      "mixed-position-transfer\\club-cup.pgn": "7b3486990249029a0cc0a30d9bc6765de8d9516ddb943ef7b9e2f5dbf009c095",
+      "coordination-and-cached-defences\\fresh\\tyreso.pgn": "6b976e3ec06a84f2e548e9f66e0e01ee1ba59cb731393c4242d37d0c0d597912",
+      "mixed-mistake-contrast\\raw\\serbia-w-22RJ28ho.pgn": "af5f8987473e638e935bde415253cca9d97f97b7da877b6107d9de49e234712e",
+      "shelter-after-exchanges\\sants-b.pgn": "6015d3892665072c978b8f8bf932632dc2f49627856710f747c9f3163648dbb5",
+      "otb-transfer\\calvia-r4.pgn": "137a1754dbe7a1327b5d18d27c769a2363684825667bdbf2c94988f5ed1b59b5",
+      "shelter-after-exchanges\\biel-amateur.pgn": "53106a4f24412334e8cc996f03fb2c84d50ed032aa0e935850f7426ad1238fb1",
+      "mixed-mistake-contrast\\raw\\serbia-w-gib2xXny.pgn": "826d5d7e60d9353207631ed535d2ecf9401d1e0679158e7e27539e645e95650d",
+      "aligned-strategic-plans\\challenge\\british-championship.pgn": "2cba83d6f233b4dc419975296c895d9c786e831053bd6ce1a3a75c19a662fbf7",
+      "promotion-mistake-transfer\\guernsey.pgn": "74232ed341751e5b2a39b379c8819808e9924225e1644fae156c601427c2f6d3",
+      "aligned-strategic-plans\\challenge\\hastings-masters.pgn": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4",
+      "shelter-after-exchanges\\sants-a.pgn": "079282c8284e3439fdfc01ed8edab95ed9df38d8db1d3fd481c7ad36599f3b23",
+      "shelter-after-exchanges\\biel-masters.pgn": "d4040be3cb26790004a76b7cdc30683e4b26f87a52e4bb2bfe386a8bafc969e1",
+      "played-immediate-mate\\wittelsbach-all.pgn": "8d30ffd55cd602172778f229250f49fbd3907db48611549d03bf923ca03a9020",
+      "otb-transfer\\4ncl-r4.pgn": "d8520a476efe505e4767d72599cee3cba3326ef11138c9f7b80b4fb6fcdf095f",
+      "position-transfer\\london-open-r5.pgn": "e4d5835c7d61c4efcfde14b7eb2fe2e89abd685c6d2d31bdfcb5301ae860b87d",
+      "strategic-transfer\\british-major-open-r7.pgn": "c783b4479ce3add0961439b2493ff4365f8e97390146d981eb44849f7e0087bb",
+      "quick-nomination-transfer\\dutch-open.pgn": "a9431bcedc8d9e55855909c04ea77a69278fe64e0ab12dd11707f0852ed8460e",
+      "defensive-recovery\\bavarian.pgn": "cd8fbf2e5da6b6ccf043abe634d9b94931721e893fc91396c08538097258f7e8",
+      "shared-reply-transfer\\european-team-r4.pgn": "7e3bbc423895bf5e63b3644c3f78997b8114f36b956053a308354bb85e486193",
+      "file-use-transfer\\british-major-open-2026-r6.pgn": "0b47b20f265f4ce4ca14e4a390f30f1adf54d06c5a144ab223836c5b15467006",
+      "promotion-mistake-transfer\\challengers.pgn": "89aa94c72a2f352938aaf9387fe2783c332efa2086a23389ca01b8b341c8ecb3",
+      "quick-nomination-transfer\\european-women.pgn": "2623b600973a334f8f459818431b32c5f88b5211a1892a21cee9b46209c15bb5",
+      "equal-search-budget\\abu-round1.pgn": "9ba33fb4525968a5c1a60e3e828b45dcb96b41e08743f7558deeeb45a318f0f6",
+      "mistake-transfer\\maia-u2000-r4.pgn": "4c67fad13d87376385224fe570389ad1da450927569338fea0b527e4f7595682",
+      "passed-pawn-choices\\world-seniors-65-2026.pgn": "57ad6743504ed363bf55fcb750eb3f0f7d84df6d6eedc811a548b1936c5193bf",
+      "rook-file-consequence\\turkey-round1.pgn": "aa554daab3eb10d84a0f0d3b5d0200dc952b5cbfee4d61b1e57e8162c44e02e8",
+      "missed-tactical-families\\junior.pgn": "0727c67ea1087bf194ba3c2da492f0d8835ce751e31f86055fa0f449cc996cc9",
+      "structural-tradeoffs\\arco.pgn": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18"
+    },
+    "events": {
+      "12-wittelsbacher-weihnachtsopen-2025": 3,
+      "20-pojedinacno-prvenstvo-srbije-za-sahistkinje": 3,
+      "2025-british-chess-championships-major-open": 2,
+      "2025-london-chess-classic-fide-open": 2,
+      "2026-british-chess-championships-championship": 2,
+      "2026-british-chess-championships-major-open": 2,
+      "24th-annual-turkey-bowl": 2,
+      "25th-european-womens-chess-championship-2026": 2,
+      "29th-open-bavarian-chess-championship": 2,
+      "31st-abu-dhabi-international-chess-festival-masters": 2,
+      "41st-european-chess-club-cup-2026-women": 2,
+      "48th-international-chess-open-citta-di-arco-grupo-a-1-37": 2,
+      "4ncl-division-2-2025-2026": 2,
+      "50th-guernsey-international-chess-festival-challengers": 2,
+      "50th-guernsey-international-chess-festival-open": 2,
+      "59th-biel-international-chess-festival-2026-open-amateur-ato": 2,
+      "59th-biel-international-chess-festival-2026-open-masters-mto": 2,
+      "9th-cherry-blossom-classic-u2300": 2,
+      "allsvenskan-20262027-div-1-tyreso": 2,
+      "campeonato-de-ajedrez-abierto-por-equipos-2026": 2,
+      "campeonato-de-espana-individual-absoluto-y-femenino-2025-spanish-championships": 2,
+      "dutch-open-2026-dutch-open": 2,
+      "european-chess-club-cup-2025-open-matches-1-16": 2,
+      "european-team-chess-championship-2025-open": 2,
+      "fide-world-senior-chess-championships-2026-open-65": 2,
+      "german-2nd-bundesliga-north": 2,
+      "hastings-international-chess-congress-2025-masters": 2,
+      "johor-chess-festival-2025-international-open": 2,
+      "maia-chess-festival-2025-u2000": 2,
+      "north-american-junior-chess-championship-u20-2025-open": 2,
+      "sachycz-extraliga-202627": 2,
+      "tyreso-sk-km-2026": 2,
+      "xxii-calvia-amateur-open": 2,
+      "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-a": 2,
+      "xxvii-open-internacional-de-sants-ciutat-de-barcelona-2026-group-b": 2
+    }
+  }
+}

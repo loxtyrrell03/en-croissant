@@ -1,17 +1,11 @@
 import { castlingSide, type Chess } from "chessops/chess";
 import { makeFen } from "chessops/fen";
 import type { Color, Square } from "chessops/types";
-import {
-    kingCastlesTo,
-    makeSquare,
-    makeUci,
-    opposite,
-    parseUci,
-    rookCastlesTo,
-} from "chessops/util";
+import { makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import type { TacticalGameHistory } from "./gameHistory";
+import { followPieceIdentities, initialPieceIdentities } from "./decisionPieceIdentity";
 import type { ComparativePositionalEvidence } from "./positionalTransitions";
 import {
     advanceTacticalRepetitionContext,
@@ -45,32 +39,12 @@ type Trace = ReturnType<typeof trace>;
 const material = { pawn: 100, knight: 320, bishop: 330, rook: 500, queen: 900, king: 0 };
 
 function trace(steps: TacticalReplayStep[]) {
-    const original = new Map<Square, Square>();
-    for (const [square] of steps[0].before.board) original.set(square, square);
+    const original = initialPieceIdentities(steps[0].before);
     const removed = new Map<Square, number>();
     const positions = [new Map(original)];
     for (const [index, step] of steps.entries()) {
-        const { before, move, capture } = step;
-        const origin = original.get(move.from)!;
-        original.delete(move.from);
-        const castle = castlingSide(before, move);
-        if (castle) {
-            const rook = before.castles.rook[before.turn][castle]!;
-            const rookOrigin = original.get(rook)!;
-            original.delete(rook);
-            original.set(rookCastlesTo(before.turn, castle), rookOrigin);
-            original.set(kingCastlesTo(before.turn, castle), origin);
-        } else {
-            if (capture) {
-                const taken =
-                    before.epSquare === move.to && before.board.get(move.from)?.role === "pawn"
-                        ? move.to + (before.turn === "white" ? -8 : 8)
-                        : move.to;
-                removed.set(original.get(taken)!, index + 1);
-                original.delete(taken);
-            }
-            original.set(move.to, origin);
-        }
+        const captured = followPieceIdentities(original, step);
+        if (captured !== undefined) removed.set(captured, index + 1);
         positions.push(new Map(original));
     }
     return { steps, positions, removed };
