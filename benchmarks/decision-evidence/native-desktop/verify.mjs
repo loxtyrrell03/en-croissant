@@ -268,7 +268,7 @@ for (const [name, reply, capture, early, punishment] of [
 }
 
 for (const [name, square, mechanism] of [
-  ["Chile Passed Pawn", "b6", /MIXED.*Bxf2/s],
+  ["Chile Passed Pawn", "b6", /MIXED.*Engine supported.*(?:Bxe3|Bxf2).*Bg5.*Rxb6/s],
   ["Passed Pawn Handoff", "f6", /Rf8 leaves f7.*Nf7/s],
   ["Direct Pawn Blockade", "f3", /Kf2.*stop its advance|stop its advance.*Kf2/s],
 ]) {

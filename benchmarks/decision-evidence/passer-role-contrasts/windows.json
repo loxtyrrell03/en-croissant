@@ -1,0 +1,48 @@
+{
+  "revision": "9812c1bf78f3eb2820f8daf7a568e9da5757a057",
+  "sourcePanelWidths": [
+    320,
+    390,
+    900
+  ],
+  "sourceRegressionsPassed": 58,
+  "scenarios": {
+    "Amager Defender Capture": {
+      "passed": true,
+      "seconds": 9.679,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nTACTICAL\n\n3 candidate moves examined\n\nTactical · Engine supported. After bxc3, Qxc5 removes the defender before taking on c3. If Rxc3 comes first, the defender takes the piece that was about to remove it with Qxd4.\n\nDefender first. Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nTaking too early. Rxc3 Qxd4 Rxd4 Rxc3\n\nQd4 gives this piece access to c5. In the analysed continuation, Qxc5 uses capturingDefender at ply 3. Qd4 bxc3 Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThis capture order applies to the reply shown. Other defences can change the continuation.\n\nHide evidence",
+      "move": "What the move achieves\n\nTACTICAL\n\nTactical · Engine supported. After bxc3, Qxc5 removes the defender before taking on c3. If Rxc3 comes first, the defender takes the piece that was about to remove it with Qxd4.\n\nDefender first. Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nTaking too early. Rxc3 Qxd4 Rxd4 Rxc3\n\nQd4 gives this piece access to c5. In the analysed continuation, Qxc5 uses capturingDefender at ply 3. Qd4 bxc3 Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nThe analysed line does not yet connect this mechanism to a settled material, mating or identified positional outcome.\n\nThe shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.\n\nThis capture order applies to the reply shown. Other defences can change the continuation.\n\nHide evidence",
+      "captureOrderFound": true
+    },
+    "Chile Passed Pawn": {
+      "passed": true,
+      "seconds": 7.128,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Engine supported. Bf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical · Engine supported. Bf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.\n\nThis is the material change in the displayed tactical episode after settling replies. Later play and other defences can alter it.\n\nHide evidence"
+    },
+    "Passed Pawn Handoff": {
+      "passed": true,
+      "seconds": 8.329,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nPOSITIONAL\n\n3 candidate moves examined\n\nPositional · Strategic interpretation. Both lines keep a piece in front of the opposing passed pawn on f6 and stop its advance.\n\nAfter Rf8 Bc3. Rf8 Bc3 Bd5+ Kg1 Nf7 Qxc7 Be6 Qf4 gxh5\n\nAfter Rf8 Bxc7. Rf8 Bxc7 Rc8 Ba5 Nf7 Qe4 Bd7 Qd3 Rc1+\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence",
+      "move": "What the move achieves\n\nPOSITIONAL\n\nPositional · Strategic interpretation. Rf8 leaves f7 for the blockading piece and still defends that square. Both lines keep a piece in front of the opposing passed pawn on f6 and stop its advance.\n\nAfter Rf8 Bc3. Rf8 Bc3 Bd5+ Kg1 Nf7 Qxc7 Be6 Qf4 gxh5\n\nAfter Rf8 Bd4. Rf8 Bd4 Bd5+ Kg1 Nf7 Qxc7 Re8 Kf2 gxh5\n\nHide evidence"
+    },
+    "Direct Pawn Blockade": {
+      "passed": true,
+      "seconds": 9.624,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nPOSITIONAL\n\n3 candidate moves examined\n\nPositional · Strategic interpretation. Both lines keep a piece in front of the opposing passed pawn on f3 and stop its advance.\n\nAfter Kf2 Rh8. Kf2 Rh8 h3 a5 bxa5\n\nAfter Kf2 a5. Kf2 a5 bxa5 Rh8 h3\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence",
+      "move": "What the move achieves\n\nPOSITIONAL\n\nPositional · Strategic interpretation. Both lines keep a piece in front of the opposing passed pawn on f3 and stop its advance.\n\nAfter Kf2 Rh8. Kf2 Rh8 h3 a5 bxa5\n\nAfter Kf2 a5. Kf2 a5 bxa5 Rh8 h3\n\nHide evidence"
+    }
+  }
+}

@@ -101,6 +101,18 @@ reports and tactical dimensions match across all 240 replays.
 Both layers reuse cached Stockfish lines, with no added search.
 [Earlier audit replay](broad-runtime-receipt.json)
 
+The isolated Windows build at `9812c1bf` passed four live Stockfish
+scenarios. The Chilean `...Bf2` appears as mixed in both the position
+and move panels, with tactical support via `...Bxe3` in the live run
+and strategic evidence for removing the b6 pawn. The cached replay
+separately checks the conditional `...Bxf2` error. The native checks
+also cover the f7 handoff, the direct blockade of the f3 pawn, and
+the prior Amager capture-order proof. The scenarios took 7.1–9.7
+seconds each from opening the Tactics tab to evidence. The source
+panel passed at 320, 390 and 900 pixels, and 58 classifier unit tests
+passed. [Windows receipt](windows.json) ·
+[Native instructions](../native-desktop/README.md)
+
 ## Reproduce
 
 Use Python with python-chess and the Stockfish 19 executable used in
@@ -131,6 +143,13 @@ $env:PAWN_REPLAY_BASELINE = 'baseline.json'
 $env:PAWN_REPLAY_OUTPUT = 'runtime.json'
 node node_modules/vitest/vitest.mjs run --config "$bench/runtime.config.mjs"
 python "$bench/runtime_receipt.py" app.json runtime.json "$bench/blind-reference.json" receipt.json
+```
+
+To check the rendered panel with the recorded engine frames, use
+Playwright's `index.mjs` and a Chrome executable:
+
+```powershell
+node "$bench/verify-panel.mjs" $decisionPlaywright $chrome
 ```
 
 The experiments address one strategic feature and its contribution

@@ -91,3 +91,14 @@ Capture` case stays unclear at the normal live search budget. The
 fixed-budget replay finds its ordering after the different reply
 `...Rb8`. The earlier Finnish and quiet counterattack scenarios
 still pass. [Run receipt](../cached-capture-selection/windows.json)
+
+Revision `9812c1bf` adds `Chile Passed Pawn`, `Passed Pawn Handoff`
+and `Direct Pawn Blockade`. The live Chile scenario checks separate
+tactical and positional evidence in the mixed position and move.
+The live engine can support the tactic through either `...Bxe3`
+or the cached comparison involving `...Bxf2`. The handoff checks
+`...Rf8` and `...Nf7` against the f6 pawn. The direct blockade
+checks `Kf2` against the f3 pawn. All three passed with real
+Stockfish alongside the Amager scenario.
+[Run receipt](../passer-role-contrasts/windows.json) ·
+[Held-out benchmark](../passer-role-contrasts/README.md)
