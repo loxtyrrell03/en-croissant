@@ -1,0 +1,32 @@
+{
+  "revision": "32edca0ecf2dfa16c47a41fc4ac4c34bd3e14f45",
+  "scenarios": {
+    "Bavarian Refutation": {
+      "passed": true,
+      "seconds": 11.109,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nTACTICAL\n\n3 candidate moves examined\n\nTactical · Engine supported. Qc8 allows Nxb5 and both searches retain a material loss. Nxd4 removes the piece that would play Nxb5.\n\nBetter line. Nxd4 exd4 Rce7 Rxe7 Rxe7 Re1 Rxe1+ Qxe1 Kf7 Qd1 h5\n\nRefuted choice. Qc8 Nxb5 Rd7 Nd4 Kh8 Nf5 h5 Kh1 Rc7 e4 h4\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence"
+    },
+    "Amsterdam Exchange": {
+      "passed": true,
+      "seconds": 4.709,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "move": "What the move achieves\n\nMIXED\n\nTactical · Checked local proof. Bxe5 takes the knight on e5, but concedes material elsewhere. The checked exchanges gain at least 0.9 pawns.\n\nPositional · Strategic interpretation. The exchange creates a passed pawn on d5, and d4 advances that pawn. Both searches show this follow-up.\n\nAfter Bxe5 dxe5. Bxe5 dxe5 d4 Bd6 Kd5 Kd3 Bf5+\n\nAfter Bxe5 dxe5. Bxe5 dxe5 d4 Bd6 d3+ Kd2 Kd4\n\nMATERIAL GAIN\n\nThe local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.\n\nThe searches show how this plan develops after the exchange. Its share of the engine evaluation is uncertain.\n\nHide evidence"
+    },
+    "Exact Rook Ending": {
+      "passed": true,
+      "seconds": 6.536,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Tablebase · Draw with best play. 3 of 19 legal moves draw. Rg6, Rg7, Rg8.",
+      "mistake": "What Kf1 allows\n\nTACTICAL\n\nTablebase · Draw → Loss.\n\nEngine evaluation loss 4.28 pawns\n\nTactical · Tablebase verified. Kf1 leaves e2, allowing the pawn to advance with e2+.\n\nShow evidence"
+    }
+  },
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "executableSha256": "75d953f81ab79dfb6e9f4a7e35fe9e988791eb8a6048f4834843233f7d02b670"
+}

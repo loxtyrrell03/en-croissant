@@ -1,0 +1,71 @@
+import argparse
+import json
+from pathlib import Path
+import chess
+import chess.pgn
+
+parser = argparse.ArgumentParser(description="Prepare the isolated native Decision Evidence checks.")
+parser.add_argument("qa", type=Path, help="Task-owned directory containing an archived source subfolder")
+parser.add_argument("stockfish", type=Path, help="Local Stockfish 19 executable")
+args = parser.parse_args()
+qa = args.qa.resolve()
+source = qa / "source"
+if (source / ".git").exists() or not (source / "src-tauri" / "tauri.conf.json").is_file():
+    parser.error("source must be a committed archive inside the QA directory")
+if not args.stockfish.is_file():
+    parser.error("Stockfish executable not found")
+paths = {key: qa / "runtime-fixtures" / folder for key, folder in {
+    "document-dir": "documents", "databases-dir": "databases",
+    "engines-dir": "engines", "puzzles-dir": "puzzles",
+}.items()}
+for folder in paths.values():
+    folder.mkdir(parents=True, exist_ok=True)
+settings = {"type": "local", "id": "decision-stockfish-19", "name": "Stockfish 19 QA",
+            "version": "19", "path": str(args.stockfish.resolve()), "enabled": True,
+            "go": {"t": "Depth", "c": 18},
+            "settings": [{"name": "Threads", "value": 1}, {"name": "Hash", "value": 64}, {"name": "MultiPV", "value": 3}]}
+(paths["engines-dir"] / "engines.json").write_text(json.dumps([settings]), encoding="utf-8")
+entries = json.dumps({key: str(folder) for key, folder in paths.items()})
+(source / "public" / "__decision-native-qa.html").write_text(
+    "<!doctype html><meta charset=utf-8><script>"
+    f"for (const [key, value] of Object.entries({entries})) localStorage.setItem(key, JSON.stringify(value));"
+    'location.replace("index.html");</script>', encoding="utf-8")
+config = qa / "tauri.qa.json"
+cfg = {
+    "identifier": "org.encroissant.decision.qa",
+    "app": {"windows": [{
+        "height": 880, "label": "main", "title": "En Croissant Decision Evidence QA",
+        "width": 1280, "visible": False, "url": "__decision-native-qa.html",
+    }]},
+}
+config.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+
+fixtures = source / "benchmarks" / "decision-evidence"
+def load(folder, filename):
+    return json.loads((fixtures / folder / filename).read_text(encoding="utf-8-sig"))
+
+def fixture(label, fen, line):
+    board = chess.Board(fen)
+    game = chess.pgn.Game()
+    game.setup(board)
+    game.headers["Event"] = label
+    game.headers["White"] = label
+    game.headers["Black"] = "Stockfish QA Fixture"
+    node = game
+    for san in line:
+        move = board.parse_san(san)
+        node = node.add_variation(move)
+        board.push(move)
+    (paths["document-dir"] / (label + ".pgn")).write_text(str(game) + "\n", encoding="utf-8")
+
+fixture("Bavarian Refutation", load("sibling-refutation", "fixture.json")["bavaria"]["input"]["fen"], ["Qc8", "Nxb5"])
+fixture("Exact Rook Ending", load("exact-endgame-decisions", "witness.json")["fen"], ["Kf1", "e2+"])
+amsterdam = load("settled-exchange-plans", "fixture.json")["amsterdam"]
+board = chess.Board(amsterdam["history"]["fen"])
+sans = []
+for uci in [*amsterdam["history"]["moves"], amsterdam["recordedMove"]]:
+    move = board.parse_uci(uci)
+    sans.append(board.san(move))
+    board.push(move)
+fixture("Amsterdam Exchange", amsterdam["history"]["fen"], sans)
+print("Isolated app settings and legal PGN fixtures prepared.")
