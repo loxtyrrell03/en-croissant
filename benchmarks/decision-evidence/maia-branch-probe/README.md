@@ -96,3 +96,35 @@ neural move or motif verdicts to the app.
   to 46 ms median per decision, excluding model load and Stockfish.
   The pre-existing engine searches were held fixed. There is no
   runtime integration or new deployed diagnosis.
+
+## Does Maia add anything to the review queue?
+
+The retrospective complementarity check uses 104 previously reviewed
+positions from three cohorts across eight distinct event groups. Maia and
+the legal-line tree sometimes find different mixed positives. The union
+contains nine, seven and ten known positives in the three cohorts.
+That union uses extra review choices and its labels are known after review.
+It gives a ceiling for how much a better selection rule could benefit.
+
+A fixed rule alternates the tree and Maia root queues within each event,
+starting with the tree. Duplicate nominations count once and every event
+keeps its original number of review slots. A second arm alternates the
+tree and legal-line logistic queues by the same rule.
+
+| Method | Reviewed mixed positives | Reviewed negatives | Uncertain |
+| --- | ---: | ---: | ---: |
+| Legal-line tree | 18/22 | 2 | 2 |
+| Maia root with legal lines | 15/22 | 1 | 6 |
+| Tree alternating with Maia root | 17/22 | 2 | 3 |
+| Tree alternating with legal-line logistic | 18/22 | 2 | 2 |
+
+The neural blend ties the tree in two cohorts and selects one fewer
+positive in the third. The two simple models exchange a gain in one cohort
+for a loss in another. This comparison reuses existing predictions and
+labels. It uses zero new engine searches or training and is exploratory.
+The available evidence does not support adding Maia to the app. A future
+test of complementary features would need fresh event groups, independent
+mixed labels and a prespecified selector.
+
+Run `python benchmarks/decision-evidence/maia-branch-probe/queue-complementarity.py`
+from the repository root to reproduce the exact counts.

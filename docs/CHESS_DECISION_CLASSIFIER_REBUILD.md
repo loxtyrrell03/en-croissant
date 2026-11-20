@@ -4186,3 +4186,14 @@ classical moves yield no new label, and 1,869 valid archive reports have
 identical contents after accounting for the cache version. The
 implementation adds no engine requests.
 [Benchmark, exact variations and reproduction](../benchmarks/decision-evidence/interference-in-line/README.md)
+
+## Neural model complementarity at equal review budgets
+
+A retrospective check across 104 previously reviewed positions compares
+the neural and simpler mixed-position review queues. At 22 fixed
+event-level slots the legal-line tree selects 18 reviewed positives,
+Maia root plus legal lines selects 15, and alternating the two selects
+17. Alternating the tree with legal-line logistic selects 18. The queues
+can surface different positives, but this selection experiment gives no
+reason to add a neural runtime.
+[Matched-budget check](../benchmarks/decision-evidence/maia-branch-probe/README.md#does-maia-add-anything-to-the-review-queue)
