@@ -68,7 +68,7 @@ prototype feeds the otherwise unavailable move's paired line
 back through the exact-move assessor with no additional engine
 search.
 
-| Reserve question | Reviewed positives | Original | v62 | Paired move prototype |
+| Reserve question | Reviewed positives | Original | v62 | v63 |
 | --- | ---: | ---: | ---: | ---: |
 | Tactical position | 9 | 4 | 5 | 5 |
 | Positional position | 24 | — | 4 | 4 |
@@ -93,6 +93,19 @@ Decision Evidence v63 stores the supplemental played move
 outside the engine shortlist. Only the existing move selector
 lists it, labelled **Played move**. Move-selection and
 mistake comparisons share the already scored exact line.
+Replays of 56 new and 124 previously captured requests preserve
+the original candidate, position and mistake reports apart from
+the report's version number. The 124 requests expose 10 further
+recorded choices, with two positional and eight unclear.
+`verify_release.py` compares those v62, v63 and prototype replays.
+[Release replay receipt](release.json)
+
+The pinned panel passed at 320, 390 and 900 pixels. The isolated
+Windows build at `46c70780` used real Stockfish 19 and displayed
+the `h4` pawn lock when selecting **Played move**, alongside a
+separate estimate of 0.86 pawns lost and an unclear cause. The
+promotion diversion explanation also passed on the same build.
+[Windows receipt](windows.json)
 
 ## Links to the earlier benchmarks
 
@@ -113,3 +126,16 @@ retaining the e6 pawn structure is absent. The defender's
 both axes. Conversely, the technical `Kxg4` conversion is called
 tactical because it wins a loose pawn. These are distinct gaps
 in attribution. The new selector does not change them.
+
+`mixed_followup.py` re-searches the exact alternatives at 4.8
+and 8 million nodes per request. Both budgets prefer `...Ne7+`
+over `...exd5` and show the e6 structure surviving the exchange
+of the rook on d5. In both leading lines White eventually plays
+`Nxe6`, so the structure is temporary. Both `...g5` and
+`...g6` vacate g7. The leading independent replies support an
+earlier `...Kg7` after `...g5` while White's b-pawn is still
+stopped short of promotion. The lines establish the timing
+difference. They cannot isolate how much of the evaluation
+difference comes from king mobility. These two examples are
+already reviewed and are diagnostic probes.
+[Exact searches](mixed-followup.json)

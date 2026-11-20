@@ -116,3 +116,9 @@ name after the Playwright entry point. These checks compare the
 same reply after the played and better moves, using live Stockfish.
 Both passed alongside the rear-piece trade regression.
 [Run receipt](../shared-ray-mistakes/transfer-windows.json)
+
+Revision `46c70780` adds `Played Pawn Lock`. It selects the
+actual `h4` outside Stockfish's shortlist and checks its strategic
+evidence independently of the evaluation loss. The live promotion
+diversion regression also passed on this build.
+[Run receipt](../annotation-transfer/windows.json)

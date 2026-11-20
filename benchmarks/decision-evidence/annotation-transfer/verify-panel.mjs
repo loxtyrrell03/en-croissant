@@ -20,7 +20,7 @@ await verifyDecisionPanel({
     await page.getByRole("option", { name: "h4 · Played move", exact: true }).click();
     await section.getByText("Positional", { exact: true }).first().waitFor();
     await section.getByRole("button", { name: "Show evidence", exact: true }).click();
-    assert.match(await section.innerText(), /fixes opposing pawns on h4 and h5/);
+    assert.match(await section.innerText(), /fixes opposing pawns face to face on h4 and h5/);
     const mistake = page.getByText("What h4 missed or allowed", { exact: true }).locator("../..");
     assert.match(await mistake.innerText(), /evaluation loss/);
     await section.getByRole("button", { name: "Hide evidence", exact: true }).click();

@@ -1,0 +1,25 @@
+{
+  "annotation": {
+    "requests": 56,
+    "stats": {
+      "supplemental": 12,
+      "positional": 3,
+      "unclear": 9
+    }
+  },
+  "archive": {
+    "requests": 124,
+    "stats": {
+      "supplemental": 10,
+      "unclear": 8,
+      "positional": 2
+    }
+  },
+  "inputs": {
+    "app-v62.json": "b4cf828971975cd3c51041dc56041044911db4aff93fab63f54bacf9bc1d48a0",
+    "app-v63.json": "0e49428f180d7921673fa34d648e1ccadce1ca14a90f3c31de3c7b67b9da3442",
+    "app-paired-target.json": "f01148359b921de7f4327f702c081e92339196b253fefbc77553e5984d97e663",
+    "early-v62.json": "4bc0b709cab084dcb6dca5e2efc5d97dc4b7184d1cabd89ce3f1d9c2edad105b",
+    "early-v63.json": "267f3013ff9a0e9f2054ef6c6833648ccefd6cfc7784dea81bc25038f8721ed6"
+  }
+}

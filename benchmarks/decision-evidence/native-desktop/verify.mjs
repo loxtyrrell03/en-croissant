@@ -334,7 +334,7 @@ if (wanted.has("Played Pawn Lock")) {
     await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
     const move = await section.innerText();
     assert.match(move, /POSITIONAL/i);
-    assert.match(move, /fixes opposing pawns on h4 and h5/);
+    assert.match(move, /fixes opposing pawns face to face on h4 and h5/);
     const mistake = await page.getByText("What h4 missed or allowed", { exact: true }).locator("../..").innerText();
     assert.match(mistake, /evaluation loss/);
     return { move, mistake };
