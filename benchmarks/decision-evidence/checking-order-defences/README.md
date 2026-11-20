@@ -92,4 +92,5 @@ the recorded reply and capture before comparing to the played reference.
 
 [Counts, timings and reproduced lines](results.json) ·
 [Earlier move-order benchmark](../checking-capture-order/README.md) ·
-[Neural search-selection test](../paired-choice-training/README.md)
+[Neural search-selection test](../paired-choice-training/README.md) ·
+[Isolated Windows run](windows.json)

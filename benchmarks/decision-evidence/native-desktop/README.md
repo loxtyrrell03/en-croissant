@@ -70,3 +70,10 @@ engine label when a separate local proof is also present.
 All three scenarios and the three earlier checks passed on the v56
 isolated Windows build. [Run receipt](../checking-capture-order/windows.json) ·
 [Classifier benchmark](../checking-capture-order/README.md)
+
+Revision `27580772` adds `Berjaya Checking Defence` for the same reply
+after the better move and `La Roda Checking Defence` for removing the
+original checker after analysing a played move. Both ran with real
+Stockfish and joined the three passing capture-order checks.
+[Run receipt](../checking-order-defences/windows.json) ·
+[Held-out benchmark](../checking-order-defences/README.md)
