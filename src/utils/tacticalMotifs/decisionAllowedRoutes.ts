@@ -224,7 +224,7 @@ export function compareAllowedDecisionRoutes(
             betterLineUci: stronger[0].slice(0, outcome.end).map((step) => step.uci),
             ...(breach && breach.control.length > 1 ? { controlLineUci: breach.control } : {}),
             mechanisms: [second],
-            explanation: `After ${actual.san}, the opponent uses ${second.mechanism}. ${second.description}${breach ? " " + breach.reason : ""}`,
+            explanation: `After ${actual.san}, ${second.description}${breach ? " " + breach.reason : ""}`,
         };
     }
     if (method === "capture" || method === "verified") {

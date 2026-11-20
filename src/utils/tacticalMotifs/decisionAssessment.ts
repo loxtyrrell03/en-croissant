@@ -1313,11 +1313,11 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                             );
                             return otherFork
                                 ? `The two choices use different forks in the analysed lines. ${item.description} ${otherFork.description} The stronger line retains more material over the compared moves.`
-                                : `The better choice uses ${item.mechanism}. The played continuation retains less material in the analysed horizon. ${item.description}`;
+                                : `${item.description} The better line keeps more material over the compared moves.`;
                         }),
                         ...allowed.map(
                             (item) =>
-                                `The opponent can use ${item.mechanism} after the played move. This mechanism is absent from the compared better line, which retains more material. ${item.description}`,
+                                `${item.description} The played line keeps less material over the compared moves.`,
                         ),
                         ...(tacticalEpisode
                             ? [

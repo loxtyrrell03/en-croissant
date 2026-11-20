@@ -7,10 +7,21 @@ import {
 
 import kenya from "../../../benchmarks/decision-evidence/promotion-intermezzo/kenya-fixture.json";
 import promotionLines from "../../../benchmarks/decision-evidence/promotion-intermezzo/line-fixtures.json";
+import passerRoles from "../../../benchmarks/decision-evidence/passer-role-contrasts/runtime-fixture.json";
 import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
 
 const inspect = (fen: string, pvUci: string[]) =>
     extractTacticalSequenceWitnesses(fen, { fen, pvUci, cp: 200, depth: 18 });
+
+test("a preparation explains the actual defender and capture in the continuation", () => {
+    const { fen, candidates } = passerRoles.chile;
+    const witness = extractTacticalSequenceWitnesses(fen, candidates[0])
+        .find((item) => item.mechanism === "tacticalPreparation");
+    expect(witness?.supportingMechanisms).toContain("capturingDefender");
+    expect(witness?.description).toMatch(/Bf2.*access to e3.*Bxe3 removes.*recapture on b6.*Rxb6/);
+    expect(witness?.description).not.toContain("capturingDefender");
+    expect(witness?.lineUci).toEqual(["g3f2", "h6h5", "f2e3", "d3e3", "b2b6"]);
+});
 
 test("alternative replies share one motif label while retaining separate lines", () => {
     const fen = "3r4/4k3/8/8/1N6/8/8/6K1 w - - 0 1";

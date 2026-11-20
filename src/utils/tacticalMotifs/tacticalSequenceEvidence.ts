@@ -583,7 +583,7 @@ export function extractTacticalSequenceWitnesses(
                     i,
                     k,
                     [first.move.to, payoff.move.to],
-                    `${first.san} removes the defender on ${makeSquare(first.move.to)}. At ply ${k + 1}, ${payoff.san} uses a capture that this defender could legally have recaptured on before its removal. The intervening moves are part of this combination.`,
+                    `${first.san} removes the defender on ${makeSquare(first.move.to)}. Later, ${payoff.san} takes on ${makeSquare(payoff.move.to)}, where that defender could have recaptured.`,
                 );
             }
         }
@@ -687,13 +687,14 @@ export function extractTacticalSequenceWitnesses(
             later.length &&
             !attacks(rootPiece, root.move.from, root.before.board.occupied).has(step.move.to)
         ) {
-            const payoff = Math.max(...later.map((item) => item.payoffPly));
+            const consequence = later.reduce((longest, item) =>
+                item.payoffPly > longest.payoffPly ? item : longest);
             push(
                 "tacticalPreparation",
                 0,
-                payoff - 1,
+                consequence.payoffPly - 1,
                 [root.move.from, root.move.to, step.move.to],
-                `${root.san} gives this piece access to ${makeSquare(step.move.to)}. In the analysed continuation, ${step.san} uses ${[...new Set(later.map((item) => item.mechanism))].join(" and ")} at ply ${i + 1}.`,
+                `${root.san} gives this piece access to ${makeSquare(step.move.to)}. ${consequence.description}`,
             );
             result[result.length - 1].supportingMechanisms = [
                 ...new Set(later.map((item) => item.mechanism)),
