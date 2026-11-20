@@ -1,0 +1,172 @@
+{
+  "initial": {
+    "cases": 114,
+    "repeated": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "tn": 18,
+      "wrongFeature": 0,
+      "uncertain": 1,
+      "excluded": 92,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "linked": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "tn": 18,
+      "wrongFeature": 0,
+      "uncertain": 1,
+      "excluded": 92,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "newWorkerReports": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "tn": 18,
+      "wrongFeature": 0,
+      "uncertain": 1,
+      "excluded": 92,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "changes": {
+      "annotated-pawn-asian-disabilities-men-2026-2f1d3c397b0d2623-72": {
+        "before": "tactical",
+        "after": "mixed",
+        "feature": "pawn-stable-minor",
+        "explanation": "After Qd2 \u2026 Ne4, Black's knight occupies e4, supported by a pawn and beyond the reach of an opposing pawn. Both searches retain this structure. The same setup is absent after Rxc7 through this window."
+      },
+      "mistake-ayr-major-sept-2026-986c3b63dcad4cf7-64": {
+        "before": "unclear",
+        "after": "positional",
+        "feature": "passed-pawn",
+        "explanation": "After Re2 \u2026 d4, Black's pawn from d5 becomes a passed pawn on d4. Both searches retain this structure. cxd5 takes the original pawn on d5 before it can advance."
+      },
+      "structure-arco-open-2026-70d84a822f75ef78-34": {
+        "before": "unclear",
+        "after": "positional",
+        "feature": "passed-pawn",
+        "explanation": "After d5 \u2026 cxd5, White's pawn from c4 becomes a passed pawn on d5. Both searches retain this structure. The same setup is absent after bxc5 through this window."
+      },
+      "classical-94c60d770289ea79": {
+        "before": "unclear",
+        "after": "positional",
+        "feature": "passed-pawn",
+        "explanation": "After Bf6 \u2026 cxb7, White's pawn from d5 becomes a passed pawn on b7. Both searches retain this structure. exd5 takes the original pawn on d5 before it can advance."
+      },
+      "classical-7b66f71a899a1c2d": {
+        "before": "unclear",
+        "after": "positional",
+        "feature": "passed-pawn",
+        "explanation": "After Bxd5 \u2026 cxd5, White's pawn from c4 becomes a passed pawn on d5. Both searches retain this structure. The same setup is absent after b5 through this window."
+      }
+    },
+    "workerMedianMs": {
+      "before": 61.809,
+      "after": 62.398
+    }
+  },
+  "replication": {
+    "cases": 135,
+    "repeated": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 21,
+      "wrongFeature": 0,
+      "uncertain": 4,
+      "excluded": 108,
+      "uncertainNominated": 1,
+      "excludedNominated": 0
+    },
+    "linked": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 21,
+      "wrongFeature": 0,
+      "uncertain": 4,
+      "excluded": 108,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "newWorkerReports": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 21,
+      "wrongFeature": 0,
+      "uncertain": 4,
+      "excluded": 108,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "changes": {
+      "classical-11a1777b21f6c4a7": {
+        "before": "unclear",
+        "after": "positional",
+        "feature": "passed-pawn",
+        "explanation": "After dxc4 \u2026 exd5, White's pawn from e4 becomes a passed pawn on d5. Both searches retain this structure. The same setup is absent after bxc4 through this window."
+      }
+    },
+    "workerMedianMs": {
+      "before": 41.581,
+      "after": 41.279
+    }
+  },
+  "reserve": {
+    "cases": 170,
+    "repeated": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 2,
+      "tn": 17,
+      "wrongFeature": 0,
+      "uncertain": 5,
+      "excluded": 144,
+      "uncertainNominated": 1,
+      "excludedNominated": 0
+    },
+    "linked": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 3,
+      "tn": 18,
+      "wrongFeature": 0,
+      "uncertain": 5,
+      "excluded": 144,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "newWorkerReports": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 3,
+      "tn": 18,
+      "wrongFeature": 0,
+      "uncertain": 5,
+      "excluded": 144,
+      "uncertainNominated": 0,
+      "excludedNominated": 0
+    },
+    "changes": {},
+    "workerMedianMs": {
+      "before": 35.675,
+      "after": 36.634
+    }
+  },
+  "firstLinkedIteration": {
+    "matches": 0,
+    "newWorkerReports": null
+  },
+  "archive": {
+    "inputs": 1051,
+    "newMistakeExplanations": 3,
+    "note": "Public examples are included. Full archived payload stays local; combined median time includes the initial sample."
+  }
+}

@@ -1,0 +1,79 @@
+[
+  {
+    "offset": 77,
+    "before": [],
+    "after": [
+      "import { compareStrategicAssets, type StrategicAssetEvidence } from \"strategic-asset-experiment\";"
+    ]
+  },
+  {
+    "offset": 82,
+    "before": [
+      "export const DECISION_ASSESSMENT_VERSION = 34;"
+    ],
+    "after": [
+      "export const DECISION_ASSESSMENT_VERSION = 35;"
+    ]
+  },
+  {
+    "offset": 172,
+    "before": [],
+    "after": [
+      "              strategicAsset?: StrategicAssetEvidence;"
+    ]
+  },
+  {
+    "offset": 1155,
+    "before": [],
+    "after": [
+      "            const strategicAsset =",
+      "                corroboratedChoices &&",
+      "                !factors.length &&",
+      "                !pawnEpisodes.length &&",
+      "                !shelter &&",
+      "                !promotion?.positional &&",
+      "                !rookPressure &&",
+      "                !pawnStructure",
+      "                    ? compareStrategicAssets(",
+      "                          input.fen,",
+      "                          comparedBest,",
+      "                          playedLine,",
+      "                          betterProbe!.lines[0],",
+      "                          playedProbe!.lines[0],",
+      "                          input.history,",
+      "                      )",
+      "                    : null;"
+    ]
+  },
+  {
+    "offset": 1161,
+    "before": [
+      "                pawnStructure"
+    ],
+    "after": [
+      "                pawnStructure ||",
+      "                strategicAsset"
+    ]
+  },
+  {
+    "offset": 1176,
+    "before": [],
+    "after": [
+      "                        ...(strategicAsset ? [strategicAsset.factor.description] : []),"
+    ]
+  },
+  {
+    "offset": 1184,
+    "before": [],
+    "after": [
+      "                    ...(strategicAsset ? [strategicAsset.factor] : []),"
+    ]
+  },
+  {
+    "offset": 1206,
+    "before": [],
+    "after": [
+      "                ...(strategicAsset ? { strategicAsset } : {}),"
+    ]
+  }
+]

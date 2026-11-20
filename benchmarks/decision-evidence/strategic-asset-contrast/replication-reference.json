@@ -1,0 +1,6676 @@
+[
+  {
+    "id": "classical-7e8fd50ec1014222",
+    "event": "vicenza",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-d01154860af21fb8",
+    "event": "nato",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-19268e81a614ea4e",
+    "event": "vechta",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e00aa099a841020b",
+    "event": "hoogeveen",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-8d3e23eead720c5b",
+    "event": "munster",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-821962f726f337e0",
+    "event": "calvia",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-82482db940615760",
+    "event": "maritime",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-1d9a4f82777f2364",
+    "event": "khelo",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ac15a6b84f26d938",
+    "event": "vicenza",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ec33203a1c1b833b",
+    "event": "nato",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9b759a7b06f94564",
+    "event": "munster",
+    "phase": "passer-concession",
+    "fen": "r2q1rk1/pp3ppp/2p5/bB1pP3/1n1P1P1n/PQN1B3/1P3P1P/R4R1K b - - 0 18",
+    "playedMoveUci": "b4a6",
+    "pairedDrop": 147,
+    "replyDrop": 134,
+    "lines": [
+      {
+        "san": [
+          "Nc2",
+          "Qxc2",
+          "cxb5",
+          "b4",
+          "Bb6",
+          "Qe2",
+          "Qd7",
+          "Rg1",
+          "a6",
+          "Qg4",
+          "Nf5"
+        ],
+        "material": [
+          0,
+          -320,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "uci": [
+          "b4c2",
+          "b3c2",
+          "c6b5",
+          "b2b4",
+          "a5b6",
+          "c2e2",
+          "d8d7",
+          "f1g1",
+          "a7a6",
+          "e2g4",
+          "h4f5"
+        ]
+      },
+      {
+        "san": [
+          "Nc2",
+          "Qxc2",
+          "cxb5",
+          "b4",
+          "Bb6",
+          "Nxb5",
+          "Qd7",
+          "Nd6",
+          "Qh3",
+          "f3",
+          "Bc7"
+        ],
+        "material": [
+          0,
+          -320,
+          10,
+          10,
+          10,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90
+        ],
+        "uci": [
+          "b4c2",
+          "b3c2",
+          "c6b5",
+          "b2b4",
+          "a5b6",
+          "c3b5",
+          "d8d7",
+          "b5d6",
+          "d7h3",
+          "f2f3",
+          "b6c7"
+        ]
+      },
+      {
+        "san": [
+          "Na6",
+          "Bd3",
+          "Qd7",
+          "Rg1",
+          "Bxc3",
+          "bxc3",
+          "Nc7",
+          "Qb1",
+          "f5",
+          "Rg5",
+          "Qe8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          320,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10
+        ],
+        "uci": [
+          "b4a6",
+          "b5d3",
+          "d8d7",
+          "f1g1",
+          "a5c3",
+          "b2c3",
+          "a6c7",
+          "b3b1",
+          "f7f5",
+          "g1g5",
+          "d7e8"
+        ]
+      },
+      {
+        "san": [
+          "Na6",
+          "Bd3",
+          "Qd7",
+          "Rg1",
+          "f5",
+          "Na4",
+          "b5",
+          "Qd1",
+          "Bd8",
+          "Rg3",
+          "Rf7"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "b4a6",
+          "b5d3",
+          "d8d7",
+          "f1g1",
+          "f7f5",
+          "c3a4",
+          "b7b5",
+          "b3d1",
+          "a5d8",
+          "g1g3",
+          "f8f7"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "e5",
+          "keys": [
+            [
+              [
+                9,
+                "e5"
+              ],
+              [
+                10,
+                "e5"
+              ],
+              [
+                11,
+                "e5"
+              ]
+            ],
+            [
+              [
+                5,
+                "e5"
+              ],
+              [
+                6,
+                "e5"
+              ],
+              [
+                7,
+                "e5"
+              ],
+              [
+                8,
+                "e5"
+              ],
+              [
+                9,
+                "e5"
+              ],
+              [
+                10,
+                "e5"
+              ],
+              [
+                11,
+                "e5"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "The same e5 pawn is passed in both weaker lines only late in the comparison and the removal order diverges."
+  },
+  {
+    "id": "classical-53a52b5d5fdb9e77",
+    "event": "vechta",
+    "phase": "passer-concession",
+    "fen": "2r5/1p3rpk/p2p3b/N1nP1q1P/2P1pp2/1PB2P2/P3Q3/K2R2R1 w - - 0 30",
+    "playedMoveUci": "g1g6",
+    "pairedDrop": 332,
+    "replyDrop": 405,
+    "lines": [
+      {
+        "san": [
+          "Qg2",
+          "Kg8",
+          "Qg6",
+          "Qxg6",
+          "hxg6",
+          "Re7",
+          "b4",
+          "Na4",
+          "Bd4",
+          "exf3",
+          "Rgf1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -900,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100
+        ],
+        "uci": [
+          "e2g2",
+          "h7g8",
+          "g2g6",
+          "f5g6",
+          "h5g6",
+          "f7e7",
+          "b3b4",
+          "c5a4",
+          "c3d4",
+          "e4f3",
+          "g1f1"
+        ]
+      },
+      {
+        "san": [
+          "Qg2",
+          "Kg8",
+          "Qg6",
+          "Qxg6",
+          "hxg6",
+          "Re7",
+          "Bd4",
+          "exf3",
+          "Rgf1",
+          "Ne4",
+          "Rxf3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -900,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          0
+        ],
+        "uci": [
+          "e2g2",
+          "h7g8",
+          "g2g6",
+          "f5g6",
+          "h5g6",
+          "f7e7",
+          "c3d4",
+          "e4f3",
+          "g1f1",
+          "c5e4",
+          "f1f3"
+        ]
+      },
+      {
+        "san": [
+          "Rg6",
+          "exf3",
+          "Qxf3",
+          "Ne4",
+          "Kb2",
+          "Ng5",
+          "Qe2",
+          "f3",
+          "Qc2",
+          "Qxc2+",
+          "Kxc2"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -900,
+          0
+        ],
+        "uci": [
+          "g1g6",
+          "e4f3",
+          "e2f3",
+          "c5e4",
+          "a1b2",
+          "e4g5",
+          "f3e2",
+          "f4f3",
+          "e2c2",
+          "f5c2",
+          "b2c2"
+        ]
+      },
+      {
+        "san": [
+          "Rg6",
+          "exf3",
+          "Qxf3",
+          "Ne4",
+          "Rf1",
+          "Nxc3",
+          "Qxc3",
+          "Bg5",
+          "Kb2",
+          "Bf6",
+          "Rxf6"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          0,
+          0,
+          -330,
+          -10,
+          -10,
+          -10,
+          -10,
+          320
+        ],
+        "uci": [
+          "g1g6",
+          "e4f3",
+          "e2f3",
+          "c5e4",
+          "d1f1",
+          "e4c3",
+          "f3c3",
+          "h6g5",
+          "a1b2",
+          "g5f6",
+          "g6f6"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "e4",
+          "keys": [
+            [
+              [
+                2,
+                "f3"
+              ]
+            ],
+            [
+              [
+                2,
+                "f3"
+              ]
+            ],
+            [
+              [
+                10,
+                "f3"
+              ],
+              [
+                11,
+                "f3"
+              ]
+            ],
+            [
+              [
+                8,
+                "f3"
+              ],
+              [
+                9,
+                "f3"
+              ],
+              [
+                10,
+                "f3"
+              ]
+            ]
+          ]
+        },
+        {
+          "start": "f4",
+          "keys": [
+            [
+              [
+                2,
+                "f4"
+              ],
+              [
+                3,
+                "f4"
+              ],
+              [
+                4,
+                "f4"
+              ],
+              [
+                5,
+                "f4"
+              ],
+              [
+                6,
+                "f4"
+              ],
+              [
+                7,
+                "f4"
+              ],
+              [
+                8,
+                "f3"
+              ],
+              [
+                9,
+                "f3"
+              ],
+              [
+                10,
+                "f3"
+              ],
+              [
+                11,
+                "f3"
+              ]
+            ],
+            [
+              [
+                2,
+                "f4"
+              ],
+              [
+                3,
+                "f4"
+              ],
+              [
+                4,
+                "f4"
+              ],
+              [
+                5,
+                "f4"
+              ],
+              [
+                6,
+                "f4"
+              ],
+              [
+                7,
+                "f4"
+              ],
+              [
+                8,
+                "f4"
+              ],
+              [
+                9,
+                "f4"
+              ],
+              [
+                10,
+                "f4"
+              ],
+              [
+                11,
+                "f4"
+              ]
+            ],
+            [
+              [
+                10,
+                "f4"
+              ],
+              [
+                11,
+                "f4"
+              ]
+            ],
+            [
+              [
+                8,
+                "f4"
+              ],
+              [
+                9,
+                "f4"
+              ],
+              [
+                10,
+                "f4"
+              ],
+              [
+                11,
+                "f4"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "yes",
+    "feature": "passed-pawn",
+    "note": "Rg6 allows exf3 immediately, removing the f3 blocker and creating the separate passed pawn from f4. Qg2 delays that pawn change past the early window in both lines.",
+    "tactical": null
+  },
+  {
+    "id": "classical-9d46c50276c079a9",
+    "event": "calvia",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-24004969d05414c6",
+    "event": "hoogeveen",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-fa50c5d3dac9547b",
+    "event": "khelo",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c0a58a2ca4d6c8ee",
+    "event": "maritime",
+    "phase": "passer-concession",
+    "fen": "6k1/p4pb1/3p2p1/3Bpq1p/1P4b1/1Q2P1P1/P4P1K/2B5 w - - 1 30",
+    "playedMoveUci": "h2g1",
+    "pairedDrop": 205,
+    "replyDrop": 194,
+    "lines": [
+      {
+        "san": [
+          "f4",
+          "e4",
+          "Qc4",
+          "Bf3",
+          "Bb7",
+          "Kh7",
+          "Bc8",
+          "Qf6",
+          "Bb7",
+          "h4",
+          "g4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f2f4",
+          "e5e4",
+          "b3c4",
+          "g4f3",
+          "d5b7",
+          "g8h7",
+          "b7c8",
+          "f5f6",
+          "c8b7",
+          "h5h4",
+          "g3g4"
+        ]
+      },
+      {
+        "san": [
+          "f4",
+          "h4",
+          "e4",
+          "Qh5",
+          "Kg2",
+          "hxg3",
+          "Qxg3",
+          "Bf6",
+          "fxe5",
+          "Bh4",
+          "Qc3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "f2f4",
+          "h5h4",
+          "e3e4",
+          "f5h5",
+          "h2g2",
+          "h4g3",
+          "b3g3",
+          "g7f6",
+          "f4e5",
+          "f6h4",
+          "g3c3"
+        ]
+      },
+      {
+        "san": [
+          "Kg1",
+          "e4",
+          "Bb7",
+          "Bf3",
+          "Qc4",
+          "Kh7",
+          "Bc8",
+          "Qf6",
+          "Bh3",
+          "h4",
+          "g4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "h2g1",
+          "e5e4",
+          "d5b7",
+          "g4f3",
+          "b3c4",
+          "g8h7",
+          "b7c8",
+          "f5f6",
+          "c8h3",
+          "h5h4",
+          "g3g4"
+        ]
+      },
+      {
+        "san": [
+          "Kg1",
+          "e4",
+          "Bb7",
+          "Bf3",
+          "Qc2",
+          "Kh7",
+          "Bc8",
+          "Qf6",
+          "Bh3",
+          "h4",
+          "Qc8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "h2g1",
+          "e5e4",
+          "d5b7",
+          "g4f3",
+          "b3c2",
+          "g8h7",
+          "b7c8",
+          "f5f6",
+          "c8h3",
+          "h5h4",
+          "c2c8"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "g4",
+          "keys": [
+            [
+              [
+                4,
+                "f3"
+              ],
+              [
+                5,
+                "f3"
+              ],
+              [
+                6,
+                "f3"
+              ],
+              [
+                7,
+                "f3"
+              ],
+              [
+                8,
+                "f3"
+              ],
+              [
+                9,
+                "f3"
+              ],
+              [
+                10,
+                "f3"
+              ],
+              [
+                11,
+                "f3"
+              ]
+            ],
+            [
+              [
+                4,
+                "f3"
+              ],
+              [
+                5,
+                "f3"
+              ],
+              [
+                6,
+                "f3"
+              ],
+              [
+                7,
+                "f3"
+              ],
+              [
+                8,
+                "f3"
+              ],
+              [
+                9,
+                "f3"
+              ],
+              [
+                10,
+                "f3"
+              ],
+              [
+                11,
+                "f3"
+              ]
+            ],
+            [
+              [
+                4,
+                "f3"
+              ],
+              [
+                5,
+                "f3"
+              ],
+              [
+                6,
+                "f3"
+              ],
+              [
+                7,
+                "f3"
+              ],
+              [
+                8,
+                "f3"
+              ],
+              [
+                9,
+                "f3"
+              ],
+              [
+                10,
+                "f3"
+              ],
+              [
+                11,
+                "f3"
+              ]
+            ],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-4081d7cb7c18fd0f",
+    "event": "nato",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-691d9fc2f0544614",
+    "event": "vicenza",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-593f7be9746f0afa",
+    "event": "vechta",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9ad16da74d2ce1a1",
+    "event": "munster",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-073eea8a935807ab",
+    "event": "hoogeveen",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-11a1777b21f6c4a7",
+    "event": "calvia",
+    "phase": "passer-concession",
+    "fen": "4rr2/3q2k1/2b1pp2/1p1p2p1/2PPP1Pp/2P4P/2Q2PB1/1R2R1K1 b - - 0 34",
+    "playedMoveUci": "d5c4",
+    "pairedDrop": 81,
+    "replyDrop": 76,
+    "lines": [
+      {
+        "san": [
+          "bxc4",
+          "e5",
+          "f5",
+          "gxf5",
+          "Rxf5",
+          "Rb6",
+          "Ref8",
+          "Re2",
+          "Qe8",
+          "Qb1",
+          "Qh5"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "b5c4",
+          "e4e5",
+          "f6f5",
+          "g4f5",
+          "f8f5",
+          "b1b6",
+          "e8f8",
+          "e1e2",
+          "d7e8",
+          "c2b1",
+          "e8h5"
+        ]
+      },
+      {
+        "san": [
+          "bxc4",
+          "e5",
+          "f5",
+          "gxf5",
+          "Rxf5",
+          "Rb6",
+          "Ref8",
+          "Reb1",
+          "Rxf2",
+          "Qxf2",
+          "Rxf2"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          0,
+          100,
+          100,
+          100,
+          100,
+          200,
+          -300,
+          600
+        ],
+        "uci": [
+          "b5c4",
+          "e4e5",
+          "f6f5",
+          "g4f5",
+          "f8f5",
+          "b1b6",
+          "e8f8",
+          "e1b1",
+          "f5f2",
+          "c2f2",
+          "f8f2"
+        ]
+      },
+      {
+        "san": [
+          "dxc4",
+          "d5",
+          "exd5",
+          "exd5",
+          "Rxe1+",
+          "Rxe1",
+          "Bb7",
+          "d6",
+          "Rf7",
+          "Bxb7",
+          "Qxb7"
+        ],
+        "material": [
+          100,
+          100,
+          200,
+          100,
+          600,
+          100,
+          100,
+          100,
+          100,
+          -230,
+          100
+        ],
+        "uci": [
+          "d5c4",
+          "d4d5",
+          "e6d5",
+          "e4d5",
+          "e8e1",
+          "b1e1",
+          "c6b7",
+          "d5d6",
+          "f8f7",
+          "g2b7",
+          "d7b7"
+        ]
+      },
+      {
+        "san": [
+          "dxc4",
+          "d5",
+          "exd5",
+          "exd5",
+          "Rxe1+",
+          "Rxe1",
+          "Bb7",
+          "Qb2",
+          "Re8",
+          "Rb1",
+          "Ba8"
+        ],
+        "material": [
+          100,
+          100,
+          200,
+          100,
+          600,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "d5c4",
+          "d4d5",
+          "e6d5",
+          "e4d5",
+          "e8e1",
+          "b1e1",
+          "c6b7",
+          "c2b2",
+          "f8e8",
+          "e1b1",
+          "b7a8"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "e4",
+          "keys": [
+            [
+              [
+                4,
+                "d5"
+              ],
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d6"
+              ],
+              [
+                9,
+                "d6"
+              ],
+              [
+                10,
+                "d6"
+              ],
+              [
+                11,
+                "d6"
+              ]
+            ],
+            [
+              [
+                4,
+                "d5"
+              ],
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d5"
+              ],
+              [
+                9,
+                "d5"
+              ],
+              [
+                10,
+                "d5"
+              ],
+              [
+                11,
+                "d5"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "yes",
+    "feature": "passed-pawn",
+    "note": "dxc4 takes the d5 blocker off its file. In both worse lines d5 exd5 exd5 leaves White's original e4 pawn passed on d5. After bxc4 the black d5 pawn remains and stops that plan in both searched lines.",
+    "tactical": null
+  },
+  {
+    "id": "classical-efa3da027300b6de",
+    "event": "maritime",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-fcca897c26a96164",
+    "event": "khelo",
+    "phase": "passer-concession",
+    "fen": "8/4b3/8/2pk1ppp/p2P1p2/2Pb1P1P/PB1N2P1/6K1 w - - 0 36",
+    "playedMoveUci": "b2a3",
+    "pairedDrop": 124,
+    "replyDrop": 102,
+    "lines": [
+      {
+        "san": [
+          "c4+",
+          "Bxc4",
+          "Nxc4",
+          "Kxc4",
+          "dxc5",
+          "Bxc5+",
+          "Kf1",
+          "Kd3",
+          "Bf6",
+          "g4",
+          "Bh4"
+        ],
+        "material": [
+          0,
+          -100,
+          230,
+          -90,
+          10,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90
+        ],
+        "uci": [
+          "c3c4",
+          "d3c4",
+          "d2c4",
+          "d5c4",
+          "d4c5",
+          "e7c5",
+          "g1f1",
+          "c4d3",
+          "b2f6",
+          "g5g4",
+          "f6h4"
+        ]
+      },
+      {
+        "san": [
+          "c4+",
+          "Bxc4",
+          "Nxc4",
+          "Kxc4",
+          "dxc5",
+          "Bxc5+",
+          "Kf1",
+          "Kd3",
+          "Bf6",
+          "g4",
+          "Bh4"
+        ],
+        "material": [
+          0,
+          -100,
+          230,
+          -90,
+          10,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90
+        ],
+        "uci": [
+          "c3c4",
+          "d3c4",
+          "d2c4",
+          "d5c4",
+          "d4c5",
+          "e7c5",
+          "g1f1",
+          "c4d3",
+          "b2f6",
+          "g5g4",
+          "f6h4"
+        ]
+      },
+      {
+        "san": [
+          "Ba3",
+          "Bd8",
+          "dxc5",
+          "g4",
+          "Bb4",
+          "Kc6",
+          "Nf1",
+          "Bh4",
+          "fxg4",
+          "hxg4",
+          "hxg4"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          200,
+          100,
+          200
+        ],
+        "uci": [
+          "b2a3",
+          "e7d8",
+          "d4c5",
+          "g5g4",
+          "a3b4",
+          "d5c6",
+          "d2f1",
+          "d8h4",
+          "f3g4",
+          "h5g4",
+          "h3g4"
+        ]
+      },
+      {
+        "san": [
+          "Ba3",
+          "Bd8",
+          "dxc5",
+          "g4",
+          "Bb4",
+          "Kc6",
+          "Nf1",
+          "Bh4",
+          "hxg4",
+          "fxg4",
+          "Nd2"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          200,
+          100,
+          100
+        ],
+        "uci": [
+          "b2a3",
+          "e7d8",
+          "d4c5",
+          "g5g4",
+          "a3b4",
+          "d5c6",
+          "d2f1",
+          "d8h4",
+          "h3g4",
+          "f5g4",
+          "f1d2"
+        ]
+      }
+    ],
+    "options": {
+      "gains-new-passer": [
+        {
+          "start": "d4",
+          "keys": [
+            [
+              [
+                5,
+                "c5"
+              ]
+            ],
+            [
+              [
+                5,
+                "c5"
+              ]
+            ],
+            [
+              [
+                3,
+                "c5"
+              ],
+              [
+                4,
+                "c5"
+              ],
+              [
+                5,
+                "c5"
+              ],
+              [
+                6,
+                "c5"
+              ],
+              [
+                7,
+                "c5"
+              ],
+              [
+                8,
+                "c5"
+              ],
+              [
+                9,
+                "c5"
+              ],
+              [
+                10,
+                "c5"
+              ],
+              [
+                11,
+                "c5"
+              ]
+            ],
+            [
+              [
+                3,
+                "c5"
+              ],
+              [
+                4,
+                "c5"
+              ],
+              [
+                5,
+                "c5"
+              ],
+              [
+                6,
+                "c5"
+              ],
+              [
+                7,
+                "c5"
+              ],
+              [
+                8,
+                "c5"
+              ],
+              [
+                9,
+                "c5"
+              ],
+              [
+                10,
+                "c5"
+              ],
+              [
+                11,
+                "c5"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-969ae857e9968987",
+    "event": "nato",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-7c863126a034b3d4",
+    "event": "vechta",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-8d59b91ef6d852bc",
+    "event": "munster",
+    "phase": "passer-concession",
+    "fen": "r1k3rn/4bp1Q/pqp1p3/2NpP2p/1P1P2P1/4B2P/P4R2/5RK1 b - - 3 30",
+    "playedMoveUci": "g8e8",
+    "pairedDrop": 158,
+    "replyDrop": 148,
+    "lines": [
+      {
+        "san": [
+          "Qd8",
+          "Qxh5",
+          "Rb8",
+          "Bd2",
+          "Rg7",
+          "Qh6",
+          "Qg8",
+          "Nxa6",
+          "Ra8",
+          "b5",
+          "cxb5"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -200,
+          -200,
+          -200,
+          -100
+        ],
+        "uci": [
+          "b6d8",
+          "h7h5",
+          "a8b8",
+          "e3d2",
+          "g8g7",
+          "h5h6",
+          "d8g8",
+          "c5a6",
+          "b8a8",
+          "b4b5",
+          "c6b5"
+        ]
+      },
+      {
+        "san": [
+          "Qd8",
+          "Qxh5",
+          "Rg7",
+          "Bd2",
+          "Qg8",
+          "Qh6",
+          "Bxc5",
+          "bxc5",
+          "Rb8",
+          "Kg2",
+          "Kd7"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          220,
+          -110,
+          -110,
+          -110,
+          -110
+        ],
+        "uci": [
+          "b6d8",
+          "h7h5",
+          "g8g7",
+          "e3d2",
+          "d8g8",
+          "h5h6",
+          "e7c5",
+          "b4c5",
+          "a8b8",
+          "g1g2",
+          "c8d7"
+        ]
+      },
+      {
+        "san": [
+          "Re8",
+          "Rxf7",
+          "Nxf7",
+          "Qxf7",
+          "Qd8",
+          "Qxe6+",
+          "Kb8",
+          "Qxc6",
+          "Ra7",
+          "Nxa6+",
+          "Rxa6"
+        ],
+        "material": [
+          0,
+          -100,
+          400,
+          80,
+          80,
+          -20,
+          -20,
+          -120,
+          -120,
+          -220,
+          100
+        ],
+        "uci": [
+          "g8e8",
+          "f2f7",
+          "h8f7",
+          "h7f7",
+          "b6d8",
+          "f7e6",
+          "c8b8",
+          "e6c6",
+          "a8a7",
+          "c5a6",
+          "a7a6"
+        ]
+      },
+      {
+        "san": [
+          "Re8",
+          "Rxf7",
+          "Ra7",
+          "R7f4",
+          "hxg4",
+          "Qh5",
+          "Qd8",
+          "Nxe6",
+          "Qd7",
+          "Rxg4",
+          "Bxb4"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -200,
+          -100
+        ],
+        "uci": [
+          "g8e8",
+          "f2f7",
+          "a8a7",
+          "f7f4",
+          "h5g4",
+          "h7h5",
+          "b6d8",
+          "c5e6",
+          "d8d7",
+          "f4g4",
+          "e7b4"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "e5",
+          "keys": [
+            [
+              [
+                6,
+                "e5"
+              ],
+              [
+                7,
+                "e5"
+              ],
+              [
+                8,
+                "e5"
+              ],
+              [
+                9,
+                "e5"
+              ],
+              [
+                10,
+                "e5"
+              ],
+              [
+                11,
+                "e5"
+              ]
+            ],
+            [
+              [
+                8,
+                "e5"
+              ],
+              [
+                9,
+                "e5"
+              ],
+              [
+                10,
+                "e5"
+              ],
+              [
+                11,
+                "e5"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "The later e5 passer follows materially different rook and queen tactics. Its contribution to the initial rook move remains uncertain."
+  },
+  {
+    "id": "classical-fe004de737984b50",
+    "event": "hoogeveen",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f87714fe25500176",
+    "event": "vicenza",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-1111c3cfd2640175",
+    "event": "calvia",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-4b8f1c2f383c08a4",
+    "event": "maritime",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-71213e646239d0f7",
+    "event": "khelo",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-2263b40e5d017690",
+    "event": "nato",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-11a4cb9a9f2156f2",
+    "event": "vechta",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e7be8b28c7932076",
+    "event": "munster",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c306ee74d1ac53d0",
+    "event": "hoogeveen",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-d586f3f52456f533",
+    "event": "nato",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b8d8f45f0ace310e",
+    "event": "calvia",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-37329809344e1b08",
+    "event": "munster",
+    "phase": "outpost-concession",
+    "fen": "r2q1rk1/1p2ppbp/p1n3p1/2Pp1b2/N2PnB2/5N1P/PP2BPP1/R2Q1RK1 b - - 8 12",
+    "playedMoveUci": "f7f6",
+    "pairedDrop": 139,
+    "replyDrop": 105,
+    "lines": [
+      {
+        "san": [
+          "g5",
+          "Bh2",
+          "e6",
+          "Nb6",
+          "Rb8",
+          "Rc1",
+          "Kh8",
+          "Bxb8",
+          "Nxb8",
+          "Ne5",
+          "f6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -500,
+          -170,
+          -170,
+          -170
+        ],
+        "uci": [
+          "g6g5",
+          "f4h2",
+          "e7e6",
+          "a4b6",
+          "a8b8",
+          "a1c1",
+          "g8h8",
+          "h2b8",
+          "c6b8",
+          "f3e5",
+          "f7f6"
+        ]
+      },
+      {
+        "san": [
+          "g5",
+          "Bh2",
+          "e6",
+          "Nb6",
+          "Rb8",
+          "Bxb8",
+          "Nxb8",
+          "Re1",
+          "h5",
+          "Ne5",
+          "g4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -500,
+          -170,
+          -170,
+          -170,
+          -170,
+          -170
+        ],
+        "uci": [
+          "g6g5",
+          "f4h2",
+          "e7e6",
+          "a4b6",
+          "a8b8",
+          "h2b8",
+          "c6b8",
+          "f1e1",
+          "h7h5",
+          "f3e5",
+          "g5g4"
+        ]
+      },
+      {
+        "san": [
+          "f6",
+          "Nb6",
+          "e5",
+          "Be3",
+          "Rb8",
+          "dxe5",
+          "fxe5",
+          "Qxd5+",
+          "Qxd5",
+          "Nxd5",
+          "Nd4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          -100,
+          800,
+          -100,
+          -100
+        ],
+        "uci": [
+          "f7f6",
+          "a4b6",
+          "e7e5",
+          "f4e3",
+          "a8b8",
+          "d4e5",
+          "f6e5",
+          "d1d5",
+          "d8d5",
+          "b6d5",
+          "c6d4"
+        ]
+      },
+      {
+        "san": [
+          "f6",
+          "Nb6",
+          "e5",
+          "Be3",
+          "Rb8",
+          "dxe5",
+          "fxe5",
+          "Qxd5+",
+          "Qxd5",
+          "Nxd5",
+          "Nd4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          -100,
+          800,
+          -100,
+          -100
+        ],
+        "uci": [
+          "f7f6",
+          "a4b6",
+          "e7e5",
+          "f4e3",
+          "a8b8",
+          "d4e5",
+          "f6e5",
+          "d1d5",
+          "d8d5",
+          "b6d5",
+          "c6d4"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "a4",
+          "keys": [
+            [
+              [
+                2,
+                "b6"
+              ],
+              [
+                3,
+                "b6"
+              ],
+              [
+                4,
+                "b6"
+              ],
+              [
+                5,
+                "b6"
+              ],
+              [
+                6,
+                "b6"
+              ],
+              [
+                7,
+                "b6"
+              ],
+              [
+                8,
+                "b6"
+              ],
+              [
+                9,
+                "b6"
+              ]
+            ],
+            [
+              [
+                2,
+                "b6"
+              ],
+              [
+                3,
+                "b6"
+              ],
+              [
+                4,
+                "b6"
+              ],
+              [
+                5,
+                "b6"
+              ],
+              [
+                6,
+                "b6"
+              ],
+              [
+                7,
+                "b6"
+              ],
+              [
+                8,
+                "b6"
+              ],
+              [
+                9,
+                "b6"
+              ]
+            ],
+            [
+              [
+                4,
+                "b6"
+              ],
+              [
+                5,
+                "b6"
+              ],
+              [
+                6,
+                "b6"
+              ],
+              [
+                7,
+                "b6"
+              ],
+              [
+                8,
+                "b6"
+              ],
+              [
+                9,
+                "b6"
+              ],
+              [
+                10,
+                "b6"
+              ],
+              [
+                11,
+                "b6"
+              ]
+            ],
+            [
+              [
+                4,
+                "b6"
+              ],
+              [
+                5,
+                "b6"
+              ],
+              [
+                6,
+                "b6"
+              ],
+              [
+                7,
+                "b6"
+              ],
+              [
+                8,
+                "b6"
+              ],
+              [
+                9,
+                "b6"
+              ],
+              [
+                10,
+                "b6"
+              ],
+              [
+                11,
+                "b6"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-00606dfcacd16ac7",
+    "event": "vechta",
+    "phase": "outpost-concession",
+    "fen": "r3r2k/pp2qp1p/3p3B/1PpPbpQ1/3nP2P/3P3B/P7/1R3R1K b - - 5 25",
+    "playedMoveUci": "e7g5",
+    "pairedDrop": 146,
+    "replyDrop": 161,
+    "lines": [
+      {
+        "san": [
+          "f6",
+          "Qh5",
+          "fxe4",
+          "dxe4",
+          "Rg8",
+          "Rbe1",
+          "Rg3",
+          "Re3",
+          "Rg6",
+          "Bf5",
+          "Nxf5"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          330
+        ],
+        "uci": [
+          "f7f6",
+          "g5h5",
+          "f5e4",
+          "d3e4",
+          "e8g8",
+          "b1e1",
+          "g8g3",
+          "e1e3",
+          "g3g6",
+          "h3f5",
+          "d4f5"
+        ]
+      },
+      {
+        "san": [
+          "f6",
+          "Qh5",
+          "fxe4",
+          "dxe4",
+          "Rg8",
+          "Bf5",
+          "Qe8",
+          "Qxe8",
+          "Raxe8",
+          "Rg1",
+          "Ne2"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          -900,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f7f6",
+          "g5h5",
+          "f5e4",
+          "d3e4",
+          "e8g8",
+          "h3f5",
+          "e7e8",
+          "h5e8",
+          "a8e8",
+          "f1g1",
+          "d4e2"
+        ]
+      },
+      {
+        "san": [
+          "Qxg5",
+          "hxg5",
+          "f4",
+          "Kg2",
+          "Rg8",
+          "Kf2",
+          "b6",
+          "a4",
+          "Rgd8",
+          "Bg4",
+          "Re8"
+        ],
+        "material": [
+          900,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e7g5",
+          "h4g5",
+          "f5f4",
+          "h1g2",
+          "e8g8",
+          "g2f2",
+          "b7b6",
+          "a2a4",
+          "g8d8",
+          "h3g4",
+          "d8e8"
+        ]
+      },
+      {
+        "san": [
+          "Qxg5",
+          "hxg5",
+          "f4",
+          "Rf2",
+          "b6",
+          "a4",
+          "Rg8",
+          "Rbf1",
+          "a6",
+          "bxa6",
+          "Rxa6"
+        ],
+        "material": [
+          900,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0
+        ],
+        "uci": [
+          "e7g5",
+          "h4g5",
+          "f5f4",
+          "f1f2",
+          "b7b6",
+          "a2a4",
+          "e8g8",
+          "b1f1",
+          "a7a6",
+          "b5a6",
+          "a8a6"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "h6",
+          "keys": [
+            [
+              [
+                2,
+                "h6"
+              ],
+              [
+                3,
+                "h6"
+              ],
+              [
+                4,
+                "h6"
+              ],
+              [
+                5,
+                "h6"
+              ],
+              [
+                6,
+                "h6"
+              ],
+              [
+                7,
+                "h6"
+              ],
+              [
+                8,
+                "h6"
+              ],
+              [
+                9,
+                "h6"
+              ],
+              [
+                10,
+                "h6"
+              ],
+              [
+                11,
+                "h6"
+              ]
+            ],
+            [
+              [
+                2,
+                "h6"
+              ],
+              [
+                3,
+                "h6"
+              ],
+              [
+                4,
+                "h6"
+              ],
+              [
+                5,
+                "h6"
+              ],
+              [
+                6,
+                "h6"
+              ],
+              [
+                7,
+                "h6"
+              ],
+              [
+                8,
+                "h6"
+              ],
+              [
+                9,
+                "h6"
+              ],
+              [
+                10,
+                "h6"
+              ],
+              [
+                11,
+                "h6"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "The queen exchange lets hxg5 support the bishop already on h6. The support is real, but the bishop stays on h6 in both better lines too and the importance of the new support is unclear."
+  },
+  {
+    "id": "classical-9a131d0871b885be",
+    "event": "khelo",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-5a3c70bd32a5a318",
+    "event": "vicenza",
+    "phase": "outpost-concession",
+    "fen": "6k1/p6p/1p2p1p1/1b1pN3/8/P3PP2/1P5P/6K1 b - - 2 30",
+    "playedMoveUci": "b5e8",
+    "pairedDrop": 64,
+    "replyDrop": 11,
+    "lines": [
+      {
+        "san": [
+          "Kg7",
+          "f4",
+          "Kf6",
+          "Nf3",
+          "Be8",
+          "Kf2",
+          "h6",
+          "h4",
+          "Kf5",
+          "Nd4+",
+          "Kg4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "g8g7",
+          "f3f4",
+          "g7f6",
+          "e5f3",
+          "b5e8",
+          "g1f2",
+          "h7h6",
+          "h2h4",
+          "f6f5",
+          "f3d4",
+          "f5g4"
+        ]
+      },
+      {
+        "san": [
+          "Kg7",
+          "h4",
+          "Kf6",
+          "Ng4+",
+          "Kf5",
+          "Nh6+",
+          "Ke5",
+          "Kf2",
+          "d4",
+          "Nf7+",
+          "Kf6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "g8g7",
+          "h2h4",
+          "g7f6",
+          "e5g4",
+          "f6f5",
+          "g4h6",
+          "f5e5",
+          "g1f2",
+          "d5d4",
+          "h6f7",
+          "e5f6"
+        ]
+      },
+      {
+        "san": [
+          "Be8",
+          "h4",
+          "Ba4",
+          "Kh2",
+          "Kg7",
+          "Kg3",
+          "h5",
+          "Kf2",
+          "Kf6",
+          "f4",
+          "Kf5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "b5e8",
+          "h2h4",
+          "e8a4",
+          "g1h2",
+          "g8g7",
+          "h2g3",
+          "h7h5",
+          "g3f2",
+          "g7f6",
+          "f3f4",
+          "f6f5"
+        ]
+      },
+      {
+        "san": [
+          "Be8",
+          "Kf2",
+          "Kg7",
+          "h4",
+          "Ba4",
+          "b4",
+          "Kf6",
+          "Ng4+",
+          "Kf7",
+          "Ne5+",
+          "Kg7"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "b5e8",
+          "g1f2",
+          "g8g7",
+          "h2h4",
+          "e8a4",
+          "b2b4",
+          "g7f6",
+          "e5g4",
+          "f6f7",
+          "g4e5",
+          "f7g7"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-3e18f7a03ce81cfd",
+    "event": "maritime",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0d89d42734a6a044",
+    "event": "cork",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b26b7dabbc7f0025",
+    "event": "hoogeveen",
+    "phase": "outpost-concession",
+    "fen": "r1r3k1/5p2/7p/5B2/pp6/2b4P/P5P1/1R3R1K b - - 1 31",
+    "playedMoveUci": "c8c5",
+    "pairedDrop": 73,
+    "replyDrop": 94,
+    "lines": [
+      {
+        "san": [
+          "Rd8",
+          "Rbc1",
+          "Rd2",
+          "Bc2",
+          "Ra7",
+          "Bb1",
+          "Kg7",
+          "Rce1",
+          "a3",
+          "Re3",
+          "Rb2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c8d8",
+          "b1c1",
+          "d8d2",
+          "f5c2",
+          "a8a7",
+          "c2b1",
+          "g8g7",
+          "c1e1",
+          "a4a3",
+          "e1e3",
+          "d2b2"
+        ]
+      },
+      {
+        "san": [
+          "Rd8",
+          "Be4",
+          "Ra7",
+          "Rbc1",
+          "Rd4",
+          "Bb1",
+          "Rd2",
+          "Rfe1",
+          "Kg7",
+          "Kh2",
+          "a3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c8d8",
+          "f5e4",
+          "a8a7",
+          "b1c1",
+          "d8d4",
+          "e4b1",
+          "d4d2",
+          "f1e1",
+          "g8g7",
+          "h1h2",
+          "a4a3"
+        ]
+      },
+      {
+        "san": [
+          "Rc5",
+          "Bc2",
+          "Be5",
+          "Be4",
+          "Rb8",
+          "Rf3",
+          "Kg7",
+          "Kg1",
+          "b3",
+          "axb3",
+          "a3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100
+        ],
+        "uci": [
+          "c8c5",
+          "f5c2",
+          "c3e5",
+          "c2e4",
+          "a8b8",
+          "f1f3",
+          "g8g7",
+          "h1g1",
+          "b4b3",
+          "a2b3",
+          "a4a3"
+        ]
+      },
+      {
+        "san": [
+          "Rc5",
+          "Be4",
+          "Ra7",
+          "Rf3",
+          "Rd7",
+          "Bd3",
+          "h5",
+          "Rc1",
+          "Kg7",
+          "g3",
+          "f6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c8c5",
+          "f5e4",
+          "a8a7",
+          "f1f3",
+          "a7d7",
+          "e4d3",
+          "h6h5",
+          "b1c1",
+          "g8g7",
+          "g2g3",
+          "f7f6"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-f044d4eeb5b7e34b",
+    "event": "calvia",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-92ffd3f725bd054f",
+    "event": "nato",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c04c81ddece42ed8",
+    "event": "vechta",
+    "phase": "outpost-concession",
+    "fen": "8/6rp/p2pk2b/1p2p3/4Nn2/2P3B1/PP5P/3K1R2 w - - 10 34",
+    "playedMoveUci": "f1f2",
+    "pairedDrop": 97,
+    "replyDrop": 80,
+    "lines": [
+      {
+        "san": [
+          "a4",
+          "bxa4",
+          "Kc2",
+          "Nd5",
+          "Kd3",
+          "Rg4",
+          "Ra1",
+          "Nb6",
+          "h3",
+          "Rg6",
+          "Bf2"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "a2a4",
+          "b5a4",
+          "d1c2",
+          "f4d5",
+          "c2d3",
+          "g7g4",
+          "f1a1",
+          "d5b6",
+          "h2h3",
+          "g4g6",
+          "g3f2"
+        ]
+      },
+      {
+        "san": [
+          "a4",
+          "Kd5",
+          "Nf6+",
+          "Ke6",
+          "Ne4",
+          "bxa4",
+          "Kc2",
+          "Nh5",
+          "Rd1",
+          "d5",
+          "Nc5+"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "a2a4",
+          "e6d5",
+          "e4f6",
+          "d5e6",
+          "f6e4",
+          "b5a4",
+          "d1c2",
+          "f4h5",
+          "f1d1",
+          "d6d5",
+          "e4c5"
+        ]
+      },
+      {
+        "san": [
+          "Rf2",
+          "Rg4",
+          "Kc2",
+          "Nh5",
+          "Re2",
+          "Bf4",
+          "Bxf4",
+          "Nxf4",
+          "Rf2",
+          "Nd5",
+          "Kd3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          330,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f1f2",
+          "g7g4",
+          "d1c2",
+          "f4h5",
+          "f2e2",
+          "h6f4",
+          "g3f4",
+          "h5f4",
+          "e2f2",
+          "f4d5",
+          "c2d3"
+        ]
+      },
+      {
+        "san": [
+          "Rf2",
+          "Rg4",
+          "Kc2",
+          "Nh5",
+          "Re2",
+          "Bf4",
+          "b3",
+          "Nxg3",
+          "hxg3",
+          "Bxg3",
+          "Nxg3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -330,
+          -10,
+          -110,
+          220
+        ],
+        "uci": [
+          "f1f2",
+          "g7g4",
+          "d1c2",
+          "f4h5",
+          "f2e2",
+          "h6f4",
+          "b2b3",
+          "h5g3",
+          "h2g3",
+          "f4g3",
+          "e4g3"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "h6",
+          "keys": [
+            [
+              [
+                6,
+                "f4"
+              ]
+            ],
+            [
+              [
+                6,
+                "f4"
+              ],
+              [
+                7,
+                "f4"
+              ],
+              [
+                8,
+                "f4"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-d3151616d6aa4e27",
+    "event": "munster",
+    "phase": "outpost-concession",
+    "fen": "2r1k2r/2q1bp1p/p1b1p1p1/1pnpP3/3N1P2/P4R2/1PP1NBPP/R2Q3K w k - 4 17",
+    "playedMoveUci": "f3c3",
+    "pairedDrop": 61,
+    "replyDrop": 49,
+    "lines": [
+      {
+        "san": [
+          "Qe1",
+          "Ne4",
+          "Rd1",
+          "Qd8",
+          "Ng3",
+          "Nxf2+",
+          "Qxf2",
+          "Bd7",
+          "c3",
+          "Bc5",
+          "Nge2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -330,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10
+        ],
+        "uci": [
+          "d1e1",
+          "c5e4",
+          "a1d1",
+          "c7d8",
+          "e2g3",
+          "e4f2",
+          "e1f2",
+          "c6d7",
+          "c2c3",
+          "e7c5",
+          "g3e2"
+        ]
+      },
+      {
+        "san": [
+          "Qe1",
+          "Ne4",
+          "c3",
+          "Bd7",
+          "Bh4",
+          "g5",
+          "Bg3",
+          "g4",
+          "Rf1",
+          "h5",
+          "f5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d1e1",
+          "c5e4",
+          "c2c3",
+          "c6d7",
+          "f2h4",
+          "g6g5",
+          "h4g3",
+          "g5g4",
+          "f3f1",
+          "h7h5",
+          "f4f5"
+        ]
+      },
+      {
+        "san": [
+          "Rc3",
+          "Ne4",
+          "Rf3",
+          "O-O",
+          "c3",
+          "Bd7",
+          "Be3",
+          "f6",
+          "exf6",
+          "Bxf6",
+          "Rf1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0
+        ],
+        "uci": [
+          "f3c3",
+          "c5e4",
+          "c3f3",
+          "e8g8",
+          "c2c3",
+          "c6d7",
+          "f2e3",
+          "f7f6",
+          "e5f6",
+          "e7f6",
+          "f3f1"
+        ]
+      },
+      {
+        "san": [
+          "Rc3",
+          "Ne4",
+          "Rf3",
+          "Bd7",
+          "c3",
+          "O-O",
+          "Nc2",
+          "f5",
+          "Nb4",
+          "a5",
+          "Nd3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f3c3",
+          "c5e4",
+          "c3f3",
+          "c6d7",
+          "c2c3",
+          "e8g8",
+          "d4c2",
+          "f7f5",
+          "c2b4",
+          "a6a5",
+          "b4d3"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "c5",
+          "keys": [
+            [
+              [
+                2,
+                "e4"
+              ],
+              [
+                3,
+                "e4"
+              ],
+              [
+                4,
+                "e4"
+              ],
+              [
+                5,
+                "e4"
+              ],
+              [
+                6,
+                "e4"
+              ],
+              [
+                7,
+                "e4"
+              ],
+              [
+                8,
+                "e4"
+              ],
+              [
+                9,
+                "e4"
+              ],
+              [
+                10,
+                "e4"
+              ],
+              [
+                11,
+                "e4"
+              ]
+            ],
+            [
+              [
+                2,
+                "e4"
+              ],
+              [
+                3,
+                "e4"
+              ],
+              [
+                4,
+                "e4"
+              ],
+              [
+                5,
+                "e4"
+              ],
+              [
+                6,
+                "e4"
+              ],
+              [
+                7,
+                "e4"
+              ],
+              [
+                8,
+                "e4"
+              ],
+              [
+                9,
+                "e4"
+              ],
+              [
+                10,
+                "e4"
+              ],
+              [
+                11,
+                "e4"
+              ]
+            ],
+            [
+              [
+                2,
+                "e4"
+              ],
+              [
+                3,
+                "e4"
+              ],
+              [
+                4,
+                "e4"
+              ],
+              [
+                5,
+                "e4"
+              ]
+            ],
+            [
+              [
+                2,
+                "e4"
+              ],
+              [
+                3,
+                "e4"
+              ],
+              [
+                4,
+                "e4"
+              ],
+              [
+                5,
+                "e4"
+              ],
+              [
+                6,
+                "e4"
+              ],
+              [
+                7,
+                "e4"
+              ],
+              [
+                8,
+                "e4"
+              ],
+              [
+                9,
+                "e4"
+              ],
+              [
+                10,
+                "e4"
+              ],
+              [
+                11,
+                "e4"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-eed90a8e487eeeff",
+    "event": "vicenza",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-db4e9eff4e4ab3f2",
+    "event": "khelo",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-357e41f4a4c09810",
+    "event": "maritime",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-cac6aebd7a705c4a",
+    "event": "hoogeveen",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-dccb695b22162166",
+    "event": "nato",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-2d2b08959285fdf9",
+    "event": "calvia",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-bb8b31d6feee9275",
+    "event": "munster",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c53cb78aafd68390",
+    "event": "vechta",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-3dee05bceb50249a",
+    "event": "vicenza",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a865c225f15eef99",
+    "event": "maritime",
+    "phase": "outpost-concession",
+    "fen": "r1q1k2r/npp1bppp/p3b3/3BN3/3P4/1Q4P1/PP2P2P/R1B2RK1 b kq - 2 14",
+    "playedMoveUci": "c7c6",
+    "pairedDrop": 285,
+    "replyDrop": 284,
+    "lines": [
+      {
+        "san": [
+          "Bf6",
+          "Qxb7",
+          "Qxb7",
+          "Bxb7",
+          "Rd8",
+          "Be3",
+          "c5",
+          "Nd3",
+          "cxd4",
+          "Bf4",
+          "a5"
+        ],
+        "material": [
+          0,
+          -100,
+          800,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e7f6",
+          "b3b7",
+          "c8b7",
+          "d5b7",
+          "a8d8",
+          "c1e3",
+          "c7c5",
+          "e5d3",
+          "c5d4",
+          "e3f4",
+          "a6a5"
+        ]
+      },
+      {
+        "san": [
+          "Bf6",
+          "Qxb7",
+          "Qxb7",
+          "Bxb7",
+          "Rd8",
+          "Be3",
+          "c5",
+          "Nd3",
+          "cxd4",
+          "Bf4",
+          "a5"
+        ],
+        "material": [
+          0,
+          -100,
+          800,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e7f6",
+          "b3b7",
+          "c8b7",
+          "d5b7",
+          "a8d8",
+          "c1e3",
+          "c7c5",
+          "e5d3",
+          "c5d4",
+          "e3f4",
+          "a6a5"
+        ]
+      },
+      {
+        "san": [
+          "c6",
+          "Bxe6",
+          "Qxe6",
+          "Qxb7",
+          "O-O",
+          "Rxf7",
+          "Rfe8",
+          "Bg5",
+          "Bf8",
+          "a4",
+          "h6"
+        ],
+        "material": [
+          0,
+          -330,
+          0,
+          -100,
+          -100,
+          -200,
+          -200,
+          -200,
+          -200,
+          -200,
+          -200
+        ],
+        "uci": [
+          "c7c6",
+          "d5e6",
+          "c8e6",
+          "b3b7",
+          "e8g8",
+          "f1f7",
+          "f8e8",
+          "c1g5",
+          "e7f8",
+          "a2a4",
+          "h7h6"
+        ]
+      },
+      {
+        "san": [
+          "c6",
+          "Bxe6",
+          "Qxe6",
+          "Qxb7",
+          "Qc8",
+          "Qb3",
+          "Qe6",
+          "Qxe6",
+          "fxe6",
+          "Be3",
+          "Bf6"
+        ],
+        "material": [
+          0,
+          -330,
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -1000,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "c7c6",
+          "d5e6",
+          "c8e6",
+          "b3b7",
+          "e6c8",
+          "b7b3",
+          "c8e6",
+          "b3e6",
+          "f7e6",
+          "c1e3",
+          "e7f6"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "e5",
+          "keys": [
+            [
+              [
+                6,
+                "e5"
+              ],
+              [
+                7,
+                "e5"
+              ],
+              [
+                8,
+                "e5"
+              ],
+              [
+                9,
+                "e5"
+              ],
+              [
+                10,
+                "e5"
+              ],
+              [
+                11,
+                "e5"
+              ]
+            ],
+            [
+              [
+                9,
+                "e5"
+              ],
+              [
+                10,
+                "e5"
+              ],
+              [
+                11,
+                "e5"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "The e5 outpost arises after distinct material and pawn exchanges. The start and duration of the feature do not align early."
+  },
+  {
+    "id": "classical-74a5b68edfa9e283",
+    "event": "khelo",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-3ba5b663105456ff",
+    "event": "nato",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ceec86f916983b84",
+    "event": "hoogeveen",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-92c3a619353eddca",
+    "event": "vechta",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-62182c20e99d0061",
+    "event": "munster",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-575a15fe2c2a38d3",
+    "event": "calvia",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b9e2b9447f139b62",
+    "event": "vicenza",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f15af1007aaf1302",
+    "event": "maritime",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c0638f447fede83f",
+    "event": "nato",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0596a7fa0aa5792b",
+    "event": "hoogeveen",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f8fe48bd0c94efd9",
+    "event": "vechta",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-3ed910c6cb80355b",
+    "event": "nato",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-21b13b3d6c2f65f4",
+    "event": "vechta",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-3904572127c10894",
+    "event": "munster",
+    "phase": "own-asset",
+    "fen": "1rr3k1/3n2pp/q3p3/p2pP3/1p1P4/2p1QN2/P1R2NPP/1R4K1 b - - 3 27",
+    "playedMoveUci": "d7b6",
+    "pairedDrop": 63,
+    "replyDrop": 50,
+    "lines": [
+      {
+        "san": [
+          "Qa7",
+          "Nd3",
+          "h6",
+          "Rf2",
+          "Rc4",
+          "Nc1",
+          "Rcc8",
+          "Qd3",
+          "Nb6",
+          "Qg6",
+          "Qf7"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a6a7",
+          "f2d3",
+          "h7h6",
+          "c2f2",
+          "c8c4",
+          "d3c1",
+          "c4c8",
+          "e3d3",
+          "d7b6",
+          "d3g6",
+          "a7f7"
+        ]
+      },
+      {
+        "san": [
+          "Qa7",
+          "Rf1",
+          "h6",
+          "h3",
+          "a4",
+          "a3",
+          "b3",
+          "Rxc3",
+          "Nb6",
+          "Nd2",
+          "Rxc3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          400
+        ],
+        "uci": [
+          "a6a7",
+          "b1f1",
+          "h7h6",
+          "h2h3",
+          "a5a4",
+          "a2a3",
+          "b4b3",
+          "c2c3",
+          "d7b6",
+          "f3d2",
+          "c8c3"
+        ]
+      },
+      {
+        "san": [
+          "Nb6",
+          "Ng4",
+          "Nd7",
+          "h4",
+          "a4",
+          "Kh2",
+          "Nf8",
+          "Nf6+",
+          "Kh8",
+          "Ng5",
+          "gxf6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          320
+        ],
+        "uci": [
+          "d7b6",
+          "f2g4",
+          "b6d7",
+          "h2h4",
+          "a5a4",
+          "g1h2",
+          "d7f8",
+          "g4f6",
+          "g8h8",
+          "f3g5",
+          "g7f6"
+        ]
+      },
+      {
+        "san": [
+          "Nb6",
+          "Ng4",
+          "Nd7",
+          "Nf6+",
+          "Nxf6",
+          "exf6",
+          "gxf6",
+          "Rf1",
+          "Qb6",
+          "Ne5",
+          "fxe5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          320,
+          0,
+          100,
+          100,
+          100,
+          100,
+          420
+        ],
+        "uci": [
+          "d7b6",
+          "f2g4",
+          "b6d7",
+          "g4f6",
+          "d7f6",
+          "e5f6",
+          "g7f6",
+          "b1f1",
+          "a6b6",
+          "f3e5",
+          "f6e5"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-a53303f69064650c",
+    "event": "vicenza",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-d9ca1c2d5a575181",
+    "event": "hoogeveen",
+    "phase": "own-asset",
+    "fen": "2r1k3/1p1r1pp1/5n2/B1nB3p/8/P5PP/1P1RPP2/3R2K1 w - - 1 27",
+    "playedMoveUci": "f2f3",
+    "pairedDrop": 68,
+    "replyDrop": 38,
+    "lines": [
+      {
+        "san": [
+          "Bc4",
+          "Rxd2",
+          "Rxd2",
+          "Ne6",
+          "Bb5+",
+          "Kf8",
+          "Bb4+",
+          "Kg8",
+          "f3",
+          "Rc1+",
+          "Kf2"
+        ],
+        "material": [
+          0,
+          -500,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d5c4",
+          "d7d2",
+          "d1d2",
+          "c5e6",
+          "c4b5",
+          "e8f8",
+          "a5b4",
+          "f8g8",
+          "f2f3",
+          "c8c1",
+          "g1f2"
+        ]
+      },
+      {
+        "san": [
+          "Bc4",
+          "Rxd2",
+          "Rxd2",
+          "Ke7",
+          "Bb4",
+          "Ne4",
+          "Rc2",
+          "Nd6",
+          "Bd5",
+          "b6",
+          "h4"
+        ],
+        "material": [
+          0,
+          -500,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d5c4",
+          "d7d2",
+          "d1d2",
+          "e8e7",
+          "a5b4",
+          "f6e4",
+          "d2c2",
+          "e4d6",
+          "c4d5",
+          "b7b6",
+          "h3h4"
+        ]
+      },
+      {
+        "san": [
+          "f3",
+          "h4",
+          "gxh4",
+          "Nxd5",
+          "Rxd5",
+          "Rxd5",
+          "Rxd5",
+          "Na4",
+          "Rd2",
+          "Rc5",
+          "Bb4"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          -230,
+          90,
+          -410,
+          90,
+          90,
+          90,
+          90,
+          90
+        ],
+        "uci": [
+          "f2f3",
+          "h5h4",
+          "g3h4",
+          "f6d5",
+          "d2d5",
+          "d7d5",
+          "d1d5",
+          "c5a4",
+          "d5d2",
+          "c8c5",
+          "a5b4"
+        ]
+      },
+      {
+        "san": [
+          "f3",
+          "Nxd5",
+          "Rxd5",
+          "Rxd5",
+          "Rxd5",
+          "Na4",
+          "b3",
+          "Rc5",
+          "Rd8+",
+          "Ke7",
+          "Ra8"
+        ],
+        "material": [
+          0,
+          -330,
+          -10,
+          -510,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10
+        ],
+        "uci": [
+          "f2f3",
+          "f6d5",
+          "d2d5",
+          "d7d5",
+          "d1d5",
+          "c5a4",
+          "b2b3",
+          "c8c5",
+          "d5d8",
+          "e8e7",
+          "d8a8"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-7ec3bf9495e1caf8",
+    "event": "calvia",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ad648169b7502ad4",
+    "event": "maritime",
+    "phase": "own-asset",
+    "fen": "4qr1k/6b1/2p2nnp/2Pp1bp1/3Ppp2/1NN2PP1/1R1BP1BP/Q5K1 b - - 3 25",
+    "playedMoveUci": "g5g4",
+    "pairedDrop": 83,
+    "replyDrop": 100,
+    "lines": [
+      {
+        "san": [
+          "h5",
+          "Ra2",
+          "fxg3",
+          "hxg3",
+          "e3",
+          "Be1",
+          "h4",
+          "Ra6",
+          "hxg3",
+          "Bxg3",
+          "Nf4"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0
+        ],
+        "uci": [
+          "h6h5",
+          "b2a2",
+          "f4g3",
+          "h2g3",
+          "e4e3",
+          "d2e1",
+          "h5h4",
+          "a2a6",
+          "h4g3",
+          "e1g3",
+          "g6f4"
+        ]
+      },
+      {
+        "san": [
+          "h5",
+          "Qc1",
+          "h4",
+          "g4",
+          "Nxg4",
+          "fxg4",
+          "Bxg4",
+          "h3",
+          "Bh5",
+          "Be1",
+          "g4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          100,
+          -220,
+          -120,
+          -120,
+          -120,
+          -120,
+          -120
+        ],
+        "uci": [
+          "h6h5",
+          "a1c1",
+          "h5h4",
+          "g3g4",
+          "f6g4",
+          "f3g4",
+          "f5g4",
+          "h2h3",
+          "g4h5",
+          "d2e1",
+          "g5g4"
+        ]
+      },
+      {
+        "san": [
+          "g4",
+          "fxe4",
+          "Bxe4",
+          "Nxe4",
+          "Nxe4",
+          "Bxf4",
+          "Nxf4",
+          "gxf4",
+          "Nc3",
+          "e4",
+          "Nxe4"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          -330,
+          -10,
+          -110,
+          220,
+          -100,
+          -100,
+          -100,
+          0
+        ],
+        "uci": [
+          "g5g4",
+          "f3e4",
+          "f5e4",
+          "c3e4",
+          "f6e4",
+          "d2f4",
+          "g6f4",
+          "g3f4",
+          "e4c3",
+          "e2e4",
+          "c3e4"
+        ]
+      },
+      {
+        "san": [
+          "g4",
+          "fxe4",
+          "Bxe4",
+          "Nxe4",
+          "Nxe4",
+          "Bxe4",
+          "Qxe4",
+          "Qb1",
+          "Qe6",
+          "gxf4",
+          "Nxf4"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          -330,
+          -10,
+          -330,
+          0,
+          0,
+          0,
+          -100,
+          0
+        ],
+        "uci": [
+          "g5g4",
+          "f3e4",
+          "f5e4",
+          "c3e4",
+          "f6e4",
+          "g2e4",
+          "e8e4",
+          "a1b1",
+          "e4e6",
+          "g3f4",
+          "g6f4"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-dcd2372fc3c1271d",
+    "event": "nato",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ddc669a565ee0da4",
+    "event": "munster",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-aa9fa35abf90f5ba",
+    "event": "hoogeveen",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6292467d2255b99a",
+    "event": "vechta",
+    "phase": "own-asset",
+    "fen": "1r3bk1/r5pn/5p1p/1pp1pN2/n3P2P/P5P1/3B1P2/RR1N1K2 w - - 0 31",
+    "playedMoveUci": "f5e3",
+    "pairedDrop": 102,
+    "replyDrop": 86,
+    "lines": [
+      {
+        "san": [
+          "Ra2",
+          "Kf7",
+          "Nfe3",
+          "Be7",
+          "Nd5",
+          "Nf8",
+          "N1c3",
+          "Nxc3",
+          "Nxc3",
+          "Rab7",
+          "Rab2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -320,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a1a2",
+          "g8f7",
+          "f5e3",
+          "f8e7",
+          "e3d5",
+          "h7f8",
+          "d1c3",
+          "a4c3",
+          "d5c3",
+          "a7b7",
+          "a2b2"
+        ]
+      },
+      {
+        "san": [
+          "Ra2",
+          "c4",
+          "Nfe3",
+          "Rab7",
+          "Bb4",
+          "Bxb4",
+          "axb4",
+          "Rd7",
+          "Nd5",
+          "f5",
+          "Rba1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -330,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a1a2",
+          "c5c4",
+          "f5e3",
+          "a7b7",
+          "d2b4",
+          "f8b4",
+          "a3b4",
+          "b7d7",
+          "e3d5",
+          "f6f5",
+          "b1a1"
+        ]
+      },
+      {
+        "san": [
+          "Nfe3",
+          "Be7",
+          "Rb3",
+          "Rab7",
+          "Nd5",
+          "Nf8",
+          "Rab1",
+          "Kf7",
+          "N1c3",
+          "Nxc3",
+          "Nxc3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -320,
+          0
+        ],
+        "uci": [
+          "f5e3",
+          "f8e7",
+          "b1b3",
+          "a7b7",
+          "e3d5",
+          "h7f8",
+          "a1b1",
+          "g8f7",
+          "d1c3",
+          "a4c3",
+          "d5c3"
+        ]
+      },
+      {
+        "san": [
+          "Nfe3",
+          "Be7",
+          "Nd5",
+          "Nf8",
+          "N1c3",
+          "Nxc3",
+          "Nxc3",
+          "Rab7",
+          "Nd5",
+          "Ne6",
+          "a4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -320,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f5e3",
+          "f8e7",
+          "e3d5",
+          "h7f8",
+          "d1c3",
+          "a4c3",
+          "d5c3",
+          "a7b7",
+          "c3d5",
+          "f8e6",
+          "a3a4"
+        ]
+      }
+    ],
+    "options": {
+      "gains-outpost": [
+        {
+          "start": "f5",
+          "keys": [
+            [
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d5"
+              ]
+            ],
+            [
+              [
+                9,
+                "d5"
+              ],
+              [
+                10,
+                "d5"
+              ],
+              [
+                11,
+                "d5"
+              ]
+            ],
+            [
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d5"
+              ],
+              [
+                9,
+                "d5"
+              ],
+              [
+                10,
+                "d5"
+              ]
+            ],
+            [
+              [
+                3,
+                "d5"
+              ],
+              [
+                4,
+                "d5"
+              ],
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                9,
+                "d5"
+              ],
+              [
+                10,
+                "d5"
+              ],
+              [
+                11,
+                "d5"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-fc14da5a7c2a754a",
+    "event": "calvia",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-4364eb87a751a97d",
+    "event": "vicenza",
+    "phase": "own-asset",
+    "fen": "rnbr2k1/p4pp1/4p2p/2p5/1PBPq3/5N2/PP3PPP/R2Q1RK1 b - - 0 14",
+    "playedMoveUci": "c5d4",
+    "pairedDrop": 91,
+    "replyDrop": 85,
+    "lines": [
+      {
+        "san": [
+          "cxb4",
+          "Re1",
+          "Qb7",
+          "Ne5",
+          "Nc6",
+          "d5",
+          "Nxe5",
+          "Rxe5",
+          "a5",
+          "b3",
+          "Qb6"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          420,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "c5b4",
+          "f1e1",
+          "e4b7",
+          "f3e5",
+          "b8c6",
+          "d4d5",
+          "c6e5",
+          "e1e5",
+          "a7a5",
+          "b2b3",
+          "b7b6"
+        ]
+      },
+      {
+        "san": [
+          "cxb4",
+          "Re1",
+          "Qb7",
+          "Ne5",
+          "Nc6",
+          "d5",
+          "Nxe5",
+          "Rxe5",
+          "a5",
+          "Qh5",
+          "Qc7"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          420,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "c5b4",
+          "f1e1",
+          "e4b7",
+          "f3e5",
+          "b8c6",
+          "d4d5",
+          "c6e5",
+          "e1e5",
+          "a7a5",
+          "d1h5",
+          "b7c7"
+        ]
+      },
+      {
+        "san": [
+          "cxd4",
+          "Re1",
+          "Qb7",
+          "a3",
+          "Qb6",
+          "Rc1",
+          "Nc6",
+          "b5",
+          "Ne7",
+          "Ne5",
+          "Bd7"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "c5d4",
+          "f1e1",
+          "e4b7",
+          "a2a3",
+          "b7b6",
+          "a1c1",
+          "b8c6",
+          "b4b5",
+          "c6e7",
+          "f3e5",
+          "c8d7"
+        ]
+      },
+      {
+        "san": [
+          "cxd4",
+          "Re1",
+          "Qf4",
+          "Ne5",
+          "Na6",
+          "a3",
+          "Nc7",
+          "Rc1",
+          "Bb7",
+          "Bf1",
+          "Rac8"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "c5d4",
+          "f1e1",
+          "e4f4",
+          "f3e5",
+          "b8a6",
+          "a2a3",
+          "a6c7",
+          "a1c1",
+          "c8b7",
+          "c4f1",
+          "a8c8"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-0d260597442e171f",
+    "event": "maritime",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c8ad2863670424b5",
+    "event": "nato",
+    "phase": "own-asset",
+    "fen": "1r1r2k1/1p1b2pp/p1p2p2/PnPPp2q/8/3B1PB1/1PQ1R1PP/4R1K1 w - - 1 30",
+    "playedMoveUci": "d3b5",
+    "pairedDrop": 235,
+    "replyDrop": 282,
+    "lines": [
+      {
+        "san": [
+          "Re4",
+          "cxd5",
+          "Rh4",
+          "Qg5",
+          "Bxh7+",
+          "Kf7",
+          "f4",
+          "exf4",
+          "Bg6+",
+          "Kg8",
+          "Rxf4"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          0
+        ],
+        "uci": [
+          "e2e4",
+          "c6d5",
+          "e4h4",
+          "h5g5",
+          "d3h7",
+          "g8f7",
+          "f3f4",
+          "e5f4",
+          "h7g6",
+          "f7g8",
+          "h4f4"
+        ]
+      },
+      {
+        "san": [
+          "Re4",
+          "Bf5",
+          "d6",
+          "Re8",
+          "Rh4",
+          "Bxd3",
+          "Qxd3",
+          "Qg6",
+          "Rhe4",
+          "Qf7",
+          "f4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -330,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e2e4",
+          "d7f5",
+          "d5d6",
+          "d8e8",
+          "e4h4",
+          "f5d3",
+          "c2d3",
+          "h5g6",
+          "h4e4",
+          "g6f7",
+          "f3f4"
+        ]
+      },
+      {
+        "san": [
+          "Bxb5",
+          "axb5",
+          "d6",
+          "Re8",
+          "Re3",
+          "Ra8",
+          "Ra1",
+          "Qf7",
+          "Qe2",
+          "g5",
+          "h3"
+        ],
+        "material": [
+          320,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10
+        ],
+        "uci": [
+          "d3b5",
+          "a6b5",
+          "d5d6",
+          "d8e8",
+          "e2e3",
+          "b8a8",
+          "e1a1",
+          "h5f7",
+          "c2e2",
+          "g7g5",
+          "h2h3"
+        ]
+      },
+      {
+        "san": [
+          "Bxb5",
+          "axb5",
+          "d6",
+          "Re8",
+          "Bf2",
+          "g5",
+          "g4",
+          "Qg6",
+          "h4",
+          "Qxc2",
+          "Rxc2"
+        ],
+        "material": [
+          320,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          -910,
+          -10
+        ],
+        "uci": [
+          "d3b5",
+          "a6b5",
+          "d5d6",
+          "d8e8",
+          "g3f2",
+          "g7g5",
+          "g2g4",
+          "h5g6",
+          "h2h4",
+          "g6c2",
+          "e2c2"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-dd3fdfb82512d40e",
+    "event": "munster",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a7c1811460e214b5",
+    "event": "vechta",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e02e5a3a6c18491f",
+    "event": "hoogeveen",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b1fc555f52863632",
+    "event": "calvia",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-be59eddc8edd5550",
+    "event": "vicenza",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a433c838da9ec7f9",
+    "event": "maritime",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c1f85a78597980b5",
+    "event": "munster",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-d0cd57c1a3dfe33f",
+    "event": "munster",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b409e7e56ed3c6d5",
+    "event": "vicenza",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-388b20d66fc4d8db",
+    "event": "vechta",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b9f82dab4b47f576",
+    "event": "nato",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9c41459df4022db8",
+    "event": "calvia",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-dd429eed698691cd",
+    "event": "hoogeveen",
+    "phase": "quiet-control",
+    "fen": "7R/1pk5/p7/7P/P7/1KN4r/1PP5/4b3 b - - 0 42",
+    "playedMoveUci": "e1d2",
+    "pairedDrop": 87,
+    "replyDrop": 102,
+    "lines": [
+      {
+        "san": [
+          "Kb6",
+          "Rh6+",
+          "Kc5",
+          "Rh7",
+          "Kb6",
+          "Kb4",
+          "Rh4+",
+          "Ka3",
+          "Bxc3",
+          "bxc3",
+          "Rh1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          320,
+          -10,
+          -10
+        ],
+        "uci": [
+          "c7b6",
+          "h8h6",
+          "b6c5",
+          "h6h7",
+          "c5b6",
+          "b3b4",
+          "h3h4",
+          "b4a3",
+          "e1c3",
+          "b2c3",
+          "h4h1"
+        ]
+      },
+      {
+        "san": [
+          "Kb6",
+          "Kb4",
+          "Rh4+",
+          "Kb3",
+          "Rh3",
+          "Rh6+",
+          "Kc5",
+          "Rh7",
+          "Kb6",
+          "Kb4",
+          "Rh4+"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c7b6",
+          "b3b4",
+          "h3h4",
+          "b4b3",
+          "h4h3",
+          "h8h6",
+          "b6c5",
+          "h6h7",
+          "c5b6",
+          "b3b4",
+          "h3h4"
+        ]
+      },
+      {
+        "san": [
+          "Bd2",
+          "Kc4",
+          "Bc1",
+          "b4",
+          "Rh4+",
+          "Kc5",
+          "Be3+",
+          "Kd5",
+          "Bd2",
+          "Rh7+",
+          "Kb6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e1d2",
+          "b3c4",
+          "d2c1",
+          "b2b4",
+          "h3h4",
+          "c4c5",
+          "c1e3",
+          "c5d5",
+          "e3d2",
+          "h8h7",
+          "c7b6"
+        ]
+      },
+      {
+        "san": [
+          "Bd2",
+          "Kc4",
+          "Bc1",
+          "b3",
+          "Kc6",
+          "Ne4",
+          "b5+",
+          "axb5+",
+          "axb5+",
+          "Kb4",
+          "Rh4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e1d2",
+          "b3c4",
+          "d2c1",
+          "b2b3",
+          "c7c6",
+          "c3e4",
+          "b7b5",
+          "a4b5",
+          "a6b5",
+          "c4b4",
+          "h3h4"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-ab55d28d30c2243d",
+    "event": "khelo",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b1b5f171b5eb4ad0",
+    "event": "maritime",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-40e959c2cf487e32",
+    "event": "munster",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-7947aa732ea99764",
+    "event": "nato",
+    "phase": "quiet-control",
+    "fen": "r2qr1k1/pb1nbp2/1p3npp/3p1Q2/2pP3B/2N1PN2/PP3PPP/1BR1R1K1 w - - 0 16",
+    "playedMoveUci": "f5c2",
+    "pairedDrop": 88,
+    "replyDrop": 85,
+    "lines": [
+      {
+        "san": [
+          "Qh3",
+          "h5",
+          "Red1",
+          "Qc7",
+          "Bg3",
+          "Qc6",
+          "Bf4",
+          "b5",
+          "Qg3",
+          "Bf8",
+          "Ne5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f5h3",
+          "h6h5",
+          "e1d1",
+          "d8c7",
+          "h4g3",
+          "c7c6",
+          "g3f4",
+          "b6b5",
+          "h3g3",
+          "e7f8",
+          "f3e5"
+        ]
+      },
+      {
+        "san": [
+          "Qh3",
+          "Kg7",
+          "Bg3",
+          "Bc8",
+          "Bf4",
+          "g5",
+          "Nxg5",
+          "hxg5",
+          "Bxg5",
+          "Nf8",
+          "Qh6+"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          -220,
+          -120,
+          -120,
+          -120
+        ],
+        "uci": [
+          "f5h3",
+          "g8g7",
+          "h4g3",
+          "b7c8",
+          "g3f4",
+          "g6g5",
+          "f3g5",
+          "h6g5",
+          "f4g5",
+          "d7f8",
+          "h3h6"
+        ]
+      },
+      {
+        "san": [
+          "Qc2",
+          "a6",
+          "a4",
+          "Bc6",
+          "Bg3",
+          "b5",
+          "Ne5",
+          "Nxe5",
+          "dxe5",
+          "Nh5",
+          "e6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -320,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f5c2",
+          "a7a6",
+          "a2a4",
+          "b7c6",
+          "h4g3",
+          "b6b5",
+          "f3e5",
+          "d7e5",
+          "d4e5",
+          "f6h5",
+          "e5e6"
+        ]
+      },
+      {
+        "san": [
+          "Qc2",
+          "a6",
+          "a4",
+          "Bc6",
+          "Bxf6",
+          "Bxf6",
+          "e4",
+          "dxe4",
+          "Nxe4",
+          "Rxe4",
+          "Rxe4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          320,
+          -10,
+          -10,
+          -110,
+          -10,
+          -330,
+          170
+        ],
+        "uci": [
+          "f5c2",
+          "a7a6",
+          "a2a4",
+          "b7c6",
+          "h4f6",
+          "e7f6",
+          "e3e4",
+          "d5e4",
+          "c3e4",
+          "e8e4",
+          "e1e4"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-c0f0397b58a16eae",
+    "event": "vechta",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-538bfcd48c694751",
+    "event": "vicenza",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6bce3b6ba9890366",
+    "event": "hoogeveen",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6ebd5e4e19368c38",
+    "event": "calvia",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-3ace1e234faf8a2b",
+    "event": "maritime",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c558e92bbfb3fc54",
+    "event": "khelo",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a2471d94cc30bba0",
+    "event": "nato",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6367b43e499795cb",
+    "event": "vechta",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b7ae4f8461023638",
+    "event": "munster",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-d9867068b4f5942e",
+    "event": "vicenza",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a7086ebc58af4b62",
+    "event": "hoogeveen",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6741934f3f1b7e64",
+    "event": "calvia",
+    "phase": "quiet-control",
+    "fen": "q1r5/3n1k2/2p1p3/p2p1p2/3P1Pp1/1NR3P1/P5BP/2R3K1 w - - 0 30",
+    "playedMoveUci": "g2f1",
+    "pairedDrop": 72,
+    "replyDrop": 47,
+    "lines": [
+      {
+        "san": [
+          "a4",
+          "Qa7",
+          "Bf1",
+          "Rb8",
+          "Kh1",
+          "Qb6",
+          "Re3",
+          "Re8",
+          "Rd3",
+          "Qb4",
+          "Rxc6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100
+        ],
+        "uci": [
+          "a2a4",
+          "a8a7",
+          "g2f1",
+          "c8b8",
+          "g1h1",
+          "a7b6",
+          "c3e3",
+          "b8e8",
+          "e3d3",
+          "b6b4",
+          "c1c6"
+        ]
+      },
+      {
+        "san": [
+          "a4",
+          "Qa7",
+          "Bf1",
+          "Rb8",
+          "h4",
+          "gxh3",
+          "Kh2",
+          "Qb6",
+          "Be2",
+          "Nf6",
+          "Nc5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "a2a4",
+          "a8a7",
+          "g2f1",
+          "c8b8",
+          "h2h4",
+          "g4h3",
+          "g1h2",
+          "a7b6",
+          "f1e2",
+          "d7f6",
+          "b3c5"
+        ]
+      },
+      {
+        "san": [
+          "Bf1",
+          "a4",
+          "Nc5",
+          "Nxc5",
+          "Rxc5",
+          "Qb7",
+          "Bb5",
+          "Qb6",
+          "Kh1",
+          "Qa5",
+          "Rd1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -320,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "g2f1",
+          "a5a4",
+          "b3c5",
+          "d7c5",
+          "c3c5",
+          "a8b7",
+          "f1b5",
+          "b7b6",
+          "g1h1",
+          "b6a5",
+          "c1d1"
+        ]
+      },
+      {
+        "san": [
+          "Bf1",
+          "a4",
+          "Nc5",
+          "Nxc5",
+          "Rxc5",
+          "Qb7",
+          "Bb5",
+          "Qb6",
+          "h3",
+          "Rb8",
+          "Kg2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -320,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "g2f1",
+          "a5a4",
+          "b3c5",
+          "d7c5",
+          "c3c5",
+          "a8b7",
+          "f1b5",
+          "b7b6",
+          "h2h3",
+          "c8b8",
+          "g1g2"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-2bccdca7a3749132",
+    "event": "maritime",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-05ad18aa435a62d2",
+    "event": "khelo",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f75b8c4b441b1207",
+    "event": "vicenza",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-804282ae86ef26bb",
+    "event": "nato",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-52b63901d8816b5e",
+    "event": "calvia",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-5bfbb2628dd10fed",
+    "event": "vechta",
+    "phase": "exchange-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-8d458ed19e376e90",
+    "event": "hoogeveen",
+    "phase": "exchange-control",
+    "fen": "1k1rr3/pppq1ppp/2n5/8/2Pbn3/1Q3NPP/PP3PB1/R1B2RK1 w - - 2 17",
+    "playedMoveUci": "f3d4",
+    "pairedDrop": 611,
+    "replyDrop": 616,
+    "lines": [
+      {
+        "san": [
+          "Bf4",
+          "f5",
+          "Rae1",
+          "a6",
+          "Kh2",
+          "Bf6",
+          "Rd1",
+          "Qe6",
+          "Rxd8+",
+          "Rxd8",
+          "Re1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          500,
+          0,
+          0
+        ],
+        "uci": [
+          "c1f4",
+          "f7f5",
+          "a1e1",
+          "a7a6",
+          "g1h2",
+          "d4f6",
+          "e1d1",
+          "d7e6",
+          "d1d8",
+          "e8d8",
+          "f1e1"
+        ]
+      },
+      {
+        "san": [
+          "Bf4",
+          "h6",
+          "Rae1",
+          "g5",
+          "Be3",
+          "Bxe3",
+          "Rxe3",
+          "f5",
+          "Rfe1",
+          "a6",
+          "Qc2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -330,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c1f4",
+          "h7h6",
+          "a1e1",
+          "g7g5",
+          "f4e3",
+          "d4e3",
+          "e1e3",
+          "f7f5",
+          "f1e1",
+          "a7a6",
+          "b3c2"
+        ]
+      },
+      {
+        "san": [
+          "Nxd4",
+          "Nxd4",
+          "Qe3",
+          "Nxg3",
+          "Qxe8",
+          "Rxe8",
+          "fxg3",
+          "Nc2",
+          "Rb1",
+          "Ne1",
+          "Bd5"
+        ],
+        "material": [
+          330,
+          10,
+          10,
+          -90,
+          410,
+          -490,
+          -170,
+          -170,
+          -170,
+          -170,
+          -170
+        ],
+        "uci": [
+          "f3d4",
+          "c6d4",
+          "b3e3",
+          "e4g3",
+          "e3e8",
+          "d8e8",
+          "f2g3",
+          "d4c2",
+          "a1b1",
+          "c2e1",
+          "g2d5"
+        ]
+      },
+      {
+        "san": [
+          "Nxd4",
+          "Nxd4",
+          "Qe3",
+          "Nxg3",
+          "Qxe8",
+          "Rxe8",
+          "fxg3",
+          "f6",
+          "b4",
+          "Re2",
+          "Bf4"
+        ],
+        "material": [
+          330,
+          10,
+          10,
+          -90,
+          410,
+          -490,
+          -170,
+          -170,
+          -170,
+          -170,
+          -170
+        ],
+        "uci": [
+          "f3d4",
+          "c6d4",
+          "b3e3",
+          "e4g3",
+          "e3e8",
+          "d8e8",
+          "f2g3",
+          "f7f6",
+          "b2b4",
+          "e8e2",
+          "c1f4"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-56edf667906d4dfc",
+    "event": "munster",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0de634402f4ab7c5",
+    "event": "maritime",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a939c61a2d888046",
+    "event": "vicenza",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9cd77622303e896d",
+    "event": "nato",
+    "phase": "exchange-control",
+    "fen": "1r3rk1/5ppp/1qp1bn2/p1bp4/P1P1p3/4P3/1PQNBPPP/R1B2RK1 b - - 6 15",
+    "playedMoveUci": "c5e3",
+    "pairedDrop": 151,
+    "replyDrop": 144,
+    "lines": [
+      {
+        "san": [
+          "Ng4",
+          "Bxg4",
+          "Bxg4",
+          "b3",
+          "f5",
+          "cxd5",
+          "cxd5",
+          "h3",
+          "Bh5",
+          "Bb2",
+          "f4"
+        ],
+        "material": [
+          0,
+          -320,
+          10,
+          10,
+          10,
+          -90,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "uci": [
+          "f6g4",
+          "e2g4",
+          "e6g4",
+          "b2b3",
+          "f7f5",
+          "c4d5",
+          "c6d5",
+          "h2h3",
+          "g4h5",
+          "c1b2",
+          "f5f4"
+        ]
+      },
+      {
+        "san": [
+          "Ng4",
+          "Nb1",
+          "f5",
+          "cxd5",
+          "cxd5",
+          "Bxg4",
+          "fxg4",
+          "Nc3",
+          "h5",
+          "Nb5",
+          "Rbc8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          0,
+          -320,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "uci": [
+          "f6g4",
+          "d2b1",
+          "f7f5",
+          "c4d5",
+          "c6d5",
+          "e2g4",
+          "f5g4",
+          "b1c3",
+          "h7h5",
+          "c3b5",
+          "b8c8"
+        ]
+      },
+      {
+        "san": [
+          "Bxe3",
+          "fxe3",
+          "Qxe3+",
+          "Rf2",
+          "Qa7",
+          "c5",
+          "e3",
+          "Rxf6",
+          "exd2",
+          "Bxd2",
+          "gxf6"
+        ],
+        "material": [
+          100,
+          -230,
+          -130,
+          -130,
+          -130,
+          -130,
+          -130,
+          -450,
+          -130,
+          -230,
+          270
+        ],
+        "uci": [
+          "c5e3",
+          "f2e3",
+          "b6e3",
+          "f1f2",
+          "e3a7",
+          "c4c5",
+          "e4e3",
+          "f2f6",
+          "e3d2",
+          "c1d2",
+          "g7f6"
+        ]
+      },
+      {
+        "san": [
+          "Bxe3",
+          "fxe3",
+          "Qxe3+",
+          "Rf2",
+          "Qa7",
+          "c5",
+          "e3",
+          "Rxf6",
+          "exd2",
+          "Bxd2",
+          "gxf6"
+        ],
+        "material": [
+          100,
+          -230,
+          -130,
+          -130,
+          -130,
+          -130,
+          -130,
+          -450,
+          -130,
+          -230,
+          270
+        ],
+        "uci": [
+          "c5e3",
+          "f2e3",
+          "b6e3",
+          "f1f2",
+          "e3a7",
+          "c4c5",
+          "e4e3",
+          "f2f6",
+          "e3d2",
+          "c1d2",
+          "g7f6"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-4b6fbe61606722ba",
+    "event": "vechta",
+    "phase": "exchange-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-391b34573a94fbfd",
+    "event": "calvia",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e7b6e85e99142416",
+    "event": "munster",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e052d3e1867a981b",
+    "event": "hoogeveen",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-159b8655781330a4",
+    "event": "khelo",
+    "phase": "exchange-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f9d270a50fcb26f2",
+    "event": "maritime",
+    "phase": "exchange-control",
+    "fen": "r4rk1/pp2ppbp/2n3p1/8/3PBBb1/4PN2/P2K1PPP/1R5R b - - 4 15",
+    "playedMoveUci": "g4f3",
+    "pairedDrop": 125,
+    "replyDrop": 125,
+    "lines": [
+      {
+        "san": [
+          "e5",
+          "Bxc6",
+          "exf4",
+          "Rxb7",
+          "Rfd8",
+          "h3",
+          "Be6",
+          "a4",
+          "Rac8",
+          "Rc1",
+          "Rd6"
+        ],
+        "material": [
+          0,
+          -320,
+          10,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90
+        ],
+        "uci": [
+          "e7e5",
+          "e4c6",
+          "e5f4",
+          "b1b7",
+          "f8d8",
+          "h2h3",
+          "g4e6",
+          "a2a4",
+          "a8c8",
+          "h1c1",
+          "d8d6"
+        ]
+      },
+      {
+        "san": [
+          "e5",
+          "Bxc6",
+          "exf4",
+          "Rxb7",
+          "Rfd8",
+          "h3",
+          "Be6",
+          "a4",
+          "Bh6",
+          "Rc1",
+          "fxe3+"
+        ],
+        "material": [
+          0,
+          -320,
+          10,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          -90,
+          10
+        ],
+        "uci": [
+          "e7e5",
+          "e4c6",
+          "e5f4",
+          "b1b7",
+          "f8d8",
+          "h2h3",
+          "g4e6",
+          "a2a4",
+          "g7h6",
+          "h1c1",
+          "f4e3"
+        ]
+      },
+      {
+        "san": [
+          "Bxf3",
+          "gxf3",
+          "e5",
+          "Bxc6",
+          "bxc6",
+          "Bxe5",
+          "Bxe5",
+          "dxe5",
+          "f6",
+          "exf6",
+          "Rxf6"
+        ],
+        "material": [
+          320,
+          -10,
+          -10,
+          -330,
+          0,
+          -100,
+          230,
+          -100,
+          -100,
+          -200,
+          -100
+        ],
+        "uci": [
+          "g4f3",
+          "g2f3",
+          "e7e5",
+          "e4c6",
+          "b7c6",
+          "f4e5",
+          "g7e5",
+          "d4e5",
+          "f7f6",
+          "e5f6",
+          "f8f6"
+        ]
+      },
+      {
+        "san": [
+          "Bxf3",
+          "Bxf3",
+          "e5",
+          "dxe5",
+          "Rac8",
+          "Rhc1",
+          "Nxe5",
+          "Rxc8",
+          "Nxf3+",
+          "gxf3",
+          "Rxc8"
+        ],
+        "material": [
+          320,
+          -10,
+          -10,
+          -110,
+          -110,
+          -110,
+          -10,
+          -510,
+          -180,
+          -500,
+          0
+        ],
+        "uci": [
+          "g4f3",
+          "e4f3",
+          "e7e5",
+          "d4e5",
+          "a8c8",
+          "h1c1",
+          "c6e5",
+          "c1c8",
+          "e5f3",
+          "g2f3",
+          "f8c8"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-b84506be0102af0b",
+    "event": "nato",
+    "phase": "exchange-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-1c9bd63dec0e92b5",
+    "event": "vechta",
+    "phase": "exchange-control",
+    "fen": "2r2rk1/5pp1/pq2p1n1/1p1p1b1p/PQ1P4/2P2PB1/4B1PP/R4R1K b - - 1 21",
+    "playedMoveUci": "f8d8",
+    "pairedDrop": 388,
+    "replyDrop": 406,
+    "lines": [
+      {
+        "san": [
+          "h4",
+          "Be1",
+          "Nf4",
+          "Rf2",
+          "h3",
+          "gxh3",
+          "Nxh3",
+          "Rf1",
+          "Nf4",
+          "Rf2",
+          "Nxe2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          330
+        ],
+        "uci": [
+          "h5h4",
+          "g3e1",
+          "g6f4",
+          "f1f2",
+          "h4h3",
+          "g2h3",
+          "f4h3",
+          "f2f1",
+          "h3f4",
+          "f1f2",
+          "f4e2"
+        ]
+      },
+      {
+        "san": [
+          "h4",
+          "Be1",
+          "Nf4",
+          "Rf2",
+          "h3",
+          "gxh3",
+          "Nxh3",
+          "Rg2",
+          "Nf4",
+          "Rf2",
+          "Nxe2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          330
+        ],
+        "uci": [
+          "h5h4",
+          "g3e1",
+          "g6f4",
+          "f1f2",
+          "h4h3",
+          "g2h3",
+          "f4h3",
+          "f2g2",
+          "h3f4",
+          "g2f2",
+          "f4e2"
+        ]
+      },
+      {
+        "san": [
+          "Rfd8",
+          "axb5",
+          "axb5",
+          "h3",
+          "h4",
+          "Bh2",
+          "Qb7",
+          "Rfc1",
+          "Ra8",
+          "Bxb5",
+          "Rxa1"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          400
+        ],
+        "uci": [
+          "f8d8",
+          "a4b5",
+          "a6b5",
+          "h2h3",
+          "h5h4",
+          "g3h2",
+          "b6b7",
+          "f1c1",
+          "c8a8",
+          "e2b5",
+          "a8a1"
+        ]
+      },
+      {
+        "san": [
+          "Rfd8",
+          "h3",
+          "Ra8",
+          "Bh2",
+          "e5",
+          "dxe5",
+          "Qe3",
+          "Rfe1",
+          "bxa4",
+          "Bf1",
+          "a5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f8d8",
+          "h2h3",
+          "c8a8",
+          "g3h2",
+          "e6e5",
+          "d4e5",
+          "b6e3",
+          "f1e1",
+          "b5a4",
+          "e2f1",
+          "a6a5"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  },
+  {
+    "id": "classical-30a6c16206e4fb4a",
+    "event": "vicenza",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0e0b2a221a64de17",
+    "event": "munster",
+    "phase": "exchange-control",
+    "fen": "r3r1k1/pp1bbppp/1qn1p3/2pp4/3P1B2/2PBP3/PP1N1PPP/1R1Q1RK1 w - - 4 12",
+    "playedMoveUci": "b2b4",
+    "pairedDrop": 88,
+    "replyDrop": 80,
+    "lines": [
+      {
+        "san": [
+          "Bc2",
+          "Rac8",
+          "Re1",
+          "Qd8",
+          "Qf3",
+          "Rf8",
+          "Qh3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d3c2",
+          "a8c8",
+          "f1e1",
+          "b6d8",
+          "d1f3",
+          "e8f8",
+          "f3h3"
+        ]
+      },
+      {
+        "san": [
+          "Bc2",
+          "Rac8",
+          "Re1",
+          "Rf8",
+          "h3",
+          "Qd8",
+          "Nf3",
+          "f5",
+          "dxc5",
+          "Bxc5",
+          "b4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0
+        ],
+        "uci": [
+          "d3c2",
+          "a8c8",
+          "f1e1",
+          "e8f8",
+          "h2h3",
+          "b6d8",
+          "d2f3",
+          "f7f5",
+          "d4c5",
+          "e7c5",
+          "b2b4"
+        ]
+      },
+      {
+        "san": [
+          "b4",
+          "cxb4",
+          "cxb4",
+          "Nxb4",
+          "Nf3",
+          "Qd8",
+          "Rxb4",
+          "Bxb4",
+          "Qb1",
+          "a5",
+          "Bxh7+"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          -100,
+          -100,
+          -100,
+          220,
+          -280,
+          -280,
+          -280,
+          -180
+        ],
+        "uci": [
+          "b2b4",
+          "c5b4",
+          "c3b4",
+          "c6b4",
+          "d2f3",
+          "b6d8",
+          "b1b4",
+          "e7b4",
+          "d1b1",
+          "a7a5",
+          "d3h7"
+        ]
+      },
+      {
+        "san": [
+          "b4",
+          "cxb4",
+          "cxb4",
+          "Nxb4",
+          "Nf3",
+          "Qd8",
+          "Rxb4",
+          "Bxb4",
+          "Qb1",
+          "a5",
+          "Bxh7+"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          -100,
+          -100,
+          -100,
+          220,
+          -280,
+          -280,
+          -280,
+          -180
+        ],
+        "uci": [
+          "b2b4",
+          "c5b4",
+          "c3b4",
+          "c6b4",
+          "d2f3",
+          "b6d8",
+          "b1b4",
+          "e7b4",
+          "d1b1",
+          "a7a5",
+          "d3h7"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "An equivalent feature occurs in a stronger line, or the independent reply does not corroborate an early sustained asset."
+  }
+]

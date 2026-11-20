@@ -1,0 +1,1141 @@
+{
+  "base": "3d696066d6d4a5807b4ab517897c077a933b1fa1",
+  "arms": [
+    "repeated asset plus matched material",
+    "repeated asset plus the linked action and control"
+  ],
+  "scope": "A decision changes whether a new advanced passed pawn is formed or a stable pawn-supported minor piece occupies a useful advanced square. The part concerning position or tactical effect is separate.",
+  "promotion": "At least two new engine-checked independent supported diagnoses, with zero clear contradicted new judgments and no regression in the other report scopes.",
+  "reviewer": "Single manual review using legal replay and engine continuations, supplemented by an independent higher-budget reply search.",
+  "scopes": "Mistake mechanism only. Board facts support tentative positional interpretation. No changes to position character or move justification.",
+  "replyReviewNodes": 1500000,
+  "cohorts": {
+    "initial": {
+      "usedToTuneLinkedRule": true,
+      "sampling": {
+        "sources": {
+          "mongolia": {
+            "broadcast": "mongolian-national-chess-championship-2026-open/round-11/FFNCdqle",
+            "tc": "90mins/40moves + 30mins, 30secs increment all moves.",
+            "rounds": [
+              {
+                "id": "vfxJWG67",
+                "name": "Round 7",
+                "bytes": 31984,
+                "sha256": "81ef91fe0939170ee0de44864923b2b62fc556d6cd48701469ea42e8245823f5"
+              },
+              {
+                "id": "LjTXo6lL",
+                "name": "Round 8",
+                "bytes": 25610,
+                "sha256": "636aa7f38f2b488c6175b127ac62584b871bdfa37745469a8cef359f150bb25c"
+              },
+              {
+                "id": "rMOgQe0D",
+                "name": "Round 9",
+                "bytes": 36795,
+                "sha256": "dfe94dc569ccd8fe5360f33cda2b4465aec2e6196bba143c897c48e00c1fbdd1"
+              },
+              {
+                "id": "VfGrQ4e5",
+                "name": "Round 10",
+                "bytes": 29469,
+                "sha256": "3347113e721f93b97579daf3f47e29c07ed59de835a3ed6dc8262cf3dc7acab9"
+              },
+              {
+                "id": "FFNCdqle",
+                "name": "Round 11",
+                "bytes": 29590,
+                "sha256": "aa2e5a69a55174cf8251b551f5b570ecfe84151aa208c2dca43dd1aadb3c6e15"
+              }
+            ],
+            "title": "Mongolian National Chess Championship 2026 | Open"
+          },
+          "magdeburg": {
+            "broadcast": "magdeburg-open-2026/round-7/Q9SV9zBF",
+            "tc": "90 min / 40 moves + 30 min, 30 sec / move",
+            "rounds": [
+              {
+                "id": "TQDeO0Xf",
+                "name": "Round 3",
+                "bytes": 35616,
+                "sha256": "c84b449b009e8ff634118efe3a618428be48f3e6ac7b1ed50b6e7458feec5e5a"
+              },
+              {
+                "id": "4DSrj7YZ",
+                "name": "Round 4",
+                "bytes": 38391,
+                "sha256": "a190dae458d6d5de30ff128b8d5203641d9833dad18d7cdfe79c64224e750c1e"
+              },
+              {
+                "id": "W1BBMaaJ",
+                "name": "Round 5",
+                "bytes": 32182,
+                "sha256": "2ed247a0c638197f4a8b432556450f28d9d7d09cc6161b90bcd830ae36ab1b11"
+              },
+              {
+                "id": "CSRuTr1r",
+                "name": "Round 6",
+                "bytes": 37641,
+                "sha256": "96546b00b08fafa8112d75b19c8902ee4b75c23c478d57ed81abdf5f2346b5b9"
+              },
+              {
+                "id": "Q9SV9zBF",
+                "name": "Round 7",
+                "bytes": 20685,
+                "sha256": "5e7df3addd630195c2a92335185a0d599de3a4d90e393d9889dea49a7a7ef3d4"
+              }
+            ],
+            "title": "Magdeburg Open 2026"
+          },
+          "lebanon": {
+            "broadcast": "lebanese-open-chess-championship-2026/round-8/2Jaw0b1I",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "t3KVhhui",
+                "name": "Round 7",
+                "bytes": 31075,
+                "sha256": "74a40b3aed84beb1f79832722c0fc1a945a3375b937d8b4bcb09e6e41ccaec1e"
+              },
+              {
+                "id": "2Jaw0b1I",
+                "name": "Round 8",
+                "bytes": 524,
+                "sha256": "46e92cfca5b19f19126cb93e33b77e5fc2e806886d987a71de306ad3fb551f67"
+              },
+              {
+                "id": "LgRoA1yp",
+                "name": "Round 9",
+                "bytes": 28660,
+                "sha256": "5f9b40e382a1ad6a9d5369d647a72eba9980e54c6de3f42443375eeb54e354c0"
+              },
+              {
+                "id": "cWmsr2mB",
+                "name": "Round 10",
+                "bytes": 23027,
+                "sha256": "47db591c5c81609222c148e670b6aa5ac9321ee509870a9a59bc566cf46d54c3"
+              },
+              {
+                "id": "aDd4y1DB",
+                "name": "Round 11",
+                "bytes": 19231,
+                "sha256": "1044fd1fb996a771b43ec996d3ffceb6f0973943b338c19ef6d6c6b90eab04bf"
+              }
+            ],
+            "title": "Lebanese Open Chess Championship 2026"
+          },
+          "kenya": {
+            "broadcast": "kenya-national-chess-league-2026-premier-league/round-1/IhmJDJ0p",
+            "tc": "90 Minutes + 30 sec from move 1",
+            "rounds": [
+              {
+                "id": "IhmJDJ0p",
+                "name": "Round 1",
+                "bytes": 68630,
+                "sha256": "434ab990658daeb2e9e30f8afd78dd87e74ddcb2ef1c6b90798ff72a885e30a7"
+              },
+              {
+                "id": "WT4yuPmA",
+                "name": "Round 2",
+                "bytes": 90809,
+                "sha256": "10d7b3e252f2d477bba390618d100309f9e1f374d804f205be0c05ef078ce1f8"
+              },
+              {
+                "id": "MQBrArWd",
+                "name": "Round 3",
+                "bytes": 65050,
+                "sha256": "7d9fdefc1d7b09cce57941cb765c9bd634c62bc73f08f365dd6b42385e744225"
+              }
+            ],
+            "title": "Kenya National Chess League 2026 - Premier League"
+          },
+          "marshall": {
+            "broadcast": "2026-marshall-premier-fide-november/round-1/iz7YUrIF",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "iz7YUrIF",
+                "name": "Round 1",
+                "bytes": 42951,
+                "sha256": "ee44c1b28d66fad545fb90989406394baa9f1a58626b80b560191069efc9ef70"
+              },
+              {
+                "id": "JSkUBV6v",
+                "name": "Round 2",
+                "bytes": 44101,
+                "sha256": "88551d078ee717814dafed4815db584a19f1dd48e4a4811d78fea9eabc359526"
+              },
+              {
+                "id": "ZpHaxUKy",
+                "name": "Round 3",
+                "bytes": 49290,
+                "sha256": "b1debc8b3aef4f0f5bdad4823112e0f50aad1ce8bf061a9af9ae788431838904"
+              },
+              {
+                "id": "M8yK1fj5",
+                "name": "Round 4",
+                "bytes": 42424,
+                "sha256": "c764723f93d939516d71fce4cceee1bb652fae521603d20fe40e705a386fdc77"
+              },
+              {
+                "id": "Kcy1GIgm",
+                "name": "Round 5",
+                "bytes": 48923,
+                "sha256": "d52c8803ba89ffb28ea2ec67191e63ea59b919d9cb078947ee9c63b41f5f70d8"
+              }
+            ],
+            "title": "2026 Marshall Premier FIDE | November"
+          },
+          "baden-wurttemberg": {
+            "broadcast": "oberliga-baden-wurttemberg-202627/round-3/jkfgKTb7",
+            "tc": "90 min / 40 moves + 30 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "ObI5kKPA",
+                "name": "Round 1",
+                "bytes": 66570,
+                "sha256": "b40ecc2216b8b3163133414ceec47c1335c724236f91e97b2deb8b538058e637"
+              },
+              {
+                "id": "rQY0mYLq",
+                "name": "Round 2",
+                "bytes": 80316,
+                "sha256": "86159e02a08e68526706db74959f6c5bf2599e494b6d7d8e4996997952d5e744"
+              },
+              {
+                "id": "jkfgKTb7",
+                "name": "Round 3",
+                "bytes": 37000,
+                "sha256": "02a4eb153ca99e989ad861eb56c379df497f0cfb0764c0f885c89563cbe9270f"
+              }
+            ],
+            "title": "Oberliga Baden-W\u00fcrttemberg 2026/27"
+          },
+          "tyreso": {
+            "broadcast": "allsvenskan-20262027-div-1-tyreso/round-2/BvddwEwY",
+            "tc": "90 min + 30 min + 30 sec",
+            "rounds": [
+              {
+                "id": "BvddwEwY",
+                "name": "Round 2",
+                "bytes": 15563,
+                "sha256": "2953a72f495c1e1cdd58b62e0708b97a7da7b8f26a1863c9356f4c46a2e15d76"
+              }
+            ],
+            "title": "Allsvenskan 2026/2027 Div 1 Tyres\u00f6"
+          },
+          "aq-prime": {
+            "broadcast": "aq-prime-international-open-chess-championship/round-1/wVLqrDpX",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "wVLqrDpX",
+                "name": "Round 1",
+                "bytes": 80096,
+                "sha256": "fa1db05d653f1e8b94dd5a174e692477510bebe98b0a53491a14da2a3217c315"
+              },
+              {
+                "id": "FMbRNP6O",
+                "name": "Round 2",
+                "bytes": 106909,
+                "sha256": "a85c16674a532b772603a43d5e94698d8eed380185419ef3c69df76d51a24b43"
+              },
+              {
+                "id": "2TNzAle9",
+                "name": "Round 3",
+                "bytes": 90937,
+                "sha256": "991fe4754eb7ced65c4b972521bee0e2f55c30292a1c747af6939a93c21fb21c"
+              }
+            ],
+            "title": "AQ Prime International Open Chess Championship"
+          },
+          "myvatn": {
+            "broadcast": "sel-hotel-myvatn-myvatn-ol-open-2026/round-1/OigAIg3F",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "OigAIg3F",
+                "name": "Round 1",
+                "bytes": 65313,
+                "sha256": "c625657fa355d7f8fd7cd7932c5814a2a51a30eac6d9bb09a882c57a169e41b1"
+              }
+            ],
+            "title": "Sel Hotel Myvatn / Myvatn Ol Open 2026"
+          }
+        },
+        "games": {
+          "mongolia": 30,
+          "magdeburg": 1,
+          "lebanon": 1,
+          "kenya": 43,
+          "marshall": 50,
+          "baden-wurttemberg": 36,
+          "tyreso": 4,
+          "aq-prime": 1,
+          "myvatn": 1
+        },
+        "seed": "durable-structures-3d696066-classical1",
+        "beforeSplitCounts": {
+          "exchange-control": 152,
+          "quiet-control": 165,
+          "passer-concession": 73,
+          "own-asset": 91,
+          "outpost-concession": 48
+        },
+        "chosen": {
+          "passer-concession": 26,
+          "outpost-concession": 26,
+          "own-asset": 22,
+          "quiet-control": 22,
+          "exchange-control": 18
+        },
+        "eventsInSample": {
+          "marshall": 28,
+          "baden-wurttemberg": 25,
+          "mongolia": 25,
+          "kenya": 28,
+          "lebanon": 1,
+          "tyreso": 4,
+          "aq-prime": 1,
+          "magdeburg": 1,
+          "myvatn": 1
+        }
+      },
+      "engine": {
+        "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+        "threadsPerEngine": 1,
+        "hashMiB": 48,
+        "rootNodes": 600000,
+        "pairNodes": 1200000,
+        "replyNodes": 900000,
+        "samples": 114,
+        "wallSeconds": 36.5,
+        "sha256": "4acbcfc6f224c4b04dc0768524270b045da5b7aec8a1ee900fd1adabb61f88d0"
+      },
+      "referenceSha256": "b0e4ae5c9809b9f58bac085c8f33e4f543ef0f942d96b7eec66ecd2f8295a45f",
+      "inputSha256": "b4da23893a108296697eed9a29d7d6dc661b28024f2da7e1ced2321577314ceb"
+    },
+    "replication": {
+      "usedToTuneLinkedRule": false,
+      "sampling": {
+        "sources": {
+          "hoogeveen": {
+            "broadcast": "hoogeveen-open-2026/round-1/9PuO5RHI",
+            "tc": "90 min / 40 moves + 30 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "B1DrjUVO",
+                "name": "Round 5",
+                "bytes": 109156,
+                "sha256": "1d92bda4b20504dbb5aa92d4a398a73c6778bd7011928cce1942a332e49a1c8c"
+              },
+              {
+                "id": "U37LK7X8",
+                "name": "Round 6",
+                "bytes": 130413,
+                "sha256": "245591ee0e5d9c1427107225f397871cc3724290b5809e53186ac73a2b3d8483"
+              },
+              {
+                "id": "o4Nw35Ls",
+                "name": "Round 7",
+                "bytes": 147007,
+                "sha256": "f68b25f5874d2f9117c5d498b23a846ccd9e9194cb1ab2a330d33f0005a99b89"
+              },
+              {
+                "id": "DrTnN6H5",
+                "name": "Round 8",
+                "bytes": 133869,
+                "sha256": "50ff68c60cf270807246f093a0adccc457cce74630f0e6fdbe134eaff05a82b4"
+              },
+              {
+                "id": "1oWBFWRr",
+                "name": "Round 9",
+                "bytes": 92304,
+                "sha256": "99aa2be3371ad4b16469d8966761ac04f59f76b6592b16729efe79bd69ef7e0e"
+              }
+            ],
+            "title": "Hoogeveen Open 2026"
+          },
+          "calvia": {
+            "broadcast": "23rd-calvia-chess-festival-2026/round-1/xg15NIun",
+            "tc": "90 min/40 moves + 15 min + 30-sec increment from move 1",
+            "rounds": [
+              {
+                "id": "UPG6tFCZ",
+                "name": "Round 5",
+                "bytes": 56178,
+                "sha256": "2b77a3790173ef20cecc23ceb70945205ff325ae4fd7c814411f6c6b2a2326e9"
+              },
+              {
+                "id": "xRDG10tY",
+                "name": "Round 6",
+                "bytes": 55976,
+                "sha256": "bbd0839650849c0fa5c63a2e226fae27f233b18e4aec9c41ac48c2a83ca020a9"
+              },
+              {
+                "id": "1bxtyo5f",
+                "name": "Round 7",
+                "bytes": 55402,
+                "sha256": "470567e58b5007be0de4e4952116a381eb68094012732fad599c51edac6b59ba"
+              },
+              {
+                "id": "CXSJnsMQ",
+                "name": "Round 8",
+                "bytes": 54862,
+                "sha256": "438951bbd57618306ffc35f68758084773ad633bc848a6b3461d027807b34f37"
+              },
+              {
+                "id": "9F21RcCs",
+                "name": "Round 9",
+                "bytes": 35415,
+                "sha256": "d69e9069d3f7337ee8c6a8adc309569f5c52468eb21dca3df9a98d5d3e6eb25f"
+              }
+            ],
+            "title": "23rd Calvia Chess Festival 2026"
+          },
+          "maritime": {
+            "broadcast": "2026-maritime-open-chess-championship/round-1/3JVWr7GI",
+            "tc": "60 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "cBVb6wkK",
+                "name": "Round 2",
+                "bytes": 20692,
+                "sha256": "066d1922cd622d1f56a7c79fb842750f22660eaa6b24d1e0cf0ae28ab918a6e0"
+              },
+              {
+                "id": "jkrPJzQF",
+                "name": "Round 3",
+                "bytes": 21270,
+                "sha256": "b65aa684a85c574300f3e32eb2a9b1ab149845c18ac453cbdd494799e7a6ea3d"
+              },
+              {
+                "id": "Uuf9NKub",
+                "name": "Round 4",
+                "bytes": 18951,
+                "sha256": "6896906dc68c479084d416c13f109c8690fa365862d8dc01b38fe5ceec859459"
+              },
+              {
+                "id": "lTklA9T0",
+                "name": "Round 5",
+                "bytes": 22798,
+                "sha256": "50817f832d26e299cb3b40a84bc05588ef5ab3d617d60581a008340627f0ed4c"
+              },
+              {
+                "id": "HQyC5w2J",
+                "name": "Round 6",
+                "bytes": 17928,
+                "sha256": "7f3737b20fa8c231ddb78b3193c5a73f7f1a2f8cbb535f0420c3386930485b83"
+              }
+            ],
+            "title": "2026 Maritime Open Chess Championship"
+          },
+          "nato": {
+            "broadcast": "36th-nato-chess-championship-2026/round-1/vG0ow95j",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "g1jUkHiN",
+                "name": "Round 3",
+                "bytes": 208487,
+                "sha256": "a0b2f414a55ccec3c6db783f290e93205ec9e565c6cc593c80be37d6ea5d45fe"
+              },
+              {
+                "id": "KR1on1gW",
+                "name": "Round 4",
+                "bytes": 196304,
+                "sha256": "33a895ebde26e492cd0722edaa2651b00de66ebf7cd9850a70bbf349ad575ea1"
+              },
+              {
+                "id": "Zipw7lXe",
+                "name": "Round 5",
+                "bytes": 251490,
+                "sha256": "a0a50b2083e7e2e1d7df2e01139c246f33b5d4e04d092206ea18fc8a0e2e4b21"
+              },
+              {
+                "id": "Q1oXdYo5",
+                "name": "Round 6",
+                "bytes": 242766,
+                "sha256": "0cc96860b015536ac91bd6fed260051a37cfa9d045847448c9065c80fdadc9b1"
+              },
+              {
+                "id": "Cd33Pm6w",
+                "name": "Round 7",
+                "bytes": 245330,
+                "sha256": "8b4ae91e183542254a5800e7138678b37cdc365dd38d44050f30f498084361e3"
+              }
+            ],
+            "title": "36th NATO Chess Championship 2026"
+          },
+          "vechta": {
+            "broadcast": "1-vechta-open-a-open/round-1/zQKqXSHx",
+            "tc": "90 Min / 40 Z\u00fcge + 15 Min Rest + 30 sec. pro Zug",
+            "rounds": [
+              {
+                "id": "J9bSGUST",
+                "name": "Round 3",
+                "bytes": 105147,
+                "sha256": "44b0a347dd800189db9f3468d7e1a65b6c34e4991feb9ecacf2c69472704e56c"
+              },
+              {
+                "id": "oNc4C8XB",
+                "name": "Round 4",
+                "bytes": 115429,
+                "sha256": "d45decab02be13895fb0ac6777f0d441748a6716ebb7fa6ec041a559784e2bfc"
+              },
+              {
+                "id": "Xocym0Bi",
+                "name": "Round 5",
+                "bytes": 111840,
+                "sha256": "53cd0d274f1bd2e65abbacf9f129084d13f1f6f2aee654b05272c737ef77fdee"
+              },
+              {
+                "id": "mrFUdLez",
+                "name": "Round 6",
+                "bytes": 105288,
+                "sha256": "142b4b6a0fed40d810e99959598177d10175d441cdbced8e87f676f537f1146a"
+              },
+              {
+                "id": "77Bo6Z9C",
+                "name": "Round 7",
+                "bytes": 81240,
+                "sha256": "9a7d50010335e611ad408b3b368c89c0e761aebf46be1d4cefda163154916308"
+              }
+            ],
+            "title": "1. Vechta Open | A-Open"
+          },
+          "vicenza": {
+            "broadcast": "xxvi-torneo-internazionle-citta-di-vicenza/round-1/vlGeyYHK",
+            "tc": "90min+30\" move",
+            "rounds": [
+              {
+                "id": "vlGeyYHK",
+                "name": "Round 1",
+                "bytes": 57610,
+                "sha256": "e097bcfb0850d5cdc8f342148da354dbfffea8b346e3829508a6f88a334ab51b"
+              },
+              {
+                "id": "QtHtnber",
+                "name": "Round 2",
+                "bytes": 64727,
+                "sha256": "48602af0b1c81364d6550d9805a59648fbe1461e9629ce272e77a50b20d0f2a4"
+              },
+              {
+                "id": "DSJ8dtr8",
+                "name": "Round 3",
+                "bytes": 60318,
+                "sha256": "2196b03a26c9a5e0c51ade848916fda995cc9f7b2d88367ad3b6d4c274ee0ee2"
+              },
+              {
+                "id": "lBMMBjIS",
+                "name": "Round 4",
+                "bytes": 53248,
+                "sha256": "338fb0515c9f7dc9add95f29165a5803e22b9e3873a5b43c464a907873ed3cd5"
+              },
+              {
+                "id": "NdjgRC2K",
+                "name": "Round 5",
+                "bytes": 54920,
+                "sha256": "e4547fdf8c9d423d0d87644490545972bc35b404d9e9cb58af111144fb938226"
+              }
+            ],
+            "title": "xxvI Torneo Internazionle Citt\u00e0 di Vicenza"
+          },
+          "cork": {
+            "broadcast": "cork-congress-2026-masters-1825/round-1/6jT7GvmT",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "6jT7GvmT",
+                "name": "Round 1",
+                "bytes": 63887,
+                "sha256": "0f64739cd228dfe711f01f2824e12fa7e21a0c0b599c5feef9653cb4e5e1b0e1"
+              },
+              {
+                "id": "SQyR4u01",
+                "name": "Round 2",
+                "bytes": 62482,
+                "sha256": "ee09406da3c0560a1cca846660885fee1c8bda7dafd94990eecc9afac071daf3"
+              },
+              {
+                "id": "6ccbL4xe",
+                "name": "Round 3",
+                "bytes": 58471,
+                "sha256": "a13d190adfa8b5708ac9e06e496843c1f3e3f2194cb8ad916e9d0afcbd5eca5e"
+              },
+              {
+                "id": "AUvEZMJf",
+                "name": "Round 4",
+                "bytes": 68310,
+                "sha256": "117233d647a3b5ef162b5c93cf65eeb52bfaf1f99066d5ceca8f25c398559a0b"
+              },
+              {
+                "id": "rimBx76u",
+                "name": "Round 5",
+                "bytes": 52902,
+                "sha256": "cd9631b64bb4817043a0add62dbf3ec2e3fd1bed803d26dff0799835590de7b9"
+              }
+            ],
+            "title": "Cork Congress 2026 | Masters (1825+)"
+          },
+          "khelo": {
+            "broadcast": "khelo-chess-india-940-classical-fide-rating-2026/round-1/hgOotuzD",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "iehBHUjW",
+                "name": "Round 5",
+                "bytes": 16458,
+                "sha256": "6d57da67d4a99a80425b8bd8fd36ea4936515563dfce30ad0cf49bc05a7685cc"
+              },
+              {
+                "id": "QS6035ZY",
+                "name": "Round 6",
+                "bytes": 17682,
+                "sha256": "c4768d5177256ce4dbbf2760202a734e99a6de33f3018c25509d384b7f1e748d"
+              },
+              {
+                "id": "QUqyNDFU",
+                "name": "Round 7",
+                "bytes": 13999,
+                "sha256": "4e3bc58fed39802b0769ce0e84a8f5e4859a7c96b971c3c497de7924feda8a42"
+              },
+              {
+                "id": "x850byQw",
+                "name": "Round 8",
+                "bytes": 13692,
+                "sha256": "af61cda191713eb9da33e755b84b884d8a7c7f4aa54e8e9d98e25307425f49ff"
+              },
+              {
+                "id": "n2KTuYgm",
+                "name": "Round 9",
+                "bytes": 16310,
+                "sha256": "391b499b5a07fa9456fec5e63423c4e0bb4e6fe4ea260e048ac44ceb4c0b2c37"
+              }
+            ],
+            "title": "Khelo Chess India 94.0 Classical Fide Rating 2026"
+          },
+          "munster": {
+            "broadcast": "43-munsterland-open-34-challengers-2026-a-open/runde-1/gxdiQyXE",
+            "tc": "90min/40moves + 30s/move + 30min/all",
+            "rounds": [
+              {
+                "id": "H8O9v8Hg",
+                "name": "Runde 5",
+                "bytes": 115341,
+                "sha256": "6c74e20b4f986ef8a48946ab0c356fbe050893dfe6d410eb9c7be9da23b68187"
+              },
+              {
+                "id": "Nb5HURJx",
+                "name": "Runde 6",
+                "bytes": 121597,
+                "sha256": "79fa7357f49a1992af51e56f1859c45f4f48b3cecbe3440115b487213ab57e60"
+              },
+              {
+                "id": "VXq2ZO6H",
+                "name": "Runde 7",
+                "bytes": 131209,
+                "sha256": "ad4eb654dbe827fbd7f2a97c9c35aecd6698e185a47c18ae3b8e49c7b88da368"
+              },
+              {
+                "id": "B8Gqv1Pd",
+                "name": "Runde 8",
+                "bytes": 129757,
+                "sha256": "b3aee322c588ca2309add7f3e430854b035766a120b798559fa32dd147b569c3"
+              },
+              {
+                "id": "id14ysB6",
+                "name": "Runde 9",
+                "bytes": 117972,
+                "sha256": "07a49df535677fe707e33c28986af99abb0515967514c99c0db67c5a395f3174"
+              }
+            ],
+            "title": "43. M\u00fcnsterland Open / 34. Challengers 2026 - A-Open"
+          }
+        },
+        "games": {
+          "hoogeveen": 126,
+          "calvia": 53,
+          "maritime": 20,
+          "nato": 247,
+          "vechta": 113,
+          "vicenza": 66,
+          "cork": 1,
+          "khelo": 18,
+          "munster": 127
+        },
+        "seed": "durable-structures-3d696066-classical2",
+        "beforeSplitCounts": {
+          "quiet-control": 751,
+          "exchange-control": 698,
+          "outpost-concession": 253,
+          "passer-concession": 306,
+          "own-asset": 430
+        },
+        "chosen": {
+          "passer-concession": 35,
+          "outpost-concession": 35,
+          "own-asset": 22,
+          "quiet-control": 23,
+          "exchange-control": 20
+        },
+        "eventsInSample": {
+          "vicenza": 17,
+          "nato": 19,
+          "vechta": 19,
+          "hoogeveen": 17,
+          "munster": 19,
+          "calvia": 16,
+          "maritime": 16,
+          "khelo": 11,
+          "cork": 1
+        }
+      },
+      "engine": {
+        "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+        "threadsPerEngine": 1,
+        "hashMiB": 48,
+        "rootNodes": 600000,
+        "pairNodes": 1200000,
+        "replyNodes": 900000,
+        "samples": 135,
+        "wallSeconds": 43.0,
+        "sha256": "6ac8afcf334bd9a16bf5df55069e548c10e04a9a32ea88f02111ce10a7cdd8b8"
+      },
+      "referenceSha256": "5147d12636e2dd06c42ed774016ae7196526347aa8d16c74fd7e7c6a037965fe",
+      "inputSha256": "8dec47fb5335ea801a63d846dfcd922039d5716ef92fe6f345048f35b954bd8b"
+    },
+    "reserve": {
+      "usedToTuneLinkedRule": false,
+      "sampling": {
+        "sources": {
+          "2026-nz-south-island": {
+            "broadcast": "2026-nz-south-island-championship/round-4/6W8sy3kg",
+            "tc": "90 mins + 30 secs increment.",
+            "rounds": [
+              {
+                "id": "0bfwoXp1",
+                "name": "Round 5",
+                "bytes": 54352,
+                "sha256": "d6591df0376ce7307ae120bae65474c128adfc80aa1115fea4a2c9789e807995"
+              },
+              {
+                "id": "sM6zWbcg",
+                "name": "Round 6",
+                "bytes": 56636,
+                "sha256": "df26cc6398740d8a53285857fbb413c65aa58eb32c0fb8f2605541845898bf72"
+              },
+              {
+                "id": "YPQJkH0s",
+                "name": "Round 7",
+                "bytes": 41472,
+                "sha256": "8c562a57a2818541079c39c44f5ef914f67157f01d02d6a21e23b4eb048edbc9"
+              },
+              {
+                "id": "TFgUZk2X",
+                "name": "Round 8",
+                "bytes": 54387,
+                "sha256": "9726eb9608f4a923d80eadebc4b81b032eed867f31177695f89d2cef664252ce"
+              }
+            ],
+            "title": "2026 NZ South Island Championship"
+          },
+          "new-zagreb-classic-futures": {
+            "broadcast": "new-zagreb-classic-futures-2026/round-1/6zOmEpto",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "RBYpC118",
+                "name": "Round 2",
+                "bytes": 79140,
+                "sha256": "60a5ae9848bd7240c94f280a6ec6cde743ee082168f117f0bcb988dd6424c53f"
+              },
+              {
+                "id": "N1qPLyTI",
+                "name": "Round 3",
+                "bytes": 68777,
+                "sha256": "fa16c6d2daaa7d45f2c267d0826c9c8a74e565171dbe8cc79ce56b4236094f44"
+              },
+              {
+                "id": "j10dppZB",
+                "name": "Round 4",
+                "bytes": 81940,
+                "sha256": "3e778fffb1e3cb64fa38f3b53ec5e210635ade3e56be33adb6a62f8c80c1dcc4"
+              },
+              {
+                "id": "NoCMjU33",
+                "name": "Round 5",
+                "bytes": 70953,
+                "sha256": "89e05bf9049f9f44f8c80452a9809fe929c029980d16e2c04cd1f3e423bc634a"
+              }
+            ],
+            "title": "New Zagreb Classic Futures 2026"
+          },
+          "dutch-meesterklasse-2026-2027": {
+            "broadcast": "dutch-meesterklasse-2026-2027/round-2/7JGlrr4D",
+            "tc": "90min/40moves + 30min + 30sec/move",
+            "rounds": [
+              {
+                "id": "isTlRIXU",
+                "name": "Round 1",
+                "bytes": 217906,
+                "sha256": "230db3124caa2e35547f118560b5b9cf376ec6341ae2eb43710aaa0c666d5d05"
+              },
+              {
+                "id": "7JGlrr4D",
+                "name": "Round 2",
+                "bytes": 221644,
+                "sha256": "a741e572dbdfd5ba54a5fcbdcfbcbc561aa98591c95a645105ae0b907ee7ce84"
+              },
+              {
+                "id": "WXqRYeQ6",
+                "name": "Round 3",
+                "bytes": 192528,
+                "sha256": "40e0b0ed372abf4cea8ca5302d961c142c06177f1e2d6890ceec5caf7baa17cf"
+              }
+            ],
+            "title": "Dutch Meesterklasse 2026-2027"
+          },
+          "fagernes-international-autumn-2026": {
+            "broadcast": "fagernes-international-autumn-2026-gm/round-1/OXXd2D8A",
+            "tc": "100 min / 40 moves + 40 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "tWSzFmNu",
+                "name": "Round 7",
+                "bytes": 149058,
+                "sha256": "bc0279adb83cfd3ee4e1f16c79e840c4692d756d3223b5de880381c80e2e4e5d"
+              },
+              {
+                "id": "txyTaNWf",
+                "name": "Round 8",
+                "bytes": 155232,
+                "sha256": "5f5363baf1770214469772d3f69e5ba35d9902d82a122497c1df53870023b093"
+              },
+              {
+                "id": "CWOhmMrG",
+                "name": "Round 9",
+                "bytes": 153303,
+                "sha256": "800bd4a4441bbc93fd5ba0c777130356dea473e04ca74c586eaba72d2bb48600"
+              },
+              {
+                "id": "GqyZIfeA",
+                "name": "Round 10",
+                "bytes": 114584,
+                "sha256": "af2ae7d3ff1470ea71b944e3379c18098a66ae0a4a3ec7f3212e4932e781e59c"
+              }
+            ],
+            "title": "Fagernes International Autumn 2026 | GM"
+          },
+          "greek-championship-2026-75": {
+            "broadcast": "greek-championship-2026-75-2026/round-1/Rixz5ht0",
+            "tc": "90 min / 40 moves + 30 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "ZIF8Df9w",
+                "name": "Round 6",
+                "bytes": 27015,
+                "sha256": "0fe2547130ef3bca2cd94810bca95cfdfcf0ba4cdb891488bb4660b79d4e8499"
+              },
+              {
+                "id": "68NKihwI",
+                "name": "Round 7",
+                "bytes": 22940,
+                "sha256": "abaa153160f04dff5e50f26767d5224bc991714da6ed9472f1971c7eaa02477d"
+              },
+              {
+                "id": "KdE7bnN1",
+                "name": "Round 8",
+                "bytes": 24570,
+                "sha256": "37103273bdc0d887064032a63497b7d5869308676344fe0964de4ffecd5e0daa"
+              },
+              {
+                "id": "IkkznIu4",
+                "name": "Round 9",
+                "bytes": 30654,
+                "sha256": "f671c78ee3e225ded4672a4fce13a74b8eb95db20861e6597298871d52fe2807"
+              }
+            ],
+            "title": "Greek Championship 2026 | 75\u03bf \u03a0\u03b1\u03bd\u03b5\u03bb\u03bb\u03ae\u03bd\u03b9\u03bf \u0391\u03c4\u03bf\u03bc\u03b9\u03ba\u03cc \u03a0\u03c1\u03c9\u03c4\u03ac\u03b8\u03bb\u03b7\u03bc\u03b1 2026"
+          },
+          "serbian-super-league-2026": {
+            "broadcast": "serbian-super-league-2026-open/round-1/Tv1lZFK4",
+            "tc": "90 min / 40 moves + 30 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "Itn5GZof",
+                "name": "Round 8",
+                "bytes": 155870,
+                "sha256": "34314bf451de1e58c02c3f31370cb8c7c8f7905eb0662c68044e05f65e24699b"
+              },
+              {
+                "id": "AOwRr43w",
+                "name": "Round 9",
+                "bytes": 137068,
+                "sha256": "feafe35f53b9b4913fe5ae20319d972be7b345d1b3de623600392dfe45dbcf75"
+              },
+              {
+                "id": "KIb8wSWx",
+                "name": "Round 10",
+                "bytes": 127745,
+                "sha256": "2c4b27cf2be8f8eab6c74e9366f62df6e2be80bd3d50e11efe5c824a606fec99"
+              },
+              {
+                "id": "al8DbLfb",
+                "name": "Round 11",
+                "bytes": 133159,
+                "sha256": "d6e3ccd3ba40e036f15a01f4ec244853e2377809200cbaad037b20b006f544b2"
+              }
+            ],
+            "title": "Serbian Super League 2026 | Open"
+          },
+          "romanian-team-chess-championships": {
+            "broadcast": "romanian-team-chess-championships-2026-mens-super-league/round-1/uTJet4pV",
+            "tc": "90 min / 40 moves + 30 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "pe8pd64b",
+                "name": "Round 6",
+                "bytes": 124744,
+                "sha256": "8fc89c1477f2cf0730754084b59dbceeebe91071c95206d164988b0e048582f2"
+              },
+              {
+                "id": "wPZRidjI",
+                "name": "Round 7",
+                "bytes": 139139,
+                "sha256": "1c6024bfe95071fe9fdcc3c2bc42956618e1fc274895e3434192daff76a0013d"
+              },
+              {
+                "id": "ie0yeJxy",
+                "name": "Round 8",
+                "bytes": 125165,
+                "sha256": "82a6fabdc3958d5e4ba0937485a66ff4c2b8c76d83d08ac8629dcdb409fcb8e6"
+              },
+              {
+                "id": "GaE4hIHb",
+                "name": "Round 9",
+                "bytes": 121879,
+                "sha256": "f2f25b8d86208e5267425cbcd840776e60430f8a56431835432faa710bd25cea"
+              }
+            ],
+            "title": "Romanian Team Chess Championships 2026 | Men\u2019s Super League"
+          },
+          "icelandic-team-chess-championships": {
+            "broadcast": "icelandic-team-chess-championships-202627-premier-league/round-1/iztO0dly",
+            "tc": "90 min + 30 sec 40/15",
+            "rounds": [
+              {
+                "id": "xoNo71PY",
+                "name": "Round 2",
+                "bytes": 125983,
+                "sha256": "af83dff763346ac7a59b6a9e6f0bbf8a0d384c17753c26bd937ec85a9e008c24"
+              },
+              {
+                "id": "SGYe07eL",
+                "name": "Round 3",
+                "bytes": 123848,
+                "sha256": "002e13911cd048d88ff5414ee999e56cfe7522c23c563b3f3c240143b144c5d3"
+              },
+              {
+                "id": "iBMy4Ku3",
+                "name": "Round 4",
+                "bytes": 98719,
+                "sha256": "66ef116c1921d0f3f05d2a41dbd0ac6356e5fd605ca1159e5f0acad87afc6f79"
+              },
+              {
+                "id": "EtalIqlg",
+                "name": "Round 5",
+                "bytes": 112543,
+                "sha256": "1d4995ce56a40918643f99015b9cb30b89c48eb2f540332b955df414e83f7a65"
+              }
+            ],
+            "title": "Icelandic Team Chess Championships 2026/27 - Premier League"
+          },
+          "atyrau-open-2026-masters": {
+            "broadcast": "atyrau-open-2026-masters/round-1/c9M0wOWT",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "bPwB7mkh",
+                "name": "Round 6",
+                "bytes": 276638,
+                "sha256": "880c2a1aa01916797ec281d0cda0bb80e545e657b00aac613712638bc2247472"
+              },
+              {
+                "id": "cKUTroMt",
+                "name": "Round 7",
+                "bytes": 264065,
+                "sha256": "86a81a503787b4f1aa1d0f9d2d96e5b181bf8501cd0bd9f8e04b94e9631c3c82"
+              },
+              {
+                "id": "fFxKe7NX",
+                "name": "Round 8",
+                "bytes": 267420,
+                "sha256": "eef8cd193c610b6e20b2f63852b294b12bb3a23c08e8f4ed72a3d7554c959bf7"
+              },
+              {
+                "id": "UUGLEFfk",
+                "name": "Round 9",
+                "bytes": 267782,
+                "sha256": "0ec66f0dbc34639bc6fa3cc50b3440a208b51b1e74ef20deac539525064da4e7"
+              }
+            ],
+            "title": "Atyrau Open 2026 | Masters"
+          },
+          "amsterdam-chess-open-2026": {
+            "broadcast": "amsterdam-chess-open-2026-group-a/round-1/flVz3NAx",
+            "tc": "90 min + 30 sec/move",
+            "rounds": [
+              {
+                "id": "fXoFR8Bu",
+                "name": "Round 3",
+                "bytes": 60545,
+                "sha256": "3a23e2d8bebeffb103f9a5760649fe5f3a85b138aeca93646a3f0336b0b5045c"
+              },
+              {
+                "id": "YUkkMmjb",
+                "name": "Round 4",
+                "bytes": 60182,
+                "sha256": "adb0d528ca79234f39f09503e63c007d37eb2c809aa9fae86ad57174b1edfd3c"
+              },
+              {
+                "id": "HX9oNWoS",
+                "name": "Round 5",
+                "bytes": 61863,
+                "sha256": "35f61f50d48abeb26159d6b5f3325da1dbdd3e372eae256c3daba7b4e2d657ec"
+              },
+              {
+                "id": "1ujjsnvk",
+                "name": "Round 6",
+                "bytes": 63780,
+                "sha256": "b6a6210f2d6a192f52c26cb0211b5ff6e94f2aea543fdac9c36295412268a314"
+              }
+            ],
+            "title": "Amsterdam Chess Open 2026 - Group A"
+          },
+          "20-int-deizisauer-herbstopen": {
+            "broadcast": "20-int-deizisauer-herbstopen-2026/round-1/NfanDDn2",
+            "tc": "90 min + 30 sec / move",
+            "rounds": [
+              {
+                "id": "YuNkhcPl",
+                "name": "Round 4",
+                "bytes": 28859,
+                "sha256": "980117b94b26df4f51b24176231e8669ee3fb2404bb635417ec7ff2f09120bc6"
+              },
+              {
+                "id": "MMOmr1cU",
+                "name": "Round 5",
+                "bytes": 33316,
+                "sha256": "2a20f57e01596eb397b7cd3541da2ba7e9a2a0b538833d52a9b7ddb8beef1288"
+              },
+              {
+                "id": "YUvqrUdc",
+                "name": "Round 6",
+                "bytes": 26735,
+                "sha256": "2d747d4de662a1f7c781830a56e2f574f2783ec6a2c9dfba22e19eb0c64e1bd4"
+              },
+              {
+                "id": "K0HoCsBS",
+                "name": "Round 7",
+                "bytes": 31052,
+                "sha256": "15c4d3e0c9028dda343515b0fc59ec6d8129190e3cef2dfac8a3f9045dc8edc9"
+              }
+            ],
+            "title": "20. Int. Deizisauer Herbstopen 2026"
+          },
+          "benidorm-chess-open-2026": {
+            "broadcast": "benidorm-chess-open-2026-group-a/round-1/RF5nXSJJ",
+            "tc": "90 min + 30 sec",
+            "rounds": [
+              {
+                "id": "pANKkrTq",
+                "name": "Round 6",
+                "bytes": 136635,
+                "sha256": "44e3aa7edfd16cbc09429cc9dfc27207547d324c66733c3cc561c2ece1b47f55"
+              },
+              {
+                "id": "Zz3514fc",
+                "name": "Round 7",
+                "bytes": 130741,
+                "sha256": "8b0847d9e907ca0b64089a4ae2658dca3f2daf78bf2ca74c61a2f20b24a512b6"
+              },
+              {
+                "id": "MA8A9yqI",
+                "name": "Round 8",
+                "bytes": 134968,
+                "sha256": "7cc2b461522eaa6b9f2d94212254878cb9b00c3e662998e0f61d011a856e242a"
+              },
+              {
+                "id": "xQLykz1m",
+                "name": "Round 9",
+                "bytes": 111259,
+                "sha256": "48faf734ddbeb2cb825449825080a2f29a2ae5cd65a53d590ebea45da9643f7d"
+              }
+            ],
+            "title": "Benidorm Chess Open 2026 | Group A"
+          }
+        },
+        "games": {
+          "2026-nz-south-island": 47,
+          "new-zagreb-classic-futures": 1,
+          "dutch-meesterklasse-2026-2027": 147,
+          "fagernes-international-autumn-2026": 1,
+          "greek-championship-2026-75": 20,
+          "serbian-super-league-2026": 115,
+          "romanian-team-chess-championships": 100,
+          "icelandic-team-chess-championships": 1,
+          "atyrau-open-2026-masters": 210,
+          "amsterdam-chess-open-2026": 1,
+          "20-int-deizisauer-herbstopen": 1,
+          "benidorm-chess-open-2026": 1
+        },
+        "seed": "durable-structures-3d696066-classical3",
+        "beforeSplitCounts": {
+          "exchange-control": 579,
+          "quiet-control": 632,
+          "own-asset": 363,
+          "passer-concession": 276,
+          "outpost-concession": 218
+        },
+        "chosen": {
+          "passer-concession": 64,
+          "outpost-concession": 36,
+          "own-asset": 28,
+          "quiet-control": 22,
+          "exchange-control": 20
+        },
+        "eventsInSample": {
+          "atyrau-open-2026-masters": 32,
+          "romanian-team-chess-championships": 28,
+          "2026-nz-south-island": 26,
+          "dutch-meesterklasse-2026-2027": 31,
+          "greek-championship-2026-75": 16,
+          "serbian-super-league-2026": 31,
+          "20-int-deizisauer-herbstopen": 1,
+          "icelandic-team-chess-championships": 1,
+          "fagernes-international-autumn-2026": 1,
+          "amsterdam-chess-open-2026": 1,
+          "benidorm-chess-open-2026": 1,
+          "new-zagreb-classic-futures": 1
+        }
+      },
+      "engine": {
+        "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+        "threadsPerEngine": 1,
+        "hashMiB": 48,
+        "rootNodes": 600000,
+        "pairNodes": 1200000,
+        "replyNodes": 900000,
+        "samples": 170,
+        "wallSeconds": 44.8,
+        "sha256": "c0d14a46bb0669cb85b98a17b3580b85de2a9caf43c389baf3c89b36522e7199"
+      },
+      "referenceSha256": "33c653eb6dfd3bb21a3e15e93ba263522de4bfce6b3be1bb1c2536a03f6358cc",
+      "inputSha256": "477253465f002850c85d7b89f55499c7fd87d515cfe52e2f7003de0507da4191"
+    }
+  },
+  "frozenCandidateSha256": "8d3c7e8eb30c30f8d7551809bedb01b73aa9f82637bbe0ddf57f3adba9e3a6b7",
+  "formattedReproductionCandidateSha256": "d72657e7cfcca3bcc1c9573cd9280120d14e91815703e51bd5f94234f444f384"
+}

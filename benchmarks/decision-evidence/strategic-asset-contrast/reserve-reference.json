@@ -1,0 +1,6895 @@
+[
+  {
+    "id": "classical-4df891bc50c0b497",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-4c1d6332ad4d4577",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a021f980e469ead4",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-468c4aefbb184d5e",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-85d7dc490b5bd128",
+    "event": "greek-championship-2026-75",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-070a89d2e43b84b5",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c934c80b4ebb0a18",
+    "event": "20-int-deizisauer-herbstopen",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-244038945ab3031f",
+    "event": "icelandic-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-cc908582bce990d5",
+    "event": "fagernes-international-autumn-2026",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-87dbe93b70fcef7f",
+    "event": "amsterdam-chess-open-2026",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6ce9cfcbd29dda22",
+    "event": "benidorm-chess-open-2026",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c986cb1e5254e551",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "fen": "6k1/5p2/p1r2R1p/1pP1B1p1/3Pb3/6P1/7P/6K1 w - - 4 40",
+    "playedMoveUci": "f6c6",
+    "pairedDrop": 167,
+    "replyDrop": 98,
+    "lines": [
+      {
+        "san": [
+          "Rd6",
+          "Rxd6",
+          "cxd6",
+          "Kf8",
+          "Bg7+",
+          "Ke8",
+          "Bxh6",
+          "f6",
+          "Bg7",
+          "g4",
+          "Bxf6"
+        ],
+        "material": [
+          0,
+          -500,
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          200
+        ],
+        "uci": [
+          "f6d6",
+          "c6d6",
+          "c5d6",
+          "g8f8",
+          "e5g7",
+          "f8e8",
+          "g7h6",
+          "f7f6",
+          "h6g7",
+          "g5g4",
+          "g7f6"
+        ]
+      },
+      {
+        "san": [
+          "Rd6",
+          "Kf8",
+          "Rd7",
+          "Ke8",
+          "Rb7",
+          "f6",
+          "Bc7",
+          "Kf7",
+          "Bd8+",
+          "Ke6",
+          "Kf2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f6d6",
+          "g8f8",
+          "d6d7",
+          "f8e8",
+          "d7b7",
+          "f7f6",
+          "e5c7",
+          "e8f7",
+          "c7d8",
+          "f7e6",
+          "g1f2"
+        ]
+      },
+      {
+        "san": [
+          "Rxc6",
+          "Bxc6",
+          "h4",
+          "b4",
+          "Kf2",
+          "a5",
+          "hxg5",
+          "hxg5",
+          "d5",
+          "Bxd5",
+          "Bb2"
+        ],
+        "material": [
+          500,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          -100,
+          -100
+        ],
+        "uci": [
+          "f6c6",
+          "e4c6",
+          "h2h4",
+          "b5b4",
+          "g1f2",
+          "a6a5",
+          "h4g5",
+          "h6g5",
+          "d4d5",
+          "c6d5",
+          "e5b2"
+        ]
+      },
+      {
+        "san": [
+          "Rxc6",
+          "Bxc6",
+          "Kf2",
+          "a5",
+          "h4",
+          "Kh7",
+          "hxg5",
+          "hxg5",
+          "Ke3",
+          "Kg6",
+          "Kd3"
+        ],
+        "material": [
+          500,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f6c6",
+          "e4c6",
+          "g1f2",
+          "a6a5",
+          "h2h4",
+          "g8h7",
+          "h4g5",
+          "h6g5",
+          "f2e3",
+          "h7g6",
+          "e3d3"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-e43670241763d6c8",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-3ab912aebbcfd6c5",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e89d508597ca8866",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9af2a8eed0ba32db",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0efa32dfe52947a3",
+    "event": "greek-championship-2026-75",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-5d9119862049501d",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-80df671ad9816a6c",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-7c035285377c4a7f",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-8ec1b9e7bc177a17",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "fen": "r1b2rk1/4npb1/1qp1p1pp/2NpP3/PQ1P4/5N1P/2PB1PP1/R4RK1 b - - 0 20",
+    "playedMoveUci": "b6a7",
+    "pairedDrop": 175,
+    "replyDrop": 137,
+    "lines": [
+      {
+        "san": [
+          "Qxb4",
+          "Bxb4",
+          "Re8",
+          "Rfb1",
+          "Ba6",
+          "Bc3",
+          "Nc8",
+          "Ne1",
+          "Bf8",
+          "Nd7",
+          "Be7"
+        ],
+        "material": [
+          900,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "b6b4",
+          "d2b4",
+          "f8e8",
+          "f1b1",
+          "c8a6",
+          "b4c3",
+          "e7c8",
+          "f3e1",
+          "g7f8",
+          "c5d7",
+          "f8e7"
+        ]
+      },
+      {
+        "san": [
+          "Qxb4",
+          "Bxb4",
+          "Re8",
+          "Rfb1",
+          "Ba6",
+          "Nd7",
+          "g5",
+          "Bc5",
+          "Ng6",
+          "Bd6",
+          "Red8"
+        ],
+        "material": [
+          900,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "b6b4",
+          "d2b4",
+          "f8e8",
+          "f1b1",
+          "c8a6",
+          "c5d7",
+          "g6g5",
+          "b4c5",
+          "e7g6",
+          "c5d6",
+          "e8d8"
+        ]
+      },
+      {
+        "san": [
+          "Qa7",
+          "a5",
+          "Re8",
+          "a6",
+          "Bf8",
+          "Ra5",
+          "g5",
+          "Qc3",
+          "Qb6",
+          "Nh2",
+          "Nf5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "b6a7",
+          "a4a5",
+          "f8e8",
+          "a5a6",
+          "g7f8",
+          "a1a5",
+          "g6g5",
+          "b4c3",
+          "a7b6",
+          "f3h2",
+          "e7f5"
+        ]
+      },
+      {
+        "san": [
+          "Qa7",
+          "a5",
+          "g5",
+          "Rfb1",
+          "Ng6",
+          "Qb6",
+          "Ba6",
+          "Qxc6",
+          "Rfc8",
+          "Qxa6",
+          "Qxa6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -430,
+          470
+        ],
+        "uci": [
+          "b6a7",
+          "a4a5",
+          "g6g5",
+          "f1b1",
+          "e7g6",
+          "b4b6",
+          "c8a6",
+          "b6c6",
+          "f8c8",
+          "c6a6",
+          "a7a6"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-9dee44dbf31a386e",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f401817056d339cd",
+    "event": "greek-championship-2026-75",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-1b610731d7ff2fe2",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-77eb3dfa6b6f83f2",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-126893c3bbc4d7e8",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-990677fd66f7207f",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0e544d2580fc5e0d",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-10f3bf4214209fd5",
+    "event": "greek-championship-2026-75",
+    "phase": "passer-concession",
+    "fen": "2r3rk/1pq2p2/p1b1pP1p/7P/5PN1/P1p5/1PP2Q1K/3R1R2 w - - 3 28",
+    "playedMoveUci": "h2h3",
+    "pairedDrop": 258,
+    "replyDrop": 262,
+    "lines": [
+      {
+        "san": [
+          "Rg1",
+          "cxb2",
+          "Ne5",
+          "Be4",
+          "Rb1",
+          "Kh7",
+          "Rxb2",
+          "Qc3",
+          "Qe1",
+          "Qxe1",
+          "Rxe1"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0,
+          -900,
+          0
+        ],
+        "uci": [
+          "f1g1",
+          "c3b2",
+          "g4e5",
+          "c6e4",
+          "d1b1",
+          "h8h7",
+          "b1b2",
+          "c7c3",
+          "f2e1",
+          "c3e1",
+          "g1e1"
+        ]
+      },
+      {
+        "san": [
+          "Rg1",
+          "Rg5",
+          "Rg3",
+          "Rf5",
+          "Qe3",
+          "Qxf4",
+          "Qxf4",
+          "Rxf4",
+          "Ne5",
+          "Rf2+",
+          "Kh3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          800,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "f1g1",
+          "g8g5",
+          "g1g3",
+          "g5f5",
+          "f2e3",
+          "c7f4",
+          "e3f4",
+          "f5f4",
+          "g4e5",
+          "f4f2",
+          "h2h3"
+        ]
+      },
+      {
+        "san": [
+          "Kh3",
+          "cxb2",
+          "Qd2",
+          "Rcd8",
+          "Qf2",
+          "Rxd1",
+          "Rxd1",
+          "Be4",
+          "Nxh6",
+          "Qc3+",
+          "Kh2"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -600,
+          -100,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "h2h3",
+          "c3b2",
+          "f2d2",
+          "c8d8",
+          "d2f2",
+          "d8d1",
+          "f1d1",
+          "c6e4",
+          "g4h6",
+          "c7c3",
+          "h3h2"
+        ]
+      },
+      {
+        "san": [
+          "Kh3",
+          "cxb2",
+          "Rg1",
+          "Rxg4",
+          "Kxg4",
+          "Qa5",
+          "Qd4",
+          "Qf5+",
+          "Kg3",
+          "Rg8+",
+          "Kf2"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -420,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80
+        ],
+        "uci": [
+          "h2h3",
+          "c3b2",
+          "f1g1",
+          "g8g4",
+          "h3g4",
+          "c7a5",
+          "f2d4",
+          "a5f5",
+          "g4g3",
+          "c8g8",
+          "g3f2"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "c3",
+          "keys": [
+            [
+              [
+                2,
+                "b2"
+              ],
+              [
+                3,
+                "b2"
+              ],
+              [
+                4,
+                "b2"
+              ],
+              [
+                5,
+                "b2"
+              ],
+              [
+                6,
+                "b2"
+              ],
+              [
+                7,
+                "b2"
+              ],
+              [
+                8,
+                "b2"
+              ],
+              [
+                9,
+                "b2"
+              ],
+              [
+                10,
+                "b2"
+              ],
+              [
+                11,
+                "b2"
+              ]
+            ],
+            [
+              [
+                2,
+                "b2"
+              ],
+              [
+                3,
+                "b2"
+              ],
+              [
+                4,
+                "b2"
+              ],
+              [
+                5,
+                "b2"
+              ],
+              [
+                6,
+                "b2"
+              ],
+              [
+                7,
+                "b2"
+              ],
+              [
+                8,
+                "b2"
+              ],
+              [
+                9,
+                "b2"
+              ],
+              [
+                10,
+                "b2"
+              ],
+              [
+                11,
+                "b2"
+              ]
+            ],
+            [
+              [
+                2,
+                "b2"
+              ],
+              [
+                3,
+                "b2"
+              ],
+              [
+                4,
+                "b2"
+              ],
+              [
+                5,
+                "b2"
+              ],
+              [
+                6,
+                "b2"
+              ]
+            ],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "The same c3 pawn becomes passed on b2 immediately after one of the better continuations as well."
+  },
+  {
+    "id": "classical-0e5e3906715efaa8",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-7e0956e0e5e57658",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "fen": "5r1k/1Qpr1qb1/3pb2p/2p1p1p1/P1P3Pn/1P2B1NP/3R1PB1/3R2K1 b - - 0 30",
+    "playedMoveUci": "d7e7",
+    "pairedDrop": 99,
+    "replyDrop": 95,
+    "lines": [
+      {
+        "san": [
+          "Rdd8",
+          "Rd3",
+          "Rb8",
+          "Qc6",
+          "Nxg2",
+          "Qxg2",
+          "Bc8",
+          "Bd2",
+          "Bb7",
+          "Ne4",
+          "Bxe4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          330,
+          10,
+          10,
+          10,
+          10,
+          10,
+          330
+        ],
+        "uci": [
+          "d7d8",
+          "d2d3",
+          "d8b8",
+          "b7c6",
+          "h4g2",
+          "c6g2",
+          "e6c8",
+          "e3d2",
+          "c8b7",
+          "g3e4",
+          "b7e4"
+        ]
+      },
+      {
+        "san": [
+          "Rdd8",
+          "Rd3",
+          "Rb8",
+          "Qc6",
+          "Bd7",
+          "Qd5",
+          "Nxg2",
+          "Qxg2",
+          "Bc8",
+          "Bd2",
+          "Bb7"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          330,
+          10,
+          10,
+          10,
+          10
+        ],
+        "uci": [
+          "d7d8",
+          "d2d3",
+          "d8b8",
+          "b7c6",
+          "e6d7",
+          "c6d5",
+          "h4g2",
+          "d5g2",
+          "d7c8",
+          "e3d2",
+          "c8b7"
+        ]
+      },
+      {
+        "san": [
+          "Re7",
+          "Be4",
+          "Nf3+",
+          "Bxf3",
+          "Bc8",
+          "Qd5",
+          "Qxf3",
+          "Qxf3",
+          "Rxf3",
+          "b4",
+          "cxb4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -320,
+          -320,
+          -320,
+          10,
+          -890,
+          10,
+          10,
+          110
+        ],
+        "uci": [
+          "d7e7",
+          "g2e4",
+          "h4f3",
+          "e4f3",
+          "e6c8",
+          "b7d5",
+          "f7f3",
+          "d5f3",
+          "f8f3",
+          "b3b4",
+          "c5b4"
+        ]
+      },
+      {
+        "san": [
+          "Re7",
+          "Be4",
+          "Bc8",
+          "Qc6",
+          "Nf3+",
+          "Bxf3",
+          "Qxf3",
+          "Qxf3",
+          "Rxf3",
+          "b4",
+          "cxb4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -320,
+          10,
+          -890,
+          10,
+          10,
+          110
+        ],
+        "uci": [
+          "d7e7",
+          "g2e4",
+          "e6c8",
+          "b7c6",
+          "h4f3",
+          "e4f3",
+          "f7f3",
+          "c6f3",
+          "f8f3",
+          "b3b4",
+          "c5b4"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-5ab990fc37de5059",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-49a3482412da201f",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e07b5a6729abe307",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-eec1ff8b0ef8decd",
+    "event": "greek-championship-2026-75",
+    "phase": "passer-concession",
+    "fen": "4k1r1/3b3R/p2p4/4p1P1/3q4/3Q4/1P6/1K1R4 w - - 4 36",
+    "playedMoveUci": "d3d4",
+    "pairedDrop": 423,
+    "replyDrop": 423,
+    "lines": [
+      {
+        "san": [
+          "Re7+",
+          "Kf8",
+          "Rxd7",
+          "Qxd3+",
+          "Rxd3",
+          "Rg7",
+          "Rf3+",
+          "Kg8",
+          "Rd8+",
+          "Kh7",
+          "Rxd6"
+        ],
+        "material": [
+          0,
+          0,
+          330,
+          -570,
+          330,
+          330,
+          330,
+          330,
+          330,
+          330,
+          430
+        ],
+        "uci": [
+          "h7e7",
+          "e8f8",
+          "e7d7",
+          "d4d3",
+          "d1d3",
+          "g8g7",
+          "d3f3",
+          "f8g8",
+          "d7d8",
+          "g8h7",
+          "d8d6"
+        ]
+      },
+      {
+        "san": [
+          "Re7+",
+          "Kf8",
+          "Rxd7",
+          "Qxd3+",
+          "Rxd3",
+          "Rg7",
+          "Rf3+",
+          "Kg8",
+          "Rd8+",
+          "Kh7",
+          "Rg3"
+        ],
+        "material": [
+          0,
+          0,
+          330,
+          -570,
+          330,
+          330,
+          330,
+          330,
+          330,
+          330,
+          330
+        ],
+        "uci": [
+          "h7e7",
+          "e8f8",
+          "e7d7",
+          "d4d3",
+          "d1d3",
+          "g8g7",
+          "d3f3",
+          "f8g8",
+          "d7d8",
+          "g8h7",
+          "f3g3"
+        ]
+      },
+      {
+        "san": [
+          "Qxd4",
+          "exd4",
+          "Rh6",
+          "Rxg5",
+          "Rxd6",
+          "Re5",
+          "R1xd4",
+          "Bb5",
+          "Rh6",
+          "Ke7",
+          "Rg4"
+        ],
+        "material": [
+          900,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "d3d4",
+          "e5d4",
+          "h7h6",
+          "g8g5",
+          "h6d6",
+          "g5e5",
+          "d1d4",
+          "d7b5",
+          "d6h6",
+          "e8e7",
+          "d4g4"
+        ]
+      },
+      {
+        "san": [
+          "Qxd4",
+          "exd4",
+          "Rh6",
+          "Bf5+",
+          "Kc1",
+          "d3",
+          "Rxd6",
+          "Ke7",
+          "Rxa6",
+          "Rxg5",
+          "Ra5"
+        ],
+        "material": [
+          900,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          200,
+          100,
+          100
+        ],
+        "uci": [
+          "d3d4",
+          "e5d4",
+          "h7h6",
+          "d7f5",
+          "b1c1",
+          "d4d3",
+          "h6d6",
+          "e8e7",
+          "d6a6",
+          "g8g5",
+          "a6a5"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-49173effdd64fb29",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-036bedec3ab602bb",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e11d4233e0c7b8a0",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9277b218b786be4b",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a71115e0d41cc446",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "fen": "1b6/pB1k2pr/8/PP2np2/3Bp3/8/6RP/7K b - - 0 35",
+    "playedMoveUci": "d7e6",
+    "pairedDrop": 114,
+    "replyDrop": 137,
+    "lines": [
+      {
+        "san": [
+          "g6",
+          "b6",
+          "axb6",
+          "Bxe5",
+          "Bxe5",
+          "axb6",
+          "Rh6",
+          "Bd5",
+          "Ke7",
+          "b7",
+          "Kf6"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          -220,
+          110,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "uci": [
+          "g7g6",
+          "b5b6",
+          "a7b6",
+          "d4e5",
+          "b8e5",
+          "a5b6",
+          "h7h6",
+          "b7d5",
+          "d7e7",
+          "b6b7",
+          "e7f6"
+        ]
+      },
+      {
+        "san": [
+          "g6",
+          "b6",
+          "axb6",
+          "Bxe5",
+          "Bxe5",
+          "axb6",
+          "Ke7",
+          "Bc6",
+          "Kf6",
+          "b7",
+          "g5"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          -220,
+          110,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "uci": [
+          "g7g6",
+          "b5b6",
+          "a7b6",
+          "d4e5",
+          "b8e5",
+          "a5b6",
+          "d7e7",
+          "b7c6",
+          "e7f6",
+          "b6b7",
+          "g6g5"
+        ]
+      },
+      {
+        "san": [
+          "Ke6",
+          "a6",
+          "g6",
+          "b6",
+          "axb6",
+          "Bxb6",
+          "Nf3",
+          "Be3",
+          "Ke7",
+          "Ra2",
+          "Bxh2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100
+        ],
+        "uci": [
+          "d7e6",
+          "a5a6",
+          "g7g6",
+          "b5b6",
+          "a7b6",
+          "d4b6",
+          "e5f3",
+          "b6e3",
+          "e6e7",
+          "g2a2",
+          "b8h2"
+        ]
+      },
+      {
+        "san": [
+          "Ke6",
+          "a6",
+          "g6",
+          "b6",
+          "axb6",
+          "Bxb6",
+          "Nf3",
+          "Be3",
+          "Nxh2",
+          "Rxg6+",
+          "Ke5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0
+        ],
+        "uci": [
+          "d7e6",
+          "a5a6",
+          "g7g6",
+          "b5b6",
+          "a7b6",
+          "d4b6",
+          "e5f3",
+          "b6e3",
+          "f3h2",
+          "g2g6",
+          "e6e5"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "a5",
+          "keys": [
+            [
+              [
+                5,
+                "a6"
+              ],
+              [
+                6,
+                "a6"
+              ],
+              [
+                7,
+                "a6"
+              ],
+              [
+                8,
+                "a6"
+              ],
+              [
+                9,
+                "a6"
+              ],
+              [
+                10,
+                "a6"
+              ],
+              [
+                11,
+                "a6"
+              ]
+            ],
+            [
+              [
+                5,
+                "a6"
+              ],
+              [
+                6,
+                "a6"
+              ],
+              [
+                7,
+                "a6"
+              ],
+              [
+                8,
+                "a6"
+              ],
+              [
+                9,
+                "a6"
+              ],
+              [
+                10,
+                "a6"
+              ],
+              [
+                11,
+                "a6"
+              ]
+            ],
+            [
+              [
+                6,
+                "b6"
+              ],
+              [
+                7,
+                "b6"
+              ],
+              [
+                8,
+                "b6"
+              ],
+              [
+                9,
+                "b6"
+              ],
+              [
+                10,
+                "b7"
+              ],
+              [
+                11,
+                "b7"
+              ]
+            ],
+            [
+              [
+                6,
+                "b6"
+              ],
+              [
+                7,
+                "b6"
+              ],
+              [
+                8,
+                "b6"
+              ],
+              [
+                9,
+                "b6"
+              ],
+              [
+                10,
+                "b7"
+              ],
+              [
+                11,
+                "b7"
+              ]
+            ]
+          ]
+        }
+      ],
+      "concedes-outpost": [
+        {
+          "start": "b7",
+          "keys": [
+            [
+              [
+                2,
+                "b7"
+              ],
+              [
+                3,
+                "b7"
+              ],
+              [
+                4,
+                "b7"
+              ],
+              [
+                5,
+                "b7"
+              ],
+              [
+                6,
+                "b7"
+              ],
+              [
+                7,
+                "b7"
+              ],
+              [
+                8,
+                "b7"
+              ],
+              [
+                9,
+                "b7"
+              ],
+              [
+                10,
+                "b7"
+              ],
+              [
+                11,
+                "b7"
+              ]
+            ],
+            [
+              [
+                2,
+                "b7"
+              ],
+              [
+                3,
+                "b7"
+              ],
+              [
+                4,
+                "b7"
+              ],
+              [
+                5,
+                "b7"
+              ],
+              [
+                6,
+                "b7"
+              ],
+              [
+                7,
+                "b7"
+              ],
+              [
+                8,
+                "b7"
+              ],
+              [
+                9,
+                "b7"
+              ],
+              [
+                10,
+                "b7"
+              ],
+              [
+                11,
+                "b7"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "A new pawn supporter for the stationary b7 bishop coexists with the same a5 pawn becoming a more advanced b-passer after the better move. The position's relative benefits are unresolved by these lines."
+  },
+  {
+    "id": "classical-fe8d1472f414b5f4",
+    "event": "greek-championship-2026-75",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c2a852f6fa06c051",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-d33805eadcd0387e",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "fen": "r1r5/3n1pkp/1p4p1/3p4/PppP4/1P1NP2P/2R2PP1/2R3K1 w - - 0 28",
+    "playedMoveUci": "d3b4",
+    "pairedDrop": 61,
+    "replyDrop": 11,
+    "lines": [
+      {
+        "san": [
+          "bxc4",
+          "b3",
+          "Rc3",
+          "Rxa4",
+          "cxd5",
+          "Rxc3",
+          "Rxc3",
+          "Ra3",
+          "Rc4",
+          "Ra1+",
+          "Kh2"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          0,
+          100,
+          -400,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "b3c4",
+          "b4b3",
+          "c2c3",
+          "a8a4",
+          "c4d5",
+          "c8c3",
+          "c1c3",
+          "a4a3",
+          "c3c4",
+          "a3a1",
+          "g1h2"
+        ]
+      },
+      {
+        "san": [
+          "bxc4",
+          "b3",
+          "Rc3",
+          "Rxa4",
+          "cxd5",
+          "Rxc3",
+          "Rxc3",
+          "Ra3",
+          "Rc4",
+          "Ra1+",
+          "Kh2"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          0,
+          100,
+          -400,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "b3c4",
+          "b4b3",
+          "c2c3",
+          "a8a4",
+          "c4d5",
+          "c8c3",
+          "c1c3",
+          "a4a3",
+          "c3c4",
+          "a3a1",
+          "g1h2"
+        ]
+      },
+      {
+        "san": [
+          "Nxb4",
+          "cxb3",
+          "Rxc8",
+          "Rxc8",
+          "Rb1",
+          "Nf6",
+          "Rxb3",
+          "Rc1+",
+          "Kh2",
+          "h5",
+          "h4"
+        ],
+        "material": [
+          100,
+          0,
+          500,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "d3b4",
+          "c4b3",
+          "c2c8",
+          "a8c8",
+          "c1b1",
+          "d7f6",
+          "b1b3",
+          "c8c1",
+          "g1h2",
+          "h7h5",
+          "h3h4"
+        ]
+      },
+      {
+        "san": [
+          "Nxb4",
+          "Nf6",
+          "Na2",
+          "h5",
+          "bxc4",
+          "Rxa4",
+          "cxd5",
+          "Rxc2",
+          "Rxc2",
+          "Nxd5",
+          "Kf1"
+        ],
+        "material": [
+          100,
+          100,
+          100,
+          100,
+          200,
+          100,
+          200,
+          -300,
+          200,
+          100,
+          100
+        ],
+        "uci": [
+          "d3b4",
+          "d7f6",
+          "b4a2",
+          "h7h5",
+          "b3c4",
+          "a8a4",
+          "c4d5",
+          "c8c2",
+          "c1c2",
+          "f6d5",
+          "g1f1"
+        ]
+      }
+    ],
+    "options": {
+      "gains-new-passer": [
+        {
+          "start": "b3",
+          "keys": [
+            [
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d5"
+              ],
+              [
+                9,
+                "d5"
+              ],
+              [
+                10,
+                "d5"
+              ],
+              [
+                11,
+                "d5"
+              ]
+            ],
+            [
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d5"
+              ],
+              [
+                9,
+                "d5"
+              ],
+              [
+                10,
+                "d5"
+              ],
+              [
+                11,
+                "d5"
+              ]
+            ],
+            [],
+            [
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d5"
+              ],
+              [
+                9,
+                "d5"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "The independent reply scores narrow the gap to eleven centipawns and an equivalent d5 pawn appears in one of the weaker continuations."
+  },
+  {
+    "id": "classical-3173ddeec6bdf874",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-69c5304b09e81684",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-33a83f21f4e0de4e",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6a7a1baf9ac243bb",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-db393d75b08ae47c",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f56dd47cbaed2d69",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ff416a5edb06e33d",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-fee08eed188ce94c",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "fen": "1r1qr1k1/1p1b1pn1/p2p2pp/3P4/4N3/1P4P1/PQ3PBP/2RR2K1 b - - 3 22",
+    "playedMoveUci": "g8h8",
+    "pairedDrop": 215,
+    "replyDrop": 240,
+    "lines": [
+      {
+        "san": [
+          "Re7",
+          "Nf6+",
+          "Kf8",
+          "Qd2",
+          "g5",
+          "h4",
+          "Ne8",
+          "hxg5",
+          "hxg5",
+          "Nh7+",
+          "Kg8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e8e7",
+          "e4f6",
+          "g8f8",
+          "b2d2",
+          "g6g5",
+          "h2h4",
+          "g7e8",
+          "h4g5",
+          "h6g5",
+          "f6h7",
+          "f8g8"
+        ]
+      },
+      {
+        "san": [
+          "Re7",
+          "Nf6+",
+          "Kf8",
+          "Qd2",
+          "g5",
+          "h4",
+          "Ne8",
+          "hxg5",
+          "hxg5",
+          "Nh7+",
+          "Kg8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "e8e7",
+          "e4f6",
+          "g8f8",
+          "b2d2",
+          "g6g5",
+          "h2h4",
+          "g7e8",
+          "h4g5",
+          "h6g5",
+          "f6h7",
+          "f8g8"
+        ]
+      },
+      {
+        "san": [
+          "Kh8",
+          "Nxd6",
+          "Rf8",
+          "Ne4",
+          "Bg4",
+          "Rd2",
+          "Rc8",
+          "d6",
+          "Rxc1+",
+          "Qxc1",
+          "b6"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          400,
+          -100,
+          -100
+        ],
+        "uci": [
+          "g8h8",
+          "e4d6",
+          "e8f8",
+          "d6e4",
+          "d7g4",
+          "d1d2",
+          "b8c8",
+          "d5d6",
+          "c8c1",
+          "b2c1",
+          "b7b6"
+        ]
+      },
+      {
+        "san": [
+          "Kh8",
+          "Nxd6",
+          "Rf8",
+          "Ne4",
+          "Rc8",
+          "Rxc8",
+          "Bxc8",
+          "Nf6",
+          "Qd6",
+          "g4",
+          "b5"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -600,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "g8h8",
+          "e4d6",
+          "e8f8",
+          "d6e4",
+          "b8c8",
+          "c1c8",
+          "d7c8",
+          "e4f6",
+          "d8d6",
+          "g3g4",
+          "b7b5"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "d5",
+          "keys": [
+            [
+              [
+                2,
+                "d5"
+              ],
+              [
+                3,
+                "d5"
+              ],
+              [
+                4,
+                "d5"
+              ],
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d6"
+              ],
+              [
+                9,
+                "d6"
+              ],
+              [
+                10,
+                "d6"
+              ],
+              [
+                11,
+                "d6"
+              ]
+            ],
+            [
+              [
+                2,
+                "d5"
+              ],
+              [
+                3,
+                "d5"
+              ],
+              [
+                4,
+                "d5"
+              ],
+              [
+                5,
+                "d5"
+              ],
+              [
+                6,
+                "d5"
+              ],
+              [
+                7,
+                "d5"
+              ],
+              [
+                8,
+                "d5"
+              ],
+              [
+                9,
+                "d5"
+              ],
+              [
+                10,
+                "d5"
+              ],
+              [
+                11,
+                "d5"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "yes",
+    "feature": "passed-pawn",
+    "note": "After Kh8, Nxd6 removes the d6 pawn, immediately freeing White's original d5 pawn. Both weaker branches retain it. Both Re7 lines retain the d6 blocker through the early window.",
+    "tactical": null
+  },
+  {
+    "id": "classical-9d0fd2f12bb3739a",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-86ab29a7b56c9346",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-65e72906c87bcbb8",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "fen": "6k1/1N1brpn1/p1p2n2/P2p2pp/1P1P2P1/3B1PNP/5K2/2R5 b - - 0 30",
+    "playedMoveUci": "d7g4",
+    "pairedDrop": 232,
+    "replyDrop": 226,
+    "lines": [
+      {
+        "san": [
+          "h4",
+          "Ne2",
+          "Bxg4",
+          "fxg4",
+          "Rxb7",
+          "Rxc6",
+          "Ne6",
+          "b5",
+          "axb5",
+          "a6",
+          "Rb8"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          -230,
+          90,
+          -10,
+          -10,
+          -10,
+          90,
+          90,
+          90
+        ],
+        "uci": [
+          "h5h4",
+          "g3e2",
+          "d7g4",
+          "f3g4",
+          "e7b7",
+          "c1c6",
+          "g7e6",
+          "b4b5",
+          "a6b5",
+          "a5a6",
+          "b7b8"
+        ]
+      },
+      {
+        "san": [
+          "h4",
+          "Ne2",
+          "Bxg4",
+          "fxg4",
+          "Rxb7",
+          "Rxc6",
+          "Ne6",
+          "b5",
+          "axb5",
+          "a6",
+          "Ra7"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          -230,
+          90,
+          -10,
+          -10,
+          -10,
+          90,
+          90,
+          90
+        ],
+        "uci": [
+          "h5h4",
+          "g3e2",
+          "d7g4",
+          "f3g4",
+          "e7b7",
+          "c1c6",
+          "g7e6",
+          "b4b5",
+          "a6b5",
+          "a5a6",
+          "b7a7"
+        ]
+      },
+      {
+        "san": [
+          "Bxg4",
+          "hxg4",
+          "Rxb7",
+          "Rxc6",
+          "h4",
+          "Rc8+",
+          "Nfe8",
+          "Nf5",
+          "Rxb4",
+          "Nxg7",
+          "Kxg7"
+        ],
+        "material": [
+          100,
+          -230,
+          90,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          90,
+          -230,
+          90
+        ],
+        "uci": [
+          "d7g4",
+          "h3g4",
+          "e7b7",
+          "c1c6",
+          "h5h4",
+          "c6c8",
+          "f6e8",
+          "g3f5",
+          "b7b4",
+          "f5g7",
+          "g8g7"
+        ]
+      },
+      {
+        "san": [
+          "Bxg4",
+          "hxg4",
+          "h4",
+          "Nc5",
+          "hxg3+",
+          "Kxg3",
+          "Nfe8",
+          "Bxa6",
+          "Nc7",
+          "Bd3",
+          "Kf8"
+        ],
+        "material": [
+          100,
+          -230,
+          -230,
+          -230,
+          90,
+          -10,
+          -10,
+          -110,
+          -110,
+          -110,
+          -110
+        ],
+        "uci": [
+          "d7g4",
+          "h3g4",
+          "h5h4",
+          "b7c5",
+          "h4g3",
+          "f2g3",
+          "f6e8",
+          "d3a6",
+          "e8c7",
+          "a6d3",
+          "g8f8"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-850edf304972ba77",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-513cea6c6744699d",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-18df99403f46b37d",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-16e29bad24fc74cc",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-1a08871e9f8e2216",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "fen": "4r1k1/pp5p/2b2p2/q2p1Q1P/2P5/P3B3/5Pr1/R4K1R w - - 2 26",
+    "playedMoveUci": "f5f6",
+    "pairedDrop": 425,
+    "replyDrop": 454,
+    "lines": [
+      {
+        "san": [
+          "Bh6",
+          "Re7",
+          "Rh4",
+          "Bd7",
+          "Qf4",
+          "Rgg7",
+          "Bxg7",
+          "Kxg7",
+          "Qd6",
+          "Kf7",
+          "Qxd5+"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          500,
+          170,
+          170,
+          170,
+          270
+        ],
+        "uci": [
+          "e3h6",
+          "e8e7",
+          "h1h4",
+          "c6d7",
+          "f5f4",
+          "g2g7",
+          "h6g7",
+          "g8g7",
+          "f4d6",
+          "g7f7",
+          "d6d5"
+        ]
+      },
+      {
+        "san": [
+          "Bh6",
+          "Re7",
+          "Rh4",
+          "Bd7",
+          "Qf4",
+          "Rgg7",
+          "Bxg7",
+          "Kxg7",
+          "Qd6",
+          "Kf7",
+          "Qxd5+"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          500,
+          170,
+          170,
+          170,
+          270
+        ],
+        "uci": [
+          "e3h6",
+          "e8e7",
+          "h1h4",
+          "c6d7",
+          "f5f4",
+          "g2g7",
+          "h6g7",
+          "g8g7",
+          "f4d6",
+          "g7f7",
+          "d6d5"
+        ]
+      },
+      {
+        "san": [
+          "Qxf6",
+          "dxc4",
+          "Bd4",
+          "Qg5",
+          "Qh8+",
+          "Kf7",
+          "Qxh7+",
+          "Kf8",
+          "Qh8+",
+          "Kf7",
+          "Qh7+"
+        ],
+        "material": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "f5f6",
+          "d5c4",
+          "e3d4",
+          "a5g5",
+          "f6h8",
+          "g8f7",
+          "h8h7",
+          "f7f8",
+          "h7h8",
+          "f8f7",
+          "h8h7"
+        ]
+      },
+      {
+        "san": [
+          "Qxf6",
+          "dxc4",
+          "Bd4",
+          "Qd5",
+          "Qh8+",
+          "Kf7",
+          "Qf6+"
+        ],
+        "material": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f5f6",
+          "d5c4",
+          "e3d4",
+          "a5d5",
+          "f6h8",
+          "g8f7",
+          "h8f6"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "d5",
+          "keys": [
+            [
+              [
+                2,
+                "c4"
+              ],
+              [
+                3,
+                "c4"
+              ],
+              [
+                4,
+                "c4"
+              ],
+              [
+                5,
+                "c4"
+              ],
+              [
+                6,
+                "c4"
+              ],
+              [
+                7,
+                "c4"
+              ],
+              [
+                8,
+                "c4"
+              ],
+              [
+                9,
+                "c4"
+              ],
+              [
+                10,
+                "c4"
+              ],
+              [
+                11,
+                "c4"
+              ]
+            ],
+            [
+              [
+                2,
+                "c4"
+              ],
+              [
+                3,
+                "c4"
+              ],
+              [
+                4,
+                "c4"
+              ],
+              [
+                5,
+                "c4"
+              ],
+              [
+                6,
+                "c4"
+              ],
+              [
+                7,
+                "c4"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "The c4 passer does persist, but major-piece forcing play and divergent material after Bh6 complicate whether the passer is a useful explanation of the error."
+  },
+  {
+    "id": "classical-d35cdbf170931a72",
+    "event": "romanian-team-chess-championships",
+    "phase": "passer-concession",
+    "fen": "1qr3k1/3n1pp1/4p2p/p7/P1p2N2/1rP1PPP1/Q2R2KP/3R4 w - - 6 34",
+    "playedMoveUci": "a2c2",
+    "pairedDrop": 118,
+    "replyDrop": 120,
+    "lines": [
+      {
+        "san": [
+          "Qa1",
+          "Nc5",
+          "Ne2",
+          "e5",
+          "e4",
+          "g5",
+          "h3",
+          "Kg7",
+          "Nc1",
+          "Rb1",
+          "Qa2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a2a1",
+          "d7c5",
+          "f4e2",
+          "e6e5",
+          "e3e4",
+          "g7g5",
+          "h2h3",
+          "g8g7",
+          "e2c1",
+          "b3b1",
+          "a1a2"
+        ]
+      },
+      {
+        "san": [
+          "Qa1",
+          "Nc5",
+          "e4",
+          "Qb6",
+          "Ne2",
+          "e5",
+          "Nc1",
+          "Rb1",
+          "Qa2",
+          "Rc7",
+          "Rf1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a2a1",
+          "d7c5",
+          "e3e4",
+          "b8b6",
+          "f4e2",
+          "e6e5",
+          "e2c1",
+          "b3b1",
+          "a1a2",
+          "c8c7",
+          "d1f1"
+        ]
+      },
+      {
+        "san": [
+          "Qc2",
+          "Nc5",
+          "Ra1",
+          "g5",
+          "Nh5",
+          "Nd3",
+          "Qd1",
+          "Qb6",
+          "Rxd3",
+          "cxd3",
+          "Qxd3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          320,
+          -180,
+          -80
+        ],
+        "uci": [
+          "a2c2",
+          "d7c5",
+          "d1a1",
+          "g7g5",
+          "f4h5",
+          "c5d3",
+          "c2d1",
+          "b8b6",
+          "d2d3",
+          "c4d3",
+          "d1d3"
+        ]
+      },
+      {
+        "san": [
+          "Qc2",
+          "Nc5",
+          "Ra1",
+          "g5",
+          "Ne2",
+          "g4",
+          "Nd4",
+          "Qb7",
+          "Nxb3",
+          "gxf3+",
+          "Kf1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          500,
+          400,
+          400
+        ],
+        "uci": [
+          "a2c2",
+          "d7c5",
+          "d1a1",
+          "g7g5",
+          "f4e2",
+          "g5g4",
+          "e2d4",
+          "b8b7",
+          "d4b3",
+          "g4f3",
+          "g2f1"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-b146042996b96201",
+    "event": "2026-nz-south-island",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e50dc26e574267ec",
+    "event": "atyrau-open-2026-masters",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-4ea77f163cf7ec7d",
+    "event": "serbian-super-league-2026",
+    "phase": "passer-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e79b8cb5e46ef067",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "passer-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9c6c112652b26cc5",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "outpost-concession",
+    "fen": "1r6/4p3/3p1k2/p1p2p2/P1P1n1p1/1P1RP1P1/5PK1/1N6 b - - 13 47",
+    "playedMoveUci": "f6e6",
+    "pairedDrop": 230,
+    "replyDrop": 285,
+    "lines": [
+      {
+        "san": [
+          "d5",
+          "Na3",
+          "d4",
+          "exd4",
+          "cxd4",
+          "c5",
+          "e5",
+          "c6",
+          "Rc8",
+          "Nc4",
+          "Rxc6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100
+        ],
+        "uci": [
+          "d6d5",
+          "b1a3",
+          "d5d4",
+          "e3d4",
+          "c5d4",
+          "c4c5",
+          "e7e5",
+          "c5c6",
+          "b8c8",
+          "a3c4",
+          "c8c6"
+        ]
+      },
+      {
+        "san": [
+          "d5",
+          "Na3",
+          "d4",
+          "exd4",
+          "cxd4",
+          "c5",
+          "e5",
+          "c6",
+          "Nd6",
+          "c7",
+          "Rc8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d6d5",
+          "b1a3",
+          "d5d4",
+          "e3d4",
+          "c5d4",
+          "c4c5",
+          "e7e5",
+          "c5c6",
+          "e4d6",
+          "c6c7",
+          "b8c8"
+        ]
+      },
+      {
+        "san": [
+          "Ke6",
+          "Na3",
+          "Ke5",
+          "Rd5+",
+          "Kf6",
+          "Nb5",
+          "e6",
+          "Rd1",
+          "Ke5",
+          "Kf1",
+          "d5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f6e6",
+          "b1a3",
+          "e6e5",
+          "d3d5",
+          "e5f6",
+          "a3b5",
+          "e7e6",
+          "d5d1",
+          "f6e5",
+          "g2f1",
+          "d6d5"
+        ]
+      },
+      {
+        "san": [
+          "Ke6",
+          "Na3",
+          "Ng5",
+          "Nb5",
+          "Kf6",
+          "Rd1",
+          "Rh8",
+          "Nc7",
+          "Rh7",
+          "Nb5",
+          "Nf3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f6e6",
+          "b1a3",
+          "e4g5",
+          "a3b5",
+          "e6f6",
+          "d3d1",
+          "b8h8",
+          "b5c7",
+          "h8h7",
+          "c7b5",
+          "g5f3"
+        ]
+      }
+    ],
+    "options": {
+      "gains-new-passer": [
+        {
+          "start": "c5",
+          "keys": [
+            [
+              [
+                5,
+                "d4"
+              ],
+              [
+                6,
+                "d4"
+              ],
+              [
+                7,
+                "d4"
+              ],
+              [
+                8,
+                "d4"
+              ],
+              [
+                9,
+                "d4"
+              ],
+              [
+                10,
+                "d4"
+              ],
+              [
+                11,
+                "d4"
+              ]
+            ],
+            [
+              [
+                5,
+                "d4"
+              ],
+              [
+                6,
+                "d4"
+              ],
+              [
+                7,
+                "d4"
+              ],
+              [
+                8,
+                "d4"
+              ],
+              [
+                9,
+                "d4"
+              ],
+              [
+                10,
+                "d4"
+              ],
+              [
+                11,
+                "d4"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ],
+      "concedes-outpost": [
+        {
+          "start": "b1",
+          "keys": [
+            [
+              [
+                6,
+                "b5"
+              ],
+              [
+                7,
+                "b5"
+              ],
+              [
+                8,
+                "b5"
+              ],
+              [
+                9,
+                "b5"
+              ],
+              [
+                10,
+                "b5"
+              ],
+              [
+                11,
+                "b5"
+              ]
+            ],
+            [
+              [
+                4,
+                "b5"
+              ],
+              [
+                5,
+                "b5"
+              ],
+              [
+                6,
+                "b5"
+              ],
+              [
+                7,
+                "b5"
+              ],
+              [
+                10,
+                "b5"
+              ],
+              [
+                11,
+                "b5"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "yes",
+    "feature": "passed-pawn",
+    "note": "d5 Na3 d4 exd4 cxd4 creates a protected passed d4 pawn from c5 in both stronger lines. Ke6 leaves no equivalent early passer. The inferior branches vary in the timing and duration of the b5 knight.",
+    "tactical": null
+  },
+  {
+    "id": "classical-70bcf2d21fec7f85",
+    "event": "atyrau-open-2026-masters",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e34e6f72f5e232c9",
+    "event": "romanian-team-chess-championships",
+    "phase": "outpost-concession",
+    "fen": "1r4k1/2q2pp1/1p1p1n2/2pPnb2/P1P1p2p/1QN1P2P/4NPP1/1R3BK1 b - - 0 31",
+    "playedMoveUci": "c7a7",
+    "pairedDrop": 141,
+    "replyDrop": 114,
+    "lines": [
+      {
+        "san": [
+          "Qe7",
+          "Kh1",
+          "Nd3",
+          "Nd1",
+          "g5",
+          "Ng1",
+          "Nb4",
+          "Nc3",
+          "Bg6",
+          "Be2",
+          "Rf8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c7e7",
+          "g1h1",
+          "e5d3",
+          "c3d1",
+          "g7g5",
+          "e2g1",
+          "d3b4",
+          "d1c3",
+          "f5g6",
+          "f1e2",
+          "b8f8"
+        ]
+      },
+      {
+        "san": [
+          "Qe7",
+          "Qc2",
+          "Nxc4",
+          "Qa2",
+          "Na5",
+          "g4",
+          "hxg3",
+          "Nxg3",
+          "Qe5",
+          "Qc2",
+          "g6"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          200,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "c7e7",
+          "b3c2",
+          "e5c4",
+          "c2a2",
+          "c4a5",
+          "g2g4",
+          "h4g3",
+          "e2g3",
+          "e7e5",
+          "a2c2",
+          "g7g6"
+        ]
+      },
+      {
+        "san": [
+          "Qa7",
+          "a5",
+          "Qxa5",
+          "Nb5",
+          "Ne8",
+          "Qc2",
+          "Ra8",
+          "Nec3",
+          "Bh7",
+          "Nxe4",
+          "Bxe4"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          0,
+          320
+        ],
+        "uci": [
+          "c7a7",
+          "a4a5",
+          "a7a5",
+          "c3b5",
+          "f6e8",
+          "b3c2",
+          "b8a8",
+          "e2c3",
+          "f5h7",
+          "c3e4",
+          "h7e4"
+        ]
+      },
+      {
+        "san": [
+          "Qa7",
+          "a5",
+          "b5",
+          "Nxb5",
+          "Qxa5",
+          "Nec3",
+          "g5",
+          "Qc2",
+          "Qd8",
+          "Na7",
+          "Rb6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c7a7",
+          "a4a5",
+          "b6b5",
+          "c3b5",
+          "a7a5",
+          "e2c3",
+          "g7g5",
+          "b3c2",
+          "a5d8",
+          "b5a7",
+          "b8b6"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "c3",
+          "keys": [
+            [
+              [
+                4,
+                "b5"
+              ],
+              [
+                5,
+                "b5"
+              ],
+              [
+                6,
+                "b5"
+              ],
+              [
+                7,
+                "b5"
+              ],
+              [
+                8,
+                "b5"
+              ],
+              [
+                9,
+                "b5"
+              ],
+              [
+                10,
+                "b5"
+              ],
+              [
+                11,
+                "b5"
+              ]
+            ],
+            [
+              [
+                4,
+                "b5"
+              ],
+              [
+                5,
+                "b5"
+              ],
+              [
+                6,
+                "b5"
+              ],
+              [
+                7,
+                "b5"
+              ],
+              [
+                8,
+                "b5"
+              ],
+              [
+                9,
+                "b5"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "Nb5 follows a5 in both worse lines, but one line sacrifices the a-pawn and the other blunts the rook with a capture on b5. The timing and independent reply to the knight differ, so the importance of the common square is uncertain."
+  },
+  {
+    "id": "classical-6504372477f639ae",
+    "event": "serbian-super-league-2026",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c03740502ad63d32",
+    "event": "2026-nz-south-island",
+    "phase": "outpost-concession",
+    "fen": "r2q1k1r/pp3p1p/2n1b1p1/1N1pPp2/3P1P2/5N2/2P3PP/R2Q1RK1 w - - 2 16",
+    "playedMoveUci": "a1a3",
+    "pairedDrop": 69,
+    "replyDrop": 57,
+    "lines": [
+      {
+        "san": [
+          "Nd6",
+          "Na5",
+          "Qd3",
+          "Kg7",
+          "Ng5",
+          "b6",
+          "g4",
+          "Qd7",
+          "Rae1",
+          "Rhf8",
+          "Qh3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "b5d6",
+          "c6a5",
+          "d1d3",
+          "f8g7",
+          "f3g5",
+          "b7b6",
+          "g2g4",
+          "d8d7",
+          "a1e1",
+          "h8f8",
+          "d3h3"
+        ]
+      },
+      {
+        "san": [
+          "Nd6",
+          "Na5",
+          "Qd3",
+          "Kg7",
+          "Ng5",
+          "Nc4",
+          "Nxb7",
+          "Qe7",
+          "Nc5",
+          "a5",
+          "Rfb1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "b5d6",
+          "c6a5",
+          "d1d3",
+          "f8g7",
+          "f3g5",
+          "a5c4",
+          "d6b7",
+          "d8e7",
+          "b7c5",
+          "a7a5",
+          "f1b1"
+        ]
+      },
+      {
+        "san": [
+          "Ra3",
+          "Na5",
+          "Qa1",
+          "b6",
+          "Nd6",
+          "Kg7",
+          "Ng5",
+          "Qd7",
+          "h4",
+          "Nc4",
+          "Nxc4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          320
+        ],
+        "uci": [
+          "a1a3",
+          "c6a5",
+          "d1a1",
+          "b7b6",
+          "b5d6",
+          "f8g7",
+          "f3g5",
+          "d8d7",
+          "h2h4",
+          "a5c4",
+          "d6c4"
+        ]
+      },
+      {
+        "san": [
+          "Ra3",
+          "Na5",
+          "Qa1",
+          "b6",
+          "Nd6",
+          "h6",
+          "Rd1",
+          "Qc7",
+          "h4",
+          "Rg8",
+          "Rc3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a1a3",
+          "c6a5",
+          "d1a1",
+          "b7b6",
+          "b5d6",
+          "h7h6",
+          "f1d1",
+          "d8c7",
+          "h2h4",
+          "h8g8",
+          "a3c3"
+        ]
+      }
+    ],
+    "options": {
+      "gains-outpost": [
+        {
+          "start": "b5",
+          "keys": [
+            [
+              [
+                1,
+                "d6"
+              ],
+              [
+                2,
+                "d6"
+              ],
+              [
+                3,
+                "d6"
+              ],
+              [
+                4,
+                "d6"
+              ],
+              [
+                5,
+                "d6"
+              ],
+              [
+                6,
+                "d6"
+              ],
+              [
+                7,
+                "d6"
+              ],
+              [
+                8,
+                "d6"
+              ],
+              [
+                9,
+                "d6"
+              ],
+              [
+                10,
+                "d6"
+              ],
+              [
+                11,
+                "d6"
+              ]
+            ],
+            [
+              [
+                1,
+                "d6"
+              ],
+              [
+                2,
+                "d6"
+              ],
+              [
+                3,
+                "d6"
+              ],
+              [
+                4,
+                "d6"
+              ],
+              [
+                5,
+                "d6"
+              ],
+              [
+                6,
+                "d6"
+              ]
+            ],
+            [
+              [
+                5,
+                "d6"
+              ],
+              [
+                6,
+                "d6"
+              ],
+              [
+                7,
+                "d6"
+              ],
+              [
+                8,
+                "d6"
+              ],
+              [
+                9,
+                "d6"
+              ],
+              [
+                10,
+                "d6"
+              ]
+            ],
+            [
+              [
+                5,
+                "d6"
+              ],
+              [
+                6,
+                "d6"
+              ],
+              [
+                7,
+                "d6"
+              ],
+              [
+                8,
+                "d6"
+              ],
+              [
+                9,
+                "d6"
+              ],
+              [
+                10,
+                "d6"
+              ],
+              [
+                11,
+                "d6"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "no",
+    "note": "The b5 knight reaches the same supported d6 square after both moves in both searches."
+  },
+  {
+    "id": "classical-0514e390ed9ca9ae",
+    "event": "new-zagreb-classic-futures",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-924bfea147ca28d4",
+    "event": "greek-championship-2026-75",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-5351e73be02b4a39",
+    "event": "atyrau-open-2026-masters",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ed5318890f4b2d0e",
+    "event": "serbian-super-league-2026",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b20aef67889359e6",
+    "event": "romanian-team-chess-championships",
+    "phase": "outpost-concession",
+    "fen": "8/2pK1kp1/4p3/2P1b2p/8/2r1B2P/3R1PP1/8 b - - 1 37",
+    "playedMoveUci": "f7f6",
+    "pairedDrop": 112,
+    "replyDrop": 54,
+    "lines": [
+      {
+        "san": [
+          "g5",
+          "c6",
+          "Kf6",
+          "Bd4",
+          "Bxd4",
+          "Rxd4",
+          "Rc2",
+          "Kxc7",
+          "e5",
+          "Rd6+",
+          "Ke7"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          330,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "g7g5",
+          "c5c6",
+          "f7f6",
+          "e3d4",
+          "e5d4",
+          "d2d4",
+          "c3c2",
+          "d7c7",
+          "e6e5",
+          "d4d6",
+          "f6e7"
+        ]
+      },
+      {
+        "san": [
+          "g5",
+          "c6",
+          "Bh2",
+          "Bxg5",
+          "Rc5",
+          "Be3",
+          "Ra5",
+          "g3",
+          "h4",
+          "gxh4",
+          "Rf5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -200,
+          -200
+        ],
+        "uci": [
+          "g7g5",
+          "c5c6",
+          "e5h2",
+          "e3g5",
+          "c3c5",
+          "g5e3",
+          "c5a5",
+          "g2g3",
+          "h5h4",
+          "g3h4",
+          "a5f5"
+        ]
+      },
+      {
+        "san": [
+          "Kf6",
+          "f4",
+          "Rxe3",
+          "fxe5+",
+          "Kxe5",
+          "Kxc7",
+          "Kf4",
+          "c6",
+          "e5",
+          "Rc2",
+          "Ra3"
+        ],
+        "material": [
+          0,
+          0,
+          330,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f7f6",
+          "f2f4",
+          "c3e3",
+          "f4e5",
+          "f6e5",
+          "d7c7",
+          "e5f4",
+          "c5c6",
+          "e6e5",
+          "d2c2",
+          "e3a3"
+        ]
+      },
+      {
+        "san": [
+          "Kf6",
+          "f4",
+          "Rxe3",
+          "fxe5+",
+          "Rxe5",
+          "Rf2+",
+          "Kg5",
+          "c6",
+          "Rc5",
+          "Kxc7",
+          "Rc4"
+        ],
+        "material": [
+          0,
+          0,
+          330,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          0,
+          0
+        ],
+        "uci": [
+          "f7f6",
+          "f2f4",
+          "c3e3",
+          "f4e5",
+          "e3e5",
+          "d2f2",
+          "f6g5",
+          "c5c6",
+          "e5c5",
+          "d7c7",
+          "c5c4"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "c5",
+          "keys": [
+            [
+              [
+                6,
+                "c5"
+              ],
+              [
+                7,
+                "c5"
+              ],
+              [
+                8,
+                "c6"
+              ],
+              [
+                9,
+                "c6"
+              ],
+              [
+                10,
+                "c6"
+              ],
+              [
+                11,
+                "c6"
+              ]
+            ],
+            [
+              [
+                10,
+                "c6"
+              ],
+              [
+                11,
+                "c6"
+              ]
+            ],
+            [
+              [
+                8,
+                "c6"
+              ],
+              [
+                9,
+                "c6"
+              ],
+              [
+                10,
+                "c6"
+              ],
+              [
+                11,
+                "c6"
+              ]
+            ],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "The common passer arrives too late in one line and a better line also shows it. There are materially different intervening ideas."
+  },
+  {
+    "id": "classical-9861a5f4089e8252",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b157b79fc152c7d7",
+    "event": "2026-nz-south-island",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-d4b7926517bb7e1c",
+    "event": "greek-championship-2026-75",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-337daa6064c11dbc",
+    "event": "serbian-super-league-2026",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b64e986c22a37b0e",
+    "event": "atyrau-open-2026-masters",
+    "phase": "outpost-concession",
+    "fen": "1rq1r1k1/1p3p2/PQp2n2/2Np4/3Pb2p/R3P3/4BPP1/2R3K1 b - - 0 28",
+    "playedMoveUci": "h4h3",
+    "pairedDrop": 537,
+    "replyDrop": 557,
+    "lines": [
+      {
+        "san": [
+          "bxa6",
+          "Nxe4",
+          "Nxe4",
+          "Qxa6",
+          "Qf5",
+          "Bf3",
+          "h3",
+          "Qe2",
+          "hxg2",
+          "Bxg2",
+          "Re6"
+        ],
+        "material": [
+          100,
+          -230,
+          90,
+          -10,
+          -10,
+          -10,
+          -10,
+          -10,
+          90,
+          -10,
+          -10
+        ],
+        "uci": [
+          "b7a6",
+          "c5e4",
+          "f6e4",
+          "b6a6",
+          "c8f5",
+          "e2f3",
+          "h4h3",
+          "a6e2",
+          "h3g2",
+          "f3g2",
+          "e8e6"
+        ]
+      },
+      {
+        "san": [
+          "bxa6",
+          "Qxa6",
+          "Qf5",
+          "f3",
+          "h3",
+          "fxe4",
+          "Qg5",
+          "Bf3",
+          "Rb2",
+          "Qf1",
+          "dxe4"
+        ],
+        "material": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          -330,
+          -330,
+          -330,
+          -330,
+          -330,
+          -230
+        ],
+        "uci": [
+          "b7a6",
+          "b6a6",
+          "c8f5",
+          "f2f3",
+          "h4h3",
+          "f3e4",
+          "f5g5",
+          "e2f3",
+          "b8b2",
+          "a6f1",
+          "d5e4"
+        ]
+      },
+      {
+        "san": [
+          "h3",
+          "axb7",
+          "Qf5",
+          "Qc7",
+          "Bxg2",
+          "Qg3+",
+          "Kh7",
+          "Kh2",
+          "Rg8",
+          "Qh4+",
+          "Kg7"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "h4h3",
+          "a6b7",
+          "c8f5",
+          "b6c7",
+          "e4g2",
+          "c7g3",
+          "g8h7",
+          "g1h2",
+          "e8g8",
+          "g3h4",
+          "h7g7"
+        ]
+      },
+      {
+        "san": [
+          "h3",
+          "axb7",
+          "Qf5",
+          "Qc7",
+          "Bxg2",
+          "Qg3+",
+          "Kh7",
+          "Kh2",
+          "Ne4",
+          "Nxe4",
+          "Bxe4"
+        ],
+        "material": [
+          0,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -320,
+          0
+        ],
+        "uci": [
+          "h4h3",
+          "a6b7",
+          "c8f5",
+          "b6c7",
+          "e4g2",
+          "c7g3",
+          "g8h7",
+          "g1h2",
+          "f6e4",
+          "c5e4",
+          "g2e4"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-new-passer": [
+        {
+          "start": "a6",
+          "keys": [
+            [
+              [
+                2,
+                "b7"
+              ],
+              [
+                3,
+                "b7"
+              ],
+              [
+                4,
+                "b7"
+              ],
+              [
+                5,
+                "b7"
+              ],
+              [
+                6,
+                "b7"
+              ],
+              [
+                7,
+                "b7"
+              ],
+              [
+                8,
+                "b7"
+              ],
+              [
+                9,
+                "b7"
+              ],
+              [
+                10,
+                "b7"
+              ],
+              [
+                11,
+                "b7"
+              ]
+            ],
+            [
+              [
+                2,
+                "b7"
+              ],
+              [
+                3,
+                "b7"
+              ],
+              [
+                4,
+                "b7"
+              ],
+              [
+                5,
+                "b7"
+              ],
+              [
+                6,
+                "b7"
+              ],
+              [
+                7,
+                "b7"
+              ],
+              [
+                8,
+                "b7"
+              ],
+              [
+                9,
+                "b7"
+              ],
+              [
+                10,
+                "b7"
+              ],
+              [
+                11,
+                "b7"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ],
+      "concedes-outpost": [
+        {
+          "start": "c5",
+          "keys": [
+            [
+              [
+                2,
+                "c5"
+              ],
+              [
+                3,
+                "c5"
+              ],
+              [
+                4,
+                "c5"
+              ],
+              [
+                5,
+                "c5"
+              ],
+              [
+                6,
+                "c5"
+              ],
+              [
+                7,
+                "c5"
+              ],
+              [
+                8,
+                "c5"
+              ],
+              [
+                9,
+                "c5"
+              ],
+              [
+                10,
+                "c5"
+              ],
+              [
+                11,
+                "c5"
+              ]
+            ],
+            [
+              [
+                2,
+                "c5"
+              ],
+              [
+                3,
+                "c5"
+              ],
+              [
+                4,
+                "c5"
+              ],
+              [
+                5,
+                "c5"
+              ],
+              [
+                6,
+                "c5"
+              ],
+              [
+                7,
+                "c5"
+              ],
+              [
+                8,
+                "c5"
+              ],
+              [
+                9,
+                "c5"
+              ]
+            ],
+            [
+              [
+                1,
+                "c5"
+              ]
+            ],
+            [
+              [
+                1,
+                "c5"
+              ],
+              [
+                2,
+                "c5"
+              ],
+              [
+                3,
+                "c5"
+              ],
+              [
+                4,
+                "c5"
+              ],
+              [
+                5,
+                "c5"
+              ],
+              [
+                6,
+                "c5"
+              ],
+              [
+                7,
+                "c5"
+              ],
+              [
+                8,
+                "c5"
+              ],
+              [
+                9,
+                "c5"
+              ],
+              [
+                10,
+                "c5"
+              ],
+              [
+                11,
+                "c5"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    "status": "yes",
+    "feature": "passed-pawn",
+    "note": "h3 axb7 creates a passed pawn on b7 immediately, tying down the b8 rook. bxa6 removes the original pawn outright. Both searches show this contrast before the later tactics.",
+    "tactical": null
+  },
+  {
+    "id": "classical-9db5106ce6b3f88f",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-548fa694ac8feb86",
+    "event": "romanian-team-chess-championships",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-32b6b3377d7fdb17",
+    "event": "2026-nz-south-island",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-45fc57b6ccb42eda",
+    "event": "serbian-super-league-2026",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b7e77a3f2f7681a6",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a32ee07026ba4e98",
+    "event": "atyrau-open-2026-masters",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-81216739893bbf64",
+    "event": "romanian-team-chess-championships",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-fe38ea4b904bd50a",
+    "event": "2026-nz-south-island",
+    "phase": "outpost-concession",
+    "fen": "1r2r1k1/4bpp1/p2p3p/P1pP3P/6P1/2Nn1P2/1P4K1/R1B2R2 w - - 1 29",
+    "playedMoveUci": "c3a4",
+    "pairedDrop": 71,
+    "replyDrop": 93,
+    "lines": [
+      {
+        "san": [
+          "Ne4",
+          "f5",
+          "gxf5",
+          "Rf8",
+          "Rd1",
+          "Nxc1",
+          "Raxc1",
+          "Rxf5",
+          "Rc2",
+          "Rxh5",
+          "Rd3"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          100,
+          100,
+          -230,
+          90,
+          -10,
+          -10,
+          -110,
+          -110
+        ],
+        "uci": [
+          "c3e4",
+          "f7f5",
+          "g4f5",
+          "e8f8",
+          "f1d1",
+          "d3c1",
+          "a1c1",
+          "f8f5",
+          "c1c2",
+          "f5h5",
+          "d1d3"
+        ]
+      },
+      {
+        "san": [
+          "Ne4",
+          "f5",
+          "Nf2",
+          "Nxf2",
+          "Rxf2",
+          "fxg4",
+          "fxg4",
+          "Bh4",
+          "Rf3",
+          "Re4",
+          "Kh3"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -320,
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c3e4",
+          "f7f5",
+          "e4f2",
+          "d3f2",
+          "f1f2",
+          "f5g4",
+          "f3g4",
+          "e7h4",
+          "f2f3",
+          "e8e4",
+          "g2h3"
+        ]
+      },
+      {
+        "san": [
+          "Na4",
+          "Bf6",
+          "Nb6",
+          "Re2+",
+          "Kg3",
+          "Rbe8",
+          "Ra4",
+          "Be5+",
+          "f4",
+          "Bd4",
+          "Nc4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c3a4",
+          "e7f6",
+          "a4b6",
+          "e8e2",
+          "g2g3",
+          "b8e8",
+          "a1a4",
+          "f6e5",
+          "f3f4",
+          "e5d4",
+          "b6c4"
+        ]
+      },
+      {
+        "san": [
+          "Na4",
+          "Bf6",
+          "Nc3",
+          "Rb3",
+          "Ne4",
+          "Be5",
+          "Kh1",
+          "Re7",
+          "Kg2",
+          "f6",
+          "Ra2"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c3a4",
+          "e7f6",
+          "a4c3",
+          "b8b3",
+          "c3e4",
+          "f6e5",
+          "g2h1",
+          "e8e7",
+          "h1g2",
+          "f7f6",
+          "a1a2"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-da81c190cb03c59d",
+    "event": "serbian-super-league-2026",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-919030a6adb7547f",
+    "event": "atyrau-open-2026-masters",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-552537218f289192",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9294be4992f674eb",
+    "event": "romanian-team-chess-championships",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-14d89d12e2eb0445",
+    "event": "2026-nz-south-island",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-194dd55b7af68209",
+    "event": "serbian-super-league-2026",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a3544ca6068deabb",
+    "event": "atyrau-open-2026-masters",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-80ffdb9fa7952f72",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6f6326cc029b415c",
+    "event": "romanian-team-chess-championships",
+    "phase": "outpost-concession",
+    "fen": "2r5/p1r2pk1/1p4p1/3p2q1/1n1P4/2R1PQP1/1P3PK1/1B5R w - - 0 26",
+    "playedMoveUci": "c3c7",
+    "pairedDrop": 81,
+    "replyDrop": 126,
+    "lines": [
+      {
+        "san": [
+          "e4",
+          "Nc6",
+          "Qd1",
+          "dxe4",
+          "Qc1",
+          "e3",
+          "Rh4",
+          "Qd5+",
+          "Be4",
+          "Qxd4",
+          "Bxc6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -200,
+          120
+        ],
+        "uci": [
+          "e3e4",
+          "b4c6",
+          "f3d1",
+          "d5e4",
+          "d1c1",
+          "e4e3",
+          "h1h4",
+          "g5d5",
+          "b1e4",
+          "d5d4",
+          "e4c6"
+        ]
+      },
+      {
+        "san": [
+          "e4",
+          "dxe4",
+          "Bxe4",
+          "Na2",
+          "Rb3",
+          "Rd7",
+          "Bb1",
+          "Nc1",
+          "Rc3",
+          "Rxc3",
+          "bxc3"
+        ],
+        "material": [
+          0,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -500,
+          0
+        ],
+        "uci": [
+          "e3e4",
+          "d5e4",
+          "b1e4",
+          "b4a2",
+          "c3b3",
+          "c7d7",
+          "e4b1",
+          "a2c1",
+          "b3c3",
+          "c8c3",
+          "b2c3"
+        ]
+      },
+      {
+        "san": [
+          "Rxc7",
+          "Rxc7",
+          "g4",
+          "f5",
+          "Qh3",
+          "Qxg4+",
+          "Qxg4",
+          "fxg4",
+          "Kg3",
+          "Rc8",
+          "Kxg4"
+        ],
+        "material": [
+          500,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          800,
+          -100,
+          -100,
+          -100,
+          0
+        ],
+        "uci": [
+          "c3c7",
+          "c8c7",
+          "g3g4",
+          "f7f5",
+          "f3h3",
+          "g5g4",
+          "h3g4",
+          "f5g4",
+          "g2g3",
+          "c7c8",
+          "g3g4"
+        ]
+      },
+      {
+        "san": [
+          "Rxc7",
+          "Rxc7",
+          "Qe2",
+          "Rc8",
+          "f4",
+          "Qf6",
+          "f5",
+          "Qg5",
+          "fxg6",
+          "fxg6",
+          "Qf2"
+        ],
+        "material": [
+          500,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0
+        ],
+        "uci": [
+          "c3c7",
+          "c8c7",
+          "f3e2",
+          "c7c8",
+          "f2f4",
+          "g5f6",
+          "f4f5",
+          "f6g5",
+          "f5g6",
+          "f7g6",
+          "e2f2"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-4b73aa9905af5a23",
+    "event": "2026-nz-south-island",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9bac1866102b688d",
+    "event": "serbian-super-league-2026",
+    "phase": "outpost-concession",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c5f4237393ac719b",
+    "event": "atyrau-open-2026-masters",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-2dee94a618dd8479",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "outpost-concession",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-bb1d8e71df29e80b",
+    "event": "serbian-super-league-2026",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c636477d59f85441",
+    "event": "atyrau-open-2026-masters",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e165c41fecf7f209",
+    "event": "romanian-team-chess-championships",
+    "phase": "own-asset",
+    "fen": "r3rk2/5qp1/3b1p1p/5P2/1ppPP3/p4R1P/P4NP1/R2Q2K1 b - - 0 36",
+    "playedMoveUci": "a8b8",
+    "pairedDrop": 220,
+    "replyDrop": 290,
+    "lines": [
+      {
+        "san": [
+          "Rad8",
+          "Qa4",
+          "Ra8",
+          "Qd1",
+          "Red8",
+          "Qe2",
+          "b3",
+          "Rd1",
+          "b2",
+          "e5",
+          "Be7"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a8d8",
+          "d1a4",
+          "d8a8",
+          "a4d1",
+          "e8d8",
+          "d1e2",
+          "b4b3",
+          "a1d1",
+          "b3b2",
+          "e4e5",
+          "d6e7"
+        ]
+      },
+      {
+        "san": [
+          "Rad8",
+          "Qa4",
+          "Kg8",
+          "Rf1",
+          "Kh7",
+          "e5",
+          "fxe5",
+          "dxe5",
+          "Rxe5",
+          "f6",
+          "g6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "a8d8",
+          "d1a4",
+          "f8g8",
+          "a1f1",
+          "g8h7",
+          "e4e5",
+          "f6e5",
+          "d4e5",
+          "e8e5",
+          "f5f6",
+          "g7g6"
+        ]
+      },
+      {
+        "san": [
+          "Rab8",
+          "e5",
+          "fxe5",
+          "f6",
+          "g6",
+          "Ne4",
+          "Qd5",
+          "Nxd6",
+          "Qxd6",
+          "Qc1",
+          "g5"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          -230,
+          90,
+          90,
+          90
+        ],
+        "uci": [
+          "a8b8",
+          "e4e5",
+          "f6e5",
+          "f5f6",
+          "g7g6",
+          "f2e4",
+          "f7d5",
+          "e4d6",
+          "d5d6",
+          "d1c1",
+          "g6g5"
+        ]
+      },
+      {
+        "san": [
+          "Rab8",
+          "e5",
+          "Bc7",
+          "e6",
+          "Qe7",
+          "Rc1",
+          "Rbc8",
+          "Ne4",
+          "Red8",
+          "d5",
+          "Bb8"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "a8b8",
+          "e4e5",
+          "d6c7",
+          "e5e6",
+          "f7e7",
+          "a1c1",
+          "b8c8",
+          "f2e4",
+          "e8d8",
+          "d4d5",
+          "c7b8"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-e10a5af557a58228",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-bd8438b3a7f3dd26",
+    "event": "2026-nz-south-island",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-8ffe80b725b53b90",
+    "event": "greek-championship-2026-75",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-37209dd662aa91df",
+    "event": "atyrau-open-2026-masters",
+    "phase": "own-asset",
+    "fen": "8/8/2N1p3/p2pPk2/Pb1P4/1p4rp/1P6/3K3R b - - 9 43",
+    "playedMoveUci": "f5e4",
+    "pairedDrop": 116,
+    "replyDrop": 83,
+    "lines": [
+      {
+        "san": [
+          "Kg4",
+          "Nxb4",
+          "axb4",
+          "a5",
+          "Rg2",
+          "a6",
+          "Rxb2",
+          "a7",
+          "Ra2",
+          "Kc1",
+          "b2+"
+        ],
+        "material": [
+          0,
+          -330,
+          -10,
+          -10,
+          -10,
+          -10,
+          90,
+          90,
+          90,
+          90,
+          90
+        ],
+        "uci": [
+          "f5g4",
+          "c6b4",
+          "a5b4",
+          "a4a5",
+          "g3g2",
+          "a5a6",
+          "g2b2",
+          "a6a7",
+          "b2a2",
+          "d1c1",
+          "b3b2"
+        ]
+      },
+      {
+        "san": [
+          "Kg4",
+          "Nxb4",
+          "axb4",
+          "a5",
+          "Rg2",
+          "a6",
+          "Rxb2",
+          "Kc1",
+          "Ra2",
+          "a7",
+          "Rxa7"
+        ],
+        "material": [
+          0,
+          -330,
+          -10,
+          -10,
+          -10,
+          -10,
+          90,
+          90,
+          90,
+          90,
+          190
+        ],
+        "uci": [
+          "f5g4",
+          "c6b4",
+          "a5b4",
+          "a4a5",
+          "g3g2",
+          "a5a6",
+          "g2b2",
+          "d1c1",
+          "b2a2",
+          "a6a7",
+          "a2a7"
+        ]
+      },
+      {
+        "san": [
+          "Ke4",
+          "Nxb4",
+          "axb4",
+          "Ke1",
+          "Rg2",
+          "Rxh3",
+          "Rxb2",
+          "Kd1",
+          "Rb1+",
+          "Kd2",
+          "Kxd4"
+        ],
+        "material": [
+          0,
+          -330,
+          -10,
+          -10,
+          -10,
+          -110,
+          -10,
+          -10,
+          -10,
+          -10,
+          90
+        ],
+        "uci": [
+          "f5e4",
+          "c6b4",
+          "a5b4",
+          "d1e1",
+          "g3g2",
+          "h1h3",
+          "g2b2",
+          "e1d1",
+          "b2b1",
+          "d1d2",
+          "e4d4"
+        ]
+      },
+      {
+        "san": [
+          "Ke4",
+          "Nxb4",
+          "axb4",
+          "Ke1",
+          "Rg2",
+          "Rxh3",
+          "Rxb2",
+          "Kd1",
+          "Rb1+",
+          "Kd2",
+          "Kxd4"
+        ],
+        "material": [
+          0,
+          -330,
+          -10,
+          -10,
+          -10,
+          -110,
+          -10,
+          -10,
+          -10,
+          -10,
+          90
+        ],
+        "uci": [
+          "f5e4",
+          "c6b4",
+          "a5b4",
+          "d1e1",
+          "g3g2",
+          "h1h3",
+          "g2b2",
+          "e1d1",
+          "b2b1",
+          "d1d2",
+          "e4d4"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-ac5247cd6eec4ee1",
+    "event": "serbian-super-league-2026",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c094cd50a197927e",
+    "event": "romanian-team-chess-championships",
+    "phase": "own-asset",
+    "fen": "4r1k1/p2b1pb1/7p/6p1/3pN3/3BnPPP/PPP4K/R3B3 b - - 5 28",
+    "playedMoveUci": "d7c6",
+    "pairedDrop": 86,
+    "replyDrop": 77,
+    "lines": [
+      {
+        "san": [
+          "f5",
+          "Nc5",
+          "Bc6",
+          "Bf2",
+          "Bxf3",
+          "Re1",
+          "Kh8",
+          "b4",
+          "f4",
+          "gxf4",
+          "gxf4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          0,
+          100
+        ],
+        "uci": [
+          "f7f5",
+          "e4c5",
+          "d7c6",
+          "e1f2",
+          "c6f3",
+          "a1e1",
+          "g8h8",
+          "b2b4",
+          "f5f4",
+          "g3f4",
+          "g5f4"
+        ]
+      },
+      {
+        "san": [
+          "f5",
+          "Nd6",
+          "Re6",
+          "Nb7",
+          "Rb6",
+          "Nc5",
+          "Bc6",
+          "b4",
+          "Bxf3",
+          "Bd2",
+          "h5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100
+        ],
+        "uci": [
+          "f7f5",
+          "e4d6",
+          "e8e6",
+          "d6b7",
+          "e6b6",
+          "b7c5",
+          "d7c6",
+          "b2b4",
+          "c6f3",
+          "e1d2",
+          "h6h5"
+        ]
+      },
+      {
+        "san": [
+          "Bc6",
+          "Rc1",
+          "Rd8",
+          "Nd2",
+          "f5",
+          "Bf2",
+          "Bd5",
+          "b3",
+          "Be5",
+          "Re1"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d7c6",
+          "a1c1",
+          "e8d8",
+          "e4d2",
+          "f7f5",
+          "e1f2",
+          "c6d5",
+          "b2b3",
+          "g7e5",
+          "c1e1"
+        ]
+      },
+      {
+        "san": [
+          "Bc6",
+          "Kg1",
+          "f5",
+          "Nd6",
+          "Rf8",
+          "Kf2",
+          "g4",
+          "hxg4",
+          "fxg4",
+          "f4",
+          "h5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d7c6",
+          "h2g1",
+          "f7f5",
+          "e4d6",
+          "e8f8",
+          "g1f2",
+          "g5g4",
+          "h3g4",
+          "f5g4",
+          "f3f4",
+          "h6h5"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-83332c83e2aafab0",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f059794d74c9e597",
+    "event": "2026-nz-south-island",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-600547466e480306",
+    "event": "greek-championship-2026-75",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-35ff85bad96c9a4a",
+    "event": "atyrau-open-2026-masters",
+    "phase": "own-asset",
+    "fen": "r2r1k2/pp1b2p1/4ppP1/7R/3p4/8/PPP1BP1P/1K1R4 b - - 0 24",
+    "playedMoveUci": "e6e5",
+    "pairedDrop": 78,
+    "replyDrop": 58,
+    "lines": [
+      {
+        "san": [
+          "Ke7",
+          "Rh7",
+          "f5",
+          "Rxg7+",
+          "Kf6",
+          "Rh7",
+          "Kxg6",
+          "Re7",
+          "Kf6",
+          "Rh7",
+          "e5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f8e7",
+          "h5h7",
+          "f6f5",
+          "h7g7",
+          "e7f6",
+          "g7h7",
+          "f6g6",
+          "h7e7",
+          "g6f6",
+          "e7h7",
+          "e6e5"
+        ]
+      },
+      {
+        "san": [
+          "Ke7",
+          "Rh7",
+          "f5",
+          "Rxg7+",
+          "Kf6",
+          "Rh7",
+          "Kxg6",
+          "Re7",
+          "Kf6",
+          "Rh7",
+          "Ke5"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "f8e7",
+          "h5h7",
+          "f6f5",
+          "h7g7",
+          "e7f6",
+          "g7h7",
+          "f6g6",
+          "h7e7",
+          "g6f6",
+          "e7h7",
+          "f6e5"
+        ]
+      },
+      {
+        "san": [
+          "e5",
+          "f4",
+          "exf4",
+          "Rh8+",
+          "Ke7",
+          "Rh7",
+          "Rg8",
+          "Bc4",
+          "f3",
+          "Bxg8",
+          "Rxg8"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          -400,
+          -70
+        ],
+        "uci": [
+          "e6e5",
+          "f2f4",
+          "e5f4",
+          "h5h8",
+          "f8e7",
+          "h8h7",
+          "d8g8",
+          "e2c4",
+          "f4f3",
+          "c4g8",
+          "a8g8"
+        ]
+      },
+      {
+        "san": [
+          "e5",
+          "f4",
+          "exf4",
+          "Rxd4",
+          "Ke7",
+          "Rh7",
+          "Be6",
+          "Rxf4",
+          "Rd2",
+          "Rf2",
+          "Rg8"
+        ],
+        "material": [
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "e6e5",
+          "f2f4",
+          "e5f4",
+          "d1d4",
+          "f8e7",
+          "h5h7",
+          "d7e6",
+          "d4f4",
+          "d8d2",
+          "f4f2",
+          "a8g8"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-33dd066efd219ad3",
+    "event": "serbian-super-league-2026",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-7045ff6904b8d235",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-8e10bb0cf8c106de",
+    "event": "romanian-team-chess-championships",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-09af2edcf437b5ef",
+    "event": "2026-nz-south-island",
+    "phase": "own-asset",
+    "fen": "r1bn1rk1/p4ppp/8/4P3/1nB5/5N2/2Q2PPP/5RK1 w - - 0 21",
+    "playedMoveUci": "c2e4",
+    "pairedDrop": 125,
+    "replyDrop": 124,
+    "lines": [
+      {
+        "san": [
+          "Qb1",
+          "Rb8",
+          "Ng5",
+          "g6",
+          "Qe4",
+          "Bf5",
+          "Qh4",
+          "h5",
+          "h3",
+          "Nbc6",
+          "g4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "c2b1",
+          "a8b8",
+          "f3g5",
+          "g7g6",
+          "b1e4",
+          "c8f5",
+          "e4h4",
+          "h7h5",
+          "h2h3",
+          "b4c6",
+          "g2g4"
+        ]
+      },
+      {
+        "san": [
+          "Qb1",
+          "Rb8",
+          "Ng5",
+          "g6",
+          "Qe4",
+          "Nbc6",
+          "Qh4",
+          "h5",
+          "Nxf7",
+          "Nxf7",
+          "Qf6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          -220,
+          -220
+        ],
+        "uci": [
+          "c2b1",
+          "a8b8",
+          "f3g5",
+          "g7g6",
+          "b1e4",
+          "b4c6",
+          "e4h4",
+          "h7h5",
+          "g5f7",
+          "d8f7",
+          "h4f6"
+        ]
+      },
+      {
+        "san": [
+          "Qe4",
+          "Bb7",
+          "Qf5",
+          "g6",
+          "Qh3",
+          "Bxf3",
+          "Qxf3",
+          "Nbc6",
+          "Qe4",
+          "Rc8",
+          "f4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -320,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "uci": [
+          "c2e4",
+          "c8b7",
+          "e4f5",
+          "g7g6",
+          "f5h3",
+          "b7f3",
+          "h3f3",
+          "b4c6",
+          "f3e4",
+          "a8c8",
+          "f2f4"
+        ]
+      },
+      {
+        "san": [
+          "Qe4",
+          "Bb7",
+          "Qg4",
+          "a5",
+          "Nd4",
+          "Bc8",
+          "Qf3",
+          "Rb8",
+          "h3",
+          "Be6",
+          "Nxe6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          330
+        ],
+        "uci": [
+          "c2e4",
+          "c8b7",
+          "e4g4",
+          "a7a5",
+          "f3d4",
+          "b7c8",
+          "g4f3",
+          "a8b8",
+          "h2h3",
+          "c8e6",
+          "d4e6"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-29bef5c3970b9c65",
+    "event": "atyrau-open-2026-masters",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-67a3a3056e2027db",
+    "event": "serbian-super-league-2026",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-448f55c8d48d6415",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-76db02bf3b91ffed",
+    "event": "romanian-team-chess-championships",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-bc0f780f2296f45b",
+    "event": "2026-nz-south-island",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-4f486af84210d522",
+    "event": "atyrau-open-2026-masters",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6867b8c956cca585",
+    "event": "serbian-super-league-2026",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-bc95dd1ff78cd4bb",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-219390be088593e4",
+    "event": "romanian-team-chess-championships",
+    "phase": "own-asset",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-344c8cbf847c0f79",
+    "event": "atyrau-open-2026-masters",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ea90ffc78ea84398",
+    "event": "serbian-super-league-2026",
+    "phase": "own-asset",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-62d9996861629e91",
+    "event": "atyrau-open-2026-masters",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-b0928bf9f92558bd",
+    "event": "serbian-super-league-2026",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0c4bbf13fbfc6b73",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-c80f1392587065ba",
+    "event": "2026-nz-south-island",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-273b1e2064410a82",
+    "event": "romanian-team-chess-championships",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9cdef05426e60f20",
+    "event": "greek-championship-2026-75",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-10c35e224bfa2c4a",
+    "event": "atyrau-open-2026-masters",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9bf36ea435b09e5f",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "quiet-control",
+    "fen": "5rk1/p4p1p/1np1p1p1/4Q3/4P3/Prp3P1/5PKP/5B2 w - - 0 36",
+    "playedMoveUci": "e5c5",
+    "pairedDrop": 240,
+    "replyDrop": 189,
+    "lines": [
+      {
+        "san": [
+          "h4",
+          "c2",
+          "Qc5",
+          "Rb2",
+          "h5",
+          "Na4",
+          "Qxc6",
+          "gxh5",
+          "Qc7",
+          "h6",
+          "Ba6"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "h2h4",
+          "c3c2",
+          "e5c5",
+          "b3b2",
+          "h4h5",
+          "b6a4",
+          "c5c6",
+          "g6h5",
+          "c6c7",
+          "h7h6",
+          "f1a6"
+        ]
+      },
+      {
+        "san": [
+          "h4",
+          "c2",
+          "Qc5",
+          "Rb2",
+          "h5",
+          "Nd7",
+          "Qc3",
+          "Rfb8",
+          "h6",
+          "Kf8",
+          "Bc4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "h2h4",
+          "c3c2",
+          "e5c5",
+          "b3b2",
+          "h4h5",
+          "b6d7",
+          "c5c3",
+          "f8b8",
+          "h5h6",
+          "g8f8",
+          "f1c4"
+        ]
+      },
+      {
+        "san": [
+          "Qc5",
+          "Rd8",
+          "Bc4",
+          "Rb2",
+          "Bxe6",
+          "Rdd2",
+          "Qe7",
+          "Rxf2+",
+          "Kh3",
+          "fxe6",
+          "Qxa7"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100,
+          0,
+          0,
+          -330,
+          -230
+        ],
+        "uci": [
+          "e5c5",
+          "f8d8",
+          "f1c4",
+          "b3b2",
+          "c4e6",
+          "d8d2",
+          "c5e7",
+          "d2f2",
+          "g2h3",
+          "f7e6",
+          "e7a7"
+        ]
+      },
+      {
+        "san": [
+          "Qc5",
+          "Rd8",
+          "Bc4",
+          "Rb2",
+          "Bxe6",
+          "Rdd2",
+          "Kh3",
+          "Rxf2",
+          "Qxc6",
+          "fxe6",
+          "Qxe6+"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          100,
+          0,
+          100,
+          -230,
+          -130
+        ],
+        "uci": [
+          "e5c5",
+          "f8d8",
+          "f1c4",
+          "b3b2",
+          "c4e6",
+          "d8d2",
+          "g2h3",
+          "d2f2",
+          "c5c6",
+          "f7e6",
+          "c6e6"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-5dc528ed4714eb82",
+    "event": "serbian-super-league-2026",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-41966300afb1b0c7",
+    "event": "romanian-team-chess-championships",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-bfe6a9753ed8fca7",
+    "event": "2026-nz-south-island",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-87f864fc5417a172",
+    "event": "greek-championship-2026-75",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-f3585d11edf0d864",
+    "event": "atyrau-open-2026-masters",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-e41e178848833860",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-5d6840502a49e9e8",
+    "event": "serbian-super-league-2026",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-7c199032f18b4c87",
+    "event": "romanian-team-chess-championships",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-2dba9d1c7a443943",
+    "event": "2026-nz-south-island",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-694e6a6851aa4c4e",
+    "event": "greek-championship-2026-75",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-60f9db82ff3c0805",
+    "event": "atyrau-open-2026-masters",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0d6a8c3727689594",
+    "event": "serbian-super-league-2026",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ac2b825a01f0133c",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "quiet-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ea591e1757fe55e4",
+    "event": "romanian-team-chess-championships",
+    "phase": "quiet-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9c9c066746c5ea52",
+    "event": "romanian-team-chess-championships",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-0a6459dd72659826",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "exchange-control",
+    "fen": "r2qkb2/pp3p2/2npb1p1/2pN3n/2P1Pp1P/3P4/PP4BP/R1BQ1RK1 w q - 0 13",
+    "playedMoveUci": "d5f4",
+    "pairedDrop": 193,
+    "replyDrop": 183,
+    "lines": [
+      {
+        "san": [
+          "Bf3",
+          "Qxh4",
+          "Bxh5",
+          "O-O-O",
+          "Nxf4",
+          "gxh5",
+          "Qxh5",
+          "Qxh5",
+          "Nxh5",
+          "Bg4",
+          "Nf6"
+        ],
+        "material": [
+          0,
+          -100,
+          220,
+          220,
+          320,
+          -10,
+          90,
+          -810,
+          90,
+          90,
+          90
+        ],
+        "uci": [
+          "g2f3",
+          "d8h4",
+          "f3h5",
+          "e8c8",
+          "d5f4",
+          "g6h5",
+          "d1h5",
+          "h4h5",
+          "f4h5",
+          "e6g4",
+          "h5f6"
+        ]
+      },
+      {
+        "san": [
+          "Bf3",
+          "Qxh4",
+          "Bxh5",
+          "O-O-O",
+          "Nxf4",
+          "gxh5",
+          "Qxh5",
+          "Qxh5",
+          "Nxh5",
+          "Bg4",
+          "Nf6"
+        ],
+        "material": [
+          0,
+          -100,
+          220,
+          220,
+          320,
+          -10,
+          90,
+          -810,
+          90,
+          90,
+          90
+        ],
+        "uci": [
+          "g2f3",
+          "d8h4",
+          "f3h5",
+          "e8c8",
+          "d5f4",
+          "g6h5",
+          "d1h5",
+          "h4h5",
+          "f4h5",
+          "e6g4",
+          "h5f6"
+        ]
+      },
+      {
+        "san": [
+          "Nxf4",
+          "Nxf4",
+          "Bxf4",
+          "Qxh4",
+          "Bg3",
+          "Qg5",
+          "Qa4",
+          "Rc8",
+          "e5",
+          "dxe5",
+          "Rae1"
+        ],
+        "material": [
+          100,
+          -220,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -100,
+          -100
+        ],
+        "uci": [
+          "d5f4",
+          "h5f4",
+          "c1f4",
+          "d8h4",
+          "f4g3",
+          "h4g5",
+          "d1a4",
+          "a8c8",
+          "e4e5",
+          "d6e5",
+          "a1e1"
+        ]
+      },
+      {
+        "san": [
+          "Nxf4",
+          "Nxf4",
+          "Bxf4",
+          "Qxh4",
+          "Bg3",
+          "Qg5",
+          "Qa4",
+          "Bd7",
+          "Qb3",
+          "Bg7",
+          "Qxb7"
+        ],
+        "material": [
+          100,
+          -220,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100
+        ],
+        "uci": [
+          "d5f4",
+          "h5f4",
+          "c1f4",
+          "d8h4",
+          "f4g3",
+          "h4g5",
+          "d1a4",
+          "e6d7",
+          "a4b3",
+          "f8g7",
+          "b3b7"
+        ]
+      }
+    ],
+    "options": {},
+    "status": "no",
+    "note": "No distinct early sustained asset is corroborated by both independent lines, or the searches show an equivalent asset."
+  },
+  {
+    "id": "classical-a919447236c89bd6",
+    "event": "atyrau-open-2026-masters",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-3f4b819f2527da62",
+    "event": "serbian-super-league-2026",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-a1544b26f304c185",
+    "event": "greek-championship-2026-75",
+    "phase": "exchange-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-9e1cf16a62a4e81c",
+    "event": "2026-nz-south-island",
+    "phase": "exchange-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-fdd83918937abe56",
+    "event": "romanian-team-chess-championships",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-937bf80cab8c05e3",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ce43d774c8a89b4d",
+    "event": "atyrau-open-2026-masters",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-dc3e5e2bd5619f88",
+    "event": "serbian-super-league-2026",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-ca0f8a95fba811f4",
+    "event": "2026-nz-south-island",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-6445db0dfa724d11",
+    "event": "greek-championship-2026-75",
+    "phase": "exchange-control",
+    "excluded": "no-60cp-loss",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-153be335c40e02c9",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-5c8949bd58b39e25",
+    "event": "atyrau-open-2026-masters",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-5f1eb61de1b0d194",
+    "event": "romanian-team-chess-championships",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-af7b22ad4501533f",
+    "event": "serbian-super-league-2026",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-738ba1385f0f6f60",
+    "event": "2026-nz-south-island",
+    "phase": "exchange-control",
+    "fen": "r1r3k1/1p3ppp/1q2n3/pP1p1n2/Q2P4/3N1NPP/PK3P2/1RR5 w - - 1 25",
+    "playedMoveUci": "d3f4",
+    "pairedDrop": 107,
+    "replyDrop": 77,
+    "lines": [
+      {
+        "san": [
+          "Nde5",
+          "h6",
+          "g4",
+          "Nfxd4",
+          "Nxd4",
+          "Nxd4",
+          "Nd7",
+          "Qe6",
+          "Qxd4",
+          "Qxd7",
+          "a4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          220,
+          -100,
+          -100,
+          -100,
+          220,
+          -100,
+          -100
+        ],
+        "uci": [
+          "d3e5",
+          "h7h6",
+          "g3g4",
+          "f5d4",
+          "f3d4",
+          "e6d4",
+          "e5d7",
+          "b6e6",
+          "a4d4",
+          "e6d7",
+          "a2a4"
+        ]
+      },
+      {
+        "san": [
+          "Nde5",
+          "Rd8",
+          "Ka1",
+          "Nexd4",
+          "Nxd4",
+          "Nxd4",
+          "Rc3",
+          "Ne6",
+          "Qc2",
+          "Re8",
+          "f4"
+        ],
+        "material": [
+          0,
+          0,
+          0,
+          -100,
+          220,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100,
+          -100
+        ],
+        "uci": [
+          "d3e5",
+          "c8d8",
+          "b2a1",
+          "e6d4",
+          "f3d4",
+          "f5d4",
+          "c1c3",
+          "d4e6",
+          "a4c2",
+          "d8e8",
+          "f2f4"
+        ]
+      },
+      {
+        "san": [
+          "Nf4",
+          "Nxf4",
+          "gxf4",
+          "Nd6",
+          "Ka1",
+          "Rxc1",
+          "Rxc1",
+          "Nc4",
+          "Qc2",
+          "Re8",
+          "a4"
+        ],
+        "material": [
+          0,
+          -320,
+          0,
+          0,
+          0,
+          -500,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d3f4",
+          "e6f4",
+          "g3f4",
+          "f5d6",
+          "b2a1",
+          "c8c1",
+          "b1c1",
+          "d6c4",
+          "a4c2",
+          "a8e8",
+          "a2a4"
+        ]
+      },
+      {
+        "san": [
+          "Nf4",
+          "Nxf4",
+          "gxf4",
+          "Nd6",
+          "Ka1",
+          "Nc4",
+          "Qc2",
+          "Qf6",
+          "f5",
+          "a4",
+          "Ne5"
+        ],
+        "material": [
+          0,
+          -320,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "uci": [
+          "d3f4",
+          "e6f4",
+          "g3f4",
+          "f5d6",
+          "b2a1",
+          "d6c4",
+          "a4c2",
+          "b6f6",
+          "f4f5",
+          "a5a4",
+          "f3e5"
+        ]
+      }
+    ],
+    "options": {
+      "concedes-outpost": [
+        {
+          "start": "f5",
+          "keys": [
+            [
+              [
+                8,
+                "c4"
+              ],
+              [
+                9,
+                "c4"
+              ],
+              [
+                10,
+                "c4"
+              ],
+              [
+                11,
+                "c4"
+              ]
+            ],
+            [
+              [
+                6,
+                "c4"
+              ],
+              [
+                7,
+                "c4"
+              ],
+              [
+                8,
+                "c4"
+              ],
+              [
+                9,
+                "c4"
+              ],
+              [
+                10,
+                "c4"
+              ],
+              [
+                11,
+                "c4"
+              ]
+            ],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    "status": "uncertain",
+    "note": "The shared c4 knight square is reached through distinct later sequences including a rook trade. The contrast alone cannot attribute it to the original move."
+  },
+  {
+    "id": "classical-9b55c16b449fc35a",
+    "event": "greek-championship-2026-75",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-4ecab63f641ba167",
+    "event": "dutch-meesterklasse-2026-2027",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  },
+  {
+    "id": "classical-59129c5f061b9e97",
+    "event": "atyrau-open-2026-masters",
+    "phase": "exchange-control",
+    "excluded": "played-leads-preview",
+    "status": "excluded"
+  }
+]

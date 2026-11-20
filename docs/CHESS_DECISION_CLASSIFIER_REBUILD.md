@@ -3823,3 +3823,16 @@ No positions, move assessments, positional mistake evidence, or
 evaluation losses change in the matched replay. The app uses the
 existing searches.
 [Benchmark, source examples and replay](../benchmarks/decision-evidence/opened-checking-forks/README.md)
+
+## Passed pawns and supported pieces in mistake explanations
+
+The comparative strategic-asset trial asks whether two searches retain
+the same new passer or pawn-supported minor and whether the stronger
+choice prevents it. The archived replay identifies a fork with a
+separate lasting e4 outpost and two passed-pawn concessions. Across
+305 new classical games, the linked rule adds one of five reviewed
+explanations with zero false positives across 39 reviewed negatives.
+The looser version adds two with one false call. Neither meets the
+promotion standard. Both stay offline. The comparison
+uses existing engine frames.
+[Review and reproduction](../benchmarks/decision-evidence/strategic-asset-contrast/README.md)
