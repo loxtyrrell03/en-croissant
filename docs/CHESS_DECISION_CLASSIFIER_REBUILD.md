@@ -3785,3 +3785,21 @@ archived game reports match. The live scans add 20 line motifs with
 zero additional engine searches. The rule abstains when the route
 only yields a payoff beyond its checked horizon.
 [Benchmark, adjudications and replay](../benchmarks/decision-evidence/line-route-motifs/README.md)
+
+## The tactical cost of recapturing a pawn
+
+A trial replays a capture sequence after both the played move and a
+stronger move. It verifies an off-square countercapture after a
+defender recaptures the pawn. In the Brazilian development case
+`Rb1 Bxf4 gxf4 Bxh3`, taking back with `Bxh3` leaves the knight
+available to `Rxf3`. `Nd4` moves the knight before the exchange.
+The existing report already identifies a separate structural cost.
+
+Among 97 unused classical decisions and 56 unused puzzle decisions,
+the broad early-exchange heuristic adds ten incorrect mechanism calls.
+The stricter trial adds no false calls and misses the one verified
+positive. The stronger move there prevents the first exchange, outside
+the trial's same-exchange comparison. Both trials remain offline.
+The replay uses complete exact Stockfish frames, includes the current
+worker, and separates initial collection defects from the scored run.
+[Benchmark, witness and reproduction](../benchmarks/decision-evidence/mixed-exchange-defence/README.md)

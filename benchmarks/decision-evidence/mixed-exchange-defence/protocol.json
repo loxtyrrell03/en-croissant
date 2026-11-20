@@ -1,0 +1,456 @@
+{
+  "baseline": "46c31482",
+  "collector": "scripts/benchmarks/decision-evidence-engine.py CompleteVariations",
+  "classical": {
+    "sources": {
+      "germany": {
+        "broadcast": "german-bundesliga-202627-schachbundesliga/round-4/LHHlsufz",
+        "tc": "90 min / 40 moves + 30 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "dppuxRu1",
+            "name": "Round 1",
+            "bytes": 250240,
+            "sha256": "a92483a1115dfbdfe6f74b7cf7f4c0b9568328e4eccc76c9a44d3980e9fe975c"
+          },
+          {
+            "id": "Bs7teQ5B",
+            "name": "Round 2",
+            "bytes": 287136,
+            "sha256": "e53407ba760fbde6553131ead79b191ba3192ad8774941adbca97510560d3aeb"
+          },
+          {
+            "id": "Fj6C4C8U",
+            "name": "Round 3",
+            "bytes": 282759,
+            "sha256": "7aab3ea9b21926deffda496c60db5f6a5b67cae33cc4f8c1643febeb08731b86"
+          },
+          {
+            "id": "LHHlsufz",
+            "name": "Round 4",
+            "bytes": 268578,
+            "sha256": "5832ed5f30056859d540025027c5aa4e2115710cc8f8fd56894aab1a45df3423"
+          },
+          {
+            "id": "ZoRDAS90",
+            "name": "Round 5",
+            "bytes": 271902,
+            "sha256": "649eadd5b4d40c63511c1cab5a10fb8f88f92fdf3edbb2c02a2e7d0c8074a577"
+          },
+          {
+            "id": "6k62uFr2",
+            "name": "Round 6",
+            "bytes": 274618,
+            "sha256": "cbba9a378085bd6d09fe99e555c8d60675569081cb2786545d134e522b564413"
+          }
+        ],
+        "title": "German Bundesliga 2026/27 (Schachbundesliga)"
+      },
+      "slovenia": {
+        "broadcast": "slovenian-team-championship-2026-drzavna-clanska-liga/round-7/5Q02uSJA",
+        "tc": "90 min / 40 moves + 30 min + 30 sec/move",
+        "rounds": [
+          {
+            "id": "2unO1nXK",
+            "name": "Round 3",
+            "bytes": 124063,
+            "sha256": "cae6a8f3ef325a969de8e1491776537a351321fd2eb65a3849cfeede60e62e7f"
+          },
+          {
+            "id": "rOtCQ0iz",
+            "name": "Round 4",
+            "bytes": 126968,
+            "sha256": "86924d78f0463eb82f6bcbfd994264b12dde74b405e1bda27a64413443d813b7"
+          },
+          {
+            "id": "jW6R6k38",
+            "name": "Round 5",
+            "bytes": 119628,
+            "sha256": "aa97b5646937729c7ae7392ed4b13f66dd16ad2b383a4b3e995c76950f5e5a1b"
+          },
+          {
+            "id": "o0z6Nmr5",
+            "name": "Round 6",
+            "bytes": 115051,
+            "sha256": "2b6793669a0958cae79b5f15f7630ec609d2d3dfc4f50adc1d1b25450ea9b2b7"
+          },
+          {
+            "id": "5Q02uSJA",
+            "name": "Round 7",
+            "bytes": 116073,
+            "sha256": "8c8da5c349ac3a305b1c19a494d1aa2c2c939615ee89fa5fedba8aa683b69c79"
+          },
+          {
+            "id": "bqazI8nB",
+            "name": "Round 8",
+            "bytes": 92740,
+            "sha256": "a0f937b44e8f1f5317e9452ee0434418d068eb06161d525ffb0ce3c920c42194"
+          },
+          {
+            "id": "z9YLkHSE",
+            "name": "Round 9",
+            "bytes": 103357,
+            "sha256": "704e50abb63e8aa69ab1ce4e7a1b286fe9fa95c11ca35a3925706f1c4708be82"
+          }
+        ],
+        "title": "Slovenian Team Championship 2026 (Dr\u017eavna \u010dlanska liga)"
+      },
+      "arcelormittal": {
+        "broadcast": "1-aberto-do-brasil-de-xadrez-arcelormittal/round-1/pRRfMmKu",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "pRRfMmKu",
+            "name": "Round 1",
+            "bytes": 24706,
+            "sha256": "8cf7415a9361140208c3eea6ea2edabdfe2dec9d991d00f487f6157908d27be3"
+          },
+          {
+            "id": "V0af1eSI",
+            "name": "Round 2",
+            "bytes": 32233,
+            "sha256": "b532f3a7feb8c80ea049f5fba9dbcb9e73bfcf7aed59cd8a8543bf97391ab654"
+          },
+          {
+            "id": "qPmGfQwA",
+            "name": "Round 3",
+            "bytes": 38413,
+            "sha256": "7ce00fba950451d402fc96f8ed52f508d11a251aed7defc1752c1b10ce692942"
+          },
+          {
+            "id": "vriVuOsB",
+            "name": "Round 4",
+            "bytes": 29302,
+            "sha256": "834ca9303a05b01cd6b3fe1ceae6e84bbccd88af84b6bbb3fed58b8ddd5a02ea"
+          },
+          {
+            "id": "2g9MB1Qu",
+            "name": "Round 5",
+            "bytes": 35451,
+            "sha256": "b73feb8b459e444bedc13ed5ad9b61c93c5c858fa5f6d69b020a9461d48ef528"
+          },
+          {
+            "id": "1VAcc103",
+            "name": "Round 6",
+            "bytes": 27229,
+            "sha256": "feb7751ded1446e65c14acd877533b1aaf29258d31f795c9288b5de762b8f091"
+          }
+        ],
+        "title": "1\u00ba ABERTO DO BRASIL DE XADREZ ARCELORMITTAL"
+      },
+      "montenegro": {
+        "broadcast": "ekipni-kup-crne-gore-2026/semifinal/QgYT3qZX",
+        "tc": "90 min / 40 moves + 15 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "QgYT3qZX",
+            "name": "Semifinals",
+            "bytes": 49428,
+            "sha256": "4fbd628509c70fdf13edc85ee542218af02c9530b373520016bb7f15a2ceb4ac"
+          },
+          {
+            "id": "2cHuz9HO",
+            "name": "Finals",
+            "bytes": 31157,
+            "sha256": "6579b812f8bc129366fe9858b5a957e9ef51ff5a473af106fb3fb16e7108def0"
+          }
+        ],
+        "title": "Ekipni Kup Crne Gore 2026"
+      },
+      "bengbu": {
+        "broadcast": "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a/round-1/nJcBDmFE",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "nJcBDmFE",
+            "name": "Round 1",
+            "bytes": 153214,
+            "sha256": "105b3d090ee94e406348ce34c0dafa03fd6c36d86fb5f764270ca94f85595776"
+          },
+          {
+            "id": "gB345vel",
+            "name": "Round 2",
+            "bytes": 160671,
+            "sha256": "5f8da09485e1f34e59beb7bbc3cadae6d505592d5e051d264faefb1ff93dd6dc"
+          },
+          {
+            "id": "VSiTo8l4",
+            "name": "Round 3",
+            "bytes": 181908,
+            "sha256": "e068cfc640e704fb2462905a080a5bc01355300956d33bc7fdf61582a392d761"
+          },
+          {
+            "id": "iA7Yri6A",
+            "name": "Round 4",
+            "bytes": 152902,
+            "sha256": "596be74ae79abee985e4960319de77d491a4aec61b1121b51268b57d4d85ab05"
+          },
+          {
+            "id": "pHw2b5Sm",
+            "name": "Round 5",
+            "bytes": 156279,
+            "sha256": "7330263b867c3499dae84b1300a7f3a09735140a4c50d45bb58c217ecb2bafed"
+          }
+        ],
+        "title": "2nd Belt and Road China International Chess Open (Bengbu, Anhui) 2026 Group A"
+      },
+      "arequipa": {
+        "broadcast": "itt-im-arequipa-leon-del-sur/round-1/AgTTL0bz",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "AgTTL0bz",
+            "name": "Round 1",
+            "bytes": 6864,
+            "sha256": "3195e9fa1dd3a8ce0617cc932ec62f53454a616cfb0224cc74462e4efbbb16ac"
+          },
+          {
+            "id": "dpYa7fm2",
+            "name": "Round 2",
+            "bytes": 6448,
+            "sha256": "c329c0553d143f476ad9da5176b844ba844b73469184d6c98a70521168d3a4ac"
+          },
+          {
+            "id": "Zwz1d8xe",
+            "name": "Round 3",
+            "bytes": 5943,
+            "sha256": "28afdeb34bab82892e1ab907de401b53f01316c151dcff783a1cae5431141aa6"
+          },
+          {
+            "id": "OEMeHBRb",
+            "name": "Round 4",
+            "bytes": 24938,
+            "sha256": "5a73f749109cdab9b861101088064da1d97bdaa62dd585951b6310d4f2e4abe3"
+          },
+          {
+            "id": "YcBjHzdB",
+            "name": "Round 5",
+            "bytes": 25952,
+            "sha256": "865e1a11894073acbd0936bd1b46aab8bb776463409c2e187a3e18c00cdb0cce"
+          },
+          {
+            "id": "OyhNXhCb",
+            "name": "Round 6",
+            "bytes": 26087,
+            "sha256": "136f1158786edfb5dacf7017ac8f577cd56b778309489adb31a64480a39a8168"
+          }
+        ],
+        "title": "ITT IM AREQUIPA LEON DEL SUR"
+      },
+      "rudar": {
+        "broadcast": "rudar-xxxvii-gm-round-robin/round-1/jFsKFqZe",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "jFsKFqZe",
+            "name": "Round 1",
+            "bytes": 3638,
+            "sha256": "531d2a8c6a88148283acddf04e5b0c17d4c84bcf2d1528c53eeaf2e35559ac5d"
+          },
+          {
+            "id": "UBHqIr1P",
+            "name": "Round 2",
+            "bytes": 9794,
+            "sha256": "2f25c3127e144fc9b497f15be9384e0b33bffb29ada0c0e6c330bd36a7f8a957"
+          },
+          {
+            "id": "H12Ao3dX",
+            "name": "Round 3",
+            "bytes": 16466,
+            "sha256": "0b64d7a72f16ed1c34187aebc7bc76fa699f383d2fc8314569b41cb1b67f37de"
+          },
+          {
+            "id": "0hQ7CoZl",
+            "name": "Round 4",
+            "bytes": 16158,
+            "sha256": "3281876cf27fe4be3cf338c149bbff8b756ad2fa0500a5e6702968d406cf09f1"
+          },
+          {
+            "id": "sPD8lNfD",
+            "name": "Round 5",
+            "bytes": 17293,
+            "sha256": "0ec4e74a55f6702276e512019faaf8f966904d5011a700cb88298331c6122351"
+          },
+          {
+            "id": "KgV0mCHA",
+            "name": "Round 6",
+            "bytes": 18878,
+            "sha256": "00f6ab814c9ff8edaa92ce74bfb6e40782f22902d5af7050592c1ecd2ce32fcd"
+          }
+        ],
+        "title": "RUDAR XXXVII - GM ROUND ROBIN"
+      },
+      "blumenau": {
+        "broadcast": "brazil-chess-series-masters-blumenau-2026/round-1/oinbA9PR",
+        "tc": "90 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "oinbA9PR",
+            "name": "Round 1",
+            "bytes": 27725,
+            "sha256": "8760eb3cbddbe11187708908e32175fe206638516a391810e61fb0e98bed80ea"
+          },
+          {
+            "id": "h4bApYpa",
+            "name": "Round 2",
+            "bytes": 20814,
+            "sha256": "ca382ce32eed9a58fceaeb983b5a6dd8ecac91568a87ea2ed00f2136cc221f14"
+          },
+          {
+            "id": "WuCa5IId",
+            "name": "Round 3",
+            "bytes": 25178,
+            "sha256": "2fb4557c24e12ac4a65eb29cd34fd281e7eb711776214f191142acd334af3bbb"
+          },
+          {
+            "id": "6tUy89Da",
+            "name": "Round 4",
+            "bytes": 26776,
+            "sha256": "ea39133d1ef93959c0653e6d2642a559b229f49fa9c7cacdca324ed2ad64bfc0"
+          },
+          {
+            "id": "mrLSOhHy",
+            "name": "Round 5",
+            "bytes": 22320,
+            "sha256": "dfef429c8088794a961f40385aaec94d1e0646b73ee3f7a42d88691e37da6100"
+          }
+        ],
+        "title": "Brazil Chess Series Masters | Blumenau 2026"
+      },
+      "serbia-w": {
+        "broadcast": "20-pojedinacno-prvenstvo-srbije-za-sahistkinje/round-1/gib2xXny",
+        "tc": "90 min for 40 moves + 30 min for the rest of the game, with 30-second increment",
+        "rounds": [
+          {
+            "id": "gib2xXny",
+            "name": "Round 1",
+            "bytes": 28475,
+            "sha256": "826d5d7e60d9353207631ed535d2ecf9401d1e0679158e7e27539e645e95650d"
+          },
+          {
+            "id": "22RJ28ho",
+            "name": "Round 2",
+            "bytes": 28685,
+            "sha256": "af5f8987473e638e935bde415253cca9d97f97b7da877b6107d9de49e234712e"
+          }
+        ],
+        "title": "20. POJEDINACNO PRVENSTVO SRBIJE ZA SAHISTKINJE"
+      },
+      "junior-open": {
+        "broadcast": "fide-world-junior-chess-championship-2026-open/round-1/5JLs2gkn",
+        "tc": "90 min / 40 moves + 30 min + 30 sec / move",
+        "rounds": [
+          {
+            "id": "5JLs2gkn",
+            "name": "Round 1",
+            "bytes": 130138,
+            "sha256": "5b77351d3d3d3e8b0f649fb1b611342d6201f4f7114dca4691166e9fd2d4851e"
+          }
+        ],
+        "title": "FIDE World Junior Chess Championship 2026 | Open"
+      }
+    },
+    "sampling": {
+      "seed": "exchange-defense-mistakes-46c31482",
+      "earlierBoards": 1051,
+      "games": {
+        "germany": 133,
+        "slovenia": 203,
+        "arcelormittal": 47,
+        "montenegro": 16,
+        "bengbu": 153,
+        "arequipa": 16,
+        "rudar": 22,
+        "blumenau": 24,
+        "serbia-w": 9,
+        "junior-open": 29
+      },
+      "population": {
+        "germany:guarded-exchange": 11,
+        "germany:ordinary-exchange": 59,
+        "germany:direct-gain": 58,
+        "slovenia:ordinary-exchange": 94,
+        "slovenia:direct-gain": 85,
+        "slovenia:guarded-exchange": 12,
+        "arcelormittal:direct-gain": 12,
+        "arcelormittal:ordinary-exchange": 29,
+        "arcelormittal:guarded-exchange": 2,
+        "montenegro:direct-gain": 8,
+        "montenegro:ordinary-exchange": 8,
+        "bengbu:guarded-exchange": 14,
+        "bengbu:ordinary-exchange": 64,
+        "bengbu:direct-gain": 75,
+        "arequipa:direct-gain": 5,
+        "arequipa:ordinary-exchange": 7,
+        "arequipa:guarded-exchange": 4,
+        "rudar:ordinary-exchange": 11,
+        "rudar:direct-gain": 7,
+        "rudar:guarded-exchange": 1,
+        "blumenau:direct-gain": 13,
+        "blumenau:ordinary-exchange": 10,
+        "serbia-w:direct-gain": 3,
+        "serbia-w:ordinary-exchange": 6,
+        "junior-open:direct-gain": 15,
+        "junior-open:ordinary-exchange": 13
+      },
+      "selected": {
+        "guarded-exchange": 44,
+        "direct-gain": 31,
+        "ordinary-exchange": 22
+      }
+    },
+    "engine": {
+      "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "threadsPerEngine": 1,
+      "hashMiB": 48,
+      "rootNodes": 600000,
+      "pairNodes": 1200000,
+      "replyNodes": 900000,
+      "samples": 97,
+      "wallSeconds": 25.3,
+      "sha256": "f5223f625a663b648514e0a1c69f39efe953768282d57a76062498abc1dea8f7"
+    }
+  },
+  "puzzles": {
+    "sampling": {
+      "source": "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+      "headers": {
+        "ETag": "\"6ae6f0f4-12766d85\"",
+        "Content-Length": "309751173",
+        "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT"
+      },
+      "scanLimit": 225000,
+      "population": {
+        "direct-gain": 1346,
+        "ordinary-exchange": 148,
+        "guarded-exchange": 152
+      },
+      "selected": {
+        "guarded-exchange": 24,
+        "direct-gain": 20,
+        "ordinary-exchange": 12
+      }
+    },
+    "engine": {
+      "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+      "threadsPerEngine": 1,
+      "hashMiB": 48,
+      "rootNodes": 600000,
+      "pairNodes": 1200000,
+      "replyNodes": 900000,
+      "samples": 56,
+      "wallSeconds": 34.9,
+      "sha256": "7c5f4da90b1b21e585f4810fcb693b1991cd725b867cdb81a84dba2bd88bff13"
+    }
+  },
+  "review": {
+    "separateRestrictedSearchNodes": 430000,
+    "publicationIncludesPositiveCheckpoint": true,
+    "frozenReferenceSha256": "38f18e624759d0151ffd850080a9f95e59d88463ee2b8941cec33dcf18f4ba45"
+  },
+  "publicInputsSha256": {
+    "development.json": "3761f9c5a6fc0113641ca5a7679f38d56285f50a3fd26429c397472cac380b68",
+    "reserve.json": "c9177c0787d9697eef51afa08bf7dd68e0f49fd93b9c859c85bfcf3be5c73ece",
+    "positive-reference.json": "411347f00fc2fc90a468fe4b3326ffdacb2d2af24a22de447cfbf947d2ec1080"
+  }
+}

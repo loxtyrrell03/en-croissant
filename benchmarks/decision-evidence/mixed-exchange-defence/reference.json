@@ -1,0 +1,920 @@
+[
+  {
+    "id": "0b543a2f795b3f2d",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "15237fd256798501",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "167e94c836a4b18c",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "1712c4a4bc957dbf",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "1d0d9038f8755056",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "1dde117c8853234f",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "20f72ece8a41f413",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "228cb9d2776a899e",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "2494197572b0b11b",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "25eb55fc26d26363",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "34be69331f223009",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "384658d570f53080",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "3a2b15581a688f29",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "433d05c391f7ef4d",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "543bb0d89bb55c66",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "58ed3f190efc833d",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "6211a34692ba6146",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "6784cb00e50bf568",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "68a4c8cd76d02aec",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "74d7130ccf72efc0",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "784eb88a003497a8",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "78e92e13dea17f25",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "7c69b857bb101075",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "855ecdc957944118",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "86c6060fbee7985d",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "87c4cb2c2ddc8acc",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "88c8a7f114a37cda",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "8a86573c5468f7a9",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "8fe8f6ea2840cbb4",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "90f8baeeda462b83",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "92c8163868cd076f",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "95557842d97e12d9",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "bc9ac8d0474d6709",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "bddf91929eea8419",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "be403928c8ec3635",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "c22542830f7ad2f4",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "c9d1ad5733df39c5",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "ccfbe2ca6e7fdbf2",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "d461b21d6670a388",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "d5f90e7df6d692e6",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "eedc4dd46b6d10b7",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "f0d802d5b70e72fb",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "f5dea87e7e7cc21f",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "f77645186cffaac8",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "003870bb3ef2db7c",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "0078f6501a32301e",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "007c40f3cb8fe14f",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "011b8df8e076a6ab",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "011fa13767fda27b",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "037ab9874fe5abe5",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0484c8283644d737",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "0519d743c7e35bf4",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "05a8d52b24bfaf8a",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "06ecdcb4803d8ce0",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "07072632171a2930",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "072acb3914ec493c",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0875054568b9e417",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "09e783f2755a2ff9",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0a0c3a76f123f872",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "0a74f074898261ce",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0b8e44d700dd874c",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "0c79f6beafa19c44",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0d801754c00faadc",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "0de1b5f0c40b74f6",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0e3d5ee63eee6989",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "0ec96ef512c5cfb9",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0f35ee164a182a49",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "0f9555a99da1dadb",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "1016af731ceac520",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "103b9fb8b45723d8",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "109a5ba5c0ad8164",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "10c0b76cbc55aae5",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "10c6e8349347a031",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "10f2ff49c1e8e2cf",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "11e102fde57fa535",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "003ee9d17090d8fd",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "00fe91251040a5a7",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "016a2119dd2b2152",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "01961883e9f91c6b",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "019690a43374e74a",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "01f93e023db9eef3",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "02c7f42b852cd972",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "02e33bb55ead17ac",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "0328184dc928f33b",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "034665e5ef9d9eec",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "03a2383fe3e029e4",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "03b2c18b5e124556",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "03f4a52a5535be30",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "04467b569771056f",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "046c9beb811816d6",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "049256a776c8d5b2",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "052458498372de8f",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "played-leads-preview"
+  },
+  {
+    "id": "05d9860230ec4b78",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "062ed704cf3f42e9",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "068197ed9ea75bb7",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "06c5dc233cc14a66",
+    "cohort": "classical",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "06db3ee2d75a211d",
+    "cohort": "classical",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "1VBlQ",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0T3iu",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1wMuo",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0e6Ej",
+    "cohort": "puzzles",
+    "status": "uncertain",
+    "reason": "The board or engine shows a possible secondary resource with insufficient corroboration."
+  },
+  {
+    "id": "0iNnR",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1dYZE",
+    "cohort": "puzzles",
+    "status": "yes",
+    "reason": "A deeper restricted recapture search finds the released piece is taken immediately with a substantial score penalty."
+  },
+  {
+    "id": "1T38C",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "14fPd",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "1XHCS",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1ZM1v",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1bMEZ",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1KfT3",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1KEVf",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0UK1A",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "28SG7",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0C77C",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "23G9A",
+    "cohort": "puzzles",
+    "status": "uncertain",
+    "reason": "The board or engine shows a possible secondary resource with insufficient corroboration."
+  },
+  {
+    "id": "0XioS",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1Y32q",
+    "cohort": "puzzles",
+    "status": "uncertain",
+    "reason": "The board or engine shows a possible secondary resource with insufficient corroboration."
+  },
+  {
+    "id": "1268E",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "27kvS",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0TF6a",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "2FNya",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0lX8X",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "1QOfJ",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "1ckN3",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "0PSmH",
+    "cohort": "puzzles",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "1zitg",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "1PWxf",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "1fA6H",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "1OY2c",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "1rKGg",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "1pkkn",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "0mgtS",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "133ti",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched line does not contain this capture sequence."
+  },
+  {
+    "id": "257CN",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "2AbPH",
+    "cohort": "puzzles",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "1XFTC",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1F5UV",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "0EUd7",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1LMPP",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "0mGWY",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0ZuDQ",
+    "cohort": "puzzles",
+    "status": "excluded",
+    "reason": "no-60cp-loss"
+  },
+  {
+    "id": "0m7sF",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The follow-up does not take a legally recapturable pawn on the other square."
+  },
+  {
+    "id": "0WAWX",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1shM0",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1t85l",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "18Vqj",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1vmJN",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0LdBY",
+    "cohort": "puzzles",
+    "status": "uncertain",
+    "reason": "The board or engine shows a possible secondary resource with insufficient corroboration."
+  },
+  {
+    "id": "1Wfp6",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1cHHP",
+    "cohort": "puzzles",
+    "status": "uncertain",
+    "reason": "The board or engine shows a possible secondary resource with insufficient corroboration."
+  },
+  {
+    "id": "0J4v0",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "01yFV",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "0Lpjw",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  },
+  {
+    "id": "1TTIO",
+    "cohort": "puzzles",
+    "status": "no",
+    "reason": "The independently searched recaptures do not show this off-square guard removal."
+  }
+]

@@ -1,0 +1,343 @@
+{
+  "id": "rook-pressure-brazil-women-2026-57cc81bc061d8626-56",
+  "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/2RR1QK1 w - - 2 29",
+  "candidates": [
+    {
+      "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/2RR1QK1 w - - 2 29",
+      "cp": -378,
+      "mate": null,
+      "depth": 24,
+      "nodes": 2400228,
+      "pvUci": [
+        "f3d4",
+        "e8g7",
+        "d4e2",
+        "h6f4",
+        "e2f4",
+        "h5h4",
+        "d1d3",
+        "a3d3",
+        "f1d3",
+        "f6b2",
+        "c1f1",
+        "h4g3",
+        "d3g3",
+        "e6c4",
+        "f1d1",
+        "b2e5",
+        "h3h4",
+        "a2b2",
+        "f4d3",
+        "c4d3",
+        "g3d3",
+        "e5f4",
+        "d3d4",
+        "b2c2"
+      ],
+      "wdl": [
+        0,
+        0,
+        1000
+      ],
+      "searchMs": 2112.1730000013486
+    },
+    {
+      "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/2RR1QK1 w - - 2 29",
+      "cp": -550,
+      "mate": null,
+      "depth": 24,
+      "nodes": 2400228,
+      "pvUci": [
+        "c1b1",
+        "h6f4",
+        "g3f4",
+        "e6h3",
+        "f3g5",
+        "h3g4",
+        "d1d3",
+        "a3d3",
+        "f1d3",
+        "f6f4",
+        "d3e3",
+        "f4e3",
+        "f2e3",
+        "f7f6",
+        "g5f3",
+        "e8g7",
+        "b4b5"
+      ],
+      "wdl": [
+        0,
+        0,
+        1000
+      ],
+      "searchMs": 2112.1730000013486
+    }
+  ],
+  "comparisonCandidates": [
+    {
+      "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/2RR1QK1 w - - 2 29",
+      "cp": -378,
+      "mate": null,
+      "depth": 24,
+      "nodes": 2400228,
+      "pvUci": [
+        "f3d4",
+        "e8g7",
+        "d4e2",
+        "h6f4",
+        "e2f4",
+        "h5h4",
+        "d1d3",
+        "a3d3",
+        "f1d3",
+        "f6b2",
+        "c1f1",
+        "h4g3",
+        "d3g3",
+        "e6c4",
+        "f1d1",
+        "b2e5",
+        "h3h4",
+        "a2b2",
+        "f4d3",
+        "c4d3",
+        "g3d3",
+        "e5f4",
+        "d3d4",
+        "b2c2"
+      ],
+      "wdl": [
+        0,
+        0,
+        1000
+      ],
+      "searchMs": 2112.1730000013486
+    },
+    {
+      "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/2RR1QK1 w - - 2 29",
+      "cp": -550,
+      "mate": null,
+      "depth": 24,
+      "nodes": 2400228,
+      "pvUci": [
+        "c1b1",
+        "h6f4",
+        "g3f4",
+        "e6h3",
+        "f3g5",
+        "h3g4",
+        "d1d3",
+        "a3d3",
+        "f1d3",
+        "f6f4",
+        "d3e3",
+        "f4e3",
+        "f2e3",
+        "f7f6",
+        "g5f3",
+        "e8g7",
+        "b4b5"
+      ],
+      "wdl": [
+        0,
+        0,
+        1000
+      ],
+      "searchMs": 2112.1730000013486
+    }
+  ],
+  "playedMoveUci": "c1b1",
+  "replyProbes": [
+    {
+      "moveUci": "f3d4",
+      "lines": [
+        {
+          "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PPNPN2/r5PP/r4PB1/2RR1QK1 b - - 3 29",
+          "depth": 19,
+          "cp": 298,
+          "mate": null,
+          "pvUci": [
+            "h5h4",
+            "c1c2",
+            "a2c2",
+            "d4c2",
+            "a3c3",
+            "f4e6",
+            "f6e6",
+            "c2d4",
+            "e6c4",
+            "g3h4",
+            "h6g7",
+            "d4e2",
+            "c3b3",
+            "e2f4",
+            "c4f1",
+            "g1f1",
+            "b3b4",
+            "h4h5",
+            "g6g5",
+            "f4d3",
+            "b4c4"
+          ]
+        },
+        {
+          "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PPNPN2/r5PP/r4PB1/2RR1QK1 b - - 3 29",
+          "depth": 19,
+          "cp": 285,
+          "mate": null,
+          "pvUci": [
+            "h6f4",
+            "g3f4",
+            "e8g7",
+            "b4b5",
+            "c6c5",
+            "d4c2",
+            "a3b3",
+            "c2e3",
+            "f6f4",
+            "c1a1",
+            "a2b2",
+            "a1b1",
+            "h5h4",
+            "b1b2",
+            "b3b2",
+            "d1b1",
+            "b2b1",
+            "f1b1",
+            "f4g5",
+            "g1h1",
+            "g7h5",
+            "e4e5",
+            "b7b6",
+            "e5d6",
+            "g5f4",
+            "d6d7"
+          ]
+        },
+        {
+          "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PPNPN2/r5PP/r4PB1/2RR1QK1 b - - 3 29",
+          "depth": 19,
+          "cp": 285,
+          "mate": null,
+          "pvUci": [
+            "e8g7",
+            "b4b5",
+            "h5h4",
+            "c1c2",
+            "a2c2",
+            "d4c2",
+            "a3c3",
+            "c2d4",
+            "h4g3",
+            "f2g3",
+            "e6c4",
+            "f1e1",
+            "c3g3",
+            "e1g3",
+            "h6f4",
+            "g3c3",
+            "d6d5",
+            "b5c6",
+            "b7c6",
+            "d4e2",
+            "f4e5",
+            "c3e3",
+            "c6c5",
+            "d1f1",
+            "f6d6"
+          ]
+        }
+      ]
+    },
+    {
+      "moveUci": "c1b1",
+      "lines": [
+        {
+          "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/1R1R1QK1 b - - 3 29",
+          "depth": 19,
+          "cp": 593,
+          "mate": null,
+          "pvUci": [
+            "h6f4",
+            "g3f4",
+            "e6h3",
+            "f3e1",
+            "h3g4",
+            "d1d3",
+            "f6f4",
+            "b4b5",
+            "a2a1",
+            "e1f3",
+            "a1b1",
+            "f1b1",
+            "a3d3",
+            "b1d3",
+            "f4c1",
+            "d3f1",
+            "c1f1",
+            "g1f1",
+            "g4f3",
+            "g2f3"
+          ]
+        },
+        {
+          "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/1R1R1QK1 b - - 3 29",
+          "depth": 19,
+          "cp": 413,
+          "mate": null,
+          "pvUci": [
+            "h5h4",
+            "f4e6",
+            "h4g3",
+            "f2g3",
+            "h6e3",
+            "g1h2",
+            "a2f2",
+            "e6g5",
+            "f2f1",
+            "d1f1",
+            "e3g5",
+            "b4b5",
+            "g5e3",
+            "b5c6",
+            "b7c6",
+            "b1b8"
+          ]
+        },
+        {
+          "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/1R1R1QK1 b - - 3 29",
+          "depth": 19,
+          "cp": 278,
+          "mate": null,
+          "pvUci": [
+            "e6c8",
+            "f4d3",
+            "c8h3",
+            "g2h3",
+            "f6f3",
+            "e4e5",
+            "h6d2",
+            "b1b2",
+            "a2b2",
+            "d3b2",
+            "d2b4",
+            "b2d3",
+            "b4c3",
+            "h3g2",
+            "f3f5",
+            "g2h3"
+          ]
+        }
+      ]
+    }
+  ],
+  "label": {
+    "id": "rook-pressure-brazil-women-2026-57cc81bc061d8626-56",
+    "scope": "mistake-mechanism",
+    "moveUci": "c1b1",
+    "tactical": true,
+    "positional": true,
+    "rationale": "Rb1 permits Bxf4 gxf4 Bxh3 in both searches. That sequence gains the pawn and separately removes the g-pawn from the king's cover. Neither Nd4 line suffers the same reorganisation of the king's pawns."
+  }
+}

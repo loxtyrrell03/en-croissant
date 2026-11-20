@@ -1,0 +1,74 @@
+{
+  "reference": 153,
+  "baselineStatus": {
+    "best-supplied-choice": 53,
+    "assessed": 75,
+    "no-meaningful-loss-measured": 13,
+    "comparison-unavailable": 12
+  },
+  "positiveCaseBaseline": {
+    "1dYZE": {
+      "status": "assessed",
+      "category": "unclear"
+    }
+  },
+  "quick": {
+    "classical": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 14,
+      "uncertain": 0,
+      "uncertainNominated": 0,
+      "excluded": 83,
+      "excludedNominated": 0
+    },
+    "puzzles": {
+      "tp": 0,
+      "fp": 10,
+      "fn": 1,
+      "tn": 37,
+      "uncertain": 5,
+      "uncertainNominated": 2,
+      "excluded": 3,
+      "excludedNominated": 0
+    }
+  },
+  "controlled": {
+    "classical": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 14,
+      "uncertain": 0,
+      "uncertainNominated": 0,
+      "excluded": 83,
+      "excludedNominated": 0
+    },
+    "puzzles": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "tn": 47,
+      "uncertain": 5,
+      "uncertainNominated": 0,
+      "excluded": 3,
+      "excludedNominated": 0
+    }
+  },
+  "timingMs": {
+    "baselineMedian": 157.531,
+    "controlledMedianAdded": 0.005,
+    "controlledMaxAdded": 0.687
+  },
+  "developmentReplay": {
+    "requests": 1051,
+    "addedWitnesses": [
+      "rook-pressure-brazil-women-2026-57cc81bc061d8626-56"
+    ],
+    "baselineMixedOnFrozenPositives": 1,
+    "trialMixedOnFrozenPositives": 2,
+    "frozenMixedPositiveCount": 17,
+    "controlledMedianAddedMs": 0.001
+  }
+}
