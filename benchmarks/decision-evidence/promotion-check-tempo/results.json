@@ -1,0 +1,111 @@
+{
+  "base": "e624c951",
+  "freshSampleSha256": "d4804af7f521a95f9aed423faa944c11d83d04d616a7812567be54fe3695f7a1",
+  "freshFramesSha256": "ee7c8fd91b646894d3d72f8bf8867871a120a6aa37c71e5290857e6e0b1ff3fc",
+  "cachedSources": {
+    "archive": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "concordance": "b230420f9b9092568f5ec404ebb6b7351865eeff10739d93daa5b39cf108261a",
+    "capture-reserve": "e978e9d3a31a7f9ced6b3ed7de5b4be8908b3999f663cec11404357c62c3c445",
+    "short-mate-reserve": "a27bf8bd49161ae2000b0d6c485ffce08d9b9898e929d4cdccc4e43941195547",
+    "paired-study-deep": "4319a9b00640bcef4c0a3b266996aec3f9d138d659febeaf2b9579d35a218d91"
+  },
+  "freshExclusions": {
+    "paired-passer-benchmark/sample.json": "afa3ece3f098a740430073f958df0f80b132f912ea9fb96b5149c90abba0e7a1",
+    "reply-coverage-audit/full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "reply-concordance/reserve-scored.json": "b230420f9b9092568f5ec404ebb6b7351865eeff10739d93daa5b39cf108261a",
+    "alternate-capture-payoff/fresh-scored.json": "e978e9d3a31a7f9ced6b3ed7de5b4be8908b3999f663cec11404357c62c3c445",
+    "played-mate-in-three/reserve-scored.json": "a27bf8bd49161ae2000b0d6c485ffce08d9b9898e929d4cdccc4e43941195547"
+  },
+  "cachedArms": {
+    "inputs": 1460,
+    "exact": [
+      "paired-study-deep:transfer:passer-pair-03b0bbd727d6f3fb"
+    ],
+    "samePawn": [
+      "paired-study-deep:transfer:passer-pair-03b0bbd727d6f3fb"
+    ]
+  },
+  "freshArms": {
+    "inputs": 144,
+    "exact": [],
+    "samePawn": []
+  },
+  "freshEvents": 51,
+  "freshFrameStatuses": {
+    "no-distinct-quiet-king-leader": 131,
+    "scored": 11,
+    "unmatched-pair": 2
+  },
+  "cachedWorker": {
+    "inputs": 1460,
+    "validReports": 1459,
+    "changed": [
+      {
+        "id": "paired-study-deep:transfer:passer-pair-03b0bbd727d6f3fb",
+        "before": "unclear",
+        "after": "mixed",
+        "evidence": {
+          "description": "After Kg2, Rxd3 comes without check and b8=Q is legal. After Kf3, the same capture Rxd3+ forces a response to check before the pawn can promote.",
+          "linesUci": [
+            [
+              "f2g2",
+              "c6d6",
+              "b6b7",
+              "d6d3",
+              "b7b8q"
+            ],
+            [
+              "f2f3",
+              "c6d6",
+              "b6b7",
+              "d6d3"
+            ]
+          ]
+        },
+        "positional": [
+          "The passed pawn on b6 promotes and keeps its new piece through the next four plies in both searches of Kg2."
+        ]
+      }
+    ],
+    "baselineMedianMs": 72.984,
+    "productMedianMs": 72.556
+  },
+  "freshWorker": {
+    "inputs": 144,
+    "validReports": 144,
+    "changed": [],
+    "baselineMedianMs": 41.377,
+    "productMedianMs": 42.75
+  },
+  "liveWorker": [
+    {
+      "id": "passer-pair-24058c51cfa95ff0",
+      "leader": "unclear",
+      "mistake": "unclear",
+      "evidence": null
+    },
+    {
+      "id": "passer-pair-03b0bbd727d6f3fb",
+      "leader": "mixed",
+      "mistake": "unclear",
+      "evidence": {
+        "description": "After Kg1, Rxd3 comes without check and b8=Q is legal. After Kf3, the same capture Rxd3+ forces a response to check before the pawn can promote.",
+        "linesUci": [
+          [
+            "f2g1",
+            "c6d6",
+            "b6b7",
+            "d6d3",
+            "b7b8q"
+          ],
+          [
+            "f2f3",
+            "c6d6",
+            "b6b7",
+            "d6d3"
+          ]
+        ]
+      }
+    }
+  ]
+}

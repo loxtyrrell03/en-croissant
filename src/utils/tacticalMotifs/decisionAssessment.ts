@@ -103,7 +103,9 @@ import {
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 51;
+import { comparePromotionCheckTempo } from "./decisionPromotionCheckTempo";
+
+export const DECISION_ASSESSMENT_VERSION = 52;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -1423,6 +1425,41 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 ...(passedAdvance ? { passedAdvance } : {}),
                 ...(recovery ? { tacticalRecovery: recovery } : {}),
             };
+        }
+    }
+    // A conditional promotion explains this candidate. The position and
+    // played mistake were assessed on their own evidence above.
+    const leader = moves[0];
+    if (
+        !leader.promotionTactic &&
+        (leader.tactical.support !== "supported" || leader.positional.support !== "supported") &&
+        comparedBest?.pvUci[0] === first.pvUci[0] &&
+        comparisonMeasured?.lines.length === comparison.length
+    ) {
+        const reply = input.replyProbes?.find((probe) => probe.moveUci === leader.moveUci)?.lines[0];
+        for (const alternative of comparison.slice(1)) {
+            const evidence = comparePromotionCheckTempo(
+                input.fen, comparedBest, alternative, reply, input.history,
+            );
+            if (!evidence?.sameContinuation) continue;
+            leader.promotionTactic = evidence.tactic;
+            if (leader.tactical.support !== "supported") {
+                leader.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [evidence.tactic.description],
+                };
+            }
+            if (leader.positional.support !== "supported") {
+                leader.positional = {
+                    support: "supported",
+                    basis: "heuristic",
+                    reasons: [evidence.pawnPlan],
+                };
+            }
+            leader.category = category(leader.tactical, leader.positional);
+            leader.limitations.push("This is a comparison after the shown reply. Other defences can change the route to promotion.");
+            break;
         }
     }
     return {

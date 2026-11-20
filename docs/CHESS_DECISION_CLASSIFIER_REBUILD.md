@@ -4369,3 +4369,21 @@ when it gives check. The first example also supports a specific
 tactical mistake diagnosis. The second leaves the mistake axis uncertain
 because the played move retains other winning continuations.
 [Paired reference, exact counterfactuals and replay](../benchmarks/decision-evidence/paired-passer-benchmark/README.md)
+
+
+## Immediate promotion after avoiding check
+
+Two king moves can give the same opponent capture different forcing
+power. The move assessor now checks this exact contrast. It needs a
+quiet advance by the original passed pawn and the same reply through
+promotion in two searches. A direct check after the competing king
+move must make that promotion illegal in the corresponding sequence.
+
+In Hoogeveen the normal Stockfish search's `Kg1` gains a mixed
+explanation. `Rxd3` is no check, so `b8=Q` is available immediately.
+The paired example gives no new mistake verdict. A weaker requirement
+of the same pawn promoting after a different continuation yields no
+additional cases. Neither variant finds another in 144 fresh
+classical games. This is a scoped explanation with no extra engine
+queries. Broad mixed recall remains unverified.
+[Evidence, comparison and regression replay](../benchmarks/decision-evidence/promotion-check-tempo/README.md)
