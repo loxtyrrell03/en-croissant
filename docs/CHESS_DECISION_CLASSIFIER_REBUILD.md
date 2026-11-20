@@ -4264,3 +4264,18 @@ lose three false mixed labels with no lost true positives. Mistake reports
 are unchanged across the 1,051-request archive and the 26-game prospective
 sample. The checks reuse the existing searches.
 [Samples, regressions and reproduction](../benchmarks/decision-evidence/capture-structural-dependence/README.md)
+
+
+## Compensated alternate captures
+
+The mistake adapter now corroborates the local gain from a compensated
+alternate capture with the exact Stockfish variation. It counts the
+opponent's later captures as costs and separates subsequent gains on
+other squares. The evidence retains its own replayable line.
+
+The earlier European Club Cup false positive disappears at normal and
+deeper budgets. The unchanged archive contains a real alternate pawn
+capture, and the 120-game public replay has no additional affected
+reports. A direct-capture-only arm drops a constructed valid case and
+a total-material arm accepts a constructed gain on the wrong square.
+[Evidence, controls and reproduction](../benchmarks/decision-evidence/alternate-capture-payoff/README.md)

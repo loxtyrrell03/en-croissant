@@ -1729,6 +1729,34 @@ export function pawnOpportunityRemainsAfterReply(
     return false;
 }
 
+/**
+ * A local exchange bound does not cover off-square play after a recapture.
+ * Before teaching a compensated alternative, require the searched line to
+ * retain the gain after the capturing side leaves the exchange and the
+ * opponent answers. Debit all concessions without crediting unrelated wins.
+ */
+function corroborateCompensatedCapture(fen: string, pv: string[], gain: number) {
+    const steps = replayTacticalLine(fen, pv.slice(0, 10));
+    const root = steps[0];
+    if (!root?.capture) return null;
+    const side = root.before.turn;
+    let unrelatedGain = 0;
+    for (let index = 1; index + 1 < steps.length; index++) {
+        const step = steps[index];
+        if (step.before.turn !== side) continue;
+        if (step.move.to !== root.move.to) unrelatedGain += step.capture;
+        if (step.move.promotion) unrelatedGain += VALUE[step.move.promotion] - VALUE.pawn;
+        if (step.capture || step.move.promotion || step.before.isCheck() || step.after.isCheck())
+            continue;
+
+        const reply = steps[index + 1];
+        if (reply.after.isEnd() || reply.after.isCheck() || reply.balance - unrelatedGain < gain)
+            return null;
+        return steps.slice(0, index + 2);
+    }
+    return null;
+}
+
 /** Recover a concrete capture cause even when the preferred engine reply is
  * a different, unexplained move. The better board must avoid every profitable
  * immediate capture of the SAME victim, not merely stop this one attacker.
@@ -1740,7 +1768,7 @@ export function proveAlternativeCaptureCause(
     fen: string,
     playedMove: string,
     bestMove: string,
-    nominatedReplies: readonly string[],
+    nominatedLines: readonly string[][],
     principalReply?: string,
     nodeLimit = 8192,
 ): TacticalMotifEvidence | null {
@@ -1762,10 +1790,11 @@ export function proveAlternativeCaptureCause(
         }
         return true;
     };
+    const nominations = new Map(nominatedLines.map(line => [line[0], line]));
     const relative = (square: Square) => pos.turn === "white" ? square : square ^ 56;
     const candidates = legalMoves(pos).filter(move =>
         !move.promotion && pos.board.get(move.to)?.color === played.before.turn &&
-        makeUci(move) !== principalReply && nominatedReplies.includes(makeUci(move))).sort((a, b) =>
+        makeUci(move) !== principalReply && nominations.has(makeUci(move))).sort((a, b) =>
             capturedValue(pos, b) - capturedValue(pos, a) ||
             relative(a.from) - relative(b.from) || relative(a.to) - relative(b.to));
     let strongest: TacticalMotifEvidence | null = null;
@@ -1797,11 +1826,20 @@ export function proveAlternativeCaptureCause(
             };
             const contextual = filterCompensatedRootCaptures(makeFen(pos.toSetup()), [uci], [motif], fen, playedMove)[0];
             if (!contextual || (contextual.value ?? 0) < MIN_TACTICAL_CAPTURE_GAIN) continue;
+            const reachedFen = makeFen(pos.toSetup());
+            const continuation = gain < step.capture
+                ? corroborateCompensatedCapture(reachedFen, nominations.get(uci)!, gain)
+                : [step];
+            if (!continuation) continue;
             strongest = {
                 ...contextual,
                 comparison: "prevented",
                 comparisonEvidence: `${san} is an alternative reply. ${better.san} instead keeps that ${victim.role}${target === move.to ? "" : ` on ${makeSquare(target)}`} safe from immediate capture.`,
-                alternativeLine: { fen: makeFen(pos.toSetup()), uci: [uci], san: [san] },
+                alternativeLine: {
+                    fen: reachedFen,
+                    uci: continuation.map(item => item.uci),
+                    san: continuation.map(item => item.san),
+                },
             };
         }
     } catch { /* Keep an already complete witness; unfinished candidates supply no evidence. */ }

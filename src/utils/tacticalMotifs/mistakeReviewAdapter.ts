@@ -149,7 +149,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 178;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 179;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1840,7 +1840,7 @@ export function classifyMistakeReviewMotifs(
         // alternatives preserving at least half the measured mistake swing,
         // and within one pawn of the preferred reply. No score proves a motif.
         const nominated = nominatedAlternatives(fenAfterPlayedMove ?? "", refutationLine[0],
-            input.refutationCandidates, Math.min(100, input.cpLoss / 2)).map(candidate => candidate.pvUci[0]);
+            input.refutationCandidates, Math.min(100, input.cpLoss / 2)).map(candidate => candidate.pvUci);
         const alternative = nominated.length
             ? proveAlternativeCaptureCause(fen, playedMoveUci, bestMoveUci, nominated, refutationLine[0])
             : null;

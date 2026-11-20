@@ -1,0 +1,396 @@
+{
+  "baseline": "b6eb8757",
+  "candidate": "Decision Evidence v49 and mistake review adapter 179",
+  "comparisons": {
+    "direct-only": {
+      "all": {
+        "requests": 146,
+        "validReports": 146,
+        "changedByScope": {
+          "position": 0,
+          "moves": 0,
+          "mistake": 1,
+          "mistakeStatus": 0
+        },
+        "changedMistakeVerdicts": {
+          "public-0a3e5b236535825c": [
+            "tactical",
+            "unclear"
+          ]
+        },
+        "medianWorkerMs": {
+          "before": 154.33,
+          "after": 156.49
+        }
+      }
+    },
+    "all-material": {
+      "all": {
+        "requests": 146,
+        "validReports": 146,
+        "changedByScope": {
+          "position": 0,
+          "moves": 0,
+          "mistake": 1,
+          "mistakeStatus": 0
+        },
+        "changedMistakeVerdicts": {
+          "public-0a3e5b236535825c": [
+            "tactical",
+            "unclear"
+          ]
+        },
+        "medianWorkerMs": {
+          "before": 154.33,
+          "after": 157.37
+        }
+      }
+    },
+    "product": {
+      "all": {
+        "requests": 146,
+        "validReports": 146,
+        "changedByScope": {
+          "position": 0,
+          "moves": 0,
+          "mistake": 1,
+          "mistakeStatus": 0
+        },
+        "changedMistakeVerdicts": {
+          "public-0a3e5b236535825c": [
+            "tactical",
+            "unclear"
+          ]
+        },
+        "medianWorkerMs": {
+          "before": 154.33,
+          "after": 156.19
+        }
+      },
+      "fresh": {
+        "requests": 120,
+        "validReports": 120,
+        "changedByScope": {
+          "position": 0,
+          "moves": 0,
+          "mistake": 0,
+          "mistakeStatus": 0
+        },
+        "changedMistakeVerdicts": {},
+        "medianWorkerMs": {
+          "before": 170.9,
+          "after": 167.05
+        }
+      },
+      "prospective": {
+        "requests": 26,
+        "validReports": 26,
+        "changedByScope": {
+          "position": 0,
+          "moves": 0,
+          "mistake": 1,
+          "mistakeStatus": 0
+        },
+        "changedMistakeVerdicts": {
+          "public-0a3e5b236535825c": [
+            "tactical",
+            "unclear"
+          ]
+        },
+        "medianWorkerMs": {
+          "before": 84.18,
+          "after": 83.01
+        }
+      }
+    }
+  },
+  "archive": {
+    "requests": 1051,
+    "validReports": 1050,
+    "changedByScope": {
+      "position": 0,
+      "moves": 0,
+      "mistake": 0,
+      "mistakeStatus": 0
+    },
+    "changedMistakeVerdicts": {},
+    "medianWorkerMs": {
+      "before": 64.41,
+      "after": 64.79
+    }
+  },
+  "controls": {
+    "requests": 2,
+    "validReports": 2,
+    "changedByScope": {
+      "position": 0,
+      "moves": 0,
+      "mistake": 1,
+      "mistakeStatus": 0
+    },
+    "changedMistakeVerdicts": {
+      "public-0a3e5b236535825c": [
+        "tactical",
+        "unclear"
+      ]
+    },
+    "medianWorkerMs": {
+      "before": 211.02,
+      "after": 208.33
+    }
+  },
+  "alternateCaptureReports": {
+    "archive": {
+      "before": [
+        "mistake-tournament-of-peace-2026-d30cc78bb69dd275-65"
+      ],
+      "after": [
+        "mistake-tournament-of-peace-2026-d30cc78bb69dd275-65"
+      ]
+    },
+    "fresh": {
+      "before": [],
+      "after": []
+    },
+    "controls": {
+      "before": [
+        "public-0a3e5b236535825c",
+        "mistake-tournament-of-peace-2026-d30cc78bb69dd275-65"
+      ],
+      "after": [
+        "mistake-tournament-of-peace-2026-d30cc78bb69dd275-65"
+      ]
+    }
+  },
+  "inputs": {
+    "archive": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "fresh": "e37cef653ea448d9aa317c2a928f7924a22dda831c0852c9ae3023ab8a001b3c",
+    "freshScored": "e978e9d3a31a7f9ced6b3ed7de5b4be8908b3999f663cec11404357c62c3c445",
+    "combined": "929ab8970cfdb4b47d48961c5b962820738a5cfa46b66b68b432e3051c03f0d0",
+    "controls": "32bf943e92f2d8dffa391ba4bc6ddd85ca89016788ae3155f59af006567ca43a"
+  },
+  "freshPublicIds": [
+    "00d847326fd18819",
+    "0894a2687eba9ede",
+    "099760c0af5baaec",
+    "0e9691fe769ef14d",
+    "130ec5ce6022db48",
+    "0220c41820d55660",
+    "035d27ec7c13dbc8",
+    "05ba4009654f505d",
+    "0632388e322ad983",
+    "07a7772cb257e446",
+    "01c494c8c529fa7c",
+    "042294c77706518f",
+    "05b549587e955d27",
+    "067caeb01a010c78",
+    "079197ba7fe9060c",
+    "07fda3e4c3919da3",
+    "0efbc776c381e937",
+    "10f3578891dcc011",
+    "14ec08efe8429abb",
+    "152a02d4a816dc62",
+    "007263ab8ecba3c2",
+    "0075d862fef17963",
+    "00b93aa39090a0a9",
+    "00d76411c839167b",
+    "01e3195180f59187",
+    "00f6820efdb34dee",
+    "015aa2a6337ff2fa",
+    "01834db8ee7e023b",
+    "01ab86f4e5f21f29",
+    "0221ac698612b61f",
+    "00176f9fa75fc03e",
+    "00cfc74579cb1d7c",
+    "033adc3bd2e090ed",
+    "037b9027cb809e93",
+    "054ec46577f97f5f",
+    "03f416257be6cc38",
+    "0520f0fb408f7b8e",
+    "0750f9a001e4d281",
+    "08704b1b43c732ce",
+    "0d665d174c23f968",
+    "0236ba884d37e15b",
+    "04c676c411e9afff",
+    "04c7addde35f64b0",
+    "051192875f0053cd",
+    "05c8ef3e75eb685d",
+    "04056bddb6ff3a28",
+    "0a62235ff5f932ed",
+    "12142bbec78ce5eb",
+    "14b5f520e3ea7351",
+    "3160e062c500c8b2",
+    "000010f20d9859be",
+    "061995b19d903b65",
+    "0843c96314e16b07",
+    "0ce99aec7f2e0432",
+    "0d8d5a589c454b47",
+    "00d419ffedf35b55",
+    "013936ab5051c686",
+    "06b170a2a35f9fe1",
+    "080d9cc10f291894",
+    "0e6e95b290769c43",
+    "00e3513f0a4a9aab",
+    "0210c95e27910518",
+    "0391409c8e0bf1f6",
+    "064565fe14190821",
+    "07b858ba6a52f5dc",
+    "0236c83d71764e49",
+    "057f0f241660090d",
+    "0680942dc2b40d25",
+    "081b9f4e223c5399",
+    "08524d24c2f6d1ec",
+    "102c3b34acc583ff",
+    "37549397e4dac7de",
+    "0af71f41a339841a",
+    "145b8e358dbb7714",
+    "2b5f08f057160228",
+    "2bef1d49c293b010",
+    "2f19b30ee72accd1",
+    "00a2a3bc27610ad1",
+    "011ddbd51699fe79",
+    "06bcbde394a47859",
+    "0d967ae66b74ba03",
+    "0e1b78a6ca89e5a2",
+    "01c590776c3a14db",
+    "021a77c18ea97e90",
+    "06e8dbc72a395e10",
+    "0709c900ad6150aa",
+    "0aef10b33c1eea86",
+    "0060fdf275f2a03c",
+    "0071238a2d477841",
+    "008d84cdffde6fa2",
+    "009dd3ecaebdc5c1",
+    "013801caf86fac96",
+    "1cba4775d516207c",
+    "32469a7c0108c034",
+    "400e5f20404bcbc5",
+    "a224b894c733f987",
+    "b303063f188b3f7e",
+    "03a933e09c99a165",
+    "04e19ac07dd52f46",
+    "0556c20ebbd3302a",
+    "0576a9f20eea4d7f",
+    "06bbd522f539425b",
+    "02af1f848e8ba230",
+    "0340b3af585a609e",
+    "045cf2a0c56d9c42",
+    "05623031380b2a99",
+    "1df03dc12f193664",
+    "010da3fd436a1218",
+    "02b917b638bc6ee4",
+    "039c2240614bd474",
+    "0511c7cdae5c0211",
+    "05452128f6db4230",
+    "004b3a0cd3313a29",
+    "030741befe1e90ed",
+    "04c47147130cb09a",
+    "07330432c431624d",
+    "0b128687245ad825",
+    "019fa57237036c1c",
+    "01ffb5f85caf4237",
+    "04e15be2a3d85ae2"
+  ],
+  "freshSourceManifest": {
+    "strategic-asset-contrast\\replication\\raw\\vicenza-DSJ8dtr8.pgn": {
+      "sha256": "2196b03a26c9a5e0c51ade848916fda995cc9f7b2d88367ad3b6d4c274ee0ee2",
+      "count": 5
+    },
+    "passer-interception-transfer\\late-reserve\\raw\\poland-9eyzPy9m.pgn": {
+      "sha256": "0701bffc29d0c43f61c53beb6f44f02046d28626741418747e41c28557f258ea",
+      "count": 5
+    },
+    "passer-interception-transfer\\late-reserve\\raw\\turkey-ndTfO720.pgn": {
+      "sha256": "3bd584eb60fc06381f5b5e83caebcfe242054d4d8a29dfbe1814a10b0e4fbd7f",
+      "count": 5
+    },
+    "strategic-asset-contrast\\replication\\raw\\munster-id14ysB6.pgn": {
+      "sha256": "07a49df535677fe707e33c28986af99abb0515967514c99c0db67c5a395f3174",
+      "count": 5
+    },
+    "coordination-and-cached-defences\\fresh\\revolucion.pgn": {
+      "sha256": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7",
+      "count": 5
+    },
+    "strategic-asset-contrast\\reserve\\raw\\dutch-meesterklasse-2026-2027-WXqRYeQ6.pgn": {
+      "sha256": "40e0b0ed372abf4cea8ca5302d961c142c06177f1e2d6890ceec5caf7baa17cf",
+      "count": 5
+    },
+    "passer-interception-transfer\\late-reserve\\raw\\poland-bLaUj5vJ.pgn": {
+      "sha256": "acf4acfed455894871aad12536f0eb87afaa3e8d1cac8d793ea58c3ff155993b",
+      "count": 5
+    },
+    "strategic-asset-contrast\\replication\\raw\\vechta-mrFUdLez.pgn": {
+      "sha256": "142b4b6a0fed40d810e99959598177d10175d441cdbced8e87f676f537f1146a",
+      "count": 5
+    },
+    "shelter-after-exchanges\\sants-b.pgn": {
+      "sha256": "6015d3892665072c978b8f8bf932632dc2f49627856710f747c9f3163648dbb5",
+      "count": 5
+    },
+    "strategic-asset-contrast\\replication\\raw\\calvia-CXSJnsMQ.pgn": {
+      "sha256": "438951bbd57618306ffc35f68758084773ad633bc848a6b3461d027807b34f37",
+      "count": 5
+    },
+    "promotion-mistake-transfer\\challengers.pgn": {
+      "sha256": "89aa94c72a2f352938aaf9387fe2783c332efa2086a23389ca01b8b341c8ecb3",
+      "count": 5
+    },
+    "strategic-transfer\\british-major-open-r7.pgn": {
+      "sha256": "c783b4479ce3add0961439b2493ff4365f8e97390146d981eb44849f7e0087bb",
+      "count": 5
+    },
+    "otb-transfer\\4ncl-r4.pgn": {
+      "sha256": "d8520a476efe505e4767d72599cee3cba3326ef11138c9f7b80b4fb6fcdf095f",
+      "count": 5
+    },
+    "passer-interception-transfer\\late-reserve\\raw\\turkey-zbeM6PPX.pgn": {
+      "sha256": "82ebd4d5a45570a474382a2c4373b99f2bea8f4358c62e3ea47d770dbb59d995",
+      "count": 5
+    },
+    "strategic-asset-contrast\\raw\\mongolia-LjTXo6lL.pgn": {
+      "sha256": "636aa7f38f2b488c6175b127ac62584b871bdfa37745469a8cef359f150bb25c",
+      "count": 2
+    },
+    "strategic-asset-contrast\\replication\\raw\\vicenza-lBMMBjIS.pgn": {
+      "sha256": "338fb0515c9f7dc9add95f29165a5803e22b9e3873a5b43c464a907873ed3cd5",
+      "count": 5
+    },
+    "mixed-mistake-contrast\\raw\\junior-open-5JLs2gkn.pgn": {
+      "sha256": "5b77351d3d3d3e8b0f649fb1b611342d6201f4f7114dca4691166e9fd2d4851e",
+      "count": 5
+    },
+    "passed-pawn-mistake-transfer\\olympiad.pgn": {
+      "sha256": "5de1bea0dd205641078cc9184e595e50a2a0b2f09cc8d4ba2a22e7fc1670d70d",
+      "count": 5
+    },
+    "passed-pawn-choices\\challenge\\world-seniors-50-2026-event.pgn": {
+      "sha256": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+      "count": 5
+    },
+    "opened-ray-exchanges\\raw\\oberliga-baden-rJo68ZdK.pgn": {
+      "sha256": "f8879030c2de272e242edbea724ba34231269afd1700940712a87598f3829246",
+      "count": 5
+    },
+    "strategic-asset-contrast\\raw\\kenya-MQBrArWd.pgn": {
+      "sha256": "7d9fdefc1d7b09cce57941cb765c9bd634c62bc73f08f365dd6b42385e744225",
+      "count": 5
+    },
+    "strategic-asset-contrast\\replication\\raw\\munster-B8Gqv1Pd.pgn": {
+      "sha256": "b3aee322c588ca2309add7f3e430854b035766a120b798559fa32dd147b569c3",
+      "count": 5
+    },
+    "passer-interception-transfer\\late-reserve\\raw\\poland-wwrkku5B.pgn": {
+      "sha256": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+      "count": 5
+    },
+    "passer-interception-transfer\\late-reserve\\raw\\turkey-loIX5V6A.pgn": {
+      "sha256": "6e151fb70b4fd577220fd7ca7bc3a045bb10e726306f93add7895039cf63027e",
+      "count": 5
+    },
+    "strategic-asset-contrast\\reserve\\raw\\serbian-super-league-2026-AOwRr43w.pgn": {
+      "sha256": "feafe35f53b9b4913fe5ae20319d972be7b345d1b3de623600392dfe45dbcf75",
+      "count": 3
+    }
+  }
+}

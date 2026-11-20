@@ -1,0 +1,143 @@
+import { execFileSync } from "node:child_process";
+import { createServer } from "node:http";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+
+import { build } from "vite";
+import react from "@vitejs/plugin-react";
+
+const [playwrightModule, chrome] = process.argv.slice(2);
+const { chromium } = await import(pathToFileURL(resolve(playwrightModule)));
+const input = JSON.parse(readFileSync(new URL("./club-cup-frame.json", import.meta.url), "utf8"));
+const pinned = new Map(
+  [
+    "decisionAssessment.ts",
+    "causalTactics.ts",
+    "mistakeReviewAdapter.ts",
+    "tacticalMistakeEpisode.ts",
+  ].map((name) => {
+    const version =
+      name === "tacticalMistakeEpisode.ts"
+        ? "b6eb8757"
+        : process.env.ALTERNATE_CAPTURE_REVISION || "HEAD";
+    const path = `src/utils/tacticalMotifs/${name}`;
+    return [
+      name,
+      execFileSync("git", ["show", version === "index" ? ":" + path : version + ":" + path], {
+        encoding: "utf8",
+      }),
+    ];
+  }),
+);
+const entry = `
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+  import { MantineProvider } from "@mantine/core";
+  import "@mantine/core/styles.css";
+  import { DecisionEvidencePanel } from "/src/components/panels/tactics/DecisionEvidencePanel.tsx";
+  const props = { engine: { id: "fixture", name: "Stockfish 19", settings: [] }, previous: { fen: ${JSON.stringify(input.fen)}, playedMoveUci: "f3e5", history: ${JSON.stringify(input.history)} }, previousSan: "Ne5" };
+  createRoot(document.getElementById("qa")).render(<MantineProvider><DecisionEvidencePanel {...props} /></MantineProvider>);
+`;
+
+function fixturePlugin() {
+  return {
+    name: "decision-capture-effect-panel",
+    enforce: "pre",
+    resolveId(id) {
+      if (id === "capture-effect-panel-entry.jsx" || id === "capture-effect-panel-search")
+        return "\0" + id;
+    },
+    load(id) {
+      if (id === "\0capture-effect-panel-entry.jsx") return entry;
+      if (id === "\0capture-effect-panel-search")
+        return `
+        export const DECISION_SEARCH_SESSION_MS = 28000;
+        export async function gatherDecisionEvidence() {
+          return ${JSON.stringify(input)};
+        }
+        export async function gatherExtraPositionChoice() { return null; }
+        export async function gatherCheckingDefence() { return null; }
+        export async function gatherPassedAdvance() { return []; }
+        export async function gatherPreparedCheckpoint() { return []; }
+      `;
+      return pinned.get(id.replaceAll("\\", "/").split("/").at(-1)) ?? null;
+    },
+    transform(code, id) {
+      if (id.endsWith("/DecisionEvidencePanel.tsx"))
+        return code.replace('from "./decisionSearch"', 'from "capture-effect-panel-search"');
+    },
+  };
+}
+
+const result = await build({
+  configFile: false,
+  resolve: { alias: { "@": resolve("src") } },
+  build: {
+    write: false,
+    reportCompressedSize: false,
+    rollupOptions: { input: "capture-effect-panel-entry.jsx" },
+  },
+  worker: { plugins: () => [fixturePlugin()] },
+  plugins: [react(), fixturePlugin()],
+});
+const files = new Map(result.output.map((file) => [file.fileName, file]));
+const script = result.output.find((file) => file.type === "chunk" && file.isEntry);
+const styles = result.output.filter((file) => file.fileName.endsWith(".css"));
+const server = createServer((request, response) => {
+  const resource = new URL(request.url, "http://localhost").pathname.slice(1);
+  if (!resource) {
+    response.setHeader("Content-Type", "text/html");
+    response.end(
+      '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+        styles.map((style) => `<link rel="stylesheet" href="/${style.fileName}">`).join("") +
+        `<main id="qa" style="padding:8px"></main><script type="module" src="/${script.fileName}"></script>`,
+    );
+    return;
+  }
+  const file = files.get(resource);
+  if (!file) {
+    response.statusCode = 404;
+    response.end();
+    return;
+  }
+  response.setHeader("Content-Type", resource.endsWith(".css") ? "text/css" : "text/javascript");
+  response.end(file.type === "chunk" ? file.code : file.source);
+});
+
+let browser;
+try {
+  await new Promise((ready) => server.listen(0, "127.0.0.1", ready));
+  browser = await chromium.launch({ executablePath: chrome, headless: true });
+  for (const width of [320, 390, 900]) {
+    const page = await browser.newPage({ viewport: { width, height: 750 } });
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.setDefaultTimeout(12_000);
+    await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    await page.getByRole("button", { name: "Analyse last move" }).click();
+    const panel = page.getByText("What Ne5 missed or allowed", { exact: true }).locator("../..");
+    const before = process.env.ALTERNATE_CAPTURE_REVISION === "b6eb8757";
+    await panel
+      .getByText(before ? "Tactical" : "Unclear", { exact: true })
+      .first()
+      .waitFor();
+    const toggle = panel.getByRole("button", { name: "Show evidence" });
+    await toggle.focus();
+    await toggle.press("Enter");
+    const materialClaim = panel.getByText(/checked exchanges gain at least 1 pawn/);
+    if (before) await materialClaim.first().waitFor();
+    else if (await materialClaim.count()) throw new Error("False material claim remains visible");
+    await panel.getByText("Engine evaluation loss 0.83 pawns", { exact: true }).waitFor();
+    if (
+      errors.length ||
+      (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+    )
+      throw new Error(`Panel failed at ${width}px. ${errors.join("\n")}`);
+    await page.close();
+    console.log(`Club Cup move and evidence verified at ${width}px`);
+  }
+} finally {
+  await browser?.close();
+  server.close();
+}
