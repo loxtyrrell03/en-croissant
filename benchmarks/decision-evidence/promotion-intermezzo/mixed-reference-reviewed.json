@@ -1,0 +1,1649 @@
+[
+  {
+    "id": "mistake-asian-amateur-1b098be33baef77d-82",
+    "fen": "6k1/4b1r1/3p4/p1pPpBpq/P1P5/8/1P4QP/5R1K w - - 4 42",
+    "playedMoveUci": "f1f3",
+    "original": {
+      "id": "mistake-asian-amateur-1b098be33baef77d-82",
+      "scope": "mistake-mechanism",
+      "moveUci": "f1f3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rf3 allows ...g4 with tempo on the rook and a tested ...Qc1+ liquidation. b4 instead deflects the a5 pawn and creates an advanced outside a-pawn. The tactical tempo and passed-pawn opportunity are distinct."
+    },
+    "audited": {
+      "tactical": null,
+      "positional": true,
+      "mixed": null,
+      "tacticalReason": "The independent searches repeat the g4 tempo and later queen check after Rf3. The deeper paired b4 line can also reach g4 and Qc1+. The distinct tactical cost of Rf3 remains unresolved.",
+      "positionalReason": "b4 displaces the a5 pawn and frees the a4 pawn. In the other independent defence against b4, taking c5 instead leaves the c-pawn free to advance."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 349,
+        "depth": 23,
+        "pvUci": [
+          "b2b4",
+          "a5b4",
+          "f5e6",
+          "g8h8",
+          "a4a5",
+          "h5h6",
+          "a5a6",
+          "e7f6",
+          "f1f3",
+          "g5g4",
+          "e6g4",
+          "h6c1"
+        ]
+      },
+      {
+        "cp": 9,
+        "depth": 23,
+        "pvUci": [
+          "f1f3",
+          "g5g4",
+          "f5e6",
+          "g8h8",
+          "f3g3",
+          "h5h6",
+          "e6g4",
+          "h6c1",
+          "g2g1",
+          "c1g1",
+          "h1g1",
+          "e7h4"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "b2b4": {
+        "cp": -261,
+        "depth": 23,
+        "pvUci": [
+          "a5b4",
+          "f5e6",
+          "g8h8",
+          "a4a5",
+          "h5h4",
+          "g2g4",
+          "h4g4",
+          "e6g4",
+          "b4b3",
+          "a5a6",
+          "g7g8",
+          "f1f7"
+        ]
+      },
+      "f1f3": {
+        "cp": -6,
+        "depth": 22,
+        "pvUci": [
+          "g5g4",
+          "f5e6",
+          "g8h8",
+          "f3g3",
+          "h5h6",
+          "g3g4",
+          "g7g4",
+          "g2g4",
+          "h6c1",
+          "h1g2",
+          "c1d2",
+          "g2f1"
+        ]
+      }
+    },
+    "workerCategory": "positional"
+  },
+  {
+    "id": "mistake-asian-amateur-5b57e2f49c33fb0b-80",
+    "fen": "2r5/2r1p3/3p2p1/4p3/Rp2PkP1/1P1R1P2/2P5/2K5 w - - 14 41",
+    "playedMoveUci": "c2c4",
+    "original": {
+      "id": "mistake-asian-amateur-5b57e2f49c33fb0b-80",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2c4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "c4 permits ...bxc3 en passant, an immediate pawn concession in both searches. It leaves Black's doubled rooks active along the newly opened c-file."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "Only c4 creates the immediate en passant capture on c3.",
+      "positionalReason": "The black pawn from b4 becomes a passed pawn on c3 and persists into the rook ending. The c-file stays partly occupied and the two black rooks were already doubled."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -411,
+        "depth": 22,
+        "pvUci": [
+          "d3d2",
+          "c8b8",
+          "d2d3",
+          "g6g5",
+          "c1d1",
+          "b8h8",
+          "d1c1",
+          "c7b7",
+          "c2c3",
+          "b4c3",
+          "d3c3",
+          "f4g3"
+        ]
+      },
+      {
+        "cp": -490,
+        "depth": 22,
+        "pvUci": [
+          "c2c4",
+          "b4c3",
+          "c1c2",
+          "c8h8",
+          "d3c3",
+          "c7c3",
+          "c2c3",
+          "f4f3",
+          "b3b4",
+          "h8b8",
+          "c3c4",
+          "f3e4"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "d3d2": {
+        "cp": 447,
+        "depth": 23,
+        "pvUci": [
+          "c7b7",
+          "d2d3",
+          "g6g5",
+          "c1d1",
+          "b7c7",
+          "d3d2",
+          "c8h8",
+          "d2f2",
+          "f4e3",
+          "f2e2",
+          "e3f3",
+          "a4b4"
+        ]
+      },
+      "c2c4": {
+        "cp": 526,
+        "depth": 24,
+        "pvUci": [
+          "b4c3",
+          "b3b4",
+          "c8h8",
+          "a4a3",
+          "h8h1",
+          "c1c2",
+          "h1h2",
+          "c2c1",
+          "c7b7",
+          "d3c3",
+          "b7b4",
+          "c3c7"
+        ]
+      }
+    },
+    "workerCategory": "mixed"
+  },
+  {
+    "id": "mistake-world-amateur-c56d044e7e57e80e-75",
+    "fen": "1r1q4/1P3ppk/2Qpb3/3Np3/4P2p/6P1/5P1P/1R4K1 b - - 4 38",
+    "playedMoveUci": "h4h3",
+    "original": {
+      "id": "mistake-world-amateur-c56d044e7e57e80e-75",
+      "scope": "mistake-mechanism",
+      "moveUci": "h4h3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "h3 permits Qc7 and a forcing queen exchange in which White recaptures on d5, creating a second dangerous passed pawn alongside b7. Bxd5 first removes the knight and reaches a different defensive setup."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": null,
+      "mixed": null,
+      "tacticalReason": "Qc7 forces the queen trade in the repeated h3 continuation and changes the recapture on d5.",
+      "positionalReason": "The pawn on d5 is blocked by the opposing d6 pawn and also faces an adjacent e-pawn. The b7 passer is present under both root choices. This evidence does not establish a second passer."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -20,
+        "depth": 25,
+        "pvUci": [
+          "e6d5",
+          "c6d5",
+          "h4g3",
+          "h2g3",
+          "d8c7",
+          "g1f1",
+          "h7g8",
+          "d5b3",
+          "c7c6",
+          "b3b4",
+          "g8f8",
+          "f1e1"
+        ]
+      },
+      {
+        "cp": -338,
+        "depth": 25,
+        "pvUci": [
+          "h4h3",
+          "c6c7",
+          "e6d5",
+          "c7d8",
+          "b8d8",
+          "e4d5",
+          "d8b8",
+          "f2f4",
+          "f7f6",
+          "g1f2",
+          "h7g6",
+          "f2f3"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "e6d5": {
+        "cp": 17,
+        "depth": 24,
+        "pvUci": [
+          "c6d5",
+          "h4g3",
+          "h2g3",
+          "d8c7",
+          "g1f1",
+          "g7g6",
+          "d5b3",
+          "h7g7",
+          "f1e2",
+          "c7c5",
+          "e2f3",
+          "g7f8"
+        ]
+      },
+      "h4h3": {
+        "cp": 203,
+        "depth": 24,
+        "pvUci": [
+          "c6c7",
+          "e6d5",
+          "c7d8",
+          "b8d8",
+          "e4d5",
+          "d8b8",
+          "f2f4",
+          "f7f6",
+          "g1f2",
+          "h7g6",
+          "f4e5",
+          "f6e5"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101",
+    "fen": "5n2/1k4p1/2P3p1/8/R2N3r/2K5/8/8 b - - 0 51",
+    "playedMoveUci": "b7b8",
+    "original": {
+      "id": "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101",
+      "scope": "mistake-mechanism",
+      "moveUci": "b7b8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kc7 makes Nb5+ answerable by taking c6. After Kb8, Rb4+ drives the king away and the white rook maintains the pass-pawn pressure."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "After Kc7, Nb5+ allows Kxc6. Kb8 instead allows the forcing Rb4+ and Rb7 while the king moves to c8.",
+      "positionalReason": "The deeper Kb8 line keeps the c-pawn through c7+ and promotion. Both separately searched leading Kc7 lines eliminate the original c6 pawn. The old app frames lacked a complete paired root."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -30,
+        "depth": 18,
+        "pvUci": [
+          "b7c7",
+          "d4b5",
+          "c7c6",
+          "b5a7",
+          "c6b7",
+          "a4h4",
+          "b7a7",
+          "h4f4",
+          "f8e6",
+          "f4e4",
+          "e6c7",
+          "c3c4"
+        ]
+      },
+      {
+        "cp": -392,
+        "depth": 18,
+        "pvUci": [
+          "b7b8",
+          "a4b4",
+          "b8c8",
+          "b4b7",
+          "h4h1",
+          "b7e7",
+          "f8h7",
+          "d4b5",
+          "h7f6",
+          "c3b2",
+          "h1h2",
+          "b2b3"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "b7c7": {
+        "cp": 24,
+        "depth": 26,
+        "pvUci": [
+          "d4b5",
+          "c7c6",
+          "b5a7",
+          "c6b7",
+          "a4h4",
+          "b7a7",
+          "h4b4",
+          "a7a6",
+          "c3c4",
+          "f8d7",
+          "b4b3",
+          "a6a5"
+        ]
+      },
+      "b7b8": {
+        "cp": 388,
+        "depth": 21,
+        "pvUci": [
+          "a4b4",
+          "b8c8",
+          "b4b7",
+          "h4h1",
+          "b7e7",
+          "c8d8",
+          "c6c7",
+          "d8e7",
+          "c7c8q",
+          "h1c1",
+          "d4c2",
+          "f8e6"
+        ]
+      }
+    },
+    "workerCategory": null
+  },
+  {
+    "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84",
+    "fen": "8/1p3pkp/8/3Pr1p1/p1q1Pb2/P2p3P/1P3QP1/3RR2K w - - 2 43",
+    "playedMoveUci": "g2g3",
+    "original": {
+      "id": "annotated-pawn-grand-swiss-open-2025-72bfacff5979bbb5-84",
+      "scope": "mistake-mechanism",
+      "moveUci": "g2g3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "g3 allows d2 with tempo and the forced Rxd2 Bxd2 Qxd2 liquidation. The alternative can take the original d3 pawn before that advance and keep both rooks."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": null,
+      "mixed": null,
+      "tacticalReason": "g3 allows d2 and Rxd2 Bxd2 Qxd2. Qf1 takes the d3 pawn before that advance in the compared lines.",
+      "positionalReason": "Keeping both rooks is an outcome of the trade. The saved lines do not isolate a separate activity or structural effect."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 580,
+        "depth": 23,
+        "pvUci": [
+          "f2f1",
+          "e5e7",
+          "f1d3",
+          "c4d3",
+          "d1d3",
+          "f4e5",
+          "b2b3",
+          "a4b3",
+          "d3b3",
+          "e7c7",
+          "e1d1",
+          "h7h5"
+        ]
+      },
+      {
+        "cp": 91,
+        "depth": 23,
+        "pvUci": [
+          "g2g3",
+          "d3d2",
+          "d1d2",
+          "f4d2",
+          "f2d2",
+          "g7f8",
+          "d2e3",
+          "f7f6",
+          "h1g2",
+          "f8f7",
+          "g3g4",
+          "e5e8"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "f2f1": {
+        "cp": -595,
+        "depth": 23,
+        "pvUci": [
+          "c4b5",
+          "f1d3",
+          "b5d7",
+          "d5d6",
+          "h7h6",
+          "d3f3",
+          "f7f6",
+          "f3g4",
+          "d7g4",
+          "h3g4",
+          "e5e8",
+          "d1d3"
+        ]
+      },
+      "g2g3": {
+        "cp": -89,
+        "depth": 20,
+        "pvUci": [
+          "d3d2",
+          "d1d2",
+          "f4d2",
+          "f2d2",
+          "g7f8",
+          "d2e3",
+          "f7f6",
+          "h1g2",
+          "f8f7",
+          "g3g4",
+          "e5e8",
+          "g2f3"
+        ]
+      }
+    },
+    "workerCategory": "tactical"
+  },
+  {
+    "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+    "fen": "5r2/8/2kPR3/1p6/pBp5/P1PbK3/1P6/8 b - - 25 67",
+    "playedMoveUci": "c6d7",
+    "original": {
+      "id": "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133",
+      "scope": "mistake-mechanism",
+      "moveUci": "c6d7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "After Kd7, Re7+ and Rc7+ displace the king in both searches, then d7 requires Black to give up a rook. Rf7 keeps a defensive rook available on the seventh rank and the d6-pawn restrained."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "The Kd7 branch repeats the two checking rook moves, displacing the king before d7 costs Black the rook.",
+      "positionalReason": "Rf7 keeps a defensive rook available along the seventh rank. In the two deeper replies White reaches d7+ but Black captures the pawn, while the Kd7 branch loses the rook."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 0,
+        "depth": 33,
+        "pvUci": [
+          "f8f7",
+          "e6e5",
+          "d3f5",
+          "e5e7",
+          "f7e7",
+          "d6e7",
+          "f5g6",
+          "e3f4",
+          "c6d7",
+          "f4g5",
+          "g6f7",
+          "g5f6"
+        ]
+      },
+      {
+        "cp": -772,
+        "depth": 33,
+        "pvUci": [
+          "c6d7",
+          "e6e7",
+          "d7c6",
+          "e7c7",
+          "c6d5",
+          "d6d7",
+          "f8d8",
+          "b4e7",
+          "d8d7",
+          "c7d7",
+          "d5e6",
+          "d7b7"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "f8f7": {
+        "cp": 3,
+        "depth": 34,
+        "pvUci": [
+          "e6h6",
+          "d3b1",
+          "e3d4",
+          "f7f5",
+          "d6d7",
+          "c6d7",
+          "b4d6",
+          "f5f2",
+          "d6e5",
+          "f2b2",
+          "d4d5",
+          "b2e2"
+        ]
+      },
+      "c6d7": {
+        "cp": 766,
+        "depth": 33,
+        "pvUci": [
+          "e6e7",
+          "d7c6",
+          "e7c7",
+          "c6d5",
+          "d6d7",
+          "f8d8",
+          "b4e7",
+          "d8d7",
+          "c7d7",
+          "d5e6",
+          "d7b7",
+          "d3c2"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "annotated-pawn-asian-disabilities-men-2026-17c2690bdf8b79f4-56",
+    "fen": "3r2k1/6p1/p5pp/1p6/1P6/P1rp3P/4nPP1/R2RN2K w - - 4 29",
+    "playedMoveUci": "d1d2",
+    "original": {
+      "id": "annotated-pawn-asian-disabilities-men-2026-17c2690bdf8b79f4-56",
+      "scope": "mistake-mechanism",
+      "moveUci": "d1d2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Ra2 and Rad2 coordinate the rooks against the passed pawn. Rd2 allows Nc1 and Nb3, after which the d-pawn can support either a direct advance or an unfavourable exchange on d3."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "The better and played choices both face Nc1. The played line permits the coordinated d2 and Rc1 entry and loses material in the rook exchanges.",
+      "positionalReason": "Ra2 followed by Rad2 aligns both original rooks against the d3 passer. After Rd2 the deeper continuation retreats the rook to d1 and loses that defensive setup."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -426,
+        "depth": 22,
+        "pvUci": [
+          "a1a2",
+          "e2c1",
+          "a2d2",
+          "g6g5",
+          "g2g3",
+          "g8f7",
+          "h1g2",
+          "f7e6",
+          "g2f1",
+          "d8d5",
+          "f1g2",
+          "d5d6"
+        ]
+      },
+      {
+        "cp": -666,
+        "depth": 22,
+        "pvUci": [
+          "d1d2",
+          "e2c1",
+          "a1b1",
+          "c1b3",
+          "d2d1",
+          "d3d2",
+          "e1f3",
+          "c3c1",
+          "f3d2",
+          "c1d1",
+          "b1d1",
+          "d8d2"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "a1a2": {
+        "cp": 430,
+        "depth": 22,
+        "pvUci": [
+          "e2c1",
+          "a2d2",
+          "g6g5",
+          "h1h2",
+          "g8f7",
+          "g2g3",
+          "d8d6",
+          "h2g2",
+          "f7e6",
+          "g2f1",
+          "e6e5",
+          "f1g2"
+        ]
+      },
+      "d1d2": {
+        "cp": 662,
+        "depth": 26,
+        "pvUci": [
+          "e2c1",
+          "d2d1",
+          "d3d2",
+          "e1f3",
+          "c1b3",
+          "a1b1",
+          "c3c1",
+          "f3d2",
+          "c1d1",
+          "b1d1",
+          "d8d2",
+          "d1e1"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+    "fen": "r2r2k1/1p4p1/p3Pp1p/2q2n2/6N1/P4Q2/1P3PPP/3RR1K1 b - - 0 23",
+    "playedMoveUci": "c5c2",
+    "original": {
+      "id": "annotated-pawn-asian-disabilities-women-2026-ccafab8482b80628-45",
+      "scope": "mistake-mechanism",
+      "moveUci": "c5c2",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Qc2 allows Rc1 and Nd4, followed by Nxf3+ after the queen is taken. gxf3 weakens the king's pawn cover in both worse continuations; that structural result remains after the main exchange."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": null,
+      "mixed": null,
+      "tacticalReason": "The leading Rc1 exploits the queen on c2 in both paired searches. The independent Qd3 route loses the knight after e7 and the queen trade, instead of the shallower Nxf3 route.",
+      "positionalReason": "In the original gxf3 line the disturbed king cover belongs to White, who replies to the mistake. It is not evidence of a positional penalty for Black, and the deeper main line chooses a different route."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -117,
+        "depth": 20,
+        "pvUci": [
+          "d8d1",
+          "e1d1",
+          "a8e8",
+          "f3e4",
+          "h6h5",
+          "b2b4",
+          "c5b5",
+          "g4e3",
+          "f5e3",
+          "e4e3",
+          "b5c6",
+          "d1e1"
+        ]
+      },
+      {
+        "cp": -684,
+        "depth": 20,
+        "pvUci": [
+          "c5c2",
+          "d1c1",
+          "f5d4",
+          "c1c2",
+          "d4f3",
+          "g2f3",
+          "d8e8",
+          "c2c7",
+          "f6f5",
+          "g4e5",
+          "e8e6",
+          "g1f1"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "d8d1": {
+        "cp": 137,
+        "depth": 24,
+        "pvUci": [
+          "e1d1",
+          "a8e8",
+          "f3b7",
+          "e8e6",
+          "b7b3",
+          "g8f7",
+          "h2h4",
+          "f5d4",
+          "b3d3",
+          "e6d6",
+          "g1h1",
+          "d4f5"
+        ]
+      },
+      "c5c2": {
+        "cp": 708,
+        "depth": 29,
+        "pvUci": [
+          "d1c1",
+          "c2d3",
+          "e6e7",
+          "f5e7",
+          "f3d3",
+          "d8d3",
+          "e1e7",
+          "a8d8",
+          "g4e3",
+          "d8d7",
+          "e7d7",
+          "d3d7"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "rook-pressure-brazil-women-2026-57cc81bc061d8626-56",
+    "fen": "4n1k1/1p3p2/2ppbqpb/7p/1PP1PN2/r4NPP/r4PB1/2RR1QK1 w - - 2 29",
+    "playedMoveUci": "c1b1",
+    "original": {
+      "id": "rook-pressure-brazil-women-2026-57cc81bc061d8626-56",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1b1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rb1 permits Bxf4 gxf4 Bxh3 in both searches. That sequence gains the pawn and separately removes the g-pawn from the king's cover. Neither Nd4 line suffers the same reorganisation of the king's pawns."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": null,
+      "mixed": null,
+      "tacticalReason": "Rb1 allows Bxf4 gxf4 Bxh3 in the paired and independently searched lines. This is a concrete pawn concession.",
+      "positionalReason": "A deeper leading reply to Nd4 also gives Bxf4 gxf4. Doubled f-pawns are therefore not unique to the weaker choice, even though the following capture on h3 differs."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -381,
+        "depth": 25,
+        "pvUci": [
+          "f3d4",
+          "e8g7",
+          "d4e2",
+          "h6f4",
+          "g3f4",
+          "f6h4",
+          "f4f5",
+          "g6f5",
+          "c4c5",
+          "d6c5",
+          "c1c5",
+          "f5f4"
+        ]
+      },
+      {
+        "cp": -575,
+        "depth": 25,
+        "pvUci": [
+          "c1b1",
+          "h6f4",
+          "g3f4",
+          "e6h3",
+          "f3g5",
+          "h3g2",
+          "f1g2",
+          "f6f4",
+          "c4c5",
+          "g8g7",
+          "b4b5",
+          "c6b5"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "f3d4": {
+        "cp": 379,
+        "depth": 23,
+        "pvUci": [
+          "h6f4",
+          "g3f4",
+          "e8g7",
+          "f4f5",
+          "g6f5",
+          "e4f5",
+          "g7f5",
+          "d4e6",
+          "f7e6",
+          "b4b5",
+          "f5d4",
+          "b5c6"
+        ]
+      },
+      "c1b1": {
+        "cp": 558,
+        "depth": 24,
+        "pvUci": [
+          "h6f4",
+          "g3f4",
+          "e6h3",
+          "f3e1",
+          "h3g4",
+          "d1d3",
+          "f6f4",
+          "e1c2",
+          "a3a8",
+          "f1c1",
+          "f4f6",
+          "c1d2"
+        ]
+      }
+    },
+    "workerCategory": "positional"
+  },
+  {
+    "id": "mistake-cascade-open-2026-470bb298511c2797-30",
+    "fen": "2r1k2r/p1qnbppp/bp2p3/n2pP3/3N1P2/P1P2N2/1PB2BPP/R2Q1RK1 w k - 1 16",
+    "playedMoveUci": "c2d3",
+    "original": {
+      "id": "mistake-cascade-open-2026-470bb298511c2797-30",
+      "scope": "mistake-mechanism",
+      "moveUci": "c2d3",
+      "tactical": true,
+      "positional": true,
+      "rationale": "The omitted f5 begins a forcing fxe6 and exf7+ sequence in both stronger lines, despite different first replies. It also breaks the centre before Black can stabilise. Bd3 trades the attacking bishop and allows a defended blockade with Nc5."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": null,
+      "mixed": null,
+      "tacticalReason": "f5 immediately creates the fxe6 and exf7+ sequence before Black can stop it. After Bd3 the strongest Bxd3 reply interrupts that route. An inferior Bc4 reply can allow it later.",
+      "positionalReason": "The file opening and pawn advances are part of the forcing route. The lines do not independently establish a durable positional consequence."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 390,
+        "depth": 24,
+        "pvUci": [
+          "f4f5",
+          "a6f1",
+          "f5e6",
+          "d7c5",
+          "e6f7",
+          "e8f7",
+          "f2g3",
+          "f7g8",
+          "e5e6",
+          "e7d6",
+          "d1f1",
+          "d6g3"
+        ]
+      },
+      {
+        "cp": 93,
+        "depth": 24,
+        "pvUci": [
+          "c2d3",
+          "a6d3",
+          "d1d3",
+          "e8g8",
+          "b2b4",
+          "c7c4",
+          "d3b1",
+          "a5c6",
+          "f3d2",
+          "c4c3",
+          "f1c1",
+          "c3d2"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "f4f5": {
+        "cp": -421,
+        "depth": 25,
+        "pvUci": [
+          "e8g8",
+          "f5e6",
+          "d7c5",
+          "e6f7",
+          "f8f7",
+          "f1e1",
+          "c5e4",
+          "c2e4",
+          "d5e4",
+          "e1e4",
+          "a6b7",
+          "e4g4"
+        ]
+      },
+      "c2d3": {
+        "cp": -83,
+        "depth": 23,
+        "pvUci": [
+          "a6d3",
+          "d1d3",
+          "e8g8",
+          "b2b4",
+          "c7c4",
+          "d3b1",
+          "a5c6",
+          "f3d2",
+          "c4c3",
+          "f1c1",
+          "c3d2",
+          "d4c6"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60",
+    "fen": "q5k1/1b3pbp/pB1pp1p1/8/1P2P3/5P1P/Pp3QP1/2R3K1 w - - 0 31",
+    "playedMoveUci": "c1d1",
+    "original": {
+      "id": "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60",
+      "scope": "mistake-mechanism",
+      "moveUci": "c1d1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Both branches must deal with the b2 passer. Re1 allows a Bd4 interposition and a concrete promotion/queen-capture sequence retaining White's survival chances. Rd1 lets Black build around the protected passer while keeping queens and the bishop pair."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "After the same legal Qc8 Bd4 Bxd4 Qxd4 Qc1 sequence, the queen can interpose on d1 with the rook on e1. Rd1 occupies that square with the rook. A separate search confirmed the cost of removing Qd1.",
+      "positionalReason": "After Rd1 Qc8, the independent leading line keeps both Black bishops together with the advanced b2 pawn while the queen changes files. Re1 allows Bd4 to trade the bishop and neutralise the immediate pressure."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 0,
+        "depth": 24,
+        "pvUci": [
+          "c1e1",
+          "a8c8",
+          "b6d4",
+          "g7d4",
+          "f2d4",
+          "c8c1",
+          "d4d1",
+          "c1c3",
+          "d1e2",
+          "d6d5",
+          "e1b1",
+          "c3c1"
+        ]
+      },
+      {
+        "cp": -227,
+        "depth": 24,
+        "pvUci": [
+          "c1d1",
+          "a8c8",
+          "f2d2",
+          "c8c6",
+          "b6f2",
+          "g7c3",
+          "d2d3",
+          "c3e5",
+          "h3h4",
+          "c6c1",
+          "f2e3",
+          "c1c3"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "c1e1": {
+        "cp": 0,
+        "depth": 24,
+        "pvUci": [
+          "a8c8",
+          "b6d4",
+          "g7d4",
+          "f2d4",
+          "c8c1",
+          "d4d1",
+          "c1c3",
+          "d1e2",
+          "c3c1",
+          "e2d1"
+        ]
+      },
+      "c1d1": {
+        "cp": 227,
+        "depth": 23,
+        "pvUci": [
+          "a8c8",
+          "f2d2",
+          "c8c6",
+          "b6a7",
+          "g7c3",
+          "d2d3",
+          "c3e5",
+          "g1f2",
+          "c6c7",
+          "a7d4",
+          "e5d4",
+          "d3d4"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+    "fen": "1r2r3/3b4/R2p1k2/1ppP1pN1/2P2PpP/2P3P1/4pK2/1R6 b - - 1 45",
+    "playedMoveUci": "b5b4",
+    "original": {
+      "id": "mistake-tournament-of-peace-2026-745143260fcd356d-89",
+      "scope": "mistake-mechanism",
+      "moveUci": "b5b4",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Immediate promotion on e1 forces the two rook exchanges in both stronger lines. After b4 the passed pawn remains blocked on e2 while White's rook gets into d6 and h6, winning pawns. The analysis does not establish uniqueness of the knight promotion."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": null,
+      "mixed": null,
+      "tacticalReason": "The promotion exchanges off a pair of rooks in both searches. The four promotion pieces have the same exact score at matched depth in the stronger restricted comparison.",
+      "positionalReason": "The pawn on e2 has an empty promotion square, and the first pair of played lines allows stable sixth-rank activity. The deeper opponent reply takes on b4 with a rook and changes the invasion route, so the specific positional comparison remains uncertain."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -294,
+        "depth": 21,
+        "pvUci": [
+          "e2e1n",
+          "b1e1",
+          "e8e1",
+          "f2e1",
+          "f6e7",
+          "h4h5",
+          "b8h8",
+          "a6d6",
+          "h8h5",
+          "d6b6",
+          "h5h1",
+          "e1f2"
+        ]
+      },
+      {
+        "cp": -512,
+        "depth": 21,
+        "pvUci": [
+          "b5b4",
+          "c3b4",
+          "c5b4",
+          "a6d6",
+          "f6e7",
+          "d6h6",
+          "b4b3",
+          "f2e2",
+          "b3b2",
+          "e2d3",
+          "d7a4",
+          "h4h5"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "e2e1n": {
+        "cp": 332,
+        "depth": 23,
+        "pvUci": [
+          "b1e1",
+          "e8e1",
+          "f2e1",
+          "f6e7",
+          "h4h5",
+          "b8h8",
+          "a6d6",
+          "h8h5",
+          "d6b6",
+          "h5h1",
+          "e1d2",
+          "b5c4"
+        ]
+      },
+      "b5b4": {
+        "cp": 515,
+        "depth": 23,
+        "pvUci": [
+          "c3b4",
+          "b8b4",
+          "b1e1",
+          "b4c4",
+          "h4h5",
+          "f6e7",
+          "e1e2",
+          "e7f8",
+          "a6d6",
+          "e8e2",
+          "f2e2",
+          "f8e7"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+    "fen": "2b5/2k5/p1p5/2Nrpppp/1P6/P4P1P/2R3P1/4K3 b - - 2 38",
+    "playedMoveUci": "c7d6",
+    "original": {
+      "id": "mistake-tournament-of-peace-2026-31acf8742a982f4a-75",
+      "scope": "mistake-mechanism",
+      "moveUci": "c7d6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kd6 allows g4 and the same sequence through Ne4+ and Nxg5 in both replies. The a5 lines create queenside counterplay before White can dismantle Black's kingside pawns."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "Kd6 allows the repeated g4 exchange, then Ne4+ precedes Nxg5. The check gains time for a kingside pawn capture.",
+      "positionalReason": "The original h-, g- and f-pawn interactions create a separated g-pawn after Kd6. a5 starts counterplay by moving the queenside pawn contact before White tries to trade the kingside pawns."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 192,
+        "depth": 23,
+        "pvUci": [
+          "a6a5",
+          "b4a5",
+          "c7d6",
+          "c5b3",
+          "h5h4",
+          "a3a4",
+          "c8a6",
+          "c2c1",
+          "c6c5",
+          "b3d2",
+          "a6d3",
+          "c1c3"
+        ]
+      },
+      {
+        "cp": 49,
+        "depth": 23,
+        "pvUci": [
+          "c7d6",
+          "g2g4",
+          "h5g4",
+          "h3g4",
+          "f5g4",
+          "c5e4",
+          "d6c7",
+          "e4g5",
+          "c8f5",
+          "c2c3",
+          "g4g3",
+          "c3e3"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "a6a5": {
+        "cp": -215,
+        "depth": 24,
+        "pvUci": [
+          "g2g3",
+          "c7d6",
+          "c2b2",
+          "a5b4",
+          "a3b4",
+          "d5d4",
+          "g3g4",
+          "d4f4",
+          "g4h5",
+          "f4f3",
+          "b2g2",
+          "f3f4"
+        ]
+      },
+      "c7d6": {
+        "cp": -26,
+        "depth": 23,
+        "pvUci": [
+          "g2g4",
+          "h5g4",
+          "h3g4",
+          "f5g4",
+          "c5e4",
+          "d6c7",
+          "e4g5",
+          "d5d3",
+          "f3g4",
+          "d3a3",
+          "c2e2",
+          "a3b3"
+        ]
+      }
+    },
+    "workerCategory": "positional"
+  },
+  {
+    "id": "structure-hvar-open-2026-b48ef4fb5a4313cc-43",
+    "fen": "r4rk1/3b1pb1/pq1p2p1/2pP1PBn/4P3/R1N2p2/1P1Q1N2/4K2R b K - 0 22",
+    "playedMoveUci": "a8b8",
+    "original": {
+      "id": "structure-hvar-open-2026-b48ef4fb5a4313cc-43",
+      "scope": "mistake-mechanism",
+      "moveUci": "a8b8",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Rab8 allows Rxh5 in both searches, removing the knight. ...f6 and ...gxf5 then leave doubled f-pawns and alter Black's king cover. The stronger Rfe8 lines retain the knight through this window and avoid that pawn structure."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "Both Rab8 replies use Rxh5 and the later rook-for-bishop exchange. The preferred move preserves the original h5 knight over this window.",
+      "positionalReason": "After Rab8, f6 and gxf5 put Black pawns on f6 and f5. The separate comparison after Rfe8 includes fxg6 instead, opening a different pawn structure without doubling the f-pawns."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 328,
+        "depth": 23,
+        "pvUci": [
+          "f8e8",
+          "f5g6",
+          "f7g6",
+          "g5h6",
+          "g7f6",
+          "h1g1",
+          "g8h7",
+          "g1h1",
+          "a6a5",
+          "c3d1",
+          "b6b4",
+          "a3f3"
+        ]
+      },
+      {
+        "cp": 77,
+        "depth": 23,
+        "pvUci": [
+          "a8b8",
+          "h1h5",
+          "f7f6",
+          "h5h6",
+          "g6f5",
+          "g5e3",
+          "g7h6",
+          "e3h6",
+          "f8f7",
+          "c3d1",
+          "f5e4",
+          "f2e4"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "f8e8": {
+        "cp": -312,
+        "depth": 22,
+        "pvUci": [
+          "f5g6",
+          "f7g6",
+          "g5h6",
+          "b6d8",
+          "h6g5",
+          "d8b8",
+          "g5h6",
+          "g7f6",
+          "h1g1",
+          "g8h7",
+          "g1h1",
+          "b8b4"
+        ]
+      },
+      "a8b8": {
+        "cp": -57,
+        "depth": 23,
+        "pvUci": [
+          "h1h5",
+          "f7f6",
+          "h5h6",
+          "g6f5",
+          "g5f4",
+          "g7h6",
+          "f4h6",
+          "f8f7",
+          "c3d1",
+          "f5e4",
+          "f2e4",
+          "b8e8"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "structure-halloween-open-2026-cab2aad2f516a2f9-74",
+    "fen": "1r4n1/3qbp1k/p3b1p1/3pP1B1/2pP3N/1rP1N3/RPQ3RK/8 w - - 2 38",
+    "playedMoveUci": "g5f6",
+    "original": {
+      "id": "structure-halloween-open-2026-cab2aad2f516a2f9-74",
+      "scope": "mistake-mechanism",
+      "moveUci": "g5f6",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Bf6 allows Bxf6, exf6 and Nxf6. White gives up the anchored e5 pawn in both responses. Bxe7 keeps that pawn through the comparison, and the same tactical capture sequence is avoided."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": true,
+      "mixed": true,
+      "tacticalReason": "Bf6 allows Bxf6 exf6 Nxf6 and removal of the e5 pawn. Bxe7 avoids that exchange.",
+      "positionalReason": "Both leading weaker searches give the same knight a pawn-backed e4 post after the exchange. The matched stronger lines avoid it."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": 121,
+        "depth": 24,
+        "pvUci": [
+          "g5e7",
+          "g8e7",
+          "h2g1",
+          "e6h3",
+          "g2h2",
+          "h7g8",
+          "h4g2",
+          "g6g5",
+          "c2f2",
+          "d7e6",
+          "f2f6",
+          "e6f6"
+        ]
+      },
+      {
+        "cp": -121,
+        "depth": 24,
+        "pvUci": [
+          "g5f6",
+          "e7f6",
+          "e5f6",
+          "g8f6",
+          "h4g6",
+          "f6e4",
+          "g6e5",
+          "d7e7",
+          "h2h1",
+          "e7f6",
+          "g2h2",
+          "h7g7"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "g5e7": {
+        "cp": -121,
+        "depth": 19,
+        "pvUci": [
+          "g8e7",
+          "h2g1",
+          "b3b6",
+          "g2h2",
+          "h7g7",
+          "c2f2",
+          "b8g8",
+          "h4f3",
+          "e7f5",
+          "f3g5",
+          "f5e3",
+          "f2e3"
+        ]
+      },
+      "g5f6": {
+        "cp": 92,
+        "depth": 22,
+        "pvUci": [
+          "e7f6",
+          "e5f6",
+          "g8f6",
+          "h4g6",
+          "f6e4",
+          "g6e5",
+          "d7e7",
+          "h2g1",
+          "e7h4",
+          "g2h2",
+          "e6h3",
+          "c2g2"
+        ]
+      }
+    },
+    "workerCategory": "tactical"
+  },
+  {
+    "id": "structure-hvar-open-2026-026723a8a042c574-26",
+    "fen": "r2q1rk1/p2bb2p/2n1p3/1Bpp1pp1/1P2n3/PQP1PN1P/5PPB/RN2K2R w KQ - 2 14",
+    "playedMoveUci": "e1g1",
+    "original": {
+      "id": "structure-hvar-open-2026-026723a8a042c574-26",
+      "scope": "mistake-mechanism",
+      "moveUci": "e1g1",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Immediate castling permits g4 and the h-pawn exchange, opening the h-file beside White's king while Black's pawn attacks f3 or advances to g3. Nbd2 delays that decision and both better lines can address the knight pressure earlier."
+    },
+    "audited": {
+      "tactical": null,
+      "positional": true,
+      "mixed": null,
+      "tacticalReason": "g4 creates a concrete threat against f3 but the following capture route varies. Nbd2 can also allow gxf3 in one of the close alternatives. The exact tactical cost is unresolved.",
+      "positionalReason": "After O-O g4 hxg4 fxg4 the h-pawn leaves the h-file beside the castled king. In both stronger reply examples at the same phase it remains on the h-file until a different structure arises."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -109,
+        "depth": 24,
+        "pvUci": [
+          "b1d2",
+          "c6b4",
+          "a3b4",
+          "e4d2",
+          "e1d2",
+          "d7b5",
+          "b4c5",
+          "b5c4",
+          "b3b7",
+          "f5f4",
+          "a1a7",
+          "a8a7"
+        ]
+      },
+      {
+        "cp": -293,
+        "depth": 24,
+        "pvUci": [
+          "e1g1",
+          "g5g4",
+          "h3g4",
+          "f5g4",
+          "f3d2",
+          "e7d6",
+          "h2f4",
+          "d6f4",
+          "e3f4",
+          "e4d6",
+          "b5c6",
+          "d7c6"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "b1d2": {
+        "cp": 94,
+        "depth": 22,
+        "pvUci": [
+          "c6b4",
+          "a3b4",
+          "e4d2",
+          "e1d2",
+          "d7b5",
+          "b4c5",
+          "b5c4",
+          "b3b7",
+          "f5f4",
+          "a1a7",
+          "a8a7",
+          "b7a7"
+        ]
+      },
+      "e1g1": {
+        "cp": 217,
+        "depth": 22,
+        "pvUci": [
+          "g5g4",
+          "h3g4",
+          "f5g4",
+          "b5c6",
+          "d7c6",
+          "f3d2",
+          "g4g3",
+          "h2g3",
+          "e4g3",
+          "f2g3",
+          "e7g5",
+          "f1f8"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  },
+  {
+    "id": "structure-arco-open-2026-63215443a93b15e2-83",
+    "fen": "8/6k1/p2p2p1/1p1PrpP1/nP3N1P/4R3/P4K2/8 b - - 6 42",
+    "playedMoveUci": "g7f7",
+    "original": {
+      "id": "structure-arco-open-2026-63215443a93b15e2-83",
+      "scope": "mistake-mechanism",
+      "moveUci": "g7f7",
+      "tactical": true,
+      "positional": true,
+      "rationale": "Kf7 allows Rxe5 and dxe5 followed by Nxe5+ in both lines. White's d-pawn can advance to d6 once the blocker is diverted. Nb6 leads to an alternative in which Black contests the d5 pawn and White does not get the same passer."
+    },
+    "audited": {
+      "tactical": true,
+      "positional": null,
+      "mixed": null,
+      "tacticalReason": "Kf7 allows Rxe5 dxe5 Nd3 Nc3 Nxe5+ in the paired and separate reply searches. The deeper Nb6 lines keep the added defensive resource without the same combination.",
+      "positionalReason": "The d-pawn advances to d6 but is taken immediately by the knight in the repeated deeper Kf7 line. Its recorded advance does not establish a durable positional asset."
+    },
+    "deeperPairedSearch": [
+      {
+        "cp": -18,
+        "depth": 26,
+        "pvUci": [
+          "a4b6",
+          "f4e6",
+          "g7f7",
+          "e6c7",
+          "f7e7",
+          "e3e2",
+          "e7d7",
+          "c7e6",
+          "d7e7",
+          "e6f4",
+          "e7f7",
+          "f2f1"
+        ]
+      },
+      {
+        "cp": -313,
+        "depth": 26,
+        "pvUci": [
+          "g7f7",
+          "e3e5",
+          "d6e5",
+          "f4d3",
+          "a4c3",
+          "d3e5",
+          "f7g7",
+          "d5d6",
+          "c3e4",
+          "f2e3",
+          "e4d6",
+          "e3d4"
+        ]
+      }
+    ],
+    "independentReplies": {
+      "a4b6": {
+        "cp": 0,
+        "depth": 45,
+        "pvUci": [
+          "e3e1",
+          "g7f7",
+          "e1e3",
+          "f7g7",
+          "f4e6",
+          "g7f7",
+          "e6c7",
+          "f7e7",
+          "e3e2",
+          "e7d7",
+          "c7e6",
+          "d7e7"
+        ]
+      },
+      "g7f7": {
+        "cp": 323,
+        "depth": 24,
+        "pvUci": [
+          "e3e5",
+          "d6e5",
+          "f4d3",
+          "a4c3",
+          "d3e5",
+          "f7g7",
+          "d5d6",
+          "c3e4",
+          "f2f3",
+          "e4d6",
+          "f3e3",
+          "d6c8"
+        ]
+      }
+    },
+    "workerCategory": "unclear"
+  }
+]

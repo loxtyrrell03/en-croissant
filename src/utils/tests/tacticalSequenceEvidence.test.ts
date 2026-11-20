@@ -5,6 +5,10 @@ import {
     mergeTacticalSequenceWitnesses,
 } from "../tacticalMotifs/tacticalSequenceEvidence";
 
+import kenya from "../../../benchmarks/decision-evidence/promotion-intermezzo/kenya-fixture.json";
+import promotionLines from "../../../benchmarks/decision-evidence/promotion-intermezzo/line-fixtures.json";
+import { assessChessDecision } from "../tacticalMotifs/decisionAssessment";
+
 const inspect = (fen: string, pvUci: string[]) =>
     extractTacticalSequenceWitnesses(fen, { fen, pvUci, cp: 200, depth: 18 });
 
@@ -146,4 +150,37 @@ test("a transient capture repaid by an immediate recapture is not a winning epis
     )!;
     expect(witness).toBeDefined();
     expect(measureTacticalEpisode(fen, line, witness)).toBeNull();
+});
+
+test("links a promotion to the check that wins back the rook", () => {
+    const report = assessChessDecision(kenya);
+    expect(report?.position.category).toBe("tactical");
+    expect(report?.moves[0].tactical.support).toBe("supported");
+    expect(report?.moves[0].mechanisms).toContainEqual(expect.objectContaining({
+        mechanism: "intermezzo",
+        mechanismPly: 3,
+        payoffPly: 5,
+        rootMoveInvolved: true,
+        description: expect.stringMatching(/f8=R.*immediate Rxf8 allows Kxf8.*Re1\+/),
+    }));
+});
+
+function promotionIntermezzos(id: keyof typeof promotionLines) {
+    const { fen, sourcePath } = promotionLines[id];
+    return extractTacticalSequenceWitnesses(fen, { fen, depth: 1, cp: 0, pvUci: sourcePath })
+        .filter((witness) => witness.mechanism === "intermezzo");
+}
+
+test("uses the SAN of the earlier board for the immediate recapture", () => {
+    const [witness] = promotionIntermezzos("BLLWK");
+    expect(witness).toMatchObject({
+        rootMoveInvolved: true,
+        description: expect.stringContaining("immediate Rxd1 allows Kxd1"),
+    });
+});
+
+test("keeps the check as a line event when the king cannot take back immediately", () => {
+    const witnesses = promotionIntermezzos("4GkfW");
+    expect(witnesses).toHaveLength(1);
+    expect(witnesses[0].rootMoveInvolved).toBe(false);
 });

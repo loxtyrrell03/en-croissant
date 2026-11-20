@@ -1,11 +1,13 @@
 import { attacks, between, ray as throughLine } from "chessops/attacks";
 import type { Chess } from "chessops/chess";
+import { makeSan } from "chessops/san";
 import type { Color, NormalMove, Square } from "chessops/types";
 import { makeSquare, opposite } from "chessops/util";
 import {
     MIN_TACTICAL_CAPTURE_GAIN,
     replayTacticalLine,
     tacticalCaptureGain,
+    tacticalExchangeGain,
     type TacticalReplayStep,
 } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
@@ -227,6 +229,34 @@ function exploitedAbsolutePin(steps: TacticalReplayStep[], index: number) {
     return { target, king, pinner, role: pinned.role, payoff };
 }
 
+/** A promoted pawn can draw a rook onto the promotion square before an
+ * intervening check removes its king's protection. Verify the immediate
+ * king recapture as well as the changed outcome after the check. */
+function promotionSetsUpIntermezzo(steps: TacticalReplayStep[], checkIndex: number) {
+    if (checkIndex !== 2) return null;
+    const [lead, take, check, defence, payoff] = steps;
+    if (
+        !lead.move.promotion ||
+        lead.capture ||
+        take.move.to !== lead.move.to ||
+        take.before.board.get(take.move.from)?.role !== "rook" ||
+        check.capture ||
+        defence.before.board.get(defence.move.from)?.role !== "king"
+    )
+        return null;
+    const before = check.before;
+    const immediate = tacticalExchangeGain(before, payoff.move);
+    if (immediate <= -20000 || immediate >= 90 || tacticalExchangeGain(payoff.before, payoff.move) < 90)
+        return null;
+    const position = before.clone();
+    position.play(payoff.move);
+    const king = position.board.kingOf(position.turn);
+    if (king === undefined) return null;
+    const recapture = { from: king, to: payoff.move.to };
+    if (!position.isLegal(recapture)) return null;
+    return { immediate: makeSan(before, payoff.move), reply: makeSan(position, recapture) };
+}
+
 /** Nominate only mechanisms with an observed use, never a board pattern alone.
  * These nominations retain their real ply. A later motif is not automatically
  * the cause of the root move, even in a favourable principal variation. */
@@ -243,6 +273,7 @@ export function extractTacticalSequenceWitnesses(
         k: number,
         squares: Square[],
         description: string,
+        rootMoveInvolved = i === 0,
     ) => {
         result.push({
             fen,
@@ -253,7 +284,7 @@ export function extractTacticalSequenceWitnesses(
             squares: [...new Set(squares)].map(makeSquare),
             description,
             support: "legal-continuation",
-            rootMoveInvolved: i === 0,
+            rootMoveInvolved,
             lineUci: line.pvUci.slice(0, k + 1),
         });
     };
@@ -469,12 +500,16 @@ export function extractTacticalSequenceWitnesses(
             third.move.to === previous.move.to &&
             legalCapture(first.before, third.move.from, previous.move.to, side)
         ) {
+            const kingRecapture = promotionSetsUpIntermezzo(steps, i);
             push(
                 "intermezzo",
                 i,
                 i + 2,
                 [first.move.to, previous.move.to],
-                `${first.san} inserts a check before ${third.san} recaptures on ${makeSquare(previous.move.to)}.`,
+                kingRecapture
+                    ? `${steps[0].san} draws the rook to ${makeSquare(previous.move.to)}. An immediate ${kingRecapture.immediate} allows ${kingRecapture.reply}. In this line, ${first.san} moves the king away before the recapture.`
+                    : `${first.san} inserts a check before ${third.san} recaptures on ${makeSquare(previous.move.to)}.`,
+                kingRecapture !== null || i === 0,
             );
         }
     }

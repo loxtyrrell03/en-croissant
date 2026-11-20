@@ -3906,3 +3906,18 @@ Youth case. Across 1,050 archived reports and 11 public replays, the
 classifications, motifs and engine continuations agree. The search
 allocation remains experimental.
 [Benchmark and exact continuations](../benchmarks/decision-evidence/reply-search-allocation/README.md)
+
+## Promotion and intermediate checks
+
+The app now links an immediate promotion to a later intermediate
+check when the same-square rook exchange only works after the
+king moves. In the Kenya league example the better searched move
+receives a supported explanation for the promotion followed by
+Re1+. The independently checked puzzle mechanism goes from zero
+to three of three with zero false links in 37 scoped controls.
+The full archive reports match on 1,050 valid requests. The more
+restrictive candidate for the played-move mistake remains
+experimental. Separately rechecking 17 historical mixed mistake
+references supported both axes in eight, of which the incumbent
+recognises one. The original archive result is retained.
+[Scope, engine checkpoints and reproduction](../benchmarks/decision-evidence/promotion-intermezzo/README.md)

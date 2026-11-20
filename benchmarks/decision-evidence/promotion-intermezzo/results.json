@@ -1,0 +1,170 @@
+{
+  "archiveMixedReview": {
+    "historicalMixedCount": 17,
+    "confirmedBoth": 8,
+    "oneOrBothUnresolved": 9,
+    "sameWorkerMixedInHistoricalLabels": 1,
+    "sameWorkerMixedInAuditedBoth": 1
+  },
+  "linePromotionIntermezzo": {
+    "reviewedPositive": 3,
+    "scopeControls": 37,
+    "rootLinked": {
+      "baseline": [],
+      "candidate": [
+        "BLLWK",
+        "YUsd1",
+        "coNVj"
+      ]
+    },
+    "anyIntermezzo": {
+      "baseline": 11,
+      "candidate": 11
+    }
+  },
+  "classical": {
+    "development": {
+      "games": 76,
+      "events": 14,
+      "pairStatus": {
+        "eligible": 19,
+        "ranking-did-not-repeat": 10,
+        "no-60cp-loss": 8,
+        "played-leads-root": 39
+      },
+      "frozenExchangeCandidates": [],
+      "exactFramesSha256": "a25f76acca0db53ee28d403104369d127b79662048554fc36b95df64648ad949"
+    },
+    "reserve": {
+      "games": 127,
+      "events": 27,
+      "pairStatus": {
+        "eligible": 38,
+        "no-60cp-loss": 16,
+        "played-leads-root": 61,
+        "ranking-did-not-repeat": 9,
+        "mate-in-root": 3
+      },
+      "frozenExchangeCandidates": [],
+      "exactFramesSha256": "3cddca8e51d6ec50579bc173cab7aaf743639a0983d47d526d1cc13e8b375e60"
+    }
+  },
+  "normalBudgetClassicalWorker": {
+    "requests": 221,
+    "validReports": 217,
+    "changed": [
+      "own-promotion-12195808341e545f"
+    ]
+  },
+  "puzzleWorker": {
+    "requests": 39,
+    "validReports": 39,
+    "changed": [
+      "coNVj",
+      "YUsd1"
+    ]
+  },
+  "pairedExperimentalVerifier": {
+    "classical": [
+      "own-promotion-12195808341e545f"
+    ],
+    "puzzle": [],
+    "fullArchive": []
+  },
+  "optionalSearchesAddedToApp": 0,
+  "frozen": {
+    "baselineCommit": "2c52c9628bddace4b527b1b427f9af7107ddb289",
+    "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+    "hashMiB": 64,
+    "threadsPerEngine": 1,
+    "adaptiveRootBudgets": [
+      600000,
+      2400000,
+      9600000
+    ],
+    "replyBudgets": [
+      1000000,
+      4000000
+    ],
+    "archivalReviewPairNodes": 5000000,
+    "archivalReviewReplyNodes": 6000000,
+    "puzzleMechanismPairNodes": 3000000,
+    "archiveReviewFullFramesSha256": "b6b8391c71ef54755486daa5c52385fdb64fdc1cde6aa197d23b688633b7a086",
+    "publicReserveIndependentSha256": "c183df44c3f4becf3348c51d11258db60fc13d35b1489bfae83d302e536b5aa7",
+    "puzzleAppFramesSha256": "d3ae4fde1222452718cf7e095b1dcf6da429f7e36807d9bf2c711b888f79662f",
+    "puzzleIndependentSha256": "e9cc482957d1d35673987658fb92f2676a8ed6ff4f019b60fe43342811de8240",
+    "sampling": {
+      "classical": {
+        "seed": "own-promotion-evidence-2c52c962",
+        "scanned": 3303,
+        "sourceRounds": 245,
+        "groupedEvents": {
+          "ekipni-kup-crne-gore-2026": "development",
+          "juegos-intercolegiados-nacionales-2026-clasico-juvenil-absoluto": "reserve",
+          "german-bundesliga-202627-schachbundesliga": "reserve",
+          "allsvenskan-2627-swedish-team-championship": "development",
+          "46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12": "reserve",
+          "atyrau-open-2026-masters": "reserve",
+          "2026-maritime-open-chess-championship": "development",
+          "oberliga-baden-202627": "reserve",
+          "36th-nato-chess-championship-2026": "reserve",
+          "misamis-occidental-philippines-international-chess-championship": "development",
+          "kenya-national-chess-league-2026-premier-league": "reserve",
+          "2026-serbian-second-league-group-voivodina": "reserve",
+          "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga": "development",
+          "czech-open-2026-a": "reserve",
+          "sparkassen-chess-trophy-2026-open-a": "reserve",
+          "43-munsterland-open-34-challengers-2026-a-open": "development",
+          "oberliga-baden-wurttemberg-202627": "reserve",
+          "1-vechta-open-a-open": "reserve",
+          "dutch-meesterklasse-2026-2027": "development",
+          "2nd-presidents-cup-of-the-republic-of-tajikistan-2026-group-a": "reserve",
+          "2026-marshall-premier-fide-november": "reserve",
+          "mongolian-national-chess-championship-2026-open": "development",
+          "fide-world-junior-chess-championship-2026-open": "reserve",
+          "itt-im-arequipa-leon-del-sur": "reserve",
+          "xxvi-torneo-internazionle-citta-di-vicenza": "development",
+          "slovenian-team-championship-2026-drzavna-clanska-liga": "reserve",
+          "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a": "reserve",
+          "1-aberto-do-brasil-de-xadrez-arcelormittal": "development",
+          "hoogeveen-open-2026": "reserve",
+          "1st-berjaya-global-chess-open-2026-masters": "reserve",
+          "serbian-super-league-2026-open": "development",
+          "19th-arad-open-grand-prix-classic-2026-open-a": "reserve",
+          "iv-open-internacional-de-ajedrez-cap-negret-50": "reserve",
+          "2026-turkiye-satranc-ligi-turkish-league-super-lig": "development",
+          "romanian-team-chess-championships-2026-mens-super-league": "reserve",
+          "50-obert-internacional-descacs-ciutat-de-badalona": "reserve",
+          "european-youth-chess-championship-2026-o18": "development",
+          "xix-international-chess-open-lugano-standard": "reserve",
+          "23rd-calvia-chess-festival-2026": "reserve",
+          "campeonato-sudamericano-montevideo-2026-absoluto": "development",
+          "brazil-chess-series-masters-blumenau-2026": "reserve"
+        },
+        "rawCounts": {
+          "covered-advance": 1104,
+          "played-promotion": 105,
+          "deferred-promotion": 639
+        }
+      },
+      "puzzles": {
+        "source": "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+        "headers": {
+          "ETag": "\"6ae6f0f4-12766d85\"",
+          "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT",
+          "Content-Length": "309751173"
+        },
+        "scanned": 4500000,
+        "strata": {
+          "geometry-control": 30,
+          "checking-recapture": 10
+        }
+      }
+    }
+  },
+  "fullWorkerReplay": {
+    "requests": 1051,
+    "validReports": 1050,
+    "changed": []
+  }
+}

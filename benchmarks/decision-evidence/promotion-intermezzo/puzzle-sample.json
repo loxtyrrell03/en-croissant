@@ -1,0 +1,625 @@
+{
+  "source": "https://database.lichess.org/lichess_db_puzzle.csv.zst",
+  "headers": {
+    "ETag": "\"6ae6f0f4-12766d85\"",
+    "Last-Modified": "Sun, 01 Nov 2026 07:57:40 GMT",
+    "Content-Length": "309751173"
+  },
+  "scanned": 4500000,
+  "strata": {
+    "geometry-control": 30,
+    "checking-recapture": 10
+  },
+  "rows": [
+    {
+      "id": "2V3OB",
+      "game": "1POr0Q0A",
+      "site": "https://lichess.org/training/2V3OB",
+      "fen": "5bk1/7p/bNp5/1qP2Q2/pP4P1/P1p5/5pKP/3R4 b - - 1 37",
+      "sourcePath": [
+        "f2f1q",
+        "d1f1",
+        "b5f1",
+        "f5f1",
+        "a6f1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1632
+    },
+    {
+      "id": "WV1hS",
+      "game": "xGhwf3ip",
+      "site": "https://lichess.org/training/WV1hS",
+      "fen": "4r3/1pp2rk1/p5pp/3Q4/3P4/2P5/PP1KpbPP/R4R2 b - - 1 27",
+      "sourcePath": [
+        "e2f1n",
+        "a1f1",
+        "f2e3",
+        "d2d3",
+        "f7f1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2606
+    },
+    {
+      "id": "NCWIt",
+      "game": "0MjQCx9L",
+      "site": "https://lichess.org/training/NCWIt",
+      "fen": "6k1/2r1bp1p/8/3Q1PnN/8/4q1P1/2p4P/4RR1K b - - 1 40",
+      "sourcePath": [
+        "c2c1q",
+        "e1c1",
+        "c7c1",
+        "f1c1",
+        "e3c1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1668
+    },
+    {
+      "id": "4GkfW",
+      "game": "mvEoA1VX",
+      "site": "https://lichess.org/training/4GkfW",
+      "fen": "6bk/2P3p1/1Q5p/8/8/4P1PK/1p3PNP/5q2 b - - 2 44",
+      "sourcePath": [
+        "b2b1q",
+        "b6b1",
+        "g8e6",
+        "g3g4",
+        "f1b1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2040
+    },
+    {
+      "id": "XdhMd",
+      "game": "DMm9uxhy",
+      "site": "https://lichess.org/training/XdhMd",
+      "fen": "3r2k1/1p3ppp/1p6/4P3/5P2/2P5/PPbpQ1PP/5R1K b - - 1 25",
+      "sourcePath": [
+        "d2d1q",
+        "f1d1",
+        "d8d1",
+        "e2d1",
+        "c2d1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1509
+    },
+    {
+      "id": "g7c9q",
+      "game": "qhQZHEWV",
+      "site": "https://lichess.org/training/g7c9q",
+      "fen": "8/8/2k5/2p5/2Qn1KPp/3P4/2p5/8 b - - 1 57",
+      "sourcePath": [
+        "c2c1q",
+        "c4c1",
+        "d4e2",
+        "f4g5",
+        "e2c1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1879
+    },
+    {
+      "id": "U6pYO",
+      "game": "KHL5FFXO",
+      "site": "https://lichess.org/training/U6pYO",
+      "fen": "8/p7/r7/2Pp1R2/8/3N2p1/4Kpk1/2N5 b - - 2 51",
+      "sourcePath": [
+        "f2f1q",
+        "f5f1",
+        "a6e6",
+        "e2d2",
+        "g2f1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2553
+    },
+    {
+      "id": "coNVj",
+      "game": "RLrbjt7y",
+      "site": "https://lichess.org/training/coNVj",
+      "fen": "1Q4R1/p3kr1p/3q4/7P/8/2P1p3/P1Kp4/6R1 b - - 0 33",
+      "sourcePath": [
+        "d2d1q",
+        "g1d1",
+        "f7f2",
+        "c2b3",
+        "d6d1"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2083
+    },
+    {
+      "id": "AQqvK",
+      "game": "rIY00gfN",
+      "site": "https://lichess.org/training/AQqvK",
+      "fen": "8/1p2Q3/k4pp1/2n5/pKP2P1P/8/4p3/8 b - - 3 48",
+      "sourcePath": [
+        "e2e1q",
+        "e7e1",
+        "c5d3",
+        "b4a4",
+        "d3e1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1956
+    },
+    {
+      "id": "538Kz",
+      "game": "vi0jeGHF",
+      "site": "https://lichess.org/training/538Kz",
+      "fen": "8/8/6R1/8/5P2/r7/5Kpk/8 b - - 5 57",
+      "sourcePath": [
+        "g2g1q",
+        "g6g1",
+        "a3a2",
+        "f2e3",
+        "h2g1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2374
+    },
+    {
+      "id": "3mGS5",
+      "game": "2NaBjww0",
+      "site": "https://lichess.org/training/3mGS5",
+      "fen": "4r3/1p2k2P/4p1Q1/1P1pP3/2nP4/8/1p3P2/5K2 b - - 0 36",
+      "sourcePath": [
+        "b2b1q",
+        "g6b1",
+        "c4d2",
+        "f1e1",
+        "d2b1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2141
+    },
+    {
+      "id": "MmTwC",
+      "game": "AthFQdqy",
+      "site": "https://lichess.org/training/MmTwC",
+      "fen": "8/8/8/5kp1/6n1/3K4/6Qp/8 b - - 8 63",
+      "sourcePath": [
+        "h2h1q",
+        "g2h1",
+        "g4f2",
+        "d3e2",
+        "f2h1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1587
+    },
+    {
+      "id": "1jhI7",
+      "game": "N7O5CJ7z",
+      "site": "https://lichess.org/training/1jhI7",
+      "fen": "8/8/8/2k5/1np5/4K3/pQ6/8 b - - 11 58",
+      "sourcePath": [
+        "a2a1q",
+        "b2a1",
+        "b4c2",
+        "e3d2",
+        "c2a1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1753
+    },
+    {
+      "id": "IDmUJ",
+      "game": "Xot9BvX2",
+      "site": "https://lichess.org/training/IDmUJ",
+      "fen": "3Q4/R5pk/5P1p/8/8/7P/2ppK1P1/1n6 b - - 0 36",
+      "sourcePath": [
+        "d2d1q",
+        "d8d1",
+        "b1c3",
+        "e2e3",
+        "c2d1q"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 1886
+    },
+    {
+      "id": "3IfFL",
+      "game": "zDn32yjJ",
+      "site": "https://lichess.org/training/3IfFL",
+      "fen": "8/6p1/1pp3p1/p2p2P1/P2kn2P/1P3Q2/2P1Kp2/8 b - - 1 42",
+      "sourcePath": [
+        "f2f1q",
+        "f3f1",
+        "e4g3",
+        "e2f3",
+        "g3f1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1604
+    },
+    {
+      "id": "EdxvH",
+      "game": "xZN3Hofo",
+      "site": "https://lichess.org/training/EdxvH",
+      "fen": "1k2r3/pp4pp/2b5/3Rn3/2N5/1P3PQ1/P3p1PP/6K1 b - - 0 25",
+      "sourcePath": [
+        "e2e1q",
+        "g3e1",
+        "e5f3",
+        "g2f3",
+        "e8e1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1830
+    },
+    {
+      "id": "BLLWK",
+      "game": "qDlyn5kd",
+      "site": "https://lichess.org/training/BLLWK",
+      "fen": "8/5k1p/R1B3pb/4B3/1pp5/3r4/1PKp1PPP/7R b - - 0 30",
+      "sourcePath": [
+        "d2d1q",
+        "h1d1",
+        "b4b3",
+        "c2b1",
+        "d3d1"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2047
+    },
+    {
+      "id": "1Qpsd",
+      "game": "zUJjdh85",
+      "site": "https://lichess.org/training/1Qpsd",
+      "fen": "b2rr1k1/2Q2pPp/1P6/P7/B7/5PP1/3p1K1P/8 b - - 1 37",
+      "sourcePath": [
+        "d2d1q",
+        "a4d1",
+        "d8d2",
+        "f2f1",
+        "d2d1",
+        "f1g2",
+        "d1d2",
+        "g2h3",
+        "a8f3",
+        "b6b7",
+        "f3g2",
+        "h3h4",
+        "d2d4"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2737
+    },
+    {
+      "id": "GVq6X",
+      "game": "rYPuxJSL",
+      "site": "https://lichess.org/training/GVq6X",
+      "fen": "r6k/4p3/5np1/2N4p/q1BQP2P/8/p5P1/2R3K1 b - - 1 35",
+      "sourcePath": [
+        "a2a1q",
+        "c1a1",
+        "a4a1",
+        "d4a1",
+        "a8a1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1041
+    },
+    {
+      "id": "68ibZ",
+      "game": "si8HNgqz",
+      "site": "https://lichess.org/training/68ibZ",
+      "fen": "8/3k4/p2P4/1p3p1p/1P2n3/P2Q3P/3pK3/8 b - - 1 40",
+      "sourcePath": [
+        "d2d1q",
+        "d3d1",
+        "e4c3",
+        "e2d3",
+        "c3d1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1461
+    },
+    {
+      "id": "HbDBh",
+      "game": "ENvEmOYh",
+      "site": "https://lichess.org/training/HbDBh",
+      "fen": "1k6/6p1/1P1P4/2P2PpP/1K6/3r4/1R1p2r1/1R6 b - - 0 57",
+      "sourcePath": [
+        "d2d1q",
+        "b1d1",
+        "g2b2",
+        "b4c4",
+        "d3d1"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 1976
+    },
+    {
+      "id": "FmXTl",
+      "game": "lEotlBkX",
+      "site": "https://lichess.org/training/FmXTl",
+      "fen": "8/5k1p/6p1/3P2P1/2Qn1K1P/8/2p5/8 b - - 5 51",
+      "sourcePath": [
+        "c2c1q",
+        "c4c1",
+        "d4e2",
+        "f4e5",
+        "e2c1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1673
+    },
+    {
+      "id": "9X5Ul",
+      "game": "rE6gObOZ",
+      "site": "https://lichess.org/training/9X5Ul",
+      "fen": "8/2K2p2/1P2r3/8/8/2P2k2/4n1pp/3QR3 b - - 1 57",
+      "sourcePath": [
+        "g2g1q",
+        "e1g1",
+        "h2g1q",
+        "d1g1",
+        "e2g1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1666
+    },
+    {
+      "id": "0dLp2",
+      "game": "mMgPWhZJ",
+      "site": "https://lichess.org/training/0dLp2",
+      "fen": "2krb2r/2p5/p7/2P4p/P5pN/8/1nQpRPPP/R5K1 b - - 3 29",
+      "sourcePath": [
+        "d2d1q",
+        "a1d1",
+        "d8d1",
+        "c2d1",
+        "b2d1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1379
+    },
+    {
+      "id": "PeoZf",
+      "game": "2vGTOX4R",
+      "site": "https://lichess.org/training/PeoZf",
+      "fen": "8/4k3/4p3/8/4P1n1/5Q2/7p/3K4 b - - 3 48",
+      "sourcePath": [
+        "h2h1q",
+        "f3h1",
+        "g4f2",
+        "d1e2",
+        "f2h1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1898
+    },
+    {
+      "id": "Y3vf8",
+      "game": "Hrpphmbh",
+      "site": "https://lichess.org/training/Y3vf8",
+      "fen": "2Rr4/P2P4/8/6pp/8/8/2pk1KPP/8 b - - 1 45",
+      "sourcePath": [
+        "c2c1q",
+        "c8c1",
+        "d8f8",
+        "f2g3",
+        "d2c1",
+        "a7a8q",
+        "f8a8"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2642
+    },
+    {
+      "id": "LnYM3",
+      "game": "EUQXukS8",
+      "site": "https://lichess.org/training/LnYM3",
+      "fen": "8/8/7p/7k/7r/8/1pQ2P2/5K2 b - - 4 58",
+      "sourcePath": [
+        "b2b1q",
+        "c2b1",
+        "h4h1",
+        "f1g2",
+        "h1b1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2003
+    },
+    {
+      "id": "OChtv",
+      "game": "hlQcdOnk",
+      "site": "https://lichess.org/training/OChtv",
+      "fen": "8/K7/1P5p/P2r3P/8/8/4kp2/R7 b - - 0 56",
+      "sourcePath": [
+        "f2f1q",
+        "a1f1",
+        "d5a5",
+        "a7b7",
+        "e2f1"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2416
+    },
+    {
+      "id": "Tb89w",
+      "game": "VYkfYhNm",
+      "site": "https://lichess.org/training/Tb89w",
+      "fen": "8/8/2k1p3/3nP3/4K3/8/1p6/4Q3 b - - 3 41",
+      "sourcePath": [
+        "b2b1q",
+        "e1b1",
+        "d5c3",
+        "e4d3",
+        "c3b1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1589
+    },
+    {
+      "id": "XnLNp",
+      "game": "p5jnfZQ8",
+      "site": "https://lichess.org/training/XnLNp",
+      "fen": "6k1/1p1N2p1/p1p3Bp/7P/2n3K1/PP1R2P1/3pPr2/8 b - - 0 36",
+      "sourcePath": [
+        "d2d1q",
+        "d3d1",
+        "c4e3",
+        "g4h3",
+        "e3d1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2179
+    },
+    {
+      "id": "0hVXq",
+      "game": "black",
+      "site": "https://lichess.org/training/0hVXq",
+      "fen": "5rk1/1PB2pbp/q2p2p1/3Q2N1/1P2p3/7P/5PPK/2n5 w - - 2 36",
+      "sourcePath": [
+        "b7b8q",
+        "f8b8",
+        "d5f7",
+        "g8h8",
+        "c7b8"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2464
+    },
+    {
+      "id": "5798v",
+      "game": "y0ausROf",
+      "site": "https://lichess.org/training/5798v",
+      "fen": "8/8/3k2p1/7p/1pKP2n1/5Q2/5pP1/8 b - - 1 44",
+      "sourcePath": [
+        "f2f1q",
+        "f3f1",
+        "g4e3",
+        "c4b4",
+        "e3f1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1526
+    },
+    {
+      "id": "TV3qA",
+      "game": "wwkKUgQm",
+      "site": "https://lichess.org/training/TV3qA",
+      "fen": "3r4/6kp/6p1/4p3/3qB3/5QPP/3p2K1/5R2 b - - 7 49",
+      "sourcePath": [
+        "d2d1q",
+        "f1d1",
+        "d4d1",
+        "f3d1",
+        "d8d1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1033
+    },
+    {
+      "id": "LOIIr",
+      "game": "d0UztvxM",
+      "site": "https://lichess.org/training/LOIIr",
+      "fen": "8/2p1kp1Q/4p3/1pq5/4P3/3n2P1/P1p2PBP/5RK1 b - - 0 25",
+      "sourcePath": [
+        "c2c1q",
+        "f1c1",
+        "c5f2",
+        "g1h1",
+        "d3c1"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2399
+    },
+    {
+      "id": "iJx9H",
+      "game": "CPbxhSRs",
+      "site": "https://lichess.org/training/iJx9H",
+      "fen": "8/8/8/1R5p/6bP/6P1/kpK5/8 b - - 1 60",
+      "sourcePath": [
+        "b2b1q",
+        "b5b1",
+        "g4f5",
+        "c2c1",
+        "f5b1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2283
+    },
+    {
+      "id": "RwMDj",
+      "game": "CnMtFj2i",
+      "site": "https://lichess.org/training/RwMDj",
+      "fen": "8/1P3pp1/Q3p1kp/4b3/8/6P1/p4PKP/1q3R2 b - - 4 35",
+      "sourcePath": [
+        "a2a1q",
+        "a6a1",
+        "b1b7",
+        "g2g1",
+        "e5a1"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2016
+    },
+    {
+      "id": "YUsd1",
+      "game": "rDUKgQFa",
+      "site": "https://lichess.org/training/YUsd1",
+      "fen": "1r6/p4kP1/7P/P1P5/3p4/8/1pK5/6R1 b - - 0 50",
+      "sourcePath": [
+        "b2b1q",
+        "g1b1",
+        "d4d3",
+        "c2d3",
+        "b8b1"
+      ],
+      "stratum": "checking-recapture",
+      "rating": 2362
+    },
+    {
+      "id": "ZYJoU",
+      "game": "14UWQNq6",
+      "site": "https://lichess.org/training/ZYJoU",
+      "fen": "B4k2/2r2p2/4pbp1/3p3p/3P4/3n1N1P/2p2PP1/Q4RK1 b - - 3 31",
+      "sourcePath": [
+        "c2c1q",
+        "f1c1",
+        "c7c1",
+        "a1c1",
+        "d3c1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 1424
+    },
+    {
+      "id": "9SEbG",
+      "game": "cVuwh8vz",
+      "site": "https://lichess.org/training/9SEbG",
+      "fen": "5rk1/p2Q2pp/1qp5/3p4/1NP5/P3R1P1/1P3pK1/4R3 b - - 1 29",
+      "sourcePath": [
+        "f2e1n",
+        "e3e1",
+        "b6f2",
+        "g2h3",
+        "f2e1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2342
+    },
+    {
+      "id": "OfbFU",
+      "game": "DmUwuGTR",
+      "site": "https://lichess.org/training/OfbFU",
+      "fen": "8/5r2/1R6/8/3P4/8/kpK5/8 b - - 5 51",
+      "sourcePath": [
+        "b2b1q",
+        "b6b1",
+        "f7f2",
+        "c2d3",
+        "a2b1"
+      ],
+      "stratum": "geometry-control",
+      "rating": 2475
+    }
+  ]
+}
