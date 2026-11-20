@@ -19,6 +19,7 @@ export type TacticalMistakeEpisode = {
     throughPly: number;
     betterLineUci: string[];
     playedLineUci: string[];
+    controlLineUci?: string[];
     mechanisms: TacticalSequenceWitness[];
     explanation: string;
 } & (
