@@ -102,6 +102,7 @@ python "$bench/receipt.py" alternate-cases app.json extra-questions.json
 python "$bench/trials.py" ref extra-questions.json $stockfish extra-reference.json
 python "$bench/repeat.py" app.json $stockfish repeated.json
 python "$bench/receipt.py" report app.json reference.json extra-reference.json repeated.json baseline.json results.json
+python "$bench/oracle.py" reference.json common.json $stockfish coverage.json
 ```
 
 An order judged harmless is a control for the exact capture pair. A
@@ -110,3 +111,22 @@ boards serve as runtime controls. The benchmark compares a specific
 move justification. Position character, strategic effects and the
 played mistake require separate evidence. This experiment does not
 change the application.
+
+## Candidate selection ceiling
+
+As a diagnostic, the normal-budget verifier received the exact
+question from the frozen recorded continuation, including the guard
+removal and premature capture. It recovered 27 of the 29 deeper
+positives and made no calls on the 20 harmless exact pairs. Twelve
+indeterminate reference questions also passed the cheap verification.
+These are verification results with the question supplied, not
+end-to-end recall or estimates of the reliability of unsettled labels.
+
+Of the 18 actual misses, eight already had the exact move order in
+some shared search frame. Seven had the root and the opponent reply
+but lacked the full move order. Three had the root without the reply.
+This gives a concrete baseline to beat before comparing a network.
+A selector should first use the available variations, then test
+whether learning helps recover a useful candidate beyond them under
+the same cost limit. The recorded question stays unavailable to a
+candidate selector. [Coverage and verification replay](coverage.json)

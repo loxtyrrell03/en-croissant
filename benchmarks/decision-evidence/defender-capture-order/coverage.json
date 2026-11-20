@@ -1,0 +1,964 @@
+{
+  "counts": [
+    {
+      "reference": "better-order-unverified",
+      "normalBudget": "guard-causal",
+      "count": 1
+    },
+    {
+      "reference": "order-harmless",
+      "normalBudget": "order-harmless",
+      "count": 17
+    },
+    {
+      "reference": "order-harmless",
+      "normalBudget": "unresolved",
+      "count": 3
+    },
+    {
+      "reference": "other-or-unresolved",
+      "normalBudget": "guard-causal",
+      "count": 3
+    },
+    {
+      "reference": "other-or-unresolved",
+      "normalBudget": "other-or-unresolved",
+      "count": 28
+    },
+    {
+      "reference": "other-or-unresolved",
+      "normalBudget": "unresolved",
+      "count": 1
+    },
+    {
+      "reference": "positive",
+      "normalBudget": "guard-causal",
+      "count": 27
+    },
+    {
+      "reference": "positive",
+      "normalBudget": "other-or-unresolved",
+      "count": 2
+    },
+    {
+      "reference": "reply-unverified",
+      "normalBudget": "guard-causal",
+      "count": 2
+    },
+    {
+      "reference": "root-unverified",
+      "normalBudget": "guard-causal",
+      "count": 6
+    },
+    {
+      "reference": "root-unverified",
+      "normalBudget": "unresolved",
+      "count": 1
+    },
+    {
+      "reference": "unresolved",
+      "normalBudget": "order-harmless",
+      "count": 2
+    },
+    {
+      "reference": "unresolved",
+      "normalBudget": "unresolved",
+      "count": 3
+    }
+  ],
+  "medianMs": 1504.0,
+  "availablePositivePaths": {
+    "reply-without-order": 7,
+    "exact-cached": 8,
+    "detected": 11,
+    "root-without-reply": 3
+  },
+  "positivePaths": [
+    {
+      "id": "1928521e79c727003270",
+      "visible": "reply-without-order"
+    },
+    {
+      "id": "608dc921e374d275071d",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "2e5d45c16b0a8510bad0",
+      "visible": "detected"
+    },
+    {
+      "id": "0c0330d4d32bf00d2fd2",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "2cc42d46dd6b4c04e51f",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "4314afdc92fca97e54eb",
+      "visible": "reply-without-order"
+    },
+    {
+      "id": "bb0c1d20e85b7f934575",
+      "visible": "reply-without-order"
+    },
+    {
+      "id": "1058b90080137e32d59f",
+      "visible": "root-without-reply"
+    },
+    {
+      "id": "82a16b07862645406a00",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "1a4b5ae85065cd78f483",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "222db6193878c2bc8aa7",
+      "visible": "detected"
+    },
+    {
+      "id": "340331282886eccd64ff",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "c8ff90a2dba680c6a50f",
+      "visible": "detected"
+    },
+    {
+      "id": "36d12d298f192420f80c",
+      "visible": "detected"
+    },
+    {
+      "id": "c542396022735e179fb0",
+      "visible": "reply-without-order"
+    },
+    {
+      "id": "2e3c4dec8e5e5115502b",
+      "visible": "root-without-reply"
+    },
+    {
+      "id": "a7a3dbd350361b3a9e1e",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "27cdc5733c39416b94f2",
+      "visible": "detected"
+    },
+    {
+      "id": "36b19a96bd8750796830",
+      "visible": "detected"
+    },
+    {
+      "id": "db9780c5195f8e616f27",
+      "visible": "reply-without-order"
+    },
+    {
+      "id": "d9b94e3e695f0e391d43",
+      "visible": "detected"
+    },
+    {
+      "id": "e780b1649882b5806cc4",
+      "visible": "exact-cached"
+    },
+    {
+      "id": "81f162967cbb08064741",
+      "visible": "root-without-reply"
+    },
+    {
+      "id": "3a906b47ae487f343d2d",
+      "visible": "reply-without-order"
+    },
+    {
+      "id": "ab1b081ea2462c5dcda2",
+      "visible": "detected"
+    },
+    {
+      "id": "c7d57b02c88b7d7dc67f",
+      "visible": "reply-without-order"
+    },
+    {
+      "id": "8fbec60ab4fca6a0aa54",
+      "visible": "detected"
+    },
+    {
+      "id": "599daedf23af6355f505",
+      "visible": "detected"
+    },
+    {
+      "id": "f7676c62f24b3728c712",
+      "visible": "detected"
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "4091547a2994d1c1753e",
+      "reference": "other-or-unresolved",
+      "verification": "guard-causal",
+      "gapCp": 1145,
+      "defender": "recaptures",
+      "ms": 1565
+    },
+    {
+      "id": "5db9122eb666173ddcdd",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 426,
+      "defender": "recaptures",
+      "ms": 1828
+    },
+    {
+      "id": "1928521e79c727003270",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 510,
+      "defender": "recaptures",
+      "ms": 1863
+    },
+    {
+      "id": "1ea784f67fa89dd583c9",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 34,
+      "defender": null,
+      "ms": 1848
+    },
+    {
+      "id": "15bd601392c5bed87f9a",
+      "reference": "unresolved",
+      "verification": "order-harmless",
+      "gapCp": 27,
+      "defender": null,
+      "ms": 1832
+    },
+    {
+      "id": "06363a05efdc38f553ad",
+      "reference": "reply-unverified",
+      "verification": "guard-causal",
+      "gapCp": 248,
+      "defender": "recaptures",
+      "ms": 1834
+    },
+    {
+      "id": "02e40ed031833e1a28b0",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": -9,
+      "defender": null,
+      "ms": 1822
+    },
+    {
+      "id": "05e5866990375405f1ec",
+      "reference": "order-harmless",
+      "verification": "unresolved",
+      "gapCp": -51,
+      "defender": null,
+      "ms": 1464
+    },
+    {
+      "id": "0e60ababff2fba5938c7",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 754,
+      "defender": null,
+      "ms": 1861
+    },
+    {
+      "id": "462c5e8243069430f2ad",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 18,
+      "defender": null,
+      "ms": 1507
+    },
+    {
+      "id": "28ac6e2c95d81caf70d5",
+      "reference": "other-or-unresolved",
+      "verification": "unresolved",
+      "gapCp": 92,
+      "defender": null,
+      "ms": 1352
+    },
+    {
+      "id": "143e8963d6fad26fa2f8",
+      "reference": "order-harmless",
+      "verification": "unresolved",
+      "gapCp": -70,
+      "defender": null,
+      "ms": 1676
+    },
+    {
+      "id": "01e4e8489eb9d4c84e10",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 569,
+      "defender": null,
+      "ms": 1783
+    },
+    {
+      "id": "8bcf5c655f5023acf707",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 275,
+      "defender": null,
+      "ms": 1747
+    },
+    {
+      "id": "14f25dad2ee503aec3c6",
+      "reference": "order-harmless",
+      "verification": "unresolved",
+      "gapCp": 79,
+      "defender": null,
+      "ms": 1708
+    },
+    {
+      "id": "09e486980f4049846c52",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": -4,
+      "defender": null,
+      "ms": 1600
+    },
+    {
+      "id": "1136d85db56b83f1102f",
+      "reference": "root-unverified",
+      "verification": "unresolved",
+      "gapCp": 80,
+      "defender": null,
+      "ms": 1112
+    },
+    {
+      "id": "608dc921e374d275071d",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 241,
+      "defender": "recaptures",
+      "ms": 1637
+    },
+    {
+      "id": "684e4a69f5cffe05ea00",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 144,
+      "defender": null,
+      "ms": 1610
+    },
+    {
+      "id": "2e5d45c16b0a8510bad0",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 684,
+      "defender": "recaptures",
+      "ms": 1258
+    },
+    {
+      "id": "0c0330d4d32bf00d2fd2",
+      "reference": "positive",
+      "verification": "other-or-unresolved",
+      "gapCp": 671,
+      "defender": "recaptures",
+      "ms": 1451
+    },
+    {
+      "id": "2cc42d46dd6b4c04e51f",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 825,
+      "defender": "takes-preparer",
+      "ms": 1238
+    },
+    {
+      "id": "4314afdc92fca97e54eb",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 442,
+      "defender": "recaptures",
+      "ms": 1390
+    },
+    {
+      "id": "7b4cd089a9b44644c2f7",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 1348,
+      "defender": "recaptures",
+      "ms": 1503
+    },
+    {
+      "id": "0f4c472763a5c4076393",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 506,
+      "defender": "recaptures",
+      "ms": 1468
+    },
+    {
+      "id": "71ae9409f8e3a13d6e1b",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 0,
+      "defender": null,
+      "ms": 1154
+    },
+    {
+      "id": "31e33529acbe88a8632c",
+      "reference": "other-or-unresolved",
+      "verification": "guard-causal",
+      "gapCp": 318,
+      "defender": "recaptures",
+      "ms": 1667
+    },
+    {
+      "id": "378d2937e607ed4ee69e",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 151,
+      "defender": "recaptures",
+      "ms": 1482
+    },
+    {
+      "id": "3752d49cfa11d7e5c131",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 1036,
+      "defender": "takes-preparer",
+      "ms": 1396
+    },
+    {
+      "id": "6281c1ebc60f18091aac",
+      "reference": "unresolved",
+      "verification": "order-harmless",
+      "gapCp": 44,
+      "defender": null,
+      "ms": 1696
+    },
+    {
+      "id": "0617d81ee9efb1427375",
+      "reference": "unresolved",
+      "verification": "unresolved",
+      "gapCp": 82,
+      "defender": null,
+      "ms": 1424
+    },
+    {
+      "id": "15dbdb84c1cab492c4cf",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": -15,
+      "defender": null,
+      "ms": 1471
+    },
+    {
+      "id": "bb0c1d20e85b7f934575",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 672,
+      "defender": "recaptures",
+      "ms": 1151
+    },
+    {
+      "id": "5bc945ceb194ec82712e",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 240,
+      "defender": null,
+      "ms": 1467
+    },
+    {
+      "id": "1058b90080137e32d59f",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 811,
+      "defender": "recaptures",
+      "ms": 1443
+    },
+    {
+      "id": "82a16b07862645406a00",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 344,
+      "defender": "recaptures",
+      "ms": 1505
+    },
+    {
+      "id": "2536794333cefc7379e2",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 603,
+      "defender": null,
+      "ms": 1266
+    },
+    {
+      "id": "1b39e60d60c66d8189e3",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 1880,
+      "defender": "recaptures",
+      "ms": 1624
+    },
+    {
+      "id": "64c1eaa7042090f8aef5",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 2,
+      "defender": null,
+      "ms": 1168
+    },
+    {
+      "id": "3a1a59d297ddc397c10a",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 366,
+      "defender": "recaptures",
+      "ms": 1353
+    },
+    {
+      "id": "1a4b5ae85065cd78f483",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 498,
+      "defender": "recaptures",
+      "ms": 1416
+    },
+    {
+      "id": "49ebffd073b6da956c45",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 587,
+      "defender": null,
+      "ms": 1443
+    },
+    {
+      "id": "64c3e5c23a0f54b0755f",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 522,
+      "defender": null,
+      "ms": 1621
+    },
+    {
+      "id": "8814ea3d6087e43ed97d",
+      "reference": "better-order-unverified",
+      "verification": "guard-causal",
+      "gapCp": 874,
+      "defender": "recaptures",
+      "ms": 1585
+    },
+    {
+      "id": "271520a59c49aa95c056",
+      "reference": "root-unverified",
+      "verification": "guard-causal",
+      "gapCp": 1235,
+      "defender": "recaptures",
+      "ms": 1575
+    },
+    {
+      "id": "eaee92aca831671d5af0",
+      "reference": "root-unverified",
+      "verification": "guard-causal",
+      "gapCp": 848,
+      "defender": "recaptures",
+      "ms": 1586
+    },
+    {
+      "id": "9c2037bc59a82ea722f6",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 619,
+      "defender": null,
+      "ms": 1531
+    },
+    {
+      "id": "fb6609a9a582eeb17452",
+      "reference": "other-or-unresolved",
+      "verification": "guard-causal",
+      "gapCp": 533,
+      "defender": "recaptures",
+      "ms": 1356
+    },
+    {
+      "id": "5cc0f91482447ac5b704",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 1097,
+      "defender": null,
+      "ms": 1573
+    },
+    {
+      "id": "222db6193878c2bc8aa7",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 918,
+      "defender": "recaptures",
+      "ms": 1069
+    },
+    {
+      "id": "340331282886eccd64ff",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 675,
+      "defender": "recaptures",
+      "ms": 1465
+    },
+    {
+      "id": "c8ff90a2dba680c6a50f",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 534,
+      "defender": "recaptures",
+      "ms": 1687
+    },
+    {
+      "id": "7d41a861c940c680de3d",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 16,
+      "defender": null,
+      "ms": 1508
+    },
+    {
+      "id": "15c0531c05e38874caf5",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 893,
+      "defender": "takes-preparer",
+      "ms": 1264
+    },
+    {
+      "id": "deab635997317f63a179",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 36,
+      "defender": null,
+      "ms": 1509
+    },
+    {
+      "id": "36d12d298f192420f80c",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 858,
+      "defender": "recaptures",
+      "ms": 1503
+    },
+    {
+      "id": "2176b791db7f499e25b1",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 625,
+      "defender": "recaptures",
+      "ms": 1743
+    },
+    {
+      "id": "7f06867b5da001eefa5f",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 147,
+      "defender": "recaptures",
+      "ms": 1464
+    },
+    {
+      "id": "c542396022735e179fb0",
+      "reference": "positive",
+      "verification": "other-or-unresolved",
+      "gapCp": 470,
+      "defender": "recaptures",
+      "ms": 1462
+    },
+    {
+      "id": "3a24c4ef7af8f00da850",
+      "reference": "unresolved",
+      "verification": "unresolved",
+      "gapCp": 95,
+      "defender": null,
+      "ms": 1675
+    },
+    {
+      "id": "65759b728ca3737b67a9",
+      "reference": "root-unverified",
+      "verification": "guard-causal",
+      "gapCp": 589,
+      "defender": "recaptures",
+      "ms": 1391
+    },
+    {
+      "id": "2e3c4dec8e5e5115502b",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 185,
+      "defender": "recaptures",
+      "ms": 1576
+    },
+    {
+      "id": "a415e3a1af5fc249cf75",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 1013,
+      "defender": null,
+      "ms": 1432
+    },
+    {
+      "id": "a7a3dbd350361b3a9e1e",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 1340,
+      "defender": "recaptures",
+      "ms": 1602
+    },
+    {
+      "id": "27cdc5733c39416b94f2",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 696,
+      "defender": "recaptures",
+      "ms": 1442
+    },
+    {
+      "id": "36b19a96bd8750796830",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 170,
+      "defender": "recaptures",
+      "ms": 1235
+    },
+    {
+      "id": "db9780c5195f8e616f27",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 946,
+      "defender": "recaptures",
+      "ms": 1473
+    },
+    {
+      "id": "d9b94e3e695f0e391d43",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 632,
+      "defender": "recaptures",
+      "ms": 1439
+    },
+    {
+      "id": "55b2715787e8c3de24e4",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 938,
+      "defender": null,
+      "ms": 1511
+    },
+    {
+      "id": "e780b1649882b5806cc4",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 1297,
+      "defender": "takes-preparer",
+      "ms": 1106
+    },
+    {
+      "id": "39123e833cc79f46895c",
+      "reference": "unresolved",
+      "verification": "unresolved",
+      "gapCp": 56,
+      "defender": null,
+      "ms": 1418
+    },
+    {
+      "id": "241b802a2d133503354e",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 1033,
+      "defender": "recaptures",
+      "ms": 1754
+    },
+    {
+      "id": "81f162967cbb08064741",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 934,
+      "defender": "takes-preparer",
+      "ms": 1391
+    },
+    {
+      "id": "dbe20d15da1346af8a12",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 24,
+      "defender": null,
+      "ms": 1512
+    },
+    {
+      "id": "c4452f205a73d81f89b6",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 0,
+      "defender": null,
+      "ms": 1426
+    },
+    {
+      "id": "3a906b47ae487f343d2d",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 1124,
+      "defender": "takes-preparer",
+      "ms": 1220
+    },
+    {
+      "id": "ab1b081ea2462c5dcda2",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 130,
+      "defender": "recaptures",
+      "ms": 1412
+    },
+    {
+      "id": "c7d57b02c88b7d7dc67f",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 1579,
+      "defender": "recaptures",
+      "ms": 1017
+    },
+    {
+      "id": "3ecb0c92319fdea0eee8",
+      "reference": "root-unverified",
+      "verification": "guard-causal",
+      "gapCp": 113,
+      "defender": "recaptures",
+      "ms": 1520
+    },
+    {
+      "id": "390c6abfbb7840ad2d19",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": -29,
+      "defender": null,
+      "ms": 1530
+    },
+    {
+      "id": "76cbb083a251ba22e438",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 29,
+      "defender": null,
+      "ms": 1559
+    },
+    {
+      "id": "5f2f79ce1bdbc1494572",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 106,
+      "defender": null,
+      "ms": 1600
+    },
+    {
+      "id": "3751a076e9944a13721a",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": -16,
+      "defender": null,
+      "ms": 1362
+    },
+    {
+      "id": "8fbec60ab4fca6a0aa54",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 817,
+      "defender": "recaptures",
+      "ms": 1253
+    },
+    {
+      "id": "d50a280bbc0d942cb0f7",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 1200,
+      "defender": null,
+      "ms": 1459
+    },
+    {
+      "id": "402a58431990f809215f",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 722,
+      "defender": null,
+      "ms": 1625
+    },
+    {
+      "id": "ce5a44e2115ce3aad428",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 870,
+      "defender": null,
+      "ms": 1764
+    },
+    {
+      "id": "cd59ad3fab90eb50534a",
+      "reference": "root-unverified",
+      "verification": "guard-causal",
+      "gapCp": 1091,
+      "defender": "recaptures",
+      "ms": 1534
+    },
+    {
+      "id": "5d2b49a6330baea24947",
+      "reference": "root-unverified",
+      "verification": "guard-causal",
+      "gapCp": 303,
+      "defender": "recaptures",
+      "ms": 1537
+    },
+    {
+      "id": "599daedf23af6355f505",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 140,
+      "defender": "recaptures",
+      "ms": 1776
+    },
+    {
+      "id": "bb3020447bbfa73429b2",
+      "reference": "other-or-unresolved",
+      "verification": "other-or-unresolved",
+      "gapCp": 267,
+      "defender": null,
+      "ms": 1768
+    },
+    {
+      "id": "71ee87097e50884b9e1c",
+      "reference": "reply-unverified",
+      "verification": "guard-causal",
+      "gapCp": 304,
+      "defender": "recaptures",
+      "ms": 1683
+    },
+    {
+      "id": "3bcd368d659891190448",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": -160,
+      "defender": null,
+      "ms": 1660
+    },
+    {
+      "id": "bef32b70658eedaa2d37",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 0,
+      "defender": null,
+      "ms": 1343
+    },
+    {
+      "id": "f7676c62f24b3728c712",
+      "reference": "positive",
+      "verification": "guard-causal",
+      "gapCp": 697,
+      "defender": "recaptures",
+      "ms": 1410
+    },
+    {
+      "id": "4649a3df985fade1bc5f",
+      "reference": "order-harmless",
+      "verification": "order-harmless",
+      "gapCp": 10,
+      "defender": null,
+      "ms": 1389
+    }
+  ]
+}
