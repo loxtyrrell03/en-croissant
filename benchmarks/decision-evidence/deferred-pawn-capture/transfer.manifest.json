@@ -1,0 +1,396 @@
+{
+  "counts": {
+    "deferred": 32,
+    "taken": 32
+  },
+  "groups": [
+    "11th-anogia-international-idaion-antro-2026",
+    "12th-cesme-international-open-chess-tournament",
+    "14th-new-york-international-super-swiss",
+    "17th-kiit-international-chess-festival-2026-cat-a",
+    "19-international-tournament-paracin-2026-open-a",
+    "19th-kalamaria-international-2026-group-a",
+    "19th-paleochora-international-tournament-2026",
+    "19th-poti-international-chess-festival-nana-aleksandria-cup-2026",
+    "1er-open-international-de-lecci",
+    "1st-gazi-international-open-chess-tournament-category-a",
+    "20-pojedinacno-prvenstvo-srbije-za-sahistkinje",
+    "2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b",
+    "2026-chinese-chess-league-division-a-round-robin-r7-11",
+    "2026-turkiye-satranc-ligi-turkish-league-super-lig",
+    "24th-rochefort-chess-festival",
+    "35th-drogheda-chess-congress-thomson",
+    "40e-open-international-davoine",
+    "48th-international-chess-open-citta-di-arco-grupo-b",
+    "aktobe-open-2026-vladimir-dvorkovich-memorial",
+    "buongoma-open-chess-championship-grand-prix-circuit",
+    "campeonato-de-ajedrez-abierto-por-equipos-2026",
+    "fide-world-junior-chess-championship-2026",
+    "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga"
+  ],
+  "sources": {
+    "arad-6SJEilNL.pgn": {
+      "sha256": "62a0905dd58cd5f08e03e8f3dea6bbc0cb922bb7f9d632ebccea23afa0acc59e",
+      "candidates": {
+        "deferred": 15,
+        "taken": 37
+      }
+    },
+    "arad-AmuVNKCj.pgn": {
+      "sha256": "462dfd1273d238de38384239737a8e862410488316daeac950fbba80ca714c5c",
+      "candidates": {
+        "taken": 38,
+        "deferred": 14
+      }
+    },
+    "arad-dFgK7wL9.pgn": {
+      "sha256": "44b59190c33b39c39a995073d570baab8622f51b32726dea4a0f09077c343559",
+      "candidates": {
+        "taken": 55,
+        "deferred": 20
+      }
+    },
+    "arad-KuVy4Gsx.pgn": {
+      "sha256": "5bf1134db69e007d61c1bf0a9ad403b34a14aeed0493b3dfeba82c02033a1b5d",
+      "candidates": {
+        "deferred": 21,
+        "taken": 46
+      }
+    },
+    "czech-54vvY1tE.pgn": {
+      "sha256": "27909ff5747bde36e42765722e5350fff87c55309b0734a32e08019a8df7ff19",
+      "candidates": {}
+    },
+    "czech-7SQh1n2M.pgn": {
+      "sha256": "c6acd1a6492f22af5cea9853ef65d52440348fcd4dbc4ce0aec0e4e37eddcbc8",
+      "candidates": {}
+    },
+    "czech-hQhZs0v1.pgn": {
+      "sha256": "84824095aa505b28d9a5d9cadcaf1769b28203036b440496ea5659e4f4d62710",
+      "candidates": {}
+    },
+    "czech-rIbHX8Zn.pgn": {
+      "sha256": "ff46206ffab9e2fb200a275f5e4c58bc72ebf9f1ad583896fb26ec479256abe7",
+      "candidates": {}
+    },
+    "olympiad-oQds2Dcv.pgn": {
+      "sha256": "31a48996f8fbedc7a85e9e4a47960b3a9d2f32b6b10ab11a725a7a7d1e122eae",
+      "candidates": {}
+    },
+    "olympiad-QJSVWmNu.pgn": {
+      "sha256": "69e9d5380c8f5da1f40b688a7f5fe0260ac2849e17499d21229b74258862237a",
+      "candidates": {}
+    },
+    "olympiad-WCYaLfnP.pgn": {
+      "sha256": "c4dc2b9b54a50aff114d8cc89683bfa74d12db077b34deb3715b145f735fabee",
+      "candidates": {}
+    },
+    "poland-0F78yJIi.pgn": {
+      "sha256": "f5c34a157d7a5d2c6c42a6b580524e2bf8c1c72824e4801c95fac3e19f1873c7",
+      "candidates": {
+        "deferred": 71,
+        "taken": 159
+      }
+    },
+    "poland-9eyzPy9m.pgn": {
+      "sha256": "0701bffc29d0c43f61c53beb6f44f02046d28626741418747e41c28557f258ea",
+      "candidates": {
+        "taken": 101,
+        "deferred": 32
+      }
+    },
+    "poland-bLaUj5vJ.pgn": {
+      "sha256": "acf4acfed455894871aad12536f0eb87afaa3e8d1cac8d793ea58c3ff155993b",
+      "candidates": {
+        "deferred": 51,
+        "taken": 123
+      }
+    },
+    "poland-vcIdhifR.pgn": {
+      "sha256": "75ab74109fb15f71fc5522482e3f531e99ab4b4921424c7a441f208db371eb26",
+      "candidates": {
+        "taken": 131,
+        "deferred": 61
+      }
+    },
+    "poland-wwrkku5B.pgn": {
+      "sha256": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+      "candidates": {
+        "taken": 138,
+        "deferred": 49
+      }
+    },
+    "turkey-A84qp8J6.pgn": {
+      "sha256": "6450af0b66200e43cbe416f22211d40ccb9fa4fd58e70f6616ff6fafd7721a57",
+      "candidates": {
+        "taken": 79,
+        "deferred": 21
+      }
+    },
+    "turkey-loIX5V6A.pgn": {
+      "sha256": "6e151fb70b4fd577220fd7ca7bc3a045bb10e726306f93add7895039cf63027e",
+      "candidates": {
+        "taken": 122,
+        "deferred": 49
+      }
+    },
+    "turkey-ndTfO720.pgn": {
+      "sha256": "3bd584eb60fc06381f5b5e83caebcfe242054d4d8a29dfbe1814a10b0e4fbd7f",
+      "candidates": {
+        "taken": 63,
+        "deferred": 25
+      }
+    },
+    "turkey-uxB0wfNi.pgn": {
+      "sha256": "743dd62998c2a9e1b731c0704d8858f32fe9613972e77f9b6728457310d6db5d",
+      "candidates": {
+        "taken": 95,
+        "deferred": 32
+      }
+    },
+    "turkey-zbeM6PPX.pgn": {
+      "sha256": "82ebd4d5a45570a474382a2c4373b99f2bea8f4358c62e3ea47d770dbb59d995",
+      "candidates": {
+        "taken": 80,
+        "deferred": 24
+      }
+    },
+    "buongoma.pgn": {
+      "sha256": "7c38efe6490a20f003a3efe8d2220eb139a9761221b811f79bf3b4bce79c3ec1",
+      "candidates": {
+        "taken": 60,
+        "deferred": 25
+      }
+    },
+    "korea.pgn": {
+      "sha256": "05244bcdd6654631050b703eb221f6683d67de73a82c5b081be608773c9ff544",
+      "candidates": {
+        "deferred": 22,
+        "taken": 55
+      }
+    },
+    "kovin.pgn": {
+      "sha256": "37ef02c01598a22206184ee57f5f97baa42bba522f4aeb275d2638a41b86dae7",
+      "candidates": {}
+    },
+    "marshall-premier.pgn": {
+      "sha256": "f2b4933db90a224997f18aacded255556004f04bdf6e7aa5bc3b826005e7b473",
+      "candidates": {
+        "taken": 91,
+        "deferred": 41
+      }
+    },
+    "marshall-round1.pgn": {
+      "sha256": "ee44c1b28d66fad545fb90989406394baa9f1a58626b80b560191069efc9ef70",
+      "candidates": {
+        "taken": 15,
+        "deferred": 1
+      }
+    },
+    "rudar-round1.pgn": {
+      "sha256": "531d2a8c6a88148283acddf04e5b0c17d4c84bcf2d1528c53eeaf2e35559ac5d",
+      "candidates": {}
+    },
+    "rudar.pgn": {
+      "sha256": "be9a681991b13bb72b41f39d643a01f56a84522324f39144c25b46a0e4dc6dd9",
+      "candidates": {
+        "taken": 25,
+        "deferred": 11
+      }
+    },
+    "serbia-round1.pgn": {
+      "sha256": "826d5d7e60d9353207631ed535d2ecf9401d1e0679158e7e27539e645e95650d",
+      "candidates": {
+        "deferred": 2,
+        "taken": 8
+      }
+    },
+    "serbia-women.pgn": {
+      "sha256": "d60972f69f9e543d00ec35bd33bba1c2efee8a3592c42b3b5f531b4d40eba4b3",
+      "candidates": {
+        "deferred": 12,
+        "taken": 34
+      }
+    },
+    "team-open.pgn": {
+      "sha256": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+      "candidates": {
+        "taken": 108,
+        "deferred": 42
+      }
+    },
+    "turkey-round1.pgn": {
+      "sha256": "aa554daab3eb10d84a0f0d3b5d0200dc952b5cbfee4d61b1e57e8162c44e02e8",
+      "candidates": {
+        "taken": 4,
+        "deferred": 2
+      }
+    },
+    "world-junior.pgn": {
+      "sha256": "248ced5e2f7389fa6a4e73a3fb46f8f62bc1d68d5004a2ef91df763ebc00b19e",
+      "candidates": {
+        "taken": 47,
+        "deferred": 23
+      }
+    },
+    "2aIC5tgQ.pgn": {
+      "sha256": "97ad83cbd136c9ac1de55cb6ca78e3bc5c3a12fcba0c358c9b111d9894528c80",
+      "candidates": {}
+    },
+    "5NwTVznc.pgn": {
+      "sha256": "8c2a4711e4855a0de8c8a003934af160abcf49657ee4571cef6c664d7b4ddffb",
+      "candidates": {}
+    },
+    "6BSUOsCx.pgn": {
+      "sha256": "590dc56b22afee7686c3442968118a2fc85dfe359fda7823af3cf881b3a81dc4",
+      "candidates": {
+        "deferred": 101,
+        "taken": 273
+      }
+    },
+    "6dOSu5WZ.pgn": {
+      "sha256": "f1ad688c518b2d16566a248e12f1c783ea0a9a0fc791a1288c12e6b913462209",
+      "candidates": {
+        "deferred": 428,
+        "taken": 1152
+      }
+    },
+    "6rWaPxxy.pgn": {
+      "sha256": "fa7a99da2900c678077f5b421ecb60aa59cac8fdeb8e1c5c8b49ca911c30242a",
+      "candidates": {
+        "taken": 451,
+        "deferred": 164
+      }
+    },
+    "6UkdBX8x.pgn": {
+      "sha256": "7b44cab5ebc32da31278d2ad9f69f62ef2c2acf79457753efc65d6c29c8b181d",
+      "candidates": {}
+    },
+    "cCwCXzSM.pgn": {
+      "sha256": "2eb1afb19994a20ab6f3e969fd1f482b6c03b537e01a83d144ce0ba03b153c67",
+      "candidates": {
+        "taken": 208,
+        "deferred": 62
+      }
+    },
+    "E6k5kqos.pgn": {
+      "sha256": "879abe9fcddc2feeb3cdb56200ad2d42c9fc8961c5887796995c98534ed77a5a",
+      "candidates": {
+        "taken": 181,
+        "deferred": 54
+      }
+    },
+    "eiKzYeC5.pgn": {
+      "sha256": "b8633b57a43c0a02b7988ac4461beee9dfd528130e427907212175bc296dac6d",
+      "candidates": {
+        "taken": 261,
+        "deferred": 95
+      }
+    },
+    "FHPq8jsd.pgn": {
+      "sha256": "c3d9a5ddefdbe7f6ca2e690d722ac0a28ff9cea7476e1876b0f7ac0f22e72329",
+      "candidates": {
+        "taken": 230,
+        "deferred": 90
+      }
+    },
+    "fUYhje9u.pgn": {
+      "sha256": "97989e7a556078b95873d0470b2b590246e55a0a6509ce10b5619872a9d596d5",
+      "candidates": {}
+    },
+    "gkMsc2DD.pgn": {
+      "sha256": "b2c82d35a0edeb93a5280873c991afe0a1b1d063ce796e96290316cd47d33d4d",
+      "candidates": {}
+    },
+    "jpfHrDBv.pgn": {
+      "sha256": "e34a7d11449b0b23fcfbc12d9f0fe5d126f8e3b796a9e0e02743c04e5e06fa22",
+      "candidates": {
+        "taken": 277,
+        "deferred": 102
+      }
+    },
+    "kt4oZbYm.pgn": {
+      "sha256": "44cacc9063ad5a46bba69662bc21361e1a86c650389babece70fff16fba61fbb",
+      "candidates": {
+        "deferred": 47,
+        "taken": 89
+      }
+    },
+    "o67G1mBt.pgn": {
+      "sha256": "b7fa7ed5260be86e98037578562d4815365ab4b31017e5120d1622fc60a7314b",
+      "candidates": {
+        "taken": 138,
+        "deferred": 50
+      }
+    },
+    "og77lxCx.pgn": {
+      "sha256": "28690746d799c32b01f4f86048e0799a5a9b8954404371e4d9fd5783444adedd",
+      "candidates": {
+        "taken": 399,
+        "deferred": 159
+      }
+    },
+    "OgL8Xkik.pgn": {
+      "sha256": "d64436c2350c0fb886d2eff2f1945a421aba68394bbc7b2e50882e86ec2c7f59",
+      "candidates": {
+        "deferred": 183,
+        "taken": 471
+      }
+    },
+    "P7HNlBWF.pgn": {
+      "sha256": "f6e1dd955f60bf4b79daa4ccbcaccf592d4d17c07fc3c221bccf1a8646cb126e",
+      "candidates": {
+        "taken": 206,
+        "deferred": 79
+      }
+    },
+    "SrkbhcSW.pgn": {
+      "sha256": "cc9d5f465f8c391beee2f8f73d65170f9e25f8f74d7bce0d5672ca1952674bff",
+      "candidates": {
+        "taken": 765,
+        "deferred": 281
+      }
+    },
+    "srSmnc4O.pgn": {
+      "sha256": "a07d5eb11eb79cab8e4242f144b5547a9c20b138fe9d0d19bef51031a6c0735b",
+      "candidates": {
+        "taken": 360,
+        "deferred": 136
+      }
+    },
+    "Tlwwk7ig.pgn": {
+      "sha256": "62a17830796b135d1116d7cf63b4a9a1a80b258fa705bd8380c96b2b3f5f33dc",
+      "candidates": {
+        "taken": 94,
+        "deferred": 43
+      }
+    },
+    "wfW8ajMV.pgn": {
+      "sha256": "ba975c097c0b92f9d183fca6e00e5a9e838e7fd3a7d8c675a3fcabf91c282c18",
+      "candidates": {
+        "taken": 298,
+        "deferred": 130
+      }
+    },
+    "xmfzSPiu.pgn": {
+      "sha256": "89b984e8030016f95fe158da703bca7196303de8d02f61d14595396aaedf8609",
+      "candidates": {
+        "taken": 174,
+        "deferred": 65
+      }
+    },
+    "ysPKR44Z.pgn": {
+      "sha256": "c6b4be04cbdbeb3e3b7d42207f58800b07e14e7710f862fef11c85aad7362c2d",
+      "candidates": {
+        "taken": 424,
+        "deferred": 150
+      }
+    }
+  },
+  "excluded": {
+    "full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "classical-2026-11.json": "6f3387a90934bdec162afcc03f951ad535c42578ef3abb9c22558f43b45d5f85",
+    "selection.json": "e9c76dc42f28b20c29a233e4bec268b0501a13e4de965dc2126b0a35f155993d",
+    "reserve.json": "ada806088dec957f604e002e3bb14171800decf0641d82de722caa8a2dfd8ad5"
+  }
+}

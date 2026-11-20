@@ -6273,6 +6273,8 @@ Decision Evidence v62 adds the matched reply after the independent mistake proof
 
 The v64 release record at docs/CHESS_DECISION_CLASSIFIER_RELEASE.md consolidates the exact 7a11ac6a worker on 1,051 archived requests, the 124 reviewed course and puzzle decisions, and the 26- and 72-game classical samples. Historical tactical mistakes improve from 10 to 22 of 68, with zero versus one false positive. The 72-game sample remains at zero of 17 mixed positions. The current source regression suite passes 262 tests, with 12 optional benchmark tests skipped, after updating a stale phrase assertion to verify its exact compared lines.
 
+The deferred pawn-capture benchmark freezes 64 game-disjoint public classical boards before comparison. It tests whether a verified loose pawn capture is being mistaken for a tactical requirement when the same material can be collected later in another viable line. See benchmarks/decision-evidence/deferred-pawn-capture.
+
 The 58-game shared pawn-lever transfer found no new corroborated explanation at the app budget. A four-choice control at the same node budget added one accepted position and four unconfirmed proposals. Three deeper choices confirmed none. This trial remains offline. See benchmarks/decision-evidence/pawn-contact-replies for exact lines and frame hashes.
 
 The shared pawn-lever experiment freezes 58 public classical positions across 19 event groups before the transfer runs. It compares repeated pawn contact with legal continuations that show the original pawn advancing or being exchanged. The trial is scoped to position character, with candidate and mistake diagnoses evaluated separately. See benchmarks/decision-evidence/pawn-contact-replies.
