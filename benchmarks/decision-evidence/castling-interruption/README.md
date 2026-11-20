@@ -61,6 +61,50 @@ strongest scores that clear the preview criteria. The maximum is
 sampling. Scores and verification use the higher-budget independent
 queries in both groups.
 
+| Mechanism found at the normal search budget | Enriched development, 6 games | Enriched reserve, 7 games |
+| --- | ---: | ---: |
+| Verified positive at the deeper reference budget | 0 | 1 |
+| Recorded-king-move pattern | 0 verified, 6 unresolved | 1 verified, 3 unresolved |
+| Exact check and forced king move | 0 | 1 |
+| Exact check plus the quiet late-castle variant | 0 | 1 |
+
+Six cases in each enriched cohort lack a reference verdict.
+The late-castle tactic test added no verified positives. The
+one reserve positive is `...c6 Nd6+` in South Wales. Every
+legal answer to `Nd6+` moves the king. Both searches show
+`...Kd7`. After immediate queenside castling, the same check
+loses the knight to `...Rxd6` or `...cxd6` in the respective
+searches. The castling move scored 213 and 215 centipawns
+above the delay in the two exact comparisons.
+[South Wales game](https://lichess.org/broadcast/south-wales-international-2026/round-3/AvsFowvJ/M8yRLQU1)
+
+Decision Evidence v65 ships only the exact checked-king
+comparison. It keeps the tactical attack and the separate
+positional consequence for castling rights in the played
+mistake. The ordinary shared-reply search can reuse a cached
+line or examine the same reply with at most 1M extra nodes
+in three seconds inside the analysis deadline. A legal defence
+using another piece invalidates the forced king move claim.
+The late-castling test remains a benchmark experiment.
+
+The matched worker replay covers 261 requests. The South Wales
+mistake is already mixed in v64, where the positional reason
+concerns the rook's open file. V65 adds the forced king move
+and permanent loss of castling rights. The other 260 reports
+retain their existing conclusions, and the position and
+candidate assessments remain identical across the entire replay.
+All 1,051 saved archive reports also match across v64 and v65
+apart from the report version.
+[Exact release comparison](results.json)
+
+The isolated Windows build at `de9b92f1` reproduced the castling
+diagnosis with live Stockfish 19. Stockfish chose `...cxd6`
+as the answer to the same check after castling. The pawn-chain
+and played-move regressions also passed. The collapsed panel
+showing one reason from each mixed dimension was separately
+verified at 320, 390 and 900 pixels in the source-built browser.
+[Windows receipt](windows.json)
+
 ## What the calibration establishes
 
 At 4.8M and 8M nodes, `Bh3` is the best of the exact early
@@ -85,3 +129,8 @@ evaluates the frozen decisions, then
 `assess.py APP_FRAMES REFERENCE_FRAMES RESULTS` scores them.
 The two calibration probes use the same Stockfish 19 binary
 recorded in [the stress manifest](stress.manifest.json).
+`release_replay.py prepare OUTPUT APP_FRAMES...` assembles frames
+and exact shared replies for the worker. Use the existing worker
+replay and pin the two source revisions separately. Run
+`release_replay.py verify RECEIPT INPUT V64 V65 SCORES...` for the
+release comparison.

@@ -75,6 +75,14 @@ limits precision estimates.
 
 ## Verified scope and remaining issues
 
+The v65 follow-up explains an actual castling delay when a
+specific check forces every legal reply to move the king.
+An independently compared earlier castle supplies the
+counterexample. This is a separate measured change to the
+mistake diagnosis. Collapsed mixed summaries show one reason
+from each supported dimension.
+[Castling-delay benchmark](../benchmarks/decision-evidence/castling-interruption/README.md)
+
 - Live Stockfish in an isolated Windows build reproduced the
   Candidates discovered check and the European Club Cup fork,
   each with a separately explained pawn-chain effect. The browser

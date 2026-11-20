@@ -1,0 +1,40 @@
+{
+  "revision": "de9b92f144140f5e5a13124d726f6c1463dbfe88",
+  "scenarios": {
+    "Played Pawn Lock": {
+      "passed": true,
+      "seconds": 13.853,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "move": "What the move achieves\n\nPOSITIONAL\n\nPositional \u00b7 Strategic interpretation. White's pawn advances from h2 to h4 and remains at least this far advanced in the recorded continuation. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence.\n\nPositional \u00b7 Strategic interpretation. h4 fixes opposing pawns face to face on h4 and h5; neither can advance while this lock remains. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence.\n\nThe feature changes are verified board facts. Their strategic importance is a heuristic interpretation; the engine does not assign its score to individual features.\n\nHide evidence",
+      "mistake": "What h4 missed or allowed\n\nUNCLEAR\n\nEngine evaluation loss 0.86 pawns\n\nThe search did not establish a specific cause.\n\nShow evidence"
+    },
+    "Queen Keeps the Pawn Chain": {
+      "passed": true,
+      "seconds": 9.709,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical \u00b7 Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional \u00b7 Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical \u00b7 Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional \u00b7 Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+ Kh1. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5 Qxf7. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence"
+    },
+    "Castle Before the Check": {
+      "passed": true,
+      "seconds": 16.861,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What c6 missed or allowed\n\nMIXED\n\nEngine evaluation loss 1.85 pawns\n\nTactical \u00b7 Engine supported. c6 allows Nd6+. Every legal reply moves the king, as in Kd7. After O-O-O Nd6+, cxd6 takes the knight.\n\nTactical \u00b7 Engine supported. Your move allowed this tactic: Nd6+ exploits the pawn on c4, pinned to the knight on a6 by the bishop on f1. No legal reply avoids material loss in the immediate exchange. After O-O-O, cxd6 answers Nd6+; a profitable immediate follow-up capture of the pawn on c4 or the knight on a6 is no longer forced.\n\nTactical \u00b7 Engine supported. Against Nd6+, O-O-O gives you cxd6, a profitable capture. c6 leaves that capture unavailable.\n\nPositional \u00b7 Strategic interpretation. Moving the king permanently gives up castling. O-O-O gets the king out first.\n\nPlayed line. c6 Nd6+ Kd7 Nxb7\n\nBetter line. O-O-O Nd6+ cxd6 Bxc4\n\nCheck after delaying castling. c6 Nd6+ Kd7\n\nSame check after castling first. O-O-O Nd6+ cxd6\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    }
+  },
+  "sourcePanelWidths": [
+    320,
+    390,
+    900
+  ],
+  "compactMixedAxesInSourcePanel": true,
+  "focusedTypeScriptTestsPassed": 266,
+  "optionalTestsSkipped": 12,
+  "typeCheckPassed": true
+}

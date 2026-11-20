@@ -12,6 +12,10 @@ await verifyDecisionPanel({
   async verify(page) {
     const summary = page.getByText("What c6 missed or allowed", { exact: true }).locator("../..");
     await summary.getByText("Mixed", { exact: true }).first().waitFor();
+    const compact = await summary.innerText();
+    assert.match(compact, /Tactical · Engine supported.*Nd6\+/s);
+    assert.match(compact, /Positional · Strategic interpretation.*permanently gives up castling/s);
+    assert.doesNotMatch(compact, /Same check after castling first/);
     await summary.getByRole("button", { name: "Show evidence", exact: true }).click();
     const evidence = await summary.innerText();
     assert.match(evidence, /Nd6\+.*Every legal reply moves the king.*Kd7/s);

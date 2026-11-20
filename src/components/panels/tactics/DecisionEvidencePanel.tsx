@@ -126,6 +126,9 @@ function EvidenceSummary({
   const category = exactTactic
     ? assessment.positional.support === "supported" ? "mixed" : "tactical"
     : assessment.category;
+  const summaryReasons = category === "mixed"
+    ? reasons.filter(({ label }, index) => reasons.findIndex((item) => item.label === label) === index)
+    : reasons.slice(0, 2);
   const resources = assessment.conditionalResources;
   const conditionalFork = assessment.conditionalFork;
   const forkConsequence = conditionalFork?.defenceConsequence?.description;
@@ -146,7 +149,7 @@ function EvidenceSummary({
         </Group>
         {children}
         {reasons.length > 0 ? (
-          reasons.slice(0, expanded ? reasons.length : 2).map(({ label, reason, basis }) => (
+          (expanded ? reasons : summaryReasons).map(({ label, reason, basis }) => (
             <Text key={`${label}:${reason}`} size="xs" style={{ overflowWrap: "anywhere" }}>
               <Text component="span" fw={600} size="xs">
                 {label} · {basis}.{" "}

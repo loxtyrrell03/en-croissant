@@ -1,0 +1,116 @@
+{
+  "cohorts": {
+    "calibration-app": {
+      "requests": 1
+    },
+    "development-app": {
+      "requests": 60
+    },
+    "reserve-app": {
+      "requests": 60
+    },
+    "stress-development-app": {
+      "requests": 6
+    },
+    "stress-reserve-app": {
+      "requests": 7,
+      "mistakeChanges": 1
+    },
+    "app-frames": {
+      "requests": 55
+    },
+    "classical-app-frames": {
+      "requests": 72
+    }
+  },
+  "changes": [
+    {
+      "id": "859fdb83b72cfdd5543c",
+      "cohort": "stress-reserve-app",
+      "before": "mixed",
+      "after": "mixed",
+      "evidence": {
+        "tactical": "c6 allows Nd6+. Every legal reply moves the king, as in Kd7. After O-O-O Nd6+, Rxd6 takes the knight.",
+        "positional": "Moving the king permanently gives up castling. O-O-O gets the king out first.",
+        "playedLineUci": [
+          "c7c6",
+          "b5d6",
+          "e8d7"
+        ],
+        "controlLineUci": [
+          "e8c8",
+          "b5d6",
+          "d8d6"
+        ]
+      }
+    }
+  ],
+  "trials": {
+    "development-score": {
+      "counts": {
+        "reference negative": 54,
+        "reference unresolved": 6
+      },
+      "inputs": [
+        "822688c92a1e598f9dba112400603df2425c48781d9c60c094811fe7ec4d4d9c",
+        "77d1516268e1cc9622889ace097db7146f9154080c98e0477a56c471cb0f3fa9"
+      ]
+    },
+    "reserve-score": {
+      "counts": {
+        "reference unresolved": 6,
+        "reference negative": 54
+      },
+      "inputs": [
+        "cf11118cb3b4a7311be6ed799ec0ce8d5c919b957044c578a0f586b939a56906",
+        "120d299f235ae50eb510d8d657b63d082d8e8ec675eb43731e780ed1628038d7"
+      ]
+    },
+    "stress-development-score": {
+      "counts": {
+        "reference unresolved": 6,
+        "played outcome unresolved": 6
+      },
+      "inputs": [
+        "adb228a51930b6d3f5717a444607d5cb6c0c7a501fa15702a42a59ff4116d48d",
+        "3b3f3bcc7eef6a28fa3ae3e1eb26772ae68a7c0d732dd1b1c30c540793fdc0fc"
+      ]
+    },
+    "stress-reserve-score": {
+      "counts": {
+        "reference unresolved": 6,
+        "played outcome unresolved": 3,
+        "reference positive": 1,
+        "played outcome positive": 1,
+        "checked and legal late castle positive": 1,
+        "checked king only positive": 1
+      },
+      "inputs": [
+        "d0b304f0fa26f4e9da16f4ef73382c494b572c2d684b55b6a8b3877e4c75bce1",
+        "1a20d6ec4a3a8a5d12140d1ab3144bbc5b535296cbe1dff06d78b14d2f4e9ff8"
+      ]
+    },
+    "calibration-score": {
+      "counts": {
+        "reference unresolved": 1
+      },
+      "inputs": [
+        "22ad7a459a8ad22e6d67e16519e61674cc06d889aff80a46724f858b0d60c013",
+        "2ef9a27ec31f32421a09e3ca61c320331e35aca169ee80c1fd21de7f5c82e143"
+      ]
+    }
+  },
+  "replayHashes": {
+    "runtime-input.json": "1a6f96ef877c33428d664d1fb1c5850607205d049432f90373636f46d9971b6c",
+    "runtime-v64.json": "42035d0a4e32508a3f6f2572f834c00b932dee30acdb990a4e28ebf4cc3e324c",
+    "runtime-v65.json": "6a043ae875cf62a006cc3ef9cbb34a33b38da751a2e13ff874a710b7b70187fc"
+  },
+  "archive": {
+    "requests": 1051,
+    "changed": 0,
+    "hashes": [
+      "5e3f73464c4242e88fd058f93faf5022872d90492c91dfe58d766c8c9fad9d02",
+      "dc53f9cdceaea40ccba67ddee6be228547ee91a23c88576529bbe1321df2d9d2"
+    ]
+  }
+}

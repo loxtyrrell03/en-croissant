@@ -128,3 +128,9 @@ Revision `7a11ac6a` adds `Knight Keeps the Pawn Chain` and
 candidate summaries and the two capture routes with live Stockfish.
 The played-pawn-lock scenario also passed on this build.
 [Run receipt](../capture-route-structure/windows.json)
+
+Revision `de9b92f1` adds `Castle Before the Check`. The native
+test explains the actual `...c6` mistake using both the forced
+king move and the independent `...O-O-O Nd6+ cxd6` line.
+The queen and played-pawn-lock scenarios also pass.
+[Run receipt](../castling-interruption/windows.json)
