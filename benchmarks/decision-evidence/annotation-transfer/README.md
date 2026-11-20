@@ -139,3 +139,56 @@ difference. They cannot isolate how much of the evaluation
 difference comes from king mobility. These two examples are
 already reviewed and are diagnostic probes.
 [Exact searches](mixed-followup.json)
+
+## Frozen neural models on the outside annotations
+
+The earlier Maia-3 ranking methods and controls are refit on their
+original 259 reviewed classical positions using the original settings.
+The pretrained board encoder stays fixed. All 56 Candidates games
+are outside that labelled fit, with disjoint game IDs, event IDs and
+colour-normalised root boards. The Candidates positions also postdate
+the game's training window stated by the model's authors.
+[Original protocol](../maia-branch-probe/position-protocol.json) ·
+[Maia-3 model card](https://huggingface.co/UofTCSSLab/Maia3-5M)
+
+The models rank positions on each axis where the v63 classifier has
+no supported answer. Each section gets one search nomination per four
+unresolved positions, rounded down. Every method sees the same three
+Stockfish lines. Each cell counts reviewed positives in that queue.
+Uncertain references consume a slot. The reference has no definite
+position negatives, so this estimates review yield only. These are
+neither classifier precision measurements nor confirmed explanations.
+
+| Position search ranker | Tactical, 11 slots | Positional, 11 slots | Mixed, 12 slots |
+| --- | ---: | ---: | ---: |
+| Stockfish evaluation gap | 5 | 8 | 6 |
+| Legal-line boosted tree | 5 | 11 | 6 |
+| Small legal-line network | 5 | 10 | 3 |
+| Maia move predictions plus legal lines | 6 | 10 | 6 |
+| Maia board representation plus legal lines | 4 | 9 | 4 |
+| Maia continuation representation plus legal lines | 4 | 10 | 5 |
+
+The best neural arm ties existing controls on mixed review and
+selects one more tactical positive in the Open section than the
+strongest simpler controls. Its tactical yield ties them in the
+Women's section. The earlier
+criterion of two more reviewed positives with improvement across
+two event groups is unmet. Learning mixed status directly gives
+5/12 for logistic regression, 4/12 for the small network and
+3/12 for the Maia board representation. The two sections share
+one publication. Eleven reviewed mixed positives and a single
+reviewer limit any claim about generalisation. Zero extra
+Stockfish nodes were used. A Maia CPU batch took about 50 ms per
+position, excluding feature preparation and model load.
+An independent rerun of the same inputs reproduced every ranking
+and count.
+[Complete rankings](maia-transfer.json)
+
+Use `maia_inputs.py APP_FRAMES REFERENCE V63_WORKER SAMPLES REPORTS`
+to prepare the transfer format. Then run
+`../strategic-continuation-contrast/neural-transfer.py` with the same
+checkpoint and training inputs specified in
+[its reproduction instructions](../strategic-continuation-contrast/README.md).
+Supply the two generated paths to `--transfer`. The runner verifies
+the original training and checkpoint hashes. The annotation adapter
+verifies the frame hash, exact moves and worker version.

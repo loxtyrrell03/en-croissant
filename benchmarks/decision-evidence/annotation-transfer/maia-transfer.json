@@ -1,0 +1,1023 @@
+{
+  "training": 259,
+  "transfer": 56,
+  "inputs": [
+    "9dd0a8b1ac8779c50c937dc898600d76f73f1cd1120a0312aab78496fc68e072",
+    "6ebc2d099e31241183b7e72bf8858415335d1bbad7afceb14532b35fca6c2698"
+  ],
+  "medianNetworkForwardMs": 49.99480000697076,
+  "additionalEngineNodes": 0,
+  "results": {
+    "tactical": {
+      "reference": {
+        "positive": 14,
+        "uncertain": 42
+      },
+      "incumbent": {
+        "truePositives": 6,
+        "falsePositives": 0
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 7,
+          "positivesByEvent": {
+            "candidates-open-2026": 1,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "aabfe6b6f27e48ca0ee7",
+            "20ef0e3be893edcd5e7b",
+            "2e23c752c05d28d131f5",
+            "04fea833d79be25be661",
+            "8bca07e629b49d5be38a",
+            "29c3df5a3570499634cc",
+            "1efff7290d422ca64bfb",
+            "1cee99e8c1b9cd08634a",
+            "0418bbb92230ba9be803",
+            "2ac09b955883115b2510",
+            "11e4773cb6be87b445ea"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "62971b18eb13eeca95f2",
+            "aabfe6b6f27e48ca0ee7",
+            "8bca07e629b49d5be38a",
+            "04fea833d79be25be661",
+            "1108a7974e1d54b53990",
+            "0107ab69e0cbdba8499f",
+            "1cee99e8c1b9cd08634a",
+            "1efff7290d422ca64bfb",
+            "0418bbb92230ba9be803",
+            "03d54ad91e3b4b9eb3ce",
+            "a65cd4d8d858ce0609eb"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "1108a7974e1d54b53990",
+            "24ee5afbe57a53fe9d37",
+            "62971b18eb13eeca95f2",
+            "16e6e40b09b9dc9cda22",
+            "aabfe6b6f27e48ca0ee7",
+            "0a2c8c3d7866b4f6e247",
+            "1efff7290d422ca64bfb",
+            "1cee99e8c1b9cd08634a",
+            "0418bbb92230ba9be803",
+            "0bcd30b36925a278ed73",
+            "a65cd4d8d858ce0609eb"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "62971b18eb13eeca95f2",
+            "04fea833d79be25be661",
+            "8bca07e629b49d5be38a",
+            "aabfe6b6f27e48ca0ee7",
+            "1108a7974e1d54b53990",
+            "0107ab69e0cbdba8499f",
+            "1cee99e8c1b9cd08634a",
+            "1efff7290d422ca64bfb",
+            "03d54ad91e3b4b9eb3ce",
+            "0418bbb92230ba9be803",
+            "a65cd4d8d858ce0609eb"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "aabfe6b6f27e48ca0ee7",
+            "1108a7974e1d54b53990",
+            "16e6e40b09b9dc9cda22",
+            "24ee5afbe57a53fe9d37",
+            "2e23c752c05d28d131f5",
+            "65e39ef437aa1ba21923",
+            "1cee99e8c1b9cd08634a",
+            "1efff7290d422ca64bfb",
+            "1f34ed72a88c0aef01e3",
+            "0418bbb92230ba9be803",
+            "48fd30cf4e3aad01dfe5"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 5,
+          "positivesByEvent": {
+            "candidates-open-2026": 3,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "62971b18eb13eeca95f2",
+            "aabfe6b6f27e48ca0ee7",
+            "1108a7974e1d54b53990",
+            "68a557824f5d76c89eff",
+            "04fea833d79be25be661",
+            "1c048483ab7d924db0dd",
+            "1cee99e8c1b9cd08634a",
+            "a65cd4d8d858ce0609eb",
+            "0418bbb92230ba9be803",
+            "03d54ad91e3b4b9eb3ce",
+            "1efff7290d422ca64bfb"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 7,
+          "positivesByEvent": {
+            "candidates-open-2026": 3,
+            "candidates-women-2026": 1
+          },
+          "selected": [
+            "62971b18eb13eeca95f2",
+            "1108a7974e1d54b53990",
+            "04fea833d79be25be661",
+            "0107ab69e0cbdba8499f",
+            "aabfe6b6f27e48ca0ee7",
+            "41a738ae8e474b7933ad",
+            "1cee99e8c1b9cd08634a",
+            "03d54ad91e3b4b9eb3ce",
+            "2ac09b955883115b2510",
+            "a65cd4d8d858ce0609eb",
+            "11e4773cb6be87b445ea"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 7,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 2
+          },
+          "selected": [
+            "62971b18eb13eeca95f2",
+            "0107ab69e0cbdba8499f",
+            "aabfe6b6f27e48ca0ee7",
+            "04fea833d79be25be661",
+            "1108a7974e1d54b53990",
+            "8bca07e629b49d5be38a",
+            "1cee99e8c1b9cd08634a",
+            "03d54ad91e3b4b9eb3ce",
+            "1efff7290d422ca64bfb",
+            "a65cd4d8d858ce0609eb",
+            "2ac09b955883115b2510"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "62971b18eb13eeca95f2",
+            "0107ab69e0cbdba8499f",
+            "aabfe6b6f27e48ca0ee7",
+            "68a557824f5d76c89eff",
+            "04fea833d79be25be661",
+            "1108a7974e1d54b53990",
+            "1cee99e8c1b9cd08634a",
+            "0418bbb92230ba9be803",
+            "03d54ad91e3b4b9eb3ce",
+            "1efff7290d422ca64bfb",
+            "2ac09b955883115b2510"
+          ]
+        }
+      }
+    },
+    "positional": {
+      "reference": {
+        "positive": 48,
+        "uncertain": 8
+      },
+      "incumbent": {
+        "truePositives": 11,
+        "falsePositives": 0
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 8,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "candidates-open-2026": 4,
+            "candidates-women-2026": 4
+          },
+          "selected": [
+            "12c09a5bc5bb327a706b",
+            "41a738ae8e474b7933ad",
+            "35ed665d17e0dadce5fb",
+            "04b092f6a111b55244cd",
+            "0a2c8c3d7866b4f6e247",
+            "4070dd5a11a1b22087cc",
+            "89bda6b54c285e41f75e",
+            "3a891db19cb163e196c3",
+            "0e822c2166b508e81f9f",
+            "11d9124b00cb7ed7b6ef",
+            "2e2656833ad2e3208874"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 10,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "candidates-open-2026": 5,
+            "candidates-women-2026": 5
+          },
+          "selected": [
+            "16e6e40b09b9dc9cda22",
+            "20ef0e3be893edcd5e7b",
+            "12c09a5bc5bb327a706b",
+            "41a738ae8e474b7933ad",
+            "35ed665d17e0dadce5fb",
+            "618328225dcc34c946e5",
+            "2e2656833ad2e3208874",
+            "48fd30cf4e3aad01dfe5",
+            "3a891db19cb163e196c3",
+            "4070dd5a11a1b22087cc",
+            "1f34ed72a88c0aef01e3"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 11,
+          "negatives": 0,
+          "uncertain": 0,
+          "positivesByEvent": {
+            "candidates-open-2026": 5,
+            "candidates-women-2026": 6
+          },
+          "selected": [
+            "35ed665d17e0dadce5fb",
+            "12c09a5bc5bb327a706b",
+            "0a2c8c3d7866b4f6e247",
+            "2e23c752c05d28d131f5",
+            "16e6e40b09b9dc9cda22",
+            "3a891db19cb163e196c3",
+            "1f34ed72a88c0aef01e3",
+            "7ea8ca140d44e6804ea6",
+            "225022b48897cb21a832",
+            "618328225dcc34c946e5",
+            "0095d1cdc5f553fb47d8"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 10,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "candidates-open-2026": 5,
+            "candidates-women-2026": 5
+          },
+          "selected": [
+            "16e6e40b09b9dc9cda22",
+            "12c09a5bc5bb327a706b",
+            "41a738ae8e474b7933ad",
+            "20ef0e3be893edcd5e7b",
+            "24ee5afbe57a53fe9d37",
+            "618328225dcc34c946e5",
+            "1f34ed72a88c0aef01e3",
+            "2e2656833ad2e3208874",
+            "4070dd5a11a1b22087cc",
+            "48fd30cf4e3aad01dfe5",
+            "3a891db19cb163e196c3"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 8,
+          "negatives": 0,
+          "uncertain": 3,
+          "positivesByEvent": {
+            "candidates-open-2026": 4,
+            "candidates-women-2026": 4
+          },
+          "selected": [
+            "aabfe6b6f27e48ca0ee7",
+            "0ac5572e36b9f0f536fa",
+            "1108a7974e1d54b53990",
+            "16e6e40b09b9dc9cda22",
+            "24ee5afbe57a53fe9d37",
+            "0361dc88a45ebd058ca7",
+            "4aecb8c78d00292b8023",
+            "1efff7290d422ca64bfb",
+            "1e073da996edbf472b92",
+            "0cf222e4f1b274a5f60a",
+            "09649d1822ef052c427d"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 10,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "candidates-open-2026": 5,
+            "candidates-women-2026": 5
+          },
+          "selected": [
+            "35ed665d17e0dadce5fb",
+            "0a2c8c3d7866b4f6e247",
+            "24ee5afbe57a53fe9d37",
+            "1a6e40d6e27c5f02ba4d",
+            "20ef0e3be893edcd5e7b",
+            "1f34ed72a88c0aef01e3",
+            "618328225dcc34c946e5",
+            "2e2656833ad2e3208874",
+            "a65cd4d8d858ce0609eb",
+            "3a891db19cb163e196c3",
+            "48fd30cf4e3aad01dfe5"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 9,
+          "negatives": 0,
+          "uncertain": 2,
+          "positivesByEvent": {
+            "candidates-open-2026": 4,
+            "candidates-women-2026": 5
+          },
+          "selected": [
+            "16e6e40b09b9dc9cda22",
+            "35ed665d17e0dadce5fb",
+            "0a2c8c3d7866b4f6e247",
+            "2e23c752c05d28d131f5",
+            "04b092f6a111b55244cd",
+            "3a891db19cb163e196c3",
+            "618328225dcc34c946e5",
+            "7ea8ca140d44e6804ea6",
+            "89bda6b54c285e41f75e",
+            "225022b48897cb21a832",
+            "1f34ed72a88c0aef01e3"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 10,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "candidates-open-2026": 4,
+            "candidates-women-2026": 6
+          },
+          "selected": [
+            "16e6e40b09b9dc9cda22",
+            "35ed665d17e0dadce5fb",
+            "0a2c8c3d7866b4f6e247",
+            "04b092f6a111b55244cd",
+            "24ee5afbe57a53fe9d37",
+            "3a891db19cb163e196c3",
+            "618328225dcc34c946e5",
+            "11d9124b00cb7ed7b6ef",
+            "7ea8ca140d44e6804ea6",
+            "225022b48897cb21a832",
+            "0095d1cdc5f553fb47d8"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": null,
+          "slots": 11,
+          "positives": 10,
+          "negatives": 0,
+          "uncertain": 1,
+          "positivesByEvent": {
+            "candidates-open-2026": 5,
+            "candidates-women-2026": 5
+          },
+          "selected": [
+            "0a2c8c3d7866b4f6e247",
+            "1a6e40d6e27c5f02ba4d",
+            "24ee5afbe57a53fe9d37",
+            "16e6e40b09b9dc9cda22",
+            "113c26ece8386e51b258",
+            "2e2656833ad2e3208874",
+            "3a891db19cb163e196c3",
+            "0095d1cdc5f553fb47d8",
+            "618328225dcc34c946e5",
+            "225022b48897cb21a832",
+            "1f34ed72a88c0aef01e3"
+          ]
+        }
+      }
+    },
+    "mixed": {
+      "reference": {
+        "positive": 11,
+        "uncertain": 45
+      },
+      "incumbent": {
+        "truePositives": 0,
+        "falsePositives": 0
+      },
+      "rankings": {
+        "score-logistic": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 4
+          },
+          "selected": [
+            "0ac5572e36b9f0f536fa",
+            "20ef0e3be893edcd5e7b",
+            "aabfe6b6f27e48ca0ee7",
+            "2e23c752c05d28d131f5",
+            "113c26ece8386e51b258",
+            "04fea833d79be25be661",
+            "1cee99e8c1b9cd08634a",
+            "1efff7290d422ca64bfb",
+            "1e073da996edbf472b92",
+            "0cf222e4f1b274a5f60a",
+            "0418bbb92230ba9be803",
+            "2ac09b955883115b2510"
+          ]
+        },
+        "line-logistic": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 3,
+          "negatives": 0,
+          "uncertain": 9,
+          "positivesByEvent": {
+            "candidates-open-2026": 1,
+            "candidates-women-2026": 2
+          },
+          "selected": [
+            "aabfe6b6f27e48ca0ee7",
+            "8bca07e629b49d5be38a",
+            "0107ab69e0cbdba8499f",
+            "62971b18eb13eeca95f2",
+            "113c26ece8386e51b258",
+            "68a557824f5d76c89eff",
+            "1cee99e8c1b9cd08634a",
+            "0cf222e4f1b274a5f60a",
+            "03d54ad91e3b4b9eb3ce",
+            "a65cd4d8d858ce0609eb",
+            "11d9124b00cb7ed7b6ef",
+            "2ac09b955883115b2510"
+          ]
+        },
+        "line-tree": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 4
+          },
+          "selected": [
+            "24ee5afbe57a53fe9d37",
+            "62971b18eb13eeca95f2",
+            "16e6e40b09b9dc9cda22",
+            "aabfe6b6f27e48ca0ee7",
+            "0a2c8c3d7866b4f6e247",
+            "0ac5572e36b9f0f536fa",
+            "1cee99e8c1b9cd08634a",
+            "0cf222e4f1b274a5f60a",
+            "0418bbb92230ba9be803",
+            "0bcd30b36925a278ed73",
+            "09649d1822ef052c427d",
+            "a65cd4d8d858ce0609eb"
+          ]
+        },
+        "line-network": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 3,
+          "negatives": 0,
+          "uncertain": 9,
+          "positivesByEvent": {
+            "candidates-open-2026": 1,
+            "candidates-women-2026": 2
+          },
+          "selected": [
+            "aabfe6b6f27e48ca0ee7",
+            "0107ab69e0cbdba8499f",
+            "8bca07e629b49d5be38a",
+            "62971b18eb13eeca95f2",
+            "113c26ece8386e51b258",
+            "68a557824f5d76c89eff",
+            "1cee99e8c1b9cd08634a",
+            "0cf222e4f1b274a5f60a",
+            "a65cd4d8d858ce0609eb",
+            "03d54ad91e3b4b9eb3ce",
+            "11d9124b00cb7ed7b6ef",
+            "2ac09b955883115b2510"
+          ]
+        },
+        "stockfish-gap": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 4
+          },
+          "selected": [
+            "aabfe6b6f27e48ca0ee7",
+            "0ac5572e36b9f0f536fa",
+            "1108a7974e1d54b53990",
+            "16e6e40b09b9dc9cda22",
+            "24ee5afbe57a53fe9d37",
+            "113c26ece8386e51b258",
+            "0361dc88a45ebd058ca7",
+            "4aecb8c78d00292b8023",
+            "1cee99e8c1b9cd08634a",
+            "1efff7290d422ca64bfb",
+            "1e073da996edbf472b92",
+            "0cf222e4f1b274a5f60a"
+          ]
+        },
+        "line-maia-policy": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 6,
+          "negatives": 0,
+          "uncertain": 6,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 4
+          },
+          "selected": [
+            "62971b18eb13eeca95f2",
+            "aabfe6b6f27e48ca0ee7",
+            "1c048483ab7d924db0dd",
+            "8bca07e629b49d5be38a",
+            "0107ab69e0cbdba8499f",
+            "113c26ece8386e51b258",
+            "1cee99e8c1b9cd08634a",
+            "0cf222e4f1b274a5f60a",
+            "a65cd4d8d858ce0609eb",
+            "0418bbb92230ba9be803",
+            "03d54ad91e3b4b9eb3ce",
+            "09649d1822ef052c427d"
+          ]
+        },
+        "line-maia-root": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 8,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 2
+          },
+          "selected": [
+            "0107ab69e0cbdba8499f",
+            "113c26ece8386e51b258",
+            "aabfe6b6f27e48ca0ee7",
+            "62971b18eb13eeca95f2",
+            "41a738ae8e474b7933ad",
+            "8bca07e629b49d5be38a",
+            "1cee99e8c1b9cd08634a",
+            "0cf222e4f1b274a5f60a",
+            "a65cd4d8d858ce0609eb",
+            "03d54ad91e3b4b9eb3ce",
+            "2e2656833ad2e3208874",
+            "11e4773cb6be87b445ea"
+          ]
+        },
+        "line-maia-branches": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 7,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 3
+          },
+          "selected": [
+            "0107ab69e0cbdba8499f",
+            "62971b18eb13eeca95f2",
+            "8bca07e629b49d5be38a",
+            "aabfe6b6f27e48ca0ee7",
+            "41a738ae8e474b7933ad",
+            "113c26ece8386e51b258",
+            "1cee99e8c1b9cd08634a",
+            "a65cd4d8d858ce0609eb",
+            "0cf222e4f1b274a5f60a",
+            "0418bbb92230ba9be803",
+            "2ac09b955883115b2510",
+            "2e2656833ad2e3208874"
+          ]
+        },
+        "line-random-branches": {
+          "unresolvedAP": null,
+          "slots": 12,
+          "positives": 4,
+          "negatives": 0,
+          "uncertain": 8,
+          "positivesByEvent": {
+            "candidates-open-2026": 2,
+            "candidates-women-2026": 2
+          },
+          "selected": [
+            "0107ab69e0cbdba8499f",
+            "62971b18eb13eeca95f2",
+            "8bca07e629b49d5be38a",
+            "0a2c8c3d7866b4f6e247",
+            "1c048483ab7d924db0dd",
+            "aabfe6b6f27e48ca0ee7",
+            "1cee99e8c1b9cd08634a",
+            "0cf222e4f1b274a5f60a",
+            "a65cd4d8d858ce0609eb",
+            "2e2656833ad2e3208874",
+            "11e4773cb6be87b445ea",
+            "189b46b09da0a6d7299a"
+          ]
+        }
+      }
+    }
+  },
+  "directMixed": {
+    "reference": {
+      "positive": 11,
+      "uncertain": 45
+    },
+    "incumbent": {
+      "truePositives": 0,
+      "falsePositives": 0
+    },
+    "rankings": {
+      "score-logistic": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 6,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 4
+        },
+        "selected": [
+          "0ac5572e36b9f0f536fa",
+          "20ef0e3be893edcd5e7b",
+          "aabfe6b6f27e48ca0ee7",
+          "2e23c752c05d28d131f5",
+          "113c26ece8386e51b258",
+          "04fea833d79be25be661",
+          "1cee99e8c1b9cd08634a",
+          "1efff7290d422ca64bfb",
+          "1e073da996edbf472b92",
+          "0cf222e4f1b274a5f60a",
+          "0418bbb92230ba9be803",
+          "2ac09b955883115b2510"
+        ]
+      },
+      "line-logistic": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 3,
+        "negatives": 0,
+        "uncertain": 9,
+        "positivesByEvent": {
+          "candidates-open-2026": 1,
+          "candidates-women-2026": 2
+        },
+        "selected": [
+          "aabfe6b6f27e48ca0ee7",
+          "8bca07e629b49d5be38a",
+          "0107ab69e0cbdba8499f",
+          "62971b18eb13eeca95f2",
+          "113c26ece8386e51b258",
+          "68a557824f5d76c89eff",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "03d54ad91e3b4b9eb3ce",
+          "a65cd4d8d858ce0609eb",
+          "11d9124b00cb7ed7b6ef",
+          "2ac09b955883115b2510"
+        ]
+      },
+      "line-tree": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 6,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 4
+        },
+        "selected": [
+          "24ee5afbe57a53fe9d37",
+          "62971b18eb13eeca95f2",
+          "16e6e40b09b9dc9cda22",
+          "aabfe6b6f27e48ca0ee7",
+          "0a2c8c3d7866b4f6e247",
+          "0ac5572e36b9f0f536fa",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "0418bbb92230ba9be803",
+          "0bcd30b36925a278ed73",
+          "09649d1822ef052c427d",
+          "a65cd4d8d858ce0609eb"
+        ]
+      },
+      "line-network": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 3,
+        "negatives": 0,
+        "uncertain": 9,
+        "positivesByEvent": {
+          "candidates-open-2026": 1,
+          "candidates-women-2026": 2
+        },
+        "selected": [
+          "aabfe6b6f27e48ca0ee7",
+          "0107ab69e0cbdba8499f",
+          "8bca07e629b49d5be38a",
+          "62971b18eb13eeca95f2",
+          "113c26ece8386e51b258",
+          "68a557824f5d76c89eff",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "a65cd4d8d858ce0609eb",
+          "03d54ad91e3b4b9eb3ce",
+          "11d9124b00cb7ed7b6ef",
+          "2ac09b955883115b2510"
+        ]
+      },
+      "stockfish-gap": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 6,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 4
+        },
+        "selected": [
+          "aabfe6b6f27e48ca0ee7",
+          "0ac5572e36b9f0f536fa",
+          "1108a7974e1d54b53990",
+          "16e6e40b09b9dc9cda22",
+          "24ee5afbe57a53fe9d37",
+          "113c26ece8386e51b258",
+          "0361dc88a45ebd058ca7",
+          "4aecb8c78d00292b8023",
+          "1cee99e8c1b9cd08634a",
+          "1efff7290d422ca64bfb",
+          "1e073da996edbf472b92",
+          "0cf222e4f1b274a5f60a"
+        ]
+      },
+      "line-maia-policy": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 6,
+        "negatives": 0,
+        "uncertain": 6,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 4
+        },
+        "selected": [
+          "62971b18eb13eeca95f2",
+          "aabfe6b6f27e48ca0ee7",
+          "1c048483ab7d924db0dd",
+          "8bca07e629b49d5be38a",
+          "0107ab69e0cbdba8499f",
+          "113c26ece8386e51b258",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "a65cd4d8d858ce0609eb",
+          "0418bbb92230ba9be803",
+          "03d54ad91e3b4b9eb3ce",
+          "09649d1822ef052c427d"
+        ]
+      },
+      "line-maia-root": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 4,
+        "negatives": 0,
+        "uncertain": 8,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 2
+        },
+        "selected": [
+          "0107ab69e0cbdba8499f",
+          "113c26ece8386e51b258",
+          "aabfe6b6f27e48ca0ee7",
+          "62971b18eb13eeca95f2",
+          "41a738ae8e474b7933ad",
+          "8bca07e629b49d5be38a",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "a65cd4d8d858ce0609eb",
+          "03d54ad91e3b4b9eb3ce",
+          "2e2656833ad2e3208874",
+          "11e4773cb6be87b445ea"
+        ]
+      },
+      "line-maia-branches": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 5,
+        "negatives": 0,
+        "uncertain": 7,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 3
+        },
+        "selected": [
+          "0107ab69e0cbdba8499f",
+          "62971b18eb13eeca95f2",
+          "8bca07e629b49d5be38a",
+          "aabfe6b6f27e48ca0ee7",
+          "41a738ae8e474b7933ad",
+          "113c26ece8386e51b258",
+          "1cee99e8c1b9cd08634a",
+          "a65cd4d8d858ce0609eb",
+          "0cf222e4f1b274a5f60a",
+          "0418bbb92230ba9be803",
+          "2ac09b955883115b2510",
+          "2e2656833ad2e3208874"
+        ]
+      },
+      "line-random-branches": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 4,
+        "negatives": 0,
+        "uncertain": 8,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 2
+        },
+        "selected": [
+          "0107ab69e0cbdba8499f",
+          "62971b18eb13eeca95f2",
+          "8bca07e629b49d5be38a",
+          "0a2c8c3d7866b4f6e247",
+          "1c048483ab7d924db0dd",
+          "aabfe6b6f27e48ca0ee7",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "a65cd4d8d858ce0609eb",
+          "2e2656833ad2e3208874",
+          "11e4773cb6be87b445ea",
+          "189b46b09da0a6d7299a"
+        ]
+      },
+      "direct-line-logistic": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 5,
+        "negatives": 0,
+        "uncertain": 7,
+        "positivesByEvent": {
+          "candidates-open-2026": 3,
+          "candidates-women-2026": 2
+        },
+        "selected": [
+          "0107ab69e0cbdba8499f",
+          "62971b18eb13eeca95f2",
+          "0ac5572e36b9f0f536fa",
+          "aabfe6b6f27e48ca0ee7",
+          "8bca07e629b49d5be38a",
+          "1c048483ab7d924db0dd",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "11d9124b00cb7ed7b6ef",
+          "a65cd4d8d858ce0609eb",
+          "1e073da996edbf472b92",
+          "2e2656833ad2e3208874"
+        ]
+      },
+      "direct-line-network": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 4,
+        "negatives": 0,
+        "uncertain": 8,
+        "positivesByEvent": {
+          "candidates-open-2026": 2,
+          "candidates-women-2026": 2
+        },
+        "selected": [
+          "62971b18eb13eeca95f2",
+          "0107ab69e0cbdba8499f",
+          "aabfe6b6f27e48ca0ee7",
+          "0ac5572e36b9f0f536fa",
+          "8bca07e629b49d5be38a",
+          "0a2c8c3d7866b4f6e247",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "a65cd4d8d858ce0609eb",
+          "11d9124b00cb7ed7b6ef",
+          "2e2656833ad2e3208874",
+          "03d54ad91e3b4b9eb3ce"
+        ]
+      },
+      "direct-maia-root": {
+        "unresolvedAP": null,
+        "slots": 12,
+        "positives": 3,
+        "negatives": 0,
+        "uncertain": 9,
+        "positivesByEvent": {
+          "candidates-open-2026": 1,
+          "candidates-women-2026": 2
+        },
+        "selected": [
+          "62971b18eb13eeca95f2",
+          "0107ab69e0cbdba8499f",
+          "0a2c8c3d7866b4f6e247",
+          "1c048483ab7d924db0dd",
+          "8bca07e629b49d5be38a",
+          "113c26ece8386e51b258",
+          "1cee99e8c1b9cd08634a",
+          "0cf222e4f1b274a5f60a",
+          "03d54ad91e3b4b9eb3ce",
+          "2e2656833ad2e3208874",
+          "a65cd4d8d858ce0609eb",
+          "11d9124b00cb7ed7b6ef"
+        ]
+      }
+    }
+  },
+  "directMixedPassesGate": [],
+  "passesFrozenGate": {
+    "tactical": [],
+    "positional": [],
+    "mixed": []
+  }
+}
