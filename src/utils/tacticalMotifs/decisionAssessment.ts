@@ -1131,7 +1131,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             // AND a material consequence difference to attribute a missed tactic.
             const bestMeasured = comparisonMeasured.lines[0],
                 playedMeasured = comparisonMeasured.lines[playedIndex];
-            const comparisonInput = { ...input, candidates: comparison };
+            const comparisonInput = { ...input, candidates: comparison, quietReply: undefined };
             const bestAssessment = assessMove(comparisonInput, comparedBest);
             const playedAssessment = assessMove(comparisonInput, playedLine);
             const settled = (line: typeof bestMeasured) =>

@@ -72,6 +72,10 @@ tactical proof and a searched reply frame. The enriched replay
 uses 16.8 million requested extra nodes in total. The 48 ordinary
 positions trigger no extra searches. The scoped worker replay
 changes two of 106 reports and no played-mistake assessments.
+On the h3 board, a separate paired search scores the hypothetical
+Nxd5 at −547 centipawns against h3 at 0. The regression verifies
+that the new explanation for h3 does not alter the diagnosis of
+that error.
 
 ## Reproduction
 

@@ -29,6 +29,16 @@ describe("a quiet defence with a tactical drawback", () => {
         expect(after.moves[0]).toEqual(before.moves[0]);
     });
 
+    it("keeps a separate diagnosis of Nxd5 when the stronger move gains conditional evidence", () => {
+        const { input, probe, playedError } = fixture.heldout;
+        const recorded = { ...input, ...playedError };
+        const before = assessChessDecision(recorded)!;
+        const after = assessChessDecision({ ...recorded, quietReply: probe })!;
+        expect(before.mistake).not.toBeNull();
+        expect(after.mistake).toEqual(before.mistake);
+        expect(after.position.quietReply?.moveUci).toBe("h2h3");
+    });
+
     it("models several profitable answers without claiming a unique move order", () => {
         const { input, probe } = fixture.pawnAttack;
         const question = nominateQuietReply(input.fen, input.candidates[0], probe.replies, input.history)!;
