@@ -114,8 +114,15 @@ import {
     nominateSiblingRefutation,
     type SiblingRefutationFrames,
 } from "./decisionSiblingRefutation";
+import {
+    confirmCheckingOrder,
+    findCheckingOrderChoice,
+    nominateCheckingOrder,
+    type CheckingOrderEvidence,
+    type CheckingOrderProbe,
+} from "./decisionCheckingOrder";
 
-export const DECISION_ASSESSMENT_VERSION = 55;
+export const DECISION_ASSESSMENT_VERSION = 56;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -160,6 +167,7 @@ export type DecisionAssessmentInput = {
     preparedCheckpoint?: DecisionEngineLine[];
     extraPositionChoice?: ExtraPositionChoice;
     siblingRefutation?: SiblingRefutationFrames;
+    checkingOrder?: CheckingOrderProbe;
     sharedReply?: DecisionSharedReplyProbe;
     passerFlight?: PasserFlightProbe;
     checkingDefence?: CheckingDefenceProbe;
@@ -185,6 +193,7 @@ export type ChessDecisionReport = {
         legalChoices: number;
         rejectedChoices: number;
         tacticalContrast?: TacticalMistakeEpisode;
+        checkingOrder?: CheckingOrderEvidence;
         tacticalRecovery?: DecisionTacticalRecovery;
         preparedCheckpointRequest?: { fen: string; prefix: string[] };
         preparedCheckpoint?: { lineUci: string[]; alternativeUci: string[] };
@@ -212,6 +221,7 @@ export type ChessDecisionReport = {
               tacticalRecovery?: DecisionTacticalRecovery;
               pawnStructure?: PawnStructureEvidence;
               checkingDefenceRequest?: CheckingDefenceRequest;
+              checkingOrder?: CheckingOrderEvidence;
               passedAdvanceRequest?: PassedAdvanceRequest;
               passedAdvance?: PassedAdvanceEvidence;
           })
@@ -960,6 +970,18 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             };
         }
     }
+    if (!rejectedChoices && position.tactical.support !== "supported" && input.checkingOrder?.scope === "position") {
+        const request = findCheckingOrderChoice(input.fen, input.candidates);
+        const proof = request && confirmCheckingOrder(input.fen, request, input.checkingOrder.lines, input.history);
+        if (proof) {
+            position.checkingOrder = proof;
+            position.tactical = {
+                support: "supported",
+                basis: "engine-supported",
+                reasons: [proof.explanation],
+            };
+        }
+    }
     position.category = category(position.tactical, position.positional);
     position.limitations = [
         "The position assessment covers the candidate moves and replies examined in this search.",
@@ -1469,6 +1491,18 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     reasons: [tacticalEpisode.explanation],
                 };
             }
+            let checkingOrder: CheckingOrderEvidence | null = null;
+            if (input.checkingOrder?.scope === "mistake") {
+                const request = nominateCheckingOrder(input.fen, comparedBest, playedLine);
+                checkingOrder = request && confirmCheckingOrder(input.fen, request, input.checkingOrder.lines, input.history);
+                if (checkingOrder && assessment.tactical.support !== "supported") {
+                    assessment.tactical = {
+                        support: "supported",
+                        basis: "engine-supported",
+                        reasons: [checkingOrder.explanation],
+                    };
+                }
+            }
             assessment.category = category(assessment.tactical, assessment.positional);
             assessment.limitations = [
                 "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
@@ -1486,6 +1520,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 missed,
                 allowed,
                 ...(tacticalEpisode ? { tacticalEpisode } : {}),
+                ...(checkingOrder ? { checkingOrder } : {}),
                 ...(promotion ? { promotion } : {}),
                 ...(rookPressure ? { rookPressure } : {}),
                 ...(pawnStructure ? { pawnStructure } : {}),

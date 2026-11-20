@@ -68,4 +68,21 @@ for uci in [*amsterdam["history"]["moves"], amsterdam["recordedMove"]]:
     sans.append(board.san(move))
     board.push(move)
 fixture("Amsterdam Exchange", amsterdam["history"]["fen"], sans)
+
+if (fixtures / "checking-capture-order" / "fixture.json").is_file():
+    order = load("checking-capture-order", "fixture.json")
+    for scope, label in (("position", "Finnish Capture Order"), ("mistake", "Asian Capture Order"),
+                         ("counterattack", "Sardinia Capture Order")):
+        if scope not in order:
+            continue
+        target = order[scope]["input"]
+        history = target["history"]
+        moves = history["moves"] + ([target["playedMoveUci"]] if "playedMoveUci" in target else [])
+        board = chess.Board(history["fen"])
+        legal = []
+        for uci in moves:
+            move = board.parse_uci(uci)
+            legal.append(board.san(move))
+            board.push(move)
+        fixture(label, history["fen"], legal)
 print("Isolated app settings and legal PGN fixtures prepared.")

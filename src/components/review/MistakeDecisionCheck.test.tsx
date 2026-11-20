@@ -22,6 +22,7 @@ vi.mock("@/state/atoms", async () => {
   };
 });
 vi.mock("@/components/panels/tactics/decisionSearch", () => ({
+  DECISION_SEARCH_SESSION_MS: 28_000,
   gatherDecisionEvidence: mocks.gather,
 }));
 vi.mock("@/components/panels/tactics/decisionReportWorker", () => ({

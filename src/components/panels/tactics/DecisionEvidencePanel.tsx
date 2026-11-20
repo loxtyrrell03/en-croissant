@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import type { LocalEngine } from "@/utils/engines";
 import type { DecisionEndgameAssessment } from "@/utils/tacticalMotifs/decisionEndgame";
+import type { CheckingOrderEvidence } from "@/utils/tacticalMotifs/decisionCheckingOrder";
 import type {
   ChessDecisionReport,
   DecisionAssessment,
@@ -17,6 +18,7 @@ import { DecisionEndgameCheck } from "./DecisionEndgameCheck";
 import {
   DECISION_SEARCH_SESSION_MS,
   gatherCheckingDefence,
+  gatherCheckingOrder,
   gatherDecisionEvidence,
   gatherExtraPositionChoice,
   gatherPassedAdvance,
@@ -93,12 +95,14 @@ function EvidenceSummary({
   children,
   comparedLines,
   exactTactic,
+  checkingOrder,
 }: {
   title: string;
   assessment: DecisionAssessment;
   children?: React.ReactNode;
   comparedLines?: Array<{ label: string; san: string }>;
   exactTactic?: string;
+  checkingOrder?: CheckingOrderEvidence;
 }) {
   const [expanded, setExpanded] = useState(false);
   const tactical = { label: "Tactical", value: assessment.tactical };
@@ -106,10 +110,14 @@ function EvidenceSummary({
   const dimensions = exactTactic ? [positional, tactical] : [tactical, positional];
   const reasons = [
     ...(exactTactic ? [{ label: "Tactical", reason: exactTactic, basis: "Tablebase verified" }] : []),
+    ...(checkingOrder ? [{
+      label: "Tactical", reason: checkingOrder.explanation, basis: basisLabels["engine-supported"],
+    }] : []),
     ...dimensions.flatMap(({ label, value }) =>
       value.support === "unestablished"
         ? []
-        : value.reasons.map((reason) => ({ label, reason, basis: basisLabels[value.basis] })),
+        : value.reasons.filter((reason) => reason !== checkingOrder?.explanation)
+            .map((reason) => ({ label, reason, basis: basisLabels[value.basis] })),
     ),
   ];
   const category = exactTactic
@@ -297,6 +305,15 @@ function EvidenceSummary({
   );
 }
 
+function checkingOrderLines(fen: string, proof?: CheckingOrderEvidence) {
+  if (!proof) return [];
+  return [
+    { label: "Check first", san: lineSan(fen, proof.checkingLineUci) },
+    { label: "Take immediately", san: lineSan(fen, proof.immediateCaptureLineUci) },
+    { label: "Better line", san: lineSan(fen, proof.betterLineUci) },
+  ];
+}
+
 function DecisionReport({
   report,
   playedSan,
@@ -345,6 +362,9 @@ function DecisionReport({
             : []),
         ]
       : [];
+  for (const line of checkingOrderLines(report.fen, report.mistake?.checkingOrder)) {
+    if (!mistakeLines.some(({ label }) => label === line.label)) mistakeLines.push(line);
+  }
   for (const [comparison, detail] of [
     [rookPressure, "rook comparison"],
     [pawnStructure, "pawn structure"],
@@ -400,6 +420,7 @@ function DecisionReport({
         title="Position character"
         assessment={report.position}
         exactTactic={exactDefence?.avoidingCapture}
+        checkingOrder={report.position.checkingOrder}
         comparedLines={[
           ...(contrast
             ? [
@@ -412,6 +433,7 @@ function DecisionReport({
               ]
             : []),
           ...recoveryLines(report.fen, report.position.tacticalRecovery, "alternative"),
+          ...checkingOrderLines(report.fen, report.position.checkingOrder),
           ...(checkpoint
             ? [
                 { label: "Tactical continuation", san: lineSan(report.fen, checkpoint.lineUci) },
@@ -477,6 +499,7 @@ function DecisionReport({
         <EvidenceSummary
           title={exactMistakeTitle ?? (playedSan ? `What ${playedSan} missed or allowed` : "Mistake mechanism")}
           assessment={report.mistake}
+          checkingOrder={report.mistake.checkingOrder}
           comparedLines={mistakeLines}
           exactTactic={exactMistake?.reply?.cause}
         >
@@ -659,9 +682,10 @@ export function DecisionEvidencePanel({
           deadline,
         );
         if (active() && preparedCheckpoint.length) {
+          input = { ...input, preparedCheckpoint };
           report = await classifyDecisionInWorker(
             {
-              input: { ...input, preparedCheckpoint },
+              input,
               engineName: engine.name,
               history: target.history,
             },
@@ -674,8 +698,25 @@ export function DecisionEvidencePanel({
           engine, target, input, owned.signal, deadline, progress,
         );
         if (active() && siblingRefutation) {
+          input = { ...input, siblingRefutation };
           report = await classifyDecisionInWorker(
-            { input: { ...input, siblingRefutation }, engineName: engine.name, history: target.history },
+            { input, engineName: engine.name, history: target.history },
+            owned.signal,
+          ).catch(() => report);
+        }
+      }
+      const scopes = {
+        mistake: !!report.mistake,
+        position: report.position.tactical.support !== "supported",
+      };
+      if ((scopes.mistake || scopes.position) && active() && Date.now() < deadline) {
+        const checkingOrder = await gatherCheckingOrder(
+          engine, target, input, scopes, owned.signal, deadline, progress,
+        );
+        if (active() && checkingOrder) {
+          input = { ...input, checkingOrder };
+          report = await classifyDecisionInWorker(
+            { input, engineName: engine.name, history: target.history },
             owned.signal,
           ).catch(() => report);
         }

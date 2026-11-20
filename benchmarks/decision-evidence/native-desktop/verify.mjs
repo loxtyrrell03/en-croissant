@@ -156,4 +156,47 @@ await scenario("Exact Rook Ending", async page => {
   return { position: board, mistake };
 });
 
+if (wanted.has("Finnish Capture Order")) {
+  await run("Finnish Capture Order", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse position");
+    const text = await (await expandPosition(page)).innerText();
+    assert.match(text, /\bMixed\b/i);
+    assert.match(text, /Be3/);
+    assert.match(text, /Check first\..*Rd1\+/);
+    assert.match(text, /Take immediately\..*gxf4/);
+    assert.match(text, /Qxd3/);
+    return { position: text };
+  });
+}
+
+if (wanted.has("Asian Capture Order")) {
+  await run("Asian Capture Order", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const section = page.getByText("What Nxd5 missed or allowed", { exact: true }).locator("../..");
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const text = await section.innerText();
+    assert.match(text, /Check first\..*Qxh2\+.*hxg5\+/);
+    assert.match(text, /Take immediately\..*hxg5.*Nxc7\+/);
+    return { mistake: text };
+  });
+}
+
+if (wanted.has("Sardinia Capture Order")) {
+  await run("Sardinia Capture Order", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const section = page.getByText("What f4 missed or allowed", { exact: true }).locator("../..");
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const text = await section.innerText();
+    assert.match(text, /Tactical · Engine supported\. After f4.*Taking immediately allows fxg5 to capture the queen/);
+    assert.match(text, /Check first\..*Qxg4\+.*Bxf1/);
+    return { mistake: text };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

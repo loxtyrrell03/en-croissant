@@ -46,6 +46,11 @@ import {
     nominateSiblingRefutation,
     type SiblingRefutationFrames,
 } from "@/utils/tacticalMotifs/decisionSiblingRefutation";
+import {
+    findCheckingOrderChoice,
+    nominateCheckingOrder,
+    type CheckingOrderProbe,
+} from "@/utils/tacticalMotifs/decisionCheckingOrder";
 
 export type DecisionSearchTarget = {
     fen: string;
@@ -379,6 +384,46 @@ export async function gatherSiblingRefutation(
         const control = cached ??
             (await query(choice.controlFen, choice.safeStep.uci, [choice.replyUci]))[0];
         return control ? { reply, control } : undefined;
+    } catch {
+        signal.throwIfAborted();
+        return;
+    }
+}
+
+export async function gatherCheckingOrder(
+    engine: LocalEngine,
+    target: DecisionSearchTarget,
+    input: DecisionAssessmentInput,
+    scopes: { mistake: boolean; position: boolean },
+    signal: AbortSignal,
+    deadline: number,
+    progress: (phase: string) => void,
+): Promise<CheckingOrderProbe | undefined> {
+    signal.throwIfAborted();
+    if (Date.now() >= deadline) return;
+    const pair = input.comparisonCandidates ?? input.candidates;
+    const played = pair.find((line) => line.pvUci[0] === target.playedMoveUci);
+    const mistake = scopes.mistake &&
+        pair[0]?.pvUci[0] === input.candidates[0]?.pvUci[0] && played
+        ? nominateCheckingOrder(target.fen, pair[0], played)
+        : null;
+    const request = mistake ?? (scopes.position && findCheckingOrderChoice(target.fen, input.candidates));
+    if (!request) return;
+    const scope = mistake ? "mistake" : "position";
+    const knownReplies = [input.positionReply, ...(input.replyProbes ?? [])]
+        .find((probe) => probe?.moveUci === request.choice.uci)?.lines ?? [];
+    const matching = request.moves.map((uci) => knownReplies.find((line) => line.pvUci[0] === uci));
+    const [check, take] = matching;
+    if (check && take && check.depth === take.depth && check.depth >= 16) {
+        return { scope, lines: [check, take] };
+    }
+    progress("Comparing the check with taking immediately…");
+    try {
+        const lines = await searchDecisionCheckpoint(
+            engine, { fen: request.fen, prefix: [request.choice.uci] }, signal, deadline,
+            target.history, request.moves, 1_400_000, 2,
+        );
+        return lines.length === 2 ? { scope, lines } : undefined;
     } catch {
         signal.throwIfAborted();
         return;
