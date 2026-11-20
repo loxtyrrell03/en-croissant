@@ -4313,3 +4313,21 @@ at both budgets. A blanket later material window misses that tactic
 and still accepts the Sants claim. All 1,050 valid archive reports
 agree, and the worker uses no extra searches.
 [Results, engine frames and controls](../benchmarks/decision-evidence/capture-retention/README.md)
+
+
+## An avoidable mate in three without a second played reply
+
+The worker can use an exact paired search to nominate the mating start,
+then prove the attack against every defence and rule out a mate in three
+after the scored alternative. Quiet starts can be verified. When the
+paired search suffices, the app skips the separate played reply and
+preserves the leading reply.
+
+On held-out public games the method recovers all 12 verified mates when
+the separate played reply is omitted. There were zero calls among 92
+controls. The complete-frame count is 12 with either version. A shallow
+separate reply in development had hidden one of nine verified mates.
+The new check recovers it using the valid paired frame. A live app
+search replay needs three queries instead of four. The source-built
+panel shows the mate and an exact defence against the same attack.
+[Legal proof, scored replay and live checks](../benchmarks/decision-evidence/played-mate-in-three/README.md)

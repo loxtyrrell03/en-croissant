@@ -26,6 +26,7 @@ import type {
 } from "@/utils/tacticalMotifs/decisionCheckingDefence";
 import { findAllowedImmediateMate } from "@/utils/tacticalMotifs/decisionMateConsequence";
 import { findAllowedMateInTwo } from "@/utils/tacticalMotifs/decisionAllowedMateInTwo";
+import { findAllowedMateInThree } from "@/utils/tacticalMotifs/decisionAllowedMateInThree";
 import {
     compareExtraPositionMove,
     nominatePositionRefutation,
@@ -460,7 +461,11 @@ export async function gatherDecisionEvidence(
                   (line) => afterMove(fen, line.pvUci[0]) === afterMove(fen, playedMoveUci),
               )
             : undefined;
-    for (const root of played ? [played, best] : [best]) {
+    const provedMateInThree =
+        played && (played.mate ?? 0) <= -3 && comparison
+            ? findAllowedMateInThree(fen, best, playedMoveUci, comparison, [], history)
+            : null;
+    for (const root of played && !provedMateInThree ? [played, best] : [best]) {
         const moveUci = root.pvUci[0];
         const nextFen = afterMove(fen, moveUci);
         const nextHistory = history

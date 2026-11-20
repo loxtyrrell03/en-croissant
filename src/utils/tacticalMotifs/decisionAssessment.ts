@@ -37,6 +37,7 @@ import {
     type DecisionMateConsequence,
 } from "./decisionMateConsequence";
 import { findAllowedMateInTwo } from "./decisionAllowedMateInTwo";
+import { findAllowedMateInThree } from "./decisionAllowedMateInThree";
 import type { TacticalGameHistory } from "./gameHistory";
 import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
 import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
@@ -102,7 +103,7 @@ import {
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 50;
+export const DECISION_ASSESSMENT_VERSION = 51;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -970,6 +971,15 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             replyFor(played),
         );
     }
+    if (!mateConsequence)
+        mateConsequence = findAllowedMateInThree(
+            input.fen,
+            first,
+            input.playedMoveUci,
+            comparison,
+            input.replyProbes?.find((probe) => probe.moveUci === input.playedMoveUci)?.lines ?? [],
+            input.history,
+        );
     if (mateConsequence) {
         mistakeStatus = "assessed";
         mistake = {

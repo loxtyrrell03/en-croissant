@@ -1,0 +1,678 @@
+{
+  "baseline": "c9e35249",
+  "product": "Decision Evidence v51",
+  "provenance": {
+    "development": {
+      "sampleSha256": "3d30275cc3cfb7419490e2dca60d064537ed1ab8142e74b016ca4a934c0f440c",
+      "scoredSha256": "3dd12f893d1002b797287ff9cd780bbb60c353f146ab86545f60d8257dcdba91",
+      "referenceSha256": "78ccd8a738c4d90669158f9c1836dee0a384799b11fc66b1bb64ce2820aef021",
+      "events": 14,
+      "strata": {
+        "new-short": 16,
+        "existing-mate": 10,
+        "new-longer": 6,
+        "finite-loss": 8,
+        "immediate": 8
+      },
+      "referenceReasons": {
+        "legal-mate-in-three-is-avoidable": 9,
+        "leading-score-is-mate": 8,
+        "played-is-not-exactly-three": 25,
+        "same-root-move": 6
+      }
+    },
+    "reserve": {
+      "sampleSha256": "8e8863936b9e1fb5e87ad224c6e2b009b6e53b3460ead54550149172433a9b71",
+      "scoredSha256": "a27bf8bd49161ae2000b0d6c485ffce08d9b9898e929d4cdccc4e43941195547",
+      "referenceSha256": "f2d9ffb6c72cb5b716ccfaa5b523440df880fc328c395580bb7d1c83cec297e8",
+      "events": 36,
+      "strata": {
+        "new-short": 36,
+        "existing-mate": 18,
+        "new-longer": 14,
+        "finite-loss": 22,
+        "immediate": 14
+      },
+      "referenceReasons": {
+        "legal-mate-in-three-is-avoidable": 12,
+        "played-is-not-exactly-three": 71,
+        "leading-score-is-mate": 16,
+        "same-root-move": 5
+      }
+    }
+  },
+  "groups": {
+    "development": {
+      "dev-base": {
+        "count": 48,
+        "truePositive": 8,
+        "falsePositive": 0,
+        "falseNegative": 1,
+        "trueNegative": 39,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 30.61
+      },
+      "dev-original-nominated": {
+        "count": 48,
+        "truePositive": 8,
+        "falsePositive": 0,
+        "falseNegative": 1,
+        "trueNegative": 39,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 31.91
+      },
+      "dev-original-checking": {
+        "count": 48,
+        "truePositive": 8,
+        "falsePositive": 0,
+        "falseNegative": 1,
+        "trueNegative": 39,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 34.08
+      },
+      "dev-original-all": {
+        "count": 48,
+        "truePositive": 8,
+        "falsePositive": 0,
+        "falseNegative": 1,
+        "trueNegative": 39,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 39.44
+      },
+      "dev-original-shown": {
+        "count": 48,
+        "truePositive": 8,
+        "falsePositive": 0,
+        "falseNegative": 1,
+        "trueNegative": 39,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 32.31
+      },
+      "dev-v2": {
+        "count": 48,
+        "truePositive": 9,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 39,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 41.41
+      },
+      "prod-dev-final": {
+        "count": 48,
+        "truePositive": 9,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 39,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [
+          {
+            "id": "4c2b15e2480676bd",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "b6c6",
+              "f3f2",
+              "d2c3",
+              "f2b2",
+              "c3d3",
+              "b2c2"
+            ],
+            "avoidingMoveUci": "a6f1",
+            "avoidingLineUci": [
+              "a6f1",
+              "f3f2",
+              "f1f2"
+            ],
+            "explanation": "Rxc6 permits Qxf2+, which forces mate within three moves. Qf1 avoids mate within three moves. If Qxf2+ is tried anyway, Qxf2 stops that mating line."
+          }
+        ],
+        "medianWorkerMs": 33.06
+      }
+    },
+    "reserve": {
+      "reserve-full-base": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 74.24
+      },
+      "reserve-nominated": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 72.98
+      },
+      "reserve-checking": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 78.54
+      },
+      "reserve-all": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 91.85
+      },
+      "reserve-shown": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 76.84
+      },
+      "reserve-incomplete-base": {
+        "count": 104,
+        "truePositive": 0,
+        "falsePositive": 0,
+        "falseNegative": 12,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 59.01
+      },
+      "reserve-incomplete": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 63.22
+      },
+      "prod-full-final": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [],
+        "medianWorkerMs": 62.68
+      },
+      "prod-incomplete-final": {
+        "count": 104,
+        "truePositive": 12,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "trueNegative": 92,
+        "unknown": 0,
+        "calledOnUnknown": 0,
+        "newProofs": [
+          {
+            "id": "06d80b1b9ca42407",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "a6a3",
+              "c8c7",
+              "d8c7",
+              "c2c7",
+              "e7f8",
+              "e3h6"
+            ],
+            "avoidingMoveUci": "h7h5",
+            "avoidingLineUci": [
+              "h7h5",
+              "c8c7",
+              "d8c7"
+            ],
+            "explanation": "Qxa3 permits Rc7+, which forces mate within three moves. h5 avoids mate within three moves. If Rc7+ is tried anyway, Bxc7 stops that mating line."
+          },
+          {
+            "id": "092fcba0915617e6",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "d2d6",
+              "e3e1",
+              "g1g2",
+              "b6g1",
+              "g2f3",
+              "e1e3"
+            ],
+            "avoidingMoveUci": "d2d4",
+            "avoidingLineUci": [
+              "d2d4",
+              "e3e1",
+              "d1e1"
+            ],
+            "explanation": "Qxd6 permits Re1+, which forces mate within three moves. Qd4 avoids mate within three moves. If Re1+ is tried anyway, Rxe1 stops that mating line."
+          },
+          {
+            "id": "097306ec652ffb2a",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "h1h2",
+              "f8d6",
+              "h2h1",
+              "e2e1",
+              "b1e1",
+              "f2e1"
+            ],
+            "avoidingMoveUci": "c6a8",
+            "explanation": "Kh2 permits Bd6+, which forces mate within three moves. Qa8 avoids mate within three moves. It makes the same Bd6+ reply illegal."
+          },
+          {
+            "id": "0b482d8db13e0930",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "f1g1",
+              "g6b1",
+              "a3c1",
+              "b1c1",
+              "g1g2",
+              "c1f1"
+            ],
+            "avoidingMoveUci": "f1e1",
+            "avoidingLineUci": [
+              "f1e1",
+              "g6b1",
+              "e1d2"
+            ],
+            "explanation": "Kg1 permits Qb1+, which forces mate within three moves. Ke1 avoids mate within three moves. If Qb1+ is tried anyway, Kxd2 stops that mating line."
+          },
+          {
+            "id": "0d0f762fd46cd03e",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "b6b2",
+              "a7a8",
+              "b2b8",
+              "a8b8",
+              "g8g7",
+              "f5f6"
+            ],
+            "avoidingMoveUci": "b6b5",
+            "avoidingLineUci": [
+              "b6b5",
+              "a7a8",
+              "g8g7"
+            ],
+            "explanation": "Rb2 permits Ra8+, which forces mate within three moves. Rb5 avoids mate within three moves. If Ra8+ is tried anyway, Kg7 stops that mating line."
+          },
+          {
+            "id": "17fd965529a5b31d",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "d2e2",
+              "h6a6",
+              "c7c4",
+              "a6c4",
+              "e3d3",
+              "c4d3"
+            ],
+            "avoidingMoveUci": "d2c3",
+            "avoidingLineUci": [
+              "d2c3",
+              "h6a6",
+              "e3f3"
+            ],
+            "explanation": "Kxe2 permits Qa6+, which forces mate within three moves. Kc3 avoids mate within three moves. If Qa6 is tried anyway, Rxf3+ stops that mating line."
+          },
+          {
+            "id": "194c5971b8b90e91",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "f2g2",
+              "h4h2",
+              "g2f3",
+              "h2h3",
+              "f3f2",
+              "h1f1"
+            ],
+            "avoidingMoveUci": "e3g3",
+            "avoidingLineUci": [
+              "e3g3",
+              "h4h2",
+              "g3h2"
+            ],
+            "explanation": "Kg2 permits Qh2+, which forces mate within three moves. Qg3 avoids mate within three moves. If Qh2+ is tried anyway, Qxh2 stops that mating line."
+          },
+          {
+            "id": "1fafd10b868bbbb4",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "g3g1",
+              "d7h3",
+              "f1f2",
+              "h1h2",
+              "g1g2",
+              "h3g2"
+            ],
+            "avoidingMoveUci": "e2g1",
+            "avoidingLineUci": [
+              "e2g1",
+              "d7h3",
+              "g3h3"
+            ],
+            "explanation": "Rg1 permits Qh3+, which forces mate within three moves. Ng1 avoids mate within three moves. If Qh3+ is tried anyway, Rxh3 stops that mating line."
+          },
+          {
+            "id": "24ba9d797b5910ec",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "h4h5",
+              "e1e5",
+              "g4g5",
+              "e5g5",
+              "h5h6",
+              "f8f6"
+            ],
+            "avoidingMoveUci": "h4g3",
+            "avoidingLineUci": [
+              "h4g3",
+              "e1e5",
+              "a4c6"
+            ],
+            "explanation": "Kh5 permits Rxe5+, which forces mate within three moves. Kg3 avoids mate within three moves. If Rxe5 is tried anyway, Qxc6 stops that mating line."
+          },
+          {
+            "id": "32237ea050a835a9",
+            "quiet": false,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "d5e4",
+              "f6f7",
+              "e8f7",
+              "e7d8q",
+              "f7g6",
+              "d8g5"
+            ],
+            "avoidingMoveUci": "e2e4",
+            "explanation": "Be4 permits f7+, which forces mate within three moves. Re4+ avoids mate within three moves. It makes the same f7+ reply illegal."
+          },
+          {
+            "id": "3daf411b1119e3d0",
+            "quiet": true,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "f6e4",
+              "d1h5",
+              "g7h6",
+              "h5h6",
+              "e4d2",
+              "h1g1"
+            ],
+            "avoidingMoveUci": "d6d5",
+            "avoidingLineUci": [
+              "d6d5",
+              "d1h5",
+              "g7h6"
+            ],
+            "explanation": "Nxe4 permits Qh5, which forces mate within three moves. d5 avoids mate within three moves. If Qh5 is tried anyway, Qxh6+ stops that mating line."
+          },
+          {
+            "id": "43d7c8cc0d195d97",
+            "quiet": true,
+            "kind": "allowed",
+            "mateIn": 3,
+            "proof": "legal",
+            "lineUci": [
+              "f5f4",
+              "b5d4",
+              "g5g4",
+              "f3f4",
+              "g4g3",
+              "d4f3"
+            ],
+            "avoidingMoveUci": "g5g4",
+            "explanation": "f4 permits Nd4, which forces mate within three moves. g4+ avoids mate within three moves. It makes the same Nd4 reply illegal."
+          }
+        ],
+        "medianWorkerMs": 51.14
+      }
+    }
+  },
+  "archive": {
+    "requests": 1051,
+    "valid": 1050,
+    "changedByScope": {
+      "position": 0,
+      "moves": 0,
+      "mistake": 0,
+      "mistakeStatus": 0
+    }
+  },
+  "heldoutSavedCompletedReplyNodes": 15204250,
+  "live": {
+    "base-pinned": {
+      "elapsedMs": 2445.1292999999996,
+      "askedPlayedReply": true,
+      "queries": [
+        {
+          "nodes": 600000,
+          "searched": 600318,
+          "restricted": [],
+          "historyPlies": 105,
+          "last": "a7b5"
+        },
+        {
+          "nodes": 600000,
+          "searched": 600043,
+          "restricted": [
+            "g5g4",
+            "f5f4"
+          ],
+          "historyPlies": 105,
+          "last": "a7b5"
+        },
+        {
+          "nodes": 1000000,
+          "searched": 1000035,
+          "restricted": [],
+          "historyPlies": 106,
+          "last": "f5f4"
+        },
+        {
+          "nodes": 1000000,
+          "searched": 1000632,
+          "restricted": [],
+          "historyPlies": 106,
+          "last": "g5g4"
+        }
+      ],
+      "mate": {
+        "kind": "allowed",
+        "mateIn": 3,
+        "lineUci": [
+          "f5f4",
+          "b5d6",
+          "g5g4",
+          "f3f4",
+          "g4h3",
+          "d6f5"
+        ],
+        "explanation": "After f4, the opponent's separate search confirms mate in 3. The displayed continuation ends in legal checkmate."
+      }
+    },
+    "product": {
+      "elapsedMs": 1684.6796,
+      "askedPlayedReply": false,
+      "queries": [
+        {
+          "nodes": 600000,
+          "searched": 600318,
+          "restricted": [],
+          "historyPlies": 105,
+          "last": "a7b5"
+        },
+        {
+          "nodes": 600000,
+          "searched": 600043,
+          "restricted": [
+            "g5g4",
+            "f5f4"
+          ],
+          "historyPlies": 105,
+          "last": "a7b5"
+        },
+        {
+          "nodes": 1000000,
+          "searched": 1000632,
+          "restricted": [],
+          "historyPlies": 106,
+          "last": "g5g4"
+        }
+      ],
+      "mate": {
+        "kind": "allowed",
+        "mateIn": 3,
+        "proof": "legal",
+        "lineUci": [
+          "f5f4",
+          "b5d4",
+          "g5g4",
+          "f3f4",
+          "g4g3",
+          "d4f3"
+        ],
+        "avoidingMoveUci": "g5g4",
+        "explanation": "f4 permits Nd4, which forces mate within three moves. g4+ avoids mate within three moves. It makes the same Nd4 reply illegal."
+      }
+    }
+  },
+  "sourceFiles": {
+    "paired-causal-probe/raw/allsvenskan-2627-swedish-team-championship-2qemJLs5.pgn": "94b3cf8f9ee3b3a9ee19bb11b10e6a85438b0e377777495425d7040c49b8edf0",
+    "shelter-after-exchanges/sants-a.pgn": "079282c8284e3439fdfc01ed8edab95ed9df38d8db1d3fd481c7ad36599f3b23",
+    "aligned-strategic-plans/challenge/british-championship.pgn": "2cba83d6f233b4dc419975296c895d9c786e831053bd6ce1a3a75c19a662fbf7",
+    "strategic-asset-contrast/raw/kenya-MQBrArWd.pgn": "7d9fdefc1d7b09cce57941cb765c9bd634c62bc73f08f365dd6b42385e744225",
+    "quick-nomination-transfer/dutch-open.pgn": "a9431bcedc8d9e55855909c04ea77a69278fe64e0ab12dd11707f0852ed8460e",
+    "coordination-and-cached-defences/fresh/ny-girls.pgn": "cdc49ebd994f9da954842fa583f9b72c7844757ce1d928786f4bd597e62b5bcf",
+    "shared-central-plans/structural-challenge/slovenian-league-2026.pgn": "399dd6a04b9ef40a5b6c647029d9859e6f99968b0d605c7304e052b04af11ed0",
+    "strategic-asset-contrast/replication/raw/vechta-77Bo6Z9C.pgn": "9a7d50010335e611ad408b3b368c89c0e761aebf46be1d4cefda163154916308",
+    "mixed-mistake-contrast/raw/slovenia-bqazI8nB.pgn": "a0f937b44e8f1f5317e9452ee0434418d068eb06161d525ffb0ce3c920c42194",
+    "strategic-asset-contrast/raw/kenya-WT4yuPmA.pgn": "10d7b3e252f2d477bba390618d100309f9e1f374d804f205be0c05ef078ce1f8",
+    "strategic-asset-contrast/reserve/raw/serbian-super-league-2026-al8DbLfb.pgn": "d6e3ccd3ba40e036f15a01f4ec244853e2377809200cbaad037b20b006f544b2",
+    "paired-causal-probe/raw/allsvenskan-2627-swedish-team-championship-09x0RAmi.pgn": "d15953676b5251c05e2def27ea422b064a4e3fe1a996664ba4922b88c75391df",
+    "mixed-mistake-contrast/raw/slovenia-5Q02uSJA.pgn": "8c8da5c349ac3a305b1c19a494d1aa2c2c939615ee89fa5fedba8aa683b69c79",
+    "paired-causal-probe/raw/allsvenskan-2627-swedish-team-championship-gYL8PpMJ.pgn": "297fcac19d8851dcebf91f7639df20827a6d973d5faa5172a025ee8d8a6ae36b",
+    "file-use-transfer/british-major-open-2026-r6.pgn": "0b47b20f265f4ce4ca14e4a390f30f1adf54d06c5a144ab223836c5b15467006",
+    "defensive-recovery/bavarian.pgn": "cd8fbf2e5da6b6ccf043abe634d9b94931721e893fc91396c08538097258f7e8",
+    "strategic-asset-contrast/reserve/raw/romanian-team-chess-championships-pe8pd64b.pgn": "8fc89c1477f2cf0730754084b59dbceeebe91071c95206d164988b0e048582f2",
+    "missed-tactical-families/groningen.pgn": "9b16580ba50215153da33031effc18928ce2f124b07e668116f7c351fd7eb506",
+    "strategic-asset-contrast/replication/raw/vechta-J9bSGUST.pgn": "44b0a347dd800189db9f3468d7e1a65b6c34e4991feb9ecacf2c69472704e56c",
+    "strategic-asset-contrast/raw/baden-wurttemberg-ObI5kKPA.pgn": "b40ecc2216b8b3163133414ceec47c1335c724236f91e97b2deb8b538058e637",
+    "strategic-asset-contrast/reserve/raw/serbian-super-league-2026-Itn5GZof.pgn": "34314bf451de1e58c02c3f31370cb8c7c8f7905eb0662c68044e05f65e24699b",
+    "mixed-mistake-contrast/raw/slovenia-2unO1nXK.pgn": "cae6a8f3ef325a969de8e1491776537a351321fd2eb65a3849cfeede60e62e7f",
+    "passer-interception-transfer/late-reserve/raw/poland-vcIdhifR.pgn": "75ab74109fb15f71fc5522482e3f531e99ab4b4921424c7a441f208db371eb26",
+    "otb-transfer/calvia-r4.pgn": "137a1754dbe7a1327b5d18d27c769a2363684825667bdbf2c94988f5ed1b59b5",
+    "passed-pawn-mistake-transfer/clubwomen.pgn": "925ca2273901e489e7521851c0122b3e00a532048c1cb0ce0c990e9c81fe8947",
+    "structural-tradeoffs/arco.pgn": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18",
+    "passer-interception-transfer/late-reserve/raw/poland-bLaUj5vJ.pgn": "acf4acfed455894871aad12536f0eb87afaa3e8d1cac8d793ea58c3ff155993b",
+    "mixed-mistake-contrast/raw/germany-LHHlsufz.pgn": "5832ed5f30056859d540025027c5aa4e2115710cc8f8fd56894aab1a45df3423",
+    "quick-nomination-transfer/european-women.pgn": "2623b600973a334f8f459818431b32c5f88b5211a1892a21cee9b46209c15bb5",
+    "shelter-after-exchanges/biel-masters.pgn": "d4040be3cb26790004a76b7cdc30683e4b26f87a52e4bb2bfe386a8bafc969e1",
+    "passed-pawn-choices/world-seniors-65-2026.pgn": "57ad6743504ed363bf55fcb750eb3f0f7d84df6d6eedc811a548b1936c5193bf",
+    "passer-interception-transfer/late-reserve/raw/turkey-zbeM6PPX.pgn": "82ebd4d5a45570a474382a2c4373b99f2bea8f4358c62e3ea47d770dbb59d995",
+    "otb-transfer/4ncl-r4.pgn": "d8520a476efe505e4767d72599cee3cba3326ef11138c9f7b80b4fb6fcdf095f",
+    "strategic-asset-contrast/replication/raw/hoogeveen-B1DrjUVO.pgn": "1d92bda4b20504dbb5aa92d4a398a73c6778bd7011928cce1942a332e49a1c8c",
+    "shelter-after-exchanges/biel-amateur.pgn": "53106a4f24412334e8cc996f03fb2c84d50ed032aa0e935850f7426ad1238fb1",
+    "shelter-after-exchanges/sants-b.pgn": "6015d3892665072c978b8f8bf932632dc2f49627856710f747c9f3163648dbb5",
+    "coordination-and-cached-defences/fresh/czech.pgn": "909413f5a46d5604717bf47a7ab3f643c05bddb9bce03f098285a02f2bd1c6fc",
+    "strategic-asset-contrast/replication/raw/vicenza-vlGeyYHK.pgn": "e097bcfb0850d5cdc8f342148da354dbfffea8b346e3829508a6f88a334ab51b",
+    "unified-audit/senior-2025-open65.pgn": "10a64723a2defae058a33a9a3e293fcc59d22196005dfce0afea3788a916c8a4",
+    "missed-tactical-families/spain.pgn": "d17fade6b8622ba88b353b9cf5cea5aa2a53cd8148ef7e89840b73a5b868153c",
+    "passed-pawn-mistake-transfer/olympiad.pgn": "5de1bea0dd205641078cc9184e595e50a2a0b2f09cc8d4ba2a22e7fc1670d70d",
+    "strategic-asset-contrast/replication/raw/munster-B8Gqv1Pd.pgn": "b3aee322c588ca2309add7f3e430854b035766a120b798559fa32dd147b569c3",
+    "promotion-mistake-transfer/challengers.pgn": "89aa94c72a2f352938aaf9387fe2783c332efa2086a23389ca01b8b341c8ecb3",
+    "coordination-and-cached-defences/fresh/revolucion.pgn": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7",
+    "position-transfer/london-open-r5.pgn": "e4d5835c7d61c4efcfde14b7eb2fe2e89abd685c6d2d31bdfcb5301ae860b87d",
+    "aligned-strategic-plans/challenge/hastings-masters.pgn": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4",
+    "missed-tactical-families/junior.pgn": "0727c67ea1087bf194ba3c2da492f0d8835ce751e31f86055fa0f449cc996cc9",
+    "position-transfer/4ncl-division2-r5.pgn": "36cb2b73f8f14c539b99ea46e4b94df2ba9ddb29220e8511bba27e3fad95079d",
+    "rook-file-consequence/team-open.pgn": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+    "mixed-position-transfer/british-championship.pgn": "944ddee3f96212d7a65532b23754d5ec0e5e95283692b6803203e62a148d6e85",
+    "passer-interception-transfer/late-reserve/raw/poland-0F78yJIi.pgn": "f5c34a157d7a5d2c6c42a6b580524e2bf8c1c72824e4801c95fac3e19f1873c7",
+    "strategic-asset-contrast/replication/raw/hoogeveen-U37LK7X8.pgn": "245591ee0e5d9c1427107225f397871cc3724290b5809e53186ac73a2b3d8483",
+    "passer-interception-transfer/late-reserve/raw/turkey-ndTfO720.pgn": "3bd584eb60fc06381f5b5e83caebcfe242054d4d8a29dfbe1814a10b0e4fbd7f",
+    "mixed-mistake-contrast/raw/germany-dppuxRu1.pgn": "a92483a1115dfbdfe6f74b7cf7f4c0b9568328e4eccc76c9a44d3980e9fe975c",
+    "rook-file-consequence/buongoma.pgn": "7c38efe6490a20f003a3efe8d2220eb139a9761221b811f79bf3b4bce79c3ec1",
+    "opened-ray-exchanges/raw/oberliga-baden-spdi3HMW.pgn": "eb7a367054e8037d8afa96546af74a465cd9c60a6043b259889f0d8fda6c02eb",
+    "strategic-asset-contrast/replication/raw/vicenza-NdjgRC2K.pgn": "e4547fdf8c9d423d0d87644490545972bc35b404d9e9cb58af111144fb938226",
+    "passer-interception-transfer/late-reserve/raw/poland-wwrkku5B.pgn": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+    "strategic-asset-contrast/reserve/raw/dutch-meesterklasse-2026-2027-isTlRIXU.pgn": "230db3124caa2e35547f118560b5b9cf376ec6341ae2eb43710aaa0c666d5d05",
+    "passed-pawn-choices/challenge/world-seniors-50-2026-event.pgn": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+    "strategic-asset-contrast/replication/raw/calvia-xRDG10tY.pgn": "bbd0839650849c0fa5c63a2e226fae27f233b18e4aec9c41ac48c2a83ca020a9",
+    "mixed-position-transfer/club-cup.pgn": "7b3486990249029a0cc0a30d9bc6765de8d9516ddb943ef7b9e2f5dbf009c095",
+    "played-immediate-mate/wittelsbach-all.pgn": "8d30ffd55cd602172778f229250f49fbd3907db48611549d03bf923ca03a9020",
+    "strategic-asset-contrast/replication/raw/munster-H8O9v8Hg.pgn": "6c74e20b4f986ef8a48946ab0c356fbe050893dfe6d410eb9c7be9da23b68187",
+    "coordination-and-cached-defences/fresh/tyreso.pgn": "6b976e3ec06a84f2e548e9f66e0e01ee1ba59cb731393c4242d37d0c0d597912",
+    "equal-search-budget/abu-round1.pgn": "9ba33fb4525968a5c1a60e3e828b45dcb96b41e08743f7558deeeb45a318f0f6",
+    "unified-audit/british-2025.pgn": "d376eb246c885719553eaab5b3a38b72b4f0c4118c7c639c69848ecfc08c9d13",
+    "equal-search-budget/formentera.pgn": "45b78fb178fe98a72be3cd3d34a9e10de2d0b954fb070f0b7a35743ec4ede47a",
+    "passer-interception-transfer/late-reserve/raw/turkey-A84qp8J6.pgn": "6450af0b66200e43cbe416f22211d40ccb9fa4fd58e70f6616ff6fafd7721a57"
+  }
+}

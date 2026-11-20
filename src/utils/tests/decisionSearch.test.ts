@@ -9,6 +9,7 @@ import { assessChessDecision } from "@/utils/tacticalMotifs/decisionAssessment";
 import type { BestMoves, EngineOptions } from "@/bindings";
 import type { LocalEngine } from "@/utils/engines";
 import cases from "../../../benchmarks/decision-evidence/defence-after-attack/fixtures.json";
+import mateThree from "../../../benchmarks/decision-evidence/played-mate-in-three/fixtures.json";
 import mateTwo from "../../../benchmarks/decision-evidence/played-mate-in-two/fixtures.json";
 import drawFrames from "../../../benchmarks/decision-evidence/draw-aware-search/fixtures.json";
 
@@ -406,6 +407,70 @@ test("a verified quiet mate in two skips played searches and retains the leading
     expect(assessChessDecision(evidence)?.mistake?.mateConsequence).toMatchObject({
         kind: "allowed",
         mateIn: 2,
+        proof: "legal",
+        avoidingMoveUci: stronger,
+    });
+});
+
+test("a verified mate in three keeps the paired search and skips the played reply", async () => {
+    const {
+        fen: root,
+        playedMoveUci,
+        history,
+        candidates,
+        comparisonCandidates,
+        replyProbes,
+    } = mateThree.copa;
+    const stronger = candidates[0].pvUci[0];
+    const reached = replyProbes.find((probe) => probe.moveUci === stronger)!.lines;
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) => {
+        const atRoot = options.moves.length === history.moves.length;
+        const frames = atRoot
+            ? options.searchMoves?.length
+                ? comparisonCandidates
+                : candidates
+            : reached;
+        if (!atRoot) expect(options.moves.at(-1)).toBe(stronger);
+        const sign = atRoot ? -1 : 1;
+        return Promise.resolve([
+            100,
+            frames.map(
+                (line, index): BestMoves => ({
+                    nodes: line.nodes,
+                    nps: 300000,
+                    depth: line.depth,
+                    multipv: index + 1,
+                    uciMoves: line.pvUci,
+                    sanMoves: [],
+                    score: {
+                        value:
+                            line.cp === null
+                                ? { type: "mate", value: line.mate! * sign }
+                                : { type: "cp", value: line.cp * sign },
+                        wdl: null,
+                    },
+                }),
+            ),
+        ]);
+    });
+    const evidence = await gatherDecisionEvidence(
+        engine,
+        { fen: root, playedMoveUci, history },
+        new AbortController().signal,
+        vi.fn(),
+    );
+    expect(evidence.comparisonCandidates?.map((line) => line.pvUci[0])).toEqual([
+        stronger,
+        playedMoveUci,
+    ]);
+    expect(evidence.replyProbes?.map((probe) => probe.moveUci)).toEqual([stronger]);
+    expect(native.getBestMoves.mock.calls.map((call) => call[3].moves.length)).toEqual([
+        history.moves.length,
+        history.moves.length,
+        history.moves.length + 1,
+    ]);
+    expect(assessChessDecision(evidence)?.mistake?.mateConsequence).toMatchObject({
+        mateIn: 3,
         proof: "legal",
         avoidingMoveUci: stronger,
     });
