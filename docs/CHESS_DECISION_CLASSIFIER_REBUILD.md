@@ -4279,3 +4279,21 @@ capture, and the 120-game public replay has no additional affected
 reports. A direct-capture-only arm drops a constructed valid case and
 a total-material arm accepts a constructed gain on the wrong square.
 [Evidence, controls and reproduction](../benchmarks/decision-evidence/alternate-capture-payoff/README.md)
+
+
+## Close replies and the limits of repeated engine evidence
+
+A new offline comparison reuses the closest matching alternate reply
+across the paired and separate searches. On 460 existing matched inputs
+it yields one tactical candidate. The World Junior case loses its alleged
+knight win after a deeper search finds the immediate pawn recapture.
+The guarded arm removes it. A 160-game frozen reserve yields no new
+diagnoses. The trial stays offline.
+
+The same assessor detects one of eight independently confirmed mixed
+mistakes on archived app frames and zero on the saved deeper paired
+frames. A missing comparison is recovered and one positional explanation
+appears, while a previously detected en passant result becomes unclear.
+Broader reply matching and deeper searches do not recover either axis
+reliably from this set.
+[Trials, exact lines and verification](../benchmarks/decision-evidence/reply-concordance/README.md)

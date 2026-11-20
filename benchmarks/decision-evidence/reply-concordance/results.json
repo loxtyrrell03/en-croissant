@@ -1,0 +1,305 @@
+{
+  "baselineRevision": "053ca262",
+  "inputs": {
+    "matched": "6e10f3c5b1b6218c2508174e4b2c82dc4a16c322b968f57663e6557b25562998",
+    "deep": "a9172208de8b8aafc23ee3a39b777a0231ff812e4a64b304cc8c96c4177eea68",
+    "reserve": "f405bf33cd1f171c48c2369d33f809f69c9fd890d4a87fb14ee76dcc3a12e3ff",
+    "reserve-scored": "b230420f9b9092568f5ec404ebb6b7351865eeff10739d93daa5b39cf108261a",
+    "depth-check": "182fb4411fa1faa575c6bf2ce6e62fff34b80703c07c87cb50410da02ffdc668"
+  },
+  "matched": {
+    "cohorts": {
+      "archive": 199,
+      "public-transfer": 115,
+      "outpost-reserve": 127,
+      "prospective": 19
+    },
+    "eligibleAlternateCounts": {
+      "35": {
+        "none": 358,
+        "one": 97,
+        "both": 5
+      },
+      "65": {
+        "none": 345,
+        "one": 108,
+        "both": 7
+      }
+    },
+    "arms": {
+      "both": {
+        "requests": 460,
+        "changed": {
+          "public-transfer:00a2a3bc27610ad1": {
+            "before": "unclear",
+            "after": "tactical",
+            "tactical": [
+              "After Nxd4, both searches show Nxd4 winning material. After cxd4, the original target is on c6. The same move no longer takes it on d4.",
+              "The played continuation gives up at least 3.2 more material points over the compared moves."
+            ],
+            "positional": [
+              "No relevant positional difference has been established."
+            ]
+          }
+        }
+      },
+      "tight": {
+        "requests": 460,
+        "changed": {
+          "public-transfer:00a2a3bc27610ad1": {
+            "before": "unclear",
+            "after": "tactical",
+            "tactical": [
+              "After Nxd4, both searches show Nxd4 winning material. After cxd4, the original target is on c6. The same move no longer takes it on d4.",
+              "The played continuation gives up at least 3.2 more material points over the compared moves."
+            ],
+            "positional": [
+              "No relevant positional difference has been established."
+            ]
+          }
+        }
+      },
+      "positional": {
+        "requests": 460,
+        "changed": {}
+      },
+      "tactical": {
+        "requests": 460,
+        "changed": {
+          "public-transfer:00a2a3bc27610ad1": {
+            "before": "unclear",
+            "after": "tactical",
+            "tactical": [
+              "After Nxd4, both searches show Nxd4 winning material. After cxd4, the original target is on c6. The same move no longer takes it on d4.",
+              "The played continuation gives up at least 3.2 more material points over the compared moves."
+            ],
+            "positional": [
+              "No relevant positional difference has been established."
+            ]
+          }
+        }
+      },
+      "matched-guarded": {
+        "requests": 460,
+        "changed": {}
+      }
+    }
+  },
+  "freshReserve": {
+    "eventFiles": {
+      "strategic-asset-contrast\\replication\\raw\\vicenza-DSJ8dtr8.pgn": {
+        "sha256": "2196b03a26c9a5e0c51ade848916fda995cc9f7b2d88367ad3b6d4c274ee0ee2",
+        "count": 5
+      },
+      "passer-interception-transfer\\late-reserve\\raw\\poland-9eyzPy9m.pgn": {
+        "sha256": "0701bffc29d0c43f61c53beb6f44f02046d28626741418747e41c28557f258ea",
+        "count": 5
+      },
+      "passer-interception-transfer\\late-reserve\\raw\\turkey-ndTfO720.pgn": {
+        "sha256": "3bd584eb60fc06381f5b5e83caebcfe242054d4d8a29dfbe1814a10b0e4fbd7f",
+        "count": 5
+      },
+      "strategic-asset-contrast\\replication\\raw\\munster-id14ysB6.pgn": {
+        "sha256": "07a49df535677fe707e33c28986af99abb0515967514c99c0db67c5a395f3174",
+        "count": 5
+      },
+      "coordination-and-cached-defences\\fresh\\revolucion.pgn": {
+        "sha256": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7",
+        "count": 5
+      },
+      "strategic-asset-contrast\\reserve\\raw\\dutch-meesterklasse-2026-2027-WXqRYeQ6.pgn": {
+        "sha256": "40e0b0ed372abf4cea8ca5302d961c142c06177f1e2d6890ceec5caf7baa17cf",
+        "count": 5
+      },
+      "passer-interception-transfer\\late-reserve\\raw\\poland-bLaUj5vJ.pgn": {
+        "sha256": "acf4acfed455894871aad12536f0eb87afaa3e8d1cac8d793ea58c3ff155993b",
+        "count": 5
+      },
+      "strategic-asset-contrast\\replication\\raw\\vechta-mrFUdLez.pgn": {
+        "sha256": "142b4b6a0fed40d810e99959598177d10175d441cdbced8e87f676f537f1146a",
+        "count": 5
+      },
+      "shelter-after-exchanges\\sants-b.pgn": {
+        "sha256": "6015d3892665072c978b8f8bf932632dc2f49627856710f747c9f3163648dbb5",
+        "count": 5
+      },
+      "strategic-asset-contrast\\replication\\raw\\calvia-CXSJnsMQ.pgn": {
+        "sha256": "438951bbd57618306ffc35f68758084773ad633bc848a6b3461d027807b34f37",
+        "count": 4
+      },
+      "promotion-mistake-transfer\\challengers.pgn": {
+        "sha256": "89aa94c72a2f352938aaf9387fe2783c332efa2086a23389ca01b8b341c8ecb3",
+        "count": 5
+      },
+      "strategic-transfer\\british-major-open-r7.pgn": {
+        "sha256": "c783b4479ce3add0961439b2493ff4365f8e97390146d981eb44849f7e0087bb",
+        "count": 5
+      },
+      "otb-transfer\\4ncl-r4.pgn": {
+        "sha256": "d8520a476efe505e4767d72599cee3cba3326ef11138c9f7b80b4fb6fcdf095f",
+        "count": 5
+      },
+      "passer-interception-transfer\\late-reserve\\raw\\turkey-zbeM6PPX.pgn": {
+        "sha256": "82ebd4d5a45570a474382a2c4373b99f2bea8f4358c62e3ea47d770dbb59d995",
+        "count": 5
+      },
+      "strategic-asset-contrast\\raw\\mongolia-LjTXo6lL.pgn": {
+        "sha256": "636aa7f38f2b488c6175b127ac62584b871bdfa37745469a8cef359f150bb25c",
+        "count": 1
+      },
+      "strategic-asset-contrast\\replication\\raw\\vicenza-lBMMBjIS.pgn": {
+        "sha256": "338fb0515c9f7dc9add95f29165a5803e22b9e3873a5b43c464a907873ed3cd5",
+        "count": 4
+      },
+      "mixed-mistake-contrast\\raw\\junior-open-5JLs2gkn.pgn": {
+        "sha256": "5b77351d3d3d3e8b0f649fb1b611342d6201f4f7114dca4691166e9fd2d4851e",
+        "count": 5
+      },
+      "passed-pawn-mistake-transfer\\olympiad.pgn": {
+        "sha256": "5de1bea0dd205641078cc9184e595e50a2a0b2f09cc8d4ba2a22e7fc1670d70d",
+        "count": 5
+      },
+      "passed-pawn-choices\\challenge\\world-seniors-50-2026-event.pgn": {
+        "sha256": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+        "count": 5
+      },
+      "opened-ray-exchanges\\raw\\oberliga-baden-rJo68ZdK.pgn": {
+        "sha256": "f8879030c2de272e242edbea724ba34231269afd1700940712a87598f3829246",
+        "count": 3
+      },
+      "strategic-asset-contrast\\raw\\kenya-MQBrArWd.pgn": {
+        "sha256": "7d9fdefc1d7b09cce57941cb765c9bd634c62bc73f08f365dd6b42385e744225",
+        "count": 5
+      },
+      "strategic-asset-contrast\\replication\\raw\\munster-B8Gqv1Pd.pgn": {
+        "sha256": "b3aee322c588ca2309add7f3e430854b035766a120b798559fa32dd147b569c3",
+        "count": 5
+      },
+      "passer-interception-transfer\\late-reserve\\raw\\poland-wwrkku5B.pgn": {
+        "sha256": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+        "count": 5
+      },
+      "passer-interception-transfer\\late-reserve\\raw\\turkey-loIX5V6A.pgn": {
+        "sha256": "6e151fb70b4fd577220fd7ca7bc3a045bb10e726306f93add7895039cf63027e",
+        "count": 5
+      },
+      "strategic-asset-contrast\\reserve\\raw\\serbian-super-league-2026-AOwRr43w.pgn": {
+        "sha256": "feafe35f53b9b4913fe5ae20319d972be7b345d1b3de623600392dfe45dbcf75",
+        "count": 5
+      },
+      "aligned-strategic-plans\\challenge\\british-championship.pgn": {
+        "sha256": "2cba83d6f233b4dc419975296c895d9c786e831053bd6ce1a3a75c19a662fbf7",
+        "count": 5
+      },
+      "paired-causal-probe\\raw\\german-bundesliga-202627-schachbundesliga-LHHlsufz.pgn": {
+        "sha256": "5832ed5f30056859d540025027c5aa4e2115710cc8f8fd56894aab1a45df3423",
+        "count": 5
+      },
+      "strategic-asset-contrast\\reserve\\raw\\greek-championship-2026-75-IkkznIu4.pgn": {
+        "sha256": "f671c78ee3e225ded4672a4fce13a74b8eb95db20861e6597298871d52fe2807",
+        "count": 5
+      },
+      "played-immediate-mate\\wittelsbach-all.pgn": {
+        "sha256": "8d30ffd55cd602172778f229250f49fbd3907db48611549d03bf923ca03a9020",
+        "count": 5
+      },
+      "mixed-position-transfer\\club-cup.pgn": {
+        "sha256": "7b3486990249029a0cc0a30d9bc6765de8d9516ddb943ef7b9e2f5dbf009c095",
+        "count": 5
+      },
+      "shelter-after-exchanges\\biel-masters.pgn": {
+        "sha256": "d4040be3cb26790004a76b7cdc30683e4b26f87a52e4bb2bfe386a8bafc969e1",
+        "count": 5
+      },
+      "strategic-asset-contrast\\reserve\\raw\\dutch-meesterklasse-2026-2027-7JGlrr4D.pgn": {
+        "sha256": "a741e572dbdfd5ba54a5fcbdcfbcbc561aa98591c95a645105ae0b907ee7ce84",
+        "count": 5
+      },
+      "position-transfer\\4ncl-division2-r5.pgn": {
+        "sha256": "36cb2b73f8f14c539b99ea46e4b94df2ba9ddb29220e8511bba27e3fad95079d",
+        "count": 5
+      },
+      "strategic-asset-contrast\\reserve\\raw\\serbian-super-league-2026-KIb8wSWx.pgn": {
+        "sha256": "2c4b27cf2be8f8eab6c74e9366f62df6e2be80bd3d50e11efe5c824a606fec99",
+        "count": 3
+      }
+    },
+    "eligibleAlternateCounts": {
+      "none": 127,
+      "one": 30,
+      "both": 3
+    },
+    "arms": {
+      "tight": {
+        "requests": 160,
+        "changed": {}
+      },
+      "guarded": {
+        "requests": 160,
+        "changed": {}
+      }
+    }
+  },
+  "depthCheck": {
+    "depth-both": {
+      "requests": 2,
+      "changed": {
+        "public-transfer:00a2a3bc27610ad1": {
+          "before": "unclear",
+          "after": "tactical",
+          "tactical": [
+            "After Nxd4, both searches show Nxd4 winning material. After cxd4, the original target is on c6. The same move no longer takes it on d4.",
+            "The played continuation gives up at least 3.2 more material points over the compared moves."
+          ],
+          "positional": [
+            "No relevant positional difference has been established."
+          ]
+        }
+      }
+    },
+    "guarded": {
+      "requests": 2,
+      "changed": {}
+    }
+  },
+  "reviewedMixed": {
+    "originalMixedLabels": 17,
+    "confirmedMixedLabels": 8,
+    "archive": {
+      "categoryCounts": {
+        "mixed": 1,
+        "missing": 1,
+        "unclear": 4,
+        "positional": 1,
+        "tactical": 1
+      },
+      "byId": {
+        "mistake-asian-amateur-5b57e2f49c33fb0b-80": "mixed",
+        "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101": "missing",
+        "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133": "unclear",
+        "annotated-pawn-asian-disabilities-men-2026-17c2690bdf8b79f4-56": "unclear",
+        "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60": "unclear",
+        "mistake-tournament-of-peace-2026-31acf8742a982f4a-75": "positional",
+        "structure-hvar-open-2026-b48ef4fb5a4313cc-43": "unclear",
+        "structure-halloween-open-2026-cab2aad2f516a2f9-74": "tactical"
+      }
+    },
+    "deeperForcedPair": {
+      "categoryCounts": {
+        "unclear": 5,
+        "positional": 2,
+        "tactical": 1
+      },
+      "byId": {
+        "mistake-asian-amateur-5b57e2f49c33fb0b-80": "unclear",
+        "annotated-pawn-grand-swiss-open-2025-06d8488e5d433ad1-101": "unclear",
+        "annotated-pawn-asian-disabilities-women-2026-7716a8470913a78a-133": "unclear",
+        "annotated-pawn-asian-disabilities-men-2026-17c2690bdf8b79f4-56": "positional",
+        "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60": "unclear",
+        "mistake-tournament-of-peace-2026-31acf8742a982f4a-75": "positional",
+        "structure-hvar-open-2026-b48ef4fb5a4313cc-43": "unclear",
+        "structure-halloween-open-2026-cab2aad2f516a2f9-74": "tactical"
+      }
+    }
+  }
+}
