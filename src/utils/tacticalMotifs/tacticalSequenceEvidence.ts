@@ -24,6 +24,7 @@ export type TacticalSequenceWitness = {
         | "discoveredAttack"
         | "discoveredCheck"
         | "clearance"
+        | "interference"
         | "skewer"
         | "intermezzo"
         | "attraction"
@@ -45,6 +46,12 @@ export type TacticalSequenceWitness = {
  * square alone cannot make two distinct double attacks equivalent. */
 export function sameTacticalMechanism(a: TacticalSequenceWitness, b: TacticalSequenceWitness) {
     if (a.actor !== b.actor || a.mechanism !== b.mechanism) return false;
+    if (a.mechanism === "interference")
+        return (
+            a.squares.length === 4 &&
+            b.squares.length === 4 &&
+            a.squares.every((square, index) => square === b.squares[index])
+        );
     if (a.mechanism === "discoveredAttack")
         return (
             a.squares[1] === b.squares[1] &&
@@ -68,7 +75,9 @@ export function sameTacticalMechanism(a: TacticalSequenceWitness, b: TacticalSeq
 export function mergeTacticalSequenceWitnesses(witnesses: TacticalSequenceWitness[]) {
     const grouped = new Map<string, TacticalSequenceWitness>();
     for (const item of witnesses) {
-        const key = `${item.fen}:${item.actor}:${item.mechanism}:${item.mechanismPly}:${item.squares.slice().sort().join(",")}`;
+        const squares =
+            item.mechanism === "interference" ? item.squares : item.squares.slice().sort();
+        const key = `${item.fen}:${item.actor}:${item.mechanism}:${item.mechanismPly}:${squares.join(",")}`;
         const existing = grouped.get(key);
         if (!existing) grouped.set(key, structuredClone(item));
         else if (

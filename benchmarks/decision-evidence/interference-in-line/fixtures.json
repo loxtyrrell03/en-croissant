@@ -1,0 +1,757 @@
+{
+  "direct": {
+    "fen": "1rq1k1nr/1p1b1ppp/1Q2p3/1Nb5/4p3/8/PPP2PPP/2KR1BNR w k - 6 11",
+    "candidates": [
+      {
+        "depth": 31,
+        "cp": 830,
+        "mate": null,
+        "nodes": 2400429,
+        "pvUci": [
+          "b5c7",
+          "e8f8",
+          "b6c5",
+          "g8e7",
+          "c5d6",
+          "d7c6",
+          "g1h3",
+          "h7h5",
+          "h3g5",
+          "h8h6",
+          "f1c4",
+          "c6d5",
+          "c4b5",
+          "h6g6",
+          "h2h4",
+          "e6e5",
+          "d6e5",
+          "d5a2",
+          "b2b3",
+          "e7c6",
+          "e5f4",
+          "a2b3",
+          "c2b3",
+          "g6g5",
+          "h4g5",
+          "b8a8",
+          "c1b1"
+        ],
+        "fen": "1rq1k1nr/1p1b1ppp/1Q2p3/1Nb5/4p3/8/PPP2PPP/2KR1BNR w k - 6 11"
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "b5c7",
+        "lines": [
+          {
+            "depth": 26,
+            "cp": -792,
+            "mate": null,
+            "nodes": 4306186,
+            "pvUci": [
+              "e8f8",
+              "b6c5",
+              "g8e7",
+              "c5d6",
+              "d7c6",
+              "f1c4",
+              "h7h5",
+              "g1h3",
+              "h8h6",
+              "h3g5",
+              "c6d5",
+              "c4d5",
+              "e6d5",
+              "d6f4",
+              "f7f5",
+              "c7d5",
+              "e7d5",
+              "d1d5",
+              "f8g8",
+              "f4e5",
+              "b8a8",
+              "h1d1",
+              "a8a2"
+            ],
+            "fen": "1rq1k1nr/1pNb1ppp/1Q2p3/2b5/4p3/8/PPP2PPP/2KR1BNR b k - 7 11"
+          },
+          {
+            "depth": 26,
+            "cp": -846,
+            "mate": null,
+            "nodes": 4306186,
+            "pvUci": [
+              "e8e7",
+              "b6c5",
+              "e7d8",
+              "c7e6",
+              "f7e6",
+              "c5f8",
+              "d8c7",
+              "f8g7",
+              "g8h6",
+              "g7h6",
+              "b8a8",
+              "h6f4",
+              "c7b6",
+              "d1d6",
+              "b6a7",
+              "f4e4",
+              "d7c6",
+              "e4e3",
+              "a7b8",
+              "a2a3"
+            ],
+            "fen": "1rq1k1nr/1pNb1ppp/1Q2p3/2b5/4p3/8/PPP2PPP/2KR1BNR b k - 7 11"
+          },
+          {
+            "depth": 26,
+            "cp": -912,
+            "mate": null,
+            "nodes": 4306186,
+            "pvUci": [
+              "e8d8",
+              "c7e6",
+              "d8e8",
+              "e6c5",
+              "d7c6",
+              "g1e2",
+              "g8f6",
+              "e2d4",
+              "e8f8",
+              "f1c4",
+              "h7h6",
+              "h1e1",
+              "f8g8",
+              "d4c6",
+              "c8c6",
+              "b6c6",
+              "b7c6",
+              "d1d4",
+              "b8b4",
+              "e1d1",
+              "g7g6"
+            ],
+            "fen": "1rq1k1nr/1pNb1ppp/1Q2p3/2b5/4p3/8/PPP2PPP/2KR1BNR b k - 7 11"
+          }
+        ]
+      }
+    ]
+  },
+  "delayed": {
+    "fen": "2r2rk1/3pq2p/pb2p1B1/1p2P3/6Q1/P5P1/1n3PP1/2R2RK1 w - - 1 23",
+    "candidates": [
+      {
+        "depth": 23,
+        "cp": 432,
+        "mate": null,
+        "nodes": 2400474,
+        "pvUci": [
+          "g6e8",
+          "e7g7",
+          "g4g7",
+          "g8g7",
+          "c1c8",
+          "b2d3",
+          "e8d7",
+          "b6f2",
+          "g1h1",
+          "f8c8",
+          "d7c8",
+          "f2c5",
+          "c8e6",
+          "d3e5",
+          "f1f5",
+          "c5d6",
+          "e6a2",
+          "h7h6",
+          "h1h2",
+          "g7g6",
+          "a2b1",
+          "g6h7"
+        ],
+        "fen": "2r2rk1/3pq2p/pb2p1B1/1p2P3/6Q1/P5P1/1n3PP1/2R2RK1 w - - 1 23"
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "g6e8",
+        "lines": [
+          {
+            "depth": 24,
+            "cp": -399,
+            "mate": null,
+            "nodes": 3357285,
+            "pvUci": [
+              "e7g7",
+              "g4g7",
+              "g8g7",
+              "c1c8",
+              "b2d3",
+              "e8d7",
+              "b6f2",
+              "g1h1",
+              "f8c8",
+              "d7c8",
+              "f2c5",
+              "c8a6",
+              "d3f2",
+              "h1h2",
+              "g7g6",
+              "g3g4",
+              "f2g4",
+              "h2g3",
+              "g4e5",
+              "f1a1",
+              "b5b4",
+              "a3a4",
+              "g6f5",
+              "a1c1",
+              "c5d4",
+              "a6c4",
+              "d4b6",
+              "c1f1",
+              "f5e4",
+              "c4e6",
+              "e4e3",
+              "f1f5",
+              "e5d3",
+              "a4a5",
+              "b6c7",
+              "g3h4"
+            ],
+            "fen": "2r1Brk1/3pq2p/pb2p3/1p2P3/6Q1/P5P1/1n3PP1/2R2RK1 b - - 2 23"
+          },
+          {
+            "depth": 24,
+            "cp": -533,
+            "mate": null,
+            "nodes": 3357285,
+            "pvUci": [
+              "g8h8",
+              "c1c8",
+              "b2d3",
+              "e8d7",
+              "b6f2",
+              "g1h1",
+              "f8c8",
+              "d7c8",
+              "f2c5",
+              "c8e6",
+              "e7e8",
+              "g4f5",
+              "e8g6",
+              "h1h2",
+              "c5a3",
+              "f5f6",
+              "g6f6",
+              "e5f6",
+              "a3d6",
+              "h2h3",
+              "a6a5"
+            ],
+            "fen": "2r1Brk1/3pq2p/pb2p3/1p2P3/6Q1/P5P1/1n3PP1/2R2RK1 b - - 2 23"
+          },
+          {
+            "depth": 24,
+            "cp": null,
+            "mate": -6,
+            "nodes": 3357285,
+            "pvUci": [
+              "e7g5",
+              "g4g5",
+              "g8h8",
+              "c1c8",
+              "b6d8",
+              "c8d8",
+              "h7h5",
+              "d8d7",
+              "f8f7",
+              "g5h6",
+              "h8g8",
+              "e8f7"
+            ],
+            "fen": "2r1Brk1/3pq2p/pb2p3/1p2P3/6Q1/P5P1/1n3PP1/2R2RK1 b - - 2 23"
+          }
+        ]
+      }
+    ]
+  },
+  "oneSearch": {
+    "fen": "R7/1rNp1k1p/4p1p1/2p5/2P5/1n5P/3r1PP1/1R4K1 w - - 2 31",
+    "candidates": [
+      {
+        "depth": 22,
+        "cp": 482,
+        "mate": null,
+        "nodes": 2400101,
+        "pvUci": [
+          "c7b5",
+          "f7g7",
+          "b1b3",
+          "d7d5",
+          "b3f3",
+          "b7f7",
+          "f3f7",
+          "g7f7",
+          "g1f1",
+          "d2d1",
+          "f1e2",
+          "d1b1",
+          "g2g3",
+          "b1b2",
+          "e2f1",
+          "b2b1",
+          "f1g2",
+          "f7f6",
+          "a8c8",
+          "f6g5"
+        ],
+        "fen": "R7/1rNp1k1p/4p1p1/2p5/2P5/1n5P/3r1PP1/1R4K1 w - - 2 31"
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "c7b5",
+        "lines": [
+          {
+            "depth": 21,
+            "cp": -503,
+            "mate": null,
+            "nodes": 3155654,
+            "pvUci": [
+              "d2d3",
+              "a8a3",
+              "f7e7",
+              "a3b3",
+              "d3b3",
+              "b1b3",
+              "d7d5",
+              "b3f3",
+              "d5c4",
+              "b5c3",
+              "e7d6",
+              "g1f1",
+              "e6e5",
+              "f1e1",
+              "d6e6",
+              "f3e3",
+              "b7b3",
+              "e1d1",
+              "b3a3",
+              "d1d2",
+              "a3a1",
+              "e3f3"
+            ],
+            "fen": "R7/1r1p1k1p/4p1p1/1Np5/2P5/1n5P/3r1PP1/1R4K1 b - - 3 31"
+          },
+          {
+            "depth": 21,
+            "cp": -503,
+            "mate": null,
+            "nodes": 3155654,
+            "pvUci": [
+              "f7e7",
+              "b1b3",
+              "d7d5",
+              "b3a3",
+              "e7d7",
+              "a8h8",
+              "d5c4",
+              "b5c3",
+              "d7c6",
+              "h8c8",
+              "b7c7",
+              "c8c7",
+              "c6c7",
+              "a3a4",
+              "d2c2",
+              "a4c4",
+              "c7c6"
+            ],
+            "fen": "R7/1r1p1k1p/4p1p1/1Np5/2P5/1n5P/3r1PP1/1R4K1 b - - 3 31"
+          },
+          {
+            "depth": 21,
+            "cp": -505,
+            "mate": null,
+            "nodes": 3155654,
+            "pvUci": [
+              "f7g7",
+              "b1b3",
+              "d7d5",
+              "b3f3",
+              "b7d7",
+              "a8c8",
+              "d5d4",
+              "c8c7",
+              "d2d1",
+              "g1h2",
+              "d7c7",
+              "b5c7",
+              "d1e1",
+              "h2g3",
+              "h7h5",
+              "c7e8",
+              "g7h6",
+              "e8d6",
+              "e6e5",
+              "d6f7",
+              "h6h7"
+            ],
+            "fen": "R7/1r1p1k1p/4p1p1/1Np5/2P5/1n5P/3r1PP1/1R4K1 b - - 3 31"
+          }
+        ]
+      }
+    ]
+  },
+  "merelyAligned": {
+    "fen": "r4rk1/ppq2pp1/1npb3p/5b2/3PN2B/1B5P/PPQ2PP1/3RR2K w - - 8 21",
+    "candidates": [
+      {
+        "depth": 31,
+        "cp": 859,
+        "mate": null,
+        "nodes": 2400520,
+        "pvUci": [
+          "e4f6",
+          "g8h8",
+          "c2f5",
+          "g7g6",
+          "f5d3",
+          "b6d5",
+          "b3d5",
+          "c6d5",
+          "f6d5",
+          "c7d7",
+          "d3e3",
+          "h8g7",
+          "h4f6",
+          "g7h7",
+          "f6e5",
+          "d6e7",
+          "e3f3",
+          "f7f6",
+          "e5h2",
+          "a8e8",
+          "d5c7",
+          "e8c8",
+          "d4d5"
+        ],
+        "fen": "r4rk1/ppq2pp1/1npb3p/5b2/3PN2B/1B5P/PPQ2PP1/3RR2K w - - 8 21"
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "e4f6",
+        "lines": [
+          {
+            "depth": 29,
+            "cp": -855,
+            "mate": null,
+            "nodes": 4800264,
+            "pvUci": [
+              "g8h8",
+              "c2f5",
+              "g7g6",
+              "f5f3",
+              "b6d5",
+              "b3d5",
+              "c6d5",
+              "f6d5",
+              "c7c6",
+              "d1c1",
+              "a8e8",
+              "h4f6",
+              "h8h7",
+              "f6e5",
+              "f7f5",
+              "e1d1",
+              "e8e6",
+              "f3b3",
+              "d6e5",
+              "d4e5",
+              "e6e5",
+              "c1c6",
+              "b7c6"
+            ],
+            "fen": "r4rk1/ppq2pp1/1npb1N1p/5b2/3P3B/1B5P/PPQ2PP1/3RR2K b - - 9 21"
+          },
+          {
+            "depth": 29,
+            "cp": null,
+            "mate": -8,
+            "nodes": 4800264,
+            "pvUci": [
+              "g7f6",
+              "c2f5",
+              "d6e5",
+              "d4e5",
+              "b6d5",
+              "b3c2",
+              "f8e8",
+              "d1d5",
+              "g8f8",
+              "f5h7",
+              "c7d6",
+              "d5d6",
+              "e8e6",
+              "d6d7",
+              "e6e5",
+              "h7f7"
+            ],
+            "fen": "r4rk1/ppq2pp1/1npb1N1p/5b2/3P3B/1B5P/PPQ2PP1/3RR2K b - - 9 21"
+          }
+        ]
+      }
+    ]
+  },
+  "alreadyNamed": {
+    "fen": "8/2p2pk1/1p1b2q1/p2P3p/P3r2P/1P2NQP1/7K/5R2 w - - 4 40",
+    "candidates": [
+      {
+        "depth": 26,
+        "cp": 922,
+        "mate": null,
+        "nodes": 2400358,
+        "pvUci": [
+          "e3f5",
+          "g7f8",
+          "f3e4",
+          "g6f6",
+          "h2h3",
+          "f8g8",
+          "e4e2",
+          "d6b4",
+          "e2h5",
+          "g8f8",
+          "h5g4",
+          "b4d2",
+          "g4f3",
+          "f8g8",
+          "d5d6",
+          "c7d6",
+          "f3h5"
+        ],
+        "fen": "8/2p2pk1/1p1b2q1/p2P3p/P3r2P/1P2NQP1/7K/5R2 w - - 4 40"
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "e3f5",
+        "lines": [
+          {
+            "depth": 24,
+            "cp": -941,
+            "mate": null,
+            "nodes": 4212532,
+            "pvUci": [
+              "g7f8",
+              "f3e4",
+              "g6f6",
+              "h2h3",
+              "f6e5",
+              "e4f3",
+              "f8e8",
+              "f3h5",
+              "d6f8",
+              "h5d1",
+              "e5f6",
+              "f1f4",
+              "f8d6",
+              "f5d6",
+              "f6d6"
+            ],
+            "fen": "8/2p2pk1/1p1b2q1/p2P1N1p/P3r2P/1P3QP1/7K/5R2 b - - 5 40"
+          },
+          {
+            "depth": 24,
+            "cp": -995,
+            "mate": null,
+            "nodes": 4212532,
+            "pvUci": [
+              "g7h7",
+              "f3e4",
+              "d6c5",
+              "e4e5",
+              "b6b5",
+              "a4b5",
+              "c5b4",
+              "f5e7",
+              "b4e7",
+              "e5e7",
+              "h7g8",
+              "e7c7",
+              "f7f6",
+              "c7b6",
+              "g8g7",
+              "f1f2",
+              "g6f7",
+              "b6d6",
+              "f6f5",
+              "d6b6"
+            ],
+            "fen": "8/2p2pk1/1p1b2q1/p2P1N1p/P3r2P/1P3QP1/7K/5R2 b - - 5 40"
+          },
+          {
+            "depth": 24,
+            "cp": -1011,
+            "mate": null,
+            "nodes": 4212532,
+            "pvUci": [
+              "g7g8",
+              "f3e4",
+              "g8f8",
+              "f5d6",
+              "g6d6",
+              "e4f5",
+              "d6e7",
+              "f5h5",
+              "f7f6",
+              "f1f4",
+              "e7f7",
+              "h5f5",
+              "f8g8",
+              "h4h5"
+            ],
+            "fen": "8/2p2pk1/1p1b2q1/p2P1N1p/P3r2P/1P3QP1/7K/5R2 b - - 5 40"
+          }
+        ]
+      }
+    ]
+  },
+  "quietMixed": {
+    "fen": "R7/1rNp1k1p/4p1p1/2p5/2P5/1n5P/3r1PP1/1R4K1 w - - 2 31",
+    "candidates": [
+      {
+        "depth": 23,
+        "cp": 507,
+        "mate": null,
+        "nodes": 4800456,
+        "pvUci": [
+          "c7b5",
+          "f7e7",
+          "b1b3",
+          "d7d5",
+          "b3a3",
+          "d5d4",
+          "a8h8",
+          "e7f6",
+          "a3f3",
+          "f6g7",
+          "h8c8",
+          "d2d1",
+          "g1h2",
+          "b7f7",
+          "f3f7",
+          "g7f7",
+          "h2g3"
+        ],
+        "fen": "R7/1rNp1k1p/4p1p1/2p5/2P5/1n5P/3r1PP1/1R4K1 w - - 2 31"
+      }
+    ],
+    "replyProbes": [
+      {
+        "moveUci": "c7b5",
+        "lines": [
+          {
+            "depth": 22,
+            "cp": -515,
+            "mate": null,
+            "nodes": 9600287,
+            "pvUci": [
+              "f7e7",
+              "b1b3",
+              "d7d5",
+              "b3a3",
+              "d2c2",
+              "a8h8",
+              "e7f6",
+              "a3f3",
+              "f6e5",
+              "f3e3",
+              "e5f6",
+              "b5d6",
+              "b7b1",
+              "g1h2",
+              "d5d4",
+              "e3f3",
+              "f6e5",
+              "d6f7",
+              "e5e4",
+              "h8h7",
+              "c2c4",
+              "f7d6",
+              "e4d5",
+              "d6c4",
+              "d5c4",
+              "h7d7",
+              "e6e5",
+              "h3h4",
+              "b1b6"
+            ],
+            "fen": "R7/1r1p1k1p/4p1p1/1Np5/2P5/1n5P/3r1PP1/1R4K1 b - - 3 31"
+          },
+          {
+            "depth": 22,
+            "cp": -518,
+            "mate": null,
+            "nodes": 9600287,
+            "pvUci": [
+              "f7g7",
+              "b1b3",
+              "d7d5",
+              "b3f3",
+              "b7f7",
+              "f3f7",
+              "g7f7",
+              "g2g3",
+              "d2d1",
+              "g1g2",
+              "d1e1",
+              "h3h4",
+              "f7f6",
+              "a8c8",
+              "d5d4",
+              "c8c6",
+              "f6e7",
+              "g2f3",
+              "e7d7",
+              "c6d6",
+              "d7e7",
+              "d6a6",
+              "e7d7"
+            ],
+            "fen": "R7/1r1p1k1p/4p1p1/1Np5/2P5/1n5P/3r1PP1/1R4K1 b - - 3 31"
+          },
+          {
+            "depth": 22,
+            "cp": -551,
+            "mate": null,
+            "nodes": 9600287,
+            "pvUci": [
+              "d2d3",
+              "a8a3",
+              "b7b6",
+              "a3b3",
+              "d3b3",
+              "b1b3",
+              "b6a6",
+              "b3d3",
+              "f7e7",
+              "d3d2",
+              "h7h5",
+              "g2g3",
+              "g6g5",
+              "d2d1",
+              "a6a4",
+              "b5d6",
+              "a4b4"
+            ],
+            "fen": "R7/1r1p1k1p/4p1p1/1Np5/2P5/1n5P/3r1PP1/1R4K1 b - - 3 31"
+          }
+        ]
+      }
+    ]
+  }
+}

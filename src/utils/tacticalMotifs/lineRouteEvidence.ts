@@ -9,6 +9,7 @@ import {
     tacticalExchangeGain,
     type TacticalReplayStep,
 } from "./causalTactics";
+import { findInterferenceInLine } from "./interferenceInLine";
 import type { TacticalGameHistory } from "./gameHistory";
 import {
     advanceTacticalRepetitionContext,
@@ -104,7 +105,7 @@ function displacedDuty(
 }
 
 type Route = {
-    id: "deflection" | "clearance";
+    id: "deflection" | "clearance" | "interference";
     through: number;
     text: string;
     squares: Square[];
@@ -287,7 +288,11 @@ export function findScoredLineRoutes(
     if (steps.length < 3 || castlingSide(steps[0].before, steps[0].move)) return [];
     const verified = steps.slice(0, reliablePrefix(steps, history));
     if (verified.length < 3) return [];
-    return [deflection(verified, scoredMaterial, scoredMate), clearance(verified, scoredMate)]
+    return [
+        deflection(verified, scoredMaterial, scoredMate),
+        clearance(verified, scoredMate),
+        findInterferenceInLine(verified, scoredMaterial, scoredMate),
+    ]
         .filter((route): route is Route => route !== null)
         .map((route) => ({ ...route, moveUci: verified[0].uci }));
 }
@@ -302,7 +307,11 @@ export function findLineRouteEvidence(
 ): TacticalMotifEvidence[] {
     return findScoredLineRoutes(fen, pv, cp, mate, depth, history).map((route) => ({
         id: route.id,
-        label: route.id === "deflection" ? "Deflection in this line" : "Clearance in this line",
+        label: {
+            deflection: "Deflection in this line",
+            clearance: "Clearance in this line",
+            interference: "Interference in this line",
+        }[route.id],
         confidence: "high",
         source: "available",
         ply: 1,

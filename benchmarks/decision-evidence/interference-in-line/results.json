@@ -1,0 +1,617 @@
+{
+  "development": {
+    "cases": 24,
+    "searchInputSha256": "2206d29a37c81dd6d9d6a917d102e38d48551d420998428a1cf31496a5550ab9",
+    "reference": {
+      "same role in both": 12,
+      "neither": 12
+    },
+    "geometricLive": {
+      "TP": 12,
+      "FP": 10,
+      "TN": 2
+    },
+    "candidateExactLive": {
+      "TP": 11,
+      "TN": 12,
+      "FN": 1
+    },
+    "candidateExactDecision": {
+      "TP": 11,
+      "TN": 12,
+      "FN": 1
+    },
+    "candidateLive": {
+      "TP": 11,
+      "TN": 11,
+      "FN": 1,
+      "FP": 1
+    },
+    "candidateDecision": {
+      "TP": 11,
+      "TN": 11,
+      "FN": 1,
+      "FP": 1
+    },
+    "newLive": [
+      {
+        "id": "0rI8A",
+        "line": "40...Be5 41. Rd5 Qxe4+",
+        "roles": [
+          "e5",
+          "e6",
+          "e4",
+          "f4"
+        ],
+        "point": "In this line, Be5 blocks the queen on e6 from recapturing on e4. Qxe4+ uses the cut defence to win material."
+      },
+      {
+        "id": "1hTGb",
+        "line": "21...Re2 22. Kc2 Qxf1",
+        "roles": [
+          "e2",
+          "d3",
+          "f1",
+          "g2"
+        ],
+        "point": "In this line, Re2 blocks the queen on d3 from recapturing on f1. Qxf1 uses the cut defence to win material."
+      },
+      {
+        "id": "3QA39",
+        "line": "24. Bd5+ Ka6 25. Qxd4",
+        "roles": [
+          "d5",
+          "d8",
+          "d4",
+          "f4"
+        ],
+        "point": "In this line, Bd5+ blocks the queen on d8 from recapturing on d4. Qxd4 uses the cut defence to win material."
+      },
+      {
+        "id": "3SuQQ",
+        "line": "40...c4+ 41. Kh2 Rxb5",
+        "roles": [
+          "c4",
+          "e2",
+          "b5",
+          "a5"
+        ],
+        "point": "In this line, c4+ blocks the queen on e2 from recapturing on b5. Rxb5 uses the cut defence to win material."
+      },
+      {
+        "id": "2SNTj",
+        "line": "22...Nf4 23. Rae1 Qxd6",
+        "roles": [
+          "f4",
+          "g3",
+          "d6",
+          "f6"
+        ],
+        "point": "In this line, Nf4 blocks the queen on g3 from recapturing on d6. Qxd6 uses the cut defence to win material."
+      },
+      {
+        "id": "2A31Y",
+        "line": "34. Nf6+ Kg6 35. Qxe5",
+        "roles": [
+          "f6",
+          "g7",
+          "e5",
+          "f4"
+        ],
+        "point": "In this line, Nf6+ blocks the bishop on g7 from recapturing on e5. Qxe5 uses the cut defence to win material."
+      },
+      {
+        "id": "3W01l",
+        "line": "20...Nd5 21. Qd4 Qxb7",
+        "roles": [
+          "d5",
+          "g2",
+          "b7",
+          "e7"
+        ],
+        "point": "In this line, Nd5 blocks the bishop on g2 from recapturing on b7. Qxb7 uses the cut defence to win material."
+      }
+    ],
+    "newDecisions": [
+      "0rI8A",
+      "1hTGb",
+      "3QA39",
+      "3SuQQ",
+      "2SNTj",
+      "2A31Y",
+      "3W01l"
+    ],
+    "positionChanges": [
+      {
+        "id": "0rI8A",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "1hTGb",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "2SNTj",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "2A31Y",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "3W01l",
+        "before": "unclear",
+        "after": "tactical"
+      }
+    ],
+    "medianCandidateWorkerMs": 101.29,
+    "baselineLive": {
+      "TP": 4,
+      "TN": 11,
+      "FN": 8,
+      "FP": 1
+    },
+    "baselineDecision": {
+      "TP": 4,
+      "TN": 11,
+      "FN": 8,
+      "FP": 1
+    },
+    "medianBaselineWorkerMs": 99.0
+  },
+  "heldout": {
+    "cases": 44,
+    "searchInputSha256": "a41b9f494adc7c76fece6c0ac79e84c42d0d094e26cd3fd7c16ff6f8399412d2",
+    "reference": {
+      "same role in both": 19,
+      "neither": 23,
+      "first search only": 1,
+      "independent reply only": 1
+    },
+    "geometricLive": {
+      "TP": 20,
+      "FP": 21,
+      "TN": 3
+    },
+    "candidateExactLive": {
+      "TP": 16,
+      "FN": 4,
+      "TN": 24
+    },
+    "candidateExactDecision": {
+      "TP": 15,
+      "FN": 4,
+      "TN": 25
+    },
+    "candidateLive": {
+      "TP": 16,
+      "FN": 4,
+      "TN": 22,
+      "FP": 2
+    },
+    "candidateDecision": {
+      "TP": 15,
+      "FN": 4,
+      "TN": 23,
+      "FP": 2
+    },
+    "newLive": [
+      {
+        "id": "1u15v",
+        "line": "23...Bd1+ 24. Kg3 Rxe1",
+        "roles": [
+          "d1",
+          "c1",
+          "e1",
+          "e8"
+        ],
+        "point": "In this line, Bd1+ blocks the rook on c1 from recapturing on e1. Rxe1 uses the cut defence to win material."
+      },
+      {
+        "id": "4P26i",
+        "line": "11. Nc7+ Kf8 12. Qxc5+",
+        "roles": [
+          "c7",
+          "c8",
+          "c5",
+          "b6"
+        ],
+        "point": "In this line, Nc7+ blocks the queen on c8 from recapturing on c5. Qxc5+ uses the cut defence to win material."
+      },
+      {
+        "id": "0atE3",
+        "line": "31. Nb5 Kg7 32. Rxb3",
+        "roles": [
+          "b5",
+          "b7",
+          "b3",
+          "b1"
+        ],
+        "point": "In this line, Nb5 blocks the rook on b7 from recapturing on b3. Rxb3 uses the cut defence to win material."
+      },
+      {
+        "id": "3ZK2N",
+        "line": "25. Ne7+ Kh8 26. Rxe4",
+        "roles": [
+          "e7",
+          "e8",
+          "e4",
+          "d4"
+        ],
+        "point": "In this line, Ne7+ blocks the rook on e8 from recapturing on e4. Rxe4 uses the cut defence to win material."
+      },
+      {
+        "id": "01GCT",
+        "line": "31. Be4+ Kh8 32. Rxe6",
+        "roles": [
+          "e4",
+          "e3",
+          "e6",
+          "a6"
+        ],
+        "point": "In this line, Be4+ blocks the queen on e3 from recapturing on e6. Rxe6 uses the cut defence to win material."
+      },
+      {
+        "id": "04Qx2",
+        "line": "23. Be8+ Qg7 24. Qxg7+ Kxg7 25. Rxc8",
+        "roles": [
+          "e8",
+          "f8",
+          "c8",
+          "c1"
+        ],
+        "point": "In this line, Be8+ blocks the rook on f8 from recapturing on c8. Rxc8 uses the cut defence to win material."
+      },
+      {
+        "id": "352UV",
+        "line": "36. Bd6+ Ka8 37. Bxd3",
+        "roles": [
+          "d6",
+          "d8",
+          "d3",
+          "a6"
+        ],
+        "point": "In this line, Bd6+ blocks the rook on d8 from recapturing on d3. Bxd3 uses the cut defence to win material."
+      },
+      {
+        "id": "3lsqy",
+        "line": "13. Bb5+ Kf8 14. Bxe5",
+        "roles": [
+          "b5",
+          "a5",
+          "e5",
+          "h2"
+        ],
+        "point": "In this line, Bb5+ blocks the queen on a5 from recapturing on e5. Bxe5 uses the cut defence to win material."
+      }
+    ],
+    "newDecisions": [
+      "1u15v",
+      "4P26i",
+      "3ZK2N",
+      "01GCT",
+      "04Qx2",
+      "352UV",
+      "3lsqy"
+    ],
+    "positionChanges": [
+      {
+        "id": "4P26i",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "01GCT",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "04Qx2",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "3lsqy",
+        "before": "unclear",
+        "after": "tactical"
+      }
+    ],
+    "medianCandidateWorkerMs": 128.32,
+    "baselineLive": {
+      "TP": 8,
+      "FN": 12,
+      "TN": 22,
+      "FP": 2
+    },
+    "baselineDecision": {
+      "TP": 8,
+      "FN": 11,
+      "TN": 23,
+      "FP": 2
+    },
+    "medianBaselineWorkerMs": 127.61
+  },
+  "classical": {
+    "cases": 29,
+    "searchInputSha256": "a2edc32055540398519ac7f3ae76187be1fae19200d17b9d1045a6dc4514bccf",
+    "reference": {
+      "neither": 27,
+      "independent reply only": 1,
+      "first search only": 1
+    },
+    "geometricLive": {
+      "FP": 6,
+      "TN": 22,
+      "TP": 1
+    },
+    "candidateExactLive": {
+      "TN": 28,
+      "FN": 1
+    },
+    "candidateExactDecision": {
+      "TN": 29
+    },
+    "candidateLive": {
+      "TN": 28,
+      "FN": 1
+    },
+    "candidateDecision": {
+      "TN": 29
+    },
+    "newLive": [],
+    "newDecisions": [],
+    "positionChanges": [],
+    "medianCandidateWorkerMs": 29.06,
+    "baselineLive": {
+      "TN": 28,
+      "FN": 1
+    },
+    "baselineDecision": {
+      "TN": 29
+    },
+    "medianBaselineWorkerMs": 27.24,
+    "sources": {
+      "grand-swiss-2025.pgn": {
+        "sha256": "3f1c04b3e8347f94c1cd665d561abce85b1dcf9a0cd426f8519e36848abc5f62",
+        "population": {}
+      },
+      "arco.pgn": {
+        "sha256": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18",
+        "population": {
+          "used-cut": 6,
+          "near-miss": 5
+        }
+      },
+      "irish-championship.pgn": {
+        "sha256": "c6206cecc5be314d1582cc9a58b77fee8b26b745d5a07e900016e5de54b58239",
+        "population": {
+          "near-miss": 14,
+          "used-cut": 3
+        }
+      },
+      "icelandic-open.pgn": {
+        "sha256": "6ff1afae6a26aac05e6e6356be60afe357cf1f4588fb5e760e1a4a12065126b7",
+        "population": {
+          "near-miss": 1
+        }
+      },
+      "poland.pgn": {
+        "sha256": "8c20aae8325c8504373f7729be29b33d7242647104d1f794a50ae3888e0ffdef",
+        "population": {
+          "near-miss": 3,
+          "used-cut": 1
+        }
+      },
+      "team-open.pgn": {
+        "sha256": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+        "population": {
+          "near-miss": 2,
+          "used-cut": 1
+        }
+      },
+      "world-junior.pgn": {
+        "sha256": "248ced5e2f7389fa6a4e73a3fb46f8f62bc1d68d5004a2ef91df763ebc00b19e",
+        "population": {}
+      },
+      "english-open.pgn": {
+        "sha256": "947e527c5b24b4cc9852c582487a79c44f358ebea843bbf8dbe78f4cd2a06811",
+        "population": {
+          "used-cut": 1
+        }
+      },
+      "hastings-masters.pgn": {
+        "sha256": "ac95f8097eb55fd827cde47d98b8a0b095d5c8cdb52d61df137c40bd2d1898c4",
+        "population": {
+          "near-miss": 2
+        }
+      },
+      "british-2025.pgn": {
+        "sha256": "d376eb246c885719553eaab5b3a38b72b4f0c4118c7c639c69848ecfc08c9d13",
+        "population": {
+          "near-miss": 2
+        }
+      },
+      "guernsey.pgn": {
+        "sha256": "74232ed341751e5b2a39b379c8819808e9924225e1644fae156c601427c2f6d3",
+        "population": {
+          "near-miss": 1
+        }
+      }
+    }
+  },
+  "deeperRecheck": {
+    "cases": 10,
+    "searchInputSha256": "4d741fad6e48190f1f62552cc8e770984db3ee281ecd46bd6acd184c2378fffe",
+    "reference": {
+      "same role in both": 8,
+      "neither": 1,
+      "first search only": 1
+    },
+    "geometricLive": {
+      "TP": 9,
+      "TN": 1
+    },
+    "candidateExactLive": {
+      "TP": 8,
+      "TN": 1,
+      "FN": 1
+    },
+    "candidateExactDecision": {
+      "TP": 8,
+      "TN": 2
+    },
+    "candidateLive": {
+      "TP": 8,
+      "TN": 1,
+      "FN": 1
+    },
+    "candidateDecision": {
+      "TP": 8,
+      "TN": 2
+    },
+    "newLive": [
+      {
+        "id": "1u15v",
+        "line": "23...Bd1+ 24. Kg3 Rxe1",
+        "roles": [
+          "d1",
+          "c1",
+          "e1",
+          "e8"
+        ],
+        "point": "In this line, Bd1+ blocks the rook on c1 from recapturing on e1. Rxe1 uses the cut defence to win material."
+      },
+      {
+        "id": "4P26i",
+        "line": "11. Nc7+ Kf8 12. Qxc5+",
+        "roles": [
+          "c7",
+          "c8",
+          "c5",
+          "b6"
+        ],
+        "point": "In this line, Nc7+ blocks the queen on c8 from recapturing on c5. Qxc5+ uses the cut defence to win material."
+      },
+      {
+        "id": "0atE3",
+        "line": "31. Nb5 Ke7 32. Rxb3",
+        "roles": [
+          "b5",
+          "b7",
+          "b3",
+          "b1"
+        ],
+        "point": "In this line, Nb5 blocks the rook on b7 from recapturing on b3. Rxb3 uses the cut defence to win material."
+      },
+      {
+        "id": "3ZK2N",
+        "line": "25. Ne7+ Kh8 26. Rxe4",
+        "roles": [
+          "e7",
+          "e8",
+          "e4",
+          "d4"
+        ],
+        "point": "In this line, Ne7+ blocks the rook on e8 from recapturing on e4. Rxe4 uses the cut defence to win material."
+      },
+      {
+        "id": "01GCT",
+        "line": "31. Be4+ Kh8 32. Rxe6",
+        "roles": [
+          "e4",
+          "e3",
+          "e6",
+          "a6"
+        ],
+        "point": "In this line, Be4+ blocks the queen on e3 from recapturing on e6. Rxe6 uses the cut defence to win material."
+      },
+      {
+        "id": "04Qx2",
+        "line": "23. Be8+ Qg7 24. Qxg7+ Kxg7 25. Rxc8",
+        "roles": [
+          "e8",
+          "f8",
+          "c8",
+          "c1"
+        ],
+        "point": "In this line, Be8+ blocks the rook on f8 from recapturing on c8. Rxc8 uses the cut defence to win material."
+      },
+      {
+        "id": "352UV",
+        "line": "36. Bd6+ Ka8 37. Bxd3",
+        "roles": [
+          "d6",
+          "d8",
+          "d3",
+          "a6"
+        ],
+        "point": "In this line, Bd6+ blocks the rook on d8 from recapturing on d3. Bxd3 uses the cut defence to win material."
+      },
+      {
+        "id": "3lsqy",
+        "line": "13. Bb5+ Kf8 14. Bxe5",
+        "roles": [
+          "b5",
+          "a5",
+          "e5",
+          "h2"
+        ],
+        "point": "In this line, Bb5+ blocks the queen on a5 from recapturing on e5. Bxe5 uses the cut defence to win material."
+      }
+    ],
+    "newDecisions": [
+      "1u15v",
+      "4P26i",
+      "0atE3",
+      "3ZK2N",
+      "01GCT",
+      "04Qx2",
+      "352UV",
+      "3lsqy"
+    ],
+    "positionChanges": [
+      {
+        "id": "4P26i",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "0atE3",
+        "before": "positional",
+        "after": "mixed"
+      },
+      {
+        "id": "01GCT",
+        "before": "unclear",
+        "after": "tactical"
+      },
+      {
+        "id": "3lsqy",
+        "before": "unclear",
+        "after": "tactical"
+      }
+    ],
+    "medianCandidateWorkerMs": 147.36,
+    "baselineLive": {
+      "FN": 9,
+      "TN": 1
+    },
+    "baselineDecision": {
+      "FN": 8,
+      "TN": 2
+    },
+    "medianBaselineWorkerMs": 129.98
+  },
+  "archive": {
+    "requests": 1875,
+    "reports": 1869,
+    "changedByField": {},
+    "changed": [],
+    "medianBaselineWorkerMs": 72.54,
+    "medianCandidateWorkerMs": 73.3
+  }
+}

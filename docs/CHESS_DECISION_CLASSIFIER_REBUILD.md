@@ -4169,3 +4169,20 @@ An archive replay adds one diagnosis and keeps position and move
 reports unchanged. The previous quiet-threat proofs match after
 sharing the short mating logic. Source panel and regression tests pass.
 [Exact paired lines, independent checks and reproduction](../benchmarks/decision-evidence/played-mate-in-two/README.md)
+## Interference with the original recapture
+
+A legal scored variation can now show how a move cuts an actual recapture.
+The app verifies the original guard on the pre-move board and checks
+whether removing the interposing piece restores that same recapture at
+the payoff. It keeps the result at line level unless an independent reply
+search corroborates the roles and outcome.
+
+On 44 held-out puzzle roots the live scanner improves from 8/20 to 16/20
+and Decision Evidence from 8/19 to 15/19. Neither adds a label on its
+controls. The full worker gains four tactical position diagnoses. A deeper
+check additionally converts a positional diagnosis to mixed when a
+pawn-supported knight square also cuts a rook's recapture. The 29 recorded
+classical moves yield no new label, and 1,869 valid archive reports have
+identical contents after accounting for the cache version. The
+implementation adds no engine requests.
+[Benchmark, exact variations and reproduction](../benchmarks/decision-evidence/interference-in-line/README.md)
