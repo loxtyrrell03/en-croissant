@@ -44,8 +44,8 @@ def mixed(label):
     return None
 
 
-def tally(labels, before, after, older=None, *, is_mistake):
-    arms={"original": before, "v47": after}
+def tally(labels, before, after, older=None, *, is_mistake, current="v47"):
+    arms={"original": before, current: after}
     if older is not None:
         arms["v33"] = older
     result={}
@@ -68,12 +68,12 @@ def tally(labels, before, after, older=None, *, is_mistake):
     return dict(cases=len(labels),axes=result,mixed_breakdown=dict(mixed_breakdown))
 
 
-def archived(lab, scratch):
+def archived(lab, scratch, current):
     archive_file=lab/"reply-coverage-audit/full-pair-input.json"
     rows=lookup(read(archive_file))
     old=lookup(read(lab/"unified-audit/archive-original.json"))
     previous=lookup(read(lab/"unified-audit/threat-final-full-candidate.json"))
-    now=lookup(read(scratch/"archive-v47.json"))
+    now=lookup(read(scratch/f"archive-{current}.json"))
     assert rows.keys()==now.keys()
     result={"inputSha256":digest(archive_file),"queries":len(rows),"scopes":{}}
     for scope in ("ordinary position","other reviewed position","classical mistake"):
@@ -92,16 +92,16 @@ def archived(lab, scratch):
         method=lambda material,row:supported((material[row["id"]]["report"] or {}).get(question))
         details=tally([x["label"] for x in subgroup],[old[x["id"]] for x in subgroup],
                       [method(now,x) for x in subgroup],[method(previous,x) for x in subgroup],
-                      is_mistake=question=="mistake")
+                      is_mistake=question=="mistake", current=current)
         details["medianMs"]={name:median(outputs[x["id"]]["ms"] for x in subgroup)
-                             for name,outputs in (("original",old),("v47",now))}
+                             for name,outputs in (("original",old),(current,now))}
         result["scopes"][scope]=details
     return result
 
 
-def frozen_cohorts(lab, scratch):
-    current=lookup(read(scratch/"early-v47.json"))
-    matched_input=scratch/"matched-early.json"
+def frozen_cohorts(lab, scratch, references, tag):
+    current=lookup(read(scratch/f"early-{tag}.json"))
+    matched_input=references/"matched-early.json"
     matched=lookup(read(matched_input))
     result={"inputSha256":digest(matched_input),"cohorts":{}}
     for cohort in ("course","independent","classical"):
@@ -117,13 +117,13 @@ def frozen_cohorts(lab, scratch):
     return result
 
 
-def prospective(scratch):
-    reference_file=scratch/"prospective-reference.json"
+def prospective(scratch, references, tag):
+    reference_file=references/"prospective-reference.json"
     reference=read(reference_file)
-    assert reference["scoredInputSha256"]==digest(scratch/"prospective-scored.json")
-    old=lookup(read(scratch/"prospective-original.json"))
-    current=lookup(read(scratch/"prospective-v47.json"))
-    result={"sources":read(scratch/"prospective-manifest.json"),"reviewSha256":digest(reference_file),
+    assert reference["scoredInputSha256"]==digest(references/"prospective-scored.json")
+    old=lookup(read(references/"prospective-original.json"))
+    current=lookup(read(scratch/f"prospective-{tag}.json"))
+    result={"sources":read(references/"prospective-manifest.json"),"reviewSha256":digest(reference_file),
             "scoredInputSha256":reference["scoredInputSha256"],"scope":{}}
     for kind in ("position", "mistake"):
         label_scope="position-character" if kind=="position" else "mistake-mechanism"
@@ -131,7 +131,7 @@ def prospective(scratch):
         assert {case["id"] for case in labels}==current.keys()
         result["scope"][kind]=tally(labels,[old[case["id"]+"#"+kind] for case in labels],
                       [supported((current[case["id"]]["report"] or {}).get(kind)) for case in labels],
-                      is_mistake=kind=="mistake")
+                      is_mistake=kind=="mistake", current=tag)
     return result
 
 
@@ -139,10 +139,15 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ("classifier_research","replay_directory","output"):
         parser.add_argument(name,type=Path)
+    parser.add_argument("--tag", default="v47")
+    parser.add_argument("--revision", default="ae4bf1fc")
+    parser.add_argument("--references", type=Path, help="Earlier immutable input and label directory")
     args=parser.parse_args()
     lab,scratch=args.classifier_research,args.replay_directory
-    results=dict(revision="ae4bf1fc",historical_archive=archived(lab,scratch),
-                 previously_reviewed=frozen_cohorts(lab,scratch),prospective=prospective(scratch))
+    references=args.references or scratch
+    results=dict(revision=args.revision,historical_archive=archived(lab,scratch,args.tag),
+                 previously_reviewed=frozen_cohorts(lab,scratch,references,args.tag),
+                 prospective=prospective(scratch,references,args.tag))
     with args.output.open("x",encoding="utf-8") as out:
         json.dump(results,out,indent=2,ensure_ascii=False)
         out.write("\n")

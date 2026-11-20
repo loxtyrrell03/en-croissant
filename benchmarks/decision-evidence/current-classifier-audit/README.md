@@ -123,3 +123,58 @@ in the existing archive runner for `prospective-original.json`.
 [Public reference](prospective-reference-public.json) contains the public
 portion of the review. Reproducing the full score needs the hashed local
 reference, public and private. Run `score.py LAB REPLAY_DIRECTORY OUTPUT`.
+
+## v57 archive refresh
+
+The committed worker at `27580772` was run on all three saved cohorts
+using the previous engine frames and labels. Run the same replay with
+`replay.config.mjs` and `INTERFERENCE_MODE=archive` to pin this
+worker's source even from a checkout with pending changes. Set
+`INTERFERENCE_INPUT` and `INTERFERENCE_OUTPUT` for each of the three
+inputs. Name the new files `archive-v57.json`, `early-v57.json` and
+`prospective-v57.json`. Run `score.py LAB REPLAY_DIRECTORY OUTPUT
+--tag v57 --revision 27580772 --references EARLIER_AUDIT_DIRECTORY`.
+
+| Scope | v47 true / false positives | v57 true / false positives | Reference positives / negatives |
+| --- | ---: | ---: | ---: |
+| Ordinary classical position, tactical | 40 / 0 | 40 / 0 | 135 / 54 |
+| Ordinary classical position, positional | 64 / 1 | 64 / 0 | 212 / 27 |
+| Ordinary classical position, mixed | 8 / 1 | 8 / 0 | 88 / 81 |
+| Classical mistake, tactical | 22 / 0 | 22 / 0 | 68 / 165 |
+| Classical mistake, positional | 20 / 0 | 20 / 0 | 89 / 164 |
+| Classical mistake, mixed | 1 / 0 | 1 / 0 | 17 / 185 |
+| Woodpecker exact move, tactical | 20 / 1 | 20 / 1 | 35 / 9 |
+| Woodpecker exact move, positional | 6 / 3 | 6 / 1 | 24 / 13 |
+| Woodpecker exact move, mixed | 2 / 2 | 2 / 0 | 9 / 22 |
+| Earlier prospective played mistake, tactical | 1 / 1 | 1 / 0 | 2 / 1 |
+
+Recall is unchanged on these saved frames. Of the 88 reviewed mixed
+ordinary positions, 57 still have support for neither axis. The course
+and independent-puzzle exact-move motif counts are unchanged from the
+v47 replay. Current median worker compute on the archive
+was 47 ms for ordinary positions and 77 ms for recorded mistakes,
+excluding engine work. New optional app searches are outside the scope
+of this cache replay.
+[Full counts, motif results and uncertainty](results-v57.json)
+
+## New prospective sample
+
+`classical-2026-11.json` freezes 72 distinct public classical games
+from 15 event groups before either classifier was run. Every combination
+of the three recorded mover-rating bands and three move-number windows
+has eight games. The time-control evidence, export URLs, prior input
+hashes and inclusion counts are in `classical-2026-11.manifest.json`.
+The game and board exclusions include the older mixed and course
+audits and the recent neural and checking-order cohorts. The reference
+is pending review. The archive scores above are separate.
+
+To regenerate, download only the PGN URLs listed in the manifest into
+a scratch directory under their listed filenames. Use its
+`broadcasts` array as the input source list when replaying the frozen
+selection and supply the same prior files in the manifest. Run
+`freeze-classical.py SOURCES OUTPUT --prior PRIOR_FILES...`. The
+app-budget and deeper frames use `classical-frames.py app INPUT
+STOCKFISH OUTPUT` and `classical-frames.py reference INPUT STOCKFISH
+OUTPUT --app-frames APP_OUTPUT` from the repository root. Review the
+matched frames with `classical-review-packet.py APP_OUTPUT REFERENCE_OUTPUT`
+under the [frozen reference protocol](classical-review-protocol.md).
