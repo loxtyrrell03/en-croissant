@@ -1,0 +1,881 @@
+{
+  "positions": {
+    "train": 2135,
+    "test": 424,
+    "validation": 422,
+    "classical": 88,
+    "reserve": 30,
+    "puzzle-audit": 20
+  },
+  "knownTraining": 1300,
+  "trainingPairs": 188,
+  "pretraining": {
+    "games": 10800,
+    "pairs": 21305
+  },
+  "pretrainingPrepareSeconds": 8.732492199982516,
+  "spatialFeaturesMs": 0.18347239500788345,
+  "batchedInferenceCpuMs": {
+    "spatial-scratch": 0.19457806989030435,
+    "spatial-pretrained": 0.18211074062073965
+  },
+  "singleInferenceCpuMs": {
+    "spatial-scratch": 2.2148599999491125,
+    "spatial-pretrained": 2.170332000241615
+  },
+  "fits": {
+    "spatial-scratch": [
+      {
+        "seed": 17,
+        "validationLogLoss": 0.0030101239681243896,
+        "epoch": 25,
+        "pretrainSeconds": 2.00001522898674e-07,
+        "fitSeconds": 2.8393378000473604,
+        "parameters": 13113
+      },
+      {
+        "seed": 59,
+        "validationLogLoss": 0.008055751211941242,
+        "epoch": 16,
+        "pretrainSeconds": 1.00000761449337e-07,
+        "fitSeconds": 0.9002412999980152,
+        "parameters": 13113
+      },
+      {
+        "seed": 97,
+        "validationLogLoss": 0.0019328368362039328,
+        "epoch": 26,
+        "pretrainSeconds": 0.0,
+        "fitSeconds": 1.1794677999569103,
+        "parameters": 13113
+      }
+    ],
+    "spatial-pretrained": [
+      {
+        "seed": 17,
+        "validationLogLoss": 0.005341282580047846,
+        "epoch": 7,
+        "pretrainSeconds": 1.0275286000105552,
+        "fitSeconds": 0.535370800003875,
+        "parameters": 13113
+      },
+      {
+        "seed": 59,
+        "validationLogLoss": 0.0053464435040950775,
+        "epoch": 8,
+        "pretrainSeconds": 1.1692324000177905,
+        "fitSeconds": 0.5457109999842942,
+        "parameters": 13113
+      },
+      {
+        "seed": 97,
+        "validationLogLoss": 0.0013900770572945476,
+        "epoch": 15,
+        "pretrainSeconds": 1.0541905999998562,
+        "fitSeconds": 0.7636763000045903,
+        "parameters": 13113
+      }
+    ]
+  },
+  "results": {
+    "test": {
+      "stockfish": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 34,
+          "negatives": 0,
+          "uncertain": 72
+        },
+        "ap": 0.9936523125996813,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "quick-payoff": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 70,
+          "negatives": 1,
+          "uncertain": 35
+        },
+        "ap": 0.99845070672633,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "reply-logistic": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 70,
+          "negatives": 0,
+          "uncertain": 36
+        },
+        "ap": 1.0,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "spatial-scratch": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 68,
+          "negatives": 0,
+          "uncertain": 38
+        },
+        "ap": 0.9993272029173534,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      },
+      "spatial-pretrained": {
+        "positions": 424,
+        "available": {
+          "positives": 76,
+          "negatives": 185,
+          "uncertain": 163
+        },
+        "quarterBudget": 106,
+        "picks": {
+          "positives": 66,
+          "negatives": 0,
+          "uncertain": 40
+        },
+        "ap": 0.9943346882783929,
+        "counterfactualPairs": {
+          "total": 42,
+          "fractionCorrect": 1.0
+        }
+      }
+    },
+    "classical": {
+      "incumbent": {
+        "truePositive": 4,
+        "falsePositive": 0,
+        "missed": 3
+      },
+      "stockfish": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 6,
+          "negatives": 5,
+          "uncertain": 11
+        },
+        "ap": 0.8044217687074828,
+        "unresolved": {
+          "positions": 82,
+          "available": {
+            "positives": 3,
+            "negatives": 60,
+            "uncertain": 19
+          },
+          "quarterBudget": 20,
+          "picks": {
+            "positives": 3,
+            "negatives": 6,
+            "uncertain": 11
+          },
+          "ap": 0.8333333333333333
+        }
+      },
+      "quick-payoff": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 5,
+          "negatives": 2,
+          "uncertain": 15
+        },
+        "ap": 0.7466666666666667,
+        "unresolved": {
+          "positions": 82,
+          "available": {
+            "positives": 3,
+            "negatives": 60,
+            "uncertain": 19
+          },
+          "quarterBudget": 20,
+          "picks": {
+            "positives": 2,
+            "negatives": 5,
+            "uncertain": 13
+          },
+          "ap": 0.49206349206349204
+        }
+      },
+      "reply-logistic": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 7,
+          "negatives": 6,
+          "uncertain": 9
+        },
+        "ap": 0.8404761904761904,
+        "unresolved": {
+          "positions": 82,
+          "available": {
+            "positives": 3,
+            "negatives": 60,
+            "uncertain": 19
+          },
+          "quarterBudget": 20,
+          "picks": {
+            "positives": 3,
+            "negatives": 6,
+            "uncertain": 11
+          },
+          "ap": 0.5555555555555556
+        }
+      },
+      "spatial-scratch": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 5,
+          "negatives": 8,
+          "uncertain": 9
+        },
+        "ap": 0.7410394988034739,
+        "unresolved": {
+          "positions": 82,
+          "available": {
+            "positives": 3,
+            "negatives": 60,
+            "uncertain": 19
+          },
+          "quarterBudget": 20,
+          "picks": {
+            "positives": 2,
+            "negatives": 10,
+            "uncertain": 8
+          },
+          "ap": 0.5344827586206896
+        }
+      },
+      "spatial-pretrained": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 4,
+          "negatives": 9,
+          "uncertain": 9
+        },
+        "ap": 0.6619146371363189,
+        "unresolved": {
+          "positions": 82,
+          "available": {
+            "positives": 3,
+            "negatives": 60,
+            "uncertain": 19
+          },
+          "quarterBudget": 20,
+          "picks": {
+            "positives": 1,
+            "negatives": 9,
+            "uncertain": 10
+          },
+          "ap": 0.39166666666666666
+        }
+      },
+      "handcrafted-network": {
+        "positions": 88,
+        "available": {
+          "positives": 7,
+          "negatives": 60,
+          "uncertain": 21
+        },
+        "quarterBudget": 22,
+        "picks": {
+          "positives": 5,
+          "negatives": 8,
+          "uncertain": 9
+        },
+        "ap": 0.7578571428571428,
+        "unresolved": {
+          "positions": 82,
+          "available": {
+            "positives": 3,
+            "negatives": 60,
+            "uncertain": 19
+          },
+          "quarterBudget": 20,
+          "picks": {
+            "positives": 2,
+            "negatives": 10,
+            "uncertain": 8
+          },
+          "ap": 0.44155844155844154
+        }
+      }
+    },
+    "puzzle-audit": {
+      "incumbent": {
+        "truePositive": 9,
+        "falsePositive": 0,
+        "missed": [
+          "lichess-4bGea",
+          "lichess-4bHkU",
+          "lichess-4bIxF",
+          "lichess-4bUMJ",
+          "lichess-4bhj9"
+        ]
+      },
+      "stockfish": {
+        "positions": 20,
+        "available": {
+          "positives": 14,
+          "negatives": 3,
+          "uncertain": 3
+        },
+        "quarterBudget": 5,
+        "picks": {
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 0
+        },
+        "ap": 0.8344122147693576,
+        "unresolved": {
+          "positions": 11,
+          "available": {
+            "positives": 5,
+            "negatives": 3,
+            "uncertain": 3
+          },
+          "quarterBudget": 2,
+          "picks": {
+            "positives": 1,
+            "negatives": 1,
+            "uncertain": 0
+          },
+          "ap": 0.71
+        },
+        "shortlist": [
+          {
+            "id": "lichess-4bV3Q",
+            "reviewedFork": false
+          },
+          {
+            "id": "lichess-4bhj9",
+            "reviewedFork": true
+          }
+        ]
+      },
+      "quick-payoff": {
+        "positions": 20,
+        "available": {
+          "positives": 14,
+          "negatives": 3,
+          "uncertain": 3
+        },
+        "quarterBudget": 5,
+        "picks": {
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0
+        },
+        "ap": 0.9952380952380953,
+        "unresolved": {
+          "positions": 11,
+          "available": {
+            "positives": 5,
+            "negatives": 3,
+            "uncertain": 3
+          },
+          "quarterBudget": 2,
+          "picks": {
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 0
+          },
+          "ap": 1.0
+        },
+        "shortlist": [
+          {
+            "id": "lichess-4bGea",
+            "reviewedFork": true
+          },
+          {
+            "id": "lichess-4bIxF",
+            "reviewedFork": true
+          }
+        ]
+      },
+      "reply-logistic": {
+        "positions": 20,
+        "available": {
+          "positives": 14,
+          "negatives": 3,
+          "uncertain": 3
+        },
+        "quarterBudget": 5,
+        "picks": {
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0
+        },
+        "ap": 1.0,
+        "unresolved": {
+          "positions": 11,
+          "available": {
+            "positives": 5,
+            "negatives": 3,
+            "uncertain": 3
+          },
+          "quarterBudget": 2,
+          "picks": {
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1
+          },
+          "ap": 1.0
+        },
+        "shortlist": [
+          {
+            "id": "lichess-4bIxF",
+            "reviewedFork": true
+          },
+          {
+            "id": "lichess-4bS2l",
+            "reviewedFork": null
+          }
+        ]
+      },
+      "spatial-scratch": {
+        "positions": 20,
+        "available": {
+          "positives": 14,
+          "negatives": 3,
+          "uncertain": 3
+        },
+        "quarterBudget": 5,
+        "picks": {
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0
+        },
+        "ap": 1.0,
+        "unresolved": {
+          "positions": 11,
+          "available": {
+            "positives": 5,
+            "negatives": 3,
+            "uncertain": 3
+          },
+          "quarterBudget": 2,
+          "picks": {
+            "positives": 1,
+            "negatives": 0,
+            "uncertain": 1
+          },
+          "ap": 1.0
+        },
+        "shortlist": [
+          {
+            "id": "lichess-4bhj9",
+            "reviewedFork": true
+          },
+          {
+            "id": "lichess-4bS2l",
+            "reviewedFork": null
+          }
+        ]
+      },
+      "spatial-pretrained": {
+        "positions": 20,
+        "available": {
+          "positives": 14,
+          "negatives": 3,
+          "uncertain": 3
+        },
+        "quarterBudget": 5,
+        "picks": {
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 0
+        },
+        "ap": 0.9910714285714285,
+        "unresolved": {
+          "positions": 11,
+          "available": {
+            "positives": 5,
+            "negatives": 3,
+            "uncertain": 3
+          },
+          "quarterBudget": 2,
+          "picks": {
+            "positives": 2,
+            "negatives": 0,
+            "uncertain": 0
+          },
+          "ap": 0.9428571428571428
+        },
+        "shortlist": [
+          {
+            "id": "lichess-4bhj9",
+            "reviewedFork": true
+          },
+          {
+            "id": "lichess-4bUMJ",
+            "reviewedFork": true
+          }
+        ]
+      }
+    },
+    "reserve": {
+      "incumbent": {
+        "truePositive": 5,
+        "falsePositive": 0,
+        "missed": [
+          "fork-halloween-d53941b1a5ad36e0-112"
+        ]
+      },
+      "stockfish": {
+        "positions": 30,
+        "available": {
+          "positives": 6,
+          "negatives": 19,
+          "uncertain": 5
+        },
+        "quarterBudget": 7,
+        "picks": {
+          "positives": 3,
+          "negatives": 0,
+          "uncertain": 4
+        },
+        "ap": 0.7716450216450216,
+        "unresolved": {
+          "positions": 24,
+          "available": {
+            "positives": 1,
+            "negatives": 19,
+            "uncertain": 4
+          },
+          "quarterBudget": 6,
+          "picks": {
+            "positives": 1,
+            "negatives": 1,
+            "uncertain": 4
+          },
+          "ap": 1.0
+        },
+        "shortlist": [
+          {
+            "id": "fork-halloween-d53941b1a5ad36e0-112",
+            "reviewedFork": true
+          },
+          {
+            "id": "fork-hvar-a9c8a10f89ba9b63-59",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-hvar-866dab292b7d63e2-52",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-halloween-bd2d0033b26e20e1-48",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-hvar-dcea340934dc09f6-63",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-halloween-81e728da2fa96926-48",
+            "reviewedFork": false
+          }
+        ]
+      },
+      "quick-payoff": {
+        "positions": 30,
+        "available": {
+          "positives": 6,
+          "negatives": 19,
+          "uncertain": 5
+        },
+        "quarterBudget": 7,
+        "picks": {
+          "positives": 5,
+          "negatives": 0,
+          "uncertain": 2
+        },
+        "ap": 0.8333333333333333,
+        "unresolved": {
+          "positions": 24,
+          "available": {
+            "positives": 1,
+            "negatives": 19,
+            "uncertain": 4
+          },
+          "quarterBudget": 6,
+          "picks": {
+            "positives": 1,
+            "negatives": 4,
+            "uncertain": 1
+          },
+          "ap": 0.3333333333333333
+        },
+        "shortlist": [
+          {
+            "id": "fork-hvar-a9c8a10f89ba9b63-59",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-halloween-d53941b1a5ad36e0-112",
+            "reviewedFork": true
+          },
+          {
+            "id": "fork-stockholm-ea6e5d2fcf4e856e-27",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-halloween-7616ea8af55f1592-43",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-stockholm-685ee11a03b674df-29",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-halloween-b4f008f5772b242b-26",
+            "reviewedFork": false
+          }
+        ]
+      },
+      "reply-logistic": {
+        "positions": 30,
+        "available": {
+          "positives": 6,
+          "negatives": 19,
+          "uncertain": 5
+        },
+        "quarterBudget": 7,
+        "picks": {
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 2
+        },
+        "ap": 0.8819444444444444,
+        "unresolved": {
+          "positions": 24,
+          "available": {
+            "positives": 1,
+            "negatives": 19,
+            "uncertain": 4
+          },
+          "quarterBudget": 6,
+          "picks": {
+            "positives": 1,
+            "negatives": 3,
+            "uncertain": 2
+          },
+          "ap": 1.0
+        },
+        "shortlist": [
+          {
+            "id": "fork-halloween-d53941b1a5ad36e0-112",
+            "reviewedFork": true
+          },
+          {
+            "id": "fork-stockholm-429190fb73477d5f-51",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-halloween-bd2d0033b26e20e1-48",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-hvar-866dab292b7d63e2-52",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-stockholm-685ee11a03b674df-29",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-stockholm-eb469f36bd982437-75",
+            "reviewedFork": false
+          }
+        ]
+      },
+      "spatial-scratch": {
+        "positions": 30,
+        "available": {
+          "positives": 6,
+          "negatives": 19,
+          "uncertain": 5
+        },
+        "quarterBudget": 7,
+        "picks": {
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 2
+        },
+        "ap": 0.8773809523809524,
+        "unresolved": {
+          "positions": 24,
+          "available": {
+            "positives": 1,
+            "negatives": 19,
+            "uncertain": 4
+          },
+          "quarterBudget": 6,
+          "picks": {
+            "positives": 1,
+            "negatives": 2,
+            "uncertain": 3
+          },
+          "ap": 1.0
+        },
+        "shortlist": [
+          {
+            "id": "fork-halloween-d53941b1a5ad36e0-112",
+            "reviewedFork": true
+          },
+          {
+            "id": "fork-stockholm-429190fb73477d5f-51",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-hvar-a9c8a10f89ba9b63-59",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-halloween-bd2d0033b26e20e1-48",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-stockholm-685ee11a03b674df-29",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-hvar-866dab292b7d63e2-52",
+            "reviewedFork": null
+          }
+        ]
+      },
+      "spatial-pretrained": {
+        "positions": 30,
+        "available": {
+          "positives": 6,
+          "negatives": 19,
+          "uncertain": 5
+        },
+        "quarterBudget": 7,
+        "picks": {
+          "positives": 4,
+          "negatives": 1,
+          "uncertain": 2
+        },
+        "ap": 0.9484126984126984,
+        "unresolved": {
+          "positions": 24,
+          "available": {
+            "positives": 1,
+            "negatives": 19,
+            "uncertain": 4
+          },
+          "quarterBudget": 6,
+          "picks": {
+            "positives": 1,
+            "negatives": 3,
+            "uncertain": 2
+          },
+          "ap": 1.0
+        },
+        "shortlist": [
+          {
+            "id": "fork-halloween-d53941b1a5ad36e0-112",
+            "reviewedFork": true
+          },
+          {
+            "id": "fork-stockholm-429190fb73477d5f-51",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-hvar-866dab292b7d63e2-52",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-hvar-df6ef53f898d7299-59",
+            "reviewedFork": false
+          },
+          {
+            "id": "fork-halloween-bd2d0033b26e20e1-48",
+            "reviewedFork": null
+          },
+          {
+            "id": "fork-hvar-d7e3f241bf839149-44",
+            "reviewedFork": false
+          }
+        ]
+      }
+    }
+  },
+  "inputs": {
+    "puzzle-corpus-frozen.json": "9f3d2bdf595a3eac9f1d4f049f3937c03248bfa5595e3c4709f6b6ee30f1fee0",
+    "receipt.json": "cb455b838c0e6921c87b8f5ccf0f1bb57f365c2f6089f8c16ee1e6e74dc4de5a",
+    "transfer.json": "1f83e41a36fed1315de39d8edda7c144bab0217cf28450f3676da725be61e0de"
+  },
+  "dependencies": {
+    "torch": "2.9.0+cu129",
+    "chess": "1.11.2",
+    "numpy": "2.5.2",
+    "device": "cuda"
+  },
+  "engine": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "excludedFromPuzzleAudit": 20
+}

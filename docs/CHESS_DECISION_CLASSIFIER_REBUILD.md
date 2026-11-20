@@ -3986,3 +3986,23 @@ can take over the d-file in Buongoma. It adds no verified transfer in
 the 113-game reserve, including a targeted comparison against the
 played offers. That rule remains experimental.
 [Exact continuations, references and replay](../benchmarks/decision-evidence/promotion-and-exchange-compensation/README.md)
+
+## Spatial fork learning and the limits of its training target
+
+A compact convolutional encoder reads the board, exact candidate move and
+two short legal Stockfish replies. Pretraining on 21,305 matched move pairs
+from 10,800 Lichess puzzle games supplies a broad move-ranking objective before
+the exact-fork fit. A second arm trains the same architecture from scratch.
+Pretraining, exact fitting and validation exclude transfer source games and
+colour-normalised root boards.
+
+At the same 26 review slots across two classical cohorts, simple quick
+Stockfish ranking retrieves all four reviewed forks missed by the incumbent
+verifier and seven reviewed negatives. The scratch network retrieves three
+forks and 12 negatives. The pretrained network retrieves two forks and 12
+negatives. On the disjoint puzzle teacher test, the line logistic control
+gets perfect average precision on known labels. The teacher confirms four
+of 13 reviewed classical forks and leaves nine unknown because it requires
+an early capture by the original attacking piece across both defences.
+The spatial models stay offline.
+[Experimental protocol, reproduction and examples](../benchmarks/decision-evidence/spatial-fork-model/README.md)

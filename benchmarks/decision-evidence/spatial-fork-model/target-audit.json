@@ -1,0 +1,77 @@
+{
+  "teacherNodes": 120000,
+  "cohorts": {
+    "classical": {
+      "counts": {
+        "positive": {
+          "positive": 4,
+          "negative": 0,
+          "unknown": 3
+        },
+        "negative": {
+          "positive": 0,
+          "negative": 31,
+          "unknown": 29
+        },
+        "unknown": {
+          "positive": 0,
+          "negative": 0,
+          "unknown": 21
+        }
+      },
+      "reviewedPositiveMissedByApp": {
+        "positive": 1,
+        "negative": 0,
+        "unknown": 2
+      }
+    },
+    "puzzle-audit": {
+      "counts": {
+        "positive": {
+          "positive": 9,
+          "negative": 0,
+          "unknown": 5
+        },
+        "negative": {
+          "positive": 0,
+          "negative": 2,
+          "unknown": 1
+        },
+        "unknown": {
+          "positive": 0,
+          "negative": 0,
+          "unknown": 3
+        }
+      },
+      "reviewedPositiveMissedByApp": {
+        "positive": 3,
+        "negative": 0,
+        "unknown": 2
+      }
+    },
+    "reserve": {
+      "counts": {
+        "positive": {
+          "positive": 0,
+          "negative": 0,
+          "unknown": 6
+        },
+        "negative": {
+          "positive": 0,
+          "negative": 6,
+          "unknown": 13
+        },
+        "unknown": {
+          "positive": 0,
+          "negative": 0,
+          "unknown": 5
+        }
+      },
+      "reviewedPositiveMissedByApp": {
+        "positive": 0,
+        "negative": 0,
+        "unknown": 1
+      }
+    }
+  }
+}
