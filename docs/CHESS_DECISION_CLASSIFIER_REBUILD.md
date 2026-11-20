@@ -4197,3 +4197,18 @@ Maia root plus legal lines selects 15, and alternating the two selects
 can surface different positives, but this selection experiment gives no
 reason to add a neural runtime.
 [Matched-budget check](../benchmarks/decision-evidence/maia-branch-probe/README.md#does-maia-add-anything-to-the-review-queue)
+
+## Pawn breaks that open different files
+
+This offline comparison distinguishes two viable choices with different
+pawn breaks from a repeated pawn exchange with demonstrated rook use.
+The revised rule follows the same capturing pawn through quiet intervening
+moves and can show its later capture on the opened file. On 126 reserved
+classical boards it proposes three new explanations. Two survive both
+deeper searches, compared with one for the consecutive-exchange rule.
+On 92 separate boards it proposes two. Neither meets the same deeper
+rook-use criterion. A different-plans example reproduces in both sets of
+engine frames for a Serbian Championship game. The trial adds no mixed
+diagnosis. The current benchmark gives insufficient evidence for an app
+verdict change.
+[Exact games, comparisons and reproduction](../benchmarks/decision-evidence/competing-pawn-plans/README.md)

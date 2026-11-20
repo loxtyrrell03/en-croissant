@@ -1,0 +1,783 @@
+{
+  "development": {
+    "count": 40,
+    "originalPositions": {
+      "unclear": 27,
+      "positional": 11,
+      "tactical": 2
+    },
+    "originalLeadingMoves": {
+      "unclear": 31,
+      "positional": 7,
+      "tactical": 2
+    },
+    "medianExperimentalMs": 1.621,
+    "methods": {
+      "broad": {
+        "nominations": 2,
+        "possibleAdditions": []
+      },
+      "strict": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "delayedPlans": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "repeated": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "delayed": {
+        "nominations": 0,
+        "possibleAdditions": []
+      }
+    }
+  },
+  "firstReserve": {
+    "count": 126,
+    "originalPositions": {
+      "unclear": 104,
+      "tactical": 3,
+      "positional": 19
+    },
+    "originalLeadingMoves": {
+      "unclear": 108,
+      "tactical": 2,
+      "positional": 16
+    },
+    "medianExperimentalMs": 1.576,
+    "methods": {
+      "broad": {
+        "nominations": 10,
+        "possibleAdditions": [
+          {
+            "id": "0d40487b66f327b8",
+            "before": "unclear",
+            "description": "The two leading choices change different pawn structures. After Kf7, b4 challenges the pawn on c3. The exchange leaves White without a pawn on the b-file. e4 challenges the pawn on f3. The exchange leaves Black without a pawn on the f-file.",
+            "linesUci": [
+              [
+                "g8f7",
+                "d2d6",
+                "e8e6",
+                "d6d5",
+                "b5b4",
+                "h1g1",
+                "b4c3",
+                "b2c3",
+                "e6e7",
+                "g1f2"
+              ],
+              [
+                "e5e4",
+                "f3e4",
+                "f5e4",
+                "g2g3",
+                "b5b4"
+              ]
+            ]
+          },
+          {
+            "id": "1179fb2e156ab5d9",
+            "before": "unclear",
+            "description": "Both choices prepare the same pawn break. h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file, which White uses with Rh1. After Ka1, h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file.",
+            "linesUci": [
+              [
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "c8c7",
+                "c3e2",
+                "c7g7",
+                "h3h1"
+              ],
+              [
+                "b1a1",
+                "d8d7",
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "f8f7",
+                "c3e2"
+              ]
+            ]
+          },
+          {
+            "id": "071641b1c8d6a0d8",
+            "before": "unclear",
+            "description": "Both choices prepare the same pawn break. a6 challenges the pawn on b7. The exchange leaves Black without a pawn on the b-file. After Bf2, a6 challenges the pawn on b7. The exchange leaves Black without a pawn on the b-file.",
+            "linesUci": [
+              [
+                "a5a6",
+                "b7a6",
+                "c4a6",
+                "d5b6",
+                "e1d2"
+              ],
+              [
+                "e1f2",
+                "d4f2",
+                "f3f2",
+                "e7d6",
+                "a5a6",
+                "b7a6",
+                "c4a6",
+                "d6c5",
+                "a6c8"
+              ]
+            ]
+          }
+        ]
+      },
+      "strict": {
+        "nominations": 1,
+        "possibleAdditions": [
+          {
+            "id": "1179fb2e156ab5d9",
+            "before": "unclear",
+            "description": "Both choices prepare the same pawn break. h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file, which White uses with Rh1. After Ne2, h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file, which White uses with Rh5.",
+            "linesUci": [
+              [
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "c8c7",
+                "c3e2",
+                "c7g7",
+                "h3h1"
+              ],
+              [
+                "c3e2",
+                "c6c5",
+                "h2h3",
+                "d8d7",
+                "h3g4",
+                "f5g4",
+                "h1h5",
+                "f8f5"
+              ]
+            ]
+          }
+        ]
+      },
+      "delayedPlans": {
+        "nominations": 1,
+        "possibleAdditions": [
+          {
+            "id": "1179fb2e156ab5d9",
+            "before": "unclear",
+            "description": "Both choices prepare the same pawn break. h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file, which White uses with Rh1. After Ne2, h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file, which White uses with Rh5.",
+            "linesUci": [
+              [
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "c8c7",
+                "c3e2",
+                "c7g7",
+                "h3h1"
+              ],
+              [
+                "c3e2",
+                "c6c5",
+                "h2h3",
+                "d8d7",
+                "h3g4",
+                "f5g4",
+                "h1h5",
+                "f8f5"
+              ]
+            ]
+          }
+        ]
+      },
+      "repeated": {
+        "nominations": 2,
+        "possibleAdditions": [
+          {
+            "id": "1179fb2e156ab5d9",
+            "before": "unclear",
+            "description": "h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file, which White uses with Rh1.",
+            "linesUci": [
+              [
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "c8c7",
+                "c3e2",
+                "c7g7",
+                "h3h1"
+              ],
+              [
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "c8c7",
+                "h3h1"
+              ]
+            ],
+            "deeper": "rook use repeats"
+          },
+          {
+            "id": "60d6705da570e446",
+            "before": "unclear",
+            "description": "b5 challenges the pawn on a4. The exchange leaves Black without a pawn on the b-file, which Black uses with Rb3.",
+            "linesUci": [
+              [
+                "b6b5",
+                "a4b5",
+                "a6b5",
+                "e2a2",
+                "b5d7",
+                "a2a5",
+                "b7b3"
+              ],
+              [
+                "b6b5",
+                "a4b5",
+                "a6b5",
+                "e2a2",
+                "b5d7",
+                "a2a5",
+                "b7b3"
+              ]
+            ],
+            "deeper": "rook use appears once"
+          }
+        ]
+      },
+      "delayed": {
+        "nominations": 3,
+        "possibleAdditions": [
+          {
+            "id": "1179fb2e156ab5d9",
+            "before": "unclear",
+            "description": "h3 challenges the pawn on g4. The exchange leaves White without a pawn on the h-file, which White uses with Rh1.",
+            "linesUci": [
+              [
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "c8c7",
+                "c3e2",
+                "c7g7",
+                "h3h1"
+              ],
+              [
+                "h2h3",
+                "g4h3",
+                "h1h3",
+                "c8c7",
+                "h3h1"
+              ]
+            ],
+            "deeper": "rook use repeats"
+          },
+          {
+            "id": "1b60762651b34e40",
+            "before": "unclear",
+            "description": "b4 challenges the pawn on c5. The exchange leaves White without a pawn on the b-file, which White uses with Rxb4.",
+            "linesUci": [
+              [
+                "b2b4",
+                "c5b4",
+                "c3b4",
+                "a5b4",
+                "a1a7",
+                "d7c5",
+                "b5b4"
+              ],
+              [
+                "b2b4",
+                "c5b4",
+                "c3b4",
+                "a5b4",
+                "a1a7",
+                "d7c5",
+                "b5b4"
+              ]
+            ],
+            "deeper": "rook use repeats"
+          },
+          {
+            "id": "60d6705da570e446",
+            "before": "unclear",
+            "description": "b5 challenges the pawn on a4. The exchange leaves Black without a pawn on the b-file, which Black uses with Rb3.",
+            "linesUci": [
+              [
+                "b6b5",
+                "a4b5",
+                "a6b5",
+                "e2a2",
+                "b5d7",
+                "a2a5",
+                "b7b3"
+              ],
+              [
+                "b6b5",
+                "a4b5",
+                "a6b5",
+                "e2a2",
+                "b5d7",
+                "a2a5",
+                "b7b3"
+              ]
+            ],
+            "deeper": "rook use appears once"
+          }
+        ]
+      }
+    },
+    "sameLeadingMoveDeeper": 93,
+    "deeperRootRookUseInBoth": 3
+  },
+  "secondReserve": {
+    "count": 92,
+    "originalPositions": {
+      "positional": 20,
+      "unclear": 69,
+      "tactical": 3
+    },
+    "originalLeadingMoves": {
+      "positional": 18,
+      "unclear": 73,
+      "tactical": 1
+    },
+    "medianExperimentalMs": 1.652,
+    "methods": {
+      "broad": {
+        "nominations": 3,
+        "possibleAdditions": [
+          {
+            "id": "a8a65119945f4951",
+            "before": "unclear",
+            "description": "The two leading choices change different pawn structures. f5 challenges the pawn on e4. The exchange leaves Black without a pawn on the f-file. After Rfe8, d5 challenges the pawn on e4. The exchange leaves Black without a pawn on the d-file.",
+            "linesUci": [
+              [
+                "f7f5",
+                "e4f5",
+                "d7f5",
+                "d2e4",
+                "f5g6"
+              ],
+              [
+                "f8e8",
+                "d2f1",
+                "d6d5",
+                "e4d5",
+                "d7d5",
+                "a2d2",
+                "b7b5"
+              ]
+            ]
+          }
+        ]
+      },
+      "strict": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "delayedPlans": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "repeated": {
+        "nominations": 2,
+        "possibleAdditions": [
+          {
+            "id": "070c0ba4cee10817",
+            "before": "unclear",
+            "description": "b4 challenges the pawn on a5. The exchange leaves White without a pawn on the a-file, which White uses with Ra5.",
+            "linesUci": [
+              [
+                "b2b4",
+                "a5b4",
+                "a3b4",
+                "a6a2",
+                "d1d2",
+                "c6c4",
+                "d5a5"
+              ],
+              [
+                "b2b4",
+                "a5b4",
+                "a3b4",
+                "a6a2",
+                "d1d2",
+                "c6c4",
+                "d5a5"
+              ]
+            ],
+            "deeper": "exchange repeats without demonstrated rook access"
+          },
+          {
+            "id": "03e5235ebb57385e",
+            "before": "unclear",
+            "description": "d5 challenges the pawn on e4. The exchange leaves Black without a pawn on the d-file, which Black uses with Rd2.",
+            "linesUci": [
+              [
+                "d6d5",
+                "e4d5",
+                "d8d5",
+                "b5a3",
+                "d5d2"
+              ],
+              [
+                "d6d5",
+                "e4d5",
+                "d8d5",
+                "b5a3",
+                "d5d2"
+              ]
+            ],
+            "deeper": "exchange repeats without demonstrated rook access"
+          }
+        ]
+      },
+      "delayed": {
+        "nominations": 2,
+        "possibleAdditions": [
+          {
+            "id": "070c0ba4cee10817",
+            "before": "unclear",
+            "description": "b4 challenges the pawn on a5. The exchange leaves White without a pawn on the a-file, which White uses with Ra5.",
+            "linesUci": [
+              [
+                "b2b4",
+                "a5b4",
+                "a3b4",
+                "a6a2",
+                "d1d2",
+                "c6c4",
+                "d5a5"
+              ],
+              [
+                "b2b4",
+                "a5b4",
+                "a3b4",
+                "a6a2",
+                "d1d2",
+                "c6c4",
+                "d5a5"
+              ]
+            ],
+            "deeper": "exchange repeats without demonstrated rook access"
+          },
+          {
+            "id": "03e5235ebb57385e",
+            "before": "unclear",
+            "description": "d5 challenges the pawn on e4. The exchange leaves Black without a pawn on the d-file, which Black uses with Rd2.",
+            "linesUci": [
+              [
+                "d6d5",
+                "e4d5",
+                "d8d5",
+                "b5a3",
+                "d5d2"
+              ],
+              [
+                "d6d5",
+                "e4d5",
+                "d8d5",
+                "b5a3",
+                "d5d2"
+              ]
+            ],
+            "deeper": "exchange repeats without demonstrated rook access"
+          }
+        ]
+      }
+    },
+    "sameLeadingMoveDeeper": 68,
+    "deeperRootRookUseInBoth": 2
+  },
+  "historicalReviewed": {
+    "count": 71,
+    "originalPositions": {
+      "positional": 14,
+      "unclear": 46,
+      "tactical": 11
+    },
+    "originalLeadingMoves": {
+      "positional": 10,
+      "unclear": 51,
+      "tactical": 8,
+      "mixed": 2
+    },
+    "medianExperimentalMs": 1.628,
+    "methods": {
+      "broad": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "strict": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "delayedPlans": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "repeated": {
+        "nominations": 0,
+        "possibleAdditions": []
+      },
+      "delayed": {
+        "nominations": 0,
+        "possibleAdditions": []
+      }
+    }
+  },
+  "manifests": {
+    "development": {
+      "pgns": {
+        "arco.pgn": {
+          "available": {
+            "contact": 123,
+            "exchange": 131
+          },
+          "selected": {
+            "contact": 5,
+            "exchange": 5
+          },
+          "sha256": "b14fc734ffade2b07eb108b0fbb133c4ae3a809ea6a58afb4a31c4ac80e12d18"
+        },
+        "hvar.pgn": {
+          "available": {
+            "contact": 63,
+            "exchange": 50
+          },
+          "selected": {
+            "exchange": 5,
+            "contact": 5
+          },
+          "sha256": "8bbea58a784f9117ffa141d8402bb4c0e6e7187d50ac00d4081f2010495967aa"
+        },
+        "dutch-open.pgn": {
+          "available": {
+            "exchange": 13,
+            "contact": 16
+          },
+          "selected": {
+            "contact": 5,
+            "exchange": 5
+          },
+          "sha256": "a9431bcedc8d9e55855909c04ea77a69278fe64e0ab12dd11707f0852ed8460e"
+        },
+        "cappelle-open.pgn": {
+          "available": {
+            "exchange": 6,
+            "contact": 8
+          },
+          "selected": {
+            "contact": 5,
+            "exchange": 5
+          },
+          "sha256": "cc42b65217f9ded90288256ae6d39010ce3392256987d121e2750d6c15fa6b56"
+        }
+      },
+      "populationSha256": "9842eff692b279ac075eb941188d1c273ad8ebc0e1897170aa158cfc1dba41c6",
+      "appFramesSha256": "1e1cf246188df2c0e3aa3253fe84619c5548b3f7f1d1afbf348982b5f96f29c3"
+    },
+    "reserved": {
+      "pgns": {
+        "czech-a.pgn": {
+          "available": {
+            "contact": 129,
+            "exchange": 125
+          },
+          "selected": {
+            "contact": 7,
+            "exchange": 7
+          },
+          "sha256": "c3f659ae45718903aedda659a3fdf20e0d6049d5fe0f1060a93e9c42a3b31451"
+        },
+        "irish-championship.pgn": {
+          "available": {
+            "contact": 74,
+            "exchange": 57
+          },
+          "selected": {
+            "exchange": 7,
+            "contact": 7
+          },
+          "sha256": "c6206cecc5be314d1582cc9a58b77fee8b26b745d5a07e900016e5de54b58239"
+        },
+        "icelandic-open.pgn": {
+          "available": {
+            "exchange": 62,
+            "contact": 68
+          },
+          "selected": {
+            "exchange": 7,
+            "contact": 7
+          },
+          "sha256": "6ff1afae6a26aac05e6e6356be60afe357cf1f4588fb5e760e1a4a12065126b7"
+        },
+        "club-cup.pgn": {
+          "available": {
+            "contact": 41,
+            "exchange": 39
+          },
+          "selected": {
+            "exchange": 7,
+            "contact": 7
+          },
+          "sha256": "7b3486990249029a0cc0a30d9bc6765de8d9516ddb943ef7b9e2f5dbf009c095"
+        },
+        "british-major-open-r7.pgn": {
+          "available": {
+            "exchange": 15,
+            "contact": 11
+          },
+          "selected": {
+            "contact": 7,
+            "exchange": 7
+          },
+          "sha256": "c783b4479ce3add0961439b2493ff4365f8e97390146d981eb44849f7e0087bb"
+        },
+        "stockholm.pgn": {
+          "available": {
+            "contact": 20,
+            "exchange": 13
+          },
+          "selected": {
+            "exchange": 7,
+            "contact": 7
+          },
+          "sha256": "73db2ecd3b605f9b8dd2274616ac0f8c5f18bdc292ad4ca80bcf51596c89cd7c"
+        },
+        "buongoma.pgn": {
+          "available": {
+            "contact": 15,
+            "exchange": 11
+          },
+          "selected": {
+            "contact": 7,
+            "exchange": 7
+          },
+          "sha256": "7c38efe6490a20f003a3efe8d2220eb139a9761221b811f79bf3b4bce79c3ec1"
+        },
+        "korea.pgn": {
+          "available": {
+            "contact": 13,
+            "exchange": 12
+          },
+          "selected": {
+            "exchange": 7,
+            "contact": 7
+          },
+          "sha256": "05244bcdd6654631050b703eb221f6683d67de73a82c5b081be608773c9ff544"
+        },
+        "london-open-r5.pgn": {
+          "available": {
+            "exchange": 22,
+            "contact": 25
+          },
+          "selected": {
+            "exchange": 7,
+            "contact": 7
+          },
+          "sha256": "e4d5835c7d61c4efcfde14b7eb2fe2e89abd685c6d2d31bdfcb5301ae860b87d"
+        }
+      },
+      "populationSha256": "830cc707e1b4d61779bee446fd53bc3441a0dfd7b785d975c18607c1b24a5614",
+      "appFramesSha256": "43faea210fde6ba2585ea1f2a0b169f83d1af478059bb1d770aad3806a9b8f66"
+    },
+    "replication": {
+      "pgns": {
+        "4ncl-division2-r5.pgn": {
+          "available": {
+            "exchange": 21,
+            "contact": 16
+          },
+          "selected": {
+            "exchange": 6,
+            "contact": 6
+          },
+          "sha256": "36cb2b73f8f14c539b99ea46e4b94df2ba9ddb29220e8511bba27e3fad95079d"
+        },
+        "european-individual-r6.pgn": {
+          "available": {
+            "exchange": 53,
+            "contact": 44
+          },
+          "selected": {
+            "contact": 6,
+            "exchange": 6
+          },
+          "sha256": "c122d7bee782eff41e85aa1bb09bef3e8386de230c3b8f93a1d246fa5a23b82f"
+        },
+        "british-championship.pgn": {
+          "available": {
+            "exchange": 17,
+            "contact": 17
+          },
+          "selected": {
+            "contact": 6,
+            "exchange": 6
+          },
+          "sha256": "944ddee3f96212d7a65532b23754d5ec0e5e95283692b6803203e62a148d6e85"
+        },
+        "poland.pgn": {
+          "available": {
+            "contact": 66,
+            "exchange": 57
+          },
+          "selected": {
+            "contact": 6,
+            "exchange": 6
+          },
+          "sha256": "8c20aae8325c8504373f7729be29b33d7242647104d1f794a50ae3888e0ffdef"
+        },
+        "thanksgiving.pgn": {
+          "available": {
+            "contact": 13,
+            "exchange": 16
+          },
+          "selected": {
+            "contact": 6,
+            "exchange": 6
+          },
+          "sha256": "6c05da05de7270de21d7d501e532e03a424ae0259c73c13eb5ad698306212b4c"
+        },
+        "serbia-women.pgn": {
+          "available": {
+            "contact": 4,
+            "exchange": 5
+          },
+          "selected": {
+            "exchange": 5,
+            "contact": 4
+          },
+          "sha256": "d60972f69f9e543d00ec35bd33bba1c2efee8a3592c42b3b5f531b4d40eba4b3"
+        },
+        "world-junior.pgn": {
+          "available": {
+            "contact": 5,
+            "exchange": 9
+          },
+          "selected": {
+            "contact": 5,
+            "exchange": 6
+          },
+          "sha256": "248ced5e2f7389fa6a4e73a3fb46f8f62bc1d68d5004a2ef91df763ebc00b19e"
+        },
+        "english-open.pgn": {
+          "available": {
+            "exchange": 12,
+            "contact": 11
+          },
+          "selected": {
+            "contact": 6,
+            "exchange": 6
+          },
+          "sha256": "947e527c5b24b4cc9852c582487a79c44f358ebea843bbf8dbe78f4cd2a06811"
+        }
+      },
+      "populationSha256": "c4b5df38aa9954762cb27fe82a79d098eec0e0efa3031ad7532f4b67b94d9e80",
+      "appFramesSha256": "1fee89e7053093747803f3824d3453214d81074f2ded50aac70944d1ae86f9e3"
+    }
+  }
+}
