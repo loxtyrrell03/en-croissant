@@ -136,4 +136,8 @@ if deferred_capture.is_file():
     cases = load("deferred-pawn-capture", "transfer.json")
     target = next(row for row in cases if row["id"] == "00fdf80b1db70bd6")
     history_fixture("Pawn Capture Can Wait", target["history"])
+repetition_retry = fixtures / "native-desktop" / "repetition-retry.json"
+if repetition_retry.is_file():
+    target = load("native-desktop", "repetition-retry.json")
+    history_fixture("Repetition Search Recovery", target["history"], [target["playedMoveUci"]])
 print("Isolated app settings and legal PGN fixtures prepared.")

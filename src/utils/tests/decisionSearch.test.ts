@@ -13,6 +13,7 @@ import mateThree from "../../../benchmarks/decision-evidence/played-mate-in-thre
 import mateTwo from "../../../benchmarks/decision-evidence/played-mate-in-two/fixtures.json";
 import drawFrames from "../../../benchmarks/decision-evidence/draw-aware-search/fixtures.json";
 import sharedRay from "../../../benchmarks/decision-evidence/shared-ray-mistakes/candidate-regression.json";
+import repetitionRetry from "../../../benchmarks/decision-evidence/native-desktop/repetition-retry.json";
 
 const native = vi.hoisted(() => ({ listen: vi.fn(), getBestMoves: vi.fn(), kill: vi.fn() }));
 vi.mock("@/bindings", () => ({ events: { bestMovesPayload: { listen: native.listen } } }));
@@ -146,6 +147,51 @@ test("a decision search keeps candidate, unrestricted reply and capture evidence
         ["b2b4"],
     ]);
     expect(new Set(native.getBestMoves.mock.calls.map((call) => call[1])).size).toBe(3);
+});
+
+test("continues to the deeper valid frame after a plausible-looking continuation permits a draw", async () => {
+    const { fen: start, history, engineFrames, mockReplies } = repetitionRetry;
+    const requested: number[] = [];
+    native.getBestMoves.mockImplementation((_engine, _tab, mode, options: EngineOptions) => {
+        if (options.moves.length > history.moves.length)
+            return Promise.resolve([100, lines(mockReplies.map((move) => [move]), [37, 45, 50])]);
+        expect(options.fen).toBe(history.fen);
+        expect(options.moves).toEqual(history.moves);
+        requested.push(mode.c);
+        const frame = engineFrames[String(mode.c) as keyof typeof engineFrames];
+        return Promise.resolve([100, lines(frame.map((line) => line.pvUci),
+            frame.map((line) => line.cp), frame[0].depth)]);
+    });
+    const task = gatherDecisionEvidence(
+        engine, { fen: start, history }, new AbortController().signal, vi.fn(),
+    );
+    await vi.advanceTimersByTimeAsync(750);
+    const result = await task;
+    expect(requested).toEqual([600000, 2400000, 9600000]);
+    expect(result.candidates).toEqual(engineFrames["9600000"].map(
+        ({ fen, pvUci, cp, depth, mate }) => ({ fen, pvUci, cp, depth, mate }),
+    ));
+});
+
+test("accepts the corrected final engine frame during the recovery window", async () => {
+    native.getBestMoves.mockImplementation((_engine, tab, mode, options: EngineOptions) => {
+        if (options.searchMoves?.[0] === "d6b4")
+            return Promise.resolve([100, lines([conditional], [500])]);
+        if (options.fen !== fen)
+            return Promise.resolve([100, lines(blackReplies, [100, 120, 130])]);
+        expect(mode.c).toBe(600000);
+        const listen = native.listen.mock.lastCall![0];
+        setTimeout(() => listen({ payload: {
+            engine: engine.id, tab, fen, moves: [], progress: 100,
+            bestLines: lines([first, second, third]),
+        } }), 40);
+        return Promise.resolve([100, lines([["b2b6"], second, third])]);
+    });
+    const result = expect(gatherDecisionEvidence(engine, { fen }, new AbortController().signal, vi.fn()))
+        .resolves.toMatchObject({ candidates: [{ pvUci: first }, { pvUci: second }, { pvUci: third }] });
+    await vi.advanceTimersByTimeAsync(120);
+    await result;
+    expect(native.getBestMoves.mock.calls.filter((call) => call[3].fen === fen)).toHaveLength(1);
 });
 
 test("an exact mate in one skips the paired and played-reply searches", async () => {

@@ -442,6 +442,17 @@ if (wanted.has("Pawn Capture Can Wait")) {
   });
 }
 
+if (wanted.has("Repetition Search Recovery")) {
+  await run("Repetition Search Recovery", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const position = await page.getByText("Position character", { exact: true }).locator("../..").innerText();
+    assert.match(position, /3 candidate moves examined/);
+    return { position };
+  });
+}
+
 if (audit) {
   const cases = JSON.parse(sample);
   const limit = limitArg ? Number(limitArg) : cases.length;

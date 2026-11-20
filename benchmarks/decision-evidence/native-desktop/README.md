@@ -162,3 +162,20 @@ wall time. Review notes remain separate from the software inputs.
 Use `classical-replay.py` to prepare matching inputs for the
 [original scanner replay](../cross-scope-audit/README.md), then use
 its `--score` option with the original and fixed-budget receipts.
+
+### Recovering a rejected search frame
+
+The live audit found a World Amateur endgame where the first two
+Stockfish searches showed lines allowing a repetition claim against
+their reported advantage. The validator rejected both frames. The
+initial search then ended without attempting the higher budget.
+The 9.6M-node frame contains three valid alternatives.
+[Public game](https://lichess.org/broadcast/fide-world-amateur-chess-championships-2026-u2300/round-4/xYn1a1FM/xVn2KVMx)
+
+The root search now advances to the next available budget when a
+frame is unusable. A rejected complete frame gives the engine up to
+250 ms to publish a corrected final frame. Last-valid evidence remains
+available during retries, within the existing full-session limit.
+The regression includes the exact three captured frames and checks
+the retry sequence. Use `Repetition Search Recovery` to verify the
+application path with live Stockfish.

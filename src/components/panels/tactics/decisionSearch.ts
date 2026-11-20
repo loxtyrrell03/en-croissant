@@ -147,6 +147,7 @@ const REPLY_BUDGETS = [1_000_000, 4_000_000];
 export const DECISION_SEARCH_SESSION_MS = 28_000;
 const PREPARED_CHECKPOINT_NODES = 1_400_000;
 const LATE_START_MS = 35_000;
+const REJECTED_FRAME_GRACE_MS = 250;
 const PIECE_VALUE: Record<Role, number> = {
     pawn: 100,
     knight: 320,
@@ -340,6 +341,7 @@ async function searchPosition(
         let registered = false;
         let settled = false;
         let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
+        let rejectedFrameTimer: ReturnType<typeof setTimeout> | undefined;
         const release = () => {
             void killEngine(engine, tab).catch(() => {});
         };
@@ -352,6 +354,7 @@ async function searchPosition(
             if (settled) return;
             settled = true;
             clearTimeout(timer);
+            clearTimeout(rejectedFrameTimer);
             signal.removeEventListener("abort", abort);
             if (requested) release();
             if (!requested || registered) detach();
@@ -401,7 +404,13 @@ async function searchPosition(
                 lines.map((line) => scoreForMover(fen, line)),
                 history,
             );
-            if (!candidates) return;
+            if (!candidates) {
+                // A node-limited search can report 100% just before its final
+                // bestmove frame. Give that frame time to arrive, then let
+                // the caller try another budget rather than waiting idle.
+                rejectedFrameTimer ??= setTimeout(() => finish([]), REJECTED_FRAME_GRACE_MS);
+                return;
+            }
             if (restricted) {
                 const expected = new Set(restricted.map((uci) => afterMove(fen, uci)));
                 if (
@@ -661,7 +670,7 @@ export async function gatherDecisionEvidence(
             Math.min(Date.now() + (candidates.length ? 8_000 : 12_000), sessionEnd),
             history,
         );
-        if (!lines.length) break;
+        if (!lines.length) continue;
         candidates = lines;
         rootNodes = nodes;
         if (lines[0].depth >= 18 || lines[0].mate !== null) break;
