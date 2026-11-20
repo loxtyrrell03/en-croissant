@@ -168,6 +168,13 @@ The game and board exclusions include the older mixed and course
 audits and the recent neural and checking-order cohorts. The reference
 is pending review. The archive scores above are separate.
 
+Both Stockfish passes completed. The leading move agreed on 60 of 72
+boards. All 72 exact app-budget leading moves have a separate deeper
+reply analysis, even when the deeper root prefers another move. Search
+counts, end-of-depth node counts and input hashes are in the
+[frame receipt](classical-frame-receipt.json). These measurements record
+reference availability and search cost. They do not score accuracy.
+
 To regenerate, download only the PGN URLs listed in the manifest into
 a scratch directory under their listed filenames. Use its
 `broadcasts` array as the input source list when replaying the frozen
