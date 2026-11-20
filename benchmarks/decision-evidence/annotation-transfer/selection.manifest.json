@@ -1,0 +1,27 @@
+{
+  "pgnSha256": "b63b1c7ba8c20b12055c8bfc32b9ae19cea6a4db6c72ce75b01ed233ed09c6bf",
+  "selectionSha256": "e9c76dc42f28b20c29a233e4bec268b0501a13e4de965dc2126b0a35f155993d",
+  "source": "https://lichess.org/study/Y1yXP80U",
+  "exclusions": {
+    "classical-2026-11.json": "6f3387a90934bdec162afcc03f951ad535c42578ef3abb9c22558f43b45d5f85",
+    "transfer.json": "223d5982d8ee30d50277ee6e549e884952f5808642fb6a964bf9dd62b3fd4bcf",
+    "inputs.json": "8b1a441dc4666f722bca3e415f0827085f8e40cbd7f19ccf4d6d9d8990b8015f"
+  },
+  "sampled": 56,
+  "counts": {
+    "development": {
+      "mistakeSignal": 7,
+      "bothSignals": 2,
+      "strategicSignal": 5,
+      "tacticalSignal": 6,
+      "other": 8
+    },
+    "reserve": {
+      "mistakeSignal": 6,
+      "bothSignals": 5,
+      "strategicSignal": 6,
+      "tacticalSignal": 5,
+      "other": 6
+    }
+  }
+}
