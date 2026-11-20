@@ -88,6 +88,33 @@ reasoning needs same-position alternatives with manually reviewed,
 contrasting outcomes. The few positive assets here cannot answer whether
 a learned model would improve mixed-position coverage on new games.
 
+## Equal budgets by event family
+
+The retrospective check pairs the exact frozen review budgets within
+each event family. The neural passer model and shallow-line logistic
+both select four positives in the ordinary sample and three in the
+enriched sample. In the ordinary sample, the network adds one provisional
+positive at the Czech Open and loses one at the AQ Prime International
+Open. Removing one event at a time puts its difference between −1 and
++1. The enriched families all tie. The higher-budget rerun leaves the
+two models tied at three confirmed selections and one, respectively.
+Static logistic ties on ordinary deeper confirmations and finds two
+in the enriched sample.
+
+The [recurrent mistake search](../neural-deep-witness/README.md)
+ties score logistic in every ordinary event. In the enriched sample
+the network loses one provisional witness at the Aruba Championship
+and ties elsewhere. Removing any one event leaves its difference
+between −1 and zero. Both methods select the sole confirmed witness
+from that cohort.
+
+These are sensitivity checks on previous evaluation samples. The
+comparison supplies no new holdout and the small event counts make
+the size of any possible gain uncertain. There is no demonstrated
+net gain in verified explanations at the same search budget across
+events. Keep learned rankings as offline research. Re-run the check
+with `python benchmarks/decision-evidence/neural-passer-probe/compare-event-stability.py`.
+
 ## Reproduce
 
 From the repository root, use Python with python-chess, NumPy,
