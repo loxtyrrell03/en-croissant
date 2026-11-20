@@ -1,0 +1,813 @@
+{
+  "before": "ae4bf1fc (Decision Evidence v47)",
+  "after": "Decision Evidence v48",
+  "puzzleReplays": {
+    "heldout": {
+      "ids": [
+        "0M8uW",
+        "06fqR",
+        "01CDd",
+        "0MWde",
+        "0IIYc",
+        "0Qga3",
+        "0QSTz",
+        "05jlL",
+        "09aaY",
+        "00Yey",
+        "00f2T",
+        "0AjV2",
+        "06CXU",
+        "2togW",
+        "14BDR",
+        "06Owt",
+        "00Mke",
+        "1SeCE",
+        "00hSr",
+        "0C1yE",
+        "09hZI",
+        "1QleQ",
+        "0HcRr",
+        "02I9S",
+        "06f2z",
+        "0wovi",
+        "1dnDz",
+        "02hgm",
+        "0aYR2",
+        "0mdWI",
+        "11Nu1",
+        "05HWi",
+        "05XDB",
+        "0091A",
+        "3DT8m",
+        "0wbQ5",
+        "0cfeg",
+        "02vM9",
+        "04Xrh",
+        "0D4wO",
+        "06aCr",
+        "0L7Df",
+        "0ASzV",
+        "0SfoP",
+        "0KsSj",
+        "01jRL",
+        "2VW3n",
+        "017u3",
+        "0NcCy",
+        "0Bj1T",
+        "0L1PI",
+        "04Jl6",
+        "0E5BM",
+        "00jmD",
+        "0wID5",
+        "0NG4f",
+        "03yPf",
+        "00sJb",
+        "07400",
+        "0cPnY",
+        "0fdZP",
+        "2NINB",
+        "02obx",
+        "0gsba",
+        "04lr7",
+        "09VSq",
+        "0mw6b",
+        "0GZVV",
+        "0CmLE",
+        "0cQhi",
+        "0mLOY",
+        "0f0qi"
+      ],
+      "matchedInputSha256": "88f4ae922cfdb94bc573e4d753689794dd5da47fce68ce4c71968930b7ed9114",
+      "selectionCounts": {
+        "bishop-gain": 18,
+        "pawn-gain": 18,
+        "pawn-trade": 18,
+        "bishop-trade": 18
+      },
+      "arms": {
+        "geometry": {
+          "requests": 72,
+          "valid": 72,
+          "changedReportsByScope": {
+            "position": 11,
+            "moves": 29,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "move: mixed -> tactical": 19,
+            "move: positional -> unclear": 9,
+            "position: mixed -> tactical": 6,
+            "position: positional -> unclear": 5
+          },
+          "medianWorkerMs": {
+            "before": 127.99,
+            "after": 127.36
+          }
+        },
+        "material": {
+          "requests": 72,
+          "valid": 72,
+          "changedReportsByScope": {
+            "position": 4,
+            "moves": 10,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "move: mixed -> tactical": 10,
+            "position: mixed -> tactical": 3,
+            "position: positional -> unclear": 1
+          },
+          "medianWorkerMs": {
+            "before": 127.99,
+            "after": 128.08
+          }
+        },
+        "product": {
+          "requests": 72,
+          "valid": 72,
+          "changedReportsByScope": {
+            "position": 3,
+            "moves": 9,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "position: positional -> unclear": 1,
+            "move: mixed -> tactical": 6,
+            "position: mixed -> tactical": 1
+          },
+          "medianWorkerMs": {
+            "before": 127.99,
+            "after": 112.15
+          }
+        }
+      }
+    },
+    "reserve": {
+      "ids": [
+        "0g9zH",
+        "0A6jf",
+        "0JIxr",
+        "02Plz",
+        "0J6XL",
+        "0THsN",
+        "0DaaM",
+        "04orv",
+        "0JZyC",
+        "0PWE7",
+        "005nD",
+        "32csl",
+        "00lex",
+        "007tv",
+        "0Dx7Y",
+        "04TEk",
+        "01IW8",
+        "0ACi2",
+        "091he",
+        "0pV9K",
+        "053Cr",
+        "0I9nr",
+        "07Apj",
+        "02lyy",
+        "0Dwaa",
+        "0oP81",
+        "0bB7J",
+        "0FrGY",
+        "0H8GA",
+        "0c7iE",
+        "01KiF",
+        "01ctt",
+        "02WmY",
+        "0xiNN",
+        "0m2Du",
+        "0ME0O",
+        "09yqH",
+        "00gym",
+        "19PHc",
+        "0jgYf",
+        "01BTT",
+        "077ct",
+        "13Ltm",
+        "03KYx",
+        "00ZvN",
+        "0kFxk",
+        "0HUuL",
+        "1Mhxs",
+        "196dT",
+        "2TSFR",
+        "0HLAQ",
+        "0msyf",
+        "0ZzhM",
+        "04Sku",
+        "2vI1u",
+        "03CZE",
+        "0XxwW",
+        "0E0gl",
+        "0RwEP",
+        "06mr7",
+        "0ghwC",
+        "02GOf",
+        "0Dslc",
+        "0NH8A",
+        "016vg",
+        "04qqj",
+        "0JA4J",
+        "09dS7"
+      ],
+      "matchedInputSha256": "28a486629f820c837b02e69b1cd913385d25a4b14959c9537a83b0012a0a50d4",
+      "selectionCounts": {
+        "pawn-gain": 18,
+        "bishop-trade": 18,
+        "bishop-gain": 18,
+        "pawn-trade": 14
+      },
+      "arms": {
+        "geometry": {
+          "requests": 68,
+          "valid": 68,
+          "changedReportsByScope": {
+            "position": 6,
+            "moves": 23,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "move: mixed -> tactical": 15,
+            "position: mixed -> tactical": 3,
+            "position: positional -> unclear": 2,
+            "move: positional -> unclear": 6
+          },
+          "medianWorkerMs": {
+            "before": 155.81,
+            "after": 150.0
+          }
+        },
+        "material": {
+          "requests": 68,
+          "valid": 68,
+          "changedReportsByScope": {
+            "position": 2,
+            "moves": 10,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "move: mixed -> tactical": 9,
+            "position: mixed -> tactical": 2
+          },
+          "medianWorkerMs": {
+            "before": 155.81,
+            "after": 148.89
+          }
+        },
+        "product": {
+          "requests": 68,
+          "valid": 68,
+          "changedReportsByScope": {
+            "position": 2,
+            "moves": 9,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "move: mixed -> tactical": 8,
+            "position: mixed -> tactical": 2
+          },
+          "medianWorkerMs": {
+            "before": 155.81,
+            "after": 116.59
+          }
+        }
+      }
+    },
+    "fresh-final": {
+      "ids": [
+        "0HWsD",
+        "0Lvd8",
+        "0Prfv",
+        "0I2y3",
+        "05iL1",
+        "00mF3",
+        "01icD",
+        "4MNbk",
+        "0EFIo",
+        "04GZF",
+        "0KzLJ",
+        "00Ycz",
+        "0KiZf",
+        "01LsE",
+        "014It",
+        "0NJhw",
+        "01MiZ",
+        "0556F",
+        "0hSkp",
+        "2G0jG",
+        "01Aoh",
+        "0OAEc",
+        "09a7a",
+        "02kXd",
+        "0Bsf6"
+      ],
+      "matchedInputSha256": "37eb581720950eb4df721032f08a156d5a08bc4239bd04eb0c33463683985ca6",
+      "selectionCounts": {
+        "pawn-gain": 18,
+        "bishop-trade": 3,
+        "bishop-gain": 4
+      },
+      "arms": {
+        "geometry": {
+          "requests": 25,
+          "valid": 25,
+          "changedReportsByScope": {
+            "position": 5,
+            "moves": 11,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "position: mixed -> tactical": 4,
+            "move: mixed -> tactical": 8,
+            "position: positional -> unclear": 1,
+            "move: positional -> unclear": 3
+          },
+          "medianWorkerMs": {
+            "before": 112.39,
+            "after": 113.27
+          }
+        },
+        "material": {
+          "requests": 25,
+          "valid": 25,
+          "changedReportsByScope": {
+            "position": 4,
+            "moves": 8,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "position: mixed -> tactical": 4,
+            "move: mixed -> tactical": 8
+          },
+          "medianWorkerMs": {
+            "before": 112.39,
+            "after": 108.63
+          }
+        },
+        "product": {
+          "requests": 25,
+          "valid": 25,
+          "changedReportsByScope": {
+            "position": 4,
+            "moves": 8,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "position: mixed -> tactical": 3,
+            "move: mixed -> tactical": 7
+          },
+          "medianWorkerMs": {
+            "before": 112.39,
+            "after": 114.0
+          },
+          "changedMoves": {
+            "0HWsD": [
+              {
+                "move": "f1f7",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on g6 has no friendly pawn on either adjacent file. Its separate strategic value alongside Rxf7 is uncertain."
+                ]
+              }
+            ],
+            "0I2y3": [
+              {
+                "move": "f6f2",
+                "before": "mixed",
+                "after": "mixed",
+                "addedNotes": [
+                  "White's pawn on e4 has no friendly pawn on either adjacent file. Its separate strategic value alongside Qxf2+ is uncertain."
+                ]
+              }
+            ],
+            "01icD": [
+              {
+                "move": "d5e5",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "White's pawn on e3 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxe5 is uncertain."
+                ]
+              }
+            ],
+            "4MNbk": [
+              {
+                "move": "f2h2",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "White's pawn on g3 has no friendly pawn on either adjacent file. Its separate strategic value alongside Rxh2+ is uncertain."
+                ]
+              }
+            ],
+            "04GZF": [
+              {
+                "move": "h4h3",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on h5 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxh3+ is uncertain.",
+                  "Black's pawn on g6 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxh3+ is uncertain."
+                ]
+              }
+            ],
+            "0KiZf": [
+              {
+                "move": "h4h2",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on h6 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxh2 is uncertain."
+                ]
+              }
+            ],
+            "01MiZ": [
+              {
+                "move": "c3d5",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on c5 has no friendly pawn on either adjacent file. Its separate strategic value alongside Nxd5 is uncertain."
+                ]
+              }
+            ],
+            "2G0jG": [
+              {
+                "move": "g4g6",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Qxg6+, removing the opponent's bishop pair. The opponent no longer has bishops on both colour complexes in the recorded continuation. Its separate strategic value alongside Qxg6+ is uncertain."
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "deeper": {
+      "ids": [
+        "0HWsD",
+        "0I2y3",
+        "01icD",
+        "4MNbk",
+        "04GZF",
+        "0KiZf",
+        "01MiZ",
+        "2G0jG"
+      ],
+      "matchedInputSha256": "40af9ce58a74dda27340f49fc2d82b8aa48925fa131c50ecfe1f23d8995d234e",
+      "selectionCounts": {
+        "pawn-gain": 7,
+        "bishop-gain": 1
+      },
+      "arms": {
+        "product": {
+          "requests": 8,
+          "valid": 8,
+          "changedReportsByScope": {
+            "position": 4,
+            "moves": 8,
+            "mistake": 0,
+            "mistakeStatus": 0
+          },
+          "categoryTransitions": {
+            "position: mixed -> tactical": 3,
+            "move: mixed -> tactical": 7
+          },
+          "medianWorkerMs": {
+            "before": 131.02,
+            "after": 130.98
+          },
+          "changedMoves": {
+            "0HWsD": [
+              {
+                "move": "f1f7",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on g6 has no friendly pawn on either adjacent file. Its separate strategic value alongside Rxf7 is uncertain."
+                ]
+              }
+            ],
+            "0I2y3": [
+              {
+                "move": "f6f2",
+                "before": "mixed",
+                "after": "mixed",
+                "addedNotes": [
+                  "White's pawn on e4 has no friendly pawn on either adjacent file. Its separate strategic value alongside Qxf2+ is uncertain."
+                ]
+              }
+            ],
+            "01icD": [
+              {
+                "move": "d5e5",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "White's pawn on e3 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxe5 is uncertain."
+                ]
+              }
+            ],
+            "4MNbk": [
+              {
+                "move": "f2h2",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "White's pawn on g3 has no friendly pawn on either adjacent file. Its separate strategic value alongside Rxh2+ is uncertain."
+                ]
+              }
+            ],
+            "04GZF": [
+              {
+                "move": "h4h3",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on h5 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxh3+ is uncertain.",
+                  "Black's pawn on g6 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxh3+ is uncertain."
+                ]
+              }
+            ],
+            "0KiZf": [
+              {
+                "move": "h4h2",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on h6 has no enemy pawn ahead on its file or either adjacent file. Its separate strategic value alongside Rxh2 is uncertain."
+                ]
+              }
+            ],
+            "01MiZ": [
+              {
+                "move": "c3d5",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Black's pawn on c5 has no friendly pawn on either adjacent file. Its separate strategic value alongside Nxd5 is uncertain."
+                ]
+              }
+            ],
+            "2G0jG": [
+              {
+                "move": "g4g6",
+                "before": "mixed",
+                "after": "tactical",
+                "addedNotes": [
+                  "Qxg6+, removing the opponent's bishop pair. The opponent no longer has bishops on both colour complexes in the recorded continuation. Its separate strategic value alongside Qxg6+ is uncertain."
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "otherReplays": {
+    "archive": {
+      "requests": 1051,
+      "valid": 1050,
+      "changedReportsByScope": {
+        "position": 2,
+        "moves": 19,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "categoryTransitions": {
+        "move: mixed -> tactical": 18,
+        "position: mixed -> tactical": 2
+      },
+      "medianWorkerMs": {
+        "before": 63.94,
+        "after": 64.41
+      }
+    },
+    "prospective": {
+      "requests": 26,
+      "valid": 26,
+      "changedReportsByScope": {
+        "position": 0,
+        "moves": 0,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "categoryTransitions": {},
+      "medianWorkerMs": {
+        "before": 77.19,
+        "after": 81.6
+      }
+    },
+    "early": {
+      "requests": 124,
+      "valid": 124,
+      "changedReportsByScope": {
+        "position": 1,
+        "moves": 3,
+        "mistake": 0,
+        "mistakeStatus": 0
+      },
+      "categoryTransitions": {
+        "position: mixed -> tactical": 1,
+        "move: mixed -> tactical": 3
+      },
+      "medianWorkerMs": {
+        "before": 156.07,
+        "after": 154.83
+      }
+    }
+  },
+  "earlierReview": {
+    "v47": {
+      "course": {
+        "move-justification": {
+          "tactical": {
+            "tp": 20,
+            "fp": 1,
+            "fn": 15,
+            "tn": 8
+          },
+          "positional": {
+            "tp": 6,
+            "fp": 3,
+            "fn": 18,
+            "tn": 10
+          },
+          "mixed": {
+            "tp": 2,
+            "fp": 2,
+            "fn": 7,
+            "tn": 20
+          }
+        },
+        "position-character": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 2,
+            "tn": 0
+          },
+          "positional": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 10,
+            "tn": 0
+          },
+          "mixed": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 3,
+            "tn": 0
+          }
+        }
+      },
+      "independent": {
+        "move-justification": {
+          "tactical": {
+            "tp": 27,
+            "fp": 0,
+            "fn": 20,
+            "tn": 0
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 1,
+            "fn": 6,
+            "tn": 40
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 1,
+            "fn": 5,
+            "tn": 40
+          }
+        }
+      },
+      "classical": {
+        "mistake-mechanism": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 4,
+            "tn": 14
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 5,
+            "tn": 14
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 17
+          }
+        }
+      }
+    },
+    "product": {
+      "course": {
+        "move-justification": {
+          "tactical": {
+            "tp": 20,
+            "fp": 1,
+            "fn": 15,
+            "tn": 8
+          },
+          "positional": {
+            "tp": 6,
+            "fp": 1,
+            "fn": 18,
+            "tn": 12
+          },
+          "mixed": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 7,
+            "tn": 22
+          }
+        },
+        "position-character": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 2,
+            "tn": 0
+          },
+          "positional": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 10,
+            "tn": 0
+          },
+          "mixed": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 3,
+            "tn": 0
+          }
+        }
+      },
+      "independent": {
+        "move-justification": {
+          "tactical": {
+            "tp": 27,
+            "fp": 0,
+            "fn": 20,
+            "tn": 0
+          },
+          "positional": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 6,
+            "tn": 41
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 5,
+            "tn": 41
+          }
+        }
+      },
+      "classical": {
+        "mistake-mechanism": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 4,
+            "tn": 14
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 5,
+            "tn": 14
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 17
+          }
+        }
+      }
+    }
+  }
+}

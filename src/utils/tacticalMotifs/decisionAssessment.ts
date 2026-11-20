@@ -96,12 +96,13 @@ import {
 } from "./decisionCheckingDefence";
 
 import { compareAllowedDecisionRoutes } from "./decisionAllowedRoutes";
+import { findCaptureEffectDependencies } from "./decisionCaptureEffects";
 import {
     corroborateDecisionLineRoutes,
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 47;
+export const DECISION_ASSESSMENT_VERSION = 48;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -566,6 +567,7 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
         );
     }
     if (corroborated) {
+        const captureEffects = new Map<ComparativePositionalEvidence, string>();
         const routes = corroborateDecisionLineRoutes(input.fen, line, probe!.lines[0], input.history)
             .filter(
                 (route) => result.tactical.support !== "supported" ||
@@ -588,26 +590,41 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             }
             result.limitations.push("These mechanisms apply to the shown defence. Other replies can change the route or payoff.");
 
-            const kept = [];
-            const reasons = [];
-            for (const [index, factor] of result.positionalFactors.entries()) {
-                if (isStructuralEffectFromTacticalCapture(input.fen, line.pvUci[0], factor)) {
-                    result.limitations.push(`${factor.description} Its strategic importance alongside the material gain remains uncertain.`);
-                } else {
-                    kept.push(factor);
-                    reasons.push(result.positional.reasons[index]);
-                }
+            for (const factor of result.positionalFactors) {
+                if (isStructuralEffectFromTacticalCapture(input.fen, line.pvUci[0], factor))
+                    captureEffects.set(
+                        factor,
+                        `${factor.description} Its strategic importance alongside the material gain remains uncertain.`,
+                    );
             }
-            if (kept.length < result.positionalFactors.length) {
-                result.positionalFactors = kept;
-                result.positional = kept.length
-                    ? { ...result.positional, reasons }
-                    : {
-                          support: "suggestive",
-                          basis: "insufficient",
-                          reasons: ["The capture changes the position. Its separate strategic impact is uncertain."],
-                      };
+        }
+        if (result.tactical.support === "supported") {
+            for (const { factor, tacticalGain, separatelyUsed, captureSan } of findCaptureEffectDependencies(
+                input.fen,
+                line,
+                branches[0],
+                result.positionalFactors,
+            )) {
+                if (tacticalGain && !separatelyUsed && !captureEffects.has(factor))
+                    captureEffects.set(
+                        factor,
+                        `${factor.description} Its separate strategic value alongside ${captureSan} is uncertain.`,
+                    );
             }
+        }
+        if (captureEffects.size) {
+            const reasons = result.positional.reasons.filter(
+                (_, index) => !captureEffects.has(result.positionalFactors[index]),
+            );
+            result.positionalFactors = result.positionalFactors.filter((factor) => !captureEffects.has(factor));
+            result.positional = reasons.length
+                ? { ...result.positional, reasons }
+                : {
+                      support: "suggestive",
+                      basis: "insufficient",
+                      reasons: ["The capture changes the position. Its separate strategic impact is uncertain."],
+                  };
+            result.limitations.push(...captureEffects.values());
         }
     }
     result.category = category(result.tactical, result.positional);

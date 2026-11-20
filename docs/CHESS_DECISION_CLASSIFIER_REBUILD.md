@@ -4246,3 +4246,21 @@ lone reviewed mixed position is unclear. A materially even knight
 exchange reveals a tactical certificate that still overstates the
 capture result. The old and current build make this false call in the
 frozen evaluation. [Cross-scope results and exact gaps](../benchmarks/decision-evidence/current-classifier-audit/README.md)
+
+
+## Structural observations from a tactical capture
+
+The worker distinguishes material won by a tactic from independent
+strategic value. When both legal searches repeat the same profitable
+capture, a structural effect of that capture stays visible in the details.
+A quiet passed-pawn advance or demonstrated rook use can still support a
+mixed explanation. The check also keeps positional effects after balanced
+exchanges, including recaptures delayed by a check.
+
+On the 25-puzzle frozen sample, seven moves change from mixed to tactical
+and one retains a mixed explanation through separate rook activity. The
+eight verdicts repeat at twice the nodes. Earlier reviewed puzzle data
+lose three false mixed labels with no lost true positives. Mistake reports
+are unchanged across the 1,051-request archive and the 26-game prospective
+sample. The checks reuse the existing searches.
+[Samples, regressions and reproduction](../benchmarks/decision-evidence/capture-structural-dependence/README.md)
