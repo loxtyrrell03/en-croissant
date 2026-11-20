@@ -96,6 +96,14 @@ and Black has moved the c6 pawn. The check is already a verified fork
 in v63. A restricted replay confirms the new structural comparison.
 [Game](https://lichess.org/broadcast/41st-european-chess-club-cup-2026-open/round-2/ETE9LeyG/fVYl3mxV)
 
+In a German Championship control, `Nf7+ Ke7 Nxe5` also
+takes the same piece that a pawn could capture. The subsequent
+`...Nxc3` removes the c3 pawn within the comparison window. The
+pattern calls it a retained chain and the verifier correctly abstains.
+Two other root pattern hits remain unresolved because the routes
+change material by too much to isolate the structural comparison.
+[German Championship game](https://lichess.org/broadcast/german-chess-championship-2026-masters-men/round-5/yzzoZ1jd/CtCWBKgi)
+
 Decision Evidence v64 requires the checking move to be first in the
 normal shortlist, with an independently supported tactic. The pawn
 capture must already be scored in the same shortlist. It reuses
@@ -113,11 +121,26 @@ both explanations on the Club Cup board at 320, 390 and 900 pixels.
 The single independent positive limits inference about more general
 mixed-classification accuracy. [Results and exact board evidence](results.json)
 
+The isolated Windows build at `7a11ac6a` reproduced both mixed
+diagnoses with live Stockfish 19. The full analysis took 6.6
+seconds on the Candidates board and 7.3 seconds on the Club Cup
+board in this test. The earlier `h4` played-move regression also
+passed. The installed app and phone service are outside this
+verification. [Windows receipt](windows.json)
+
+On the earlier Candidates review, this changes one of seven mixed
+position references and one of two mixed exact-move references from
+missed to detected. That example informed development of the new
+test. The other six mixed positions remain unexplained. This
+readback is separate from the game-disjoint reserve above.
+
 ## Reproduce
 
 Use `capture.py STAGE INPUT STOCKFISH OUTPUT --split SPLIT` for both
 stages. The checked-in `transfer.json` contains development and
 reserve, and `calibration.json` contains the opened Candidates board.
+The Stockfish 19 executable has SHA-256
+`45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0`.
 The app stage preserves the normal three root choices and records the
 extra comparisons. The reference stage clears the engine hash for
 each request and captures its own lines. Run
@@ -127,7 +150,8 @@ connected recapture on c6.
 
 The worker replay uses `replay.config.mjs`,
 `CAPTURE_ROUTE_INPUT` and `CAPTURE_ROUTE_OUTPUT`. The input is
-the concatenated app-frame lists, tagged with their cohort. Pin
+the concatenated app-frame lists, tagged with their cohort. Keep
+the calibration row when it also appears in the wider archive. Pin
 `DECISION_AUDIT_REVISION` to the revision being replayed and set
 `CAPTURE_ROUTE_CANDIDATE=1` when replaying v64. Use the standard
 source-panel harness for `verify-panel.mjs`. `receipt.py --help`

@@ -1,0 +1,40 @@
+{
+  "revision": "7a11ac6adb330c2b6a4cc4c5a2fa76ca0528b921",
+  "scenarios": {
+    "Played Pawn Lock": {
+      "passed": true,
+      "seconds": 11.454,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "move": "What the move achieves\n\nPOSITIONAL\n\nPositional \u00b7 Strategic interpretation. White's pawn advances from h2 to h4 and remains at least this far advanced in the recorded continuation. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence.\n\nPositional \u00b7 Strategic interpretation. h4 fixes opposing pawns face to face on h4 and h5; neither can advance while this lock remains. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence.\n\nThe feature changes are verified board facts. Their strategic importance is a heuristic interpretation; the engine does not assign its score to individual features.\n\nHide evidence",
+      "mistake": "What h4 missed or allowed\n\nUNCLEAR\n\nEngine evaluation loss 0.86 pawns\n\nThe search did not establish a specific cause.\n\nShow evidence"
+    },
+    "Knight Keeps the Pawn Chain": {
+      "passed": true,
+      "seconds": 6.577,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical \u00b7 Checked local proof. Ne7+ vacates c6, uncovering the rook on c8 against the king on c3. The knight on e7 also attacks the rook on d5. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.\n\nPositional \u00b7 Strategic interpretation. After Ne7+ Kb2 Nxd5, the pawn on e6 still supports f5. Taking the same rook immediately with exd5 breaks that pawn link.\n\nNe7+ moves out of the c8\u2013c3 line and uncovers check. Ne7+\n\nAfter Ne7+. Ne7+ Kb2 Nxd5 g3 Rg8 Nd4\n\nAfter exd5. exd5 Nd4 Nxa5+ Kb4 Nc6+ Nxc6 bxc6\n\nDISCOVERED CHECK\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical \u00b7 Checked local proof. Ne7+ vacates c6, uncovering the rook on c8 against the king on c3. The knight on e7 also attacks the rook on d5. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.\n\nPositional \u00b7 Strategic interpretation. After Ne7+ Kb2 Nxd5, the pawn on e6 still supports f5. Taking the same rook immediately with exd5 breaks that pawn link.\n\nNe7+ moves out of the c8\u2013c3 line and uncovers check. Ne7+\n\nAfter Ne7+ Kb2. Ne7+ Kb2 Nxd5 g3 Rg8 Nd4\n\nAfter exd5 Nd4. exd5 Nd4 Nxa5+ Kb4 Nc6+ Nxc6 bxc6\n\nDISCOVERED CHECK\n\nThe shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.\n\nThis is the material change in the displayed tactical episode after settling replies. Later play and other defences can alter it.\n\nThe local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence"
+    },
+    "Queen Keeps the Pawn Chain": {
+      "passed": true,
+      "seconds": 7.327,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical \u00b7 Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional \u00b7 Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical \u00b7 Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional \u00b7 Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+ Kh1. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5 Qxf7. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence"
+    }
+  },
+  "sourcePanelWidths": [
+    320,
+    390,
+    900
+  ],
+  "focusedTypeScriptTestsPassed": 50,
+  "legalPythonTestsPassed": 3,
+  "typeCheckPassed": true
+}

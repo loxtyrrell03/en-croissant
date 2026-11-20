@@ -122,3 +122,9 @@ actual `h4` outside Stockfish's shortlist and checks its strategic
 evidence independently of the evaluation loss. The live promotion
 diversion regression also passed on this build.
 [Run receipt](../annotation-transfer/windows.json)
+
+Revision `7a11ac6a` adds `Knight Keeps the Pawn Chain` and
+`Queen Keeps the Pawn Chain`. Both verify mixed position and
+candidate summaries and the two capture routes with live Stockfish.
+The played-pawn-lock scenario also passed on this build.
+[Run receipt](../capture-route-structure/windows.json)
