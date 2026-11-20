@@ -48,9 +48,11 @@ function legacy(input: Case) {
         variations: input.candidates.map((line, index) => ({ ...line, multipv: index + 1 })),
     });
     const motifs = scan.variations.find((line) => line.lineUci[0] === best.pvUci[0])?.motifs ?? [];
+    const rootMotifs = motifs.filter((motif) => motif.ply === 1 && motif.moveUci === best.pvUci[0]);
     return {
-        tactical: motifs.some((motif) => motif.ply === 1 && motif.moveUci === best.pvUci[0]),
+        tactical: rootMotifs.length > 0,
         allLeading: scan.variations.some((line) => line.motifs.length > 0),
+        ...(process.env.DECISION_SCORE_ROOT_MOTIFS ? { motifs: rootMotifs.map((motif) => motif.id) } : {}),
     };
 }
 

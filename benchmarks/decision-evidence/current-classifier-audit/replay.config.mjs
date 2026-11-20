@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const worker = "src/components/panels/tactics/decisionReport.worker.ts";
 const revision = process.env.DECISION_AUDIT_REVISION ?? "27580772";
 const git = (...args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
-const changed = git("diff", "--name-only", "-z", revision, "--", "src")
+const changed = git("diff", "--name-only", "--diff-filter=DMRTUXB", "-z", revision, "--", "src")
     .split("\0").filter(Boolean);
 const sources = new Map([...new Set([worker, ...changed])].map((file) => {
     let code = git("show", `${revision}:${file}`);

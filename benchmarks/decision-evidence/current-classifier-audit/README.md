@@ -189,3 +189,7 @@ STOCKFISH OUTPUT` and `classical-frames.py reference INPUT STOCKFISH
 OUTPUT --app-frames APP_OUTPUT` from the repository root. Review the
 matched frames with `classical-review-packet.py APP_OUTPUT REFERENCE_OUTPUT`
 under the [frozen reference protocol](classical-review-protocol.md).
+
+The [three-scope classical transfer](classical-results.md) compares the
+original, v47 and v57 at the app budget. It also records the deeper
+input experiment and exact follow-up searches on representative misses.

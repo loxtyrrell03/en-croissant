@@ -1,0 +1,2308 @@
+{
+  "revision": "27580772",
+  "referenceSha256": "99b604c119719672c9837f0edd23c9d72ddf4d83761f1e90d9643f0b976683da",
+  "inputs": {
+    "app": "a39fdeb343e7c5219d7a77429f78613222179b1b868bf8370c888bdd1d3a0cb7",
+    "deep": "feb0de9c259a7a39fd91b71fb2c6054a0d38eb5877316e2e7db74d75962e9603"
+  },
+  "experiment": "Cached wider and deeper Stockfish frames, unchanged classifier",
+  "warning": "This uses the frames reviewed for the reference. It diagnoses evidence availability and agreement, not prospective accuracy at the deeper budget.",
+  "results": {
+    "position": {
+      "allAvailable": {
+        "cases": 72,
+        "axes": {
+          "tactical": {
+            "app": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 20,
+              "tn": 1,
+              "unknownReference": 42,
+              "precision": {
+                "value": 1.0,
+                "numerator": 9,
+                "denominator": 9,
+                "interval95": [
+                  0.7008549515804559,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.3103448275862069,
+                "numerator": 9,
+                "denominator": 29,
+                "interval95": [
+                  0.17275616744483216,
+                  0.4923013423309317
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.3333333333333333,
+                "numerator": 10,
+                "denominator": 30,
+                "interval95": [
+                  0.19230498083676134,
+                  0.5121994835545616
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.16,
+                  0.4411764705882353
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1999
+              }
+            },
+            "deeper": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 20,
+              "tn": 1,
+              "unknownReference": 42,
+              "precision": {
+                "value": 1.0,
+                "numerator": 9,
+                "denominator": 9,
+                "interval95": [
+                  0.7008549515804559,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.3103448275862069,
+                "numerator": 9,
+                "denominator": 29,
+                "interval95": [
+                  0.17275616744483216,
+                  0.4923013423309317
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.3333333333333333,
+                "numerator": 10,
+                "denominator": 30,
+                "interval95": [
+                  0.19230498083676134,
+                  0.5121994835545616
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.16,
+                  0.4411764705882353
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1999
+              }
+            }
+          },
+          "positional": {
+            "app": {
+              "tp": 13,
+              "fp": 0,
+              "fn": 46,
+              "tn": 1,
+              "unknownReference": 12,
+              "precision": {
+                "value": 1.0,
+                "numerator": 13,
+                "denominator": 13,
+                "interval95": [
+                  0.7719046276458016,
+                  0.9999999999999999
+                ]
+              },
+              "recall": {
+                "value": 0.22033898305084745,
+                "numerator": 13,
+                "denominator": 59,
+                "interval95": [
+                  0.13354197627929038,
+                  0.3413269936763709
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.23333333333333334,
+                "numerator": 14,
+                "denominator": 60,
+                "interval95": [
+                  0.1443956173664283,
+                  0.35436270377601964
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.14545454545454545,
+                  0.29508196721311475
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 2000
+              }
+            },
+            "deeper": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 50,
+              "tn": 1,
+              "unknownReference": 12,
+              "precision": {
+                "value": 1.0,
+                "numerator": 9,
+                "denominator": 9,
+                "interval95": [
+                  0.7008549515804559,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.15254237288135594,
+                "numerator": 9,
+                "denominator": 59,
+                "interval95": [
+                  0.0823846399859648,
+                  0.26517983783773563
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.16666666666666666,
+                "numerator": 10,
+                "denominator": 60,
+                "interval95": [
+                  0.0931317697919145,
+                  0.2803161316361453
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.06779661016949153,
+                  0.25806451612903225
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 2000
+              }
+            }
+          },
+          "mixed": {
+            "app": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 17,
+              "tn": 2,
+              "unknownReference": 53,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 17,
+                "interval95": [
+                  0.0,
+                  0.1843181350088518
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 2,
+                "denominator": 2,
+                "interval95": [
+                  0.34238022750665303,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.10526315789473684,
+                "numerator": 2,
+                "denominator": 19,
+                "interval95": [
+                  0.02935856029887013,
+                  0.31394082711109006
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 2000,
+                "precisionDraws": 0
+              }
+            },
+            "deeper": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 17,
+              "tn": 2,
+              "unknownReference": 53,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 17,
+                "interval95": [
+                  0.0,
+                  0.1843181350088518
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 2,
+                "denominator": 2,
+                "interval95": [
+                  0.34238022750665303,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.10526315789473684,
+                "numerator": 2,
+                "denominator": 19,
+                "interval95": [
+                  0.02935856029887013,
+                  0.31394082711109006
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 2000,
+                "precisionDraws": 0
+              }
+            }
+          }
+        }
+      },
+      "sameLeadingMove": {
+        "cases": 60,
+        "axes": {
+          "tactical": {
+            "app": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 17,
+              "tn": 0,
+              "unknownReference": 34,
+              "precision": {
+                "value": 1.0,
+                "numerator": 9,
+                "denominator": 9,
+                "interval95": [
+                  0.7008549515804559,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.34615384615384615,
+                "numerator": 9,
+                "denominator": 26,
+                "interval95": [
+                  0.1941223032294052,
+                  0.5377942881118918
+                ]
+              },
+              "specificity": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "agreement": {
+                "value": 0.34615384615384615,
+                "numerator": 9,
+                "denominator": 26,
+                "interval95": [
+                  0.1941223032294052,
+                  0.5377942881118918
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.19047619047619047,
+                  0.48
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1999
+              }
+            },
+            "deeper": {
+              "tp": 9,
+              "fp": 0,
+              "fn": 17,
+              "tn": 0,
+              "unknownReference": 34,
+              "precision": {
+                "value": 1.0,
+                "numerator": 9,
+                "denominator": 9,
+                "interval95": [
+                  0.7008549515804559,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.34615384615384615,
+                "numerator": 9,
+                "denominator": 26,
+                "interval95": [
+                  0.1941223032294052,
+                  0.5377942881118918
+                ]
+              },
+              "specificity": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "agreement": {
+                "value": 0.34615384615384615,
+                "numerator": 9,
+                "denominator": 26,
+                "interval95": [
+                  0.1941223032294052,
+                  0.5377942881118918
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.19047619047619047,
+                  0.48
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1999
+              }
+            }
+          },
+          "positional": {
+            "app": {
+              "tp": 12,
+              "fp": 0,
+              "fn": 36,
+              "tn": 1,
+              "unknownReference": 11,
+              "precision": {
+                "value": 1.0,
+                "numerator": 12,
+                "denominator": 12,
+                "interval95": [
+                  0.7575059933447592,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.25,
+                "numerator": 12,
+                "denominator": 48,
+                "interval95": [
+                  0.1492063367379791,
+                  0.3878437280950796
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.2653061224489796,
+                "numerator": 13,
+                "denominator": 49,
+                "interval95": [
+                  0.16211282134957408,
+                  0.4026228897131079
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.16666666666666666,
+                  0.32608695652173914
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 2000
+              }
+            },
+            "deeper": {
+              "tp": 8,
+              "fp": 0,
+              "fn": 40,
+              "tn": 1,
+              "unknownReference": 11,
+              "precision": {
+                "value": 1.0,
+                "numerator": 8,
+                "denominator": 8,
+                "interval95": [
+                  0.6755924351161198,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.16666666666666666,
+                "numerator": 8,
+                "denominator": 48,
+                "interval95": [
+                  0.08695513576485567,
+                  0.295778284012556
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.1836734693877551,
+                "numerator": 9,
+                "denominator": 49,
+                "interval95": [
+                  0.09976341062070308,
+                  0.3135760260289987
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.07894736842105263,
+                  0.2727272727272727
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 2000
+              }
+            }
+          },
+          "mixed": {
+            "app": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 14,
+              "tn": 1,
+              "unknownReference": 45,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 14,
+                "interval95": [
+                  1.3877787807814457e-17,
+                  0.2153108027376358
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.06666666666666667,
+                "numerator": 1,
+                "denominator": 15,
+                "interval95": [
+                  0.011866895493268553,
+                  0.2981652987378003
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 2000,
+                "precisionDraws": 0
+              }
+            },
+            "deeper": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 14,
+              "tn": 1,
+              "unknownReference": 45,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 14,
+                "interval95": [
+                  1.3877787807814457e-17,
+                  0.2153108027376358
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.06666666666666667,
+                "numerator": 1,
+                "denominator": 15,
+                "interval95": [
+                  0.011866895493268553,
+                  0.2981652987378003
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 2000,
+                "precisionDraws": 0
+              }
+            }
+          }
+        }
+      },
+      "exactCandidateUnavailable": [],
+      "changedAxes": [
+        {
+          "id": "0184c9f0beec78b03a65",
+          "sameLeader": true,
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "001a6009922115f686d6",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          }
+        },
+        {
+          "id": "002fbb75907381957f6f",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          }
+        },
+        {
+          "id": "001d004a45def1b67e6c",
+          "sameLeader": true,
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "0024602cab8975872cbc",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          }
+        },
+        {
+          "id": "0079cb89e05dd81b9640",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "023ea2e0f5bc6510886b",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "001b89e6056db630cf8d",
+          "sameLeader": false,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "002719621d794bcb0c4a",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "00acd47041b0a54528ce",
+          "sameLeader": true,
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "0002472cffe0d7d148f5",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        }
+      ],
+      "deeperMixedPositiveBreakdown": {
+        "tactical=False,positional=False": 14,
+        "tactical=False,positional=True": 1,
+        "tactical=True,positional=False": 2
+      }
+    },
+    "move": {
+      "allAvailable": {
+        "cases": 71,
+        "axes": {
+          "tactical": {
+            "app": {
+              "tp": 8,
+              "fp": 0,
+              "fn": 11,
+              "tn": 3,
+              "unknownReference": 49,
+              "precision": {
+                "value": 1.0,
+                "numerator": 8,
+                "denominator": 8,
+                "interval95": [
+                  0.6755924351161198,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.42105263157894735,
+                "numerator": 8,
+                "denominator": 19,
+                "interval95": [
+                  0.23141891282454238,
+                  0.6372409646574496
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.5,
+                "numerator": 11,
+                "denominator": 22,
+                "interval95": [
+                  0.3072210627372502,
+                  0.6927789372627497
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.21052631578947367,
+                  0.6111111111111112
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1998
+              }
+            },
+            "deeper": {
+              "tp": 8,
+              "fp": 0,
+              "fn": 11,
+              "tn": 3,
+              "unknownReference": 49,
+              "precision": {
+                "value": 1.0,
+                "numerator": 8,
+                "denominator": 8,
+                "interval95": [
+                  0.6755924351161198,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.42105263157894735,
+                "numerator": 8,
+                "denominator": 19,
+                "interval95": [
+                  0.23141891282454238,
+                  0.6372409646574496
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.5,
+                "numerator": 11,
+                "denominator": 22,
+                "interval95": [
+                  0.3072210627372502,
+                  0.6927789372627497
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.21052631578947367,
+                  0.6111111111111112
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1998
+              }
+            }
+          },
+          "positional": {
+            "app": {
+              "tp": 7,
+              "fp": 0,
+              "fn": 46,
+              "tn": 3,
+              "unknownReference": 15,
+              "precision": {
+                "value": 1.0,
+                "numerator": 7,
+                "denominator": 7,
+                "interval95": [
+                  0.6456695649333126,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.1320754716981132,
+                "numerator": 7,
+                "denominator": 53,
+                "interval95": [
+                  0.06547853284463252,
+                  0.24840255308904924
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.17857142857142858,
+                "numerator": 10,
+                "denominator": 56,
+                "interval95": [
+                  0.09999856752412305,
+                  0.2984118203665106
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.02040816326530612,
+                  0.28888888888888886
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1979
+              }
+            },
+            "deeper": {
+              "tp": 6,
+              "fp": 0,
+              "fn": 47,
+              "tn": 3,
+              "unknownReference": 15,
+              "precision": {
+                "value": 1.0,
+                "numerator": 6,
+                "denominator": 6,
+                "interval95": [
+                  0.6096657120978346,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.11320754716981132,
+                "numerator": 6,
+                "denominator": 53,
+                "interval95": [
+                  0.05293030947702562,
+                  0.22576519111992185
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.16071428571428573,
+                "numerator": 9,
+                "denominator": 56,
+                "interval95": [
+                  0.08692667607595139,
+                  0.2780620666974952
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.25
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1930
+              }
+            }
+          },
+          "mixed": {
+            "app": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 7,
+              "tn": 6,
+              "unknownReference": 58,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 7,
+                "interval95": [
+                  5.551115123125783e-17,
+                  0.35433043506668743
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 6,
+                "denominator": 6,
+                "interval95": [
+                  0.6096657120978346,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.46153846153846156,
+                "numerator": 6,
+                "denominator": 13,
+                "interval95": [
+                  0.23206067809538303,
+                  0.7085620428549398
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 2000,
+                "precisionDraws": 0
+              }
+            },
+            "deeper": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 7,
+              "tn": 6,
+              "unknownReference": 58,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 7,
+                "interval95": [
+                  5.551115123125783e-17,
+                  0.35433043506668743
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 6,
+                "denominator": 6,
+                "interval95": [
+                  0.6096657120978346,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.46153846153846156,
+                "numerator": 6,
+                "denominator": 13,
+                "interval95": [
+                  0.23206067809538303,
+                  0.7085620428549398
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 2000,
+                "precisionDraws": 0
+              }
+            }
+          }
+        }
+      },
+      "sameLeadingMove": {
+        "cases": 60,
+        "axes": {
+          "tactical": {
+            "app": {
+              "tp": 8,
+              "fp": 0,
+              "fn": 9,
+              "tn": 3,
+              "unknownReference": 40,
+              "precision": {
+                "value": 1.0,
+                "numerator": 8,
+                "denominator": 8,
+                "interval95": [
+                  0.6755924351161198,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.47058823529411764,
+                "numerator": 8,
+                "denominator": 17,
+                "interval95": [
+                  0.26165106442409436,
+                  0.6903676493999558
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.55,
+                "numerator": 11,
+                "denominator": 20,
+                "interval95": [
+                  0.34208534245034233,
+                  0.7418021417443759
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.25,
+                  0.65
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1998
+              }
+            },
+            "deeper": {
+              "tp": 8,
+              "fp": 0,
+              "fn": 9,
+              "tn": 3,
+              "unknownReference": 40,
+              "precision": {
+                "value": 1.0,
+                "numerator": 8,
+                "denominator": 8,
+                "interval95": [
+                  0.6755924351161198,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.47058823529411764,
+                "numerator": 8,
+                "denominator": 17,
+                "interval95": [
+                  0.26165106442409436,
+                  0.6903676493999558
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.55,
+                "numerator": 11,
+                "denominator": 20,
+                "interval95": [
+                  0.34208534245034233,
+                  0.7418021417443759
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.25,
+                  0.65
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1998
+              }
+            }
+          },
+          "positional": {
+            "app": {
+              "tp": 7,
+              "fp": 0,
+              "fn": 38,
+              "tn": 3,
+              "unknownReference": 12,
+              "precision": {
+                "value": 1.0,
+                "numerator": 7,
+                "denominator": 7,
+                "interval95": [
+                  0.6456695649333126,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.15555555555555556,
+                "numerator": 7,
+                "denominator": 45,
+                "interval95": [
+                  0.07745423484758268,
+                  0.2878390887239627
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.20833333333333334,
+                "numerator": 10,
+                "denominator": 48,
+                "interval95": [
+                  0.11730272957905595,
+                  0.34258901272617925
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.023809523809523808,
+                  0.3333333333333333
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1979
+              }
+            },
+            "deeper": {
+              "tp": 6,
+              "fp": 0,
+              "fn": 39,
+              "tn": 3,
+              "unknownReference": 12,
+              "precision": {
+                "value": 1.0,
+                "numerator": 6,
+                "denominator": 6,
+                "interval95": [
+                  0.6096657120978346,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.13333333333333333,
+                "numerator": 6,
+                "denominator": 45,
+                "interval95": [
+                  0.06257148747568075,
+                  0.2617730182617707
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 3,
+                "denominator": 3,
+                "interval95": [
+                  0.4385029682449546,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.1875,
+                "numerator": 9,
+                "denominator": 48,
+                "interval95": [
+                  0.10191390954847647,
+                  0.31939867149284695
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.2826086956521739
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1930
+              }
+            }
+          },
+          "mixed": {
+            "app": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 6,
+              "tn": 6,
+              "unknownReference": 48,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 6,
+                "interval95": [
+                  2.7755575615628914e-17,
+                  0.3903342879021653
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 6,
+                "denominator": 6,
+                "interval95": [
+                  0.6096657120978346,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.5,
+                "numerator": 6,
+                "denominator": 12,
+                "interval95": [
+                  0.2537815976337061,
+                  0.7462184023662939
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 1996,
+                "precisionDraws": 0
+              }
+            },
+            "deeper": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 6,
+              "tn": 6,
+              "unknownReference": 48,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": 0.0,
+                "numerator": 0,
+                "denominator": 6,
+                "interval95": [
+                  2.7755575615628914e-17,
+                  0.3903342879021653
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 6,
+                "denominator": 6,
+                "interval95": [
+                  0.6096657120978346,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.5,
+                "numerator": 6,
+                "denominator": 12,
+                "interval95": [
+                  0.2537815976337061,
+                  0.7462184023662939
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.0
+                ],
+                "precision95": null,
+                "recallDraws": 1996,
+                "precisionDraws": 0
+              }
+            }
+          }
+        }
+      },
+      "exactCandidateUnavailable": [
+        "007d1e68be8ba47c1463"
+      ],
+      "changedAxes": [
+        {
+          "id": "0184c9f0beec78b03a65",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "0010093bac6adb755f95",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "00348c948d65bebf83b7",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "00c734fe12af420d6699",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": true,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": true,
+            "positional": true,
+            "mixed": true
+          }
+        }
+      ],
+      "deeperMixedPositiveBreakdown": {
+        "tactical=False,positional=False": 4,
+        "tactical=False,positional=True": 1,
+        "tactical=True,positional=False": 2
+      }
+    },
+    "mistake": {
+      "allAvailable": {
+        "cases": 72,
+        "axes": {
+          "tactical": {
+            "app": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 2,
+              "tn": 52,
+              "unknownReference": 17,
+              "precision": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.3333333333333333,
+                "numerator": 1,
+                "denominator": 3,
+                "interval95": [
+                  0.06149194472039621,
+                  0.7923403991979522
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.9636363636363636,
+                "numerator": 53,
+                "denominator": 55,
+                "interval95": [
+                  0.8767653602534898,
+                  0.9899704587106665
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  1.0
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 1937,
+                "precisionDraws": 1290
+              }
+            },
+            "deeper": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 2,
+              "tn": 52,
+              "unknownReference": 17,
+              "precision": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.3333333333333333,
+                "numerator": 1,
+                "denominator": 3,
+                "interval95": [
+                  0.06149194472039621,
+                  0.7923403991979522
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.9636363636363636,
+                "numerator": 53,
+                "denominator": 55,
+                "interval95": [
+                  0.8767653602534898,
+                  0.9899704587106665
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  1.0
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 1937,
+                "precisionDraws": 1290
+              }
+            }
+          },
+          "positional": {
+            "app": {
+              "tp": 2,
+              "fp": 0,
+              "fn": 8,
+              "tn": 52,
+              "unknownReference": 10,
+              "precision": {
+                "value": 1.0,
+                "numerator": 2,
+                "denominator": 2,
+                "interval95": [
+                  0.34238022750665303,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.2,
+                "numerator": 2,
+                "denominator": 10,
+                "interval95": [
+                  0.05668215145437519,
+                  0.5098375284633583
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.8709677419354839,
+                "numerator": 54,
+                "denominator": 62,
+                "interval95": [
+                  0.7655067270982637,
+                  0.9331412194071697
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.4
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1767
+              }
+            },
+            "deeper": {
+              "tp": 2,
+              "fp": 0,
+              "fn": 8,
+              "tn": 52,
+              "unknownReference": 10,
+              "precision": {
+                "value": 1.0,
+                "numerator": 2,
+                "denominator": 2,
+                "interval95": [
+                  0.34238022750665303,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.2,
+                "numerator": 2,
+                "denominator": 10,
+                "interval95": [
+                  0.05668215145437519,
+                  0.5098375284633583
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.8709677419354839,
+                "numerator": 54,
+                "denominator": 62,
+                "interval95": [
+                  0.7655067270982637,
+                  0.9331412194071697
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.4
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 2000,
+                "precisionDraws": 1767
+              }
+            }
+          },
+          "mixed": {
+            "app": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "tn": 52,
+              "unknownReference": 20,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": null,
+                "precision95": null,
+                "recallDraws": 0,
+                "precisionDraws": 0
+              }
+            },
+            "deeper": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "tn": 52,
+              "unknownReference": 20,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 1.0,
+                "numerator": 52,
+                "denominator": 52,
+                "interval95": [
+                  0.9312077638761376,
+                  1.0
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": null,
+                "precision95": null,
+                "recallDraws": 0,
+                "precisionDraws": 0
+              }
+            }
+          }
+        }
+      },
+      "sameLeadingMove": {
+        "cases": 60,
+        "axes": {
+          "tactical": {
+            "app": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 2,
+              "tn": 45,
+              "unknownReference": 12,
+              "precision": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.3333333333333333,
+                "numerator": 1,
+                "denominator": 3,
+                "interval95": [
+                  0.06149194472039621,
+                  0.7923403991979522
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.9583333333333334,
+                "numerator": 46,
+                "denominator": 48,
+                "interval95": [
+                  0.8602434412954456,
+                  0.9884981065106133
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  1.0
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 1937,
+                "precisionDraws": 1290
+              }
+            },
+            "deeper": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 2,
+              "tn": 45,
+              "unknownReference": 12,
+              "precision": {
+                "value": 1.0,
+                "numerator": 1,
+                "denominator": 1,
+                "interval95": [
+                  0.20654931437723745,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.3333333333333333,
+                "numerator": 1,
+                "denominator": 3,
+                "interval95": [
+                  0.06149194472039621,
+                  0.7923403991979522
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.9583333333333334,
+                "numerator": 46,
+                "denominator": 48,
+                "interval95": [
+                  0.8602434412954456,
+                  0.9884981065106133
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  1.0
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 1937,
+                "precisionDraws": 1290
+              }
+            }
+          },
+          "positional": {
+            "app": {
+              "tp": 2,
+              "fp": 0,
+              "fn": 6,
+              "tn": 45,
+              "unknownReference": 7,
+              "precision": {
+                "value": 1.0,
+                "numerator": 2,
+                "denominator": 2,
+                "interval95": [
+                  0.34238022750665303,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.25,
+                "numerator": 2,
+                "denominator": 8,
+                "interval95": [
+                  0.071479212752109,
+                  0.5907245696898311
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.8867924528301887,
+                "numerator": 47,
+                "denominator": 53,
+                "interval95": [
+                  0.7742348088800781,
+                  0.9470696905229743
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.5
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 1996,
+                "precisionDraws": 1767
+              }
+            },
+            "deeper": {
+              "tp": 2,
+              "fp": 0,
+              "fn": 6,
+              "tn": 45,
+              "unknownReference": 7,
+              "precision": {
+                "value": 1.0,
+                "numerator": 2,
+                "denominator": 2,
+                "interval95": [
+                  0.34238022750665303,
+                  1.0
+                ]
+              },
+              "recall": {
+                "value": 0.25,
+                "numerator": 2,
+                "denominator": 8,
+                "interval95": [
+                  0.071479212752109,
+                  0.5907245696898311
+                ]
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 0.8867924528301887,
+                "numerator": 47,
+                "denominator": 53,
+                "interval95": [
+                  0.7742348088800781,
+                  0.9470696905229743
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": [
+                  0.0,
+                  0.5
+                ],
+                "precision95": [
+                  1.0,
+                  1.0
+                ],
+                "recallDraws": 1996,
+                "precisionDraws": 1767
+              }
+            }
+          },
+          "mixed": {
+            "app": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "tn": 45,
+              "unknownReference": 15,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": null,
+                "precision95": null,
+                "recallDraws": 0,
+                "precisionDraws": 0
+              }
+            },
+            "deeper": {
+              "tp": 0,
+              "fp": 0,
+              "fn": 0,
+              "tn": 45,
+              "unknownReference": 15,
+              "precision": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "recall": {
+                "value": null,
+                "numerator": 0,
+                "denominator": 0,
+                "interval95": null
+              },
+              "specificity": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "agreement": {
+                "value": 1.0,
+                "numerator": 45,
+                "denominator": 45,
+                "interval95": [
+                  0.9213484012671117,
+                  1.0
+                ]
+              },
+              "eventBootstrap": {
+                "recall95": null,
+                "precision95": null,
+                "recallDraws": 0,
+                "precisionDraws": 0
+              }
+            }
+          }
+        }
+      },
+      "exactCandidateUnavailable": [],
+      "changedAxes": [
+        {
+          "id": "000ced6e147d6d5ab791",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          }
+        },
+        {
+          "id": "0010093bac6adb755f95",
+          "sameLeader": true,
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "standard": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          }
+        },
+        {
+          "id": "00119961bc2c688880e1",
+          "sameLeader": false,
+          "reference": {
+            "tactical": null,
+            "positional": null
+          },
+          "standard": {
+            "tactical": false,
+            "positional": false,
+            "mixed": false
+          },
+          "deeper": {
+            "tactical": false,
+            "positional": true,
+            "mixed": false
+          }
+        }
+      ],
+      "deeperMixedPositiveBreakdown": {}
+    }
+  }
+}
