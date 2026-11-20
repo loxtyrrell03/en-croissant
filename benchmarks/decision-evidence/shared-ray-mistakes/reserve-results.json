@@ -1,0 +1,1281 @@
+{
+  "referenceSha256": "930f0f6df8305a6879d0eab1ec9ec4c003e431cab982ca6e7baf9dc8a9bc8e4d",
+  "inputs": [
+    {
+      "path": "reserve.json",
+      "sha256": "e72c68fa149709ebb2bdfae2cdd0009e3bc3c6a7883fba76b5389a813d8e684f"
+    },
+    {
+      "path": "enriched-reserve.json",
+      "sha256": "68d941f10014228f955ccda5c4d93699017331e2d7cb919276b62a3afbde496e"
+    }
+  ],
+  "rows": 189,
+  "groups": 58,
+  "reviewed": {
+    "negative": 32,
+    "uncertain": 11,
+    "positive": 8
+  },
+  "metrics": {
+    "geometry": {
+      "falsePositive": 6,
+      "uncertainCalls": 6,
+      "truePositive": 7,
+      "uncertainAbstentions": 5,
+      "trueNegative": 26,
+      "falseNegative": 1,
+      "outsideReview": 0
+    },
+    "oneLine": {
+      "trueNegative": 31,
+      "uncertainAbstentions": 10,
+      "falseNegative": 7,
+      "truePositive": 1,
+      "uncertainCalls": 1,
+      "falsePositive": 1,
+      "outsideReview": 0
+    },
+    "twoSearches": {
+      "trueNegative": 31,
+      "uncertainAbstentions": 10,
+      "falseNegative": 7,
+      "truePositive": 1,
+      "uncertainCalls": 1,
+      "falsePositive": 1,
+      "outsideReview": 0
+    },
+    "localExchange": {
+      "trueNegative": 32,
+      "uncertainAbstentions": 10,
+      "falseNegative": 7,
+      "truePositive": 1,
+      "uncertainCalls": 1,
+      "outsideReview": 0
+    },
+    "witnesses": {
+      "trueNegative": 32,
+      "uncertainAbstentions": 11,
+      "falseNegative": 8,
+      "outsideReview": 0
+    }
+  },
+  "spentProbeNodes": 14702835,
+  "baseline": {
+    "03a4b162cfce149e2d55": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Against Qd6, Nc6 gives you Rxd6, a profitable capture. Ne6 leaves that capture unavailable."
+      ]
+    },
+    "2aea24296b737d1d07d5": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "126d18d9a819b5b4310e": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "242d53f8fdf3293dd27c": {
+      "status": "comparison-unavailable",
+      "category": null,
+      "tactical": []
+    },
+    "14c9c863fcf0f8bc530f": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "R3d2 attacks the rook on e2 after Re2. Both searches show Rxd2 moving it away. After Bh4, the same R3d2 meets Bf6 with the rook safe from a profitable capture by that attacker."
+      ]
+    },
+    "03ba318d1decf665a6ec": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "3a23b478d0c603afcced": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "02e21a0484dd8507946f": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "42733ef4e8cbb8380209": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "11f847867875ff784c42": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "02e0ad5db71d42e6f413": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "0d446f99328b6ef0dc6c": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "49f27dc5c744a8e40442": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "354bbbe2b3f1b478d01f": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Your move allowed this tactic: Bf4 skewers the queen on e3 and the knight on d2. No legal reply saves the rear target without conceding material. After Nf1, Ra1 answers Bf4; a profitable immediate follow-up capture of the queen on f3 or the knight on f1 is no longer forced.",
+        "Bf4 attacks the queen on e3 after Qe3. Both searches show Qd3 moving it away. After Nf1, the same Bf4 meets h4 with the queen safe from a profitable capture by that attacker."
+      ]
+    },
+    "001a0752019aa9e03d6f": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "001fd2e290a6bd2c16de": {
+      "status": "no-meaningful-loss-measured",
+      "category": null,
+      "tactical": []
+    },
+    "000f69076ee47ce6d1e5": {
+      "status": "no-meaningful-loss-measured",
+      "category": null,
+      "tactical": []
+    },
+    "001a72394aecc51da17c": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "000dd96942c1b813e4b4": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "000194e4899fedd31189": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "00028887718c9a4e9c6f": {
+      "status": "comparison-unavailable",
+      "category": null,
+      "tactical": []
+    },
+    "00000e9b6c6e24f83a61": {
+      "status": "no-meaningful-loss-measured",
+      "category": null,
+      "tactical": []
+    },
+    "7a08acf7cce5309721d1": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Against Bd4, Ne7 gives you Rxd4, a profitable capture. Re5 leaves that capture unavailable."
+      ]
+    },
+    "a16b957c5fc9a8510807": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "2ab51dd75d41cb4fb5ce": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "54f5cda489fcdfcd53bc": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Against Bg4, h6 gives you Bxg4, a profitable capture. Be6 leaves that capture unavailable."
+      ]
+    },
+    "35d6cd75d259cfc5644a": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Against Rh8, Kc1 gives you Rxh8, a profitable capture. Bh4 leaves that capture unavailable."
+      ]
+    },
+    "b4fce07a35523a4f7341": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Ba6 attacks the queen on b7 after Qb7. Both searches show Qa8 moving it away. After Qa8, the same Ba6 meets Rxc1 with the queen safe from a profitable capture by that attacker."
+      ]
+    },
+    "d1f85b5071f3abee37a4": {
+      "status": "assessed",
+      "category": "positional",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "d1af8f705089a1cdb33d": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "48ed25a9a65ce8af9086": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "21cab507e74d86ea72bf": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "41e19f28368c10654f9f": {
+      "status": "no-meaningful-loss-measured",
+      "category": null,
+      "tactical": []
+    },
+    "ad5a5705313932356041": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "32d1fefdd574c0f90d54": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "67da2c881ef62ed2478c": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "63bb3038c692d98b1b1b": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "124668445d9e3eaa479d": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "5c12b1ab7f2b3ac90cbb": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "43d11a4e2eff85a5eef2": {
+      "status": "comparison-unavailable",
+      "category": null,
+      "tactical": []
+    },
+    "0d2551fa1422fd5b4bc3": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "8c709edcb5b7769d30a1": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "After Qe3, both searches show Rxc3 winning material. After Nd1, the original target is on d1. The same move no longer takes it on c3.",
+        "The played continuation gives up at least 2.2 more material points over the compared moves."
+      ]
+    },
+    "7ea997c6cfc34f22eb96": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "f1b2aec45e2d59e3e896": {
+      "status": "best-supplied-choice",
+      "category": null,
+      "tactical": []
+    },
+    "80801424b4dc38cbdf50": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "4fd5a3a5c6e5dae1a9e7": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "74bbeb8b32f16b05b853": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Qa5 attacks a6 and b4. After Qg6, Qxb4 takes one of these targets in this line. The played line retains 2.7 fewer material points after 11 plies of both compared lines."
+      ]
+    },
+    "d00902dbba3d666796db": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "Bf5 traps the rook on c2. The local search finds a material gain against all 30 legal replies. After Re1, the same Bf5 gives that attacker no profitable capture of the rook."
+      ]
+    },
+    "eb19ffef9ff9d642c782": {
+      "status": "assessed",
+      "category": "tactical",
+      "tactical": [
+        "The opponent can use skewer after the played move. This mechanism is absent from the compared better line, which retains more material. Bg5 attacks the more valuable piece on f6. After it moves, Bxe7 takes the piece behind it.",
+        "The opponent can use tacticalPreparation after the played move. This mechanism is absent from the compared better line, which retains more material. Bg5 gives this piece access to e7. In the analysed continuation, Bxe7 uses capturingDefender at ply 3.",
+        "Bg5 attacks the more valuable piece on f6. After it moves, Bxe7 takes the piece behind it. The played line retains 1.0 fewer material points after 13 plies of both compared lines."
+      ]
+    },
+    "b819c474f295e039eca6": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    },
+    "f16ef36742ebdfe71ece": {
+      "status": "assessed",
+      "category": "unclear",
+      "tactical": [
+        "No relevant tactical mechanism has been established."
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "03a4b162cfce149e2d55",
+      "source": "https://lichess.org/broadcast/english-chess-championships-2026-open-classical/inCygpgU",
+      "rootFen": "5Q2/5p1k/1p3rp1/p1p4p/3n1P1P/6P1/PP3K2/8 b - - 1 31",
+      "played": "d4e6",
+      "better": "d4c6",
+      "reply": "f8d6",
+      "pairs": [
+        [
+          "e6",
+          "f6"
+        ]
+      ],
+      "lossCp": 124,
+      "paired": {
+        "cp": -124,
+        "san": "31...Ne6 32. Qd6 c4 33. Qxb6 Rf5 34. Qe3 Rc5 35. Qc3 Kg8"
+      },
+      "independent": {
+        "cp": -105,
+        "san": "31...Ne6 32. Qd6 c4 33. Qxb6 Rf5 34. Qe3 Rc5 35. Qc3 Kg8"
+      },
+      "control": {
+        "cp": 935,
+        "mate": null,
+        "san": "31...Nc6 32. Qd6 Rxd6 33. a4 b5 34. axb5 Nb8 35. b3 Rd8"
+      },
+      "pairedVictims": [],
+      "independentVictims": [],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "14c9c863fcf0f8bc530f",
+      "source": "https://lichess.org/broadcast/bubamara-open-2026/round-5/vFZCI6Co/VBwtyeui",
+      "rootFen": "4r3/p4kpp/2p5/1p1b4/8/1PPR1P1P/P1P2bP1/1K1R4 b - - 2 20",
+      "played": "e8e2",
+      "better": "f2h4",
+      "reply": "d3d2",
+      "pairs": [
+        [
+          "e2",
+          "f2"
+        ]
+      ],
+      "lossCp": 158,
+      "paired": {
+        "cp": 131,
+        "san": "20...Re2 21. R3d2 Rxd2 22. Rxd2 Bc5 23. a4 a6 24. axb5 axb5"
+      },
+      "independent": {
+        "cp": 128,
+        "san": "20...Re2 21. R3d2 Rxd2 22. Rxd2 Be3 23. Rd3 Bb6 24. a4 bxa4"
+      },
+      "control": {
+        "cp": 366,
+        "mate": null,
+        "san": "20...Bh4 21. R3d2 Bf6 22. Rd3 a6 23. a4 Re2 24. Rg1 Rf2"
+      },
+      "pairedVictims": [],
+      "independentVictims": [],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "42733ef4e8cbb8380209",
+      "source": "https://lichess.org/broadcast/35th-drogheda-chess-congress-thomson-masters/round-5/7Lny4P8g/tR7qq6yM",
+      "rootFen": "8/6kp/3b3R/p1pB1pP1/1r1p1P2/4r3/8/5R1K b - - 1 37",
+      "played": "b4b6",
+      "better": "d6c7",
+      "reply": "h6f6",
+      "pairs": [
+        [
+          "d6",
+          "b6"
+        ]
+      ],
+      "lossCp": 102,
+      "paired": {
+        "cp": 373,
+        "san": "37...Rb6 38. Rf6 d3 39. Rd1 a4 40. Rf7+ Kh8 41. Kg1 Rb2"
+      },
+      "independent": {
+        "cp": 312,
+        "san": "37...Rb6 38. Rf6 d3 39. Rd1 a4 40. Kg1 c4 41. Bxc4 a3"
+      },
+      "control": {
+        "cp": 444,
+        "mate": null,
+        "san": "37...Bc7 38. Rf6 Re7 39. Kg2 d3 40. Re1 Rb2+ 41. Kg3 Rbe2"
+      },
+      "pairedVictims": [],
+      "independentVictims": [],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "354bbbe2b3f1b478d01f",
+      "source": "https://lichess.org/broadcast/bubamara-open-2026/round-5/vFZCI6Co/bEHMpuED",
+      "rootFen": "2rr2k1/p4pp1/3b1p1p/3p2q1/1p1P4/2P2Q2/PP1N1PPP/2R1R1K1 w - - 2 19",
+      "played": "f3e3",
+      "better": "d2f1",
+      "reply": "d6f4",
+      "pairs": [
+        [
+          "e3",
+          "d2"
+        ]
+      ],
+      "lossCp": 127,
+      "paired": {
+        "cp": -122,
+        "san": "19. Qe3 Bf4 20. Qd3 Bxd2 21. h4 Qxh4 22. Qxd2 bxc3 23. Rxc3"
+      },
+      "independent": {
+        "cp": -106,
+        "san": "19. Qe3 Bf4 20. Qd3 Bxd2 21. h4 Qxh4 22. Qxd2 bxc3 23. Rxc3"
+      },
+      "control": {
+        "cp": 426,
+        "mate": null,
+        "san": "19. Nf1 Bf4 20. h4 Qxh4 21. g3 Bxg3 22. Qxg3 Qh5 23. Ne3"
+      },
+      "pairedVictims": [
+        [
+          "d2",
+          5,
+          "f4d2"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "d2",
+          5,
+          "f4d2"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "7a08acf7cce5309721d1",
+      "source": "https://lichess.org/broadcast/pan-american-championship-masters-seniors-2026-50/round-8/hPJ6PMJO/WezsSTSX",
+      "rootFen": "1kn2r2/1p4bp/5qp1/p2r4/4Q1P1/1PN1B2P/P4P2/1KR4R b - - 0 26",
+      "played": "d5e5",
+      "better": "c8e7",
+      "reply": "e3d4",
+      "pairs": [
+        [
+          "e5",
+          "f6"
+        ]
+      ],
+      "lossCp": 418,
+      "paired": {
+        "cp": -549,
+        "san": "26...Re5 27. Bd4 Rfe8 28. Qd3 Qf8 29. Bxe5+ Rxe5 30. Rhd1 Re6"
+      },
+      "independent": {
+        "cp": -510,
+        "san": "26...Re5 27. Bd4 Rfe8 28. Qd3 Na7 29. Rhe1 Nc6 30. Bxe5+ Rxe5"
+      },
+      "control": {
+        "cp": 771,
+        "mate": null,
+        "san": "26...Ne7 27. Bd4 Rxd4 28. Qc2 Nc6 29. Qb2 Rfd8 30. Nb5 Rd2"
+      },
+      "pairedVictims": [
+        [
+          "e5",
+          7,
+          "d4e5"
+        ],
+        [
+          "e5",
+          9,
+          "d4e5"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "e5",
+          9,
+          "d4e5"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "54f5cda489fcdfcd53bc",
+      "source": "https://lichess.org/broadcast/rubinstein-chess-festival-2026-open-a/ZvtLBvk8",
+      "rootFen": "2r3k1/p1r2ppp/5b2/2B2b2/1P6/4RB2/P4PPP/4R1K1 b - - 7 26",
+      "played": "f5e6",
+      "better": "h7h6",
+      "reply": "f3g4",
+      "pairs": [
+        [
+          "e6",
+          "c8"
+        ]
+      ],
+      "lossCp": 168,
+      "paired": {
+        "cp": -417,
+        "san": "26...Be6 27. Bg4 Rd8 28. h3 Rd2 29. a3 a5 30. Bxe6 fxe6"
+      },
+      "independent": {
+        "cp": -350,
+        "san": "26...Be6 27. Bg4 Rd8 28. Bxe6 fxe6 29. Rxe6 Bd4 30. Ra6 Bxc5"
+      },
+      "control": {
+        "cp": 607,
+        "mate": null,
+        "san": "26...h6 27. Bg4 Bxg4 28. Re8+ Kh7 29. Rxc8 Bxc8 30. h3 a5"
+      },
+      "pairedVictims": [],
+      "independentVictims": [
+        [
+          "e6",
+          7,
+          "g4e6"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "35d6cd75d259cfc5644a",
+      "source": "https://lichess.org/broadcast/1-festival-internazionale-di-scacchi-il-tesoro-di-san-gennaro-torneo-a/round-4/pNHP0yHN/5NbyD8dQ",
+      "rootFen": "2r5/4bkp1/4p3/3n4/1p1NN3/pP2nPB1/P1P5/1K5R w - - 1 33",
+      "played": "g3h4",
+      "better": "b1c1",
+      "reply": "c8h8",
+      "pairs": [
+        [
+          "h4",
+          "h1"
+        ]
+      ],
+      "lossCp": 557,
+      "paired": {
+        "cp": -613,
+        "san": "33. Bh4 Rh8 34. Nc6 Bxh4 35. Kc1 Kg8 36. Kd2 Ng2 37. Kd3"
+      },
+      "independent": {
+        "cp": -601,
+        "san": "33. Bh4 Rh8 34. Nc6 Bxh4 35. Ne5+ Kg8 36. Ng6 Rh6 37. Nxh4"
+      },
+      "control": {
+        "cp": 699,
+        "mate": null,
+        "san": "33. Kc1 Rh8 34. Rxh8 Nf5 35. Be5 Bf6 36. Bxf6 gxf6 37. Ne2"
+      },
+      "pairedVictims": [],
+      "independentVictims": [],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "b4fce07a35523a4f7341",
+      "source": "https://lichess.org/broadcast/manaus-chess-open-2026/round-1/AW7p5bGi/NTNQowAN",
+      "rootFen": "2r2r1k/p3n1b1/4P1pp/3qp3/Q1B2p2/5P2/P4BPP/2R2RK1 b - - 5 25",
+      "played": "d5b7",
+      "better": "d5a8",
+      "reply": "c4a6",
+      "pairs": [
+        [
+          "b7",
+          "c8"
+        ]
+      ],
+      "lossCp": 431,
+      "paired": {
+        "cp": -742,
+        "san": "25...Qb7 26. Ba6 Qa8 27. Bxc8 Rxc8 28. Rxc8+ Qxc8 29. Qd7 Bf6"
+      },
+      "independent": {
+        "cp": -745,
+        "san": "25...Qb7 26. Ba6 Qa8 27. Bxc8 Rxc8 28. Rxc8+ Qxc8 29. Qd7 Bf8"
+      },
+      "control": {
+        "cp": -298,
+        "mate": null,
+        "san": "25...Qa8 26. Ba6 Rxc1 27. Rxc1 Bf6 28. Rc7 Rb8 29. h4 Rb1+"
+      },
+      "pairedVictims": [
+        [
+          "c8",
+          5,
+          "a6c8"
+        ],
+        [
+          "c8",
+          7,
+          "a6c8"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "c8",
+          5,
+          "a6c8"
+        ],
+        [
+          "c8",
+          7,
+          "a6c8"
+        ]
+      ],
+      "oneLine": [
+        "a6c8"
+      ],
+      "twoSearches": [
+        {
+          "firstCapture": "a6c8",
+          "secondCapture": "a6c8",
+          "firstHorizon": 5,
+          "secondHorizon": 5,
+          "controlHorizon": 5
+        }
+      ],
+      "localExchange": [
+        {
+          "firstCapture": "a6c8",
+          "secondCapture": "a6c8",
+          "firstHorizon": 5,
+          "secondHorizon": 5,
+          "controlHorizon": 5
+        }
+      ],
+      "witnesses": []
+    },
+    {
+      "id": "d1f85b5071f3abee37a4",
+      "source": "https://lichess.org/broadcast/maia-chess-open-2026-masters/round-6/UrGQbSUE/hXS8XkQB",
+      "rootFen": "r3r1k1/2p2pb1/p1nqb1p1/3Np1Bp/4P2P/1B3P2/PP1Q2P1/2R1K2R b K - 6 17",
+      "played": "e6d7",
+      "better": "a6a5",
+      "reply": "b3a4",
+      "pairs": [
+        [
+          "c6",
+          "d7"
+        ]
+      ],
+      "lossCp": 259,
+      "paired": {
+        "cp": -307,
+        "san": "17...Bd7 18. Ba4 Kh7 19. O-O Rac8 20. f4 exf4 21. Bxf4 Qe6"
+      },
+      "independent": {
+        "cp": -291,
+        "san": "17...Bd7 18. Ba4 Kh7 19. O-O Rac8 20. f4 exf4 21. Bxf4 Qe6"
+      },
+      "control": {
+        "cp": -63,
+        "mate": null,
+        "san": "17...a5 18. Ba4 Bxd5 19. Qxd5 Qb4+ 20. Rc3 Qxa4 21. Rxc6 Qb4+"
+      },
+      "pairedVictims": [],
+      "independentVictims": [],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "d1af8f705089a1cdb33d",
+      "source": "https://lichess.org/broadcast/skakligaen-20262027/round-1/mqrJwMy3/CkDKPBYz",
+      "rootFen": "1r4k1/3bB1bp/1rp3p1/3p1p2/q2P4/2R1P1P1/P1Q2PBP/R5K1 b - - 2 23",
+      "played": "a4a7",
+      "better": "a4c2",
+      "reply": "e7c5",
+      "pairs": [
+        [
+          "b6",
+          "a7"
+        ]
+      ],
+      "lossCp": 490,
+      "paired": {
+        "cp": -643,
+        "san": "23...Qa7 24. Bc5 f4 25. Bxb6 Rxb6 26. gxf4 Bf8 27. a4 Bf5"
+      },
+      "independent": {
+        "cp": -657,
+        "san": "23...Qa7 24. Bc5 Bf8 25. Bxb6 Rxb6 26. Rb3 Qa4 27. Qd1 Rxb3"
+      },
+      "control": {
+        "cp": null,
+        "mate": 8,
+        "san": "23...Qxc2 24. Bc5 Rb1+ 25. Bf1 Qd1 26. Rc1 Qxc1 27. Rxb1 Rxb1"
+      },
+      "pairedVictims": [
+        [
+          "b6",
+          5,
+          "c5b6"
+        ],
+        [
+          "b6",
+          7,
+          "c5b6"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "b6",
+          5,
+          "c5b6"
+        ],
+        [
+          "b6",
+          7,
+          "c5b6"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "48ed25a9a65ce8af9086",
+      "source": "https://lichess.org/broadcast/ganja-open-2026-group-a/round-4/Y7f0Kjud/EEpruXnY",
+      "rootFen": "2n5/6b1/1p3k1p/4p1p1/1PPp4/3B2PP/R4P2/6K1 b - - 2 42",
+      "played": "g7f8",
+      "better": "c8d6",
+      "reply": "a2a8",
+      "pairs": [
+        [
+          "c8",
+          "f8"
+        ]
+      ],
+      "lossCp": 114,
+      "paired": {
+        "cp": -768,
+        "san": "42...Bf8 43. Ra8 Nd6 44. c5 bxc5 45. bxc5 e4 46. cxd6 exd3"
+      },
+      "independent": {
+        "cp": -708,
+        "san": "42...Bf8 43. Ra8 e4 44. Rxc8 exd3 45. Rxf8+ Ke7 46. Ra8 d2"
+      },
+      "control": {
+        "cp": -449,
+        "mate": null,
+        "san": "42...Nd6 43. Ra8 e4 44. Bc2 Nxc4 45. Bxe4 Ke6 46. Ra2 b5"
+      },
+      "pairedVictims": [],
+      "independentVictims": [
+        [
+          "c8",
+          7,
+          "a8c8"
+        ],
+        [
+          "f8",
+          7,
+          "c8f8"
+        ],
+        [
+          "f8",
+          9,
+          "c8f8"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "32d1fefdd574c0f90d54",
+      "source": "https://lichess.org/broadcast/12th-cesme-international-open-chess-tournament/round-6/DhWApaGr/PCUhUO5w",
+      "rootFen": "r2q1rk1/5pp1/p2b1nbp/1pnPp3/4P1PB/2N2N1P/P1B2P2/R2Q1RK1 w - - 1 19",
+      "played": "f3d2",
+      "better": "a1c1",
+      "reply": "d8a5",
+      "pairs": [
+        [
+          "c3",
+          "d2"
+        ]
+      ],
+      "lossCp": 115,
+      "paired": {
+        "cp": -221,
+        "san": "19. Nd2 Qa5 20. Qf3 Rac8 21. Rac1 Ncd7 22. Bb3 Ba3 23. Rc2"
+      },
+      "independent": {
+        "cp": -253,
+        "san": "19. Nd2 Qa5 20. Qf3 Rac8 21. Rac1 Ncd7 22. Bb3 Ba3 23. Rc2"
+      },
+      "control": {
+        "cp": 34,
+        "mate": null,
+        "san": "19. Rc1 Qa5 20. Bxf6 gxf6 21. Bb1 Qa3 22. Ne2 Bxe4 23. Rc3"
+      },
+      "pairedVictims": [],
+      "independentVictims": [],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "63bb3038c692d98b1b1b",
+      "source": "https://lichess.org/broadcast/mcc-classic-swiss/n5vOYpBi",
+      "rootFen": "r7/1pkb4/p1n2P2/3p4/3Pp2r/B1P5/4B3/R3KR2 b Q - 0 31",
+      "played": "d7h3",
+      "better": "c6d8",
+      "reply": "f1h1",
+      "pairs": [
+        [
+          "h3",
+          "h4"
+        ]
+      ],
+      "lossCp": 299,
+      "paired": {
+        "cp": -454,
+        "san": "31...Bh3 32. Rh1 b5 33. f7 b4 34. Bxb4 Nxb4 35. cxb4 Rhh8"
+      },
+      "independent": {
+        "cp": -408,
+        "san": "31...Bh3 32. Rh1 Nb8 33. Bf1 Nd7 34. Rxh3 Rxh3 35. Bxh3 Nxf6"
+      },
+      "control": {
+        "cp": 829,
+        "mate": null,
+        "san": "31...Nd8 32. Rh1 Rxh1+ 33. Bf1 Nf7 34. c4 e3 35. O-O-O Rg8"
+      },
+      "pairedVictims": [],
+      "independentVictims": [
+        [
+          "h3",
+          9,
+          "h1h3"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "124668445d9e3eaa479d",
+      "source": "https://lichess.org/broadcast/chessbattle-summer-cup-classic/round-3/ko7NjcMo/I02aJRsa",
+      "rootFen": "1rb2nk1/p3bp2/2B2p2/7N/3r3p/4B2P/PP3PP1/R4RK1 b - - 4 23",
+      "played": "d4d6",
+      "better": "d4c4",
+      "reply": "e3f4",
+      "pairs": [
+        [
+          "d6",
+          "b8"
+        ]
+      ],
+      "lossCp": 280,
+      "paired": {
+        "cp": -585,
+        "san": "23...Rd6 24. Bf4 Rxb2 25. Bxd6 Bxd6 26. Nxf6+ Kh8 27. Rfb1 Re2"
+      },
+      "independent": {
+        "cp": -571,
+        "san": "23...Rd6 24. Bf4 f5 25. Bxd6 Bxd6 26. Nf6+ Kh8 27. Rfd1 Be5"
+      },
+      "control": {
+        "cp": -21,
+        "mate": null,
+        "san": "23...Rc4 24. Bf4 Rxb2 25. Rfc1 Rxc1+ 26. Bxc1 Rb6 27. Bf3 Bc5"
+      },
+      "pairedVictims": [
+        [
+          "d6",
+          7,
+          "f4d6"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "d6",
+          5,
+          "f4d6"
+        ],
+        [
+          "d6",
+          7,
+          "f4d6"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "8c709edcb5b7769d30a1",
+      "source": "https://lichess.org/broadcast/pofinay-indywidualnych-mistrzostw-polski-2026-open/OHA3daQb",
+      "rootFen": "r2q2k1/1ppb2bp/3p2p1/2nP4/2P1PQPP/2N5/Pp2B3/1R2K2R w K - 0 20",
+      "played": "f4e3",
+      "better": "c3d1",
+      "reply": "a8a3",
+      "pairs": [
+        [
+          "c3",
+          "e3"
+        ]
+      ],
+      "lossCp": 245,
+      "paired": {
+        "cp": -813,
+        "san": "20. Qe3 Ra3 21. O-O Rxc3 22. Qf4 Qxh4 23. Rf3 Rc1+ 24. Rf1"
+      },
+      "independent": {
+        "cp": -767,
+        "san": "20. Qe3 Ra3 21. O-O Rxc3 22. Qf2 Nxe4 23. Qf7+ Kh8 24. Rf4"
+      },
+      "control": {
+        "cp": -531,
+        "mate": null,
+        "san": "20. Nd1 Ra3 21. O-O Qe7 22. Nxb2 Bd4+ 23. Kg2 Rxa2 24. Qd2"
+      },
+      "pairedVictims": [
+        [
+          "c3",
+          5,
+          "a3c3"
+        ],
+        [
+          "c3",
+          7,
+          "a3c3"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "c3",
+          5,
+          "a3c3"
+        ]
+      ],
+      "oneLine": [
+        "a3c3"
+      ],
+      "twoSearches": [
+        {
+          "firstCapture": "a3c3",
+          "secondCapture": "a3c3",
+          "firstHorizon": 5,
+          "secondHorizon": 5,
+          "controlHorizon": 5
+        }
+      ],
+      "localExchange": [
+        {
+          "firstCapture": "a3c3",
+          "secondCapture": "a3c3",
+          "firstHorizon": 5,
+          "secondHorizon": 5,
+          "controlHorizon": 5
+        }
+      ],
+      "witnesses": []
+    },
+    {
+      "id": "74bbeb8b32f16b05b853",
+      "source": "https://lichess.org/broadcast/12th-cesme-international-open-chess-tournament/round-3/49B66yW9/pz0mE6Xh",
+      "rootFen": "2r3k1/3r1pPp/p3n2q/3BQ3/1p6/1P4Pb/PB3R1P/4R1K1 b - - 2 37",
+      "played": "c8e8",
+      "better": "c8d8",
+      "reply": "d5c6",
+      "pairs": [
+        [
+          "d7",
+          "e8"
+        ]
+      ],
+      "lossCp": 529,
+      "paired": {
+        "cp": -644,
+        "san": "37...Re8 38. Bc6 Rdd8 39. Bxe8 Rxe8 40. Qc5 Qg6 41. Qxb4 Rc8"
+      },
+      "independent": {
+        "cp": -646,
+        "san": "37...Re8 38. Bc6 Rde7 39. Bxe8 Rxe8 40. Qa5 Qg6 41. Qxb4 Rc8"
+      },
+      "control": {
+        "cp": 0,
+        "mate": null,
+        "san": "37...Rcd8 38. Bc6 Rd1 39. Re2 Bg4 40. Rxd1 Rxd1+ 41. Re1 Qd2"
+      },
+      "pairedVictims": [
+        [
+          "e8",
+          5,
+          "c6e8"
+        ],
+        [
+          "e8",
+          7,
+          "c6e8"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "e8",
+          5,
+          "c6e8"
+        ],
+        [
+          "e8",
+          7,
+          "c6e8"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "d00902dbba3d666796db",
+      "source": "https://lichess.org/broadcast/chessbattle-summer-cup-classic/round-2/ilJTKt0N/9llxB1GY",
+      "rootFen": "5rk1/ppq2ppp/4p3/3pP3/2rP2b1/b1P1BN2/P2Q1PPP/1RR3K1 w - - 4 18",
+      "played": "c1c2",
+      "better": "c1e1",
+      "reply": "g4f5",
+      "pairs": [
+        [
+          "c2",
+          "b1"
+        ]
+      ],
+      "lossCp": 117,
+      "paired": {
+        "cp": -442,
+        "san": "18. Rc2 Bf5 19. Rb3 Bxc2 20. Qxc2 Be7 21. h4 a6 22. h5"
+      },
+      "independent": {
+        "cp": -476,
+        "san": "18. Rc2 Bf5 19. Rb3 Bxc2 20. Qxc2 Be7 21. h4 Rc8 22. Bd2"
+      },
+      "control": {
+        "cp": -168,
+        "mate": null,
+        "san": "18. Re1 Bf5 19. Rb3 Be7 20. Qb2 b6 21. Rc1 h6 22. Nd2"
+      },
+      "pairedVictims": [
+        [
+          "c2",
+          5,
+          "f5c2"
+        ],
+        [
+          "c2",
+          7,
+          "f5c2"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "c2",
+          5,
+          "f5c2"
+        ],
+        [
+          "c2",
+          7,
+          "f5c2"
+        ]
+      ],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "eb19ffef9ff9d642c782",
+      "source": "https://lichess.org/broadcast/amagers-100ars-jubilumsturnering-open/round-6/L3aezZWu/2LtxYKNm",
+      "rootFen": "r1q2r1k/1p2b1pp/p1pp4/4p3/4P3/P3B3/1PPQ1PPP/3RR1K1 b - - 1 20",
+      "played": "f8f6",
+      "better": "c8e6",
+      "reply": "e3g5",
+      "pairs": [
+        [
+          "f6",
+          "e7"
+        ]
+      ],
+      "lossCp": 345,
+      "paired": {
+        "cp": -371,
+        "san": "20...Rf6 21. Bg5 Re6 22. Bxe7 Rxe7 23. Qxd6 Qe8 24. Re3 Rf7"
+      },
+      "independent": {
+        "cp": -370,
+        "san": "20...Rf6 21. Bg5 Rf7 22. Bxe7 Rxe7 23. Qxd6 Qe8 24. Re3 Rf7"
+      },
+      "control": {
+        "cp": -17,
+        "mate": null,
+        "san": "20...Qe6 21. Bg5 Bxg5 22. Qxg5 Rf4 23. Rd2 Raf8 24. Qh5 h6"
+      },
+      "pairedVictims": [
+        [
+          "e7",
+          7,
+          "g5e7"
+        ]
+      ],
+      "independentVictims": [
+        [
+          "e7",
+          7,
+          "g5e7"
+        ]
+      ],
+      "oneLine": [
+        "g5e7"
+      ],
+      "twoSearches": [
+        {
+          "firstCapture": "g5e7",
+          "secondCapture": "g5e7",
+          "firstHorizon": 7,
+          "secondHorizon": 7,
+          "controlHorizon": 7
+        }
+      ],
+      "localExchange": [],
+      "witnesses": []
+    },
+    {
+      "id": "f16ef36742ebdfe71ece",
+      "source": "https://lichess.org/broadcast/english-chess-championships-2026-open-classical/inCygpgU",
+      "rootFen": "r1b2rk1/2q1pp1p/p5pB/1p1Rb3/2nN1QP1/2N4P/PPP5/2K2R2 w - - 0 22",
+      "played": "f4f3",
+      "better": "f4f2",
+      "reply": "c8b7",
+      "pairs": [
+        [
+          "d5",
+          "f3"
+        ]
+      ],
+      "lossCp": 561,
+      "paired": {
+        "cp": -476,
+        "san": "22. Qf3 Bb7 23. Ne6 Bxd5 24. Nxd5 Bxb2+ 25. Kd1 Qd6 26. Nxf8"
+      },
+      "independent": {
+        "cp": -407,
+        "san": "22. Qf3 Bb7 23. Bxf8 Rxf8 24. Ne6 Bxd5 25. Nxd5 Qa5 26. c3"
+      },
+      "control": {
+        "cp": 432,
+        "mate": null,
+        "san": "22. Qf2 Bb7 23. Ne6 Qc6 24. Nxf8 f6 25. Rc5 Qg2 26. Qxg2"
+      },
+      "pairedVictims": [
+        [
+          "d5",
+          5,
+          "b7d5"
+        ],
+        [
+          "d5",
+          7,
+          "b7d5"
+        ]
+      ],
+      "independentVictims": [],
+      "oneLine": [],
+      "twoSearches": [],
+      "localExchange": [],
+      "witnesses": []
+    }
+  ]
+}

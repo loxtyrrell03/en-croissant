@@ -96,7 +96,7 @@ def material(board, color):
                for role, weight in VALUE.items())
 
 
-def payments(root, branch, ray, targets):
+def payments(root, branch, ray, targets, *, require_local_exchange=False):
     """Credit only the original slider and its actual victim in this line."""
     board = root.copy(stack=True)
     side = root.turn
@@ -119,6 +119,10 @@ def payments(root, branch, ray, targets):
         board.push(move)
         # Allow the player to recapture on the very next turn before scoring.
         checkpoint = material(board, side) if captured and ply % 2 else None
+        if checkpoint is not None and require_local_exchange:
+            # A loss on another square later cannot pay for a recaptured piece.
+            captured = [capture for capture in captured
+                        if ply != capture[1] + 1 or capture[3] - checkpoint >= 100]
         if checkpoint is not None and not board.is_check() and initial - checkpoint >= 100:
             for square, at, take, before_capture in captured:
                 if at + 1 <= ply <= at + 3 and before_capture - checkpoint >= 100:
@@ -143,7 +147,7 @@ def preview(row):
         same_reply = next((line for line in controls if line["pvUci"][0] == reply), None)
     control_prefix = [better["pvUci"][0], reply]
     original = material(root, root.turn)
-    single, paired_witness, witnesses = [], [], []
+    single, paired_witness, local_witness, witnesses = [], [], [], []
     for pair in pairs:
         recorded_payoffs = list(payments(root, first, ray, pair))
         independent_payoffs = list(payments(root, second, ray, pair))
@@ -173,6 +177,8 @@ def preview(row):
 
         single.extend(capture for _, ply, capture in recorded_payoffs + independent_payoffs
                       if maintains_material(ply))
+        first_local = set(payments(root, first, ray, pair, require_local_exchange=True))
+        second_local = set(payments(root, second, ray, pair, require_local_exchange=True))
         for victim, ply, capture in recorded_payoffs:
             for other, alternative_ply, alternative_capture in independent_payoffs:
                 horizon = max(ply, alternative_ply)
@@ -183,7 +189,10 @@ def preview(row):
                     firstHorizon=ply, secondHorizon=alternative_ply, controlHorizon=horizon,
                 )
                 paired_witness.append(certificate)
-                if victim != other and first[2] != second[2]:
+                local = (victim, ply, capture) in first_local and (other, alternative_ply, alternative_capture) in second_local
+                if local:
+                    local_witness.append(certificate)
+                if local and victim != other and first[2] != second[2]:
                     witnesses.append(certificate)
     return dict(
         id=row["id"], source=row.get("site"), rootFen=root.fen(),
@@ -193,7 +202,9 @@ def preview(row):
         paired=dict(cp=played["cp"], san=root.variation_san([chess.Move.from_uci(uci) for uci in first[:9]])),
         independent=dict(cp=-opponent["cp"], san=root.variation_san([chess.Move.from_uci(uci) for uci in second[:9]])),
         control=(
-            dict(cp=-same_reply["cp"], san=root.variation_san([
+            dict(cp=None if same_reply["cp"] is None else -same_reply["cp"],
+                 mate=None if same_reply.get("mate") is None else -same_reply["mate"],
+                 san=root.variation_san([
                 chess.Move.from_uci(uci) for uci in [better["pvUci"][0], *same_reply["pvUci"][:8]]
             ])) if same_reply else None
         ),
@@ -201,6 +212,7 @@ def preview(row):
         independentVictims=[[chess.square_name(square), p, u] for pair in pairs for square, p, u in payments(root, second, ray, pair)],
         oneLine=single[:1],
         twoSearches=paired_witness[:1],
+        localExchange=local_witness[:1],
         witnesses=witnesses[:1],
     )
 

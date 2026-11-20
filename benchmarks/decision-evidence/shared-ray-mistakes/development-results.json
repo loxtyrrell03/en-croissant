@@ -1,0 +1,409 @@
+[
+  {
+    "file": "development-final.json",
+    "sha256": "e8caae9d384f455a66c21601fb9fc467708ca57b40cba003417db399869c2c91",
+    "count": 68,
+    "cases": [
+      {
+        "id": "025522a1c3787710a1f7",
+        "source": "https://lichess.org/broadcast/chess-slovak-open-skalica-2026-open-a/R1ZiYVGV",
+        "rootFen": "r3r1k1/2p1R1bp/1p1q2pB/p1pN2Q1/P1Pn4/3P4/2P3PP/5R1K b - - 8 31",
+        "played": "d4e6",
+        "better": "e8e7",
+        "reply": "g5f6",
+        "pairs": [
+          [
+            "e6",
+            "d6"
+          ]
+        ],
+        "lossCp": 308,
+        "paired": {
+          "cp": -966,
+          "san": "31...Ne6 32. Qf6 Qxe7 33. Nxe7+ Kh8 34. Bxg7+ Nxg7 35. h4 Rab8"
+        },
+        "independent": {
+          "cp": -897,
+          "san": "31...Ne6 32. Qf6 Qxe7 33. Nxe7+ Kh8 34. Bxg7+ Nxg7 35. Kg1 Rad8"
+        },
+        "control": {
+          "cp": 1028,
+          "san": "31...Rxe7 32. Qf6 Bxf6 33. c3 Nc2 34. g4 Rf7 35. d4 cxd4"
+        },
+        "pairedVictims": [],
+        "independentVictims": [],
+        "oneLine": [],
+        "twoSearches": [],
+        "localExchange": [],
+        "witnesses": []
+      }
+    ]
+  },
+  {
+    "file": "enriched-development.json",
+    "sha256": "32f4cfe477dda089ed62203ce96db771b9e39322bd7d45761c64a7c8b1758ea6",
+    "count": 22,
+    "cases": [
+      {
+        "id": "9975d77d471bf1918c25",
+        "source": "https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-5/Fu49apHE/t2oYnWzd",
+        "rootFen": "1r3rk1/1pqbbppp/p3pn2/4Q3/2N5/1P4P1/PBP2PBP/R4RK1 b - - 6 16",
+        "played": "c7d8",
+        "better": "b8c8",
+        "reply": "f1d1",
+        "pairs": [
+          [
+            "d7",
+            "d8"
+          ]
+        ],
+        "lossCp": 154,
+        "paired": {
+          "cp": -188,
+          "san": "16...Qd8 17. Rfd1 b5 18. Nd6 Qb6 19. Rac1 Rfd8 20. Nf5 exf5"
+        },
+        "independent": {
+          "cp": -200,
+          "san": "16...Qd8 17. Rfd1 b5 18. Nd6 Qb6 19. Rac1 Rfd8 20. Nf5 exf5"
+        },
+        "control": {
+          "cp": -25,
+          "san": "16...Rbc8 17. Rfd1 Bb5 18. Qxc7 Rxc7 19. Be5 Rc5 20. Bd6 Bxd6"
+        },
+        "pairedVictims": [],
+        "independentVictims": [],
+        "oneLine": [],
+        "twoSearches": [],
+        "localExchange": [],
+        "witnesses": []
+      },
+      {
+        "id": "7f39644916bcab84df63",
+        "source": "https://lichess.org/broadcast/kanizsa-open-2026-group-b/VCjJO0Fe",
+        "rootFen": "r3kb1r/2p1qpp1/p1n1bn1p/P2pp3/1p2P3/1BPPBN1P/1P1NQPP1/R3K2R b KQkq - 0 14",
+        "played": "e7d7",
+        "better": "d5e4",
+        "reply": "b3a4",
+        "pairs": [
+          [
+            "c6",
+            "d7"
+          ]
+        ],
+        "lossCp": 460,
+        "paired": {
+          "cp": -558,
+          "san": "14...Qd7 15. Ba4 Bd6 16. exd5 Nxd5 17. c4 Nxe3 18. Qxe3 O-O-O"
+        },
+        "independent": {
+          "cp": -502,
+          "san": "14...Qd7 15. Ba4 bxc3 16. bxc3 Bd6 17. d4 dxe4 18. Nxe5 Bxe5"
+        },
+        "control": {
+          "cp": -145,
+          "san": "14...dxe4 15. Ba4 exf3 16. Bxc6+ Bd7 17. Qxf3 Rd8 18. Bb7 Qe6"
+        },
+        "pairedVictims": [],
+        "independentVictims": [],
+        "oneLine": [],
+        "twoSearches": [],
+        "localExchange": [],
+        "witnesses": []
+      },
+      {
+        "id": "136c82426d59afc64a20",
+        "source": "https://lichess.org/broadcast/17th-kiit-international-chess-festival-2026-cat-a/round-2/m07ZUsDG/GmryetCb",
+        "rootFen": "3rr3/2q2pkp/2b3p1/2N1p3/1P1p1n2/1BP2P2/4Q1PP/3RR1K1 w - - 1 27",
+        "played": "e2c4",
+        "better": "e2f1",
+        "reply": "c6d5",
+        "pairs": [
+          [
+            "c4",
+            "b3"
+          ]
+        ],
+        "lossCp": 477,
+        "paired": {
+          "cp": -518,
+          "san": "27. Qc4 Bd5 28. Qf1 Bxb3 29. Nxb3 Qxc3 30. Nc5 Qxb4 31. Nd3"
+        },
+        "independent": {
+          "cp": -493,
+          "san": "27. Qc4 Bd5 28. Qb5 Bxb3 29. Nxb3 Qxc3 30. Nd2 Rb8 31. Qa5"
+        },
+        "control": {
+          "cp": 7,
+          "san": "27. Qf1 Bd5 28. Bxd5 Nxd5 29. cxd4 Qb6 30. Qf2 Nxb4 31. h3"
+        },
+        "pairedVictims": [
+          [
+            "b3",
+            7,
+            "d5b3"
+          ]
+        ],
+        "independentVictims": [
+          [
+            "b3",
+            7,
+            "d5b3"
+          ]
+        ],
+        "oneLine": [
+          "d5b3"
+        ],
+        "twoSearches": [
+          {
+            "firstCapture": "d5b3",
+            "secondCapture": "d5b3",
+            "firstHorizon": 7,
+            "secondHorizon": 7,
+            "controlHorizon": 7
+          }
+        ],
+        "localExchange": [],
+        "witnesses": []
+      },
+      {
+        "id": "207ccf6721b8a2061bf2",
+        "source": "https://lichess.org/broadcast/iii-open-de-ajedrez-ciudad-de-tomelloso-u1800/round-6/efIdyXop/caDOO1gA",
+        "rootFen": "3q4/2p3pk/2p1b1rp/p1BpPp2/P2P1P2/2P4P/5QP1/1R4K1 b - - 3 27",
+        "played": "e6c8",
+        "better": "d8a8",
+        "reply": "b1b8",
+        "pairs": [
+          [
+            "c8",
+            "d8"
+          ]
+        ],
+        "lossCp": 203,
+        "paired": {
+          "cp": -330,
+          "san": "27...Bc8 28. Rb8 Re6 29. Ra8 Re8 30. Qg3 g5 31. Rxa5 Rg8"
+        },
+        "independent": {
+          "cp": -327,
+          "san": "27...Bc8 28. Rb8 Qg8 29. Ra8 Qd8 30. Rxa5 Bd7 31. Ra7 Qb8"
+        },
+        "control": {
+          "cp": 634,
+          "san": "27...Qa8 28. Rb8 Qxb8 29. Qa2 Qd8 30. Qf2 Kg8 31. Kh2 Bd7"
+        },
+        "pairedVictims": [],
+        "independentVictims": [],
+        "oneLine": [],
+        "twoSearches": [],
+        "localExchange": [],
+        "witnesses": []
+      },
+      {
+        "id": "6aa0e0de837f50ec991a",
+        "source": "https://lichess.org/broadcast/6th-dolakha-open-international-chess-tournament-2026-classical/round-2/ccbslgWy/REoUf8E5",
+        "rootFen": "r3r2k/b1pq1pp1/p1n3bp/1p2p3/1P2Nn2/PBPP1N1P/1BQ2PP1/R3R1K1 w - - 5 19",
+        "played": "e1d1",
+        "better": "d3d4",
+        "reply": "g6h5",
+        "pairs": [
+          [
+            "f3",
+            "d1"
+          ]
+        ],
+        "lossCp": 156,
+        "paired": {
+          "cp": -369,
+          "san": "19. Red1 Bh5 20. Ne1 Rad8 21. Ng3 Bxd1 22. Rxd1 a5 23. Ne2"
+        },
+        "independent": {
+          "cp": -326,
+          "san": "19. Red1 Bh5 20. Ne1 Rad8 21. Ng3 Bxd1 22. Rxd1 a5 23. a4"
+        },
+        "control": {
+          "cp": -122,
+          "san": "19. d4 Bh5 20. Re3 Rad8 21. Rae1 Bg6 22. Qd1 f5 23. Ng3"
+        },
+        "pairedVictims": [
+          [
+            "d1",
+            7,
+            "h5d1"
+          ],
+          [
+            "d1",
+            9,
+            "h5d1"
+          ]
+        ],
+        "independentVictims": [
+          [
+            "d1",
+            7,
+            "h5d1"
+          ],
+          [
+            "d1",
+            9,
+            "h5d1"
+          ]
+        ],
+        "oneLine": [
+          "h5d1"
+        ],
+        "twoSearches": [
+          {
+            "firstCapture": "h5d1",
+            "secondCapture": "h5d1",
+            "firstHorizon": 7,
+            "secondHorizon": 7,
+            "controlHorizon": 7
+          }
+        ],
+        "localExchange": [
+          {
+            "firstCapture": "h5d1",
+            "secondCapture": "h5d1",
+            "firstHorizon": 7,
+            "secondHorizon": 7,
+            "controlHorizon": 7
+          }
+        ],
+        "witnesses": []
+      },
+      {
+        "id": "766cc795198d0cb85bd5",
+        "source": "https://lichess.org/broadcast/romanian-team-chess-championships-2026-division-a/round-1/s8MAu1rB/wy1hRgzu",
+        "rootFen": "2rq1rk1/p3bppp/3p4/1b2pP1Q/1p2P3/1B2B3/PPP3PP/3R1RK1 w - - 5 20",
+        "played": "f1f3",
+        "better": "f1f2",
+        "reply": "b5e2",
+        "pairs": [
+          [
+            "f3",
+            "h5"
+          ]
+        ],
+        "lossCp": 184,
+        "paired": {
+          "cp": -116,
+          "san": "20. Rf3 Be2 21. Rd5 Rc7 22. Kf2 Bxf3 23. Kxf3 Kh8 24. Rd2"
+        },
+        "independent": {
+          "cp": -125,
+          "san": "20. Rf3 Be2 21. Rd2 Bxf3 22. gxf3 d5 23. Bxd5 Qc7 24. Kh1"
+        },
+        "control": {
+          "cp": 752,
+          "san": "20. Rf2 Be2 21. Rxe2 h6 22. Bxa7 Bg5 23. Bf2 Qa5 24. g3"
+        },
+        "pairedVictims": [
+          [
+            "f3",
+            7,
+            "e2f3"
+          ],
+          [
+            "f3",
+            9,
+            "e2f3"
+          ]
+        ],
+        "independentVictims": [
+          [
+            "f3",
+            5,
+            "e2f3"
+          ]
+        ],
+        "oneLine": [],
+        "twoSearches": [],
+        "localExchange": [],
+        "witnesses": []
+      }
+    ]
+  },
+  {
+    "file": "broad-shared-input.json",
+    "sha256": "fddbe24c9bb2ed904c0e88cc368c0c9259a61f3e167b8efbd3b1645075752012",
+    "count": 72,
+    "cases": [
+      {
+        "id": "011ee7b47d52c0273595",
+        "source": "https://lichess.org/broadcast/interclubes-apertura-102-club-de-ajedrez-de-chile-2026/ronda-2/qJsVhpBL/FjsVrbkO",
+        "rootFen": "2kr2rb/1bpnq3/1p2pn2/p5BN/P1P3p1/2N5/1P3PPP/R2QRBK1 w - - 1 20",
+        "played": "g5h4",
+        "better": "d1c1",
+        "reply": "e7h7",
+        "pairs": [
+          [
+            "h5",
+            "h4"
+          ]
+        ],
+        "lossCp": 509,
+        "paired": {
+          "cp": -555,
+          "san": "20. Bh4 Qh7 21. Nxf6 Nxf6 22. Qe2 Qxh4 23. Qxe6+ Kb8 24. c5"
+        },
+        "independent": {
+          "cp": -580,
+          "san": "20. Bh4 Qh7 21. Rxe6 Qxh5 22. Bg3 Nc5 23. Qe1 Rde8 24. Re7"
+        },
+        "control": {
+          "cp": -49,
+          "san": "20. Qc1 Qh7 21. Nxf6 Bxf6 22. Bxf6 Nxf6 23. Rxe6 Rdf8 24. Qd2"
+        },
+        "pairedVictims": [
+          [
+            "h4",
+            9,
+            "h7h4"
+          ]
+        ],
+        "independentVictims": [
+          [
+            "h5",
+            5,
+            "h7h5"
+          ],
+          [
+            "h5",
+            7,
+            "h7h5"
+          ]
+        ],
+        "oneLine": [
+          "h7h4"
+        ],
+        "twoSearches": [
+          {
+            "firstCapture": "h7h4",
+            "secondCapture": "h7h5",
+            "firstHorizon": 9,
+            "secondHorizon": 5,
+            "controlHorizon": 9
+          }
+        ],
+        "localExchange": [
+          {
+            "firstCapture": "h7h4",
+            "secondCapture": "h7h5",
+            "firstHorizon": 9,
+            "secondHorizon": 5,
+            "controlHorizon": 9
+          }
+        ],
+        "witnesses": [
+          {
+            "firstCapture": "h7h4",
+            "secondCapture": "h7h5",
+            "firstHorizon": 9,
+            "secondHorizon": 5,
+            "controlHorizon": 9
+          }
+        ]
+      }
+    ]
+  }
+]

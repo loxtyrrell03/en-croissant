@@ -29,6 +29,15 @@ both sides of the alignment rather than an incidental target.
 All three compare the material change after allowing an immediate
 recapture and require the stronger choice to break the alignment.
 
+A development false positive showed why comparing balances only at
+the end of a few plies is too coarse. After `Qc4 Bd5 Qf1 Bxb3`,
+`Nxb3` trades bishop for bishop. The queen takes a pawn on c3
+later. That pawn cannot supply the payoff for the claimed skewer.
+The revised candidate requires a loss immediately after the
+target is taken and the defender gets a turn to recapture. A
+separate later checkpoint checks whether that local loss persists.
+[Development lines](development-results.json)
+
 ## Data
 
 The sample uses classical broadcast PGNs with declared clocks of
@@ -49,6 +58,51 @@ The [frozen sample](sample.json) records source hashes, quotas
 and the exact selections. The course collections and player game
 libraries are outside this targeted transfer test.
 
+## Held-out comparison
+
+The second group contains 189 decisions from 58 event families,
+including 53 selected by a recorded early capture and 40 ordinary
+controls. One engine-assisted reviewer labelled 51 exact questions
+before inspecting classifier outputs. The reference covers the
+original slider's direct material gain from an aligned piece.
+Other mechanisms, including a relative pin that lets a different
+attacker win material, are outside that endpoint.
+
+| Method | Correct on 8 positives | False calls on 32 negatives | Calls on 11 unresolved |
+| --- | ---: | ---: | ---: |
+| Alignment and comparable root loss | 7 | 6 | 6 |
+| One played continuation with a material payoff | 1 | 1 | 1 |
+| Two played continuations with a material payoff | 1 | 1 | 1 |
+| Both losses must survive the immediate recapture | 1 | 0 | 1 |
+| Different defences must cost different pieces | 0 | 0 | 0 |
+
+The lone new candidate match is `...Qb7 Ba6` followed by
+`Bxc8` for the exchange. The existing classifier already
+explains the tactical error by comparing the same reply after
+`...Qa8`. Exact-reply collection required 16 extra engine
+queries across the 189 replay inputs, totalling 14.7 million
+nodes in the last complete frames. The narrower local method
+did not earn integration. These numbers address one mechanism
+on a targeted sample and are too small to estimate general
+tactical recall. [Sealed reference](reserve-reference.json) ·
+[Scores and lines](reserve-results.json)
+
+## Existing classifier correction
+
+The run exposed an attribution defect in the existing named
+skewer detector. It tied a legal rear-piece capture to a tactical
+mistake using the subsequent line's overall material balance.
+The updated detector checks the capture's legal local exchange
+before it can support a skewer. This makes the `Qc4` diagnosis
+unclear at this search budget. It keeps the evaluation loss.
+
+The held-out `...Rf6 Bg5` case also showed a skewer based on
+an equal trade. The correction keeps a separately witnessed
+defender removal, `Bxe7 Rxe7 Qxd6`. Both reports retain their
+played-move evaluation losses. No extra engine searches are
+needed for this correction. The rendered evidence was checked
+with recorded Stockfish frames at 320, 390 and 900 pixels.
+
 ## Reproduce
 
 From the repository root, use Python with python-chess and the
@@ -65,4 +119,19 @@ $bench = 'benchmarks/decision-evidence/shared-ray-mistakes'
 python "$bench/capture.py" "$bench/sample.json" development app $stockfish dev.json
 python "$bench/capture.py" "$bench/sample.json" enrichedDevelopment app $stockfish dev-enriched.json
 python "$bench/ray_review.py" dev-preview.json dev.json dev-enriched.json
+python "$bench/capture.py" "$bench/sample.json" reserve app $stockfish reserve.json
+python "$bench/capture.py" "$bench/sample.json" enrichedReserve app $stockfish enriched-reserve.json
+python "$bench/verify_exact.py" $stockfish review-reserve.json reserve.json enriched-reserve.json
+python "$bench/score.py" "$bench/reserve-reference.json" reserve-baseline.json reserve-scores.json reserve.json enriched-reserve.json
 ```
+
+The worker baseline uses revision `c62e78f0`, the same frames
+and the [replay config](replay.config.mjs). Set `INTERFERENCE_MODE=archive`,
+`INTERFERENCE_INPUT` to the combined frame array and
+`INTERFERENCE_OUTPUT` to the chosen result path. Omit an empty
+`comparisonCandidates` array, as the normal app does when no
+comparison was requested. Set `RAY_EXCHANGE_GUARD=1` to overlay
+only the revised skewer check on the baseline. Use
+`test_ray_review.py` and `tacticalSequenceEvidence.test.ts` for
+the local regressions. Run `verify-panel.mjs` with Playwright's
+`index.mjs` and the Chrome executable for the rendered check.

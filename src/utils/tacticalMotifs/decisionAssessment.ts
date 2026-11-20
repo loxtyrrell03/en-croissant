@@ -135,7 +135,7 @@ import { findPassedPawnRoles } from "./decisionPassedPawnRole";
 const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
 const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
 
-export const DECISION_ASSESSMENT_VERSION = 60;
+export const DECISION_ASSESSMENT_VERSION = 61;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";

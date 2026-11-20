@@ -46,6 +46,18 @@ test("a geometric double attack on protected cheap targets is not labelled a mea
     );
 });
 
+test("a rear-piece trade cannot borrow the payoff from a later pawn capture", () => {
+    const fen = "3rr3/2q2pkp/2b3p1/2N1p3/1PQp1n2/1BP2P2/6PP/3RR1K1 b - - 2 27";
+    const continuation = ["c6d5", "c4f1", "d5b3", "c5b3", "c7c3", "b3c5"];
+    expect(inspect(fen, continuation)).not.toContainEqual(
+        expect.objectContaining({ mechanism: "skewer", mechanismPly: 1 }),
+    );
+    const undefended = fen.replace("2N1p3", "4p3");
+    expect(inspect(undefended, continuation.slice(0, 3))).toContainEqual(
+        expect.objectContaining({ mechanism: "skewer", mechanismPly: 1, payoffPly: 3 }),
+    );
+});
+
 test("deflection requires a legal recapture duty before the defender moves", () => {
     const fen = "7k/8/8/8/8/5r2/1q3P2/2B2R1K b - - 0 1";
     const witnesses = inspect(fen, ["f3f2", "f1f2", "b2c1"]);

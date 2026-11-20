@@ -505,18 +505,22 @@ export function extractTacticalSequenceWitnesses(
                 );
             }
 
-            // A more valuable front target moves and exposes the rear target.
+            // A legal trade of the rear target is not itself a material win.
+            // Check this capture before using a later line's gain as evidence.
             if (
                 ["bishop", "rook", "queen"].includes(moved.role) &&
                 third.move.from === first.move.to &&
                 between(first.move.to, third.move.to).has(reply.move.from) &&
                 targets.includes(reply.move.from)
             ) {
-                const value = (role: string) =>
-                    ({ pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100 })[role] ?? 0;
                 const front = reply.before.board.get(reply.move.from),
                     back = third.before.board.get(third.move.to);
-                if (front && back && value(front.role) > value(back.role))
+                if (
+                    front &&
+                    back &&
+                    VALUE[front.role] >= VALUE[back.role] + MIN_TACTICAL_CAPTURE_GAIN &&
+                    tacticalExchangeGain(third.before, third.move) >= MIN_TACTICAL_CAPTURE_GAIN
+                )
                     push(
                         "skewer",
                         i,
