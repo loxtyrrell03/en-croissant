@@ -1,0 +1,56 @@
+{
+  "revision": "8bb06b6ff0fa5e76207eab4a2ebab1c76a180f36",
+  "scenarios": {
+    "Bavarian Refutation": {
+      "passed": true,
+      "seconds": 11.091,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nTACTICAL\n\n3 candidate moves examined\n\nTactical · Engine supported. Qc8 allows Nxb5 and both searches retain a material loss. Nxd4 removes the piece that would play Nxb5.\n\nBetter line. Nxd4 exd4 Rce7 Rxe7 Rxe7 Re1 Rxe1+ Qxe1 Kf7 Qd1 h5\n\nRefuted choice. Qc8 Nxb5 Rd7 Nd4 Kh8 Nf5 h5 Kh1 Rc7 e4 h4\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence"
+    },
+    "Amsterdam Exchange": {
+      "passed": true,
+      "seconds": 5.519,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "move": "What the move achieves\n\nMIXED\n\nTactical · Checked local proof. Bxe5 takes the knight on e5, but concedes material elsewhere. The checked exchanges gain at least 0.9 pawns.\n\nPositional · Strategic interpretation. The exchange creates a passed pawn on d5, and d4 advances that pawn. Both searches show this follow-up.\n\nAfter Bxe5 dxe5. Bxe5 dxe5 d4 Bd6 Kd5 Kd3 Bf5+\n\nAfter Bxe5 dxe5. Bxe5 dxe5 d4 Bd6 d3+ Kd2 Kd4\n\nMATERIAL GAIN\n\nThe local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.\n\nThe searches show how this plan develops after the exchange. Its share of the engine evaluation is uncertain.\n\nHide evidence"
+    },
+    "Exact Rook Ending": {
+      "passed": true,
+      "seconds": 6.29,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Tablebase · Draw with best play. 3 of 19 legal moves draw. Rg6, Rg7, Rg8.",
+      "mistake": "What Kf1 allows\n\nTACTICAL\n\nTablebase · Draw → Loss.\n\nEngine evaluation loss 4.28 pawns\n\nTactical · Tablebase verified. Kf1 leaves e2, allowing the pawn to advance with e2+.\n\nShow evidence"
+    },
+    "Finnish Capture Order": {
+      "passed": true,
+      "seconds": 7.236,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Engine supported. After Qe6, Rd1+ comes before gxf4, which takes the bishop on f4. Taking immediately allows Qxd3 to capture the rook that gives check. Be3 moves the bishop out of that capture.\n\nPositional · Strategic interpretation. White's minor piece on e3 has pawn support and no opposing pawn able to advance to attack that square. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence.\n\nCheck first. Qe6 Rd1+ Kg2 gxf4 Qf5+ Kg8 Qc8+ Kf7 e6+ Kf6\n\nTake immediately. Qe6 gxf4 Qf5+ Kg8 Qxd3 fxg3 Qxg3 Rxb2 Qd3 Rb4\n\nBetter line. Be3 Rd5 e6 Re5 b3 Rbe4 Qc7 Rxe6 Qxa5 Bf8\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence"
+    },
+    "Asian Capture Order": {
+      "passed": true,
+      "seconds": 15.407,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What Nxd5 missed or allowed\n\nTACTICAL\n\nEngine evaluation loss 8.58 pawns\n\nTactical · Engine supported. After Nxd5, Qxh2+ comes before hxg5+, which takes the queen on g5. Taking immediately scores worse for the attacker. The line continues with Nxc7+ Ke7 Nxa8. Qg7 moves the queen out of that capture.\n\nTactical · Engine supported. hxg5+ removes the piece on g5 which could legally recapture on d5. The line continues Kg3 Bxd5. The played line retains 2.2 fewer material points after 10 plies of both compared lines.\n\nhxg5+ removes the piece on g5 which could legally recapture on d5. The line continues Kg3 Bxd5. Qxh2+ Kxh2 hxg5+ Kg3 Bxd5\n\nhxg5+ moves out of the h8–h2 line and uncovers check. Qxh2+ Kxh2 hxg5+\n\nPlayed line. Nxd5 Qxh2+ Kxh2 hxg5+ Kg3 Bxd5 bxc5 Kd8 Rbd1 Kc7\n\nBetter line. Qg7 O-O-O b5 d4 Ne4 axb5 Bxb5 Ne5 Nf6 h5\n\nCheck first. Nxd5 Qxh2+ Kxh2 hxg5+ Kg1 Bxd5 c4 Bc6 b5 axb5\n\nTake immediately. Nxd5 hxg5 Nxc7+ Ke7 Nxa8 Rxa8 h3 cxb4 Rxb4 Nc5\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    },
+    "Sardinia Capture Order": {
+      "passed": true,
+      "seconds": 16.466,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What f4 missed or allowed\n\nTACTICAL\n\nEngine evaluation loss 1.54 pawns\n\nTactical · Engine supported. After f4, Qxg4+ comes before Bxf1, which takes the rook on f1. Taking immediately allows fxg5 to capture the queen that gives check. Rfe1 moves the rook out of that capture.\n\nTactical · Checked local proof. Your move allowed this tactic: Qxg4+ wins the loose pawn on g4. After Rfe1, Qxg4+ no longer wins material in the same-square exchange.\n\nTactical · Checked local proof. Against Qxg4+, Rfe1 gives you fxg4, a profitable capture. f4 leaves that capture unavailable.\n\nPlayed line. f4 Qxg4+ Kh1 Bxf1\n\nBetter line. Rfe1 Qxg4+ fxg4 Rd6\n\nCheck first. f4 Qxg4+ Kh1 Bxf1 Rxf1 Qh3 Re1 Nxd4 Qxd4 Bb6\n\nTake immediately. f4 Bxf1 fxg5 Bh3 g6 Rxd5 Nxd5 Re4 Qd1 Kf8\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    }
+  },
+  "executableSha256": "d364a7949d2d7b11a0ae60c1fe444d28b0c53c94a6aac666ba45a155c8fdb5d7",
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0"
+}

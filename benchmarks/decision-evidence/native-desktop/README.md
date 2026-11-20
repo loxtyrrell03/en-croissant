@@ -59,3 +59,14 @@ opening the Tactics tab and running the selected analysis. The endgame
 timing also includes the online lookup. App startup and compilation are
 outside those timings. The installed release is outside the scope of this
 check.
+
+## Capture-order scenarios
+
+Use revision `8bb06b6f` in the same isolated build workflow. Choose
+`Finnish Capture Order`, `Asian Capture Order` or `Sardinia Capture Order`
+as an argument after the Playwright entry point. These cases check the
+mixed position, a move-order explanation on a played mistake, and the
+engine label when a separate local proof is also present.
+All three scenarios and the three earlier checks passed on the v56
+isolated Windows build. [Run receipt](../checking-capture-order/windows.json) ·
+[Classifier benchmark](../checking-capture-order/README.md)
