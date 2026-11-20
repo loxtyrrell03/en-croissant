@@ -1,0 +1,72 @@
+[
+  {
+    "offset": 49,
+    "before": [],
+    "after": [
+      "import { compareExchangeOutpost, type ExchangeOutpostEvidence } from \"./decisionExchangeOutpost\";"
+    ]
+  },
+  {
+    "offset": 83,
+    "before": [
+      "export const DECISION_ASSESSMENT_VERSION = 35;"
+    ],
+    "after": [
+      "export const DECISION_ASSESSMENT_VERSION = 36;"
+    ]
+  },
+  {
+    "offset": 173,
+    "before": [],
+    "after": [
+      "              exchangeOutpost?: ExchangeOutpostEvidence;"
+    ]
+  },
+  {
+    "offset": 1174,
+    "before": [],
+    "after": [
+      "            const exchangeOutpost =",
+      "                corroboratedChoices && assessment.tactical.support === \"supported\" &&",
+      "                !factors.length && !pawnEpisodes.length && !shelter &&",
+      "                !promotion?.positional && !rookPressure && !pawnStructure",
+      "                    ? compareExchangeOutpost(",
+      "                          input.fen,",
+      "                          comparedBest,",
+      "                          playedLine,",
+      "                          betterProbe!.lines[0],",
+      "                          playedProbe!.lines[0],",
+      "                          input.history,",
+      "                      )",
+      "                    : null;"
+    ]
+  },
+  {
+    "offset": 1175,
+    "before": [],
+    "after": [
+      "                exchangeOutpost ||"
+    ]
+  },
+  {
+    "offset": 1195,
+    "before": [],
+    "after": [
+      "                        ...(exchangeOutpost ? [exchangeOutpost.factor.description] : []),"
+    ]
+  },
+  {
+    "offset": 1203,
+    "before": [],
+    "after": [
+      "                    ...(exchangeOutpost ? [exchangeOutpost.factor] : []),"
+    ]
+  },
+  {
+    "offset": 1225,
+    "before": [],
+    "after": [
+      "                ...(exchangeOutpost ? { exchangeOutpost } : {}),"
+    ]
+  }
+]

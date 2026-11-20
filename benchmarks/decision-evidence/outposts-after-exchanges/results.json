@@ -1,0 +1,87 @@
+{
+  "historicalWorker": {
+    "requests": 1051,
+    "reports": 1050,
+    "changes": [
+      {
+        "id": "structure-halloween-open-2026-cab2aad2f516a2f9-74",
+        "before": "tactical",
+        "after": "mixed",
+        "proof": {
+          "playedLineUci": [
+            "g5f6",
+            "e7f6",
+            "e5f6",
+            "g8f6",
+            "h4g6",
+            "f6e4",
+            "g6e5",
+            "d7e7",
+            "h2h1",
+            "e7f6"
+          ],
+          "betterLineUci": [
+            "g5e7",
+            "g8e7",
+            "h2g1",
+            "b3b6",
+            "g2h2",
+            "h7g7",
+            "c2f2",
+            "e7f5",
+            "e3g4",
+            "b8h8"
+          ],
+          "factor": {
+            "feature": "pawn-stable-minor",
+            "side": "black",
+            "squareOrFile": "e4",
+            "firstPly": 6,
+            "lastConsecutivePly": 10,
+            "description": "After Bf6, Nxf6 takes the pawn from e5. Ne4 gives Black's knight a lasting square on e4, supported by d5. Both searches keep it there after the exchange. The Bxe7 lines avoid that outpost through the same interval.",
+            "support": "board-fact",
+            "comparisonMoveUci": "g5e7",
+            "comparisonGapCp": 242,
+            "supportInComparison": false,
+            "comparison": "separate-reply-search",
+            "materialWindowPlies": 10,
+            "interpretation": "heuristic"
+          }
+        }
+      }
+    ],
+    "medianMs": {
+      "baseline": 60.49,
+      "candidate": 60.22
+    }
+  },
+  "publicWorker": {
+    "requests": 143,
+    "reports": 143,
+    "changes": [],
+    "medianMs": {
+      "baseline": 126.37,
+      "candidate": 120.35
+    }
+  },
+  "historicalReviewedMixed": {
+    "trueExamples": 17,
+    "incumbent": 1,
+    "experimental": 2
+  },
+  "previewSpatialLink": {
+    "historicalNewTrue": 1,
+    "freshNominations": 1,
+    "freshConfirmed": 0
+  },
+  "guardedWorker": {
+    "historicalNewTrue": 1,
+    "freshNominations": 0
+  },
+  "newEngineCallsPerWorkerReplay": 0,
+  "notes": [
+    "Historical positions informed the experiment.",
+    "The fresh sample is geometry-enriched, with 35 excluded at the initial engine screen. The 108 independently searched positions did not provide a confirmed transferable instance of the exact linked label. Source families can recur.",
+    "Cached runtime is measured on this PC. Both public replays ran sequentially. The archive baseline and candidate were measured on separate runs."
+  ]
+}

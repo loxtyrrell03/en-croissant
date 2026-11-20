@@ -3880,3 +3880,15 @@ shows the compared lines at three widths.
 The 1,051-request retrospective archive adds one reviewed
 Grand Swiss explanation and leaves the mixed count at one of 17.
 [Benchmark, exact application inputs and regression evidence](../benchmarks/decision-evidence/passed-pawn-interception/app-transfer/README.md)
+
+## Exact supervision for outposts after exchanges
+
+An offline comparison tests whether the same opposing minor piece
+retains a pawn-supported square after a tactical exchange. It changes
+one known classical development example from tactical to mixed, adding
+no engine calls. On 143 distinct fresh classical games all worker
+reports agree with the incumbent. The broader geometry screen
+nominates a bishop that deeper Stockfish exchanges immediately.
+The sample supplies no confirmed fresh example of the narrow label.
+Keep the candidate and training-label experiment offline.
+[Exact frames, review and reproduction](../benchmarks/decision-evidence/outposts-after-exchanges/README.md)
