@@ -3969,3 +3969,20 @@ report replay, seven of nine previously reviewed changed positions gain
 tactical agreement and two lose it. Neither classical cohort changes
 any played-move mistake category. The update adds no engine requests.
 [Comparisons, known gaps and regression fixtures](../benchmarks/decision-evidence/discovered-target-identity/README.md)
+
+## The advanced pawn can pay for a piece
+
+Decision assessment v38 follows the same seventh-rank advance into a
+promotion exchange after two competitive replies. The reply lines
+preserve the gain and reach different boards before promotion. The
+World Amateur example regains a mixed verdict, while saved
+Deizisau and Münsterland positions gain tactical support in the first
+113-game reserve. The separate 51-game event-disjoint reserve adds
+none. Position and move evidence each show the compared lines with
+no additional engine search.
+
+A separate exchange-sacrifice prototype explains why the second rook
+can take over the d-file in Buongoma. It adds no verified transfer in
+the 113-game reserve, including a targeted comparison against the
+played offers. That rule remains experimental.
+[Exact continuations, references and replay](../benchmarks/decision-evidence/promotion-and-exchange-compensation/README.md)

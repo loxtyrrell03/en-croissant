@@ -1,0 +1,256 @@
+{
+  "incumbent": "90e63d0e5b68156c5fd61ebca5ec306077519b57",
+  "version": 38,
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "requestedGamesByStratum": {
+    "transfer-input.json": {
+      "exchange": 25,
+      "pawn": 64,
+      "control": 24
+    },
+    "second-input.json": {
+      "pawn": 51
+    }
+  },
+  "sampleEvents": {
+    "transfer-input.json": 56,
+    "second-input.json": 8
+  },
+  "matchedRequests": 1417,
+  "prototypeScreen": {
+    "archive": {
+      "requests": 1051,
+      "promotion": 1,
+      "promotionSingle": 1,
+      "promotionWider": 1,
+      "exchange": 1,
+      "exchangeUncompared": 1
+    },
+    "classical": {
+      "requests": 202,
+      "promotion": 0,
+      "promotionSingle": 0,
+      "promotionWider": 0,
+      "exchange": 0,
+      "exchangeUncompared": 0
+    },
+    "first": {
+      "requests": 113,
+      "promotion": 1,
+      "promotionSingle": 2,
+      "promotionWider": 2,
+      "exchange": 0,
+      "exchangeUncompared": 0
+    },
+    "second": {
+      "requests": 51,
+      "promotion": 0,
+      "promotionSingle": 1,
+      "promotionWider": 0,
+      "exchange": 0,
+      "exchangeUncompared": 0
+    }
+  },
+  "reportChanges": [
+    {
+      "id": "archive/tournament-amateur-u1700-2026-b7b765ea84af4f87-74",
+      "v37": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "move": "positional"
+      },
+      "v38": {
+        "category": "mixed",
+        "tactical": "supported",
+        "positional": "supported",
+        "move": "mixed",
+        "movePromotion": {
+          "description": "After a7, the pawn can be traded for a rook. After Kf5 or g3, Stockfish finds a8=Q Rxa8 Rxa8.",
+          "linesUci": [
+            [
+              "a6a7",
+              "g6f5",
+              "a7a8q",
+              "d8a8",
+              "a2a8"
+            ],
+            [
+              "a6a7",
+              "g4g3",
+              "f2g3",
+              "d6g3",
+              "a7a8q",
+              "d8a8",
+              "a2a8"
+            ]
+          ]
+        },
+        "positionPromotion": {
+          "description": "After a7, the pawn can be traded for a rook. After Kf5 or g3, Stockfish finds a8=Q Rxa8 Rxa8.",
+          "linesUci": [
+            [
+              "a6a7",
+              "g6f5",
+              "a7a8q",
+              "d8a8",
+              "a2a8"
+            ],
+            [
+              "a6a7",
+              "g4g3",
+              "f2g3",
+              "d6g3",
+              "a7a8q",
+              "d8a8",
+              "a2a8"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "first/compensation-0bb4101921da39c6",
+      "v37": {
+        "category": "positional",
+        "tactical": "unestablished",
+        "positional": "supported",
+        "move": "unclear"
+      },
+      "v38": {
+        "category": "mixed",
+        "tactical": "supported",
+        "positional": "supported",
+        "move": "tactical",
+        "movePromotion": {
+          "description": "After a7, the pawn can be traded for a rook. After Rd8, Stockfish finds a8=Q Rxa8 Rxa8. After Rd5+, it finds a8=R Rxa8 Rxa8+.",
+          "linesUci": [
+            [
+              "a6a7",
+              "d1d8",
+              "a4b4",
+              "e8f7",
+              "b4b8",
+              "d8d2",
+              "a5b4",
+              "d2a2",
+              "a7a8q",
+              "a2a8",
+              "b8a8"
+            ],
+            [
+              "a6a7",
+              "d1d5",
+              "a5b4",
+              "d5d8",
+              "a7a8r",
+              "d8a8",
+              "a4a8"
+            ]
+          ]
+        },
+        "positionPromotion": {
+          "description": "After a7, the pawn can be traded for a rook. After Rd8, Stockfish finds a8=Q Rxa8 Rxa8. After Rd5+, it finds a8=R Rxa8 Rxa8+.",
+          "linesUci": [
+            [
+              "a6a7",
+              "d1d8",
+              "a4b4",
+              "e8f7",
+              "b4b8",
+              "d8d2",
+              "a5b4",
+              "d2a2",
+              "a7a8q",
+              "a2a8",
+              "b8a8"
+            ],
+            [
+              "a6a7",
+              "d1d5",
+              "a5b4",
+              "d5d8",
+              "a7a8r",
+              "d8a8",
+              "a4a8"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "first/compensation-e11c062a65623a29",
+      "v37": {
+        "category": "unclear",
+        "tactical": "unestablished",
+        "positional": "unestablished",
+        "move": "unclear"
+      },
+      "v38": {
+        "category": "tactical",
+        "tactical": "supported",
+        "positional": "unestablished",
+        "move": "tactical",
+        "movePromotion": {
+          "description": "After d7, the pawn can be traded for a bishop. After h5 or Kf5, Stockfish finds d8=R Bxd8 Kxd8.",
+          "linesUci": [
+            [
+              "d6d7",
+              "h7h5",
+              "d7d8r",
+              "f6d8",
+              "c8d8"
+            ],
+            [
+              "d6d7",
+              "e6f5",
+              "d7d8r",
+              "f6d8",
+              "c8d8"
+            ]
+          ]
+        },
+        "positionPromotion": {
+          "description": "After d7, the pawn can be traded for a bishop. After h5 or Kf5, Stockfish finds d8=R Bxd8 Kxd8.",
+          "linesUci": [
+            [
+              "d6d7",
+              "h7h5",
+              "d7d8r",
+              "f6d8",
+              "c8d8"
+            ],
+            [
+              "d6d7",
+              "e6f5",
+              "d7d8r",
+              "f6d8",
+              "c8d8"
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "recordedExchangeComparison": {
+    "recorded-leads": 15,
+    "outside-equal-budget-comparison": 10
+  },
+  "hashes": {
+    "replay-input.json": "53ee629530eb1d54166174e50d8b60737d86d0770e8987e0f0cde7026440019c",
+    "transfer-input.json": "ea5572303a8bd5f1be6b80bd0151c938796dd85dce5e5d0729c063b71cd7f1bc",
+    "transfer-frames.json": "f020d1716dd485c0e327e2e7efbeb0e9e9dc6bc5b25aac5010504ae47b3454c0",
+    "second-input.json": "195717062673f52efbc3c9888fc90515c7cf4fcde37957ce7b709ec11bd00336",
+    "second-frames.json": "0eb26c4078b48785b674e32f241935b657d1cd7961ceb0611a1a1622fdfcce96",
+    "exchange-choices.json": "bd675c1d8192479e8746ffb0b44e2bca2a915639d55de832034e18c52e3f6f27"
+  },
+  "verification": {
+    "vitest": 72,
+    "typecheck": true,
+    "sourcePanelWidths": [
+      320,
+      390,
+      900
+    ]
+  }
+}

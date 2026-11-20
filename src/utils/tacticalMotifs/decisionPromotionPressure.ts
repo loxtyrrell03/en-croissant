@@ -1,7 +1,8 @@
 import type { Color, Role, Square } from "chessops/types";
+import { makeFen } from "chessops/fen";
 import { makeSquare, opposite } from "chessops/util";
 import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
-import type { DecisionEngineLine } from "./decisionEvidence";
+import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import type { PositionStrategicPlan } from "./decisionPositionPlans";
 import { tacticalRepetitionKey } from "./repetitionHistory";
 
@@ -133,11 +134,14 @@ function viable(left: DecisionEngineLine, right: DecisionEngineLine) {
     );
 }
 
-function independent(a: TacticalReplayStep[], b: TacticalReplayStep[], left: Event, right: Event) {
-    const boards = new Set(
-        a.slice(0, left.through).map((step) => tacticalRepetitionKey(step.after)),
-    );
-    return !b.slice(0, right.through).some((step) => boards.has(tacticalRepetitionKey(step.after)));
+function independent(
+    a: TacticalReplayStep[],
+    b: TacticalReplayStep[],
+    left: number,
+    right: number,
+) {
+    const boards = new Set(a.slice(0, left).map((step) => tacticalRepetitionKey(step.after)));
+    return !b.slice(0, right).some((step) => boards.has(tacticalRepetitionKey(step.after)));
 }
 
 function pair(a: TacticalReplayStep[], b: TacticalReplayStep[], left: Event, right: Event) {
@@ -151,6 +155,94 @@ function describe(root: string, event: Event) {
     return event.description.startsWith(`${root} `)
         ? event.description
         : `After ${root}, ${event.description}`;
+}
+
+/** Follow the advanced pawn into a specific exchange after two separate
+ * competitive replies. The same promotion reached by a transposition adds
+ * no corroboration, and the gain must survive the immediate counterplay. */
+export function findPromotionTradeAfterAdvance(
+    fen: string,
+    root: DecisionEngineLine,
+    replies: DecisionEngineLine[],
+): PositionStrategicPlan | undefined {
+    const [advance] = replayTacticalLine(fen, root.pvUci.slice(0, 1));
+    if (
+        !advance ||
+        advance.before.board.get(advance.move.from)?.role !== "pawn" ||
+        relativeRank(advance.move.from, advance.before.turn) !== 6 ||
+        relativeRank(advance.move.to, advance.before.turn) !== 7
+    )
+        return;
+    const [leadingReply] = replies;
+    const child = makeFen(advance.after.toSetup());
+    if (
+        !leadingReply ||
+        replies.length < 2 ||
+        root.depth < 18 ||
+        root.cp === null ||
+        root.mate != null ||
+        leadingReply.depth < 16 ||
+        leadingReply.cp === null ||
+        leadingReply.mate != null ||
+        Math.abs(root.cp + leadingReply.cp) > 90 ||
+        !measureDecisionLine(fen, root) ||
+        !measureDecisionLine(child, leadingReply)
+    )
+        return;
+    const captures = [];
+    for (const reply of replies.slice(0, 3)) {
+        if (
+            reply.cp === null ||
+            reply.mate != null ||
+            reply.depth !== leadingReply.depth ||
+            reply.cp > leadingReply.cp ||
+            leadingReply.cp - reply.cp > 50 ||
+            !measureDecisionLine(child, reply)
+        )
+            continue;
+        const maxPromotionPly = 9;
+        const steps = replayTacticalLine(fen, [
+            advance.uci,
+            ...reply.pvUci.slice(0, maxPromotionPly + 3),
+        ]);
+        const { promotion } = traceAdvancedPawn(steps, advance.move.from, advance.before.turn);
+        const trade = promotion?.trade;
+        if (
+            !promotion ||
+            !trade ||
+            promotion.through > maxPromotionPly ||
+            promotion.square % 8 !== advance.move.to % 8 ||
+            steps.length < trade.through + 2 ||
+            steps.slice(trade.through - 1, trade.through + 2).some((step) => step.balance < 90)
+        )
+            continue;
+        captures.push({ steps, promotion, trade });
+    }
+    for (const [index, first] of captures.entries()) {
+        const second = captures
+            .slice(index + 1)
+            .find(
+                (other) =>
+                    other.steps[1].uci !== first.steps[1].uci &&
+                    other.promotion.square === first.promotion.square &&
+                    other.trade.role === first.trade.role &&
+                    independent(
+                        first.steps.slice(1),
+                        other.steps.slice(1),
+                        first.promotion.through - 2,
+                        other.promotion.through - 2,
+                    ),
+            );
+        if (!second) continue;
+        const branches =
+            first.trade.description === second.trade.description
+                ? `After ${first.steps[1].san} or ${second.steps[1].san}, Stockfish finds ${first.trade.description}.`
+                : `After ${first.steps[1].san}, Stockfish finds ${first.trade.description}. After ${second.steps[1].san}, it finds ${second.trade.description}.`;
+        return {
+            description: `After ${advance.san}, the pawn can be traded for a ${first.trade.role}. ${branches}`,
+            linesUci: pair(first.steps, second.steps, first.trade, second.trade),
+        };
+    }
 }
 
 /** Two distinct legal choices have to show what actually happens to the
@@ -202,7 +294,7 @@ export function findPromotionPressure(
                 Math.min(left.through, right.through) < 5
             )
                 continue;
-            if (!independent(paths[0], paths[i], left, right)) continue;
+            if (!independent(paths[0], paths[i], left.through, right.through)) continue;
             positional = {
                 description: `${title} ${describe(paths[0][0].san, left)}. ${describe(paths[i][0].san, right)}.`,
                 linesUci: pair(paths[0], paths[i], left, right),
@@ -219,7 +311,7 @@ export function findPromotionPressure(
             a.square === b.square &&
             a.trade.role === b.trade.role &&
             Math.max(a.through, b.through) <= 6 &&
-            independent(paths[1], paths[2], a.trade, b.trade)
+            independent(paths[1], paths[2], a.trade.through, b.trade.through)
         ) {
             tactical = {
                 description: `After ${paths[1][0].san}, ${a.trade.description} trades the promoting pawn for a ${a.trade.role}. After ${paths[2][0].san}, ${b.trade.description} shows the same exchange.`,

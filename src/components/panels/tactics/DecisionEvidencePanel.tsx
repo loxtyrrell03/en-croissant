@@ -170,7 +170,7 @@ function EvidenceSummary({
         )}
         {expanded &&
           comparedLines?.map(({ label, san }) => (
-            <Text key={label} size="xs" style={{ overflowWrap: "anywhere" }}>
+            <Text key={`${label}:${san}`} size="xs" style={{ overflowWrap: "anywhere" }}>
               <Text component="span" fw={600} size="xs">
                 {label}.{" "}
               </Text>
@@ -366,7 +366,7 @@ function DecisionReport({
               ]
             : []),
           ...distinctPositionLines.map((moves) => ({
-            label: `After ${lineSan(report.fen, moves.slice(0, 1))}`,
+            label: `After ${lineSan(report.fen, moves.slice(0, promotion?.linesUci.includes(moves) ? 2 : 1))}`,
             san: lineSan(report.fen, moves),
           })),
         ]}
@@ -380,6 +380,10 @@ function DecisionReport({
           key={selected.moveUci}
           title="What the move achieves"
           assessment={selected}
+          comparedLines={selected.promotionTactic?.linesUci.map((moves) => ({
+            label: `After ${lineSan(report.fen, moves.slice(0, 2))}`,
+            san: lineSan(report.fen, moves),
+          }))}
         >
           <Select
             aria-label="Candidate move"

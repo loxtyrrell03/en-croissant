@@ -74,7 +74,7 @@ import {
     type PositionStrategicPlan,
 } from "./decisionPositionPlans";
 import { findSharedStructuralPlan } from "./decisionSharedStructure";
-import { findPromotionPressure } from "./decisionPromotionPressure";
+import { findPromotionPressure, findPromotionTradeAfterAdvance } from "./decisionPromotionPressure";
 import { comparePromotionMistake, type PromotionMistakeEvidence } from "./decisionPromotionMistake";
 import { compareRookPressure, type RookPressureEvidence } from "./decisionRookPressure";
 import { comparePawnStructure, type PawnStructureEvidence } from "./decisionPawnStructure";
@@ -83,7 +83,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 37;
+export const DECISION_ASSESSMENT_VERSION = 38;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -104,6 +104,7 @@ export type DecisionAssessment = {
     matingLines?: ConfirmedMatingLines;
     mateDefence?: ImmediateMateDefence;
     quietMateThreat?: QuietMateThreat;
+    promotionTactic?: PositionStrategicPlan;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -150,7 +151,6 @@ export type ChessDecisionReport = {
         preparedCheckpointRequest?: { fen: string; prefix: string[] };
         preparedCheckpoint?: { lineUci: string[]; alternativeUci: string[] };
         strategicPlan?: PositionStrategicPlan;
-        promotionTactic?: PositionStrategicPlan;
     };
     moves: Array<
         DecisionAssessment & { moveUci: string; evaluationCp: number | null; depth: number }
@@ -468,6 +468,17 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             result.limitations.push("The material gain and the escape are shown in the compared engine lines.");
         }
     }
+    if (corroborated && result.tactical.support !== "supported") {
+        const promotion = findPromotionTradeAfterAdvance(input.fen, line, probe!.lines);
+        if (promotion) {
+            result.promotionTactic = promotion;
+            result.tactical = {
+                support: "supported",
+                basis: "engine-supported",
+                reasons: [promotion.description],
+            };
+        }
+    }
     const certificates =
         input.rootCertificates
             ?.find((item) => item.fen === input.fen && item.moveUci === line.pvUci[0])
@@ -600,6 +611,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         (move) =>
             move.tactical.support === "supported" &&
             (move.matingLines ||
+                move.promotionTactic ||
                 move.tactical.basis === "bounded-proof" ||
                 move.conditionalResources.length > 0 ||
                 move.mechanisms.length === 0 ||
@@ -618,6 +630,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
     if (tactical?.matingLines) position.matingLines = tactical.matingLines;
     if (tactical?.quietMateThreat) position.quietMateThreat = tactical.quietMateThreat;
+    if (tactical?.promotionTactic) position.promotionTactic = tactical.promotionTactic;
     for (const move of viable) {
         const line = input.candidates.find((item) => item.pvUci[0] === move.moveUci)!;
         const qualified = qualifyPositionFactors(
