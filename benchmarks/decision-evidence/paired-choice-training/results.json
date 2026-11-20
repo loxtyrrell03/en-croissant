@@ -1,0 +1,764 @@
+{
+  "inputSha256": {
+    "final-test.jsonl": "b0d0682e630c6b5cfe91613be31f99fc9b06fecec529333219ae8e737c07ee08",
+    "stronger-frames.jsonl": "da7bc3ff4793651730a3f5164ab177e35a1706f588ce703bb9bb4ffa539708a3",
+    "stockfish-windows-x86-64-universal.exe": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0"
+  },
+  "fitLabels": {
+    "None": 1197,
+    "0": 846,
+    "1": 14
+  },
+  "developmentLabels": {
+    "0": 166,
+    "None": 267,
+    "1": 2
+  },
+  "holdoutLabels": {
+    "0": 236,
+    "None": 253,
+    "1": 4
+  },
+  "holdoutPositionAssessments": {
+    "unclear": 75,
+    "tactical": 6,
+    "unavailable": 11,
+    "mixed": 1,
+    "positional": 27
+  },
+  "firstWitnesses": 4,
+  "strongerWitnesses": 3,
+  "repeatedWitnesses": 3,
+  "repeatableGames": 2,
+  "repeatableEvents": 2,
+  "firstFit": {
+    "preview root loss": {
+      "initial": {
+        "None": 81,
+        "0": 28
+      },
+      "initialAveragePrecision": 0.12095,
+      "repeatableWitnessesSelected": 0,
+      "repeatableEvents": []
+    },
+    "short reply loss": {
+      "initial": {
+        "None": 72,
+        "0": 35,
+        "1": 2
+      },
+      "initialAveragePrecision": 0.59375,
+      "repeatableWitnessesSelected": 1,
+      "repeatableEvents": [
+        "asian-zone-33-chess-championship-2025"
+      ]
+    },
+    "short legal material": {
+      "initial": {
+        "None": 48,
+        "0": 58,
+        "1": 3
+      },
+      "initialAveragePrecision": 0.08027,
+      "repeatableWitnessesSelected": 2,
+      "repeatableEvents": [
+        "asian-zone-33-chess-championship-2025",
+        "finnish-championship-2025"
+      ]
+    },
+    "line logistic": {
+      "initial": {
+        "None": 74,
+        "0": 34,
+        "1": 1
+      },
+      "initialAveragePrecision": 0.07002,
+      "repeatableWitnessesSelected": 1,
+      "repeatableEvents": [
+        "asian-zone-33-chess-championship-2025"
+      ]
+    },
+    "line boosted tree": {
+      "initial": {
+        "None": 73,
+        "0": 36
+      },
+      "initialAveragePrecision": 0.4,
+      "repeatableWitnessesSelected": 0,
+      "repeatableEvents": []
+    },
+    "neural ensemble": {
+      "initial": {
+        "None": 72,
+        "0": 36,
+        "1": 1
+      },
+      "initialAveragePrecision": 0.1485,
+      "repeatableWitnessesSelected": 1,
+      "repeatableEvents": [
+        "asian-zone-33-chess-championship-2025"
+      ]
+    }
+  },
+  "convergenceCheck": {
+    "results": {
+      "preview root loss": {
+        "initial": {
+          "None": 81,
+          "0": 28
+        },
+        "initialAveragePrecision": 0.12095,
+        "repeatableWitnessesSelected": 0,
+        "repeatableEvents": []
+      },
+      "short reply loss": {
+        "initial": {
+          "None": 72,
+          "0": 35,
+          "1": 2
+        },
+        "initialAveragePrecision": 0.59375,
+        "repeatableWitnessesSelected": 1,
+        "repeatableEvents": [
+          "asian-zone-33-chess-championship-2025"
+        ]
+      },
+      "short legal material": {
+        "initial": {
+          "None": 48,
+          "0": 58,
+          "1": 3
+        },
+        "initialAveragePrecision": 0.08027,
+        "repeatableWitnessesSelected": 2,
+        "repeatableEvents": [
+          "asian-zone-33-chess-championship-2025",
+          "finnish-championship-2025"
+        ]
+      },
+      "line logistic": {
+        "initial": {
+          "None": 74,
+          "0": 34,
+          "1": 1
+        },
+        "initialAveragePrecision": 0.07002,
+        "repeatableWitnessesSelected": 1,
+        "repeatableEvents": [
+          "asian-zone-33-chess-championship-2025"
+        ]
+      },
+      "line boosted tree": {
+        "initial": {
+          "None": 73,
+          "0": 36
+        },
+        "initialAveragePrecision": 0.4,
+        "repeatableWitnessesSelected": 0,
+        "repeatableEvents": []
+      },
+      "neural ensemble": {
+        "initial": {
+          "None": 72,
+          "0": 36,
+          "1": 1
+        },
+        "initialAveragePrecision": 0.1485,
+        "repeatableWitnessesSelected": 1,
+        "repeatableEvents": [
+          "asian-zone-33-chess-championship-2025"
+        ]
+      }
+    },
+    "iterations": {
+      "network 31": 673,
+      "network 73": 659,
+      "network 109": 869
+    }
+  },
+  "witnesses": [
+    {
+      "id": "00333f3baca7a16487ba",
+      "site": "https://lichess.org/broadcast/finnish-championship-2025-open/round-6/VbaO6YyH/nG9f6NSy",
+      "fen": "8/4Q1bk/7p/p3P1p1/1r3B2/3r2P1/1P3P2/6K1 w - - 0 37",
+      "event": "finnish-championship-2025",
+      "stronger": "f4e3",
+      "weaker": "e7e6",
+      "checkOrCapture": "d3d1",
+      "originalTarget": "f4",
+      "lossCp": 194,
+      "lossInSeparateReplyCp": 206,
+      "sameReplyContrastCp": 304,
+      "retainedMaterialContrast": 2,
+      "refutationSan": "37. Qe6 Rd1+ 38. Kg2 gxf4 39. Qf5+ Kg8 40. Qc8+ Kf7",
+      "comparisonSan": "37. Be3 Rd1+ 38. Kg2 Rd5 39. e6 Re4 40. Bc5 Rde5",
+      "refutedLine": [
+        "e7e6",
+        "d3d1",
+        "g1g2",
+        "g5f4",
+        "e6f5",
+        "h7g8",
+        "f5c8",
+        "g8f7",
+        "g3f4",
+        "d1e1",
+        "c8d7",
+        "f7g8",
+        "e5e6",
+        "b4f4",
+        "e6e7",
+        "f4e4",
+        "d7d5",
+        "g8h8",
+        "d5d8",
+        "h8h7",
+        "d8d3",
+        "h7g8",
+        "d3d5"
+      ],
+      "comparedLine": [
+        "f4e3",
+        "d3d1",
+        "g1g2",
+        "d1d5",
+        "e5e6",
+        "b4e4",
+        "e3c5",
+        "d5e5",
+        "e7c7",
+        "e4c4",
+        "c7e5",
+        "g7e5",
+        "e6e7",
+        "c4c5",
+        "e7e8q",
+        "e5g7",
+        "e8d7",
+        "h6h5",
+        "d7d3",
+        "h7h8",
+        "g2g1"
+      ],
+      "baseline": {
+        "category": "positional",
+        "tactical": {
+          "support": "unestablished",
+          "basis": "insufficient",
+          "reasons": [
+            "No relevant tactical mechanism has been established."
+          ]
+        },
+        "positional": {
+          "support": "supported",
+          "basis": "heuristic",
+          "reasons": [
+            "White's minor piece on e3 has pawn support and no opposing pawn able to advance to attack that square. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence."
+          ]
+        },
+        "contrastedChoice": null
+      },
+      "firstCheck": {
+        "kind": "same-depth comparison from after the weaker choice",
+        "checkedMoveSan": "Rd1+",
+        "directCaptureSan": "gxf4",
+        "checkMinusDirectCp": 558,
+        "frames": [
+          {
+            "fen": "8/6bk/4Q2p/p3P1p1/1r3B2/3r2P1/1P3P2/6K1 b - - 1 37",
+            "cp": -15,
+            "mate": null,
+            "depth": 19,
+            "nodes": 1235931,
+            "pvUci": [
+              "d3d1",
+              "g1g2",
+              "g5f4",
+              "e6f5",
+              "h7g8",
+              "f5c8",
+              "g8f7",
+              "e5e6",
+              "f7f6",
+              "c8c7",
+              "f6e6",
+              "c7g7",
+              "f4g3",
+              "g7h6",
+              "e6e7",
+              "h6e3",
+              "e7d7",
+              "e3g3",
+              "d1d4",
+              "g3e5",
+              "a5a4",
+              "e5g7",
+              "d7e6"
+            ]
+          },
+          {
+            "fen": "8/6bk/4Q2p/p3P1p1/1r3B2/3r2P1/1P3P2/6K1 b - - 1 37",
+            "cp": -573,
+            "mate": null,
+            "depth": 19,
+            "nodes": 1235931,
+            "pvUci": [
+              "g5f4",
+              "e6f5",
+              "h7g8",
+              "f5d3",
+              "f4g3",
+              "d3g3",
+              "b4b2",
+              "g3d3",
+              "b2b4",
+              "d3d5",
+              "g8h7",
+              "g1g2",
+              "b4g4",
+              "g2h3",
+              "g4f4",
+              "h3g3",
+              "f4f8",
+              "e5e6",
+              "g7f6",
+              "d5d7",
+              "h7h8",
+              "e6e7",
+              "f8g8",
+              "g3f3",
+              "f6e7",
+              "d7e7",
+              "g8g5",
+              "e7f8",
+              "h8h7",
+              "f3e4",
+              "g5g2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "00333f3baca7a16487ba",
+      "site": "https://lichess.org/broadcast/finnish-championship-2025-open/round-6/VbaO6YyH/nG9f6NSy",
+      "fen": "8/4Q1bk/7p/p3P1p1/1r3B2/3r2P1/1P3P2/6K1 w - - 0 37",
+      "event": "finnish-championship-2025",
+      "stronger": "f4e3",
+      "weaker": "e7f7",
+      "checkOrCapture": "d3d1",
+      "originalTarget": "f4",
+      "lossCp": 192,
+      "lossInSeparateReplyCp": 197,
+      "sameReplyContrastCp": 295,
+      "retainedMaterialContrast": 2,
+      "refutationSan": "37. Qf7 Rd1+ 38. Kg2 gxf4 39. Qf5+ Kg8 40. Qc8+ Kf7",
+      "comparisonSan": "37. Be3 Rd1+ 38. Kg2 Rd5 39. e6 Re4 40. Bc5 Rde5",
+      "refutedLine": [
+        "e7f7",
+        "d3d1",
+        "g1g2",
+        "g5f4",
+        "f7f5",
+        "h7g8",
+        "f5c8",
+        "g8f7",
+        "g3f4",
+        "d1e1",
+        "c8d7",
+        "f7g8",
+        "d7d5",
+        "g8h7",
+        "d5a5",
+        "e1e4",
+        "e5e6",
+        "e4f4",
+        "e6e7",
+        "b4e4",
+        "a5d8",
+        "g7f6",
+        "e7e8q",
+        "f4g4",
+        "g2f1",
+        "f6d8",
+        "e8f7",
+        "h7h8",
+        "f7f8",
+        "h8h7",
+        "f8d8",
+        "e4b4"
+      ],
+      "comparedLine": [
+        "f4e3",
+        "d3d1",
+        "g1g2",
+        "d1d5",
+        "e5e6",
+        "b4e4",
+        "e3c5",
+        "d5e5",
+        "e7c7",
+        "e4c4",
+        "c7e5",
+        "g7e5",
+        "e6e7",
+        "c4c5",
+        "e7e8q",
+        "e5g7",
+        "e8d7",
+        "h6h5",
+        "d7d3",
+        "h7h8",
+        "g2g1"
+      ],
+      "baseline": {
+        "category": "positional",
+        "tactical": {
+          "support": "unestablished",
+          "basis": "insufficient",
+          "reasons": [
+            "No relevant tactical mechanism has been established."
+          ]
+        },
+        "positional": {
+          "support": "supported",
+          "basis": "heuristic",
+          "reasons": [
+            "White's minor piece on e3 has pawn support and no opposing pawn able to advance to attack that square. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence."
+          ]
+        },
+        "contrastedChoice": null
+      },
+      "firstCheck": {
+        "kind": "same-depth comparison from after the weaker choice",
+        "checkedMoveSan": "Rd1+",
+        "directCaptureSan": "gxf4",
+        "checkMinusDirectCp": 496,
+        "frames": [
+          {
+            "fen": "8/5Qbk/7p/p3P1p1/1r3B2/3r2P1/1P3P2/6K1 b - - 1 37",
+            "cp": -23,
+            "mate": null,
+            "depth": 20,
+            "nodes": 1140217,
+            "pvUci": [
+              "d3d1",
+              "g1g2",
+              "g5f4",
+              "f7f5",
+              "h7g8",
+              "f5c8",
+              "g8f7",
+              "g3f4",
+              "d1e1",
+              "c8c7",
+              "f7g8",
+              "c7a5",
+              "e1e4",
+              "e5e6",
+              "b4d4",
+              "a5a8",
+              "g8h7",
+              "f4f5",
+              "d4c4"
+            ]
+          },
+          {
+            "fen": "8/5Qbk/7p/p3P1p1/1r3B2/3r2P1/1P3P2/6K1 b - - 1 37",
+            "cp": -519,
+            "mate": null,
+            "depth": 20,
+            "nodes": 1140217,
+            "pvUci": [
+              "g5f4",
+              "f7f5",
+              "h7g8",
+              "f5d3",
+              "f4g3",
+              "d3g3",
+              "b4b2",
+              "f2f4",
+              "b2b1",
+              "g1g2",
+              "b1b2",
+              "g2f1",
+              "b2b1",
+              "f1e2",
+              "b1b4",
+              "g3g4",
+              "a5a4",
+              "g4e6",
+              "g8h7",
+              "e2f3",
+              "b4b8",
+              "f4f5",
+              "b8b7",
+              "f5f6"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "00e0309267248002c05d",
+      "site": "https://lichess.org/broadcast/asian-zone-33-chess-championship-2025-open/round-6/roeA7bS3/2U0pPKIx",
+      "fen": "r3k2r/1bqn1p2/p3p2p/2pp2Q1/1P6/2NB4/P1P2PPP/1R2R1K1 w kq - 0 21",
+      "event": "asian-zone-33-chess-championship-2025",
+      "stronger": "g5g7",
+      "weaker": "c3d5",
+      "checkOrCapture": "c7h2",
+      "originalTarget": "g5",
+      "lossCp": 819,
+      "lossInSeparateReplyCp": 869,
+      "sameReplyContrastCp": 1654,
+      "retainedMaterialContrast": 2,
+      "refutationSan": "21. Nxd5 Qxh2+ 22. Kxh2 hxg5+ 23. Kg1 Bxd5 24. bxc5 Ke7",
+      "comparisonSan": "21. Qg7 Qxh2+ 22. Kxh2 c4 23. Qxh8+ Ke7 24. Qd4 cxd3",
+      "refutedLine": [
+        "c3d5",
+        "c7h2",
+        "g1h2",
+        "h6g5",
+        "h2g1",
+        "b7d5",
+        "b4c5",
+        "e8e7",
+        "d3f1",
+        "a8c8",
+        "e1e3",
+        "c8c5",
+        "c2c4",
+        "d5c6",
+        "e3g3",
+        "h8d8"
+      ],
+      "comparedLine": [
+        "g5g7",
+        "c7h2",
+        "g1h2",
+        "c5c4",
+        "g7h8",
+        "e8e7",
+        "h8d4",
+        "c4d3",
+        "c2d3",
+        "a8d8",
+        "b4b5",
+        "a6a5",
+        "h2g1",
+        "d8g8",
+        "e1c1",
+        "e7d6",
+        "d4f4",
+        "e6e5",
+        "f4h6",
+        "g8g6"
+      ],
+      "baseline": {
+        "category": "positional",
+        "tactical": {
+          "support": "unestablished",
+          "basis": "insufficient",
+          "reasons": [
+            "No relevant tactical mechanism has been established."
+          ]
+        },
+        "positional": {
+          "support": "supported",
+          "basis": "heuristic",
+          "reasons": [
+            "White’s passed pawn from b4 shapes both lines. After Qg7, b6 advances the passer on b6. After Qh5, b6 advances the passer on b6."
+          ]
+        },
+        "contrastedChoice": null
+      },
+      "firstCheck": {
+        "kind": "same-depth comparison from after the weaker choice",
+        "checkedMoveSan": "Qxh2+",
+        "directCaptureSan": "hxg5",
+        "checkMinusDirectCp": 1257,
+        "frames": [
+          {
+            "fen": "r3k2r/1bqn1p2/p3p2p/2pN2Q1/1P6/3B4/P1P2PPP/1R2R1K1 b kq - 0 21",
+            "cp": 641,
+            "mate": null,
+            "depth": 18,
+            "nodes": 2400330,
+            "pvUci": [
+              "c7h2",
+              "g1h2",
+              "h6g5",
+              "h2g1",
+              "b7d5",
+              "c2c4",
+              "d5c6",
+              "a2a3",
+              "a6a5",
+              "b4b5",
+              "c6b7",
+              "a3a4",
+              "g5g4",
+              "b5b6",
+              "e8e7",
+              "d3e4",
+              "b7e4",
+              "e1e4"
+            ]
+          },
+          {
+            "fen": "r3k2r/1bqn1p2/p3p2p/2pN2Q1/1P6/3B4/P1P2PPP/1R2R1K1 b kq - 0 21",
+            "cp": -616,
+            "mate": null,
+            "depth": 18,
+            "nodes": 2400330,
+            "pvUci": [
+              "h6g5",
+              "d5c7",
+              "e8e7",
+              "c7a8",
+              "h8a8",
+              "d3e4",
+              "b7e4",
+              "e1e4",
+              "a8b8",
+              "e4c4",
+              "f7f5",
+              "a2a3",
+              "g5g4",
+              "c4c3",
+              "f5f4",
+              "b1d1",
+              "e7f6",
+              "h2h3",
+              "c5b4",
+              "a3b4",
+              "d7e5",
+              "h3g4"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "unrestrictedRootVisibility": {
+    "00333f3baca7a16487ba": {
+      "3": [
+        {
+          "san": "Be3",
+          "move": "f4e3",
+          "cp": 194,
+          "depth": 20
+        },
+        {
+          "san": "Qe6",
+          "move": "e7e6",
+          "cp": 22,
+          "depth": 20
+        },
+        {
+          "san": "Qf7",
+          "move": "e7f7",
+          "cp": 15,
+          "depth": 20
+        }
+      ],
+      "5": [
+        {
+          "san": "Be3",
+          "move": "f4e3",
+          "cp": 194,
+          "depth": 20
+        },
+        {
+          "san": "Qf7",
+          "move": "e7f7",
+          "cp": 22,
+          "depth": 20
+        },
+        {
+          "san": "Qe6",
+          "move": "e7e6",
+          "cp": 16,
+          "depth": 20
+        },
+        {
+          "san": "Bxg5",
+          "move": "f4g5",
+          "cp": 11,
+          "depth": 20
+        },
+        {
+          "san": "Qc5",
+          "move": "e7c5",
+          "cp": 0,
+          "depth": 20
+        }
+      ]
+    },
+    "00e0309267248002c05d": {
+      "3": [
+        {
+          "san": "Qg7",
+          "move": "g5g7",
+          "cp": 185,
+          "depth": 19
+        },
+        {
+          "san": "Qg4",
+          "move": "g5g4",
+          "cp": 170,
+          "depth": 19
+        },
+        {
+          "san": "Qh5",
+          "move": "g5h5",
+          "cp": 137,
+          "depth": 19
+        }
+      ],
+      "5": [
+        {
+          "san": "Qg7",
+          "move": "g5g7",
+          "cp": 197,
+          "depth": 17
+        },
+        {
+          "san": "Qg4",
+          "move": "g5g4",
+          "cp": 188,
+          "depth": 17
+        },
+        {
+          "san": "Qh5",
+          "move": "g5h5",
+          "cp": 154,
+          "depth": 17
+        },
+        {
+          "san": "Qd2",
+          "move": "g5d2",
+          "cp": 116,
+          "depth": 17
+        },
+        {
+          "san": "Qh4",
+          "move": "g5h4",
+          "cp": 91,
+          "depth": 17
+        }
+      ]
+    }
+  },
+  "onlyAtInitialBudget": [
+    [
+      "0036504bdd0be6b600f3",
+      "h6g7",
+      "c1c3",
+      "d4e2",
+      "material",
+      "c1"
+    ]
+  ],
+  "onlyAtStrongerBudget": []
+}

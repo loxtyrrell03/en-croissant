@@ -1,0 +1,162 @@
+{
+  "african-superzonal-chess-championship-2025-open-PK4BiMlQ.pgn": {
+    "event": "african-superzonal-chess-championship-2025-open",
+    "pgn": "https://lichess.org/api/broadcast/PK4BiMlQ.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/african-superzonal-chess-championship-2025-open/round-1/TZieEcJa",
+    "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+    "bytes": 61067,
+    "sha256": "0aafd5741709ccb5ac0f7b9fcc6ca7e99a03d8f3a5f9516fd33cdd812008fcc8"
+  },
+  "xvii-memorial-pedro-lezcano-montalvo-2025-s6v7rV0e.pgn": {
+    "event": "xvii-memorial-pedro-lezcano-montalvo-2025",
+    "pgn": "https://lichess.org/api/broadcast/s6v7rV0e.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-1/gfXgh34J",
+    "timeControl": "90 min + 30 sec / move",
+    "bytes": 638486,
+    "sha256": "8d02583bcfe78c3ad39c232e7437c3136f4f4c218fe21968d982cc7acf00e925"
+  },
+  "54-abierto-internacional-ciudad-de-mar-del-plata-UmEX7nBu.pgn": {
+    "event": "54-abierto-internacional-ciudad-de-mar-del-plata",
+    "pgn": "https://lichess.org/api/broadcast/UmEX7nBu.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/54-abierto-internacional-ciudad-de-mar-del-plata/round-1/8ScdxBcH",
+    "timeControl": "90 min + 30 sec",
+    "bytes": 114848,
+    "sha256": "fb603c458b23151c04fc3c30d8f5a8bae27970bc93a02e4e4566b55db5c689d2"
+  },
+  "22nd-bangkok-chess-club-open-2025-r0eh3s3n.pgn": {
+    "event": "22nd-bangkok-chess-club-open-2025",
+    "pgn": "https://lichess.org/api/broadcast/r0eh3s3n.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/22nd-bangkok-chess-club-open-2025/round-1/AJ0oxvZv",
+    "timeControl": "90 min / 40 moves + 30 min / rest + 30 sec from move 1",
+    "bytes": 262650,
+    "sha256": "90eae4d9584475986e58d6426feab590cf5943c18af3e900f5dfe73c75d48805"
+  },
+  "lxx-campeonato-abierto-mexicano-queretaro-2025-internacional-i96kIc2a.pgn": {
+    "event": "lxx-campeonato-abierto-mexicano-queretaro-2025-internacional",
+    "pgn": "https://lichess.org/api/broadcast/i96kIc2a.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/lxx-campeonato-abierto-mexicano-queretaro-2025-internacional/ronda-1/L9LdbJLm",
+    "timeControl": "90 min + 30 sec",
+    "bytes": 298231,
+    "sha256": "eaf7d56c99d13510e1c4648d22370ebfe239248b871ff6d34a6a4596ce65cab4"
+  },
+  "51-open-chess-la-roda-rEgA7bhz.pgn": {
+    "event": "51-open-chess-la-roda",
+    "pgn": "https://lichess.org/api/broadcast/rEgA7bhz.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/51-open-chess-la-roda/round-1/YUeTzlgd",
+    "timeControl": "90 min + 30 sec",
+    "bytes": 203669,
+    "sha256": "9e103ac686b2cafe97c0f1a217fe7a978fdbf02097ad95895b95b20eae6784df"
+  },
+  "2025-o2c-doeberl-cup-stSVniC9.pgn": {
+    "event": "2025-o2c-doeberl-cup",
+    "pgn": "https://lichess.org/api/broadcast/stSVniC9.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/2025-o2c-doeberl-cup/round-1/p5cqjd8z",
+    "timeControl": "90 mins + 30 secs increment.",
+    "bytes": 74446,
+    "sha256": "4c9349ef767b5387040ed4869e09ae0aba3cae4cbad18949ed6a5584fcb7bf7a"
+  },
+  "67th-southend-easter-chess-festival-2025-gm-round-robin-kbIUsnqS.pgn": {
+    "event": "67th-southend-easter-chess-festival-2025-gm-round-robin",
+    "pgn": "https://lichess.org/api/broadcast/kbIUsnqS.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/67th-southend-easter-chess-festival-2025-gm-round-robin/round-1/qWSx4nPn",
+    "timeControl": "G: 90 min + 30 sec",
+    "bytes": 56967,
+    "sha256": "0b4b6603a9503354eef16dab66c2150077a258d2c69874ad618dfb95fcffe910"
+  },
+  "the-dublin-easter-im-norm-2025-sdc3jPDu.pgn": {
+    "event": "the-dublin-easter-im-norm-2025",
+    "pgn": "https://lichess.org/api/broadcast/sdc3jPDu.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/the-dublin-easter-im-norm-2025/round-1/Dp1Fs5Hv",
+    "timeControl": "90 min + 30 sec / move",
+    "bytes": 51499,
+    "sha256": "b529257049830bc9fb7309793ae9b8262981e63641611b959cc2d7173d2e2f7f"
+  },
+  "2025-canadian-closed-championnat-ferme-du-canada-closed-FEdZG0OL.pgn": {
+    "event": "2025-canadian-closed-championnat-ferme-du-canada-closed",
+    "pgn": "https://lichess.org/api/broadcast/FEdZG0OL.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/2025-canadian-closed-championnat-ferme-du-canada-closed/round-1/9ZGI1SLf",
+    "timeControl": "90 min + 30 sec / move",
+    "bytes": 90555,
+    "sha256": "af3b004b09605ac19dc66e1c9a048c83fc10e0026f66785256374b24f3361c7f"
+  },
+  "finnish-championship-2025-open-i6RjRMpi.pgn": {
+    "event": "finnish-championship-2025-open",
+    "pgn": "https://lichess.org/api/broadcast/i6RjRMpi.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/finnish-championship-2025-open/round-1/JmQwH6M0",
+    "timeControl": "90'/40 moves + 30' + 30''/move",
+    "bytes": 57023,
+    "sha256": "eab07c479a0c48521288a6352455a363a0f13609ef2ab53b19bff4ef35101a6c"
+  },
+  "4ncl-easter-congress-2025-open-w8OAoJwV.pgn": {
+    "event": "4ncl-easter-congress-2025-open",
+    "pgn": "https://lichess.org/api/broadcast/w8OAoJwV.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/4ncl-easter-congress-2025-open/round-1/pmMO1qZh",
+    "timeControl": "90 min + 30 sec / move",
+    "bytes": 160439,
+    "sha256": "bbd754fe983e6d36ff9680b26728963e0438f41831d8fa326be69f05e367cec1"
+  },
+  "3rd-maharashtra-international-grandmaster-2025-AVDgzx7C.pgn": {
+    "event": "3rd-maharashtra-international-grandmaster-2025",
+    "pgn": "https://lichess.org/api/broadcast/AVDgzx7C.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/3rd-maharashtra-international-grandmaster-2025/round-1/CtkJryiQ",
+    "timeControl": "90 min + 30 sec / move",
+    "bytes": 129551,
+    "sha256": "758b8a94075820ae5c2d13ccc20feca574c2d73ba76e9215a30ecc9fa3654625"
+  },
+  "menorca-open-2025-open-nsgnf6rc.pgn": {
+    "event": "menorca-open-2025-open",
+    "pgn": "https://lichess.org/api/broadcast/nsgnf6rc.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/menorca-open-2025-open/round-1/IbEAqP66",
+    "timeControl": "90 min + 30 sec / move",
+    "bytes": 322951,
+    "sha256": "f369f1796396ac7f53c29f89dbc573bc66c76520e693a50cb9c8ab0cfbfead07"
+  },
+  "2025-sydney-international-open-championships-VqTd7T2w.pgn": {
+    "event": "2025-sydney-international-open-championships",
+    "pgn": "https://lichess.org/api/broadcast/VqTd7T2w.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/2025-sydney-international-open-championships/round-1/GdxThii3",
+    "timeControl": "90 min + 30 sec",
+    "bytes": 119396,
+    "sha256": "676346fa012b6ffcd25d616778aca5b9b02b1ace508c23a8f07503f973ba6842"
+  },
+  "asian-zone-33-chess-championship-2025-open-wfaM8dO7.pgn": {
+    "event": "asian-zone-33-chess-championship-2025-open",
+    "pgn": "https://lichess.org/api/broadcast/wfaM8dO7.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/asian-zone-33-chess-championship-2025-open/round-1/gpYZ6CUG",
+    "timeControl": "90mins/40moves + 30mins, 30secs increment all moves.",
+    "bytes": 78499,
+    "sha256": "66ed196cc03404c9119a2253444adee6b4d5efb87c6d43522df719e7d355ff27"
+  },
+  "campeonato-absoluto-de-euskadi-2025-0bp11T0v.pgn": {
+    "event": "campeonato-absoluto-de-euskadi-2025",
+    "pgn": "https://lichess.org/api/broadcast/0bp11T0v.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/campeonato-absoluto-de-euskadi-2025/round-1/VCa1Gwmv",
+    "timeControl": "90 mins + 30 secs increment.",
+    "bytes": 87518,
+    "sha256": "4af747b82fa93f1b38f5886cff8617f1c7a366d497c9cb97a1ac94c527998a96"
+  },
+  "rokh-chess-festival-2025-olr16IuC.pgn": {
+    "event": "rokh-chess-festival-2025",
+    "pgn": "https://lichess.org/api/broadcast/olr16IuC.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/rokh-chess-festival-2025/round-1/mjTK2D5M",
+    "timeControl": "90 min + 30 sec / move",
+    "bytes": 37025,
+    "sha256": "334283040b3de1deceb12ce3787e1122c041702b6256342db40aafe335959784"
+  },
+  "guildford-fide-congress-open-2025-guRPunjq.pgn": {
+    "event": "guildford-fide-congress-open-2025",
+    "pgn": "https://lichess.org/api/broadcast/guRPunjq.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/guildford-fide-congress-open-2025/round-1/WN7y9PZi",
+    "timeControl": "G90 + 30 seconds a move from move 1, reducing to 10 seconds a move after",
+    "bytes": 64017,
+    "sha256": "b2c9bd7e89db327562c1259343d8da42e3f4d972e687eef706ad1a59a6b599b8"
+  },
+  "sardinia-world-chess-festival-2025-open-a-gDfAUwcT.pgn": {
+    "event": "sardinia-world-chess-festival-2025-open-a",
+    "pgn": "https://lichess.org/api/broadcast/gDfAUwcT.pgn?clocks=false&comments=false",
+    "round": "https://lichess.org/broadcast/sardinia-world-chess-festival-2025-open-a/round-1/sRDI7joy",
+    "timeControl": "90 min / 40 moves + 30 min + 30 sec / move",
+    "bytes": 357756,
+    "sha256": "cdd64d29990b4d1dc90aefca82b4e312198fee48f8309b8c3e8755dfda4a27ba"
+  }
+}

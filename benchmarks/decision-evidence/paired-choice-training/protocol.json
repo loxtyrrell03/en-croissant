@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "baseRevision": "e6fbc1e8",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "ordinaryTrainingGames": 280,
+  "enrichedTrainingCap": 230,
+  "holdoutGames": 120,
+  "holdout": "One midgame board per finished 2025 public classical game. Test tournament families excluded from both fitting groups. No recorded game move or historic evaluation enters the holdout ranker.",
+  "availableModelSearch": {
+    "rootNodes": 90000,
+    "rootLines": 5,
+    "replyNodes": 12000,
+    "maxRootLossCp": 175
+  },
+  "initialReference": {
+    "rootNodes": 820000,
+    "replyNodes": 260000,
+    "maxCompetitiveGapCp": 35,
+    "minRepeatedLossCp": 90,
+    "sustainedMaterialPawns": 2,
+    "horizonPlies": 8
+  },
+  "repeatReference": {
+    "rootNodes": 1900000,
+    "replyNodes": 680000,
+    "recheck": "Repeat all held-out boards. Match the exact stronger move, weaker move, refuting reply, mechanism and original target when judging repeatable positives."
+  },
+  "criterion": "One alternative per board. Compare positive counts and known competitive alternatives, stratified by tournament. Unknowns consume a slot. A model earns a second prospective experiment if it gains at least two repeated witnesses in at least two tournament families over the best simple method at the same budget, without more competitive alternatives.",
+  "scope": "Engine-witness samples. A positive is a concrete branch contrast under the recorded searches. A competitive alternative is a control for the contrast. Neither outcome labels a player's thinking or the full position."
+}
