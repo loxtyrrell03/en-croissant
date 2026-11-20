@@ -4387,3 +4387,23 @@ additional cases. Neither variant finds another in 144 fresh
 classical games. This is a scoped explanation with no extra engine
 queries. Broad mixed recall remains unverified.
 [Evidence, comparison and regression replay](../benchmarks/decision-evidence/promotion-check-tempo/README.md)
+
+
+## A defensive check that takes away a king flight
+
+The new passed-pawn defence probe asks about the same exact check after
+both choices when an existing passer advances to the seventh. It
+requires the relocated slider to cover a legal king flight on the other
+board. Matched searches confirm that the flight actually matters, that
+the weaker line wins the checker or retains a promotion, and that the
+stronger line takes the pawn.
+
+In Lugano, the normal search now explains why `...Rb2` is mixed and
+`...Rd4` permits a tactical failure. The archived 841 requests and
+128 fresh games nominate no additional search. One geometry-based
+stress set finds five potentially better moves on 64 boards, but none
+supplies the scored and legal advance contrast. The live workflow uses
+two extra 500k-node queries for the Lugano case. The probe is bounded by
+the existing session deadline. The evidence concerns a scoped transfer
+and does not measure overall classifier accuracy.
+[Engine comparison, live receipt and tests](../benchmarks/decision-evidence/checking-flight-defence/README.md)

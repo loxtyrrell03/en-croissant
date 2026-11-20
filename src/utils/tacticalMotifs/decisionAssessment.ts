@@ -105,7 +105,9 @@ import {
 
 import { comparePromotionCheckTempo } from "./decisionPromotionCheckTempo";
 
-export const DECISION_ASSESSMENT_VERSION = 52;
+import { confirmPasserFlight, nominatePasserFlight, type PasserFlightProbe } from "./decisionPasserFlight";
+
+export const DECISION_ASSESSMENT_VERSION = 53;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -127,6 +129,7 @@ export type DecisionAssessment = {
     mateDefence?: ImmediateMateDefence;
     quietMateThreat?: QuietMateThreat;
     promotionTactic?: PositionStrategicPlan;
+    passerFlight?: PositionStrategicPlan;
     positionalFactors: ComparativePositionalEvidence[];
     limitations: string[];
 };
@@ -148,6 +151,7 @@ export type DecisionAssessmentInput = {
     preparedCheckpoint?: DecisionEngineLine[];
     extraPositionChoice?: ExtraPositionChoice;
     sharedReply?: DecisionSharedReplyProbe;
+    passerFlight?: PasserFlightProbe;
     checkingDefence?: CheckingDefenceProbe;
     passedAdvance?: DecisionEngineLine[];
     rootCertificates?: Array<{ fen: string; moveUci: string; motifs: TacticalMotifEvidence[] }>;
@@ -950,6 +954,19 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
         comparisonMeasured?.lines.length === comparison.length
     )
         mistakeStatus = "best-supplied-choice";
+    const passerRequest =
+        input.passerFlight && playedIndex > 0 && comparedBest?.pvUci[0] === first.pvUci[0]
+            ? nominatePasserFlight(
+                  input.fen,
+                  comparedBest,
+                  comparison[playedIndex],
+                  input.replyProbes?.find((probe) => probe.moveUci === comparison[playedIndex].pvUci[0])?.lines ?? [],
+                  input.history,
+              )
+            : null;
+    const passerFlight = passerRequest && input.passerFlight
+        ? confirmPasserFlight(passerRequest, input.passerFlight)
+        : null;
     const mateHint = input.replyProbes?.find(
         (probe) => probe.moveUci === input.playedMoveUci,
     )?.lines[0]?.pvUci[0];
@@ -1400,6 +1417,14 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     };
                 }
             }
+            if (passerFlight && assessment.tactical.support !== "supported") {
+                tacticalEpisode = passerFlight.episode;
+                assessment.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [tacticalEpisode.explanation],
+                };
+            }
             assessment.category = category(assessment.tactical, assessment.positional);
             assessment.limitations = [
                 "This compares objective consequences. It cannot establish what the player saw or misunderstood.",
@@ -1461,6 +1486,29 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             leader.limitations.push("This is a comparison after the shown reply. Other defences can change the route to promotion.");
             break;
         }
+    }
+    if (passerFlight) {
+        const episode = passerFlight.episode;
+        leader.passerFlight = {
+            description: episode.explanation,
+            linesUci: [episode.betterLineUci, episode.playedLineUci],
+        };
+        if (leader.tactical.support !== "supported") {
+            leader.tactical = {
+                support: "supported",
+                basis: "engine-supported",
+                reasons: [episode.explanation],
+            };
+        }
+        if (passerFlight.rookPlan && leader.positional.support !== "supported") {
+            leader.positional = {
+                support: "supported",
+                basis: "heuristic",
+                reasons: [passerFlight.rookPlan],
+            };
+        }
+        leader.category = category(leader.tactical, leader.positional);
+        leader.limitations.push("These lines compare the same pawn push. Other replies may require a different defence.");
     }
     return {
         version: DECISION_ASSESSMENT_VERSION,

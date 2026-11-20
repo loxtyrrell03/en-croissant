@@ -28,6 +28,11 @@ import { findAllowedImmediateMate } from "@/utils/tacticalMotifs/decisionMateCon
 import { findAllowedMateInTwo } from "@/utils/tacticalMotifs/decisionAllowedMateInTwo";
 import { findAllowedMateInThree } from "@/utils/tacticalMotifs/decisionAllowedMateInThree";
 import {
+    nominatePasserFlight,
+    selectPasserFlightCheck,
+    type PasserFlightProbe,
+} from "@/utils/tacticalMotifs/decisionPasserFlight";
+import {
     compareExtraPositionMove,
     nominatePositionRefutation,
     pickExtraPositionMove,
@@ -45,13 +50,24 @@ export type DecisionSearchTarget = {
 };
 
 function searchDecisionCheckpoint(
-    engine: LocalEngine, checkpoint: DecisionCheckpoint, signal: AbortSignal,
-    deadline: number, history?: TacticalGameHistory, restricted?: string[],
+    engine: LocalEngine,
+    checkpoint: DecisionCheckpoint,
+    signal: AbortSignal,
+    deadline: number,
+    history?: TacticalGameHistory,
+    restricted?: string[],
+    nodes = 2_400_000,
+    width = 3,
 ) {
     return searchPosition(
-        engine, checkpoint.fen, 2_400_000, signal, Math.min(deadline, Date.now() + 3_600),
+        engine,
+        checkpoint.fen,
+        nodes,
+        signal,
+        Math.min(deadline, Date.now() + 3_600),
         history ? { fen: history.fen, moves: [...history.moves, ...checkpoint.prefix] } : undefined,
         restricted,
+        width,
     );
 }
 
@@ -573,6 +589,35 @@ export async function gatherDecisionEvidence(
         });
         if (lines.length) positionReply = { moveUci: alternative.moveUci, lines };
     }
+    let passerFlight: PasserFlightProbe | undefined;
+    if (played && pairedBest?.pvUci[0] === best.pvUci[0] && played !== pairedBest) {
+        const replies = replyProbes.find((probe) => probe.moveUci === played.pvUci[0])?.lines ?? [];
+        const request = nominatePasserFlight(fen, pairedBest, played, replies, history);
+        if (request && Date.now() < sessionEnd) {
+            progress("Checking the passed-pawn defence…");
+            const stopAt = Math.min(sessionEnd, Date.now() + 3_000);
+            const query = (checkpoint: DecisionCheckpoint, restricted?: string[]) =>
+                searchDecisionCheckpoint(
+                    engine,
+                    checkpoint,
+                    signal,
+                    stopAt,
+                    history,
+                    restricted,
+                    500_000,
+                    2,
+                ).catch(() => {
+                    signal.throwIfAborted();
+                    return [];
+                });
+            const stronger = await query(request.better);
+            const check = selectPasserFlightCheck(request, stronger);
+            if (check) {
+                const [counter] = await query(request.played, [check.pvUci[0]]);
+                if (counter) passerFlight = { better: stronger, played: counter };
+            }
+        }
+    }
     signal.throwIfAborted();
     return {
         fen,
@@ -582,5 +627,6 @@ export async function gatherDecisionEvidence(
         replyProbes,
         positionReply,
         sharedReply,
+        passerFlight,
     };
 }

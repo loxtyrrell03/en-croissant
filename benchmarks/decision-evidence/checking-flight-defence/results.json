@@ -1,0 +1,118 @@
+{
+  "baseline": "f851ecda",
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "retainedInputs": {
+    "reply-coverage-audit/full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "reply-concordance/reserve-scored.json": "b230420f9b9092568f5ec404ebb6b7351865eeff10739d93daa5b39cf108261a",
+    "alternate-capture-payoff/fresh-scored.json": "e978e9d3a31a7f9ced6b3ed7de5b4be8908b3999f663cec11404357c62c3c445",
+    "promotion-check-tempo/fresh-scored.json": "ee7c8fd91b646894d3d72f8bf8867871a120a6aa37c71e5290857e6e0b1ff3fc",
+    "played-mate-in-three/reserve-scored.json": "a27bf8bd49161ae2000b0d6c485ffce08d9b9898e929d4cdccc4e43941195547"
+  },
+  "freshExclusions": {
+    "reply-coverage-audit/full-pair-input.json": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "reply-concordance/reserve-scored.json": "b230420f9b9092568f5ec404ebb6b7351865eeff10739d93daa5b39cf108261a",
+    "alternate-capture-payoff/fresh-scored.json": "e978e9d3a31a7f9ced6b3ed7de5b4be8908b3999f663cec11404357c62c3c445",
+    "promotion-check-tempo/fresh-scored.json": "ee7c8fd91b646894d3d72f8bf8867871a120a6aa37c71e5290857e6e0b1ff3fc",
+    "played-mate-in-three/reserve-scored.json": "a27bf8bd49161ae2000b0d6c485ffce08d9b9898e929d4cdccc4e43941195547",
+    "paired-passer-benchmark/sample.json": "afa3ece3f098a740430073f958df0f80b132f912ea9fb96b5149c90abba0e7a1"
+  },
+  "sampleHashes": {
+    "reserve": "fe8b1d051edaa72b14b5420a4d41b0ab8ca2286ad8b42e88f86c4128dbca006a",
+    "reserve-scored": "4884e8ce56dbae0bb18ade273c80a86a9d9df6dfb5c17be68b9ed1a84361c536",
+    "stress-scored": "5e71bd31bf22683598fd1383b589fcd30e5b9d8fd65bf3f25e2169c1d5d29c54"
+  },
+  "appScreen": {
+    "archive": {
+      "inputs": 842,
+      "hits": [
+        "passer-pair-24058c51cfa95ff0"
+      ],
+      "elapsedMs": 30.431799999999953
+    },
+    "fresh": {
+      "inputs": 128,
+      "hits": [],
+      "elapsedMs": 1.133100000000013
+    },
+    "stress": {
+      "inputs": 64,
+      "hits": [],
+      "elapsedMs": 0.3786000000000058
+    }
+  },
+  "freshBudget": {
+    "no-related-leading-choice": 97,
+    "scored": 22,
+    "pair-reversed": 9
+  },
+  "geometryBudget": {
+    "geometry-does-not-improve": 59,
+    "geometry-is-better": 5
+  },
+  "luganoBudget": {
+    "shallow": {
+      "defenderScoresCp": [
+        12,
+        -734
+      ],
+      "weakerPayoff": "checker-captured",
+      "requestedNodes": 1000000,
+      "engineWallMs": 972.92
+    },
+    "reference": {
+      "defenderScoresCp": [
+        9,
+        -817
+      ],
+      "weakerPayoff": "checker-captured",
+      "requestedNodes": 4800000,
+      "engineWallMs": 2889.86
+    },
+    "repeat": {
+      "defenderScoresCp": [
+        14,
+        -846
+      ],
+      "weakerPayoff": "same-pawn-promotes",
+      "requestedNodes": 9600000,
+      "engineWallMs": 5639.98
+    }
+  },
+  "live": {
+    "baseline": {
+      "queries": 5,
+      "move": "unclear",
+      "mistake": "unclear",
+      "elapsedMs": 6084
+    },
+    "enabled": {
+      "queries": 7,
+      "move": "mixed",
+      "mistake": "tactical",
+      "elapsedMs": 7415,
+      "extra": [
+        {
+          "nodes": 500000,
+          "searched": 500354,
+          "restricted": [],
+          "prefix": [
+            "d2b2",
+            "b6b7"
+          ]
+        },
+        {
+          "nodes": 500000,
+          "searched": 500618,
+          "restricted": [
+            "d5e3"
+          ],
+          "prefix": [
+            "d2d4",
+            "b6b7"
+          ]
+        }
+      ]
+    },
+    "matchedLaterRun": true
+  }
+}

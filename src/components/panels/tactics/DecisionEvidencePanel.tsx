@@ -406,7 +406,10 @@ function DecisionReport({
           key={selected.moveUci}
           title="What the move achieves"
           assessment={selected}
-          comparedLines={selected.promotionTactic?.linesUci.map((moves) => ({
+          comparedLines={[
+            ...(selected.promotionTactic?.linesUci ?? []),
+            ...(selected.passerFlight?.linesUci ?? []),
+          ].map((moves) => ({
             label: `After ${lineSan(report.fen, moves.slice(0, 2))}`,
             san: lineSan(report.fen, moves),
           }))}
