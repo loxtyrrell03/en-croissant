@@ -1,0 +1,4438 @@
+{
+  "sample": {
+    "capture-order": 96,
+    "ordinary": 48
+  },
+  "references": {
+    "other-or-unresolved": 32,
+    "positive": 29,
+    "order-harmless": 20,
+    "unresolved": 5,
+    "reply-unverified": 2,
+    "root-unverified": 7,
+    "better-order-unverified": 1
+  },
+  "sources": {
+    "1-festival-internazionale-di-scacchi-il-tesoro-di-san-gennaro-torneo-a": 3,
+    "2026-carolinas-classic": 5,
+    "2026-sahel-international-chess-festival-open-a": 8,
+    "20th-iccd-world-deaf-chess-championships-team-classical-men": 5,
+    "22nd-chefchaouen-international-chess-festival-2026": 3,
+    "23rd-bangkok-chess-club-open-2026": 8,
+    "25th-ipca-world-individual-chess-championship-2026": 4,
+    "29th-open-bavarian-chess-championship": 8,
+    "32nd-abu-dhabi-international-chess-festival-2026": 8,
+    "5th-skyline-open-open": 6,
+    "6th-dolakha-open-international-chess-tournament-2026": 3,
+    "7th-paul-keres-memorial-festival-2026": 6,
+    "brasov-grand-prix-classic-2026": 8,
+    "capital-chess-classic-2026": 3,
+    "chess-slovak-open-skalica-2026": 5,
+    "chessbattle-summer-cup-classic": 8,
+    "fesueq-festival-sudeste-por-equipes-2026": 8,
+    "fisu-world-university-championship-mind-sports-2026": 8,
+    "gct-super-chess-classic-romania-2026": 3,
+    "mcc-classic-swiss": 5,
+    "oskemen-open-2026": 4,
+    "picas-all-india-open-fide-classical-rating-chess-tournament-2026": 3,
+    "pofinay-indywidualnych-mistrzostw-polski-2026": 7,
+    "portuguese-senior-championship-2025": 3,
+    "rubinstein-chess-festival-2026": 7,
+    "4th-hdca-all-india-open-fide-rated-classical-chess-tournament-2026": 2,
+    "austrian-championship-2026": 2,
+    "xxv-festival-internazionale-citta-di-nichelino-open-a": 1
+  },
+  "geometry": {
+    "calls-needing-separate-review": 12,
+    "false-negative": 18,
+    "true-negative": 18,
+    "false-positive": 2,
+    "true-positive": 11
+  },
+  "verified": {
+    "calls-needing-separate-review": 5,
+    "false-negative": 18,
+    "true-negative": 20,
+    "true-positive": 11
+  },
+  "optionalCost": {
+    "searches": 25,
+    "nodes": 30593585,
+    "medianMs": 1412
+  },
+  "cases": [
+    {
+      "id": "4091547a2994d1c1753e",
+      "source": "https://lichess.org/broadcast/1-festival-internazionale-di-scacchi-il-tesoro-di-san-gennaro-torneo-a/round-4/pNHP0yHN/rn52ut69",
+      "group": "1-festival-internazionale-di-scacchi-il-tesoro-di-san-gennaro-torneo-a",
+      "category": "capture-order",
+      "recordedKey": [
+        "h3e6",
+        "a1c1",
+        "e6c4",
+        "d3e3"
+      ],
+      "appKey": [
+        "h3e6",
+        "a1c1",
+        "e6c4",
+        "d3e3"
+      ],
+      "reference": "other-or-unresolved",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "26...Be6 27. Rc1",
+        "lines": [
+          {
+            "cp": 479,
+            "mate": null,
+            "depth": 21,
+            "san": "27...Bxc4 28. Kf2 Be6 29. Rc6 Nd5 30. Rxa6 h6 31. Ra3"
+          },
+          {
+            "cp": -663,
+            "mate": null,
+            "depth": 21,
+            "san": "27...Rxe3 28. Nxe3 Kf8 29. b3 Nd7 30. f4 Nf6 31. Rc6"
+          }
+        ],
+        "gap": 1142,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "26...Be6 27. Rc1",
+        "lines": [
+          {
+            "cp": 487,
+            "mate": null,
+            "depth": 20,
+            "san": "27...Bxc4 28. Rxc4 Rxe3 29. Kf2 Re6 30. Rc8+ Ne8 31. a4"
+          },
+          {
+            "cp": -658,
+            "mate": null,
+            "depth": 20,
+            "san": "27...Rxe3 28. Nxe3 Kf8 29. Rc6 Bxa2 30. Rxa6 Be6 31. Ra3"
+          }
+        ],
+        "gap": 1145,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "h3e6": "unclear",
+        "f6d5": "unclear",
+        "f6d7": "unclear"
+      }
+    },
+    {
+      "id": "1928521e79c727003270",
+      "source": "https://lichess.org/broadcast/2026-sahel-international-chess-festival-open-a/round-3/UvFPXCDK/jTN5ifpT",
+      "group": "2026-sahel-international-chess-festival-open-a",
+      "category": "capture-order",
+      "recordedKey": [
+        "h4f2",
+        "c7c6",
+        "f2c5",
+        "c3a4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "14. Bf2 c6",
+        "lines": [
+          {
+            "cp": 6,
+            "mate": null,
+            "depth": 25,
+            "san": "15. Bxc5 dxc5 16. Nxa4 cxd5 17. Nxc5 dxe4 18. Nxd7 Qxd7"
+          },
+          {
+            "cp": -506,
+            "mate": null,
+            "depth": 25,
+            "san": "15. Nxa4 Nxa4 16. b3 Nc5 17. O-O Qe7 18. Rfb1 cxd5"
+          }
+        ],
+        "gap": 512,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "e1c1": "unclear",
+        "h4f2": "unclear",
+        "g2g4": "unclear"
+      }
+    },
+    {
+      "id": "1ea784f67fa89dd583c9",
+      "source": "https://lichess.org/broadcast/20th-iccd-world-deaf-chess-championships-team-classical-men/round-3/KAO56buS/SfSplLAW",
+      "group": "20th-iccd-world-deaf-chess-championships-team-classical-men",
+      "category": "capture-order",
+      "recordedKey": [
+        "f1e1",
+        "b8c6",
+        "e1e6",
+        "a3e7"
+      ],
+      "appKey": [
+        "a1e1",
+        "b8c6",
+        "e1e6",
+        "f3f6"
+      ],
+      "reference": "order-harmless",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "17. Rfe1 Nbc6",
+        "lines": [
+          {
+            "cp": 1158,
+            "mate": null,
+            "depth": 24,
+            "san": "18. Rxe6 Bxe6 19. Qxf6 Kd7 20. Re1 Rae8 21. Qxe6+ Kd8"
+          },
+          {
+            "cp": 1117,
+            "mate": null,
+            "depth": 24,
+            "san": "18. Bxe7 Kxe7 19. Bf5 Rg5 20. Bxe6 Bxe6 21. Qe4 Ne5"
+          }
+        ],
+        "gap": 41,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "17. Rae1 Nbc6",
+        "lines": [
+          {
+            "cp": 1059,
+            "mate": null,
+            "depth": 18,
+            "san": "18. Rxe6 Bxe6 19. Re1 Kd7 20. Qxf6 Rae8 21. Qxe6+ Kd8"
+          },
+          {
+            "cp": -682,
+            "mate": null,
+            "depth": 18,
+            "san": "18. Qxf6 Qxf6 19. Re4 Rg4 20. Re2 Rxh4 21. Rfe1 Bf5"
+          }
+        ],
+        "gap": 1741,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "a1e1": "tactical",
+        "f1e1": "unclear",
+        "a3e7": "unclear"
+      }
+    },
+    {
+      "id": "06363a05efdc38f553ad",
+      "source": "https://lichess.org/broadcast/23rd-bangkok-chess-club-open-2026-classical/round-3/S00Zm4qV/d8nKKtQO",
+      "group": "23rd-bangkok-chess-club-open-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "c1h6",
+        "f6e5",
+        "h6f8",
+        "g4f5"
+      ],
+      "appKey": [
+        "c1h6",
+        "f5f4",
+        "h6f8",
+        "e5f6"
+      ],
+      "reference": "reply-unverified",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "20. Bh6 fxe5",
+        "lines": [
+          {
+            "cp": 496,
+            "mate": null,
+            "depth": 22,
+            "san": "21. Bxf8 Bxf8 22. gxf5 Bxf5 23. Ne3 Be6 24. Bg4 Bf7"
+          },
+          {
+            "cp": 163,
+            "mate": null,
+            "depth": 22,
+            "san": "21. gxf5 Rxf5 22. Ne3 Rg5+ 23. Rg2 Kh8 24. Bg4 Bg8"
+          }
+        ],
+        "gap": 333,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "20. Bh6 f4",
+        "lines": [
+          {
+            "cp": 82,
+            "mate": null,
+            "depth": 21,
+            "san": "21. Bxf8 Bxf8 22. exf6 Qxf6 23. Na1 Nxa1 24. Qxa1 Rb8"
+          },
+          {
+            "cp": -95,
+            "mate": null,
+            "depth": 21,
+            "san": "21. exf6 Rxf6 22. Bg5 Rg6 23. Bxf4 Bg5 24. Bg3 Qd7"
+          }
+        ],
+        "gap": 177,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "c1h6": "unclear",
+        "c1f4": "unclear",
+        "e5f6": "unclear"
+      }
+    },
+    {
+      "id": "05e5866990375405f1ec",
+      "source": "https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-1/atM541Zl/k7WZKdAV",
+      "group": "29th-open-bavarian-chess-championship",
+      "category": "capture-order",
+      "recordedKey": [
+        "f5e4",
+        "g4g5",
+        "e4f3",
+        "f6g5"
+      ],
+      "appKey": [
+        "f5e4",
+        "g4g5",
+        "e4f3",
+        "f6g5"
+      ],
+      "reference": "order-harmless",
+      "app": "unresolved",
+      "refSAN": {
+        "prefix": "26...Be4 27. g5",
+        "lines": [
+          {
+            "cp": -216,
+            "mate": null,
+            "depth": 27,
+            "san": "27...Bxf3 28. Bxf3 fxg5 29. Bxc6 bxc6 30. Rxa5 Rfb8 31. Rd7"
+          },
+          {
+            "cp": -227,
+            "mate": null,
+            "depth": 27,
+            "san": "27...fxg5 28. Nxg5 Bxg2 29. Kxg2 Re8 30. Ne4 Re7 31. Rcd5"
+          }
+        ],
+        "gap": 11,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "26...Be4 27. g5",
+        "lines": [
+          {
+            "cp": -241,
+            "mate": null,
+            "depth": 23,
+            "san": "27...fxg5 28. Nxg5 Bxg2 29. Kxg2 Re8 30. Ne4 Re7 31. Rcd5"
+          },
+          {
+            "cp": -292,
+            "mate": null,
+            "depth": 23,
+            "san": "27...Bxf3 28. Bxf3 fxg5 29. Bxc6 bxc6 30. Rxa5 Rfb8 31. Rd7"
+          }
+        ],
+        "gap": -51,
+        "role": null
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "f5e4": "unclear",
+        "f5b1": "unclear",
+        "f5e6": "unclear"
+      }
+    },
+    {
+      "id": "01e4e8489eb9d4c84e10",
+      "source": "https://lichess.org/broadcast/brasov-grand-prix-classic-2026-group-a/round-1/WYslOwD7/WJmkMb29",
+      "group": "brasov-grand-prix-classic-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "c1g5",
+        "h7h6",
+        "g5f6",
+        "c3e4"
+      ],
+      "appKey": [
+        "c1g5",
+        "h7h6",
+        "g5f6",
+        "c3e4"
+      ],
+      "reference": "other-or-unresolved",
+      "app": "other-or-unresolved",
+      "refSAN": {
+        "prefix": "18. Bg5 h6",
+        "lines": [
+          {
+            "cp": -55,
+            "mate": null,
+            "depth": 24,
+            "san": "19. Bxf6 Qxf6 20. Nxe4 Qe5 21. f4 Qd4+ 22. e3 Qc4"
+          },
+          {
+            "cp": -624,
+            "mate": null,
+            "depth": 24,
+            "san": "19. Nxe4 hxg5 20. Nxg5 Bxa2 21. Ra1 Bc4 22. Rxa7 Nfd5"
+          }
+        ],
+        "gap": 569,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "18. Bg5 h6",
+        "lines": [
+          {
+            "cp": -53,
+            "mate": null,
+            "depth": 19,
+            "san": "19. Bxf6 Qxf6 20. Nxe4 Qe5 21. Ne3 Bxa2 22. Rd1 Nc4"
+          },
+          {
+            "cp": -622,
+            "mate": null,
+            "depth": 19,
+            "san": "19. Nxe4 hxg5 20. Nxg5 Bd5 21. Nc3 Bxg2 22. Kxg2 Nfd5"
+          }
+        ],
+        "gap": 569,
+        "role": null
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "a2a4": "unclear",
+        "c1g5": "tactical",
+        "b4b5": "unclear"
+      }
+    },
+    {
+      "id": "1136d85db56b83f1102f",
+      "source": "https://lichess.org/broadcast/fesueq-festival-sudeste-por-equipes-2026/A5WKEZ6B",
+      "group": "fesueq-festival-sudeste-por-equipes-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "e2c4",
+        "g7e6",
+        "c4e6",
+        "c5c7"
+      ],
+      "appKey": null,
+      "reference": "root-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "31. Bc4 Ne6",
+        "lines": [
+          {
+            "cp": 919,
+            "mate": null,
+            "depth": 28,
+            "san": "32. Bxe6 fxe6 33. Rxc7 Kxc7 34. Ke3 Kb6 35. d5 Kxb5"
+          },
+          {
+            "cp": 708,
+            "mate": null,
+            "depth": 28,
+            "san": "32. Rxc7 Nxc7 33. Bxf7 Nxb5 34. Ke3 Ke7 35. Bb3 Nd6"
+          }
+        ],
+        "gap": 211,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "e4e5": "positional",
+        "e2g4": "unclear",
+        "e2c4": "unclear"
+      }
+    },
+    {
+      "id": "608dc921e374d275071d",
+      "source": "https://lichess.org/broadcast/fisu-world-university-championship-mind-sports-2026-classical-men/round-1/N6JwpVHC/gNqStaWR",
+      "group": "fisu-world-university-championship-mind-sports-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "b4b5",
+        "c8b7",
+        "b5c6",
+        "c4d5"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "15. b5 Bb7",
+        "lines": [
+          {
+            "cp": 221,
+            "mate": null,
+            "depth": 24,
+            "san": "16. bxc6 Bxc6 17. Nc3 Rc8 18. cxd5 Bxd5 19. Bxd5 exd5"
+          },
+          {
+            "cp": -10,
+            "mate": null,
+            "depth": 24,
+            "san": "16. cxd5 cxd5 17. Nd2 g5 18. Nf3 gxf4 19. Qd2 f6"
+          }
+        ],
+        "gap": 231,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "b4b5": "tactical",
+        "c2d3": "unclear",
+        "b1c3": "unclear"
+      }
+    },
+    {
+      "id": "2e5d45c16b0a8510bad0",
+      "source": "https://lichess.org/broadcast/mcc-classic-swiss/n5vOYpBi",
+      "group": "mcc-classic-swiss",
+      "category": "capture-order",
+      "recordedKey": [
+        "f5d6",
+        "e4e7",
+        "d6f7",
+        "c3c4"
+      ],
+      "appKey": [
+        "f5d6",
+        "e4e7",
+        "d6f7",
+        "c3c4"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "52. Nd6 Re7",
+        "lines": [
+          {
+            "cp": 6,
+            "mate": null,
+            "depth": 24,
+            "san": "53. Nxf7 Rxf7 54. Rxc4+ Kg5 55. Kg3 h5 56. Rc5+ Kh6"
+          },
+          {
+            "cp": -707,
+            "mate": null,
+            "depth": 24,
+            "san": "53. Rxc4+ Bxc4 54. Nxc4 Rd7 55. b4 Rd3 56. Ke2 Rxh3"
+          }
+        ],
+        "gap": 713,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "52. Nd6 Re7",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 23,
+            "san": "53. Nxf7 Rxf7 54. Rxc4+ Kg5 55. Kg3 h5 56. Rc5+ Kh6"
+          },
+          {
+            "cp": -684,
+            "mate": null,
+            "depth": 23,
+            "san": "53. Rxc4+ Bxc4 54. Nxc4 Rc7 55. b3 Rc8 56. Ke2 Kg3"
+          }
+        ],
+        "gap": 684,
+        "role": "recaptures"
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "f5d6": "tactical",
+        "f5g3": "unclear",
+        "f5e3": "unclear"
+      }
+    },
+    {
+      "id": "0c0330d4d32bf00d2fd2",
+      "source": "https://lichess.org/broadcast/oskemen-open-2026-open/round-3/dC2DVhZ7/j18AjHyN",
+      "group": "oskemen-open-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "d3c2",
+        "d1a1",
+        "c2b3",
+        "e2d4"
+      ],
+      "appKey": [
+        "d3c4",
+        "d1a1",
+        "c4b3",
+        "e2d4"
+      ],
+      "reference": "positive",
+      "app": "order-harmless",
+      "refSAN": {
+        "prefix": "52...Bc2 53. Ra1",
+        "lines": [
+          {
+            "cp": 774,
+            "mate": null,
+            "depth": 28,
+            "san": "53...Bxb3 54. Kf1 Nxd4 55. Nxb3 Rxb3 56. Bf2 Nxf3 57. Ra7+"
+          },
+          {
+            "cp": 21,
+            "mate": null,
+            "depth": 28,
+            "san": "53...Nxd4 54. Nxd4 Bxd2 55. Bxd2 Bg6 56. Ra7+ Ke8 57. Nxe6"
+          }
+        ],
+        "gap": 753,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "52...Bc4 53. Ra1",
+        "lines": [
+          {
+            "cp": 691,
+            "mate": null,
+            "depth": 25,
+            "san": "53...Bxb3 54. Ra7+ Ke8 55. Ra8+ Kd7 56. Nxb3 Nxd4+ 57. Bf2"
+          },
+          {
+            "cp": 645,
+            "mate": null,
+            "depth": 25,
+            "san": "53...Nxd4 54. Rb1 Rxb1 55. Nxb1 Bxe1 56. Nxd4 c5 57. Nc6"
+          }
+        ],
+        "gap": 46,
+        "role": null
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "b4d2": "tactical",
+        "d3c4": "unclear",
+        "d3c2": "tactical"
+      }
+    },
+    {
+      "id": "2cc42d46dd6b4c04e51f",
+      "source": "https://lichess.org/broadcast/picas-all-india-open-fide-classical-rating-chess-tournament-2026/round-5/LWdqmMgO/7doN3gLE",
+      "group": "picas-all-india-open-fide-classical-rating-chess-tournament-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "d7d6",
+        "f6e4",
+        "d6e6",
+        "f3e4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "39. Rd6 Nxe4",
+        "lines": [
+          {
+            "cp": -13,
+            "mate": null,
+            "depth": 26,
+            "san": "40. Rxe6 fxe6 41. fxe4 a4 42. Rxb6 Kf7 43. bxa4 Rc8"
+          },
+          {
+            "cp": -892,
+            "mate": null,
+            "depth": 26,
+            "san": "40. fxe4 Rxd6 41. e5 Re6 42. Kh2 Rd8 43. a3 Rxe5"
+          }
+        ],
+        "gap": 879,
+        "role": "takes-preparer"
+      },
+      "appSAN": null,
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "d7d6": "tactical",
+        "d7e7": "unclear",
+        "d7d2": "unclear"
+      }
+    },
+    {
+      "id": "4314afdc92fca97e54eb",
+      "source": "https://lichess.org/broadcast/pofinay-indywidualnych-mistrzostw-polski-2026-open/OHA3daQb",
+      "group": "pofinay-indywidualnych-mistrzostw-polski-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "a6a4",
+        "d2e2",
+        "a4e4",
+        "e6g5"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "32...Ra4 33. Re2",
+        "lines": [
+          {
+            "cp": -25,
+            "mate": null,
+            "depth": 24,
+            "san": "33...Rxe4 34. Rxe4 Nxg5 35. Rxe5 Ne6 36. Rd5 Rc8 37. Rdd7"
+          },
+          {
+            "cp": -479,
+            "mate": null,
+            "depth": 24,
+            "san": "33...Nxg5 34. Nxg5 h6 35. Nxf7 Rf4 36. Nxe5 Rxf6 37. c4"
+          }
+        ],
+        "gap": 454,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "a6a4": "unclear",
+        "e6g5": "tactical",
+        "h7h6": "unclear"
+      }
+    },
+    {
+      "id": "71ae9409f8e3a13d6e1b",
+      "source": "https://lichess.org/broadcast/2026-carolinas-classic/round-3/ViyKcGyC/C709yh3x",
+      "group": "2026-carolinas-classic",
+      "category": "capture-order",
+      "recordedKey": [
+        "a8b7",
+        "d6d5",
+        "b7d5",
+        "b1b3"
+      ],
+      "appKey": [
+        "a8c6",
+        "d6d5",
+        "c6d5",
+        "b1b3"
+      ],
+      "reference": "order-harmless",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "40. Qb7 Qxd5",
+        "lines": [
+          {
+            "cp": 5,
+            "mate": null,
+            "depth": 34,
+            "san": "41. Qxd5 Rxd5 42. Rxb3 Ra5 43. Rb7 Kg7 44. f3 Ra4"
+          },
+          {
+            "cp": 2,
+            "mate": null,
+            "depth": 34,
+            "san": "41. Rxb3 Qxb7 42. Rxb7 Kg7 43. Ra7 Rd1+ 44. Kh2 Ra1"
+          }
+        ],
+        "gap": 3,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "40. Qc6 Qxd5",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 22,
+            "san": "41. Qxd5 Rxd5 42. Rxb3 Ra5 43. Rb7 Kg7 44. Kh2 Ra1"
+          },
+          {
+            "cp": -1291,
+            "mate": null,
+            "depth": 22,
+            "san": "41. Rxb3 Qxc6 42. Rb1 Qc2 43. Re1 Rd2 44. Rf1 Qf5"
+          }
+        ],
+        "gap": 1291,
+        "role": "takes-preparer"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "a8c6": "unclear",
+        "a8b7": "unclear",
+        "a8a7": "unclear"
+      }
+    },
+    {
+      "id": "bb0c1d20e85b7f934575",
+      "source": "https://lichess.org/broadcast/5th-skyline-open-open/HyGJMos9",
+      "group": "5th-skyline-open-open",
+      "category": "capture-order",
+      "recordedKey": [
+        "e3d4",
+        "f7g6",
+        "d4f6",
+        "h4h5"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "45. Bd4 Kg6",
+        "lines": [
+          {
+            "cp": 702,
+            "mate": null,
+            "depth": 27,
+            "san": "46. Bxf6 Kxf6 47. Rxh5 Rb8 48. b5 Kg6 49. Rd5 Rh8"
+          },
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 27,
+            "san": "46. Rxh5 Nxh5 47. c5 Kf5 48. Kc4 Ke6 49. b5 Rf7"
+          }
+        ],
+        "gap": 702,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "positional",
+      "baselineMoves": {
+        "e3d4": "tactical",
+        "h4f4": "unclear",
+        "b4b5": "unclear"
+      }
+    },
+    {
+      "id": "1058b90080137e32d59f",
+      "source": "https://lichess.org/broadcast/brasov-grand-prix-classic-2026-group-a/round-4/krVGRHso/rNi6ozhf",
+      "group": "brasov-grand-prix-classic-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "f8g6",
+        "d1c1",
+        "g6e5",
+        "d7d4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "28...Ng6 29. Rc1",
+        "lines": [
+          {
+            "cp": -35,
+            "mate": null,
+            "depth": 25,
+            "san": "29...Nxe5 30. Rxe5 Qxd4 31. Qxe6 Qxb2 32. Rf1 Rf8 33. Rxf5"
+          },
+          {
+            "cp": -900,
+            "mate": null,
+            "depth": 25,
+            "san": "29...Qxd4 30. Bxd4 e5 31. Rxe5 Rxd4 32. Re6 Nf8 33. Rexc6"
+          }
+        ],
+        "gap": 865,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "positional",
+      "baselineMoves": {
+        "f8g6": "positional",
+        "d7e8": "unclear",
+        "d7e7": "unclear"
+      }
+    },
+    {
+      "id": "82a16b07862645406a00",
+      "source": "https://lichess.org/broadcast/chess-slovak-open-skalica-2026-open-a/R1ZiYVGV",
+      "group": "chess-slovak-open-skalica-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "c5c4",
+        "c1e3",
+        "c4d3",
+        "f6e4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "16...c4 17. Be3",
+        "lines": [
+          {
+            "cp": -366,
+            "mate": null,
+            "depth": 22,
+            "san": "17...cxd3 18. Qxd3 b4 19. Nb5 Nxe4 20. Qxe4 Be2 21. Nc7"
+          },
+          {
+            "cp": -672,
+            "mate": null,
+            "depth": 22,
+            "san": "17...Nxe4 18. Bxe4 Nf6 19. Bd4 b4 20. Nb5 Rfc8 21. Bxf6"
+          }
+        ],
+        "gap": 306,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "c5c4": "unclear",
+        "a8a1": "unclear",
+        "d7b6": "unclear"
+      }
+    },
+    {
+      "id": "1a4b5ae85065cd78f483",
+      "source": "https://lichess.org/broadcast/oskemen-open-2026-open/round-4/bM1BpdzE/oTVAx67B",
+      "group": "oskemen-open-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "d5f4",
+        "a6c8",
+        "f4d3",
+        "d8d4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "25...Nf4 26. Bxc8",
+        "lines": [
+          {
+            "cp": -702,
+            "mate": null,
+            "depth": 24,
+            "san": "26...Nxd3 27. Bxe6+ Kh8 28. Nxd3 Rxd4 29. Bxf5 Rxb3 30. Bb2"
+          },
+          {
+            "cp": -1224,
+            "mate": null,
+            "depth": 24,
+            "san": "26...Rxd4 27. Qxd4 Rxc8 28. Qxf4 h6 29. Qc4 Re8 30. b4"
+          }
+        ],
+        "gap": 522,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "positional",
+      "baselineMoves": {
+        "c8c7": "positional",
+        "d5f4": "unclear",
+        "d5b4": "unclear"
+      }
+    },
+    {
+      "id": "49ebffd073b6da956c45",
+      "source": "https://lichess.org/broadcast/picas-all-india-open-fide-classical-rating-chess-tournament-2026/round-4/E4wpnA2T/k0lAul4h",
+      "group": "picas-all-india-open-fide-classical-rating-chess-tournament-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "d7e6",
+        "e2f4",
+        "e6d5",
+        "a3a2"
+      ],
+      "appKey": [
+        "d7e6",
+        "e2f4",
+        "e6d5",
+        "a3a2"
+      ],
+      "reference": "other-or-unresolved",
+      "app": "other-or-unresolved",
+      "refSAN": {
+        "prefix": "24...Be6 25. Nf4",
+        "lines": [
+          {
+            "cp": 3,
+            "mate": null,
+            "depth": 26,
+            "san": "25...Bxd5 26. Nxd5 Rxa2 27. Nf6+ Bxf6 28. exf6 Nb8 29. Rxf5"
+          },
+          {
+            "cp": -645,
+            "mate": null,
+            "depth": 26,
+            "san": "25...Rxa2 26. Nxe6 Re2 27. Qf1 fxe6 28. Bxe6+ Kh8 29. Ra1"
+          }
+        ],
+        "gap": 648,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "24...Be6 25. Nf4",
+        "lines": [
+          {
+            "cp": 7,
+            "mate": null,
+            "depth": 21,
+            "san": "25...Bxd5 26. Nxd5 Rxa2 27. Nf6+ Bxf6 28. exf6 Qe2 29. Qxe2"
+          },
+          {
+            "cp": -580,
+            "mate": null,
+            "depth": 21,
+            "san": "25...Rxa2 26. Nxe6 fxe6 27. Bxe6+ Kh8 28. Bxa2 Qxa2 29. Rxb7"
+          }
+        ],
+        "gap": 587,
+        "role": null
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "d7e6": "mixed",
+        "c6d8": "unclear",
+        "b7b5": "unclear"
+      }
+    },
+    {
+      "id": "8814ea3d6087e43ed97d",
+      "source": "https://lichess.org/broadcast/portuguese-senior-championship-2025-26-classical-s50/lLoSkBb9",
+      "group": "portuguese-senior-championship-2025",
+      "category": "capture-order",
+      "recordedKey": [
+        "b7c6",
+        "e8d8",
+        "c6a4",
+        "c2b3"
+      ],
+      "appKey": null,
+      "reference": "better-order-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "20. Bc6 Rd8",
+        "lines": [
+          {
+            "cp": 169,
+            "mate": null,
+            "depth": 22,
+            "san": "21. Bxa4 Rxa4 22. h4 Qg6 23. Qxb3 Raa8 24. Rfe1 h6"
+          },
+          {
+            "cp": -689,
+            "mate": null,
+            "depth": 22,
+            "san": "21. Qxb3 axb3 22. Rfe1 Rd6 23. Be4 Qd8 24. Re3 c5"
+          }
+        ],
+        "gap": 858,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "b7c6": "unclear",
+        "h2h4": "unclear",
+        "f2f4": "unclear"
+      }
+    },
+    {
+      "id": "271520a59c49aa95c056",
+      "source": "https://lichess.org/broadcast/rubinstein-chess-festival-2026-open-a/ZvtLBvk8",
+      "group": "rubinstein-chess-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "c4e6",
+        "c8d8",
+        "e6d7",
+        "d4b6"
+      ],
+      "appKey": null,
+      "reference": "root-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "23. Be6 Rcd8",
+        "lines": [
+          {
+            "cp": 378,
+            "mate": null,
+            "depth": 25,
+            "san": "24. Bxd7 Rxd7 25. Qxb6 Re8 26. Bd4 Rc8 27. O-O Rdc7"
+          },
+          {
+            "cp": -890,
+            "mate": null,
+            "depth": 25,
+            "san": "24. Qxb6 Nxb6 25. Bd4 Qxe6 26. Bxb6 f4 27. O-O fxe3"
+          }
+        ],
+        "gap": 1268,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "e1g1": "unclear",
+        "h4h5": "unclear",
+        "e1f2": "unclear"
+      }
+    },
+    {
+      "id": "eaee92aca831671d5af0",
+      "source": "https://lichess.org/broadcast/2026-carolinas-classic/round-4/nBMahb0Q/hwfc3U8e",
+      "group": "2026-carolinas-classic",
+      "category": "capture-order",
+      "recordedKey": [
+        "g6e4",
+        "f4g3",
+        "e4f3",
+        "c6e5"
+      ],
+      "appKey": null,
+      "reference": "root-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "18...Be4 19. Qg3",
+        "lines": [
+          {
+            "cp": 259,
+            "mate": null,
+            "depth": 24,
+            "san": "19...Bxf3 20. Bxf3 Nxe5 21. Bg4 Qd6 22. Rfe1 Nc4 23. a4"
+          },
+          {
+            "cp": -583,
+            "mate": null,
+            "depth": 24,
+            "san": "19...Nxe5 20. Nxe5 Rfc8 21. Rac1 a5 22. Bh5 g6 23. Bg4"
+          }
+        ],
+        "gap": 842,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "c6d4": "unclear",
+        "g6e4": "tactical",
+        "a8c8": "unclear"
+      }
+    },
+    {
+      "id": "222db6193878c2bc8aa7",
+      "source": "https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-5/Fu49apHE/71PJMGhY",
+      "group": "29th-open-bavarian-chess-championship",
+      "category": "capture-order",
+      "recordedKey": [
+        "c5b6",
+        "d2c1",
+        "b6a6",
+        "d3b5"
+      ],
+      "appKey": [
+        "c5b6",
+        "d2c1",
+        "b6a6",
+        "d3b5"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "45. Kb6 Bc1",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 28,
+            "san": "46. Kxa6 Bxb2 47. Bxb5+ Kc7 48. f6 gxf6 49. a4 Bc1"
+          },
+          {
+            "cp": -1045,
+            "mate": null,
+            "depth": 28,
+            "san": "46. Bxb5+ axb5 47. g5 h5 48. f6 gxf6 49. f5 d3"
+          }
+        ],
+        "gap": 1045,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "45. Kb6 Bc1",
+        "lines": [
+          {
+            "cp": 11,
+            "mate": null,
+            "depth": 23,
+            "san": "46. Kxa6 Bxb2 47. Bxb5+ Kc7 48. f6 gxf6 49. a4 Bc1"
+          },
+          {
+            "cp": -907,
+            "mate": null,
+            "depth": 23,
+            "san": "46. Bxb5+ axb5 47. g5 Bxb2 48. f6 d3 49. f5 d2"
+          }
+        ],
+        "gap": 918,
+        "role": "recaptures"
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "c5b6": "tactical",
+        "f5f6": "unclear",
+        "b2b3": "unclear"
+      }
+    },
+    {
+      "id": "340331282886eccd64ff",
+      "source": "https://lichess.org/broadcast/32nd-abu-dhabi-international-chess-festival-2026/round-9/QCV9xA2S/uWnzSjJG",
+      "group": "32nd-abu-dhabi-international-chess-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "d1e1",
+        "d8e8",
+        "e1e7",
+        "d4f6"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "28. Rde1 Rde8",
+        "lines": [
+          {
+            "cp": 155,
+            "mate": null,
+            "depth": 22,
+            "san": "29. Rxe7 Rxe7 30. Bxf6 Rxf6 31. Qxf6 Qxf6 32. Nxf6 Bf7"
+          },
+          {
+            "cp": -624,
+            "mate": null,
+            "depth": 22,
+            "san": "29. Bxf6 Bxf6 30. Qxf6 Rxf6 31. Rxe8+ Rf8 32. f6 Qg8"
+          }
+        ],
+        "gap": 779,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "d1e1": "mixed",
+        "f1e1": "unclear",
+        "c3e1": "unclear"
+      }
+    },
+    {
+      "id": "c8ff90a2dba680c6a50f",
+      "source": "https://lichess.org/broadcast/5th-skyline-open-open/HyGJMos9",
+      "group": "5th-skyline-open-open",
+      "category": "capture-order",
+      "recordedKey": [
+        "c1f4",
+        "c5c4",
+        "f4e5",
+        "a5c4"
+      ],
+      "appKey": [
+        "c1f4",
+        "c5c4",
+        "f4e5",
+        "a5c4"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "19. Bf4 c4",
+        "lines": [
+          {
+            "cp": -11,
+            "mate": null,
+            "depth": 23,
+            "san": "20. Bxe5 Qxe5 21. Nxc4 Qxe4 22. Qb3 Bf8 23. Bf1 Qb7"
+          },
+          {
+            "cp": -604,
+            "mate": null,
+            "depth": 23,
+            "san": "20. Nxc4 Nxc4 21. Qb3 Nxe4 22. Bg4 f5 23. Be2 Kh8"
+          }
+        ],
+        "gap": 593,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "19. Bf4 c4",
+        "lines": [
+          {
+            "cp": -7,
+            "mate": null,
+            "depth": 20,
+            "san": "20. Bxe5 Qxe5 21. Nxc4 Qxe4 22. Qb3 Bf8 23. Bf1 Qb7"
+          },
+          {
+            "cp": -541,
+            "mate": null,
+            "depth": 20,
+            "san": "20. Nxc4 Nxc4 21. Rad1 Rxd1 22. Rxd1 Bf8 23. Rd4 Nd6"
+          }
+        ],
+        "gap": 534,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "c1f4": "unclear",
+        "a5c4": "unclear",
+        "b2b3": "unclear"
+      }
+    },
+    {
+      "id": "deab635997317f63a179",
+      "source": "https://lichess.org/broadcast/chess-slovak-open-skalica-2026-open-a/R1ZiYVGV",
+      "group": "chess-slovak-open-skalica-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "h5e2",
+        "f1g1",
+        "e2d2",
+        "f5f4"
+      ],
+      "appKey": [
+        "h5e2",
+        "f1g1",
+        "e2d2",
+        "f5f4"
+      ],
+      "reference": "order-harmless",
+      "app": "order-harmless",
+      "refSAN": {
+        "prefix": "30...Qe2 31. Rg1",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 27,
+            "san": "31...Qxd2 32. Rxh3 Rxf4 33. Rf3 Rxf3 34. gxf3 Qxd4 35. Qc3"
+          },
+          {
+            "cp": -14,
+            "mate": null,
+            "depth": 27,
+            "san": "31...Rxf4 32. Rg3 Rg4 33. Rxg4 Qxg4 34. Qg3 Qxg3 35. hxg3"
+          }
+        ],
+        "gap": 14,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "30...Qe2 31. Rg1",
+        "lines": [
+          {
+            "cp": 11,
+            "mate": null,
+            "depth": 21,
+            "san": "31...Qxd2 32. Rxh3 Rxf4 33. Qc3 Qf2 34. Rf3 Rxf3 35. gxf3"
+          },
+          {
+            "cp": -25,
+            "mate": null,
+            "depth": 21,
+            "san": "31...Rxf4 32. Rg3 R4f7 33. Qc3 Bf5 34. Bf4 Rc8 35. Qf3"
+          }
+        ],
+        "gap": 36,
+        "role": null
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "h5e2": "tactical",
+        "f5f4": "unclear",
+        "h3g4": "unclear"
+      }
+    },
+    {
+      "id": "36d12d298f192420f80c",
+      "source": "https://lichess.org/broadcast/chessbattle-summer-cup-classic/round-3/ko7NjcMo/I02aJRsa",
+      "group": "chessbattle-summer-cup-classic",
+      "category": "capture-order",
+      "recordedKey": [
+        "e3f4",
+        "b8b2",
+        "f4d6",
+        "h5f6"
+      ],
+      "appKey": [
+        "e3f4",
+        "b8b2",
+        "f4d6",
+        "h5f6"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "24. Bf4 Rxb2",
+        "lines": [
+          {
+            "cp": 606,
+            "mate": null,
+            "depth": 24,
+            "san": "25. Bxd6 Bxd6 26. Nxf6+ Kh8 27. Rfb1 Re2 28. Bf3 Re6"
+          },
+          {
+            "cp": -238,
+            "mate": null,
+            "depth": 24,
+            "san": "25. Nxf6+ Rxf6 26. Be5 Rbxf2 27. Bxf6 Rxf6 28. Rxf6 Bxf6"
+          }
+        ],
+        "gap": 844,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "24. Bf4 Rxb2",
+        "lines": [
+          {
+            "cp": 605,
+            "mate": null,
+            "depth": 18,
+            "san": "25. Bxd6 Bxd6 26. Nxf6+ Kh8 27. Rfb1 Be5 28. Ng4 Bxg4"
+          },
+          {
+            "cp": -253,
+            "mate": null,
+            "depth": 18,
+            "san": "25. Nxf6+ Rxf6 26. Be5 Rbxf2 27. Bxf6 Rxf6 28. Bd5 Bf5"
+          }
+        ],
+        "gap": 858,
+        "role": "recaptures"
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "e3f4": "tactical",
+        "e3a7": "unclear",
+        "e3c5": "unclear"
+      }
+    },
+    {
+      "id": "c542396022735e179fb0",
+      "source": "https://lichess.org/broadcast/mcc-classic-swiss/n5vOYpBi",
+      "group": "mcc-classic-swiss",
+      "category": "capture-order",
+      "recordedKey": [
+        "f6e4",
+        "d4f5",
+        "e4d6",
+        "c4a6"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "26. Ne4 Nf5",
+        "lines": [
+          {
+            "cp": 773,
+            "mate": null,
+            "depth": 28,
+            "san": "27. Nxd6 Nxh4 28. g3 Nf3 29. Bxa6 Nd2+ 30. Kc1 Nf3"
+          },
+          {
+            "cp": 271,
+            "mate": null,
+            "depth": 28,
+            "san": "27. Bxa6 Qxa6 28. Nc5 Qc6 29. Qc4 Qxg2 30. Qe4 Qxe4"
+          }
+        ],
+        "gap": 502,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "mixed",
+      "baselineMoves": {
+        "h4h7": "mixed",
+        "f6e4": "unclear",
+        "f6g8": "unclear"
+      }
+    },
+    {
+      "id": "65759b728ca3737b67a9",
+      "source": "https://lichess.org/broadcast/pofinay-indywidualnych-mistrzostw-polski-2026-open/OHA3daQb",
+      "group": "pofinay-indywidualnych-mistrzostw-polski-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "c7c4",
+        "f3g4",
+        "c4g4",
+        "d3g6"
+      ],
+      "appKey": null,
+      "reference": "root-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "39. Qc4 Qxg4",
+        "lines": [
+          {
+            "cp": 383,
+            "mate": null,
+            "depth": 25,
+            "san": "40. Qxg4 hxg4 41. Bxg6 Rf8 42. Bh5 g3 43. Rg2 Nf6"
+          },
+          {
+            "cp": -347,
+            "mate": null,
+            "depth": 25,
+            "san": "40. Bxg6 Qxg6 41. b5 Kh7 42. Ka2 Kh6 43. Qc6 Qd3"
+          }
+        ],
+        "gap": 730,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "positional",
+      "baselineMoves": {
+        "d3g6": "positional",
+        "d3e2": "unclear",
+        "c7c4": "unclear"
+      }
+    },
+    {
+      "id": "2e3c4dec8e5e5115502b",
+      "source": "https://lichess.org/broadcast/rubinstein-chess-festival-2026-open-a/ZvtLBvk8",
+      "group": "rubinstein-chess-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "a5c4",
+        "d2d4",
+        "c4b2",
+        "e5d4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "17...Nc4 18. d4",
+        "lines": [
+          {
+            "cp": 48,
+            "mate": null,
+            "depth": 26,
+            "san": "18...Nxb2 19. Qxb2 exd4 20. Qxb7 Rxa4 21. exd4 Rxa3 22. Qb4"
+          },
+          {
+            "cp": -149,
+            "mate": null,
+            "depth": 26,
+            "san": "18...exd4 19. Bxd4 Qe8 20. Bxg7 Kxg7 21. Rd4 Qxa4 22. Qc3"
+          }
+        ],
+        "gap": 197,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "a5c4": "mixed",
+        "c7c5": "unclear",
+        "e6g4": "unclear"
+      }
+    },
+    {
+      "id": "a7a3dbd350361b3a9e1e",
+      "source": "https://lichess.org/broadcast/23rd-bangkok-chess-club-open-2026-classical/mu6Kv85k",
+      "group": "23rd-bangkok-chess-club-open-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "b2b4",
+        "a5c4",
+        "b4c5",
+        "d1d4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "20. b4 Nc4",
+        "lines": [
+          {
+            "cp": 368,
+            "mate": null,
+            "depth": 24,
+            "san": "21. bxc5 Bf5 22. Qxd4 Qe2 23. g4 Bd3 24. f5 Re8"
+          },
+          {
+            "cp": -1046,
+            "mate": null,
+            "depth": 24,
+            "san": "21. Qxd4 cxd4 22. g4 d3 23. Rb1 Bd7 24. a3 Qe2"
+          }
+        ],
+        "gap": 1414,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "b2b4": "tactical",
+        "b2b3": "unclear",
+        "g3g4": "unclear"
+      }
+    },
+    {
+      "id": "27cdc5733c39416b94f2",
+      "source": "https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-1/atM541Zl/yuhxfBgN",
+      "group": "29th-open-bavarian-chess-championship",
+      "category": "capture-order",
+      "recordedKey": [
+        "e5d6",
+        "f8e8",
+        "d6e7",
+        "b3d5"
+      ],
+      "appKey": [
+        "e5d6",
+        "f8e8",
+        "d6e7",
+        "b3d5"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "21. Bd6 Rfe8",
+        "lines": [
+          {
+            "cp": 54,
+            "mate": null,
+            "depth": 22,
+            "san": "22. Bxe7 Rxe7 23. Bxd5 Kf8 24. Bxe6 Rxe6 25. Reb1 Rc6"
+          },
+          {
+            "cp": -613,
+            "mate": null,
+            "depth": 22,
+            "san": "22. Bxd5 Nxd5 23. Rac1 Bd7 24. Rxe8+ Rxe8 25. Kf1 f6"
+          }
+        ],
+        "gap": 667,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "21. Bd6 Rfe8",
+        "lines": [
+          {
+            "cp": 105,
+            "mate": null,
+            "depth": 18,
+            "san": "22. Bxe7 Rxe7 23. Bxd5 Kf8 24. Bxe6 Rxe6 25. Reb1 Rc8"
+          },
+          {
+            "cp": -591,
+            "mate": null,
+            "depth": 18,
+            "san": "22. Bxd5 Nxd5 23. Rac1 Red8 24. Bb4 Bd7 25. f3 Be8"
+          }
+        ],
+        "gap": 696,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "e5d6": "unclear",
+        "b3c2": "unclear",
+        "a1b1": "unclear"
+      }
+    },
+    {
+      "id": "36b19a96bd8750796830",
+      "source": "https://lichess.org/broadcast/32nd-abu-dhabi-international-chess-festival-2026/round-7/nj1vIe1x/CGr0YRqA",
+      "group": "32nd-abu-dhabi-international-chess-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "a8d8",
+        "c1c4",
+        "d8d4",
+        "e5e2"
+      ],
+      "appKey": [
+        "a8d8",
+        "c1c4",
+        "d8d4",
+        "e5e2"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "37...Rd8 38. Rc4",
+        "lines": [
+          {
+            "cp": 532,
+            "mate": null,
+            "depth": 23,
+            "san": "38...Rxd4 39. Rxd4 Rxe2+ 40. Rxe2 Nf3+ 41. Kd1 Nxd4 42. Re4"
+          },
+          {
+            "cp": 336,
+            "mate": null,
+            "depth": 23,
+            "san": "38...Rxe2+ 39. Nxe2 Nxd3 40. Rd4 Rxd4 41. Nxd4 Nxe1 42. Kxe1"
+          }
+        ],
+        "gap": 196,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "37...Rd8 38. Rc4",
+        "lines": [
+          {
+            "cp": 473,
+            "mate": null,
+            "depth": 20,
+            "san": "38...Rxd4 39. Rxd4 Rxe2+ 40. Rxe2 Nf3+ 41. Kd1 Nxd4 42. Re4"
+          },
+          {
+            "cp": 303,
+            "mate": null,
+            "depth": 20,
+            "san": "38...Rxe2+ 39. Nxe2 Nxd3 40. Rd4 Rxd4 41. Nxd4 Nxe1 42. Kxe1"
+          }
+        ],
+        "gap": 170,
+        "role": "recaptures"
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "a8d8": "tactical",
+        "e5d5": "unclear",
+        "a8a2": "unclear"
+      }
+    },
+    {
+      "id": "db9780c5195f8e616f27",
+      "source": "https://lichess.org/broadcast/5th-skyline-open-open/HyGJMos9",
+      "group": "5th-skyline-open-open",
+      "category": "capture-order",
+      "recordedKey": [
+        "g4f4",
+        "c6b6",
+        "f4f5",
+        "f8d6"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "47...Rf4 48. Qxb6",
+        "lines": [
+          {
+            "cp": -5,
+            "mate": null,
+            "depth": 26,
+            "san": "48...Rxf5 49. Rxf5 Rxd6 50. Qb7 Rd7 51. Qf3 Qd8 52. Kg2"
+          },
+          {
+            "cp": -1033,
+            "mate": null,
+            "depth": 26,
+            "san": "48...Qxd6 49. Nxd6 Rd7 50. Qe3 Ra4 51. Qb3 Rda7 52. Qb8+"
+          }
+        ],
+        "gap": 1028,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "g7g6": "unclear",
+        "g4f4": "unclear",
+        "h8h7": "unclear"
+      }
+    },
+    {
+      "id": "d9b94e3e695f0e391d43",
+      "source": "https://lichess.org/broadcast/7th-paul-keres-memorial-festival-2026-classic-a/round-7/jDlBDSVs/SKRIewkh",
+      "group": "7th-paul-keres-memorial-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "e3b3",
+        "d8d7",
+        "b3b7",
+        "c5c6"
+      ],
+      "appKey": [
+        "e3b3",
+        "d8d7",
+        "b3b7",
+        "c5c6"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "25. Rb3 Rd7",
+        "lines": [
+          {
+            "cp": 37,
+            "mate": null,
+            "depth": 25,
+            "san": "26. Rxb7 Rxb7 27. Rxc6 Rxb2 28. Ba5 Nb4 29. Rd6 Nc2"
+          },
+          {
+            "cp": -603,
+            "mate": null,
+            "depth": 25,
+            "san": "26. Rxc6 Bxc6 27. Ba5 Nc1 28. Rb6 Bxf3 29. gxf3 Rd1"
+          }
+        ],
+        "gap": 640,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "25. Rb3 Rd7",
+        "lines": [
+          {
+            "cp": 39,
+            "mate": null,
+            "depth": 21,
+            "san": "26. Rxb7 Rxb7 27. Rxc6 Rxb2 28. Ba5 Nb4 29. Rd6 Nc2"
+          },
+          {
+            "cp": -593,
+            "mate": null,
+            "depth": 21,
+            "san": "26. Rxc6 Bxc6 27. Ba5 Nc1 28. Rb6 Bxf3 29. gxf3 Rd1"
+          }
+        ],
+        "gap": 632,
+        "role": "recaptures"
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "e3b3": "tactical",
+        "h2h4": "unclear",
+        "f1c4": "unclear"
+      }
+    },
+    {
+      "id": "55b2715787e8c3de24e4",
+      "source": "https://lichess.org/broadcast/brasov-grand-prix-classic-2026-group-a/round-2/PkXU4Syk/3TL530vF",
+      "group": "brasov-grand-prix-classic-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "e2e5",
+        "g5f6",
+        "e5d6",
+        "a4c5"
+      ],
+      "appKey": [
+        "e2e5",
+        "g5f6",
+        "e5d6",
+        "a4c5"
+      ],
+      "reference": "other-or-unresolved",
+      "app": "other-or-unresolved",
+      "refSAN": {
+        "prefix": "23. Qe5 Bf6",
+        "lines": [
+          {
+            "cp": 60,
+            "mate": null,
+            "depth": 24,
+            "san": "24. Qxd6 Rxd6 25. Nxc5 Bd4 26. Na6 e5 27. Kg2 g5"
+          },
+          {
+            "cp": -915,
+            "mate": null,
+            "depth": 24,
+            "san": "24. Nxc5 Bxe5 25. Nb7 Qd4 26. Kg2 g5 27. Nxd8 Rxd8"
+          }
+        ],
+        "gap": 975,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "23. Qe5 Bf6",
+        "lines": [
+          {
+            "cp": 52,
+            "mate": null,
+            "depth": 20,
+            "san": "24. Qxd6 Rxd6 25. Nxc5 Bd4 26. Nb7 Rd7 27. Na5 Rc7"
+          },
+          {
+            "cp": -886,
+            "mate": null,
+            "depth": 20,
+            "san": "24. Nxc5 Bxe5 25. Nb7 Qc7 26. Rxe5 Ra8 27. Kg2"
+          }
+        ],
+        "gap": 938,
+        "role": null
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "e2e5": "tactical",
+        "h3h4": "unclear",
+        "g1g2": "unclear"
+      }
+    },
+    {
+      "id": "e780b1649882b5806cc4",
+      "source": "https://lichess.org/broadcast/chess-slovak-open-skalica-2026-open-a/R1ZiYVGV",
+      "group": "chess-slovak-open-skalica-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "a7c7",
+        "c5b4",
+        "c7c4",
+        "d3b4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "40...Rc7 41. Bxb4",
+        "lines": [
+          {
+            "cp": 717,
+            "mate": null,
+            "depth": 32,
+            "san": "41...Rxc4 42. bxc4 Nxb4 43. c5 Kg8 44. c6 Nxc6 45. Kf2"
+          },
+          {
+            "cp": -736,
+            "mate": null,
+            "depth": 32,
+            "san": "41...Nxb4 42. Rxc7 Kg8 43. Rc4 Nd5 44. b4 e3 45. b5"
+          }
+        ],
+        "gap": 1453,
+        "role": "takes-preparer"
+      },
+      "appSAN": null,
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "a7c7": "tactical",
+        "d3c5": "unclear",
+        "a7a1": "unclear"
+      }
+    },
+    {
+      "id": "39123e833cc79f46895c",
+      "source": "https://lichess.org/broadcast/chessbattle-summer-cup-classic/round-8/vD5duAw4/7ydACTXS",
+      "group": "chessbattle-summer-cup-classic",
+      "category": "capture-order",
+      "recordedKey": [
+        "c8g4",
+        "d3d4",
+        "g4f3",
+        "c5d4"
+      ],
+      "appKey": [
+        "c8g4",
+        "d3d4",
+        "g4f3",
+        "c5d4"
+      ],
+      "reference": "unresolved",
+      "app": "unresolved",
+      "refSAN": {
+        "prefix": "14...Bg4 15. d4",
+        "lines": [
+          {
+            "cp": 32,
+            "mate": null,
+            "depth": 26,
+            "san": "15...Bxf3 16. gxf3 cxd4 17. Nxd4 Bxd4 18. Bxd4 Nxd4 19. Qxd4"
+          },
+          {
+            "cp": -30,
+            "mate": null,
+            "depth": 26,
+            "san": "15...cxd4 16. Nexd4 Ne5 17. Ne2 Qd6 18. Nxe5 Bxe5 19. f3"
+          }
+        ],
+        "gap": 62,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "14...Bg4 15. d4",
+        "lines": [
+          {
+            "cp": 25,
+            "mate": null,
+            "depth": 22,
+            "san": "15...Bxf3 16. gxf3 c4 17. h4 h5 18. Bg5 Na5 19. Nf4"
+          },
+          {
+            "cp": -31,
+            "mate": null,
+            "depth": 22,
+            "san": "15...cxd4 16. Nexd4 Ne5 17. Ne2 Qd6 18. Nxe5 Bxe5 19. h3"
+          }
+        ],
+        "gap": 56,
+        "role": null
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "c8g4": "tactical",
+        "d5d4": "unclear",
+        "f8e8": "unclear"
+      }
+    },
+    {
+      "id": "81f162967cbb08064741",
+      "source": "https://lichess.org/broadcast/fisu-world-university-championship-mind-sports-2026-classical-men/round-5/yUQivewV/b9c43JYL",
+      "group": "fisu-world-university-championship-mind-sports-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "d5d6",
+        "e7f5",
+        "d6g6",
+        "g4f5"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "27. Rd6 Nxf5",
+        "lines": [
+          {
+            "cp": 692,
+            "mate": null,
+            "depth": 25,
+            "san": "28. Rxg6 hxg6 29. gxf5 Kxg7 30. Qd2 Rf8 31. fxg6 Ne6"
+          },
+          {
+            "cp": -331,
+            "mate": null,
+            "depth": 25,
+            "san": "28. gxf5 Qxd6 29. Bd4 Kf7 30. f6 Ke6 31. f7 Rf8"
+          }
+        ],
+        "gap": 1023,
+        "role": "takes-preparer"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "d5d6": "unclear",
+        "g7d4": "positional",
+        "a1g1": "unclear"
+      }
+    },
+    {
+      "id": "3a906b47ae487f343d2d",
+      "source": "https://lichess.org/broadcast/rubinstein-chess-festival-2026-open-a/ZvtLBvk8",
+      "group": "rubinstein-chess-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "f2e2",
+        "e4d3",
+        "e2d3",
+        "c5d4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "29...Qe2 30. Qd3",
+        "lines": [
+          {
+            "cp": 304,
+            "mate": null,
+            "depth": 24,
+            "san": "30...Qxd3 31. Rxd3 Bxd4 32. Bxd4+ cxd4 33. Rxd4 Rf1+ 34. Kd2"
+          },
+          {
+            "cp": -915,
+            "mate": null,
+            "depth": 24,
+            "san": "30...cxd4 31. Qxe2 dxe3 32. Qxe3 Rf5 33. Qxa7 b5 34. Qe7"
+          }
+        ],
+        "gap": 1219,
+        "role": "takes-preparer"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "f2f6": "unclear",
+        "f2e2": "unclear",
+        "f2h2": "unclear"
+      }
+    },
+    {
+      "id": "ab1b081ea2462c5dcda2",
+      "source": "https://lichess.org/broadcast/2026-sahel-international-chess-festival-open-a/round-2/39HYBCIf/vu3Sn3bZ",
+      "group": "2026-sahel-international-chess-festival-open-a",
+      "category": "capture-order",
+      "recordedKey": [
+        "f6d5",
+        "b4b2",
+        "d5c3",
+        "g7d4"
+      ],
+      "appKey": [
+        "f6d5",
+        "b4b2",
+        "d5c3",
+        "g7d4"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "25...Nd5 26. Rxb2",
+        "lines": [
+          {
+            "cp": -335,
+            "mate": null,
+            "depth": 23,
+            "san": "26...Nxc3 27. Nb3 Nxe2+ 28. Rxe2 Bxd4+ 29. Nxd4 Rc4 30. Rd2"
+          },
+          {
+            "cp": -485,
+            "mate": null,
+            "depth": 23,
+            "san": "26...Bxd4+ 27. cxd4 Nxf4 28. Bf1 Kf8 29. Nc4 Rd7 30. Kf2"
+          }
+        ],
+        "gap": 150,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "25...Nd5 26. Rxb2",
+        "lines": [
+          {
+            "cp": -321,
+            "mate": null,
+            "depth": 19,
+            "san": "26...Nxc3 27. Nb3 Nxe2+ 28. Rxe2 Bxd4+ 29. Nxd4 Rc4 30. Rd2"
+          },
+          {
+            "cp": -451,
+            "mate": null,
+            "depth": 19,
+            "san": "26...Bxd4+ 27. cxd4 Nxf4 28. Bf1 Kf8 29. Nc4 Ke7 30. Ne3"
+          }
+        ],
+        "gap": 130,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "f6d5": "mixed",
+        "c7e7": "unclear",
+        "h7h6": "unclear"
+      }
+    },
+    {
+      "id": "c7d57b02c88b7d7dc67f",
+      "source": "https://lichess.org/broadcast/23rd-bangkok-chess-club-open-2026-classical/round-5/BLensoXl/CuU0UkHX",
+      "group": "23rd-bangkok-chess-club-open-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "b2c2",
+        "f6f3",
+        "c2c3",
+        "e8e4"
+      ],
+      "appKey": null,
+      "reference": "positive",
+      "app": null,
+      "refSAN": {
+        "prefix": "42...Rc2 43. Rf3",
+        "lines": [
+          {
+            "cp": 648,
+            "mate": null,
+            "depth": 26,
+            "san": "43...Rcxc3 44. Rxc3 Rxc3 45. Qxc3 Qxe4+ 46. f3 Qxd5 47. Kf1"
+          },
+          {
+            "cp": -1393,
+            "mate": null,
+            "depth": 26,
+            "san": "43...Qxe4 44. Nxe4 Rxf2+ 45. Kxf2 Rb2+ 46. Ke3 Rb3+ 47. Kd4"
+          }
+        ],
+        "gap": 2041,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "b2c2": "unclear",
+        "b2d2": "unclear",
+        "e8e7": "unclear"
+      }
+    },
+    {
+      "id": "3ecb0c92319fdea0eee8",
+      "source": "https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-2/zHLNETar/Ig61423E",
+      "group": "29th-open-bavarian-chess-championship",
+      "category": "capture-order",
+      "recordedKey": [
+        "d3b5",
+        "a8b8",
+        "b5c6",
+        "d4e5"
+      ],
+      "appKey": null,
+      "reference": "root-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "16. Bb5 Rb8",
+        "lines": [
+          {
+            "cp": 159,
+            "mate": null,
+            "depth": 27,
+            "san": "17. Bxc6 Bxc6 18. cxb6 cxb6 19. dxe5 dxe5 20. Qxd8+ Rxd8"
+          },
+          {
+            "cp": 33,
+            "mate": null,
+            "depth": 27,
+            "san": "17. dxe5 Nxe5 18. Bxd7 Qxd7 19. cxb6 Rxb6 20. c4 Qc6"
+          }
+        ],
+        "gap": 126,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "positional",
+      "baselineMoves": {
+        "d4d5": "positional",
+        "c5b6": "unclear",
+        "c5d6": "unclear"
+      }
+    },
+    {
+      "id": "8fbec60ab4fca6a0aa54",
+      "source": "https://lichess.org/broadcast/fisu-world-university-championship-mind-sports-2026-classical-men/round-6/o1vT6sHT/Zax6E5Ol",
+      "group": "fisu-world-university-championship-mind-sports-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "h4h5",
+        "f4f3",
+        "h5e5",
+        "d2d4"
+      ],
+      "appKey": [
+        "h4h5",
+        "f4f3",
+        "h5e5",
+        "d2d4"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "41. Rh5 Rxf3",
+        "lines": [
+          {
+            "cp": -11,
+            "mate": null,
+            "depth": 27,
+            "san": "42. Rxe5 Rxa3 43. Rxd4 Rc8 44. Rc5 Re8 45. Rd2 Ree3"
+          },
+          {
+            "cp": -854,
+            "mate": null,
+            "depth": 27,
+            "san": "42. Rxd4 exd4 43. Rd5 Rxa3 44. Rxd4 Rc8 45. Rd2 Rcc3"
+          }
+        ],
+        "gap": 843,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "41. Rh5 Rxf3",
+        "lines": [
+          {
+            "cp": -6,
+            "mate": null,
+            "depth": 21,
+            "san": "42. Rxe5 Rxa3 43. Rxd4 Rb3 44. Rd2 Rc8 45. b5 b6"
+          },
+          {
+            "cp": -823,
+            "mate": null,
+            "depth": 21,
+            "san": "42. Rxd4 exd4 43. Rd5 Rxa3 44. g5 Kh7 45. b5 Rc8"
+          }
+        ],
+        "gap": 817,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "h4h5": "unclear",
+        "d2e2": "unclear",
+        "d2d3": "unclear"
+      }
+    },
+    {
+      "id": "402a58431990f809215f",
+      "source": "https://lichess.org/broadcast/rubinstein-chess-festival-2026-open-a/ZvtLBvk8",
+      "group": "rubinstein-chess-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "c1g5",
+        "h7h6",
+        "g5f6",
+        "g2d5"
+      ],
+      "appKey": [
+        "c1g5",
+        "b8c6",
+        "g5f6",
+        "g2d5"
+      ],
+      "reference": "other-or-unresolved",
+      "app": "other-or-unresolved",
+      "refSAN": {
+        "prefix": "16. Bg5 h6",
+        "lines": [
+          {
+            "cp": 92,
+            "mate": null,
+            "depth": 23,
+            "san": "17. Bxf6 Bxf6 18. Bxd5 Rd6 19. e4 Bd4 20. Kg2 Re7"
+          },
+          {
+            "cp": -599,
+            "mate": null,
+            "depth": 23,
+            "san": "17. Bxd5 Qxd5 18. Bxf6 Qxd1 19. Raxd1 Bxf6 20. Nc4 Nc6"
+          }
+        ],
+        "gap": 691,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "16. Bg5 Nc6",
+        "lines": [
+          {
+            "cp": 8,
+            "mate": null,
+            "depth": 21,
+            "san": "17. Bxf6 Bxf6 18. Bxd5 Rd6 19. e4 Nb4 20. Nc4 Rdd7"
+          },
+          {
+            "cp": -615,
+            "mate": null,
+            "depth": 21,
+            "san": "17. Bxd5 Qxd5 18. Qxd5 Nxd5 19. Rac1 Bf8 20. Kf1 h6"
+          }
+        ],
+        "gap": 623,
+        "role": null
+      },
+      "baselinePosition": "tactical",
+      "baselineMoves": {
+        "c1g5": "tactical",
+        "c1f4": "unclear",
+        "a1b1": "unclear"
+      }
+    },
+    {
+      "id": "cd59ad3fab90eb50534a",
+      "source": "https://lichess.org/broadcast/23rd-bangkok-chess-club-open-2026-classical/round-5/BLensoXl/bDqmnE83",
+      "group": "23rd-bangkok-chess-club-open-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "e5c6",
+        "c3d5",
+        "c6e7",
+        "b7b4"
+      ],
+      "appKey": [
+        "e5c6",
+        "c3d5",
+        "c6e7",
+        "b7b4"
+      ],
+      "reference": "root-unverified",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "30. Nc6 Nd5",
+        "lines": [
+          {
+            "cp": 407,
+            "mate": null,
+            "depth": 24,
+            "san": "31. Nxe7 Rc3+ 32. Ke2 Nxe7 33. Rxb4 Nc6 34. Ra4 h6"
+          },
+          {
+            "cp": -702,
+            "mate": null,
+            "depth": 24,
+            "san": "31. Rxb4 Bxb4 32. Nc4 Rc3+ 33. Ke2 Rxb3 34. Nxb4 Nxb4"
+          }
+        ],
+        "gap": 1109,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "30. Nc6 Nd5",
+        "lines": [
+          {
+            "cp": 405,
+            "mate": null,
+            "depth": 21,
+            "san": "31. Nxe7 Nxe7 32. Rxb4 Rh1 33. Rb8+ Kf7 34. Nf3 g4"
+          },
+          {
+            "cp": -686,
+            "mate": null,
+            "depth": 21,
+            "san": "31. Rxb4 Bxb4 32. Ne5 Kg7 33. Ke2 Rc2 34. Kd3 Rxd2+"
+          }
+        ],
+        "gap": 1091,
+        "role": "recaptures"
+      },
+      "baselinePosition": "mixed",
+      "baselineMoves": {
+        "d2c4": "positional",
+        "e5c6": "tactical",
+        "b7b8": "unclear"
+      }
+    },
+    {
+      "id": "5d2b49a6330baea24947",
+      "source": "https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-2/zHLNETar/Htw7ezEJ",
+      "group": "29th-open-bavarian-chess-championship",
+      "category": "capture-order",
+      "recordedKey": [
+        "e3h6",
+        "c8c2",
+        "h6f8",
+        "a6e6"
+      ],
+      "appKey": null,
+      "reference": "root-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "27. Bh6 Rxc2",
+        "lines": [
+          {
+            "cp": -582,
+            "mate": null,
+            "depth": 23,
+            "san": "28. Bxf8 Rxf8 29. Rxe6 Bd4+ 30. Kh2 Rc1 31. g3 Bb6"
+          },
+          {
+            "cp": -832,
+            "mate": null,
+            "depth": 23,
+            "san": "28. Rxe6 Nxe6 29. Ne3 Re2 30. Nc4 Bd4+ 31. Kh2 f4"
+          }
+        ],
+        "gap": 250,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "a6a5": "unclear",
+        "c2c3": "unclear",
+        "a6a7": "unclear"
+      }
+    },
+    {
+      "id": "599daedf23af6355f505",
+      "source": "https://lichess.org/broadcast/32nd-abu-dhabi-international-chess-festival-2026/round-2/HwAy62w2/Wu2Srgu4",
+      "group": "32nd-abu-dhabi-international-chess-festival-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "d5f4",
+        "d8d7",
+        "f4e6",
+        "e4f5"
+      ],
+      "appKey": [
+        "d5f4",
+        "d8d7",
+        "f4e6",
+        "e4f5"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "23. Nf4 Qd7",
+        "lines": [
+          {
+            "cp": 204,
+            "mate": null,
+            "depth": 24,
+            "san": "24. Nxe6 Qxe6 25. exf5 gxf5 26. f4 Rd8 27. Re1 Qd7"
+          },
+          {
+            "cp": 20,
+            "mate": null,
+            "depth": 24,
+            "san": "24. exf5 Bxf5 25. Bxf5 Rxf5 26. Nd5 Rcf8 27. Qc2 Kh8"
+          }
+        ],
+        "gap": 184,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "23. Nf4 Qd7",
+        "lines": [
+          {
+            "cp": 180,
+            "mate": null,
+            "depth": 19,
+            "san": "24. Nxe6 Qxe6 25. exf5 gxf5 26. f4 Bf8 27. Re1 Qd7"
+          },
+          {
+            "cp": 40,
+            "mate": null,
+            "depth": 19,
+            "san": "24. exf5 Bxf5 25. Bxf5 Rxf5 26. Nd5 Rcf8 27. Re1 Ne5"
+          }
+        ],
+        "gap": 140,
+        "role": "recaptures"
+      },
+      "baselinePosition": "mixed",
+      "baselineMoves": {
+        "d5f4": "mixed",
+        "g1h1": "unclear",
+        "a2a3": "unclear"
+      }
+    },
+    {
+      "id": "bb3020447bbfa73429b2",
+      "source": "https://lichess.org/broadcast/brasov-grand-prix-classic-2026-group-a/round-9/mY6PZLIP/4I5PMTgR",
+      "group": "brasov-grand-prix-classic-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "b6c6",
+        "g4e4",
+        "c6e4",
+        "c4e2"
+      ],
+      "appKey": [
+        "b6c6",
+        "g4e4",
+        "c6e4",
+        "c4e2"
+      ],
+      "reference": "other-or-unresolved",
+      "app": "other-or-unresolved",
+      "refSAN": {
+        "prefix": "21...Qc6 22. Rxe4",
+        "lines": [
+          {
+            "cp": -650,
+            "mate": null,
+            "depth": 24,
+            "san": "22...Qxe4 23. Qe3 Re8 24. Qxe4 Rxe4 25. Kd2 d5 26. Bxc4"
+          },
+          {
+            "cp": -951,
+            "mate": null,
+            "depth": 24,
+            "san": "22...Bxe2 23. Qxe2 Qxe4 24. Qxe4 Re8 25. Qe2 Re6 26. Qxe6+"
+          }
+        ],
+        "gap": 301,
+        "role": null
+      },
+      "appSAN": {
+        "prefix": "21...Qc6 22. Rxe4",
+        "lines": [
+          {
+            "cp": -649,
+            "mate": null,
+            "depth": 18,
+            "san": "22...Qxe4 23. Qe3 Qh1+ 24. Kd2 Bxe2 25. Qxe2 Re8 26. Qg4+"
+          },
+          {
+            "cp": -916,
+            "mate": null,
+            "depth": 18,
+            "san": "22...Bxe2 23. Qxe2 Qxe4 24. Qxe4 Re8 25. Qxe8+ Kxe8 26. Nd3"
+          }
+        ],
+        "gap": 267,
+        "role": null
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "b6c6": "unclear",
+        "e4g4": "unclear",
+        "a8e8": "unclear"
+      }
+    },
+    {
+      "id": "71ee87097e50884b9e1c",
+      "source": "https://lichess.org/broadcast/chessbattle-summer-cup-classic/round-5/TEG72LvZ/RmgMAH8J",
+      "group": "chessbattle-summer-cup-classic",
+      "category": "capture-order",
+      "recordedKey": [
+        "f5e4",
+        "h2h4",
+        "e4f3",
+        "b6d4"
+      ],
+      "appKey": null,
+      "reference": "reply-unverified",
+      "app": null,
+      "refSAN": {
+        "prefix": "20...Be4 21. h4",
+        "lines": [
+          {
+            "cp": 1003,
+            "mate": null,
+            "depth": 24,
+            "san": "21...Bxf3 22. gxf3 Bxd4+ 23. Kg2 Bxa1 24. h5 Qc6 25. Qe3"
+          },
+          {
+            "cp": 640,
+            "mate": null,
+            "depth": 24,
+            "san": "21...Qxd4+ 22. Nxd4 Bxd4+ 23. Kf1 Bd3+ 24. Ke1 Bxa1 25. Qe3"
+          }
+        ],
+        "gap": 363,
+        "role": "recaptures"
+      },
+      "appSAN": null,
+      "baselinePosition": "mixed",
+      "baselineMoves": {
+        "b6b4": "tactical",
+        "f5e4": "mixed",
+        "h7h6": "unclear"
+      }
+    },
+    {
+      "id": "f7676c62f24b3728c712",
+      "source": "https://lichess.org/broadcast/pofinay-indywidualnych-mistrzostw-polski-2026-open/OHA3daQb",
+      "group": "pofinay-indywidualnych-mistrzostw-polski-2026",
+      "category": "capture-order",
+      "recordedKey": [
+        "f2f4",
+        "c5b3",
+        "f4e5",
+        "d6b5"
+      ],
+      "appKey": [
+        "f2f4",
+        "c5b3",
+        "f4e5",
+        "d6b5"
+      ],
+      "reference": "positive",
+      "app": "guard-causal",
+      "refSAN": {
+        "prefix": "25. f4 Nxb3",
+        "lines": [
+          {
+            "cp": -7,
+            "mate": null,
+            "depth": 27,
+            "san": "26. fxe5 Nxd2 27. Nxb5 Bd7 28. Rc2 Bxb5 29. Rxd2 Re8"
+          },
+          {
+            "cp": -715,
+            "mate": null,
+            "depth": 27,
+            "san": "26. Nxb5 Qxb5 27. Qd3 Qxd3 28. exd3 Rc8 29. Rb6 Rc1+"
+          }
+        ],
+        "gap": 708,
+        "role": "recaptures"
+      },
+      "appSAN": {
+        "prefix": "25. f4 Nxb3",
+        "lines": [
+          {
+            "cp": -1,
+            "mate": null,
+            "depth": 22,
+            "san": "26. fxe5 Nxd2 27. Nxb5 Bd7 28. Rc2 Bxb5 29. Rxd2 Re8"
+          },
+          {
+            "cp": -698,
+            "mate": null,
+            "depth": 22,
+            "san": "26. Nxb5 Qxb5 27. Qd3 Qxd3 28. exd3 Rc8 29. Rb6 Rc1+"
+          }
+        ],
+        "gap": 697,
+        "role": "recaptures"
+      },
+      "baselinePosition": "unclear",
+      "baselineMoves": {
+        "f2f4": "unclear",
+        "b3b4": "unclear",
+        "d2f4": "unclear"
+      }
+    }
+  ],
+  "appCandidateReviews": [
+    {
+      "id": "4091547a2994d1c1753e",
+      "group": "1-festival-internazionale-di-scacchi-il-tesoro-di-san-gennaro-torneo-a",
+      "app": "guard-causal",
+      "reference": "other-or-unresolved",
+      "exactProposal": [
+        "h3e6",
+        "a1c1",
+        "e6c4",
+        "d3e3"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "26...Be6 27. Rc1",
+        "lines": [
+          {
+            "cp": 479,
+            "mate": null,
+            "depth": 21,
+            "san": "27...Bxc4 28. Kf2 Be6 29. Rc6 Nd5 30. Rxa6 h6 31. Ra3"
+          },
+          {
+            "cp": -663,
+            "mate": null,
+            "depth": 21,
+            "san": "27...Rxe3 28. Nxe3 Kf8 29. b3 Nd7 30. f4 Nf6 31. Rc6"
+          }
+        ],
+        "gap": 1142,
+        "role": "recaptures"
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "1ea784f67fa89dd583c9",
+      "group": "20th-iccd-world-deaf-chess-championships-team-classical-men",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "a1e1",
+        "b8c6",
+        "e1e6",
+        "f3f6"
+      ],
+      "originalReference": false,
+      "referenceLines": {
+        "prefix": "17. Rae1 Nbc6",
+        "lines": [
+          {
+            "cp": 1146,
+            "mate": null,
+            "depth": 24,
+            "san": "18. Rxe6 Bxe6 19. Qxf6 Kd7 20. Re1 Rae8 21. Qxe6+ Kd8"
+          },
+          {
+            "cp": -731,
+            "mate": null,
+            "depth": 24,
+            "san": "18. Qxf6 Qxf6 19. d5 Ne5 20. Bh7 Rg7 21. f4 Rxh7"
+          }
+        ],
+        "gap": 1877,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "17. Rae1 Nbc6",
+        "lines": [
+          {
+            "cp": 1169,
+            "mate": null,
+            "depth": 25,
+            "san": "18. Rxe6 Bxe6 19. Re1 Kd7 20. Qxf6 Rae8 21. Qxe6+ Kd8"
+          },
+          {
+            "cp": -684,
+            "mate": null,
+            "depth": 25,
+            "san": "18. Qxf6 Qxf6 19. Bc4 Rg4 20. Re3 Qxh4 21. Rfe1 Rg7"
+          }
+        ],
+        "gap": 1853,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "06363a05efdc38f553ad",
+      "group": "23rd-bangkok-chess-club-open-2026",
+      "app": "guard-causal",
+      "reference": "other-or-unresolved",
+      "exactProposal": [
+        "c1h6",
+        "f5f4",
+        "h6f8",
+        "e5f6"
+      ],
+      "originalReference": false,
+      "referenceLines": {
+        "prefix": "20. Bh6 f4",
+        "lines": [
+          {
+            "cp": 88,
+            "mate": null,
+            "depth": 25,
+            "san": "21. Bxf8 Bxf8 22. Re1 fxe5 23. Rxe5 Bf7 24. Na1 Nxa1"
+          },
+          {
+            "cp": -100,
+            "mate": null,
+            "depth": 25,
+            "san": "21. exf6 Rxf6 22. Bg5 Rf7 23. Bxe7 Rxe7 24. Na1 Nxa1"
+          }
+        ],
+        "gap": 188,
+        "role": "recaptures"
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "05e5866990375405f1ec",
+      "group": "29th-open-bavarian-chess-championship",
+      "app": "unresolved",
+      "reference": "order-harmless",
+      "exactProposal": [
+        "f5e4",
+        "g4g5",
+        "e4f3",
+        "f6g5"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "26...Be4 27. g5",
+        "lines": [
+          {
+            "cp": -216,
+            "mate": null,
+            "depth": 27,
+            "san": "27...Bxf3 28. Bxf3 fxg5 29. Bxc6 bxc6 30. Rxa5 Rfb8 31. Rd7"
+          },
+          {
+            "cp": -227,
+            "mate": null,
+            "depth": 27,
+            "san": "27...fxg5 28. Nxg5 Bxg2 29. Kxg2 Re8 30. Ne4 Re7 31. Rcd5"
+          }
+        ],
+        "gap": 11,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "01e4e8489eb9d4c84e10",
+      "group": "brasov-grand-prix-classic-2026",
+      "app": "other-or-unresolved",
+      "reference": "other-or-unresolved",
+      "exactProposal": [
+        "c1g5",
+        "h7h6",
+        "g5f6",
+        "c3e4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "18. Bg5 h6",
+        "lines": [
+          {
+            "cp": -55,
+            "mate": null,
+            "depth": 24,
+            "san": "19. Bxf6 Qxf6 20. Nxe4 Qe5 21. f4 Qd4+ 22. e3 Qc4"
+          },
+          {
+            "cp": -624,
+            "mate": null,
+            "depth": 24,
+            "san": "19. Nxe4 hxg5 20. Nxg5 Bxa2 21. Ra1 Bc4 22. Rxa7 Nfd5"
+          }
+        ],
+        "gap": 569,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "2e5d45c16b0a8510bad0",
+      "group": "mcc-classic-swiss",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "f5d6",
+        "e4e7",
+        "d6f7",
+        "c3c4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "52. Nd6 Re7",
+        "lines": [
+          {
+            "cp": 6,
+            "mate": null,
+            "depth": 24,
+            "san": "53. Nxf7 Rxf7 54. Rxc4+ Kg5 55. Kg3 h5 56. Rc5+ Kh6"
+          },
+          {
+            "cp": -707,
+            "mate": null,
+            "depth": 24,
+            "san": "53. Rxc4+ Bxc4 54. Nxc4 Rd7 55. b4 Rd3 56. Ke2 Rxh3"
+          }
+        ],
+        "gap": 713,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "52. Nd6 Re7",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 28,
+            "san": "53. Nxf7 Rxf7 54. Rxc4+ Kg5 55. Kg3 h5 56. h4+ Kh6"
+          },
+          {
+            "cp": -733,
+            "mate": null,
+            "depth": 28,
+            "san": "53. Rxc4+ Bxc4 54. Nxc4 Rc7 55. b3 Rd7 56. Ke2 Rd8"
+          }
+        ],
+        "gap": 733,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "0c0330d4d32bf00d2fd2",
+      "group": "oskemen-open-2026",
+      "app": "order-harmless",
+      "reference": "unresolved",
+      "exactProposal": [
+        "d3c4",
+        "d1a1",
+        "c4b3",
+        "e2d4"
+      ],
+      "originalReference": false,
+      "referenceLines": {
+        "prefix": "52...Bc4 53. Ra1",
+        "lines": [
+          {
+            "cp": 753,
+            "mate": null,
+            "depth": 28,
+            "san": "53...Bxb3 54. Ra7+ Ke8 55. Ra8+ Kd7 56. Nxb3 Nxd4+ 57. Bf2"
+          },
+          {
+            "cp": 692,
+            "mate": null,
+            "depth": 28,
+            "san": "53...Nxd4 54. Rb1 Rxb1 55. Nxb1 Bxe1 56. Nxd4 c5 57. Nc2"
+          }
+        ],
+        "gap": 61,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "71ae9409f8e3a13d6e1b",
+      "group": "2026-carolinas-classic",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "a8c6",
+        "d6d5",
+        "c6d5",
+        "b1b3"
+      ],
+      "originalReference": false,
+      "referenceLines": {
+        "prefix": "40. Qc6 Qxd5",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 27,
+            "san": "41. Qxd5 Rxd5 42. Rxb3 Ra5 43. Rb7 Kg7 44. g4 Ra1+"
+          },
+          {
+            "cp": null,
+            "mate": -13,
+            "depth": 27,
+            "san": "41. Rxb3 Qxc6 42. Rb1 Qe4 43. Rc1 Rd2 44. g3 Qe2"
+          }
+        ],
+        "gap": 99987,
+        "role": "takes-preparer"
+      },
+      "repeatedLines": {
+        "prefix": "40. Qc6 Qxd5",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 30,
+            "san": "41. Qxd5 Rxd5 42. Rxb3 Ra5 43. Rb7 Kg7 44. g4 Ra1+"
+          },
+          {
+            "cp": null,
+            "mate": -13,
+            "depth": 30,
+            "san": "41. Rxb3 Qxc6 42. Rb1 Qe4 43. Rc1 Rd2 44. Rf1 Qe2"
+          }
+        ],
+        "gap": 99987,
+        "role": "takes-preparer"
+      }
+    },
+    {
+      "id": "49ebffd073b6da956c45",
+      "group": "picas-all-india-open-fide-classical-rating-chess-tournament-2026",
+      "app": "other-or-unresolved",
+      "reference": "other-or-unresolved",
+      "exactProposal": [
+        "d7e6",
+        "e2f4",
+        "e6d5",
+        "a3a2"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "24...Be6 25. Nf4",
+        "lines": [
+          {
+            "cp": 3,
+            "mate": null,
+            "depth": 26,
+            "san": "25...Bxd5 26. Nxd5 Rxa2 27. Nf6+ Bxf6 28. exf6 Nb8 29. Rxf5"
+          },
+          {
+            "cp": -645,
+            "mate": null,
+            "depth": 26,
+            "san": "25...Rxa2 26. Nxe6 Re2 27. Qf1 fxe6 28. Bxe6+ Kh8 29. Ra1"
+          }
+        ],
+        "gap": 648,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "222db6193878c2bc8aa7",
+      "group": "29th-open-bavarian-chess-championship",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "c5b6",
+        "d2c1",
+        "b6a6",
+        "d3b5"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "45. Kb6 Bc1",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 28,
+            "san": "46. Kxa6 Bxb2 47. Bxb5+ Kc7 48. f6 gxf6 49. a4 Bc1"
+          },
+          {
+            "cp": -1045,
+            "mate": null,
+            "depth": 28,
+            "san": "46. Bxb5+ axb5 47. g5 h5 48. f6 gxf6 49. f5 d3"
+          }
+        ],
+        "gap": 1045,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "45. Kb6 Bc1",
+        "lines": [
+          {
+            "cp": 2,
+            "mate": null,
+            "depth": 29,
+            "san": "46. Kxa6 Bxb2 47. Bxb5+ Kc7 48. f6 gxf6 49. a4 Bc1"
+          },
+          {
+            "cp": -1110,
+            "mate": null,
+            "depth": 29,
+            "san": "46. Bxb5+ axb5 47. g5 f6 48. Kxb5 d3 49. b4 d2"
+          }
+        ],
+        "gap": 1112,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "c8ff90a2dba680c6a50f",
+      "group": "5th-skyline-open-open",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "c1f4",
+        "c5c4",
+        "f4e5",
+        "a5c4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "19. Bf4 c4",
+        "lines": [
+          {
+            "cp": -11,
+            "mate": null,
+            "depth": 23,
+            "san": "20. Bxe5 Qxe5 21. Nxc4 Qxe4 22. Qb3 Bf8 23. Bf1 Qb7"
+          },
+          {
+            "cp": -604,
+            "mate": null,
+            "depth": 23,
+            "san": "20. Nxc4 Nxc4 21. Qb3 Nxe4 22. Bg4 f5 23. Be2 Kh8"
+          }
+        ],
+        "gap": 593,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "19. Bf4 c4",
+        "lines": [
+          {
+            "cp": -10,
+            "mate": null,
+            "depth": 24,
+            "san": "20. Bxe5 Qxe5 21. Nxc4 Qxe4 22. Qb3 Bf8 23. Bf1 Qb7"
+          },
+          {
+            "cp": -619,
+            "mate": null,
+            "depth": 24,
+            "san": "20. Nxc4 Nxc4 21. e5 Na5 22. Qb1 Nb3 23. exf6 Qxf6"
+          }
+        ],
+        "gap": 609,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "deab635997317f63a179",
+      "group": "chess-slovak-open-skalica-2026",
+      "app": "order-harmless",
+      "reference": "order-harmless",
+      "exactProposal": [
+        "h5e2",
+        "f1g1",
+        "e2d2",
+        "f5f4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "30...Qe2 31. Rg1",
+        "lines": [
+          {
+            "cp": 0,
+            "mate": null,
+            "depth": 27,
+            "san": "31...Qxd2 32. Rxh3 Rxf4 33. Rf3 Rxf3 34. gxf3 Qxd4 35. Qc3"
+          },
+          {
+            "cp": -14,
+            "mate": null,
+            "depth": 27,
+            "san": "31...Rxf4 32. Rg3 Rg4 33. Rxg4 Qxg4 34. Qg3 Qxg3 35. hxg3"
+          }
+        ],
+        "gap": 14,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "36d12d298f192420f80c",
+      "group": "chessbattle-summer-cup-classic",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "e3f4",
+        "b8b2",
+        "f4d6",
+        "h5f6"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "24. Bf4 Rxb2",
+        "lines": [
+          {
+            "cp": 606,
+            "mate": null,
+            "depth": 24,
+            "san": "25. Bxd6 Bxd6 26. Nxf6+ Kh8 27. Rfb1 Re2 28. Bf3 Re6"
+          },
+          {
+            "cp": -238,
+            "mate": null,
+            "depth": 24,
+            "san": "25. Nxf6+ Rxf6 26. Be5 Rbxf2 27. Bxf6 Rxf6 28. Rxf6 Bxf6"
+          }
+        ],
+        "gap": 844,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "24. Bf4 Rxb2",
+        "lines": [
+          {
+            "cp": 616,
+            "mate": null,
+            "depth": 25,
+            "san": "25. Bxd6 Bxd6 26. Nxf6+ Kh8 27. Rfb1 Re2 28. Bf3 Re6"
+          },
+          {
+            "cp": -238,
+            "mate": null,
+            "depth": 25,
+            "san": "25. Nxf6+ Rxf6 26. Be5 Rbxf2 27. Bxf6 Rxf6 28. Rxf6 Bxf6"
+          }
+        ],
+        "gap": 854,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "27cdc5733c39416b94f2",
+      "group": "29th-open-bavarian-chess-championship",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "e5d6",
+        "f8e8",
+        "d6e7",
+        "b3d5"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "21. Bd6 Rfe8",
+        "lines": [
+          {
+            "cp": 54,
+            "mate": null,
+            "depth": 22,
+            "san": "22. Bxe7 Rxe7 23. Bxd5 Kf8 24. Bxe6 Rxe6 25. Reb1 Rc6"
+          },
+          {
+            "cp": -613,
+            "mate": null,
+            "depth": 22,
+            "san": "22. Bxd5 Nxd5 23. Rac1 Bd7 24. Rxe8+ Rxe8 25. Kf1 f6"
+          }
+        ],
+        "gap": 667,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "21. Bd6 Rfe8",
+        "lines": [
+          {
+            "cp": 70,
+            "mate": null,
+            "depth": 24,
+            "san": "22. Bxe7 Rxe7 23. Bxd5 Kf8 24. Bxe6 Rxe6 25. Reb1 Rc6"
+          },
+          {
+            "cp": -615,
+            "mate": null,
+            "depth": 24,
+            "san": "22. Bxd5 Nxd5 23. Rac1 f6 24. f3 Bf7 25. Kf2 Red8"
+          }
+        ],
+        "gap": 685,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "36b19a96bd8750796830",
+      "group": "32nd-abu-dhabi-international-chess-festival-2026",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "a8d8",
+        "c1c4",
+        "d8d4",
+        "e5e2"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "37...Rd8 38. Rc4",
+        "lines": [
+          {
+            "cp": 532,
+            "mate": null,
+            "depth": 23,
+            "san": "38...Rxd4 39. Rxd4 Rxe2+ 40. Rxe2 Nf3+ 41. Kd1 Nxd4 42. Re4"
+          },
+          {
+            "cp": 336,
+            "mate": null,
+            "depth": 23,
+            "san": "38...Rxe2+ 39. Nxe2 Nxd3 40. Rd4 Rxd4 41. Nxd4 Nxe1 42. Kxe1"
+          }
+        ],
+        "gap": 196,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "37...Rd8 38. Rc4",
+        "lines": [
+          {
+            "cp": 563,
+            "mate": null,
+            "depth": 26,
+            "san": "38...Rxd4 39. Rxd4 Rxe2+ 40. Rxe2 Nf3+ 41. Kd1 Nxd4 42. Re4"
+          },
+          {
+            "cp": 390,
+            "mate": null,
+            "depth": 26,
+            "san": "38...Rxe2+ 39. Nxe2 Nxd3 40. Rd4 Rxd4 41. Nxd4 Nxe1 42. Kxe1"
+          }
+        ],
+        "gap": 173,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "d9b94e3e695f0e391d43",
+      "group": "7th-paul-keres-memorial-festival-2026",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "e3b3",
+        "d8d7",
+        "b3b7",
+        "c5c6"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "25. Rb3 Rd7",
+        "lines": [
+          {
+            "cp": 37,
+            "mate": null,
+            "depth": 25,
+            "san": "26. Rxb7 Rxb7 27. Rxc6 Rxb2 28. Ba5 Nb4 29. Rd6 Nc2"
+          },
+          {
+            "cp": -603,
+            "mate": null,
+            "depth": 25,
+            "san": "26. Rxc6 Bxc6 27. Ba5 Nc1 28. Rb6 Bxf3 29. gxf3 Rd1"
+          }
+        ],
+        "gap": 640,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "25. Rb3 Rd7",
+        "lines": [
+          {
+            "cp": 38,
+            "mate": null,
+            "depth": 26,
+            "san": "26. Rxb7 Rxb7 27. Rxc6 Rxb2 28. Ba5 Nb4 29. Rd6 Nc2"
+          },
+          {
+            "cp": -606,
+            "mate": null,
+            "depth": 26,
+            "san": "26. Rxc6 Bxc6 27. Ba5 Nc1 28. Rb6 Bxf3 29. gxf3 Rd1"
+          }
+        ],
+        "gap": 644,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "55b2715787e8c3de24e4",
+      "group": "brasov-grand-prix-classic-2026",
+      "app": "other-or-unresolved",
+      "reference": "other-or-unresolved",
+      "exactProposal": [
+        "e2e5",
+        "g5f6",
+        "e5d6",
+        "a4c5"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "23. Qe5 Bf6",
+        "lines": [
+          {
+            "cp": 60,
+            "mate": null,
+            "depth": 24,
+            "san": "24. Qxd6 Rxd6 25. Nxc5 Bd4 26. Na6 e5 27. Kg2 g5"
+          },
+          {
+            "cp": -915,
+            "mate": null,
+            "depth": 24,
+            "san": "24. Nxc5 Bxe5 25. Nb7 Qd4 26. Kg2 g5 27. Nxd8 Rxd8"
+          }
+        ],
+        "gap": 975,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "39123e833cc79f46895c",
+      "group": "chessbattle-summer-cup-classic",
+      "app": "unresolved",
+      "reference": "unresolved",
+      "exactProposal": [
+        "c8g4",
+        "d3d4",
+        "g4f3",
+        "c5d4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "14...Bg4 15. d4",
+        "lines": [
+          {
+            "cp": 32,
+            "mate": null,
+            "depth": 26,
+            "san": "15...Bxf3 16. gxf3 cxd4 17. Nxd4 Bxd4 18. Bxd4 Nxd4 19. Qxd4"
+          },
+          {
+            "cp": -30,
+            "mate": null,
+            "depth": 26,
+            "san": "15...cxd4 16. Nexd4 Ne5 17. Ne2 Qd6 18. Nxe5 Bxe5 19. f3"
+          }
+        ],
+        "gap": 62,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "ab1b081ea2462c5dcda2",
+      "group": "2026-sahel-international-chess-festival-open-a",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "f6d5",
+        "b4b2",
+        "d5c3",
+        "g7d4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "25...Nd5 26. Rxb2",
+        "lines": [
+          {
+            "cp": -335,
+            "mate": null,
+            "depth": 23,
+            "san": "26...Nxc3 27. Nb3 Nxe2+ 28. Rxe2 Bxd4+ 29. Nxd4 Rc4 30. Rd2"
+          },
+          {
+            "cp": -485,
+            "mate": null,
+            "depth": 23,
+            "san": "26...Bxd4+ 27. cxd4 Nxf4 28. Bf1 Kf8 29. Nc4 Rd7 30. Kf2"
+          }
+        ],
+        "gap": 150,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "25...Nd5 26. Rxb2",
+        "lines": [
+          {
+            "cp": -310,
+            "mate": null,
+            "depth": 26,
+            "san": "26...Nxc3 27. Nb3 Nxe2+ 28. Rxe2 Bxd4+ 29. Nxd4 Rc4 30. Rd2"
+          },
+          {
+            "cp": -474,
+            "mate": null,
+            "depth": 26,
+            "san": "26...Bxd4+ 27. cxd4 Nxf4 28. Bf1 Kf8 29. Nc4 Ke7 30. Ne3"
+          }
+        ],
+        "gap": 164,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "8fbec60ab4fca6a0aa54",
+      "group": "fisu-world-university-championship-mind-sports-2026",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "h4h5",
+        "f4f3",
+        "h5e5",
+        "d2d4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "41. Rh5 Rxf3",
+        "lines": [
+          {
+            "cp": -11,
+            "mate": null,
+            "depth": 27,
+            "san": "42. Rxe5 Rxa3 43. Rxd4 Rc8 44. Rc5 Re8 45. Rd2 Ree3"
+          },
+          {
+            "cp": -854,
+            "mate": null,
+            "depth": 27,
+            "san": "42. Rxd4 exd4 43. Rd5 Rxa3 44. Rxd4 Rc8 45. Rd2 Rcc3"
+          }
+        ],
+        "gap": 843,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "41. Rh5 Rxf3",
+        "lines": [
+          {
+            "cp": -3,
+            "mate": null,
+            "depth": 29,
+            "san": "42. Rxe5 Rxa3 43. Rxd4 b6 44. Rf5 Rxf5 45. gxf5 Kf7"
+          },
+          {
+            "cp": -897,
+            "mate": null,
+            "depth": 29,
+            "san": "42. Rxd4 exd4 43. Rd5 Rd3 44. a4 Rc8 45. Rc5 Rd8"
+          }
+        ],
+        "gap": 894,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "402a58431990f809215f",
+      "group": "rubinstein-chess-festival-2026",
+      "app": "other-or-unresolved",
+      "reference": "other-or-unresolved",
+      "exactProposal": [
+        "c1g5",
+        "b8c6",
+        "g5f6",
+        "g2d5"
+      ],
+      "originalReference": false,
+      "referenceLines": {
+        "prefix": "16. Bg5 Nc6",
+        "lines": [
+          {
+            "cp": 4,
+            "mate": null,
+            "depth": 23,
+            "san": "17. Bxf6 Bxf6 18. Bxd5 Rd6 19. e4 Nb4 20. Nc4 Rdd7"
+          },
+          {
+            "cp": -617,
+            "mate": null,
+            "depth": 23,
+            "san": "17. Bxd5 Qxd5 18. Qxd5 Nxd5 19. Rac1 Bf8 20. Kf1 Rb7"
+          }
+        ],
+        "gap": 621,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "cd59ad3fab90eb50534a",
+      "group": "23rd-bangkok-chess-club-open-2026",
+      "app": "guard-causal",
+      "reference": "root-unverified",
+      "exactProposal": [
+        "e5c6",
+        "c3d5",
+        "c6e7",
+        "b7b4"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "30. Nc6 Nd5",
+        "lines": [
+          {
+            "cp": 407,
+            "mate": null,
+            "depth": 24,
+            "san": "31. Nxe7 Rc3+ 32. Ke2 Nxe7 33. Rxb4 Nc6 34. Ra4 h6"
+          },
+          {
+            "cp": -702,
+            "mate": null,
+            "depth": 24,
+            "san": "31. Rxb4 Bxb4 32. Nc4 Rc3+ 33. Ke2 Rxb3 34. Nxb4 Nxb4"
+          }
+        ],
+        "gap": 1109,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "30. Nc6 Nd5",
+        "lines": [
+          {
+            "cp": 449,
+            "mate": null,
+            "depth": 25,
+            "san": "31. Nxe7 Rc3+ 32. Ke2 Nxe7 33. Rxb4 Nc6 34. Ra4 Ke7"
+          },
+          {
+            "cp": -706,
+            "mate": null,
+            "depth": 25,
+            "san": "31. Rxb4 Bxb4 32. Nc4 Rc3+ 33. Ke2 Rxb3 34. Nxb4 Nxb4"
+          }
+        ],
+        "gap": 1155,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "599daedf23af6355f505",
+      "group": "32nd-abu-dhabi-international-chess-festival-2026",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "d5f4",
+        "d8d7",
+        "f4e6",
+        "e4f5"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "23. Nf4 Qd7",
+        "lines": [
+          {
+            "cp": 204,
+            "mate": null,
+            "depth": 24,
+            "san": "24. Nxe6 Qxe6 25. exf5 gxf5 26. f4 Rd8 27. Re1 Qd7"
+          },
+          {
+            "cp": 20,
+            "mate": null,
+            "depth": 24,
+            "san": "24. exf5 Bxf5 25. Bxf5 Rxf5 26. Nd5 Rcf8 27. Qc2 Kh8"
+          }
+        ],
+        "gap": 184,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "23. Nf4 Qd7",
+        "lines": [
+          {
+            "cp": 202,
+            "mate": null,
+            "depth": 24,
+            "san": "24. Nxe6 Qxe6 25. exf5 gxf5 26. f4 Qg6 27. Re1 Kh8"
+          },
+          {
+            "cp": 30,
+            "mate": null,
+            "depth": 24,
+            "san": "24. exf5 Bxf5 25. Bxf5 Rxf5 26. Nd5 Rcf8 27. Qc2 Kh8"
+          }
+        ],
+        "gap": 172,
+        "role": "recaptures"
+      }
+    },
+    {
+      "id": "bb3020447bbfa73429b2",
+      "group": "brasov-grand-prix-classic-2026",
+      "app": "other-or-unresolved",
+      "reference": "other-or-unresolved",
+      "exactProposal": [
+        "b6c6",
+        "g4e4",
+        "c6e4",
+        "c4e2"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "21...Qc6 22. Rxe4",
+        "lines": [
+          {
+            "cp": -650,
+            "mate": null,
+            "depth": 24,
+            "san": "22...Qxe4 23. Qe3 Re8 24. Qxe4 Rxe4 25. Kd2 d5 26. Bxc4"
+          },
+          {
+            "cp": -951,
+            "mate": null,
+            "depth": 24,
+            "san": "22...Bxe2 23. Qxe2 Qxe4 24. Qxe4 Re8 25. Qe2 Re6 26. Qxe6+"
+          }
+        ],
+        "gap": 301,
+        "role": null
+      },
+      "repeatedLines": null
+    },
+    {
+      "id": "f7676c62f24b3728c712",
+      "group": "pofinay-indywidualnych-mistrzostw-polski-2026",
+      "app": "guard-causal",
+      "reference": "positive",
+      "exactProposal": [
+        "f2f4",
+        "c5b3",
+        "f4e5",
+        "d6b5"
+      ],
+      "originalReference": true,
+      "referenceLines": {
+        "prefix": "25. f4 Nxb3",
+        "lines": [
+          {
+            "cp": -7,
+            "mate": null,
+            "depth": 27,
+            "san": "26. fxe5 Nxd2 27. Nxb5 Bd7 28. Rc2 Bxb5 29. Rxd2 Re8"
+          },
+          {
+            "cp": -715,
+            "mate": null,
+            "depth": 27,
+            "san": "26. Nxb5 Qxb5 27. Qd3 Qxd3 28. exd3 Rc8 29. Rb6 Rc1+"
+          }
+        ],
+        "gap": 708,
+        "role": "recaptures"
+      },
+      "repeatedLines": {
+        "prefix": "25. f4 Nxb3",
+        "lines": [
+          {
+            "cp": -7,
+            "mate": null,
+            "depth": 27,
+            "san": "26. fxe5 Nxd2 27. Nxb5 Bd7 28. Rc2 Bxb5 29. Rxd2 Re8"
+          },
+          {
+            "cp": -715,
+            "mate": null,
+            "depth": 27,
+            "san": "26. Nxb5 Qxb5 27. Qd3 Qxd3 28. exd3 Rc8 29. Rb6 Rc1+"
+          }
+        ],
+        "gap": 708,
+        "role": "recaptures"
+      }
+    }
+  ],
+  "appCallsByReviewedStatus": {
+    "other-or-unresolved": 2,
+    "positive": 13,
+    "root-unverified": 1
+  },
+  "referenceOutcomes": [
+    {
+      "id": "4091547a2994d1c1753e",
+      "label": "other-or-unresolved",
+      "gapCp": 1142,
+      "defender": "recaptures"
+    },
+    {
+      "id": "5db9122eb666173ddcdd",
+      "label": "other-or-unresolved",
+      "gapCp": 466,
+      "defender": "recaptures"
+    },
+    {
+      "id": "1928521e79c727003270",
+      "label": "positive",
+      "gapCp": 512,
+      "defender": "recaptures"
+    },
+    {
+      "id": "1ea784f67fa89dd583c9",
+      "label": "order-harmless",
+      "gapCp": 41,
+      "defender": null
+    },
+    {
+      "id": "15bd601392c5bed87f9a",
+      "label": "unresolved",
+      "gapCp": 75,
+      "defender": null
+    },
+    {
+      "id": "06363a05efdc38f553ad",
+      "label": "reply-unverified",
+      "gapCp": 333,
+      "defender": "recaptures"
+    },
+    {
+      "id": "02e40ed031833e1a28b0",
+      "label": "order-harmless",
+      "gapCp": -2,
+      "defender": null
+    },
+    {
+      "id": "05e5866990375405f1ec",
+      "label": "order-harmless",
+      "gapCp": 11,
+      "defender": null
+    },
+    {
+      "id": "0e60ababff2fba5938c7",
+      "label": "other-or-unresolved",
+      "gapCp": 754,
+      "defender": null
+    },
+    {
+      "id": "462c5e8243069430f2ad",
+      "label": "order-harmless",
+      "gapCp": 9,
+      "defender": null
+    },
+    {
+      "id": "28ac6e2c95d81caf70d5",
+      "label": "other-or-unresolved",
+      "gapCp": 135,
+      "defender": null
+    },
+    {
+      "id": "143e8963d6fad26fa2f8",
+      "label": "order-harmless",
+      "gapCp": -31,
+      "defender": null
+    },
+    {
+      "id": "01e4e8489eb9d4c84e10",
+      "label": "other-or-unresolved",
+      "gapCp": 569,
+      "defender": null
+    },
+    {
+      "id": "8bcf5c655f5023acf707",
+      "label": "other-or-unresolved",
+      "gapCp": 322,
+      "defender": null
+    },
+    {
+      "id": "14f25dad2ee503aec3c6",
+      "label": "order-harmless",
+      "gapCp": 46,
+      "defender": null
+    },
+    {
+      "id": "09e486980f4049846c52",
+      "label": "order-harmless",
+      "gapCp": -1,
+      "defender": null
+    },
+    {
+      "id": "1136d85db56b83f1102f",
+      "label": "root-unverified",
+      "gapCp": 211,
+      "defender": "recaptures"
+    },
+    {
+      "id": "608dc921e374d275071d",
+      "label": "positive",
+      "gapCp": 231,
+      "defender": "recaptures"
+    },
+    {
+      "id": "684e4a69f5cffe05ea00",
+      "label": "other-or-unresolved",
+      "gapCp": 120,
+      "defender": "recaptures"
+    },
+    {
+      "id": "2e5d45c16b0a8510bad0",
+      "label": "positive",
+      "gapCp": 713,
+      "defender": "recaptures"
+    },
+    {
+      "id": "0c0330d4d32bf00d2fd2",
+      "label": "positive",
+      "gapCp": 753,
+      "defender": "recaptures"
+    },
+    {
+      "id": "2cc42d46dd6b4c04e51f",
+      "label": "positive",
+      "gapCp": 879,
+      "defender": "takes-preparer"
+    },
+    {
+      "id": "4314afdc92fca97e54eb",
+      "label": "positive",
+      "gapCp": 454,
+      "defender": "recaptures"
+    },
+    {
+      "id": "7b4cd089a9b44644c2f7",
+      "label": "other-or-unresolved",
+      "gapCp": 1407,
+      "defender": "recaptures"
+    },
+    {
+      "id": "0f4c472763a5c4076393",
+      "label": "other-or-unresolved",
+      "gapCp": 493,
+      "defender": "recaptures"
+    },
+    {
+      "id": "71ae9409f8e3a13d6e1b",
+      "label": "order-harmless",
+      "gapCp": 3,
+      "defender": null
+    },
+    {
+      "id": "31e33529acbe88a8632c",
+      "label": "other-or-unresolved",
+      "gapCp": 387,
+      "defender": "recaptures"
+    },
+    {
+      "id": "378d2937e607ed4ee69e",
+      "label": "other-or-unresolved",
+      "gapCp": 164,
+      "defender": "recaptures"
+    },
+    {
+      "id": "3752d49cfa11d7e5c131",
+      "label": "other-or-unresolved",
+      "gapCp": 1120,
+      "defender": "takes-preparer"
+    },
+    {
+      "id": "6281c1ebc60f18091aac",
+      "label": "unresolved",
+      "gapCp": 53,
+      "defender": null
+    },
+    {
+      "id": "0617d81ee9efb1427375",
+      "label": "unresolved",
+      "gapCp": 69,
+      "defender": null
+    },
+    {
+      "id": "15dbdb84c1cab492c4cf",
+      "label": "order-harmless",
+      "gapCp": -101,
+      "defender": null
+    },
+    {
+      "id": "bb0c1d20e85b7f934575",
+      "label": "positive",
+      "gapCp": 702,
+      "defender": "recaptures"
+    },
+    {
+      "id": "5bc945ceb194ec82712e",
+      "label": "other-or-unresolved",
+      "gapCp": 259,
+      "defender": null
+    },
+    {
+      "id": "1058b90080137e32d59f",
+      "label": "positive",
+      "gapCp": 865,
+      "defender": "recaptures"
+    },
+    {
+      "id": "82a16b07862645406a00",
+      "label": "positive",
+      "gapCp": 306,
+      "defender": "recaptures"
+    },
+    {
+      "id": "2536794333cefc7379e2",
+      "label": "other-or-unresolved",
+      "gapCp": 775,
+      "defender": null
+    },
+    {
+      "id": "1b39e60d60c66d8189e3",
+      "label": "other-or-unresolved",
+      "gapCp": 1926,
+      "defender": "recaptures"
+    },
+    {
+      "id": "64c1eaa7042090f8aef5",
+      "label": "order-harmless",
+      "gapCp": 0,
+      "defender": null
+    },
+    {
+      "id": "3a1a59d297ddc397c10a",
+      "label": "other-or-unresolved",
+      "gapCp": 321,
+      "defender": "recaptures"
+    },
+    {
+      "id": "1a4b5ae85065cd78f483",
+      "label": "positive",
+      "gapCp": 522,
+      "defender": "recaptures"
+    },
+    {
+      "id": "49ebffd073b6da956c45",
+      "label": "other-or-unresolved",
+      "gapCp": 648,
+      "defender": null
+    },
+    {
+      "id": "64c3e5c23a0f54b0755f",
+      "label": "other-or-unresolved",
+      "gapCp": 484,
+      "defender": null
+    },
+    {
+      "id": "8814ea3d6087e43ed97d",
+      "label": "better-order-unverified",
+      "gapCp": 858,
+      "defender": "recaptures"
+    },
+    {
+      "id": "271520a59c49aa95c056",
+      "label": "root-unverified",
+      "gapCp": 1268,
+      "defender": "recaptures"
+    },
+    {
+      "id": "eaee92aca831671d5af0",
+      "label": "root-unverified",
+      "gapCp": 842,
+      "defender": "recaptures"
+    },
+    {
+      "id": "9c2037bc59a82ea722f6",
+      "label": "other-or-unresolved",
+      "gapCp": 618,
+      "defender": null
+    },
+    {
+      "id": "fb6609a9a582eeb17452",
+      "label": "other-or-unresolved",
+      "gapCp": 511,
+      "defender": null
+    },
+    {
+      "id": "5cc0f91482447ac5b704",
+      "label": "other-or-unresolved",
+      "gapCp": 1385,
+      "defender": null
+    },
+    {
+      "id": "222db6193878c2bc8aa7",
+      "label": "positive",
+      "gapCp": 1045,
+      "defender": "recaptures"
+    },
+    {
+      "id": "340331282886eccd64ff",
+      "label": "positive",
+      "gapCp": 779,
+      "defender": "recaptures"
+    },
+    {
+      "id": "c8ff90a2dba680c6a50f",
+      "label": "positive",
+      "gapCp": 593,
+      "defender": "recaptures"
+    },
+    {
+      "id": "7d41a861c940c680de3d",
+      "label": "order-harmless",
+      "gapCp": -7,
+      "defender": null
+    },
+    {
+      "id": "15c0531c05e38874caf5",
+      "label": "other-or-unresolved",
+      "gapCp": 981,
+      "defender": "takes-preparer"
+    },
+    {
+      "id": "deab635997317f63a179",
+      "label": "order-harmless",
+      "gapCp": 14,
+      "defender": null
+    },
+    {
+      "id": "36d12d298f192420f80c",
+      "label": "positive",
+      "gapCp": 844,
+      "defender": "recaptures"
+    },
+    {
+      "id": "2176b791db7f499e25b1",
+      "label": "other-or-unresolved",
+      "gapCp": 594,
+      "defender": null
+    },
+    {
+      "id": "7f06867b5da001eefa5f",
+      "label": "other-or-unresolved",
+      "gapCp": 108,
+      "defender": "recaptures"
+    },
+    {
+      "id": "c542396022735e179fb0",
+      "label": "positive",
+      "gapCp": 502,
+      "defender": "recaptures"
+    },
+    {
+      "id": "3a24c4ef7af8f00da850",
+      "label": "unresolved",
+      "gapCp": 93,
+      "defender": null
+    },
+    {
+      "id": "65759b728ca3737b67a9",
+      "label": "root-unverified",
+      "gapCp": 730,
+      "defender": "recaptures"
+    },
+    {
+      "id": "2e3c4dec8e5e5115502b",
+      "label": "positive",
+      "gapCp": 197,
+      "defender": "recaptures"
+    },
+    {
+      "id": "a415e3a1af5fc249cf75",
+      "label": "other-or-unresolved",
+      "gapCp": 1049,
+      "defender": null
+    },
+    {
+      "id": "a7a3dbd350361b3a9e1e",
+      "label": "positive",
+      "gapCp": 1414,
+      "defender": "recaptures"
+    },
+    {
+      "id": "27cdc5733c39416b94f2",
+      "label": "positive",
+      "gapCp": 667,
+      "defender": "recaptures"
+    },
+    {
+      "id": "36b19a96bd8750796830",
+      "label": "positive",
+      "gapCp": 196,
+      "defender": "recaptures"
+    },
+    {
+      "id": "db9780c5195f8e616f27",
+      "label": "positive",
+      "gapCp": 1028,
+      "defender": "recaptures"
+    },
+    {
+      "id": "d9b94e3e695f0e391d43",
+      "label": "positive",
+      "gapCp": 640,
+      "defender": "recaptures"
+    },
+    {
+      "id": "55b2715787e8c3de24e4",
+      "label": "other-or-unresolved",
+      "gapCp": 975,
+      "defender": null
+    },
+    {
+      "id": "e780b1649882b5806cc4",
+      "label": "positive",
+      "gapCp": 1453,
+      "defender": "takes-preparer"
+    },
+    {
+      "id": "39123e833cc79f46895c",
+      "label": "unresolved",
+      "gapCp": 62,
+      "defender": null
+    },
+    {
+      "id": "241b802a2d133503354e",
+      "label": "other-or-unresolved",
+      "gapCp": 1004,
+      "defender": "recaptures"
+    },
+    {
+      "id": "81f162967cbb08064741",
+      "label": "positive",
+      "gapCp": 1023,
+      "defender": "takes-preparer"
+    },
+    {
+      "id": "dbe20d15da1346af8a12",
+      "label": "order-harmless",
+      "gapCp": 10,
+      "defender": null
+    },
+    {
+      "id": "c4452f205a73d81f89b6",
+      "label": "order-harmless",
+      "gapCp": -1,
+      "defender": null
+    },
+    {
+      "id": "3a906b47ae487f343d2d",
+      "label": "positive",
+      "gapCp": 1219,
+      "defender": "takes-preparer"
+    },
+    {
+      "id": "ab1b081ea2462c5dcda2",
+      "label": "positive",
+      "gapCp": 150,
+      "defender": "recaptures"
+    },
+    {
+      "id": "c7d57b02c88b7d7dc67f",
+      "label": "positive",
+      "gapCp": 2041,
+      "defender": "recaptures"
+    },
+    {
+      "id": "3ecb0c92319fdea0eee8",
+      "label": "root-unverified",
+      "gapCp": 126,
+      "defender": "recaptures"
+    },
+    {
+      "id": "390c6abfbb7840ad2d19",
+      "label": "order-harmless",
+      "gapCp": -1,
+      "defender": null
+    },
+    {
+      "id": "76cbb083a251ba22e438",
+      "label": "order-harmless",
+      "gapCp": 36,
+      "defender": null
+    },
+    {
+      "id": "5f2f79ce1bdbc1494572",
+      "label": "other-or-unresolved",
+      "gapCp": 111,
+      "defender": null
+    },
+    {
+      "id": "3751a076e9944a13721a",
+      "label": "order-harmless",
+      "gapCp": 0,
+      "defender": null
+    },
+    {
+      "id": "8fbec60ab4fca6a0aa54",
+      "label": "positive",
+      "gapCp": 843,
+      "defender": "recaptures"
+    },
+    {
+      "id": "d50a280bbc0d942cb0f7",
+      "label": "other-or-unresolved",
+      "gapCp": 1320,
+      "defender": null
+    },
+    {
+      "id": "402a58431990f809215f",
+      "label": "other-or-unresolved",
+      "gapCp": 691,
+      "defender": null
+    },
+    {
+      "id": "ce5a44e2115ce3aad428",
+      "label": "other-or-unresolved",
+      "gapCp": 905,
+      "defender": null
+    },
+    {
+      "id": "cd59ad3fab90eb50534a",
+      "label": "root-unverified",
+      "gapCp": 1109,
+      "defender": "recaptures"
+    },
+    {
+      "id": "5d2b49a6330baea24947",
+      "label": "root-unverified",
+      "gapCp": 250,
+      "defender": "recaptures"
+    },
+    {
+      "id": "599daedf23af6355f505",
+      "label": "positive",
+      "gapCp": 184,
+      "defender": "recaptures"
+    },
+    {
+      "id": "bb3020447bbfa73429b2",
+      "label": "other-or-unresolved",
+      "gapCp": 301,
+      "defender": null
+    },
+    {
+      "id": "71ee87097e50884b9e1c",
+      "label": "reply-unverified",
+      "gapCp": 363,
+      "defender": "recaptures"
+    },
+    {
+      "id": "3bcd368d659891190448",
+      "label": "order-harmless",
+      "gapCp": -208,
+      "defender": null
+    },
+    {
+      "id": "bef32b70658eedaa2d37",
+      "label": "order-harmless",
+      "gapCp": 0,
+      "defender": null
+    },
+    {
+      "id": "f7676c62f24b3728c712",
+      "label": "positive",
+      "gapCp": 708,
+      "defender": "recaptures"
+    },
+    {
+      "id": "4649a3df985fade1bc5f",
+      "label": "order-harmless",
+      "gapCp": 12,
+      "defender": null
+    }
+  ],
+  "largerReplay": {
+    "nodesPerSearch": 2400000,
+    "medianMs": 2094.0,
+    "decisions": [
+      {
+        "id": "4091547a2994d1c1753e",
+        "repeated": true,
+        "timingMs": 2474
+      },
+      {
+        "id": "1ea784f67fa89dd583c9",
+        "repeated": true,
+        "timingMs": 2697
+      },
+      {
+        "id": "06363a05efdc38f553ad",
+        "repeated": true,
+        "timingMs": 2685
+      },
+      {
+        "id": "2e5d45c16b0a8510bad0",
+        "repeated": true,
+        "timingMs": 2137
+      },
+      {
+        "id": "71ae9409f8e3a13d6e1b",
+        "repeated": true,
+        "timingMs": 1919
+      },
+      {
+        "id": "222db6193878c2bc8aa7",
+        "repeated": true,
+        "timingMs": 1828
+      },
+      {
+        "id": "c8ff90a2dba680c6a50f",
+        "repeated": true,
+        "timingMs": 2454
+      },
+      {
+        "id": "36d12d298f192420f80c",
+        "repeated": true,
+        "timingMs": 2095
+      },
+      {
+        "id": "27cdc5733c39416b94f2",
+        "repeated": true,
+        "timingMs": 2052
+      },
+      {
+        "id": "36b19a96bd8750796830",
+        "repeated": true,
+        "timingMs": 1664
+      },
+      {
+        "id": "d9b94e3e695f0e391d43",
+        "repeated": true,
+        "timingMs": 2080
+      },
+      {
+        "id": "ab1b081ea2462c5dcda2",
+        "repeated": true,
+        "timingMs": 2135
+      },
+      {
+        "id": "8fbec60ab4fca6a0aa54",
+        "repeated": true,
+        "timingMs": 1810
+      },
+      {
+        "id": "cd59ad3fab90eb50534a",
+        "repeated": true,
+        "timingMs": 2093
+      },
+      {
+        "id": "599daedf23af6355f505",
+        "repeated": true,
+        "timingMs": 2423
+      },
+      {
+        "id": "f7676c62f24b3728c712",
+        "repeated": true,
+        "timingMs": 2061
+      }
+    ]
+  }
+}

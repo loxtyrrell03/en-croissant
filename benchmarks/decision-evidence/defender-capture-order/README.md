@@ -26,6 +26,58 @@ arm sees the same candidate, and the comparison arm adds at most one
 restricted search. Both arms can abstain or miss a candidate when the
 engine chooses another continuation.
 
+## Held-out results
+
+The deeper reference verified 29 exact recorded comparisons from 15
+events, found 20 harmless orders, and left 47 cases indeterminate.
+The table scores only the 49 exact questions with definite status.
+
+| Method | True positives | Misses | False positives | True negatives |
+| --- | ---: | ---: | ---: | ---: |
+| Legal pattern alone | 11 | 18 | 2 | 18 |
+| Same pattern with a matched engine search | 11 | 18 | 0 | 20 |
+
+The matched search recovered the same 11 reference positives across
+nine events. The normal-budget selector did not nominate the exact
+comparison for the other 18. The program also nominated different
+comparisons from the recorded ones. Deeper searches confirmed two of
+those, bringing the independently confirmed total to 13 of its 16
+provisional calls. The three others remain indeterminate. Five of the
+11 recorded confirmations, plus both additional confirmations, came
+from boards the committed worker called unclear with common reply
+probes. That comparison is against the committed worker with cached
+frames. It does not run the desktop panel's other adaptive searches.
+
+In the Bavarian Open, after `21.Bd6 Rfe8`, playing `22.Bxe7 Rxe7`
+first allows `23.Bxd5`. The immediate `22.Bxd5` permits `22...Nxd5`.
+The same-depth reference puts the difference at 667 centipawns of
+engine evaluation. [Game broadcast](https://lichess.org/broadcast/29th-open-bavarian-chess-championship/round-1/atM541Zl/yuhxfBgN)
+
+A Naples example explains why a second cheap search does not settle
+the three open cases. After `26...Be6 27.Rc1`, both cheap searches show
+the eventual capture on e3 after `27...Bxc4`. The deeper defence
+`28.Kf2` changes the continuation and the original target is not
+collected within the reference window. A separate Bangkok example has
+the same problem. In the third case the initial move falls outside the
+deep competitive band. [Naples broadcast](https://lichess.org/broadcast/1-festival-internazionale-di-scacchi-il-tesoro-di-san-gennaro-torneo-a/round-4/pNHP0yHN/rn52ut69)
+
+There were 25 optional searches on the 96 challenges and none on the
+48 ordinary controls. The optional searches took a median 1.41 seconds
+in the parallel benchmark and used 30.6 million total nodes. A second
+2.4-million-node comparison retained all 16 provisional calls,
+including all three indeterminate ones. Its median wall time was
+2.09 seconds including engine startup. It therefore adds cost without
+resolving these cases. [Exact variations, outcomes and timings](results.json)
+
+Keep the prototype offline. The comparison supplies a more precise
+training target for a possible learned search selector. The benchmark
+cases are reserved for evaluation. Earlier [same-board neural
+ranking](../paired-choice-training/README.md) fetched one repeatable
+witness at a budget where a simple legal material selector fetched two.
+Any new fit should choose among independently labelled legal choices
+and beat the simple selector at the same search budget on fresh event
+groups. This experiment provides no new network accuracy result.
+
 ## Reproduce
 
 From the repository root, use Python with `python-chess` and supply the
@@ -40,12 +92,16 @@ $bench = 'benchmarks/decision-evidence/defender-capture-order'
 python "$bench/test_capture_order.py"
 python "$bench/trials.py" app "$bench/holdout.json" $stockfish app.json
 python "$bench/trials.py" ref "$bench/holdout.json" $stockfish reference.json
+python "$bench/common_replies.py" app.json $stockfish common.json
 $env:DECISION_AUDIT_REVISION = '7e1524d5'
 $env:INTERFERENCE_MODE = 'archive'
-$env:INTERFERENCE_INPUT = 'app.json'
+$env:INTERFERENCE_INPUT = 'common.json'
 $env:INTERFERENCE_OUTPUT = 'baseline.json'
 node node_modules/vitest/vitest.mjs run --config benchmarks/decision-evidence/current-classifier-audit/replay.config.mjs
-python "$bench/summary.py" app.json reference.json results.json --baseline baseline.json
+python "$bench/receipt.py" alternate-cases app.json extra-questions.json
+python "$bench/trials.py" ref extra-questions.json $stockfish extra-reference.json
+python "$bench/repeat.py" app.json $stockfish repeated.json
+python "$bench/receipt.py" report app.json reference.json extra-reference.json repeated.json baseline.json results.json
 ```
 
 An order judged harmless is a control for the exact capture pair. A
