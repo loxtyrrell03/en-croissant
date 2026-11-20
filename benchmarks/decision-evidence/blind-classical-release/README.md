@@ -24,3 +24,11 @@ labels where the checked lines do not settle the question. The
 original and frozen product then receive the same offline app-budget
 frame. The separate [live Windows run](../native-desktop/README.md)
 measures the adaptive workflow.
+
+The review is [sealed](reference.json). The common and deeper frame
+files are small fixtures containing only the 36 frozen positions.
+The label hashes cover these exact captures. The recorded notes
+include legal UCI witnesses from them. `seal.py` checked the
+witnesses against the frame prefixes and the exact move in each
+scope before either classifier produced a prediction.
+[Common frames](app-frames.json) · [Deeper frames](reference-frames.json)

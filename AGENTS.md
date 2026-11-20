@@ -6273,6 +6273,8 @@ Decision Evidence v62 adds the matched reply after the independent mistake proof
 
 The v64 release record at docs/CHESS_DECISION_CLASSIFIER_RELEASE.md consolidates the exact 7a11ac6a worker on 1,051 archived requests, the 124 reviewed course and puzzle decisions, and the 26- and 72-game classical samples. Historical tactical mistakes improve from 10 to 22 of 68, with zero versus one false positive. The 72-game sample remains at zero of 17 mixed positions. The current source regression suite passes 262 tests, with 12 optional benchmark tests skipped, after updating a stale phrase assertion to verify its exact compared lines.
 
+The 36-game reserve now has a sealed single-reviewer reference and exact matched Stockfish captures. Its legal UCI witness check binds positive move and mistake reasoning to their actual move. Preserve this reference for future comparisons and record reviewer uncertainty separately.
+
 The blind classical release reserve fixes product revision dde59f6f and 36 unsearched board histories from six previously unused public classical event groups. Seal exact-move reference labels before replaying either classifier so later changes cannot claim this reserve as untouched evidence.
 
 The 72-game live Windows audit at 8de75033 returns a report on every position. On the same engine inputs, the original and rebuilt tactical position proxies find 6 and 11 of 29 reviewed positives, and the rebuilt report finds 3 of 17 mixed positions. The median analysis time is 11.21 seconds. The exact original scorer handles both standard castling encodings and incomplete optional paired frames. See benchmarks/decision-evidence/native-desktop/classical-live-v66.json.
