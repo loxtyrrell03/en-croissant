@@ -1,0 +1,514 @@
+{
+  "scope": "Material cost of the strongest defence, with an actual fork target in another reply",
+  "frozen": {
+    "pool-deep.json": "0936e4bde1f29e87fdf420c831e9800951f3344ffc54e5740f2ba0a25f75d6ac",
+    "protocol.json": "2be6e14278a61884ab30657edbe5f73144fc27742f9b32515c5c5cf1d7201f51",
+    "candidate.ts": "f35e9eb3c2f8bab745e7799c4da29bcff31497e9e5f8ade32cc83171aad012c3"
+  },
+  "cases": [
+    {
+      "id": "fork-puzzle-0Oi9j-0",
+      "game": "BlafTo2Z",
+      "moveUci": "c1c8",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-02yri-4",
+      "game": "cTlEQq4U",
+      "moveUci": "f1f2",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0MuzL-2",
+      "game": "p8LHwP94",
+      "moveUci": "d8d1",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0A8Of-0",
+      "game": "92AUYI4b",
+      "moveUci": "d5g2",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-0IHWQ-2",
+      "game": "rHUGAHhl",
+      "moveUci": "d8d1",
+      "forkPayment": false,
+      "rationale": "Rxd1 already captures the queen. Raxd1 takes the fork piece at no additional material cost; Qxc6 is a different and smaller capture."
+    },
+    {
+      "id": "fork-puzzle-0CJ0F-0",
+      "game": "n2pQu7ll",
+      "moveUci": "e1e8",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-049fm-0",
+      "game": "hZwhxR1s",
+      "moveUci": "d6f4",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0AsMw-2",
+      "game": "cAhC1raW",
+      "moveUci": "d2d6",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-25xmm-0",
+      "game": "NgeUi07c",
+      "moveUci": "d3d7",
+      "forkPayment": false,
+      "rationale": "The strongest Qxd7 Rxd7 Nxd7 Bxd8 ends with less material gain than the rook already captured by Qxd7."
+    },
+    {
+      "id": "fork-puzzle-0uzKM-0",
+      "game": "hnWdEZMb",
+      "moveUci": "a3c3",
+      "forkPayment": false,
+      "rationale": "Qxc3 Bxc3 exchanges queens without losing additional material. Rxc6 much later is independent of that queen recapture."
+    },
+    {
+      "id": "fork-puzzle-0K3Ll-2",
+      "game": "ZO0gdcpI",
+      "moveUci": "g2g1",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-0igHU-4",
+      "game": "Q4UH9cPR",
+      "moveUci": "e6d7",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0HfVQ-2",
+      "game": "P0LyBuA8",
+      "moveUci": "g6g8",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0Oib2-2",
+      "game": "PV2SyW4p",
+      "moveUci": "g2g1q",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-0Fcc9-alternative",
+      "game": "1ynjmjv2",
+      "moveUci": "e3d4",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-02MwE-0",
+      "game": "MNqQTDDx",
+      "moveUci": "f4g6",
+      "forkPayment": false,
+      "rationale": "Nxg6 fxg6 is an even trade, with a pawn captured much later. The checked knight capture neutralizes the geometric fork."
+    },
+    {
+      "id": "fork-puzzle-0HaaE-0",
+      "game": "TGR9NjNW",
+      "moveUci": "g8g2",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-0Dobg-2",
+      "game": "qoPXEKKd",
+      "moveUci": "f2f1",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-15UBv-0",
+      "game": "UUSgwJbU",
+      "moveUci": "d4d7",
+      "forkPayment": false,
+      "rationale": "The strongest exchange concedes the e7 bishop later. That is less than the queen already lost on the initial Qxd7."
+    },
+    {
+      "id": "fork-puzzle-0AWZi-0",
+      "game": "55Uf1pDg",
+      "moveUci": "h3d7",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-1jDHb-0",
+      "game": "FiWz0CHX",
+      "moveUci": "e7e3",
+      "forkPayment": false,
+      "rationale": "Qxe3 Rxe3 neutralizes the fork by a queen trade; Bxf4 gains a pawn later through a separate square and the recapture itself is even."
+    },
+    {
+      "id": "fork-puzzle-0yPV3-2",
+      "game": "adRMhsOw",
+      "moveUci": "c6b6",
+      "forkPayment": true,
+      "rationale": "After Rb6+ Rxb6 cxb6, both independent lines show the c-pawn promoting. King moves allow the rook to take its original target b7."
+    },
+    {
+      "id": "fork-puzzle-0ZOYC-2",
+      "game": "pEc1c6KH",
+      "moveUci": "d6e7",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-06TYh-0",
+      "game": "q6l9KyDM",
+      "moveUci": "e7f7",
+      "forkPayment": false,
+      "rationale": "After Qxf7 Qg4+ Qg6 Qxc8 the net gain is the same as before the defender took the forker. The alternative branches are mates."
+    },
+    {
+      "id": "fork-puzzle-167Xm-0",
+      "game": "QTTJEfxe",
+      "moveUci": "f7f1",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-00RFz-0",
+      "game": "xZ1Y4JZn",
+      "moveUci": "e4f6",
+      "forkPayment": false,
+      "rationale": "Nxf6 Bxf6 is an equal minor-piece exchange. Main-line material swings come later and differ between searches."
+    },
+    {
+      "id": "fork-puzzle-07aiv-0",
+      "game": "qMtB10tM",
+      "moveUci": "c4d3",
+      "forkPayment": true,
+      "rationale": "Bd3+ forces the strongest Qxd3 Rxd3, losing queen for bishop. Moving the king or blocking allows Bxb1."
+    },
+    {
+      "id": "fork-puzzle-0Qzc9-0",
+      "game": "yTq02Nlp",
+      "moveUci": "f6e6",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0FH3l-0",
+      "game": "eVyLCQX0",
+      "moveUci": "b3f7",
+      "forkPayment": true,
+      "rationale": "Bxf7+ Kxf7 Be5+ uses the king's new f7 square. Qf6 Bxf6 Rxf6 leaves material gain. Kd7 or Kd8 allows immediate Bxg6."
+    },
+    {
+      "id": "fork-puzzle-01FmQ-0",
+      "game": "e8I8ds3w",
+      "moveUci": "c2f2",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-0NntN-0",
+      "game": "6TfGnQDF",
+      "moveUci": "f6e7",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0HZj3-2",
+      "game": "CXZCaV1Q",
+      "moveUci": "c1e3",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-02nxc-0",
+      "game": "FZ8OHv03",
+      "moveUci": "e1e6",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-08kk0-0",
+      "game": "VJjm9pPQ",
+      "moveUci": "g5e3",
+      "forkPayment": true,
+      "rationale": "Be3+ Qxe3 Nxe3 loses a queen for a bishop, while Kh1 or Rf2 permits Bxa7."
+    },
+    {
+      "id": "fork-puzzle-01Kz0-0",
+      "game": "Q262mNXq",
+      "moveUci": "f6f2",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-02qPC-0",
+      "game": "5XcscxSA",
+      "moveUci": "f5e5",
+      "forkPayment": true,
+      "rationale": "Re5+ Qxe5+ Bxe5 wins queen for rook. Kd2 or Kf1 leaves the queen on e6 to Rxe6."
+    },
+    {
+      "id": "fork-puzzle-0KQ9n-0",
+      "game": "tBfYH9Zx",
+      "moveUci": "b7f7",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-02DlC-alternative",
+      "game": "2tZ78ci2",
+      "moveUci": "a5a2",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-129no-0",
+      "game": "5f3fZmfV",
+      "moveUci": "d5e6",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-1F7eK-0",
+      "game": "1Ui6DpVf",
+      "moveUci": "g5f3",
+      "forkPayment": false,
+      "rationale": "Nxf3 Rxf4 after the opening capture leaves the same net gain as the initial Nxf3+. Taking the knight charges no additional fork payment."
+    },
+    {
+      "id": "fork-puzzle-01Dcf-0",
+      "game": "x6stMH1k",
+      "moveUci": "g8g3",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0ISOH-0",
+      "game": "m07zKaFd",
+      "moveUci": "c7c2",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-2KYZC-4",
+      "game": "WkzKOQpY",
+      "moveUci": "e6e1",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-0EmrY-0",
+      "game": "lodJwP6Y",
+      "moveUci": "c4f4",
+      "forkPayment": false,
+      "rationale": "Qxf4 Qxe2+ changes an equal rook trade. In the strongest line only the pawn captured by Rxf4 is gained."
+    },
+    {
+      "id": "fork-puzzle-0JfNB-alternative",
+      "game": "TZPfdv0X",
+      "moveUci": "g7f7",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-09nqt-alternative",
+      "game": "nTb60VJQ",
+      "moveUci": "b6b1",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-05mag-0",
+      "game": "sDgFxIKW",
+      "moveUci": "e7c5",
+      "forkPayment": true,
+      "rationale": "Bc5+ Qxc5 Rxc5 wins the queen for a bishop. Be3 Bxa7 Bxa7 gives the same material concession by collecting on the original square."
+    },
+    {
+      "id": "fork-puzzle-1q3fx-0",
+      "game": "h9XY5aJS",
+      "moveUci": "c3f3",
+      "forkPayment": false,
+      "rationale": "Qxf3 Nxf3 Kxf3 Rxh5 leaves only the material already captured by the initial Qxf3+."
+    },
+    {
+      "id": "fork-puzzle-0iA2N-alternative",
+      "game": "UZkL44m7",
+      "moveUci": "c2c1",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-0Ftc5-0",
+      "game": "JfESIhtK",
+      "moveUci": "f3f7",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-099YF-0",
+      "game": "HHjFzb6W",
+      "moveUci": "e2g4",
+      "forkPayment": false,
+      "rationale": "Bxg4 allows a later queen trade and leaves only the original capture in the two main continuations."
+    },
+    {
+      "id": "fork-puzzle-1qSt7-0",
+      "game": "8XjR80Z1",
+      "moveUci": "d8d3",
+      "forkPayment": null,
+      "rationale": "The supplied branches do not isolate a definite material cost specific to removing this forker."
+    },
+    {
+      "id": "fork-puzzle-004Op-0",
+      "game": "tneg9Bzk",
+      "moveUci": "d8d1",
+      "forkPayment": false,
+      "rationale": "Qxd1 is followed by checks and Rxd1 Kxd1, restoring material parity. No material concession beyond the exchange is proved."
+    },
+    {
+      "id": "fork-puzzle-05URT-2",
+      "game": "Rzb7aps9",
+      "moveUci": "f7f8",
+      "forkPayment": false,
+      "rationale": "Qxf8 Rxf8+ exchanges queens and leaves just the initial bishop gain."
+    },
+    {
+      "id": "fork-puzzle-01K12-0",
+      "game": "nnSgOzEw",
+      "moveUci": "f6f1",
+      "forkPayment": false,
+      "rationale": "Rxf1 Rxf1+ is equal. Both independent best-defence lines reach the same material with no fork payment."
+    },
+    {
+      "id": "fork-puzzle-06UJo-2",
+      "game": "0OWdzcV8",
+      "moveUci": "e1e8",
+      "forkPayment": true,
+      "rationale": "Re8+ Qxe8 Bxe8 Rxe8 Qxc7 pays an exchange with a pawn via the consecutive captures; Kh7 permits the original Rxd8."
+    },
+    {
+      "id": "fork-puzzle-0QjJz-2",
+      "game": "50zfbnwC",
+      "moveUci": "c6d5",
+      "forkPayment": false,
+      "rationale": "Qxd5 Qxb4 gives bishop for bishop, while the weaker Ke8 allows Bxc4. No additional material cost in the strongest line."
+    },
+    {
+      "id": "fork-puzzle-01BWS-0",
+      "game": "1kSKoOLt",
+      "moveUci": "g6f6",
+      "forkPayment": true,
+      "rationale": "Rf6+ Qxf6+ Kxf6 wins queen for rook. Moving the king to e7 or e8 instead allows Rxf1."
+    },
+    {
+      "id": "fork-puzzle-0PaWq-0",
+      "game": "2RymGWAr",
+      "moveUci": "e7f7",
+      "forkPayment": false,
+      "rationale": "The concrete best response is met by a mating combination. No independently corroborated fork-specific material payment is established."
+    },
+    {
+      "id": "fork-puzzle-124Ae-alternative",
+      "game": "GWey4bjA",
+      "moveUci": "b1a2",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-0NAcE-alternative",
+      "game": "1a02FdQg",
+      "moveUci": "d4d8",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-1A95B-alternative",
+      "game": "9WRPZ88Y",
+      "moveUci": "d5e4",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-0VR7A-alternative",
+      "game": "laC6O0oR",
+      "moveUci": "e7g5",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-0IBFd-alternative",
+      "game": "QoxJCplH",
+      "moveUci": "d2c3",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-2NETN-alternative",
+      "game": "jEE6IaBw",
+      "moveUci": "e1e8",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-03FqH-alternative",
+      "game": "AqpLfsu3",
+      "moveUci": "h4e4",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-06gM3-alternative",
+      "game": "l34fAGgQ",
+      "moveUci": "f3f8",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-0E4gm-alternative",
+      "game": "olgYhnUf",
+      "moveUci": "f2f5",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-04qzg-alternative",
+      "game": "c0iXFw57",
+      "moveUci": "c2d2",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-0Bmrc-alternative",
+      "game": "BDoG6Cr1",
+      "moveUci": "d8d3",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-0JVNs-alternative",
+      "game": "edt466lN",
+      "moveUci": "a1f6",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    },
+    {
+      "id": "fork-puzzle-02N0A-alternative",
+      "game": "TmfeHtWj",
+      "moveUci": "h6f6",
+      "forkPayment": false,
+      "rationale": "Stockfish's strongest capture neutralizes the attacker while retaining material or mating. The attempted fork is unsound."
+    }
+  ]
+}

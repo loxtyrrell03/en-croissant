@@ -104,6 +104,7 @@ function EvidenceSummary({
   );
   const resources = assessment.conditionalResources;
   const conditionalFork = assessment.conditionalFork;
+  const forkConsequence = conditionalFork?.defenceConsequence?.description;
   const conditionalMate = assessment.conditionalMate;
   const matingLines = assessment.matingLines;
   const mateDefence = assessment.mateDefence;
@@ -166,6 +167,11 @@ function EvidenceSummary({
               </Text>
               {lineSan(conditionalFork.fen, conditionalFork.bestReplyLineUci)}
             </Text>
+            {forkConsequence && !reasons.some(({ reason }) => reason === forkConsequence) && (
+              <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+                {forkConsequence}
+              </Text>
+            )}
           </Stack>
         )}
         {expanded &&

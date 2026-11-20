@@ -1,0 +1,784 @@
+{
+  "pool": {
+    "baseline": {
+      "positive": 0,
+      "missed": 8,
+      "falsePositive": 0,
+      "trueNegative": 45,
+      "uncertainReported": 0,
+      "uncertainUnreported": 19,
+      "moveCategoryChanges": [],
+      "moveTacticalSupportChanges": [],
+      "added": [],
+      "medianReportMs": 75.50099999999998
+    },
+    "immediate": {
+      "positive": 1,
+      "missed": 7,
+      "falsePositive": 0,
+      "trueNegative": 45,
+      "uncertainReported": 0,
+      "uncertainUnreported": 19,
+      "moveCategoryChanges": [],
+      "moveTacticalSupportChanges": [],
+      "added": [
+        {
+          "id": "fork-puzzle-01BWS-0",
+          "label": true,
+          "proof": {
+            "fen": "5k2/p7/6RN/6K1/1p6/8/P7/5q2 w - - 13 55",
+            "mechanism": "fork",
+            "actor": "white",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "f6",
+              "f8",
+              "f1"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "g6f6",
+              "f8e7",
+              "f6f1",
+              "a7a5",
+              "f1f6"
+            ],
+            "description": "Rf6+ attacks f8 and f1. After Ke7, Rxf1 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "g6f6",
+              "f1f6",
+              "g5f6",
+              "f8e8",
+              "f6e6"
+            ],
+            "weakerReplySan": "Ke7",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Rf6+ forks f8 and f1. The strongest searched reply Qxf6+ removes the attacking piece. Both searches show Kxf6, for a net gain of 4 material points after the fork, with any capture on f6 by Rf6+ counted separately."
+            }
+          }
+        }
+      ],
+      "medianReportMs": 75.91215000000011
+    },
+    "delayed": {
+      "positive": 1,
+      "missed": 7,
+      "falsePositive": 0,
+      "trueNegative": 45,
+      "uncertainReported": 0,
+      "uncertainUnreported": 19,
+      "moveCategoryChanges": [],
+      "moveTacticalSupportChanges": [],
+      "added": [
+        {
+          "id": "fork-puzzle-01BWS-0",
+          "label": true,
+          "proof": {
+            "fen": "5k2/p7/6RN/6K1/1p6/8/P7/5q2 w - - 13 55",
+            "mechanism": "fork",
+            "actor": "white",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "f6",
+              "f8",
+              "f1"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "g6f6",
+              "f8e7",
+              "f6f1",
+              "a7a5",
+              "f1f6"
+            ],
+            "description": "Rf6+ attacks f8 and f1. After Ke7, Rxf1 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "g6f6",
+              "f1f6",
+              "g5f6",
+              "f8e8",
+              "f6e6"
+            ],
+            "weakerReplySan": "Ke7",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Rf6+ forks f8 and f1. The strongest searched reply Qxf6+ removes the attacking piece. Both searches show Kxf6, for a net gain of 4 material points after the fork, with any capture on f6 by Rf6+ counted separately."
+            }
+          }
+        }
+      ],
+      "medianReportMs": 75.41619999999989
+    },
+    "retained": {
+      "positive": 5,
+      "missed": 3,
+      "falsePositive": 0,
+      "trueNegative": 45,
+      "uncertainReported": 0,
+      "uncertainUnreported": 19,
+      "moveCategoryChanges": [],
+      "moveTacticalSupportChanges": [],
+      "added": [
+        {
+          "id": "fork-puzzle-07aiv-0",
+          "label": true,
+          "proof": {
+            "fen": "4r3/1p4pk/2p2p1p/4p3/1BBP4/2P1R1P1/5PKP/1q6 w - - 2 29",
+            "mechanism": "fork",
+            "actor": "white",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "d3",
+              "h7",
+              "b1"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "c4d3",
+              "e5e4",
+              "d3b1",
+              "f6f5",
+              "e3e1",
+              "g7g5",
+              "b4d6"
+            ],
+            "description": "Bd3+ attacks the king on h7 and queen on b1. After e4, Bxb1 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "c4d3",
+              "b1d3",
+              "e3d3",
+              "e5d4",
+              "c3d4",
+              "e8d8",
+              "b4e7"
+            ],
+            "weakerReplySan": "e4",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Bd3+ forks the king on h7 and queen on b1. The strongest searched reply Qxd3 takes the attacker. In both searches, Rxd3 starts an exchange that retains at least 4.7 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-08kk0-0",
+          "label": true,
+          "proof": {
+            "fen": "3q1k1r/Q4pp1/2Bp4/3P2bp/4P1n1/1N6/1PP3PP/5RK1 b - - 4 22",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "e3",
+              "g1",
+              "a7"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "g5e3",
+              "g1h1",
+              "e3a7",
+              "g2g3",
+              "h5h4",
+              "b3d2",
+              "h4g3"
+            ],
+            "description": "Be3+ attacks the king on g1 and queen on a7. After Kh1, Bxa7 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "g5e3",
+              "a7e3",
+              "g4e3",
+              "f1a1",
+              "d8b6",
+              "a1a4",
+              "g7g6"
+            ],
+            "weakerReplySan": "Kh1",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Be3+ forks the king on g1 and queen on a7. The strongest searched reply Qxe3 takes the attacker. In both searches, Nxe3 starts an exchange that retains at least 5.7 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-02qPC-0",
+          "label": true,
+          "proof": {
+            "fen": "r7/6kp/pp1bQ3/2p2r2/2P5/1P3P2/P3KP2/7R b - - 0 29",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "e5",
+              "e2",
+              "e6"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "f5e5",
+              "e2d2",
+              "e5e6",
+              "a2a4",
+              "a8f8",
+              "h1e1",
+              "e6g6"
+            ],
+            "description": "Re5+ attacks the king on e2 and queen on e6. After Kd2, Rxe6 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "f5e5",
+              "e6e5",
+              "d6e5",
+              "h1g1",
+              "g7h8",
+              "g1g4",
+              "a8f8"
+            ],
+            "weakerReplySan": "Kd2",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Re5+ forks the king on e2 and queen on e6. The strongest searched reply Qxe5+ takes the attacker. In both searches, Bxe5 starts an exchange that retains at least 4 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-05mag-0",
+          "label": true,
+          "proof": {
+            "fen": "b1r3k1/Q3bppp/4pn2/1p3B2/4pP2/6P1/1PP4P/2B2RK1 b - - 0 22",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "c5",
+              "g1",
+              "a7"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "e7c5",
+              "c1e3",
+              "c5a7",
+              "e3a7",
+              "e6f5",
+              "a7d4",
+              "f6d5"
+            ],
+            "description": "Bc5+ attacks the king on g1 and queen on a7. After Be3, Bxa7 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "e7c5",
+              "a7c5",
+              "c8c5",
+              "f5h3",
+              "c5c2",
+              "c1e3",
+              "f6d5"
+            ],
+            "weakerReplySan": "Be3",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Bc5+ forks the king on g1 and queen on a7. The strongest searched reply Qxc5 takes the attacker. In both searches, Rxc5 starts an exchange that retains at least 5.7 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-01BWS-0",
+          "label": true,
+          "proof": {
+            "fen": "5k2/p7/6RN/6K1/1p6/8/P7/5q2 w - - 13 55",
+            "mechanism": "fork",
+            "actor": "white",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "f6",
+              "f8",
+              "f1"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "g6f6",
+              "f8e7",
+              "f6f1",
+              "a7a5",
+              "f1f6",
+              "a5a4",
+              "f6a6"
+            ],
+            "description": "Rf6+ attacks the king on f8 and queen on f1. After Ke7, Rxf1 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "g6f6",
+              "f1f6",
+              "g5f6",
+              "f8e8",
+              "f6e6",
+              "a7a5",
+              "h6f5"
+            ],
+            "weakerReplySan": "Ke7",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Rf6+ forks the king on f8 and queen on f1. The strongest searched reply Qxf6+ takes the attacker. In both searches, Kxf6 starts an exchange that retains at least 4 material points."
+            }
+          }
+        }
+      ],
+      "medianReportMs": 72.84490000000005
+    },
+    "inputSha256": "0936e4bde1f29e87fdf420c831e9800951f3344ffc54e5740f2ba0a25f75d6ac"
+  },
+  "reserve": {
+    "baseline": {
+      "positive": 0,
+      "missed": 12,
+      "falsePositive": 0,
+      "trueNegative": 39,
+      "uncertainReported": 0,
+      "uncertainUnreported": 21,
+      "moveCategoryChanges": [],
+      "moveTacticalSupportChanges": [],
+      "added": [],
+      "medianReportMs": 65.40445000000045
+    },
+    "retained": {
+      "positive": 4,
+      "missed": 8,
+      "falsePositive": 0,
+      "trueNegative": 39,
+      "uncertainReported": 0,
+      "uncertainUnreported": 21,
+      "moveCategoryChanges": [
+        {
+          "id": "fork-puzzle-05hkG-0",
+          "before": "unclear",
+          "after": "tactical"
+        }
+      ],
+      "moveTacticalSupportChanges": [
+        "fork-puzzle-05hkG-0"
+      ],
+      "added": [
+        {
+          "id": "fork-puzzle-05hkG-0",
+          "label": true,
+          "proof": {
+            "fen": "r2q3r/p5k1/bp1bp1p1/3pPn2/3P3B/2PN2QP/PP2B1P1/5RK1 w - - 1 25",
+            "mechanism": "fork",
+            "actor": "white",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "f6",
+              "g7",
+              "d8"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "h4f6",
+              "g7f7",
+              "f6d8",
+              "a6d3",
+              "e2d3",
+              "d6e5",
+              "g3e5"
+            ],
+            "description": "Bf6+ attacks the king on g7 and queen on d8. After Kf7, Bxd8 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "h4f6",
+              "d8f6",
+              "e5f6",
+              "g7h7",
+              "g3g4",
+              "f5g3",
+              "g4h4"
+            ],
+            "weakerReplySan": "Kf7",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Bf6+ forks the king on g7 and queen on d8. The strongest searched reply Qxf6 takes the attacker. In both searches, exf6+ starts an exchange that retains at least 4.7 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-04DGM-2",
+          "label": true,
+          "proof": {
+            "fen": "3r2k1/q3b1pp/p3p3/8/1P2nP2/P1R2R1P/1BQ3K1/8 b - - 2 38",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "d2",
+              "g2",
+              "c2"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "d8d2",
+              "g2h1",
+              "d2c2",
+              "c3c2",
+              "a7d7",
+              "h1h2",
+              "d7d1"
+            ],
+            "description": "Rd2+ attacks the king on g2 and queen on c2. After Kh1, Rxc2 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "d8d2",
+              "c2d2",
+              "e4d2",
+              "f3d3",
+              "a7b7",
+              "g2g1",
+              "d2e4"
+            ],
+            "weakerReplySan": "Kh1",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Rd2+ forks the king on g2 and queen on c2. The strongest searched reply Qxd2 takes the attacker. In both searches, Nxd2 starts an exchange that retains at least 4 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-00Y5Q-0",
+          "label": true,
+          "proof": {
+            "fen": "rnbq1rk1/pp2b2p/4p2Q/3p1p2/2pP4/P1N5/1PP1PPPP/2KR1BNR b - - 0 11",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "g5",
+              "c1",
+              "h6"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "e7g5",
+              "c1b1",
+              "g5h6",
+              "g1f3",
+              "g8h8",
+              "h2h4",
+              "f8g8"
+            ],
+            "description": "Bg5+ attacks the king on c1 and queen on h6. After Kb1, Bxh6 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "e7g5",
+              "h6g5",
+              "d8g5",
+              "c1b1",
+              "g8h8",
+              "g1f3",
+              "g5g7"
+            ],
+            "weakerReplySan": "Kb1",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Bg5+ forks the king on c1 and queen on h6. The strongest searched reply Qxg5+ takes the attacker. In both searches, Qxg5+ starts an exchange that retains at least 5.7 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-0GXmh-2",
+          "label": true,
+          "proof": {
+            "fen": "r2q1rk1/1b2bppp/p2p1n2/1pp5/4P3/1BNQB2P/PPP2PP1/3R1RK1 b - - 1 13",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "c4",
+              "d3",
+              "b3"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "c5c4",
+              "d3d4",
+              "c4b3",
+              "c2b3",
+              "f8e8",
+              "f2f3",
+              "f6d7"
+            ],
+            "description": "c4 attacks the queen on d3 and bishop on b3. After Qd4, cxb3 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "c5c4",
+              "b3c4",
+              "b5c4",
+              "d3c4",
+              "a8c8",
+              "c4d4",
+              "f8e8"
+            ],
+            "weakerReplySan": "Qd4",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "c4 forks the queen on d3 and bishop on b3. The strongest searched reply Bxc4 takes the attacker. In both searches, bxc4 starts an exchange that retains at least 1.3 material points."
+            }
+          }
+        }
+      ],
+      "medianReportMs": 65.98684999999989
+    },
+    "release": {
+      "positive": 4,
+      "missed": 8,
+      "falsePositive": 0,
+      "trueNegative": 39,
+      "uncertainReported": 0,
+      "uncertainUnreported": 21,
+      "moveCategoryChanges": [
+        {
+          "id": "fork-puzzle-05hkG-0",
+          "before": "unclear",
+          "after": "tactical"
+        }
+      ],
+      "moveTacticalSupportChanges": [
+        "fork-puzzle-05hkG-0"
+      ],
+      "added": [
+        {
+          "id": "fork-puzzle-05hkG-0",
+          "label": true,
+          "proof": {
+            "fen": "r2q3r/p5k1/bp1bp1p1/3pPn2/3P3B/2PN2QP/PP2B1P1/5RK1 w - - 1 25",
+            "mechanism": "fork",
+            "actor": "white",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "f6",
+              "g7",
+              "d8"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "h4f6",
+              "g7f7",
+              "f6d8",
+              "a6d3",
+              "e2d3",
+              "d6e5",
+              "g3e5"
+            ],
+            "description": "Bf6+ attacks the king on g7 and queen on d8. After Kf7, Bxd8 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "h4f6",
+              "d8f6",
+              "e5f6",
+              "g7h7",
+              "g3g4",
+              "f5g3",
+              "g4h4"
+            ],
+            "weakerReplySan": "Kf7",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Bf6+ forks the king on g7 and queen on d8. The strongest searched reply Qxf6 takes the attacker. In both searches, exf6+ starts an exchange that retains at least 4.7 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-04DGM-2",
+          "label": true,
+          "proof": {
+            "fen": "3r2k1/q3b1pp/p3p3/8/1P2nP2/P1R2R1P/1BQ3K1/8 b - - 2 38",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "d2",
+              "g2",
+              "c2"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "d8d2",
+              "g2h1",
+              "d2c2",
+              "c3c2",
+              "a7d7",
+              "h1h2",
+              "d7d1"
+            ],
+            "description": "Rd2+ attacks the king on g2 and queen on c2. After Kh1, Rxc2 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "d8d2",
+              "c2d2",
+              "e4d2",
+              "f3d3",
+              "a7b7",
+              "g2g1",
+              "d2e4"
+            ],
+            "weakerReplySan": "Kh1",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Rd2+ forks the king on g2 and queen on c2. The strongest searched reply Qxd2 takes the attacker. In both searches, Nxd2 starts an exchange that retains at least 4 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-00Y5Q-0",
+          "label": true,
+          "proof": {
+            "fen": "rnbq1rk1/pp2b2p/4p2Q/3p1p2/2pP4/P1N5/1PP1PPPP/2KR1BNR b - - 0 11",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "g5",
+              "c1",
+              "h6"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "e7g5",
+              "c1b1",
+              "g5h6",
+              "g1f3",
+              "g8h8",
+              "h2h4",
+              "f8g8"
+            ],
+            "description": "Bg5+ attacks the king on c1 and queen on h6. After Kb1, Bxh6 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "e7g5",
+              "h6g5",
+              "d8g5",
+              "c1b1",
+              "g8h8",
+              "g1f3",
+              "g5g7"
+            ],
+            "weakerReplySan": "Kb1",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "Bg5+ forks the king on c1 and queen on h6. The strongest searched reply Qxg5+ takes the attacker. In both searches, Qxg5+ starts an exchange that retains at least 5.7 material points."
+            }
+          }
+        },
+        {
+          "id": "fork-puzzle-0GXmh-2",
+          "label": true,
+          "proof": {
+            "fen": "r2q1rk1/1b2bppp/p2p1n2/1pp5/4P3/1BNQB2P/PPP2PP1/3R1RK1 b - - 1 13",
+            "mechanism": "fork",
+            "actor": "black",
+            "mechanismPly": 1,
+            "payoffPly": 3,
+            "squares": [
+              "c4",
+              "d3",
+              "b3"
+            ],
+            "support": "legal-continuation",
+            "rootMoveInvolved": true,
+            "lineUci": [
+              "c5c4",
+              "d3d4",
+              "c4b3",
+              "c2b3",
+              "f8e8",
+              "f2f3",
+              "f6d7"
+            ],
+            "description": "c4 attacks the queen on d3 and bishop on b3. After Qd4, cxb3 takes one of the original targets.",
+            "bestReplyLineUci": [
+              "c5c4",
+              "b3c4",
+              "b5c4",
+              "d3c4",
+              "a8c8",
+              "c4d4",
+              "f8e8"
+            ],
+            "weakerReplySan": "Qd4",
+            "defenceConsequence": {
+              "kind": "material",
+              "description": "c4 forks the queen on d3 and bishop on b3. The strongest searched reply Bxc4 takes the attacker. In both searches, bxc4 starts an exchange that retains at least 1.3 material points."
+            }
+          }
+        }
+      ],
+      "medianReportMs": 63.6070500000003
+    },
+    "inputSha256": "f88988f456a620817f15bc297cd842a57241190ae74aac079b96faba3480e112"
+  },
+  "archive": {
+    "requests": 1051,
+    "counts": {
+      "identical": 1050,
+      "nullBoth": 1
+    },
+    "changedIds": [],
+    "baselineMedianMs": 61.025799999999435,
+    "releaseMedianMs": 61.966700000004494
+  },
+  "publicExample": {
+    "fen": "r5k1/3PBpp1/5p1p/8/8/Pq5P/3R1PP1/3R2K1 w - - 3 41",
+    "mechanism": "fork",
+    "actor": "white",
+    "mechanismPly": 1,
+    "payoffPly": 3,
+    "squares": [
+      "d8",
+      "g8",
+      "a8"
+    ],
+    "support": "legal-continuation",
+    "rootMoveInvolved": true,
+    "lineUci": [
+      "d7d8q",
+      "g8h7",
+      "d8a8",
+      "b3e6",
+      "e7d6",
+      "f6f5",
+      "a8b7"
+    ],
+    "description": "d8=Q+ attacks the king on g8 and rook on a8. After Kh7, Qxa8 takes one of the original targets.",
+    "bestReplyLineUci": [
+      "d7d8q",
+      "a8d8",
+      "d2d8",
+      "g8h7",
+      "d8d3",
+      "b3c2",
+      "e7d6"
+    ],
+    "weakerReplySan": "Kh7",
+    "defenceConsequence": {
+      "kind": "material",
+      "description": "d8=Q+ forks the king on g8 and rook on a8. The strongest searched reply Rxd8 takes the attacker. In both searches, Rxd8+ starts an exchange that retains at least 4 material points."
+    }
+  },
+  "extraEngineRequestsPerReport": 0
+}

@@ -2,6 +2,7 @@ import { makeFen } from "chessops/fen";
 import { makeSquare } from "chessops/util";
 import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
+import { findForkWithPaidDefence } from "./decisionForkPayment";
 import type { ComparativePositionalEvidence } from "./positionalTransitions";
 import type { TacticalSequenceWitness } from "./tacticalSequenceEvidence";
 
@@ -76,6 +77,17 @@ export function findConditionalFork(
     root: DecisionEngineLine,
     replies: DecisionEngineLine[],
     corroboratedFactors: readonly ComparativePositionalEvidence[] = [],
+): ConditionalForkEvidence | null {
+    const quiet = findQuietConditionalFork(fen, root, replies, corroboratedFactors);
+    if (quiet?.defenceConsequence) return quiet;
+    return findForkWithPaidDefence(fen, root, replies) ?? quiet;
+}
+
+function findQuietConditionalFork(
+    fen: string,
+    root: DecisionEngineLine,
+    replies: DecisionEngineLine[],
+    corroboratedFactors: readonly ComparativePositionalEvidence[],
 ): ConditionalForkEvidence | null {
     const rootStep = replayTacticalLine(fen, root.pvUci.slice(0, 1))[0];
     const best = replies[0];

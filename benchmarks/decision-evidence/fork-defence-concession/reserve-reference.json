@@ -1,0 +1,514 @@
+{
+  "scope": "Material cost of best defence to the exact fork",
+  "frozen": {
+    "reserve-deep.json": "f88988f456a620817f15bc297cd842a57241190ae74aac079b96faba3480e112",
+    "protocol.json": "2be6e14278a61884ab30657edbe5f73144fc27742f9b32515c5c5cf1d7201f51",
+    "candidate-v2.ts": "0254a3fac47b6f11e51d37604afec769d3b544ba8bfbd8ff15e598b63fa84592"
+  },
+  "cases": [
+    {
+      "id": "fork-puzzle-0GYxS-2",
+      "game": "sTaPxg3n",
+      "moveUci": "g3e2",
+      "forkPayment": false,
+      "rationale": "Nxe2+ already wins the queen, then the best reply takes the forker and the subsequent queen capture retains less."
+    },
+    {
+      "id": "fork-puzzle-02gpk-2",
+      "game": "A6GMJz2C",
+      "moveUci": "d7d4",
+      "forkPayment": false,
+      "rationale": "The comparable Qxd4 Rxd4 trades queens and retains just the bishop captured by the candidate."
+    },
+    {
+      "id": "fork-puzzle-05hkG-0",
+      "game": "D2NA9Gpf",
+      "moveUci": "h4f6",
+      "forkPayment": true,
+      "rationale": "Bf6+ Qxf6 exf6+ retains queen for bishop; either king retreat allows Bxd8 on the original target."
+    },
+    {
+      "id": "fork-puzzle-0ECGi-0",
+      "game": "MzfW0CKI",
+      "moveUci": "e8e1",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-1SoHY-0",
+      "game": "gXVe2vpI",
+      "moveUci": "e1e6",
+      "forkPayment": false,
+      "rationale": "Rxe6 already captures the bishop. fxe6 Qxd7 leaves no additional net material."
+    },
+    {
+      "id": "fork-puzzle-0NZMY-0",
+      "game": "2LX2IAdw",
+      "moveUci": "f8f1",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0PLFP-0",
+      "game": "iZyLgqJS",
+      "moveUci": "d3c3",
+      "forkPayment": false,
+      "rationale": "The verified consequence is a mating line rather than a supported fork-specific material cost."
+    },
+    {
+      "id": "fork-puzzle-03vCU-0",
+      "game": "JWoo7ICY",
+      "moveUci": "e8e1",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0dy3X-0",
+      "game": "ceMymP8J",
+      "moveUci": "b4e4",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-00wPZ-0",
+      "game": "XAwlqpwf",
+      "moveUci": "f2g1",
+      "forkPayment": false,
+      "rationale": "The verified consequence is a mating line rather than a supported fork-specific material cost."
+    },
+    {
+      "id": "fork-puzzle-0HPUj-0",
+      "game": "Snl495pW",
+      "moveUci": "h6h7",
+      "forkPayment": false,
+      "rationale": "The verified consequence is a mating line rather than a supported fork-specific material cost."
+    },
+    {
+      "id": "fork-puzzle-02KdL-0",
+      "game": "TqQWZ3ix",
+      "moveUci": "c4f7",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-00awK-0",
+      "game": "D9JaNyrl",
+      "moveUci": "f7f8",
+      "forkPayment": false,
+      "rationale": "The verified consequence is a mating line rather than a supported fork-specific material cost."
+    },
+    {
+      "id": "fork-puzzle-0L5BF-0",
+      "game": "LEx906HH",
+      "moveUci": "e8e1",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0Iv3q-0",
+      "game": "ljbkXKF0",
+      "moveUci": "e5e1",
+      "forkPayment": false,
+      "rationale": "Qxe1 Qxf4 recovers less than the rook already captured."
+    },
+    {
+      "id": "fork-puzzle-0KdlZ-0",
+      "game": "fCjm6tM1",
+      "moveUci": "e5e1",
+      "forkPayment": false,
+      "rationale": "Rxe1+ Rxe1 Rxe1+ Kxe1 is an equal exchange. The later Nxg2+ Nxh4 gains less than the initial capture."
+    },
+    {
+      "id": "fork-puzzle-0fNNC-0",
+      "game": "XYyDh49D",
+      "moveUci": "e5e7",
+      "forkPayment": false,
+      "rationale": "Rxe7 takes the queen and Rxd8 recovers only a rook. No additional gain beyond the original capture."
+    },
+    {
+      "id": "fork-puzzle-0G3zv-0",
+      "game": "h2tmm6Xs",
+      "moveUci": "f6f1",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-07eHq-2",
+      "game": "7TBGRw6e",
+      "moveUci": "d5d6",
+      "forkPayment": true,
+      "rationale": "Rd6+ Rxd6 c8=Q gains material through promotion. Either king retreat allows Rxc6 and the pawn also promotes."
+    },
+    {
+      "id": "fork-puzzle-054S8-0",
+      "game": "qeIEcIsr",
+      "moveUci": "f7f2",
+      "forkPayment": false,
+      "rationale": "The verified consequence is a mating line rather than a supported fork-specific material cost."
+    },
+    {
+      "id": "fork-puzzle-06Jbr-0",
+      "game": "G8kRQYqY",
+      "moveUci": "b3f7",
+      "forkPayment": true,
+      "rationale": "Bxf7+ Kxf7 Bg5+ drives the king and forces Bxd8, even after ...Rxd8. Ke7 allows the original Bxg6."
+    },
+    {
+      "id": "fork-puzzle-0MaZV-0",
+      "game": "5qZdDtuU",
+      "moveUci": "f3f7",
+      "forkPayment": false,
+      "rationale": "The verified consequence is a mating line rather than a supported fork-specific material cost."
+    },
+    {
+      "id": "fork-puzzle-0vXiy-2",
+      "game": "lfQbgP4h",
+      "moveUci": "f2f5",
+      "forkPayment": true,
+      "rationale": "Qxf5 Bxf5+ trades queens and allows the recapturing bishop to take the original g4 target. Other replies allow Qxh5."
+    },
+    {
+      "id": "fork-puzzle-0CIhX-0",
+      "game": "I4ZIsbMx",
+      "moveUci": "h5g5",
+      "forkPayment": true,
+      "rationale": "Rg5+ Qxg5 Nf3+ forces a delayed Nxg5 in the two root lines, winning queen for rook. King retreats give Rxg7."
+    },
+    {
+      "id": "fork-puzzle-2fV9j-0",
+      "game": "Z4iD4Ibg",
+      "moveUci": "e5e6",
+      "forkPayment": true,
+      "rationale": "e6+ Rxe6 Qxf5+ Kg8 Rxe6 wins material, and Kg6 instead permits exd7 and promotion."
+    },
+    {
+      "id": "fork-puzzle-0Zyv5-2",
+      "game": "pcQV6pA5",
+      "moveUci": "e6e3",
+      "forkPayment": false,
+      "rationale": "Qxe3 Nxe3 exchanges queens equally in both best-reply lines. The position remains favourable through the advanced pawn."
+    },
+    {
+      "id": "fork-puzzle-0048h-0",
+      "game": "dq15P00L",
+      "moveUci": "e4e1",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0JZOn-2",
+      "game": "r9S7TrpD",
+      "moveUci": "g7b7",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0R4R5-0",
+      "game": "ZqsXSaOA",
+      "moveUci": "g6g2",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-1uzPM-0",
+      "game": "XPt8rXU0",
+      "moveUci": "g8g5",
+      "forkPayment": false,
+      "rationale": "Rxg5 Bxe4 recovers less than the piece already captured by the candidate. Later capture play differs."
+    },
+    {
+      "id": "fork-puzzle-0GrSV-0",
+      "game": "xxTNtcvT",
+      "moveUci": "e5d4",
+      "forkPayment": false,
+      "rationale": "Qxd4 Ne2+ Nxd4 neutralizes the fork without extra material payment beyond the initial Qxd4+."
+    },
+    {
+      "id": "fork-puzzle-04DGM-2",
+      "game": "uIm13JTw",
+      "moveUci": "d8d2",
+      "forkPayment": true,
+      "rationale": "Rd2+ Qxd2 Nxd2 wins queen for rook. Kh1 allows Rxc2 Rxc2, with the same exchange gain."
+    },
+    {
+      "id": "fork-puzzle-00zDb-0",
+      "game": "QzK6TTSA",
+      "moveUci": "c5c4",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-01MQ3-0",
+      "game": "p97EKhqM",
+      "moveUci": "b7c7",
+      "forkPayment": false,
+      "rationale": "Rxc7 Bxc7 trades rooks and preserves the bishop won by the first move."
+    },
+    {
+      "id": "fork-puzzle-1zWg5-2",
+      "game": "glp8EOI5",
+      "moveUci": "e2d2",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-06VJl-0",
+      "game": "8pOMm8SK",
+      "moveUci": "g3g7",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0MxC4-2",
+      "game": "hG1ThPfR",
+      "moveUci": "f6f4",
+      "forkPayment": true,
+      "rationale": "Rxf4+ Qxf4 Rf1+ forces a delayed Qxf4+ and 400 above the pawn already captured. Ke3 allows Rxe4."
+    },
+    {
+      "id": "fork-puzzle-00PgQ-0",
+      "game": "6ByRjehu",
+      "moveUci": "c2c1q",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-00Y5Q-0",
+      "game": "56Atk60f",
+      "moveUci": "e7g5",
+      "forkPayment": true,
+      "rationale": "Bg5+ Qxg5+ Qxg5+ wins the queen for a bishop; Kb1 allows Bxh6."
+    },
+    {
+      "id": "fork-puzzle-0JTrY-0",
+      "game": "oY5lo1hB",
+      "moveUci": "c8c3",
+      "forkPayment": false,
+      "rationale": "Rxc3 Bxb5 gets back a bishop yet charges no gain beyond the knight the first move already won."
+    },
+    {
+      "id": "fork-puzzle-061vt-0",
+      "game": "6Htsmbe8",
+      "moveUci": "d5f7",
+      "forkPayment": true,
+      "rationale": "Bxf7+ Qxf7 Rxf7 and the minor exchanges leave an additional material gain. Other king moves allow Bxg6."
+    },
+    {
+      "id": "fork-puzzle-0Ih04-0",
+      "game": "uXJGgXIK",
+      "moveUci": "d4f2",
+      "forkPayment": false,
+      "rationale": "The verified consequence is a mating line rather than a supported fork-specific material cost."
+    },
+    {
+      "id": "fork-puzzle-0DYym-2",
+      "game": "YMOxEowk",
+      "moveUci": "e2e8",
+      "forkPayment": false,
+      "rationale": "Qxe8 Rxe8+ retains the original rook gain through a queen exchange and no further material cost."
+    },
+    {
+      "id": "fork-puzzle-0GXmh-2",
+      "game": "fPW4vwV0",
+      "moveUci": "c5c4",
+      "forkPayment": true,
+      "rationale": "c4 Bxc4 bxc4 Qxc4 retains an exchange gain. Qd4 permits cxb3, and the original bishop falls."
+    },
+    {
+      "id": "fork-puzzle-09RJp-2",
+      "game": "mjq7GbAo",
+      "moveUci": "e1e6",
+      "forkPayment": true,
+      "rationale": "Rxe6+ Qxe6 Nxc7+ and Nxe6 Kxe6 leave 180 additional material units. Kd8 allows Rxd6."
+    },
+    {
+      "id": "fork-puzzle-08GdT-0",
+      "game": "hTmS3omx",
+      "moveUci": "e2f2",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-01Ykx-0",
+      "game": "z2s3zDqz",
+      "moveUci": "c6c1",
+      "forkPayment": false,
+      "rationale": "Qxc1 Rxc1+ retains the original rook gain only. Other branches exploit mate."
+    },
+    {
+      "id": "fork-puzzle-0kFxk-0",
+      "game": "H3VtlYb8",
+      "moveUci": "g6f7",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0Emc1-0",
+      "game": "FRpDVDQA",
+      "moveUci": "f3f8",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-08ipk-2",
+      "game": "cYyTKDjc",
+      "moveUci": "e6d7",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0GWmf-0",
+      "game": "oB4G5b8r",
+      "moveUci": "f4g5",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-01Qf0-2",
+      "game": "A3EsrxaJ",
+      "moveUci": "d3e3",
+      "forkPayment": false,
+      "rationale": "Qxe3 dxe3 trades queens and even concedes a pawn later. The other reply allows the original capture."
+    },
+    {
+      "id": "fork-puzzle-0G31y-0",
+      "game": "GviQ6QhT",
+      "moveUci": "g8g2",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-02fzY-2",
+      "game": "P16cwZZd",
+      "moveUci": "h8h7",
+      "forkPayment": null,
+      "rationale": "The supply of exact competing lines does not settle whether material is paid for answering the original threats."
+    },
+    {
+      "id": "fork-puzzle-0EIyq-alternative",
+      "game": "zRkw8duK",
+      "moveUci": "g6g3",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-03b0r-alternative",
+      "game": "EHjh7wKk",
+      "moveUci": "g4g5",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-08wax-alternative",
+      "game": "D0R6sOpo",
+      "moveUci": "h5g5",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-05wtL-alternative",
+      "game": "mORBjDXS",
+      "moveUci": "g6d3",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-02vM9-alternative",
+      "game": "k786XfuO",
+      "moveUci": "h4e7",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-00kZO-alternative",
+      "game": "8DbGNqW8",
+      "moveUci": "d8g8",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-0M94i-alternative",
+      "game": "vpl34H51",
+      "moveUci": "h4f2",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-09shB-alternative",
+      "game": "uYvUuaDm",
+      "moveUci": "g6g4",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-0NMuW-alternative",
+      "game": "JToUwDJJ",
+      "moveUci": "f3f7",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-1kFJa-alternative",
+      "game": "1FJXRY5Z",
+      "moveUci": "d2d5",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-2268I-alternative",
+      "game": "Ay4qNvnD",
+      "moveUci": "b2f2",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-06Ohv-alternative",
+      "game": "k2xeWGKX",
+      "moveUci": "f6f8",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-08D7H-alternative",
+      "game": "ilbe0ChA",
+      "moveUci": "e6c8",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-0LIH6-alternative",
+      "game": "S6bljjpH",
+      "moveUci": "g3h3",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-1qnIG-alternative",
+      "game": "9cOUdX94",
+      "moveUci": "g4c8",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-0AHRu-alternative",
+      "game": "DgLqU5T8",
+      "moveUci": "f5f1",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-00ttk-alternative",
+      "game": "urlk8mZq",
+      "moveUci": "d7e5",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    },
+    {
+      "id": "fork-puzzle-0Ey3i-alternative",
+      "game": "lJNa5Zuw",
+      "moveUci": "c7c4",
+      "forkPayment": false,
+      "rationale": "The searched capture permits a clear advantage to the defender. There is no confirmed material-winning fork."
+    }
+  ]
+}

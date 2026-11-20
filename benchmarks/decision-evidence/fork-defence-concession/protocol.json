@@ -1,0 +1,10 @@
+{
+  "baseline": "Worker at 6481d4e9, replayed from Git for files carrying unrelated working changes.",
+  "task": "Attribute a known possible fork to the exact move when the strongest searched defence removes the forker and pays a distinct material cost.",
+  "development": "Previously reviewed paid-defence, conditional fork and exact-move classical replays. Use the existing independent Stockfish frames.",
+  "evaluation": "Before opening new predictions, review new exact solutions and legal game-disjoint alternative moves from the retained Lichess puzzle sample. A cheap fixed-budget capture-response screen nominates cases. Remove reviewed games and mirrored boards from development. Record uncertainty and root move identity. These positions are new to manual review for this mechanism. The retained puzzle corpus supported earlier unrelated model experiments.",
+  "inputs": "Use matched exact root and first three independent reply variations from Stockfish 19. All arms share these searches. Base depth or evaluation inconsistency is recorded separately from missing proof.",
+  "arms": ["production baseline", "paid defence plus immediate fork-target capture", "paid defence plus original-target capture up to ply seven"],
+  "endpoints": "Reviewed exact fork precision and recall; new verified main-move explanations among reviewed fork negatives/positives; added positional or mistake changes; match of shown reply and material on both source searches; runtime and extra engine requests.",
+  "promotionGate": "At least two more correct exact explanations on the reviewed, group-disjoint panel and zero additional known false reports. Keep genuinely conditional evidence separate from a supported root verdict. Verify a broad archived replay on any source change and keep unrelated source edits intact."
+}

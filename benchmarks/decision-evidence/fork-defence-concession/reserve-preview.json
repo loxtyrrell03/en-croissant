@@ -1,0 +1,735 @@
+{
+  "previewNodes": 12000,
+  "screened": 2076,
+  "surfaced": 1421,
+  "counts": {
+    "other-first-defence": 18,
+    "answer-cost": 36,
+    "alternative": 18
+  },
+  "cases": [
+    {
+      "id": "fork-puzzle-0GYxS-2",
+      "game": "sTaPxg3n",
+      "boardKey": "r4r2/p5kp/3p2p1/3q4/3N4/2PP2n1/1P2QPP1/R5KR b - -",
+      "fen": "r4r2/p5kp/3p2p1/3q4/3N4/2PP2n1/1P2QPP1/R5KR b - - 3 27",
+      "move": "g3e2",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-02gpk-2",
+      "game": "A6GMJz2C",
+      "boardKey": "3rkb1r/pp1qnppp/4p3/4P3/3B4/2N5/PP3PPP/R2Q1RK1 b k -",
+      "fen": "3rkb1r/pp1qnppp/4p3/4P3/3B4/2N5/PP3PPP/R2Q1RK1 b k - 2 13",
+      "move": "d7d4",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-05hkG-0",
+      "game": "D2NA9Gpf",
+      "boardKey": "5rk1/pp2b1p1/2pn2qp/3p3b/3PpN2/BP1BP1P1/P5K1/R2Q3R b - -",
+      "fen": "r2q3r/p5k1/bp1bp1p1/3pPn2/3P3B/2PN2QP/PP2B1P1/5RK1 w - - 1 25",
+      "move": "h4f6",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0ECGi-0",
+      "game": "MzfW0CKI",
+      "boardKey": "r2r2k1/pp3pp1/7p/8/3q4/1P6/PQ3PP1/R3R1K1 w - -",
+      "fen": "r3r1k1/pq3pp1/1p6/3Q4/8/7P/PP3PP1/R2R2K1 b - - 0 23",
+      "move": "e8e1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-1SoHY-0",
+      "game": "gXVe2vpI",
+      "boardKey": "1kr5/1p1rbp1p/pq2bp2/n2p4/Q2P2P1/2NB1N1P/PP3P2/K1R1R3 w - -",
+      "fen": "1kr5/1p1rbp1p/pq2bp2/n2p4/Q2P2P1/2NB1N1P/PP3P2/K1R1R3 w - - 3 23",
+      "move": "e1e6",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0NZMY-0",
+      "game": "2LX2IAdw",
+      "boardKey": "4r2k/6p1/2p4p/ppBn3Q/3P4/8/P3q1PP/5RK1 w - -",
+      "fen": "5rk1/p3Q1pp/8/3p4/PPbN3q/2P4P/6P1/4R2K b - - 2 33",
+      "move": "f8f1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0PLFP-0",
+      "game": "iZyLgqJS",
+      "boardKey": "1k6/1p3P2/p3Q3/6P1/1P2pP2/1KPrb3/P3q3/R1B5 b - -",
+      "fen": "1k6/1p3P2/p3Q3/6P1/1P2pP2/1KPrb3/P3q3/R1B5 b - - 0 32",
+      "move": "d3c3",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-03vCU-0",
+      "game": "JWoo7ICY",
+      "boardKey": "2k1r3/1ppb1pp1/p6p/3p4/1P1q4/3B1P2/5PPP/3RQ1K1 w - -",
+      "fen": "3rq1k1/5ppp/3b1p2/1p1Q4/3P4/P6P/1PPB1PP1/2K1R3 b - - 2 23",
+      "move": "e8e1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0dy3X-0",
+      "game": "ceMymP8J",
+      "boardKey": "1k6/1n6/4P3/pQ6/P1KP4/4q3/8/8 w - -",
+      "fen": "8/8/4Q3/p1kp4/Pq6/4p3/1N6/1K6 b - - 0 63",
+      "move": "b4e4",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-00wPZ-0",
+      "game": "XAwlqpwf",
+      "boardKey": "r1b2rk1/ppp2ppp/8/1B1p4/3bn3/5N2/PPP2qPP/RNBQR2K b - -",
+      "fen": "r1b2rk1/ppp2ppp/8/1B1p4/3bn3/5N2/PPP2qPP/RNBQR2K b - - 1 12",
+      "move": "f2g1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0HPUj-0",
+      "game": "Snl495pW",
+      "boardKey": "1k4r1/ppp2Q2/8/1P1PP2p/2P3r1/P6q/5P1P/R5RK b - -",
+      "fen": "r5rk/5p1p/p6Q/2p3R1/1p1pp2P/8/PPP2q2/1K4R1 w - - 8 27",
+      "move": "h6h7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-02KdL-0",
+      "game": "TqQWZ3ix",
+      "boardKey": "4r1k1/p1p1rp1p/1p3np1/8/1QBq4/P1N3PP/1P3P2/5K1R w - -",
+      "fen": "4r1k1/p1p1rp1p/1p3np1/8/1QBq4/P1N3PP/1P3P2/5K1R w - - 3 24",
+      "move": "c4f7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-00awK-0",
+      "game": "D9JaNyrl",
+      "boardKey": "2Q5/1pp1kr2/8/8/4B3/P7/2P2qPP/R6K b - -",
+      "fen": "r6k/2p2Qpp/p7/4b3/8/8/1PP1KR2/2q5 w - - 1 25",
+      "move": "f7f8",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0L5BF-0",
+      "game": "LEx906HH",
+      "boardKey": "r2r2k1/6pp/5p2/p1N5/1n1q4/8/3Q1PPP/R3R1K1 w - -",
+      "fen": "r3r1k1/3q1ppp/8/1N1Q4/P1n5/5P2/6PP/R2R2K1 b - - 0 29",
+      "move": "e8e1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0Iv3q-0",
+      "game": "ljbkXKF0",
+      "boardKey": "r1b3k1/pp3pbp/3q1np1/3pr3/5B2/1NPB4/PP3PPP/R2QR1K1 b - -",
+      "fen": "r1b3k1/pp3pbp/3q1np1/3pr3/5B2/1NPB4/PP3PPP/R2QR1K1 b - - 1 14",
+      "move": "e5e1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0KdlZ-0",
+      "game": "fCjm6tM1",
+      "boardKey": "4r1k1/ppp2pp1/7p/3Pr3/2P2n1B/P6P/5PP1/R3RK2 b - -",
+      "fen": "4r1k1/ppp2pp1/7p/3Pr3/2P2n1B/P6P/5PP1/R3RK2 b - - 3 21",
+      "move": "e5e1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0fNNC-0",
+      "game": "XYyDh49D",
+      "boardKey": "3R1r1k/2R1Q1bp/p5p1/4q3/1P6/6P1/5PK1/8 b - -",
+      "fen": "3R1r1k/2R1Q1bp/p5p1/4q3/1P6/6P1/5PK1/8 b - - 6 35",
+      "move": "e5e7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-0G3zv-0",
+      "game": "h2tmm6Xs",
+      "boardKey": "4r1k1/1p4p1/2p1r2p/1P1Q4/q7/P4RPP/7K/5R2 w - -",
+      "fen": "5r2/7k/p4rpp/Q7/1p1q4/2P1R2P/1P4P1/4R1K1 b - - 0 38",
+      "move": "f6f1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "other-first-defence"
+    },
+    {
+      "id": "fork-puzzle-07eHq-2",
+      "game": "7TBGRw6e",
+      "boardKey": "8/2P5/ppr2k2/3Rp1pp/PK2P1p1/8/5PPP/8 w - -",
+      "fen": "8/2P5/ppr2k2/3Rp1pp/PK2P1p1/8/5PPP/8 w - - 1 40",
+      "move": "d5d6",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-054S8-0",
+      "game": "qeIEcIsr",
+      "boardKey": "4r1k1/pp2rppp/2p5/6q1/2PP4/1P6/P4QPP/4RR1K w - -",
+      "fen": "4rr1k/p4qpp/1p6/2pp4/6Q1/2P5/PP2RPPP/4R1K1 b - - 1 22",
+      "move": "f7f2",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-06Jbr-0",
+      "game": "G8kRQYqY",
+      "boardKey": "r2qkb1r/1p3pp1/p1n3np/2p5/P4B2/1BPP1Q1P/2P2PP1/R3K2R w KQkq -",
+      "fen": "r2qkb1r/1p3pp1/p1n3np/2p5/P4B2/1BPP1Q1P/2P2PP1/R3K2R w KQkq - 1 14",
+      "move": "b3f7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0MaZV-0",
+      "game": "5qZdDtuU",
+      "boardKey": "4r1k1/1p2rppp/2p5/p7/2Pq4/1P3Q2/1P4PP/4RR1K w - -",
+      "fen": "4r1k1/1p2rppp/2p5/p7/2Pq4/1P3Q2/1P4PP/4RR1K w - - 2 22",
+      "move": "f3f7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0vXiy-2",
+      "game": "lfQbgP4h",
+      "boardKey": "2krr3/ppp2ppp/2n5/3p3q/3P2n1/2PB2P1/PP1N1Q1P/R1B3K1 w - -",
+      "fen": "2krr3/ppp2ppp/2n5/3p3q/3P2n1/2PB2P1/PP1N1Q1P/R1B3K1 w - - 0 16",
+      "move": "f2f5",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0CIhX-0",
+      "game": "I4ZIsbMx",
+      "boardKey": "3rr1k1/2p2p2/p6p/1p6/2pnN2R/P3P3/1P3Pq1/RQ2K3 w Q -",
+      "fen": "rq2k3/1p3pQ1/p3p3/2PNn2r/1P6/P6P/2P2P2/3RR1K1 b q - 0 23",
+      "move": "h5g5",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-2fV9j-0",
+      "game": "Z4iD4Ibg",
+      "boardKey": "4r3/p2qrkpp/2p5/3pPp2/2p5/2P3P1/PP2R1P1/4RQ1K w - -",
+      "fen": "4r3/p2qrkpp/2p5/3pPp2/2p5/2P3P1/PP2R1P1/4RQ1K w - - 0 26",
+      "move": "e5e6",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0Zyv5-2",
+      "game": "pcQV6pA5",
+      "boardKey": "r1b3k1/ppB3pp/2n1q3/8/2Pp1RnP/PP4PB/3Qp3/R5K1 b - -",
+      "fen": "r1b3k1/ppB3pp/2n1q3/8/2Pp1RnP/PP4PB/3Qp3/R5K1 b - - 1 30",
+      "move": "e6e3",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0048h-0",
+      "game": "dq15P00L",
+      "boardKey": "3r3k/8/p6p/1p1PR1p1/2pP4/2r4P/P5K1/4R3 w - -",
+      "fen": "4r3/p5k1/2R4p/2Pp4/1P1pr1P1/P6P/8/3R3K b - - 0 35",
+      "move": "e4e1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0JZOn-2",
+      "game": "r9S7TrpD",
+      "boardKey": "1k1r3r/1p4Rp/1q3p2/4pP2/2Q1B3/1p6/1PP4P/2K5 w - -",
+      "fen": "1k1r3r/1p4Rp/1q3p2/4pP2/2Q1B3/1p6/1PP4P/2K5 w - - 2 26",
+      "move": "g7b7",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0R4R5-0",
+      "game": "ZqsXSaOA",
+      "boardKey": "4r1k1/p2q1rp1/1p5Q/3Pp3/1PP1Nn2/3P2RP/5P1K/8 w - -",
+      "fen": "8/5p1k/3p2rp/1pp1nN2/3pP3/1P5q/P2Q1RP1/4R1K1 b - - 1 32",
+      "move": "g6g2",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-1uzPM-0",
+      "game": "XPt8rXU0",
+      "boardKey": "1r2k3/1p3pp1/1Pp5/p1N1b3/N3Pnnr/P6p/1BR2P2/6RK w - -",
+      "fen": "6rk/1br2p2/p6P/n3pNNR/P1n1B3/1pP5/1P3PP1/1R2K3 b - - 0 32",
+      "move": "g8g5",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0GrSV-0",
+      "game": "xxTNtcvT",
+      "boardKey": "2r3k1/1p4pp/p7/3pq3/P2N4/1PnQ1P2/2P3PP/5RK1 b - -",
+      "fen": "2r3k1/1p4pp/p7/3pq3/P2N4/1PnQ1P2/2P3PP/5RK1 b - - 2 25",
+      "move": "e5d4",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-04DGM-2",
+      "game": "uIm13JTw",
+      "boardKey": "3r2k1/q3b1pp/p3p3/8/1P2nP2/P1R2R1P/1BQ3K1/8 b - -",
+      "fen": "3r2k1/q3b1pp/p3p3/8/1P2nP2/P1R2R1P/1BQ3K1/8 b - - 2 38",
+      "move": "d8d2",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-00zDb-0",
+      "game": "QzK6TTSA",
+      "boardKey": "3r4/kp4p1/p4p2/b2qp2P/2R2pP1/1N3P2/1PK1Q3/8 w - -",
+      "fen": "8/1pk1q3/1n3p2/2r2Pp1/B2QP2p/P4P2/KP4P1/3R4 b - - 0 36",
+      "move": "c5c4",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-01MQ3-0",
+      "game": "p97EKhqM",
+      "boardKey": "1r6/1Rb1k3/p3p2p/B5p1/2r1p3/6PP/3R1P2/6K1 w - -",
+      "fen": "1r6/1Rb1k3/p3p2p/B5p1/2r1p3/6PP/3R1P2/6K1 w - - 1 38",
+      "move": "b7c7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-1zWg5-2",
+      "game": "glp8EOI5",
+      "boardKey": "7r/pkbnRppp/8/Qppr4/8/BNPq2P1/P4P1P/R5K1 w - -",
+      "fen": "r5k1/p4p1p/bnpQ2p1/8/qPPR4/8/PKBNrPPP/7R b - - 4 22",
+      "move": "e2d2",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-06VJl-0",
+      "game": "8pOMm8SK",
+      "boardKey": "5rk1/3rq1pp/p7/3pQ2N/5P2/1P4R1/P5PP/6K1 w - -",
+      "fen": "5rk1/3rq1pp/p7/3pQ2N/5P2/1P4R1/P5PP/6K1 w - - 1 29",
+      "move": "g3g7",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0MxC4-2",
+      "game": "hG1ThPfR",
+      "boardKey": "2R5/6kp/5rp1/8/2B1QP2/5K2/4R1Pq/7r b - -",
+      "fen": "2R5/6kp/5rp1/8/2B1QP2/5K2/4R1Pq/7r b - - 4 47",
+      "move": "f6f4",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-00PgQ-0",
+      "game": "6ByRjehu",
+      "boardKey": "1K6/2P5/4k3/8/4P3/7p/p1r5/3R4 w - -",
+      "fen": "3r4/P1R5/7P/4p3/8/4K3/2p5/1k6 b - - 0 55",
+      "move": "c2c1q",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-00Y5Q-0",
+      "game": "56Atk60f",
+      "boardKey": "2kr1bnr/1pp1pppp/p1n5/2Pp4/3P1P2/4P2q/PP2B2P/RNBQ1RK1 w - -",
+      "fen": "rnbq1rk1/pp2b2p/4p2Q/3p1p2/2pP4/P1N5/1PP1PPPP/2KR1BNR b - - 0 11",
+      "move": "e7g5",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0JTrY-0",
+      "game": "oY5lo1hB",
+      "boardKey": "2rq1rk1/3bbpp1/3ppn1p/nB6/4P3/PPN1BN1P/5PP1/2RQ1RK1 b - -",
+      "fen": "2rq1rk1/3bbpp1/3ppn1p/nB6/4P3/PPN1BN1P/5PP1/2RQ1RK1 b - - 0 16",
+      "move": "c8c3",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-061vt-0",
+      "game": "6Htsmbe8",
+      "boardKey": "2br2k1/4Rpp1/1p1b2qp/p2B4/2Pp1BP1/1P3Q1P/P6K/8 w - -",
+      "fen": "2br2k1/4Rpp1/1p1b2qp/p2B4/2Pp1BP1/1P3Q1P/P6K/8 w - - 0 31",
+      "move": "d5f7",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0Ih04-0",
+      "game": "uXJGgXIK",
+      "boardKey": "3r1r1k/ppp3pp/4Q3/8/3q4/2R5/PP3PPP/5RK1 b - -",
+      "fen": "3r1r1k/ppp3pp/4Q3/8/3q4/2R5/PP3PPP/5RK1 b - - 2 19",
+      "move": "d4f2",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0DYym-2",
+      "game": "YMOxEowk",
+      "boardKey": "3rr1k1/p3qppp/3b4/3N4/8/5P2/PPP2P1P/R1BQR1K1 b - -",
+      "fen": "r1bqr1k1/ppp2p1p/5p2/8/3n4/3B4/P3QPPP/3RR1K1 w - - 0 17",
+      "move": "e2e8",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0GXmh-2",
+      "game": "fPW4vwV0",
+      "boardKey": "3r1rk1/ppp2pp1/1bnqb2p/4p3/1PP5/P2P1N2/1B2BPPP/R2Q1RK1 w - -",
+      "fen": "r2q1rk1/1b2bppp/p2p1n2/1pp5/4P3/1BNQB2P/PPP2PP1/3R1RK1 b - - 1 13",
+      "move": "c5c4",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-09RJp-2",
+      "game": "mjq7GbAo",
+      "boardKey": "2k1rb2/ppp2q1p/6p1/3p4/3n4/3QP3/PPPN2PP/R3K1NR b KQ -",
+      "fen": "r3k1nr/pppn2pp/3qp3/3N4/3P4/6P1/PPP2Q1P/2K1RB2 w kq - 0 16",
+      "move": "e1e6",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-08GdT-0",
+      "game": "hTmS3omx",
+      "boardKey": "5Q2/p7/2p5/3P3p/4p1k1/PP4b1/4r3/5K2 b - -",
+      "fen": "5Q2/p7/2p5/3P3p/4p1k1/PP4b1/4r3/5K2 b - - 2 45",
+      "move": "e2f2",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-01Ykx-0",
+      "game": "z2s3zDqz",
+      "boardKey": "2r3k1/3q2pp/p7/1p3p2/4p3/2QbP1PP/1B3PK1/2R5 w - -",
+      "fen": "2r5/1b3pk1/2qBp1pp/4P3/1P3P2/P7/3Q2PP/2R3K1 b - - 3 43",
+      "move": "c6c1",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0kFxk-0",
+      "game": "H3VtlYb8",
+      "boardKey": "4r1k1/pp1q1pp1/1bp3P1/3p4/5P2/2PQ2K1/PPB5/7R w - -",
+      "fen": "4r1k1/pp1q1pp1/1bp3P1/3p4/5P2/2PQ2K1/PPB5/7R w - - 2 43",
+      "move": "g6f7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0Emc1-0",
+      "game": "FRpDVDQA",
+      "boardKey": "5r1k/pp4pp/3b1q2/2pBp3/2P5/P2PB1PP/1Pn3Q1/5RK1 b - -",
+      "fen": "5rk1/1pN3q1/p2pb1pp/2p5/2PbP3/3B1Q2/PP4PP/5R1K w - - 7 22",
+      "move": "f3f8",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-08ipk-2",
+      "game": "cYyTKDjc",
+      "boardKey": "1r2k3/pb3R1p/1pq1B3/6p1/2p5/2P3P1/PP2pP1P/4Q1K1 w - -",
+      "fen": "1r2k3/pb3R1p/1pq1B3/6p1/2p5/2P3P1/PP2pP1P/4Q1K1 w - - 6 35",
+      "move": "e6d7",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0GWmf-0",
+      "game": "oB4G5b8r",
+      "boardKey": "2bk1r2/2q5/p2p4/npp4B/4PB1b/2PP3P/PP1N2P1/R4RK1 w - -",
+      "fen": "2bk1r2/2q5/p2p4/npp4B/4PB1b/2PP3P/PP1N2P1/R4RK1 w - - 3 24",
+      "move": "f4g5",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-01Qf0-2",
+      "game": "A3EsrxaJ",
+      "boardKey": "2r1r1k1/1p2b3/p2p1pPQ/2nPpP2/3pP3/1P1q3P/P5B1/R4RK1 b - -",
+      "fen": "2r1r1k1/1p2b3/p2p1pPQ/2nPpP2/3pP3/1P1q3P/P5B1/R4RK1 b - - 0 23",
+      "move": "d3e3",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0G31y-0",
+      "game": "GviQ6QhT",
+      "boardKey": "2r5/5qpk/2p4p/3pQb2/3P1P1P/2P5/P7/K5R1 w - -",
+      "fen": "k5r1/p7/2p5/3p1p1p/3PqB2/2P4P/5QPK/2R5 b - - 1 33",
+      "move": "g8g2",
+      "origin": "solution",
+      "tagged": true,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-02fzY-2",
+      "game": "P16cwZZd",
+      "boardKey": "7r/1R5P/2p5/7K/2k5/8/1p3P2/8 b - -",
+      "fen": "7r/1R5P/2p5/7K/2k5/8/1p3P2/8 b - - 1 51",
+      "move": "h8h7",
+      "origin": "solution",
+      "tagged": false,
+      "stratum": "answer-cost"
+    },
+    {
+      "id": "fork-puzzle-0EIyq-alternative",
+      "game": "zRkw8duK",
+      "boardKey": "3r1r1k/ppp3pp/2n1Q3/5B2/5B2/2P3qP/PP3RP1/RN4K1 b - -",
+      "fen": "rn4k1/pp3rp1/2p3Qp/5b2/5b2/2N1q3/PPP3PP/3R1R1K w - - 1 19",
+      "move": "g6g3",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-03b0r-alternative",
+      "game": "EHjh7wKk",
+      "boardKey": "4k2r/5p1p/1p2pb1B/p1q5/6Q1/3r1PN1/PP4PP/R6K w k -",
+      "fen": "4k2r/5p1p/1p2pb1B/p1q5/6Q1/3r1PN1/PP4PP/R6K w k - 0 22",
+      "move": "g4g5",
+      "origin": "alternative",
+      "tagged": true,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-08wax-alternative",
+      "game": "D0R6sOpo",
+      "boardKey": "3r2k1/pbp3p1/1p2prN1/3q3Q/1n1P3P/8/PP3PP1/R4RK1 w - -",
+      "fen": "3r2k1/pbp3p1/1p2prN1/3q3Q/1n1P3P/8/PP3PP1/R4RK1 w - - 4 22",
+      "move": "h5g5",
+      "origin": "alternative",
+      "tagged": true,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-05wtL-alternative",
+      "game": "mORBjDXS",
+      "boardKey": "r2k3r/pp2q1p1/2p3Q1/2bp3p/6b1/2P1nNB1/PP1NKP1R/R7 w - -",
+      "fen": "r7/pp1nkp1r/2p1Nnb1/6B1/2BP3P/2P3q1/PP2Q1P1/R2K3R b - - 0 19",
+      "move": "g6d3",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-02vM9-alternative",
+      "game": "k786XfuO",
+      "boardKey": "1r3k2/3brqb1/3p3B/1p1Pp3/p3P2Q/PpP2P2/1P3KP1/R6R w - -",
+      "fen": "1r3k2/3brqb1/3p3B/1p1Pp3/p3P2Q/PpP2P2/1P3KP1/R6R w - - 9 40",
+      "move": "h4e7",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-00kZO-alternative",
+      "game": "8DbGNqW8",
+      "boardKey": "1b3r1k/pp4p1/6n1/2P1p1Bp/1P2R2P/P2P2P1/3QRrBK/3q4 b - -",
+      "fen": "3Q4/3qrRbk/p2p2p1/1p2r2p/2p1P1bP/6N1/PP4P1/1B3R1K w - - 12 38",
+      "move": "d8g8",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-0M94i-alternative",
+      "game": "vpl34H51",
+      "boardKey": "1r3rk1/6p1/2nqbp2/pp5Q/2pp4/P4NP1/1P3PBP/R3R1K1 w - -",
+      "fen": "r3r1k1/1p3pbp/p4np1/2PP4/PP5q/2NQBP2/6P1/1R3RK1 b - - 0 23",
+      "move": "h4f2",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-09shB-alternative",
+      "game": "uYvUuaDm",
+      "boardKey": "r1bq2k1/1pp2rb1/3p2Q1/p1nPp2N/2P5/P1N1p2P/1P3PP1/R4RK1 w - -",
+      "fen": "r1bq2k1/1pp2rb1/3p2Q1/p1nPp2N/2P5/P1N1p2P/1P3PP1/R4RK1 w - - 2 19",
+      "move": "g6g4",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-0NMuW-alternative",
+      "game": "JToUwDJJ",
+      "boardKey": "6r1/4kpb1/p3p2p/1p6/3q2P1/1P3R1P/P1Q3K1/8 w - -",
+      "fen": "6r1/4kpb1/p3p2p/1p6/3q2P1/1P3R1P/P1Q3K1/8 w - - 2 46",
+      "move": "f3f7",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-1kFJa-alternative",
+      "game": "1FJXRY5Z",
+      "boardKey": "2r5/3q3k/8/8/3Qp3/4BpPP/7K/3R4 b - -",
+      "fen": "3r4/7k/4bPpp/3qP3/8/8/3Q3K/2R5 w - - 0 44",
+      "move": "d2d5",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-2268I-alternative",
+      "game": "Ay4qNvnD",
+      "boardKey": "2r2rk1/RQ4p1/5q1p/1p6/3PP1bP/6P1/4nPBK/5R2 w - -",
+      "fen": "5r2/4Npbk/6p1/3pp1Bp/1P6/5Q1P/rq4P1/2R2RK1 b - - 1 30",
+      "move": "b2f2",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-06Ohv-alternative",
+      "game": "k2xeWGKX",
+      "boardKey": "5rk1/6pp/3p4/Kp1PPP2/4P3/1p3q1b/P3N2P/R1Q4R b - -",
+      "fen": "r1q4r/p3n2p/1P3Q1B/4p3/kP1ppp2/3P4/6PP/5RK1 w - - 0 29",
+      "move": "f6f8",
+      "origin": "alternative",
+      "tagged": true,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-08D7H-alternative",
+      "game": "ilbe0ChA",
+      "boardKey": "r1bq3k/4b1r1/p3Q3/1p1pR3/3P3P/P1N3P1/1P3PK1/R7 w - -",
+      "fen": "r1bq3k/4b1r1/p3Q3/1p1pR3/3P3P/P1N3P1/1P3PK1/R7 w - - 1 25",
+      "move": "e6c8",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-0LIH6-alternative",
+      "game": "S6bljjpH",
+      "boardKey": "7k/4r2r/1p2qNp1/p2p2P1/3P1P2/P3p1Q1/1P2R1K1/8 w - -",
+      "fen": "7k/4r2r/1p2qNp1/p2p2P1/3P1P2/P3p1Q1/1P2R1K1/8 w - - 2 38",
+      "move": "g3h3",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-1qnIG-alternative",
+      "game": "9cOUdX94",
+      "boardKey": "2r2b1r/1bq1n1pp/1p1k4/3Pp1p1/4P1Q1/P7/2P2PPP/3R1RK1 w - -",
+      "fen": "2r2b1r/1bq1n1pp/1p1k4/3Pp1p1/4P1Q1/P7/2P2PPP/3R1RK1 w - - 0 20",
+      "move": "g4c8",
+      "origin": "alternative",
+      "tagged": true,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-0AHRu-alternative",
+      "game": "DgLqU5T8",
+      "boardKey": "2k5/6p1/3qp3/p4r1r/P1pP4/8/1P1B2Q1/R4RK1 b - -",
+      "fen": "2k5/6p1/3qp3/p4r1r/P1pP4/8/1P1B2Q1/R4RK1 b - - 1 31",
+      "move": "f5f1",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-00ttk-alternative",
+      "game": "urlk8mZq",
+      "boardKey": "6k1/ppqn1rp1/2p3Qp/3p1N2/3P1bP1/2P2N1P/PP3P2/R5K1 b - -",
+      "fen": "6k1/ppqn1rp1/2p3Qp/3p1N2/3P1bP1/2P2N1P/PP3P2/R5K1 b - - 5 21",
+      "move": "d7e5",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    },
+    {
+      "id": "fork-puzzle-0Ey3i-alternative",
+      "game": "lJNa5Zuw",
+      "boardKey": "2kr4/ppq2p2/3b1p1p/3Bn1r1/P7/2P2N1P/1P3PP1/R2Q1RK1 b - -",
+      "fen": "2kr4/ppq2p2/3b1p1p/3Bn1r1/P7/2P2N1P/1P3PP1/R2Q1RK1 b - - 2 18",
+      "move": "c7c4",
+      "origin": "alternative",
+      "tagged": false,
+      "stratum": "alternative"
+    }
+  ],
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "inputSha256": "9f3d2bdf595a3eac9f1d4f049f3937c03248bfa5595e3c4709f6b6ee30f1fee0",
+  "durationSeconds": 18.945050099981017
+}

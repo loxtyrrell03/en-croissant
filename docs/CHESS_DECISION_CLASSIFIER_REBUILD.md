@@ -4006,3 +4006,21 @@ of 13 reviewed classical forks and leaves nine unknown because it requires
 an early capture by the original attacking piece across both defences.
 The spatial models stay offline.
 [Experimental protocol, reproduction and examples](../benchmarks/decision-evidence/spatial-fork-model/README.md)
+
+## When taking the forker costs material
+
+Decision assessment v39 verifies legal forks whose strongest defence
+captures the forker. The exact root and independent best-reply searches
+must agree on the same capture and immediate recapture. An alternative
+reply must let the forker take an original target. Display the material
+retained in both searches separately from any initial capture, and
+preserve the two legal lines.
+
+The final verifier adds five of eight requested explanations on
+development and four of 12 on a separate 72-game puzzle reserve.
+It adds no false explanation on 39 reviewed negatives and changes one
+reserve move from unclear to tactical. In 1,051 archived requests, every
+valid report matches apart from its version and one remains unavailable.
+The proof reuses all existing searches. Intermediate checks and indirect
+payoffs still defeat the immediate material test.
+[Benchmark, exact continuations and panel checks](../benchmarks/decision-evidence/fork-defence-concession/README.md)
