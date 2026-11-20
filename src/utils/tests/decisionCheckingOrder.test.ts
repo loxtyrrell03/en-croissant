@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assessChessDecision, type DecisionAssessmentInput } from "../tacticalMotifs/decisionAssessment";
 import { confirmCheckingOrder, findCheckingOrderChoice, nominateCheckingOrder } from "../tacticalMotifs/decisionCheckingOrder";
 import fixture from "../../../benchmarks/decision-evidence/checking-capture-order/fixture.json";
+import defences from "../../../benchmarks/decision-evidence/checking-order-defences/fixture.json";
 
 const position: DecisionAssessmentInput = fixture.position.input;
 const comparison: DecisionAssessmentInput = fixture.mistake.input;
@@ -85,5 +86,64 @@ describe("a check before an exposed piece is taken", () => {
         });
         expect(unrelated?.position).toEqual(original);
         expect(wrongScope?.position).toEqual(original);
+    });
+});
+
+describe("checking order when the stronger choice leaves the target in place", () => {
+    it("recognises the attacker being taken without changing the position or candidate sections", () => {
+        const { input, probe } = defences.removeAttacker;
+        const before = assessChessDecision(input)!;
+        const after = assessChessDecision({ ...input, checkingOrder: { scope: "mistake", lines: probe.lines } })!;
+        expect(after.mistake?.checkingOrder?.explanation).toMatch(/Bxf7\+.*Qxa8.*Bxe6 takes the bishop/);
+        expect(after.mistake?.checkingOrder?.defenceLineUci).toBeUndefined();
+        expect(after.position).toEqual(before.position);
+        expect(after.moves).toEqual(before.moves);
+    });
+
+    it("shows the newly legal defence after the same reply in the position section", () => {
+        const { input, probe } = defences.sameReply;
+        const before = assessChessDecision(input)!;
+        const after = assessChessDecision({
+            ...input, checkingOrder: { scope: "position", lines: probe.lines, control: probe.control },
+        })!;
+        expect(before.position.category).toBe("unclear");
+        expect(after.position.category).toBe("tactical");
+        expect(after.position.checkingOrder?.explanation).toMatch(/After Kg6, Qh8 comes without check.*Qf6/);
+        expect(after.position.checkingOrder?.defenceLineUci?.slice(0, 3)).toEqual(["h7g6", "d4h8", "e6f6"]);
+        expect(after.position.positional).toEqual(before.position.positional);
+        expect(after.moves).toEqual(before.moves);
+        expect(after.mistake).toBeNull();
+    });
+
+    it("refuses the same-reply explanation without an exact, meaningful control", () => {
+        const { input, probe } = defences.sameReply;
+        const request = findCheckingOrderChoice(input.fen, input.candidates)!;
+        const { lines, control } = probe;
+        for (const altered of [
+            undefined,
+            { ...control, fen: input.fen },
+            { ...control, pvUci: input.candidates[0].pvUci.slice(1) },
+            { ...control, pvUci: control.pvUci.slice(0, 1) },
+            { ...control, cp: lines[0].cp },
+            { ...control, upperbound: true },
+        ]) {
+            expect(confirmCheckingOrder(input.fen, request, lines, input.history, altered)).toBeNull();
+        }
+    });
+
+    it("can verify a new legal capture of the checker with deeper Menorca frames", () => {
+        const { input, probe } = defences.newCapture;
+        const [best, weaker] = input.comparisonCandidates;
+        const request = nominateCheckingOrder(input.fen, best, weaker);
+        expect(request).toBeTruthy();
+        const proof = confirmCheckingOrder(input.fen, request!, probe.lines, input.history, probe.control);
+        expect(proof?.explanation).toMatch(/After h5, Bxf7\+ can be answered with Qxf7/);
+        expect(proof?.defenceLineUci?.slice(0, 3)).toEqual(["h7h5", "d5f7", "c7f7"]);
+    });
+
+    it("declines to infer a defence from a score change when the same check and answer remain legal", () => {
+        const { input } = defences.sameLegalAnswer;
+        const [best, played] = input.comparisonCandidates;
+        expect(nominateCheckingOrder(input.fen, best, played)).toBeNull();
     });
 });

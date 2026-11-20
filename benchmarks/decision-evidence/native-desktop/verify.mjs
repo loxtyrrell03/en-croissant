@@ -199,4 +199,31 @@ if (wanted.has("Sardinia Capture Order")) {
   });
 }
 
+if (wanted.has("Berjaya Checking Defence")) {
+  await run("Berjaya Checking Defence", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse position");
+    const text = await (await expandPosition(page)).innerText();
+    assert.match(text, /Check first\..*Qh8\+.*Rxc8/);
+    assert.match(text, /Same reply after the better move\..*Kg6.*Qh8.*Qf6/);
+    assert.match(text, /Engine supported.*Qh8 comes without check/);
+    return { position: text };
+  });
+}
+
+if (wanted.has("La Roda Checking Defence")) {
+  await run("La Roda Checking Defence", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const section = page.getByText("What Qc2 missed or allowed", { exact: true }).locator("../..");
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const text = await section.innerText();
+    assert.match(text, /Check first\..*Bxf7\+.*Qxa8/);
+    assert.match(text, /Bxe6 takes the bishop that would give that check/);
+    return { mistake: text };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

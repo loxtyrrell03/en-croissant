@@ -47,6 +47,7 @@ import {
     type SiblingRefutationFrames,
 } from "@/utils/tacticalMotifs/decisionSiblingRefutation";
 import {
+    compareCheckToCapture,
     findCheckingOrderChoice,
     nominateCheckingOrder,
     type CheckingOrderProbe,
@@ -410,20 +411,37 @@ export async function gatherCheckingOrder(
     const request = mistake ?? (scopes.position && findCheckingOrderChoice(target.fen, input.candidates));
     if (!request) return;
     const scope = mistake ? "mistake" : "position";
-    const knownReplies = [input.positionReply, ...(input.replyProbes ?? [])]
-        .find((probe) => probe?.moveUci === request.choice.uci)?.lines ?? [];
-    const matching = request.moves.map((uci) => knownReplies.find((line) => line.pvUci[0] === uci));
+    const repliesFor = (move: string) => [input.positionReply, ...(input.replyProbes ?? [])]
+        .find((probe) => probe?.moveUci === move)?.lines ?? [];
+    const matching = request.moves.map((uci) =>
+        repliesFor(request.choice.uci).find((line) => line.pvUci[0] === uci),
+    );
     const [check, take] = matching;
-    if (check && take && check.depth === take.depth && check.depth >= 16) {
-        return { scope, lines: [check, take] };
-    }
-    progress("Comparing the check with taking immediately…");
+    const stopAt = Math.min(deadline, Date.now() + 3_600);
     try {
-        const lines = await searchDecisionCheckpoint(
-            engine, { fen: request.fen, prefix: [request.choice.uci] }, signal, deadline,
-            target.history, request.moves, 1_400_000, 2,
+        let lines = check && take && check.depth === take.depth && check.depth >= 16
+            ? [check, take] : [];
+        if (!lines.length) {
+            progress("Comparing the check with taking immediately…");
+            lines = await searchDecisionCheckpoint(
+                engine, { fen: request.fen, prefix: [request.choice.uci] }, signal, stopAt,
+                target.history, request.moves, 1_400_000, 2,
+            );
+        }
+        if (lines.length !== 2) return;
+        if (request.betterDefence.kind !== "same-reply") return { scope, lines };
+        if (!compareCheckToCapture(request, lines, target.history)) return;
+        const reply = request.firstReply.uci;
+        const cached = repliesFor(request.preferred.uci).find((line) =>
+            line.pvUci[0] === reply && line.depth >= 16,
         );
-        return lines.length === 2 ? { scope, lines } : undefined;
+        if (cached) return { scope, lines, control: cached };
+        progress("Checking the same reply after the stronger move…");
+        const [control] = await searchDecisionCheckpoint(
+            engine, { fen: request.betterDefence.fen, prefix: [request.preferred.uci] },
+            signal, stopAt, target.history, [reply], 1_000_000, 1,
+        );
+        return control ? { scope, lines, control } : undefined;
     } catch {
         signal.throwIfAborted();
         return;

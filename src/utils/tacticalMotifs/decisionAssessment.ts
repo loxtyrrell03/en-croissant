@@ -122,7 +122,7 @@ import {
     type CheckingOrderProbe,
 } from "./decisionCheckingOrder";
 
-export const DECISION_ASSESSMENT_VERSION = 56;
+export const DECISION_ASSESSMENT_VERSION = 57;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -972,7 +972,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     }
     if (!rejectedChoices && position.tactical.support !== "supported" && input.checkingOrder?.scope === "position") {
         const request = findCheckingOrderChoice(input.fen, input.candidates);
-        const proof = request && confirmCheckingOrder(input.fen, request, input.checkingOrder.lines, input.history);
+        const proof = request && confirmCheckingOrder(input.fen, request, input.checkingOrder.lines, input.history, input.checkingOrder.control);
         if (proof) {
             position.checkingOrder = proof;
             position.tactical = {
@@ -1494,7 +1494,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             let checkingOrder: CheckingOrderEvidence | null = null;
             if (input.checkingOrder?.scope === "mistake") {
                 const request = nominateCheckingOrder(input.fen, comparedBest, playedLine);
-                checkingOrder = request && confirmCheckingOrder(input.fen, request, input.checkingOrder.lines, input.history);
+                checkingOrder = request && confirmCheckingOrder(input.fen, request, input.checkingOrder.lines, input.history, input.checkingOrder.control);
                 if (checkingOrder && assessment.tactical.support !== "supported") {
                     assessment.tactical = {
                         support: "supported",

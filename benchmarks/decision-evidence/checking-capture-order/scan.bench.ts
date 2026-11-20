@@ -66,11 +66,11 @@ test("replay check-order nominations and bounded app searches", async () => {
             position: !!before && before.position.tactical.support !== "supported",
         }, signal, Date.now() + 7_000, () => {});
         const request = probe?.scope === "mistake" ? playedChoice : positionChoice;
-        const proof = probe && request ? confirmCheckingOrder(row.fen, request, probe.lines, row.history) : null;
+        const proof = probe && request ? confirmCheckingOrder(row.fen, request, probe.lines, row.history, probe.control) : null;
         const after = proof ? assessChessDecision({ ...row, checkingOrder: probe }) : before;
         results.push({ ...sample, positionBefore: before?.position.category, mistakeBefore: before?.mistake?.category,
             positionAfter: after?.position.category, mistakeAfter: after?.mistake?.category,
-            scope: probe?.scope, proof, frames: probe?.lines,
+            scope: probe?.scope, proof, frames: probe?.lines, control: probe?.control,
             queries: queries.slice(count), milliseconds: Math.round(performance.now() - started) });
     }
     expect(results).toHaveLength(rows.length);

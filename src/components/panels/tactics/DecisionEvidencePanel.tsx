@@ -310,6 +310,9 @@ function checkingOrderLines(fen: string, proof?: CheckingOrderEvidence) {
   return [
     { label: "Check first", san: lineSan(fen, proof.checkingLineUci) },
     { label: "Take immediately", san: lineSan(fen, proof.immediateCaptureLineUci) },
+    ...(proof.defenceLineUci ? [{
+      label: "Same reply after the better move", san: lineSan(fen, proof.defenceLineUci),
+    }] : []),
     { label: "Better line", san: lineSan(fen, proof.betterLineUci) },
   ];
 }

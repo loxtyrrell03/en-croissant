@@ -69,10 +69,19 @@ for uci in [*amsterdam["history"]["moves"], amsterdam["recordedMove"]]:
     board.push(move)
 fixture("Amsterdam Exchange", amsterdam["history"]["fen"], sans)
 
-if (fixtures / "checking-capture-order" / "fixture.json").is_file():
-    order = load("checking-capture-order", "fixture.json")
-    for scope, label in (("position", "Finnish Capture Order"), ("mistake", "Asian Capture Order"),
-                         ("counterattack", "Sardinia Capture Order")):
+for folder, scenarios in (
+    ("checking-capture-order", (
+        ("position", "Finnish Capture Order"), ("mistake", "Asian Capture Order"),
+        ("counterattack", "Sardinia Capture Order"),
+    )),
+    ("checking-order-defences", (
+        ("sameReply", "Berjaya Checking Defence"), ("removeAttacker", "La Roda Checking Defence"),
+    )),
+):
+    if not (fixtures / folder / "fixture.json").is_file():
+        continue
+    order = load(folder, "fixture.json")
+    for scope, label in scenarios:
         if scope not in order:
             continue
         target = order[scope]["input"]

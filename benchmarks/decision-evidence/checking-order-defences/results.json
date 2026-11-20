@@ -1,0 +1,1239 @@
+{
+  "schema": 1,
+  "stockfish": {
+    "version": "19",
+    "threads": 1,
+    "hashMiB": 64,
+    "sha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0"
+  },
+  "v56": "8bb06b6f",
+  "selection": {
+    "sha256": "8fb2ed585bdc098422e5231c763649263fde3c36d4f54988ef81f574a0e3d014",
+    "source": "Public 2026 classical games with the recorded check-before-capture shape",
+    "holdout": "Event- and game-disjoint from v57 development",
+    "overlapWithDevelopment": {
+      "event": 0,
+      "game": 0,
+      "fen": 0
+    }
+  },
+  "development": {
+    "v56": {
+      "cases": 80,
+      "games": 80,
+      "eventGroups": 10,
+      "playedReference": {
+        "different-order-outcome": 7,
+        "unresolved": 24,
+        "not-a-tested-mistake": 40,
+        "check-order-unnecessary": 9
+      },
+      "playedTruePositive": 1,
+      "playedFalsePositive": 0,
+      "missedPlayedCaseIds": [
+        "239e8a27be9e543c1366",
+        "69e317680c0554a92c88",
+        "6de2d9a64806c2df0da7",
+        "c296ed917437a6fcb636",
+        "cf7dd6b4ef2e691f1038",
+        "f797b03dd1b1ea122c8d"
+      ],
+      "proofs": [
+        {
+          "id": "21b8c451ee7e015b5d6d",
+          "event": "51-open-chess-la-roda",
+          "site": "https://lichess.org/broadcast/51-open-chess-la-roda/round-7/iviBqeo7/Pc7rAV0v",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "b6e6",
+              "b1b5",
+              "b7a6",
+              "c1c5",
+              "e5c7",
+              "c5c7",
+              "a6b5",
+              "c7h7",
+              "b5a5",
+              "h7b7"
+            ],
+            "checkingLineUci": [
+              "b6c6",
+              "b1b5",
+              "b7a6",
+              "c1c6",
+              "a6b5",
+              "c6h6",
+              "b5a5",
+              "h6h7",
+              "a5b6",
+              "h7e7"
+            ],
+            "immediateCaptureLineUci": [
+              "b6c6",
+              "c1c6",
+              "b7c6",
+              "b1c1",
+              "c6b7",
+              "c1c5",
+              "e5c3",
+              "c5b5",
+              "b7a6",
+              "b5b6"
+            ],
+            "explanation": "After Rc6, Rxb5+ comes before Rxc6+, which takes the rook on c6. Taking immediately scores worse for the attacker. The line continues with Kxc6 Rc1+ Kb7. Re6 moves the rook out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        }
+      ],
+      "extraSearch": {
+        "requests": 1,
+        "queries": 1,
+        "requestedNodes": 1400000,
+        "searchedNodes": 1400124,
+        "medianMsPerRequest": 1461,
+        "maxMsPerRequest": 1461
+      }
+    },
+    "v57": {
+      "cases": 80,
+      "games": 80,
+      "eventGroups": 10,
+      "playedReference": {
+        "different-order-outcome": 7,
+        "unresolved": 24,
+        "not-a-tested-mistake": 40,
+        "check-order-unnecessary": 9
+      },
+      "playedTruePositive": 2,
+      "playedFalsePositive": 0,
+      "missedPlayedCaseIds": [
+        "69e317680c0554a92c88",
+        "6de2d9a64806c2df0da7",
+        "c296ed917437a6fcb636",
+        "cf7dd6b4ef2e691f1038",
+        "f797b03dd1b1ea122c8d"
+      ],
+      "proofs": [
+        {
+          "id": "21b8c451ee7e015b5d6d",
+          "event": "51-open-chess-la-roda",
+          "site": "https://lichess.org/broadcast/51-open-chess-la-roda/round-7/iviBqeo7/Pc7rAV0v",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "b6e6",
+              "b1b5",
+              "b7a6",
+              "c1c5",
+              "e5c7",
+              "c5c7",
+              "a6b5",
+              "c7h7",
+              "b5a5",
+              "h7b7"
+            ],
+            "checkingLineUci": [
+              "b6c6",
+              "b1b5",
+              "b7a6",
+              "c1c6",
+              "a6b5",
+              "c6h6",
+              "b5a5",
+              "h6h7",
+              "a5b6",
+              "h7e7"
+            ],
+            "immediateCaptureLineUci": [
+              "b6c6",
+              "c1c6",
+              "b7c6",
+              "b1c1",
+              "c6b7",
+              "c1c5",
+              "e5c3",
+              "c5b5",
+              "b7a6",
+              "b5b6"
+            ],
+            "explanation": "After Rc6, Rxb5+ comes before Rxc6+, which takes the rook on c6. Taking immediately scores worse for the attacker. The line continues with Kxc6 Rc1+ Kb7. Re6 moves the rook out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "239e8a27be9e543c1366",
+          "event": "51-open-chess-la-roda",
+          "site": "https://lichess.org/broadcast/51-open-chess-la-roda/round-6/DGgPpuPE/48f11TW3",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "f7e6",
+              "d5e6",
+              "e5f7",
+              "g5d2",
+              "c3c2",
+              "d2a5",
+              "c2g6",
+              "a5d8",
+              "a8b8",
+              "d8c7"
+            ],
+            "checkingLineUci": [
+              "c3c2",
+              "e6f7",
+              "e5f7",
+              "d5a8",
+              "c2a4",
+              "a8d5",
+              "f6g5",
+              "d1a1",
+              "a4b5",
+              "a1a7"
+            ],
+            "immediateCaptureLineUci": [
+              "c3c2",
+              "d5a8",
+              "e8a8",
+              "f2f4",
+              "e5f3",
+              "g2f3",
+              "f7e6",
+              "d1c1",
+              "c2f5",
+              "g5f6"
+            ],
+            "explanation": "After Qc2, Bxf7+ comes before Qxa8, which takes the rook on a8. Taking immediately scores worse for the attacker. The line continues with Rxa8 f4 Nf3+. Bxe6 takes the bishop that would give that check."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "e5cba759491c5981c566",
+          "event": "4ncl-easter-congress-2025",
+          "site": "https://lichess.org/broadcast/4ncl-easter-congress-2025-open/round-5/4vAzf64i/l9kRjXRL",
+          "scope": "position",
+          "positionBefore": "unclear",
+          "positionAfter": "tactical",
+          "mistakeBefore": null,
+          "mistakeAfter": null,
+          "proof": {
+            "betterLineUci": [
+              "e1d1",
+              "f4e2",
+              "g1f1",
+              "b7c6",
+              "d1e1",
+              "g8f8",
+              "e1e2",
+              "e8d8",
+              "f1e1",
+              "d8d4"
+            ],
+            "checkingLineUci": [
+              "g1f1",
+              "d1e1",
+              "f1e1",
+              "b7c6",
+              "b2b4",
+              "f4e2",
+              "e1f1",
+              "g8h8",
+              "a2a4",
+              "f6f5"
+            ],
+            "immediateCaptureLineUci": [
+              "g1f1",
+              "b7c6",
+              "e1d1",
+              "f4e2",
+              "d1e1",
+              "g8f8",
+              "e1e2",
+              "e8d8",
+              "f1e1",
+              "d8d4"
+            ],
+            "explanation": "After Kf1, Rxe1+ comes before bxc6, which takes the knight on c6. Taking immediately scores worse for the attacker. The line continues with Rxd1 Nxe2 Re1. Rxd1 takes the rook that would give that check."
+          },
+          "playedReference": "not-a-tested-mistake",
+          "matchesRecordedOrder": false
+        },
+        {
+          "id": "8adc10cb851bc64db626",
+          "event": "22nd-bangkok-chess-club-open-2025",
+          "site": "https://lichess.org/broadcast/22nd-bangkok-chess-club-open-2025/round-1/AJ0oxvZv",
+          "scope": "position",
+          "positionBefore": "unclear",
+          "positionAfter": "tactical",
+          "mistakeBefore": null,
+          "mistakeAfter": null,
+          "proof": {
+            "betterLineUci": [
+              "f2e1",
+              "f4g2",
+              "e1d1",
+              "c2d2",
+              "d1d2",
+              "g2h4",
+              "f3f4",
+              "f5g4",
+              "d2d3",
+              "h4g2"
+            ],
+            "checkingLineUci": [
+              "f2e3",
+              "d5d4",
+              "e3d4",
+              "c2d2",
+              "g5e4",
+              "d2b2",
+              "e4g3",
+              "f5e6",
+              "g3e4",
+              "b2a2"
+            ],
+            "immediateCaptureLineUci": [
+              "f2e3",
+              "c2d2",
+              "e3d2",
+              "f4g6",
+              "d2e3",
+              "g6h4",
+              "g5h3",
+              "d3d2",
+              "h3f2",
+              "d5d4"
+            ],
+            "defenceLineUci": [
+              "f2e1",
+              "d5d4",
+              "g5e4",
+              "f4g2",
+              "e1d1",
+              "c2d2",
+              "d1d2",
+              "g2h4",
+              "e4g3",
+              "f5g5"
+            ],
+            "explanation": "After Ke3, d4+ comes before Rxd2, which takes the rook on d2. Taking immediately scores worse for the attacker. The line continues with Kxd2 Ng6 Ke3. After Ke1, d4 comes without check and gives time for Ne4."
+          },
+          "playedReference": "not-a-tested-mistake",
+          "matchesRecordedOrder": false
+        }
+      ],
+      "extraSearch": {
+        "requests": 6,
+        "queries": 7,
+        "requestedNodes": 9400000,
+        "searchedNodes": 9401485,
+        "medianMsPerRequest": 1452.0,
+        "maxMsPerRequest": 2194
+      }
+    },
+    "v57ChangedDefence": {
+      "cases": 80,
+      "games": 80,
+      "eventGroups": 10,
+      "playedReference": {
+        "different-order-outcome": 7,
+        "unresolved": 24,
+        "not-a-tested-mistake": 40,
+        "check-order-unnecessary": 9
+      },
+      "playedTruePositive": 2,
+      "playedFalsePositive": 0,
+      "missedPlayedCaseIds": [
+        "69e317680c0554a92c88",
+        "6de2d9a64806c2df0da7",
+        "c296ed917437a6fcb636",
+        "cf7dd6b4ef2e691f1038",
+        "f797b03dd1b1ea122c8d"
+      ],
+      "proofs": [
+        {
+          "id": "21b8c451ee7e015b5d6d",
+          "event": "51-open-chess-la-roda",
+          "site": "https://lichess.org/broadcast/51-open-chess-la-roda/round-7/iviBqeo7/Pc7rAV0v",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "b6e6",
+              "b1b5",
+              "b7a6",
+              "c1c5",
+              "e5c7",
+              "c5c7",
+              "a6b5",
+              "c7h7",
+              "b5a5",
+              "h7b7"
+            ],
+            "checkingLineUci": [
+              "b6c6",
+              "b1b5",
+              "b7a6",
+              "c1c6",
+              "a6b5",
+              "c6h6",
+              "b5a5",
+              "h6h7",
+              "a5b6",
+              "h7e7"
+            ],
+            "immediateCaptureLineUci": [
+              "b6c6",
+              "c1c6",
+              "b7c6",
+              "b1c1",
+              "c6b7",
+              "c1c5",
+              "e5c3",
+              "c5b5",
+              "b7a6",
+              "b5b6"
+            ],
+            "explanation": "After Rc6, Rxb5+ comes before Rxc6+, which takes the rook on c6. Taking immediately scores worse for the attacker. The line continues with Kxc6 Rc1+ Kb7. Re6 moves the rook out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "239e8a27be9e543c1366",
+          "event": "51-open-chess-la-roda",
+          "site": "https://lichess.org/broadcast/51-open-chess-la-roda/round-6/DGgPpuPE/48f11TW3",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "f7e6",
+              "d5e6",
+              "e5f7",
+              "g5d2",
+              "c3c2",
+              "d2a5",
+              "c2g6",
+              "a5d8",
+              "a8b8",
+              "d8c7"
+            ],
+            "checkingLineUci": [
+              "c3c2",
+              "e6f7",
+              "e5f7",
+              "d5a8",
+              "c2a4",
+              "a8d5",
+              "f6g5",
+              "d1a1",
+              "a4b5",
+              "a1a7"
+            ],
+            "immediateCaptureLineUci": [
+              "c3c2",
+              "d5a8",
+              "e8a8",
+              "f2f4",
+              "e5f3",
+              "g2f3",
+              "f7e6",
+              "d1c1",
+              "c2f5",
+              "g5f6"
+            ],
+            "explanation": "After Qc2, Bxf7+ comes before Qxa8, which takes the rook on a8. Taking immediately scores worse for the attacker. The line continues with Rxa8 f4 Nf3+. Bxe6 takes the bishop that would give that check."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "e5cba759491c5981c566",
+          "event": "4ncl-easter-congress-2025",
+          "site": "https://lichess.org/broadcast/4ncl-easter-congress-2025-open/round-5/4vAzf64i/l9kRjXRL",
+          "scope": "position",
+          "positionBefore": "unclear",
+          "positionAfter": "tactical",
+          "mistakeBefore": null,
+          "mistakeAfter": null,
+          "proof": {
+            "betterLineUci": [
+              "e1d1",
+              "f4e2",
+              "g1f1",
+              "b7c6",
+              "d1e1",
+              "g8f8",
+              "e1e2",
+              "e8d8",
+              "f1e1",
+              "d8d4"
+            ],
+            "checkingLineUci": [
+              "g1f1",
+              "d1e1",
+              "f1e1",
+              "b7c6",
+              "b2b4",
+              "f4e2",
+              "e1f1",
+              "g8h8",
+              "a2a4",
+              "f6f5"
+            ],
+            "immediateCaptureLineUci": [
+              "g1f1",
+              "b7c6",
+              "e1d1",
+              "f4e2",
+              "d1e1",
+              "g8f8",
+              "e1e2",
+              "e8d8",
+              "f1e1",
+              "d8d4"
+            ],
+            "explanation": "After Kf1, Rxe1+ comes before bxc6, which takes the knight on c6. Taking immediately scores worse for the attacker. The line continues with Rxd1 Nxe2 Re1. Rxd1 takes the rook that would give that check."
+          },
+          "playedReference": "not-a-tested-mistake",
+          "matchesRecordedOrder": false
+        },
+        {
+          "id": "8adc10cb851bc64db626",
+          "event": "22nd-bangkok-chess-club-open-2025",
+          "site": "https://lichess.org/broadcast/22nd-bangkok-chess-club-open-2025/round-1/AJ0oxvZv",
+          "scope": "position",
+          "positionBefore": "unclear",
+          "positionAfter": "tactical",
+          "mistakeBefore": null,
+          "mistakeAfter": null,
+          "proof": {
+            "betterLineUci": [
+              "f2e1",
+              "f4g2",
+              "e1d1",
+              "c2d2",
+              "d1d2",
+              "g2h4",
+              "f3f4",
+              "f5g4",
+              "d2d3",
+              "h4g2"
+            ],
+            "checkingLineUci": [
+              "f2e3",
+              "d5d4",
+              "e3d4",
+              "c2d2",
+              "g5e4",
+              "d2b2",
+              "e4g3",
+              "f5e6",
+              "g3e4",
+              "b2a2"
+            ],
+            "immediateCaptureLineUci": [
+              "f2e3",
+              "c2d2",
+              "e3d2",
+              "f4g6",
+              "d2e3",
+              "g6h4",
+              "g5h3",
+              "d3d2",
+              "h3f2",
+              "d5d4"
+            ],
+            "defenceLineUci": [
+              "f2e1",
+              "d5d4",
+              "g5e4",
+              "f4g2",
+              "e1d1",
+              "c2d2",
+              "d1d2",
+              "g2h4",
+              "e4g3",
+              "f5g5"
+            ],
+            "explanation": "After Ke3, d4+ comes before Rxd2, which takes the rook on d2. Taking immediately scores worse for the attacker. The line continues with Kxd2 Ng6 Ke3. After Ke1, d4 comes without check and gives time for Ne4."
+          },
+          "playedReference": "not-a-tested-mistake",
+          "matchesRecordedOrder": false
+        }
+      ],
+      "extraSearch": {
+        "requests": 6,
+        "queries": 8,
+        "requestedNodes": 10400000,
+        "searchedNodes": 10401656,
+        "medianMsPerRequest": 1621.0,
+        "maxMsPerRequest": 2670
+      }
+    }
+  },
+  "holdout": {
+    "v56": {
+      "cases": 80,
+      "games": 80,
+      "eventGroups": 35,
+      "playedReference": {
+        "not-a-tested-mistake": 49,
+        "different-order-outcome": 10,
+        "check-order-unnecessary": 8,
+        "unresolved": 13
+      },
+      "playedTruePositive": 2,
+      "playedFalsePositive": 0,
+      "missedPlayedCaseIds": [
+        "0437621414a2d87b426a",
+        "0c48e991bb576fa06a73",
+        "12a60545d7af566c7c17",
+        "315feb9894213555c870",
+        "336d9ca86965e14b7877",
+        "53d415b0c717c9ba5907",
+        "7c50b8e088631f2dc61a",
+        "9a4f6d09a3d4c2320a9b"
+      ],
+      "proofs": [
+        {
+          "id": "003887f26b28d93359f8",
+          "event": "zagreb-open-2026",
+          "site": "https://lichess.org/broadcast/zagreb-open-2026-viii-krunoslav-hulak-memorial/round/4gRk9Iku",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "unclear",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "g3h2",
+              "b1h1",
+              "c7d6",
+              "h1d1",
+              "d6c7",
+              "d3c5",
+              "g8g7",
+              "c5e4",
+              "h2e5",
+              "g5d8"
+            ],
+            "checkingLineUci": [
+              "c7c4",
+              "g5d8",
+              "g8h7",
+              "g2g3",
+              "b6d5",
+              "b1d1",
+              "c4d4",
+              "d8f8",
+              "d4f6",
+              "f8c5"
+            ],
+            "immediateCaptureLineUci": [
+              "c7c4",
+              "g2g3",
+              "c4d3",
+              "b1c1",
+              "d3d4",
+              "g5f4",
+              "d4g7",
+              "f4c7",
+              "b6d5",
+              "c7d8"
+            ],
+            "explanation": "After Qxc4, Qd8+ comes before Kxg3, which takes the bishop on g3. Taking immediately scores worse for the attacker. The line continues with Qxd3 Rc1 Qd4. Bh2 moves the bishop out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "5cb72007a24358e9a509",
+          "event": "hoogeveen-open-2026",
+          "site": "https://lichess.org/broadcast/hoogeveen-open-2026/round-8/DrTnN6H5/qaUCcCh0",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "c5b6",
+              "c3a2",
+              "d7c5",
+              "b3c5",
+              "b6c5",
+              "a2c1",
+              "h6h5",
+              "c1d3",
+              "c5d6",
+              "f1e2"
+            ],
+            "checkingLineUci": [
+              "a8b8",
+              "d1d7",
+              "c7d7",
+              "b3c5",
+              "d7d6",
+              "b2b4",
+              "h6h5",
+              "c3d1",
+              "a7a5",
+              "d1e3"
+            ],
+            "immediateCaptureLineUci": [
+              "a8b8",
+              "b3c5",
+              "d7c5",
+              "g3g4",
+              "a7a5",
+              "b2b3",
+              "c8e6",
+              "f1e2",
+              "b5b4",
+              "a3b4"
+            ],
+            "explanation": "After Rb8, Rxd7+ comes before Nxc5+, which takes the bishop on c5. Taking immediately scores worse for the attacker. The line continues with Nxc5 g4 a5. Bb6 moves the bishop out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        }
+      ],
+      "extraSearch": {
+        "requests": 2,
+        "queries": 2,
+        "requestedNodes": 2800000,
+        "searchedNodes": 2800175,
+        "medianMsPerRequest": 1674.5,
+        "maxMsPerRequest": 1747
+      }
+    },
+    "v57": {
+      "cases": 80,
+      "games": 80,
+      "eventGroups": 35,
+      "playedReference": {
+        "not-a-tested-mistake": 49,
+        "different-order-outcome": 10,
+        "check-order-unnecessary": 8,
+        "unresolved": 13
+      },
+      "playedTruePositive": 2,
+      "playedFalsePositive": 0,
+      "missedPlayedCaseIds": [
+        "0437621414a2d87b426a",
+        "0c48e991bb576fa06a73",
+        "12a60545d7af566c7c17",
+        "315feb9894213555c870",
+        "336d9ca86965e14b7877",
+        "53d415b0c717c9ba5907",
+        "7c50b8e088631f2dc61a",
+        "9a4f6d09a3d4c2320a9b"
+      ],
+      "proofs": [
+        {
+          "id": "003887f26b28d93359f8",
+          "event": "zagreb-open-2026",
+          "site": "https://lichess.org/broadcast/zagreb-open-2026-viii-krunoslav-hulak-memorial/round/4gRk9Iku",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "unclear",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "g3h2",
+              "b1h1",
+              "c7d6",
+              "h1d1",
+              "d6c7",
+              "d3c5",
+              "g8g7",
+              "c5e4",
+              "h2e5",
+              "g5d8"
+            ],
+            "checkingLineUci": [
+              "c7c4",
+              "g5d8",
+              "g8h7",
+              "g2g3",
+              "b6d5",
+              "b1d1",
+              "c4d4",
+              "d8f8",
+              "d4f6",
+              "f8c5"
+            ],
+            "immediateCaptureLineUci": [
+              "c7c4",
+              "g2g3",
+              "c4d3",
+              "b1c1",
+              "d3d4",
+              "g5f4",
+              "d4g7",
+              "f4c7",
+              "b6d5",
+              "c7d8"
+            ],
+            "explanation": "After Qxc4, Qd8+ comes before Kxg3, which takes the bishop on g3. Taking immediately scores worse for the attacker. The line continues with Qxd3 Rc1 Qd4. Bh2 moves the bishop out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "13db4156a937c965e470",
+          "event": "1st-berjaya-global-chess-open-2026",
+          "site": "https://lichess.org/broadcast/1st-berjaya-global-chess-open-2026-masters/round-6/Z7lzric1/idslgxxK",
+          "scope": "position",
+          "positionBefore": "unclear",
+          "positionAfter": "tactical",
+          "mistakeBefore": "unclear",
+          "mistakeAfter": "unclear",
+          "proof": {
+            "betterLineUci": [
+              "h7g6",
+              "d4c5",
+              "e6b6",
+              "d8c8",
+              "b6c5",
+              "c8c5",
+              "b8b4",
+              "a5c6",
+              "b4b1",
+              "g1h2"
+            ],
+            "checkingLineUci": [
+              "b8b4",
+              "d4h8",
+              "h7g6",
+              "d8c8",
+              "b4b6",
+              "c4c5",
+              "b6b1",
+              "g1h2",
+              "e6c8",
+              "h8c8"
+            ],
+            "immediateCaptureLineUci": [
+              "b8b4",
+              "d8c8",
+              "e6c8",
+              "d4a7",
+              "h7g8",
+              "a7d4",
+              "b4b1",
+              "g1h2",
+              "c8e6",
+              "d4d2"
+            ],
+            "defenceLineUci": [
+              "h7g6",
+              "d4h8",
+              "e6f6",
+              "h8f6",
+              "g6f6",
+              "a5c6",
+              "b8a8",
+              "g2f1",
+              "f7e6",
+              "c4c5"
+            ],
+            "explanation": "After Rxb4, Qh8+ comes before Rxc8, which takes the knight on c8. Taking immediately scores worse for the attacker. The line continues with Qxc8 Qa7 Kg8. After Kg6, Qh8 comes without check and gives time for Qf6."
+          },
+          "playedReference": "unresolved",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "5cb72007a24358e9a509",
+          "event": "hoogeveen-open-2026",
+          "site": "https://lichess.org/broadcast/hoogeveen-open-2026/round-8/DrTnN6H5/qaUCcCh0",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "c5b6",
+              "c3a2",
+              "d7c5",
+              "b3c5",
+              "b6c5",
+              "a2c1",
+              "h6h5",
+              "c1d3",
+              "c5d6",
+              "f1e2"
+            ],
+            "checkingLineUci": [
+              "a8b8",
+              "d1d7",
+              "c7d7",
+              "b3c5",
+              "d7d6",
+              "b2b4",
+              "h6h5",
+              "c3d1",
+              "a7a5",
+              "d1e3"
+            ],
+            "immediateCaptureLineUci": [
+              "a8b8",
+              "b3c5",
+              "d7c5",
+              "g3g4",
+              "a7a5",
+              "b2b3",
+              "c8e6",
+              "f1e2",
+              "b5b4",
+              "a3b4"
+            ],
+            "explanation": "After Rb8, Rxd7+ comes before Nxc5+, which takes the bishop on c5. Taking immediately scores worse for the attacker. The line continues with Nxc5 g4 a5. Bb6 moves the bishop out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        }
+      ],
+      "extraSearch": {
+        "requests": 5,
+        "queries": 7,
+        "requestedNodes": 9000000,
+        "searchedNodes": 8689771,
+        "medianMsPerRequest": 1739,
+        "maxMsPerRequest": 2838
+      }
+    },
+    "v57ChangedDefence": {
+      "cases": 80,
+      "games": 80,
+      "eventGroups": 35,
+      "playedReference": {
+        "not-a-tested-mistake": 49,
+        "different-order-outcome": 10,
+        "check-order-unnecessary": 8,
+        "unresolved": 13
+      },
+      "playedTruePositive": 2,
+      "playedFalsePositive": 0,
+      "missedPlayedCaseIds": [
+        "0437621414a2d87b426a",
+        "0c48e991bb576fa06a73",
+        "12a60545d7af566c7c17",
+        "315feb9894213555c870",
+        "336d9ca86965e14b7877",
+        "53d415b0c717c9ba5907",
+        "7c50b8e088631f2dc61a",
+        "9a4f6d09a3d4c2320a9b"
+      ],
+      "proofs": [
+        {
+          "id": "003887f26b28d93359f8",
+          "event": "zagreb-open-2026",
+          "site": "https://lichess.org/broadcast/zagreb-open-2026-viii-krunoslav-hulak-memorial/round/4gRk9Iku",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "unclear",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "g3h2",
+              "b1h1",
+              "c7d6",
+              "h1d1",
+              "d6c7",
+              "d3c5",
+              "g8g7",
+              "c5e4",
+              "h2e5",
+              "g5d8"
+            ],
+            "checkingLineUci": [
+              "c7c4",
+              "g5d8",
+              "g8h7",
+              "g2g3",
+              "b6d5",
+              "b1d1",
+              "c4d4",
+              "d8f8",
+              "d4f6",
+              "f8c5"
+            ],
+            "immediateCaptureLineUci": [
+              "c7c4",
+              "g2g3",
+              "c4d3",
+              "b1c1",
+              "d3d4",
+              "g5f4",
+              "d4g7",
+              "f4c7",
+              "b6d5",
+              "c7d8"
+            ],
+            "explanation": "After Qxc4, Qd8+ comes before Kxg3, which takes the bishop on g3. Taking immediately scores worse for the attacker. The line continues with Qxd3 Rc1 Qd4. Bh2 moves the bishop out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "13db4156a937c965e470",
+          "event": "1st-berjaya-global-chess-open-2026",
+          "site": "https://lichess.org/broadcast/1st-berjaya-global-chess-open-2026-masters/round-6/Z7lzric1/idslgxxK",
+          "scope": "position",
+          "positionBefore": "unclear",
+          "positionAfter": "tactical",
+          "mistakeBefore": "unclear",
+          "mistakeAfter": "unclear",
+          "proof": {
+            "betterLineUci": [
+              "h7g6",
+              "d4c5",
+              "e6b6",
+              "d8c8",
+              "b6c5",
+              "c8c5",
+              "b8b4",
+              "a5c6",
+              "b4b1",
+              "g1h2"
+            ],
+            "checkingLineUci": [
+              "b8b4",
+              "d4h8",
+              "h7g6",
+              "d8c8",
+              "b4b6",
+              "c4c5",
+              "b6b1",
+              "g1h2",
+              "e6c8",
+              "h8c8"
+            ],
+            "immediateCaptureLineUci": [
+              "b8b4",
+              "d8c8",
+              "e6c8",
+              "d4a7",
+              "h7g8",
+              "a7d4",
+              "b4b1",
+              "g1h2",
+              "c8e6",
+              "d4d2"
+            ],
+            "defenceLineUci": [
+              "h7g6",
+              "d4h8",
+              "e6f6",
+              "h8f6",
+              "g6f6",
+              "a5c6",
+              "b8a8",
+              "g2f1",
+              "f7e6",
+              "c4c5"
+            ],
+            "explanation": "After Rxb4, Qh8+ comes before Rxc8, which takes the knight on c8. Taking immediately scores worse for the attacker. The line continues with Qxc8 Qa7 Kg8. After Kg6, Qh8 comes without check and gives time for Qf6."
+          },
+          "playedReference": "unresolved",
+          "matchesRecordedOrder": true
+        },
+        {
+          "id": "5cb72007a24358e9a509",
+          "event": "hoogeveen-open-2026",
+          "site": "https://lichess.org/broadcast/hoogeveen-open-2026/round-8/DrTnN6H5/qaUCcCh0",
+          "scope": "mistake",
+          "positionBefore": "unclear",
+          "positionAfter": "unclear",
+          "mistakeBefore": "tactical",
+          "mistakeAfter": "tactical",
+          "proof": {
+            "betterLineUci": [
+              "c5b6",
+              "c3a2",
+              "d7c5",
+              "b3c5",
+              "b6c5",
+              "a2c1",
+              "h6h5",
+              "c1d3",
+              "c5d6",
+              "f1e2"
+            ],
+            "checkingLineUci": [
+              "a8b8",
+              "d1d7",
+              "c7d7",
+              "b3c5",
+              "d7d6",
+              "b2b4",
+              "h6h5",
+              "c3d1",
+              "a7a5",
+              "d1e3"
+            ],
+            "immediateCaptureLineUci": [
+              "a8b8",
+              "b3c5",
+              "d7c5",
+              "g3g4",
+              "a7a5",
+              "b2b3",
+              "c8e6",
+              "f1e2",
+              "b5b4",
+              "a3b4"
+            ],
+            "explanation": "After Rb8, Rxd7+ comes before Nxc5+, which takes the bishop on c5. Taking immediately scores worse for the attacker. The line continues with Nxc5 g4 a5. Bb6 moves the bishop out of that capture."
+          },
+          "playedReference": "different-order-outcome",
+          "matchesRecordedOrder": true
+        }
+      ],
+      "extraSearch": {
+        "requests": 5,
+        "queries": 7,
+        "requestedNodes": 9000000,
+        "searchedNodes": 8689771,
+        "medianMsPerRequest": 1738,
+        "maxMsPerRequest": 2832
+      }
+    },
+    "independentPositionCheck": {
+      "case": "13db4156a937c965e470",
+      "site": "https://lichess.org/broadcast/1st-berjaya-global-chess-open-2026-masters/round-6/Z7lzric1/idslgxxK",
+      "root": [
+        {
+          "cp": -634,
+          "mate": null,
+          "depth": 24,
+          "nodes": 8000463,
+          "pvUci": [
+            "h7g6",
+            "d4c5",
+            "e6b6",
+            "d8c8",
+            "b6c5",
+            "c8c5",
+            "b8b4",
+            "a5c6",
+            "b4b1",
+            "g2f1"
+          ],
+          "san": "44...Kg6 45. Qc5 Qb6 46. Rxc8 Qxc5 47. Rxc5 Rxb4 48. Nc6 Rb1+ 49. Bf1"
+        },
+        {
+          "cp": -764,
+          "mate": null,
+          "depth": 24,
+          "nodes": 8000463,
+          "pvUci": [
+            "b8b4",
+            "d4h8",
+            "h7g6",
+            "d8c8",
+            "b4b6",
+            "c4c5",
+            "e4e3",
+            "c5b6",
+            "e3e2",
+            "c8c6"
+          ],
+          "san": "44...Rxb4 45. Qh8+ Kg6 46. Rxc8 Rb6 47. c5 e3 48. cxb6 e2 49. Rc6"
+        }
+      ],
+      "orders": [
+        {
+          "cp": 720,
+          "mate": null,
+          "depth": 27,
+          "nodes": 3245716,
+          "pvUci": [
+            "d4h8",
+            "h7g6",
+            "d8c8",
+            "b4b6",
+            "c4c5",
+            "b6b1",
+            "g1h2",
+            "f5f4",
+            "c8c6",
+            "f4f3"
+          ],
+          "san": "45. Qh8+ Kg6 46. Rxc8 Rb6 47. c5 Rb1+ 48. Kh2 f4 49. Rc6 f3"
+        },
+        {
+          "cp": -482,
+          "mate": null,
+          "depth": 27,
+          "nodes": 3245716,
+          "pvUci": [
+            "d8c8",
+            "e6c8",
+            "d4a7",
+            "h7g8",
+            "g1h2",
+            "b4b1",
+            "a7e7",
+            "c8e6",
+            "e7d8",
+            "g8h7"
+          ],
+          "san": "45. Rxc8 Qxc8 46. Qa7 Kg8 47. Kh2 Rb1 48. Qe7 Qe6 49. Qd8+ Kh7"
+        }
+      ],
+      "sameReply": [
+        {
+          "cp": 503,
+          "mate": null,
+          "depth": 24,
+          "nodes": 6000502,
+          "pvUci": [
+            "d4h8",
+            "e6f6",
+            "h8f6",
+            "g6f6",
+            "a5c6",
+            "b8b6",
+            "d8c8",
+            "f7c4",
+            "g2f1",
+            "c4e6"
+          ],
+          "san": "45. Qh8 Qf6 46. Qxf6+ Kxf6 47. Nc6 Rb6 48. Rxc8 Bxc4 49. Bf1 Be6"
+        }
+      ]
+    }
+  },
+  "ordinaryReserve": {
+    "cases": 64,
+    "nominations": 0,
+    "extraQueries": 0
+  }
+}
