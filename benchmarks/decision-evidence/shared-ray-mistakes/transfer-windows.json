@@ -1,0 +1,36 @@
+{
+  "revision": "cd14819e962092f58aa1ca6c06773a09cef0e051",
+  "scenarios": {
+    "Rear-Piece Trade": {
+      "passed": true,
+      "seconds": 13.634,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What Rf6 missed or allowed\n\nTACTICAL\n\nEngine evaluation loss 3.45 pawns\n\nTactical · Engine supported. The opponent can use tacticalPreparation after the played move. This mechanism is absent from the compared better line, which retains more material. Bg5 gives this piece access to e7. In the analysed continuation, Bxe7 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bxe7 removes the piece on e7 which could legally recapture on d6. The line continues Rxe7 Qxd6. The played line retains 1.0 fewer material points after 13 plies of both compared lines.\n\nBg5 gives this piece access to e7. In the analysed continuation, Bxe7 uses capturingDefender at ply 3. Bg5 Rf7 Bxe7 Rxe7 Qxd6\n\nBxe7 removes the piece on e7 which could legally recapture on d6. The line continues Rxe7 Qxd6. Bg5 Rf7 Bxe7 Rxe7 Qxd6\n\nPlayed line. Rf6 Bg5 Rf7 Bxe7 Rxe7 Qxd6 Qe8 Re3 Rf7 Red3 Kg8 h3 a5\n\nBetter line. Qe6 Qd3 b5 b3 h6 c4 Rad8 a4 bxa4 bxa4 a5 Bd2 Qf7\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    },
+    "Aligned Queen and Rook": {
+      "passed": true,
+      "seconds": 12.364,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What Rd1 missed or allowed\n\nTACTICAL\n\nEngine evaluation loss 5.86 pawns\n\nTactical · Engine supported. Rd1 lets Bb3 line up the queen on c2 and the rook on d1. Both searches show Bxd1 winning material from that alignment. After Ne3, Bb3 Qd3 keeps the material balance in the compared line.\n\nPlayed line. Rd1 Bb3 Qb1 Bxd1 Qxd1\n\nBetter line. Ne3 Bb3 Qd3 Ne7 Qe4\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    },
+    "Promotion Diverts the Knight": {
+      "passed": true,
+      "seconds": 12.867,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What Nc2 missed or allowed\n\nTACTICAL\n\nEngine evaluation loss 1.92 pawns\n\nTactical · Engine supported. Nc2 lets Rb2 line up the knight on c2 and the rook on e2. Both searches show Rxe2 winning material from that alignment. After Be5, Rb2 Bxb2 keeps the material balance in the compared line.\n\nPlayed line. Nc2 Rb2 d7 a1=Q Nxa1 Rxe2 Nb3\n\nBetter line. Be5 Rb2 Bxb2 f6 Ba1 Rd8 Rxa2\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    }
+  },
+  "typeCheckPassed": true,
+  "targetedTestsPassed": 43,
+  "sourcePanelWidths": [
+    320,
+    390,
+    900
+  ]
+}

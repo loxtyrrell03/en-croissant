@@ -1,0 +1,41 @@
+{
+  "requests": 1,
+  "reports": 1,
+  "changes": [
+    {
+      "id": "011ee7b47d52c0273595",
+      "before": "unclear",
+      "after": "tactical",
+      "reportedLossCp": 509,
+      "proof": {
+        "kind": "forcing-attack",
+        "throughPly": 9,
+        "playedLineUci": [
+          "g5h4",
+          "e7h7",
+          "e1e6",
+          "h7h5",
+          "h4g3"
+        ],
+        "betterLineUci": [
+          "d1c1",
+          "e7h7",
+          "h5f6",
+          "h8f6",
+          "g5f6",
+          "d7f6",
+          "e1e6",
+          "d8f8",
+          "c1d2"
+        ],
+        "mechanisms": [],
+        "explanation": "Bh4 lets Qh7 line up the knight on h5 and the bishop on h4. The two searches show Qxh4 and Qxh5 winning different pieces. After Qc1, Qh7 Nxf6 keeps the material balance in the compared line."
+      }
+    }
+  ],
+  "source": "https://lichess.org/broadcast/interclubes-apertura-102-club-de-ajedrez-de-chile-2026/ronda-2/qJsVhpBL/FjsVrbkO",
+  "frameHash": "b76f447b021d38c87597693ecb9b42450e00c8bab06346f4e60d0e38793424b5",
+  "pairedPlayed": "20. Bh4 Qh7 21. Nxf6 Nxf6 22. Qe2 Qxh4 23. Qxe6+ Kb8 24. c5",
+  "independentPlayed": "20. Bh4 Qh7 21. Rxe6 Qxh5 22. Bg3 Nc5 23. Qe1 Rde8 24. Re7",
+  "matchedBetter": "20. Qc1 Qh7 21. Nxf6 Bxf6 22. Bxf6 Nxf6 23. Rxe6 Rdf8 24. Qd2"
+}

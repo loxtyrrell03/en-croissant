@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test } from "vitest";
-import { compareSharedRay, nominateSharedRay } from "./candidate";
+import { compareSharedRay, nominateSharedRay } from "@/utils/tacticalMotifs/decisionSharedRay";
 import type { DecisionAssessmentInput } from "@/utils/tacticalMotifs/decisionAssessment";
 import { nominateSharedReply } from "@/utils/tacticalMotifs/decisionSharedReply";
 

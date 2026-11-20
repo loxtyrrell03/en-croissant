@@ -1,0 +1,109 @@
+{
+  "transfer": {
+    "requests": 119,
+    "reports": 119,
+    "changes": [
+      {
+        "id": "57ad604db82317716a77",
+        "before": "unclear",
+        "after": "tactical",
+        "reportedLossCp": 586,
+        "proof": {
+          "kind": "forcing-attack",
+          "throughPly": 5,
+          "playedLineUci": [
+            "e1d1",
+            "d5b3",
+            "c2b1",
+            "b3d1",
+            "b1d1"
+          ],
+          "betterLineUci": [
+            "f1e3",
+            "d5b3",
+            "c2d3",
+            "c6e7",
+            "d3e4"
+          ],
+          "mechanisms": [],
+          "explanation": "Rd1 lets Bb3 line up the queen on c2 and the rook on d1. Both searches show Bxd1 winning material from that alignment. After Ne3, Bb3 Qd3 keeps the material balance in the compared line."
+        }
+      },
+      {
+        "id": "e613856b7d15a8e268e8",
+        "before": "unclear",
+        "after": "tactical",
+        "reportedLossCp": 192,
+        "proof": {
+          "kind": "forcing-attack",
+          "throughPly": 7,
+          "playedLineUci": [
+            "e1c2",
+            "b1b2",
+            "d6d7",
+            "a2a1q",
+            "c2a1",
+            "b2e2",
+            "a1b3"
+          ],
+          "betterLineUci": [
+            "f4e5",
+            "b1b2",
+            "e5b2",
+            "f7f6",
+            "b2a1",
+            "a8d8",
+            "e2a2"
+          ],
+          "mechanisms": [],
+          "explanation": "Nc2 lets Rb2 line up the knight on c2 and the rook on e2. Both searches show Rxe2 winning material from that alignment. After Be5, Rb2 Bxb2 keeps the material balance in the compared line."
+        }
+      },
+      {
+        "id": "f704c7a54a8a115ba5b3",
+        "before": "tactical",
+        "after": "tactical",
+        "reportedLossCp": 103,
+        "proof": {
+          "kind": "forcing-attack",
+          "throughPly": 7,
+          "playedLineUci": [
+            "c4c2",
+            "d5b3",
+            "c2b1",
+            "b3d1",
+            "b1d1"
+          ],
+          "betterLineUci": [
+            "c4g4",
+            "d5b3",
+            "d1d3",
+            "b7b5",
+            "d3d4",
+            "c8d8",
+            "e2e1"
+          ],
+          "mechanisms": [],
+          "explanation": "Qc2 lets Bb3 line up the queen on c2 and the rook on d1. Both searches show Bxd1 winning material from that alignment. After Qg4, Bb3 Rd3 keeps the material balance in the compared line."
+        }
+      }
+    ]
+  },
+  "archive": {
+    "requests": 1875,
+    "reports": 1869,
+    "changes": []
+  },
+  "restrictedRequests": 3,
+  "incrementalRestrictedRequests": 1,
+  "inputs": {
+    "baseline.json": "6201c61867ff4639a47f5b1703309d371f47199ae0386d7a5dc469028eef68c1",
+    "final-release.json": "f452433efe647cc72452fa5727b59a73f2e2484634c61fede5214d6e559c08d9",
+    "release-candidate.json": "630b594c8cdd7ce536e4de7a3ce6f929ee834295ca1e8c0303cc4f2a6524f8f8",
+    "archive-guard.json": "f9ec991d4a5acb60928b4953611938f13757208899573d6b02d7c49c2619950c",
+    "archive-final-0.json": "ab4e9b016ceed2dab1b3e0eefcd44d7657c9a82ed60db48ee35fbd14e3e06a19",
+    "archive-final-1.json": "edd42b01cbd55ac6fb46e69ca41619cc62804f0ae4e5f75ad2f9ee56fbfc1ae7",
+    "archive-final-2.json": "d357bf60dcf579b8f89ae82d3432f44058f58aaafdee3dbf3d88f6df09be1cf2",
+    "archive-final-3.json": "25b8f1b03dcd41d9e87d22a4e24bf48576b8ab4cffe4fec40c3de7b26d8177d0"
+  }
+}

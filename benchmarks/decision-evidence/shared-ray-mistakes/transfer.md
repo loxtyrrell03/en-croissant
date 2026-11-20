@@ -73,6 +73,30 @@ the matched comparison first, with the played and better
 continuations in the existing evidence control. A separate
 bounded legal proof retains priority.
 
+The committed worker at `cd14819e` reproduces all three
+explanations on the same frames. Only the reported mistake changes.
+Both earlier unclear mistakes become tactical, and the third gains
+the comparison while keeping its original reason. Evaluation losses,
+other assessments and report availability agree with v61. Across
+1,875 archived requests, all 1,869 available reports agree apart
+from the version. One of the three restricted probes is incremental
+over v61. The other two share existing requests. We verified the
+rendered panel at widths of 320, 390 and 900 pixels and ran 43
+targeted tests. [Integrated worker and cost receipt](transfer-release.json)
+
+The isolated Windows build of `cd14819e` passed both new
+examples with live Stockfish 19, in 12.4 and 12.9 seconds
+respectively. The existing rear-piece trade regression passed in
+13.6 seconds. The isolated type check passed. The test opened
+the visible mistake panel and verified the played and better
+lines. [Windows receipt](transfer-windows.json)
+
+The original Chilean `Bh4 Qh7` development case also changes
+from unclear to tactical on a separate replay. The independent
+lines lose either the knight on h5 or the bishop on h4. The cached
+`Qc1 Qh7 Nxf6` line keeps the material. This development readback
+is outside the transfer totals. [Compared lines](chile-development-replay.json)
+
 ## Reproduce
 
 From the repository root, use the same python-chess environment and
@@ -86,4 +110,13 @@ $env:DECISION_AUDIT_REVISION = '46101c2f'
 $env:RAY_INPUT = 'transfer-frames.json'
 $env:RAY_OUTPUT = 'transfer-candidate.json'
 node node_modules/vitest/vitest.mjs run --config "$bench/replay.config.mjs"
+python "$bench/score_transfer.py" transfer-frames.json "$bench/transfer-reference.json" transfer-candidate.json transfer-baseline.json transfer-results.json
 ```
+
+Use the archived worker replay in the [original experiment](README.md)
+with revisions `46101c2f` and `cd14819e` for the before and after
+reports. Run `verify_transfer_release.py` with those two transfer
+reports, the candidate report, the old archive replay and the
+corresponding new archive files. With `RAY_RELEASE=cd14819e`,
+`verify-transfer-panel.mjs` takes Playwright's `index.mjs` and a
+Chrome executable.

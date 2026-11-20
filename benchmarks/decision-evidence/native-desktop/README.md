@@ -109,3 +109,10 @@ last move `...Rf6` with live Stockfish and checks that the
 mistake still explains `Bxe7 Rxe7 Qxd6`. The equal rear-piece
 exchange no longer appears as a skewer. `Chile Passed Pawn`
 also passes on this build. [Run receipt](../shared-ray-mistakes/windows.json)
+
+Revision `cd14819e` adds `Aligned Queen and Rook` and
+`Promotion Diverts the Knight`. Run either scenario by passing its
+name after the Playwright entry point. These checks compare the
+same reply after the played and better moves, using live Stockfish.
+Both passed alongside the rear-piece trade regression.
+[Run receipt](../shared-ray-mistakes/transfer-windows.json)
